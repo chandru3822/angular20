@@ -261,7 +261,7 @@ public class ProjectProcessStepQuery {
 
   //language=PostgreSQL
   public final static String getTimeBasedAutoTriggerPps = """
-    select distinct pps.id as ppsId, ps.company_id as companyId
+    select distinct pps.id as ppsId, ps.company_id as companyId, pps.date_modified
     from flow.project_process_step pps
     inner join flow.project p on p.id = pps.project_id
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -278,8 +278,11 @@ public class ProjectProcessStepQuery {
           p.archived is not true and
           psa.archived is not true and
           psa.trigger_automatically is true and
-          psa.time_based_trigger is true
-    order by pps.id desc
+          psa.time_based_trigger is true and
+          case when ps.id = 1 and pps.date_modified < (now() - interval '30 days') then false
+                     else true
+                end
+    order by pps.date_modified desc, pps.id
   """;
 
   //language=PostgreSQL

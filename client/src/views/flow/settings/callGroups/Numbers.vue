@@ -68,7 +68,7 @@
               <td class="text-left">{{item.dateCreated  | formatDate('date', 'M/D/YYYY')}}</td>
               <td class="text-left">{{item.callCount}}</td>
               <td class="text-left">
-                <v-select attach style="width: 120px" v-model="item.active" :items="items" @change="updatePhoneNumber(item)"></v-select>
+                <v-select attach style="width: 120px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updatePhoneNumber(item)"></v-select>
               </td>
               <td>
                 <v-btn small text color="primary" v-if="userCanDelete" @click="phoneNumberToDelete=item"><v-icon>delete</v-icon></v-btn>
