@@ -411,6 +411,8 @@ public class InstallAgreementService {
         financeOption = "flexpay298";
       } else if (interestRate.equals("0.0299")) {
         financeOption = "20yr299";
+      } else if (interestRate.equals("0.0349")) {
+        financeOption = "349";
       } else if (interestRate.equals("0.0398")) {
         financeOption = "flexpay398";
       } else if (interestRate.equals("0.0399")) {
@@ -431,6 +433,8 @@ public class InstallAgreementService {
         financeOption = "flexpay298";
       } else if (interestRate.equals("0.0299")) {
         financeOption = "blueraven";
+      } else if (interestRate.equals("0.0349")) {
+        financeOption = "349";
       } else if (interestRate.equals("0.0398")) {
         financeOption = "flexpay398";
       } else if (interestRate.equals("0.0498")) {
