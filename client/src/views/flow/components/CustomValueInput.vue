@@ -230,6 +230,14 @@
           @input="handleInput"
           autocomplete="off"
         >
+          <template v-slot:prepend v-if="field.allowSelectSelf">
+            <v-tooltip top small>
+              <template v-slot:activator="{on, attrs}">
+            <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
+              </template>
+              <span class="albatross-body-3">Select Me</span>
+            </v-tooltip>
+          </template>
           <template #item="{ item }">
             <v-list-item-content>
               <v-list-item-title v-text="item.name" />
@@ -450,6 +458,9 @@ export default {
     },
     handleInput(val) {
       this.callback(this.field, val === null)
+    },
+    selectSelf(){
+      console.log('select self')
     }
   }
 }
