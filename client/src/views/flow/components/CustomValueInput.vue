@@ -409,6 +409,7 @@ export default {
       arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value,
       locked: true,
+      currentUserId:null,
     }
   },
   // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
@@ -460,7 +461,19 @@ export default {
       this.callback(this.field, val === null)
     },
     selectSelf(){
-      console.log('select self')
+      let currentUserPrimaryPositionId = this.$store.state.user.details.userPositions.find(position => position.primaryFlag === true).id
+      let currentUserId = this.$store.state.user.details.id
+      //a field with System List Type of “All Active Users” returns a distinct list of users and uses the userId as the value.id
+      //a field with System List Type "Users by Position" or "Users by Organization" returns a distinct list of user positions (so a user can appear more than once)
+        //and uses the userPositionId as the value.id
+        // if a user appears more than once, we want to use their primary position, so we get the position id of their primary position to find them in the list,
+        // and this should only return a single value...
+        // @TODO: I think we need to rethink this logic for the case that their primary position is not in the list, but another position they have IS in the list
+      //if the current user is not found in the list, do nothing
+      let currentUserValues = this.getListOfValues().filter(value => value.id === currentUserId || value.id === currentUserPrimaryPositionId)
+      if(currentUserValues.length === 1){
+        this.field.intValue = currentUserValues[0]
+      }
     }
   }
 }
