@@ -208,10 +208,10 @@ public class CustomFieldQuery {
     insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key, custom_field_sql,
                                   custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
                                   readonly, sort_list_values_alphabetically,
-                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
+                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now, allow_select_self)
     values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey, :customFieldSql,
             :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::bigint[], :readonly,
-            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
+            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow, :allowSelectSelf)
     returning id
     """;
 
