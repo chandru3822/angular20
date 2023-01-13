@@ -34,6 +34,7 @@ public class AttachmentTypeCfvQuery {
                                 cf.list_of_value_id as "listOfValueId",
                                 cf.field_name as "fieldName",
                                 cf.allow_now as "allowNow",
+                                cf.allow_select_self as "allowSelectSelf",
                                 case when cf.system_readonly is true then cf.system_readonly else cf.readonly end as "readonly",
                                 cf.system_readonly as "systemReadonly",
                                 cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",

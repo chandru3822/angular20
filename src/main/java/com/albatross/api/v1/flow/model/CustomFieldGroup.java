@@ -26,7 +26,8 @@ public class CustomFieldGroup {
 
   // This list is used when looking at custom field VALUES in a group
   //@TODO: @randa, maybe CustomFieldValue should inherit from CustomField to keep it more DRY?
-  private List<CustomFieldValue> customFieldValues;
+  // @TODO: I second the statement above
+    private List<CustomFieldValue> customFieldValues;
 
   // todo: ask unicorn boy about this - can't update dom value of key not already stored on object. re: object types -> custom field groups -> edit group name
   private Boolean edit = false;
