@@ -153,7 +153,7 @@
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto">
           <PageOverview page-name="Contact"
-                        :show-edit-btn="contact && contact.id && (userCanEdit || !contactOwnerFieldIsReadOnly())"
+                        :show-edit-btn="contact && contact.id && userCanEdit"
                         @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
                         :details="overviewDetails"
           ></PageOverview>
