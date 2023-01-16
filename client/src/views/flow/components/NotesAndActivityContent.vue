@@ -1,7 +1,7 @@
 <template>
   <div :class="{'elevation-1': bordered}">
       <v-toolbar flat dense color="white" class="elevation-0">
-        <v-toolbar-title class="albatross-header-4">Leave a note:</v-toolbar-title>
+        <v-toolbar-title class="body-large">Leave a note:</v-toolbar-title>
       </v-toolbar>
       <v-divider></v-divider>
       <v-card class="px-3 elevation-0 square-card overflow-y-auto">
@@ -69,7 +69,7 @@
           disable-sort
           :expanded.sync="expanded"
           hide-default-footer
-          class="elevation-0 mt-1"
+          class="elevation-0 mt-1 label-small"
       >
 
         <template #no-data>
@@ -139,11 +139,11 @@
             <td class="py-2 note-column">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
-                   @click="expanded=[item]" class="pl-4 note-see-comments clickable">
+                   @click="expanded=[item]" class="pl-4 note-see-comments clickable body-small">
                 See {{ item.childNotes.length }} comment{{ item.childNotes.length > 1 ? 's' : '' }}...
               </div>
               <div v-else-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)"
-                   @click="expanded=[]" class="pl-4 note-see-comments clickable">
+                   @click="expanded=[]" class="pl-4 note-see-comments clickable body-small">
                 Hide comments...
               </div>
             </td>
@@ -264,13 +264,13 @@
               </div>
               <v-row v-else class="px-0">
                 <v-col cols="11" class="pr-0">
-                  <v-card color="grey lighten-5" class="py-0">
+                  <v-card color="grey lighten-5 label-small" class="py-0">
                     <v-card-title class="reply-note-creator pt-1 pb-0">
                       {{ cn.createdBy }}
                       <v-spacer></v-spacer>
                       {{ cn.dateCreated | formatDate('timestamp') }}
                     </v-card-title>
-                    <v-card-text class="reply-note pb-1 default-text-color">
+                    <v-card-text class="reply-note pb-1 default-text-color body-large">
                       <pre class="app-pre-wrapper">{{ cn.note }}</pre>
                     </v-card-text>
                   </v-card>

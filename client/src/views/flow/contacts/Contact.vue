@@ -11,7 +11,7 @@
     <!--    modal for editing contact fields -->
     <ConfirmationDialog :open-dialog="showEditModal" parent-close
                         @confirm="validateForm()" @close-dialog="showEditModal = false">
-      <template v-slot:title>Contact Overview</template>
+      <template v-slot:title><div class="title-large">Contact Overview</div></template>
       <v-form ref="contactEditForm">
         <v-card-text class="pt-4 px-0">
           <div>
@@ -21,8 +21,10 @@
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
               label="Contact First Name"
+              class="body-large"
             ></v-text-field>
             <v-text-field
+              class="body-large"
               v-model="tempContact.lastName"
               :rules="requiredRules"
               :readonly="!userCanEdit"
@@ -30,6 +32,7 @@
               label="Contact Last Name"
             ></v-text-field>
             <v-text-field
+              class="body-large"
               v-model="tempContact.street1"
               label="Street"
               :readonly="!userCanEdit"
@@ -37,6 +40,7 @@
               @change="tempContact.reloadCoordinates = true"
             ></v-text-field>
             <v-text-field
+              class="body-large"
               v-model="tempContact.city"
               label="City"
               :readonly="!userCanEdit"
@@ -44,6 +48,7 @@
               @change="tempContact.reloadCoordinates = true"
             ></v-text-field>
             <v-text-field
+              class="body-large"
               type="text"
               v-model="tempContact.postalCode"
               counter
@@ -56,6 +61,7 @@
               label="Postal Code"
             ></v-text-field>
             <v-autocomplete v-model="tempContact.companyStateId"
+                            class="body-large"
                             :items="states"
                             label="State"
                             :readonly="!userCanEdit"
@@ -66,6 +72,7 @@
                             @input="tempContact.reloadCoordinates = true"
             ></v-autocomplete>
             <v-select v-model="tempContact.companyCountryId"
+                      class="body-large"
                       :items="countries"
                       label="Country"
                       :readonly="!userCanEdit"
@@ -76,6 +83,7 @@
                       item-value="id"
             ></v-select>
             <v-text-field text
+                          class="body-large"
                           label="Phone"
                           placeholder=" "
                           :rules="contactPhoneRule"
@@ -83,6 +91,7 @@
                           :disabled="!userCanEdit"
                           v-model="tempContact.phone"></v-text-field>
             <v-text-field text
+                          class="body-large"
                           label="Mobile"
                           placeholder=" "
                           :rules="contactPhoneRule"
@@ -90,6 +99,7 @@
                           :disabled="!userCanEdit"
                           v-model="tempContact.mobile"></v-text-field>
             <v-text-field text
+                          class="body-large"
                           label="E-Mail"
                           id="qa-email-field"
                           placeholder=" "
@@ -99,6 +109,7 @@
                           v-model="tempContact.email"></v-text-field>
           </div>
           <v-autocomplete v-model="tempContact.owner"
+                          class="body-large"
                           :readonly="contactOwnerFieldIsReadOnly()"
                           :disabled="contactOwnerFieldIsReadOnly()"
                           :items="availableOwners"
@@ -111,7 +122,7 @@
           </v-autocomplete>
         </v-card-text>
       </v-form>
-      <template v-slot:yes>Save</template>
+      <template v-slot:yes><div class="body-medium">Save</div></template>
     </ConfirmationDialog>
     <!-- modal for deleting contact -->
     <ConfirmationDialog :open-dialog="deleteContactConfirm" @confirm="deleteContact"
@@ -124,7 +135,7 @@
 
 
       <template v-slot:back-btn>
-        <v-btn fab text small color="primary" class="mr-2" @click="goToPath('/contacts')">
+        <v-btn fab text small color="primary" class="mr-2 hide-xs" @click="goToPath('/contacts')">
           <v-icon>mdi-view-list</v-icon>
         </v-btn>
       </template>
@@ -132,6 +143,7 @@
         <div class="mt-3">
           <v-btn text color="primary" v-if="userCanDelete"
                  :disabled="contact.projects && contact.projects.length > 0"
+                 class = "hide-xs"
                  @click="deleteContactConfirm = true">
             <v-icon>delete</v-icon>
           </v-btn>
@@ -147,7 +159,7 @@
           ></PageOverview>
           <v-divider class="mt-4"></v-divider>
           <v-toolbar color="transparent" flat>
-            <v-toolbar-title class="albatross-header-3">Associated Projects</v-toolbar-title>
+            <div class="headline-small">Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
@@ -177,7 +189,7 @@
                     <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
                   </v-tooltip>
                 </template>
-                <v-card class="pa-5">
+                <v-card class="pa-5 body-large">
                   Select a process to be used
                   <v-select v-model="selectedProcess"
                             :items="availableProcesses"
@@ -189,7 +201,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <v-btn text color="primary" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
+                  <v-btn text class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
                     Add Project
                   </v-btn>
                 </v-card>
@@ -200,13 +212,10 @@
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
                     :href="`/project/${p.id}/details`">
-              {{ p.projectName }}
+              <div class="body-large" >{{ p.projectName }} </div>
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
-              <div class="albatross-body-3"
-                   v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')">
-                {{ p.id }}
-              </div>
+
             </v-card>
           </div>
         </div>
@@ -215,23 +224,31 @@
         <div>
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
-            <v-toolbar-title class="albatross-header-3">
+            <v-toolbar-title class="headline-small">
               Contact Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
+              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0 hide-xs">
                 <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
                 <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
               </v-btn>
               <div>
                 <v-btn color="primary"
-                       class="white--text mt-3"
+                       class="hide-xs body-medium"
                        v-if="userCanEdit"
                        :loading="fieldsLoading"
                        :disabled="fieldsSaving"
                        @click="validateFields(true)">
                   Save Fields
+                </v-btn>
+                <v-btn color="primary"
+                       class="white--text mt-3 show-xs"
+                       v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validateFields(true)">
+                  Save
                 </v-btn>
               </div>
             </v-toolbar-items>
@@ -246,7 +263,7 @@
                     v-for="(cfg, index) in customFieldGroups"
                     :key="index"
                   >
-                    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+                    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar body-large" dense>
                       <v-toolbar-title>
                         {{ cfg.groupName }}
                       </v-toolbar-title>
@@ -264,6 +281,7 @@
                                             :readonly="getReadOnly(cf)"
                                             :callback="populateDirtyCfvs"
                                             :field="cf"
+                                            class = "body-large"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
                         <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
@@ -273,6 +291,7 @@
                                             :readonly="getReadOnly(cf)"
                                             :callback="populateDirtyCfvs"
                                             :field="cf"
+                                            class = "body-large"
                                             :show-field-name="false"></CustomValueInput>
                         </v-col>
                       </v-row>

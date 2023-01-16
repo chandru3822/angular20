@@ -1,7 +1,7 @@
 <template>
 <v-container class="pa-0">
   <v-toolbar flat color="transparent">
-    <v-toolbar-title class="albatross-header-3">{{pageName}} Overview</v-toolbar-title>
+    <div class=" headline-small">{{pageName}} Overview</div>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
@@ -15,20 +15,20 @@
   <div class="mx-4" v-if="details">
     <div v-for="detail in details">
       <div v-if="!detail.type || detail.type === constants.OVERVIEW_FIELD_TYPES.DEFAULT">
-        <span class="detail-label">{{detail.label}}: </span>
+        <span class="detail-label body-small">{{detail.label}}: </span>
         <span v-if="detail.value" @click="detail.clickable ? $emit(`click-detail`, detail) : null"
-              class="detail-item"
+              class="detail-item body-medium body-medium"
               :class="{'clickable underline anchor':detail.clickable}" >
           {{detail.value}}
         </span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.DATE">
-        <span class="detail-label">{{detail.label}}: </span>
-        <span v-if="detail.value" class="detail-item">{{formatDate(detail.value)}}</span>
+        <span class="detail-label body-small">{{detail.label}}: </span>
+        <span v-if="detail.value" class="detail-item body-medium">{{formatDate(detail.value)}}</span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.STATUS">
-        <span class="vertical-top detail-label">{{detail.label}}: </span>
-        <span class="d-inline-block detail-item vertical-top"
+        <span class="vertical-top detail-label body-small">{{detail.label}}: </span>
+        <span class="d-inline-block detail-item vertical-top body-medium"
               v-if="detail.value"
               :class="[getStatusColorClass(detail.statusTypeId), {'status-active': detail.active && !detail.statusTypeId,'status-cancelled': !detail.active && !detail.statusTypeId}]">
         {{detail.value}}
@@ -37,19 +37,19 @@
         </span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS">
-          <span class=" vertical-top detail-label">{{detail.label}}: </span>
-          <div v-if="detail.value" class="d-inline-block vertical-top detail-item">
+          <span class=" vertical-top detail-label body-small">{{detail.label}}: </span>
+          <div v-if="detail.value" class="d-inline-block vertical-top detail-item body-medium">
             <span>{{detail.value.street}}</span><br/>
             <span>{{detail.value.city}}, {{detail.value.state}} {{detail.value.zip}}</span>
           </div>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.PHONE">
-          <span class="detail-label">{{detail.label}}: </span>
-          <span v-if="detail.value" class="detail-item">{{formatPhoneNumber(detail.value)}}</span>
+          <span class="detail-label body-small">{{detail.label}}: </span>
+          <span v-if="detail.value" class="detail-item body-medium">{{formatPhoneNumber(detail.value)}}</span>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.OWNER" class="mt-2">
-        <span class="vertical-top detail-label">{{detail.label}}:</span>
-        <div v-if="detail.value" class="d-inline-block detail-item vertical-top">
+        <span class="vertical-top detail-label body-small">{{detail.label}}:</span>
+        <div v-if="detail.value" class="d-inline-block detail-item vertical-top body-medium">
                 <span :class="{'error-text': !detail.value.hasAccess}">{{
                     detail.value.fullName
                   }} - {{detail.value.position }} <br/></span>
