@@ -164,11 +164,6 @@
             @clickEdit="showEditModal()"
             :details="overviewDetails"
           ></PageOverview>
-          <div class="mx-4 address-details">
-            <div class="mt-3">
-              <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
-            </div>
-          </div>
           <v-divider class="mt-6"></v-divider>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
           <v-divider class="mb-3"></v-divider>
@@ -306,6 +301,10 @@ export default {
           statusTypeId: this.project.projectStatusTypeId,
         },
         {
+          type: constants.OVERVIEW_FIELD_TYPES.ID,
+          value: this.project.id
+        },
+        {
           label: 'Address',
           type: constants.OVERVIEW_FIELD_TYPES.ADDRESS,
           value: {
@@ -322,13 +321,17 @@ export default {
         },
         {
           label: 'Mobile',
-          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
           value: this.project.mobile
         },
         {
           label: 'Email',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.project.email
+        },
+        {
+          type: constants.OVERVIEW_FIELD_TYPES.BUTTON,
+          value: this.project.contactId
         },
         {
           label: 'Owner',

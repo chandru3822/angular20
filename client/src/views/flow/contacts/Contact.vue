@@ -448,12 +448,12 @@ export default {
         },
         {
           label: 'Mobile',
-          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
           value: formatPhoneNumber(this.contact.mobile)
         },
         {
           label: 'Email',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.contact.email
         },
         {

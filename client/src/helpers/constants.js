@@ -167,12 +167,16 @@ constants.SNACKBARS = {
 constants.CSV_BLOB_TYPE = 'text/csv;charset=utf-8'
 
 constants.OVERVIEW_FIELD_TYPES = {
-  DEFAULT: 'default',
-  DATE: 'date',
-  STATUS: 'status',
-  ADDRESS: 'address',
-  PHONE: 'phone',
-  OWNER: 'owner'
+    DEFAULT: 'default',
+    ID: 'id',
+    DATE: 'date',
+    STATUS: 'status',
+    ADDRESS: 'address',
+    PHONE: 'phone',
+    MOBILE_PHONE: 'mobile_phone',
+    EMAIL:'email',
+    OWNER: 'owner',
+    BUTTON: 'button'
 }
 
 export default constants
