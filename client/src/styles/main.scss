@@ -572,6 +572,9 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   font-weight: 600;
   font-size: 1.125rem;
   line-height: 1.5;
+  word-wrap: break-word !important;
+  text-overflow: "-" !important;
+  overflow-wrap: break-word !important;
 }
 
 .title-large{
@@ -610,21 +613,22 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.6;
 }
 
-.body-large, .body-large .v-select__selection, .body-large .v-label {
+.body-large, .body-large .v-select__selection, .body-large .v-label, .body-large input,
+.body-large .v-list-item__content, .v-list-item__title, textarea {
   font-family: lato;
   font-weight: 400;
   font-size: 1rem;
   line-height: 1.6;
 }
 
-.body-medium, tr{
+.body-medium, tr, .v-snack__content, .v-btn__content{
   font-family: lato;
   font-weight: 400;
   font-size: .875rem;
   line-height: 1.6;
 }
 
-.body-small, .body-large .v-messages__message {
+.body-small, .body-large .v-messages__message, label.v-label.v-label--active.theme--light {
   font-family: lato;
   font-weight: 400;
   font-size: .75rem;
@@ -638,6 +642,10 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
     font-size: 1.25rem;
     line-height: 1.4;
   }
+
+  .show-xs {
+    visibility: hidden;
+  }
 }
 
 @media (max-width: 600px) {
@@ -646,6 +654,10 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
     font-weight: 400;
     font-size: 1.125rem;
     line-height: 1.5;
+  }
+
+  .hide-xs {
+    visibility: hidden;
   }
 }
 

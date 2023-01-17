@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1 toolbar-z-index-override">
-          <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
+          <v-toolbar-title class="title-large-medium">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
