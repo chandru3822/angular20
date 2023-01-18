@@ -43,6 +43,7 @@ public class SmartlistQueryv1 {
   public final static String getById = """
       select
           s.*,
+          s.public as "shared",
           ot.object_type,
           cot.object_type_id,
           ot1.object_type as view_object_type,

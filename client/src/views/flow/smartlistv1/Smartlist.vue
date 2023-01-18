@@ -133,49 +133,6 @@
                     v-model="smartlist.primaryUserPosition"
                     label="Primary Position"
                   />
-
-<!--                  <v-dialog-->
-<!--                    v-if="!isUserOrgObjectType"-->
-<!--                    v-model="showToggleDialog"-->
-<!--                    width="500"-->
-<!--                  >-->
-<!--                    <template #activator="{on}">-->
-<!--                      <v-checkbox-->
-<!--                        v-model="smartlist.projectDetails"-->
-<!--                        label="Project Details"-->
-<!--                        v-on="smartlist.id && on"-->
-<!--                      />-->
-<!--                    </template>-->
-
-<!--                    <v-card>-->
-<!--                      <v-card-title-->
-<!--                        class="text-h5 grey lighten-2"-->
-<!--                        primary-title-->
-<!--                      >-->
-<!--                        Confirm-->
-<!--                      </v-card-title>-->
-
-<!--                      <v-card-text>-->
-<!--                        Toggling project details will reset your smartlist, are you sure you want to continue?-->
-<!--                      </v-card-text>-->
-
-<!--                      <v-divider></v-divider>-->
-
-<!--                      <v-card-actions>-->
-<!--                        <v-spacer></v-spacer>-->
-<!--                        <v-btn-->
-<!--                          @click="resetToggleProjectDetails">-->
-<!--                          No-->
-<!--                        </v-btn>-->
-<!--                        <v-btn-->
-<!--                          color="primary"-->
-<!--                          text-->
-<!--                          @click="[showToggleDialog = false, toggleProjectDetails()]">-->
-<!--                          Yes-->
-<!--                        </v-btn>-->
-<!--                      </v-card-actions>-->
-<!--                    </v-card>-->
-<!--                  </v-dialog>-->
                   <v-checkbox
                       v-if="!isUserOrgObjectType"
                       v-model="smartlist.projectDetails"
