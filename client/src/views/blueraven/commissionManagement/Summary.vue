@@ -126,9 +126,9 @@
           data.forEach(p => {
             csvData +=
               p.projectId + ',' +
-              p.customerName + ',' +
-              p.closer + ',' +
-              p.overridePlanName + ',' +
+              '"' + p.customerName + '","' +
+              p.closer + '","' +
+              p.overridePlanName + '",' +
               p.systemSize + ',' +
               p.overridesEarned + ',' +
               p.priorPay + ',' +
@@ -163,7 +163,7 @@
 
           this.payrollSummary.forEach(p => {
             csvData +=
-              p.closer_user + ',' +
+              '"' + p.closer_user + '",' +
               p.total_commission + ',' +
               p.total_overrides + ',' +
               p.commission_adjustments + ',' +

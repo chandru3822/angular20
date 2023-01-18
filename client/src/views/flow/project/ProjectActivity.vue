@@ -8,7 +8,8 @@
            :class="{'title-collapse': isSidebarCollapsed,
                     'title-no-collapse': !isSidebarCollapsed,
                     'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
-                    'mt-0': $route.path.indexOf('project') < 0}">
+                    'mt-0': $route.path.indexOf('project') < 0,
+                    'headline-small': true}">
 
         <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
           <template v-slot:activator="{on, attrs}">
@@ -59,7 +60,7 @@
 
             <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
-                   class="text-capitalize my-4 fix-toggle-opacity"
+                   class="text-capitalize my-4 fix-toggle-opacity body-medium"
                    style="width: 50% !important;"
             >
               Focused

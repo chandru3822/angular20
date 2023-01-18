@@ -238,18 +238,18 @@
             this.payrollSnapshot.forEach(p => {
               csvData +=
                 p.projectId + ',' +
-                p.customerName + ',' +
+                '"' + p.customerName + '",' +
                 p.systemSize + ',' +
-                p.salesRep + ',' +
-                p.source + ',' +
-                p.stage + ',' +
+                '"' + p.salesRep + '",' +
+                '"' + p.source + '",' +
+                '"' + p.stage + '",' +
                 p.cancelled + ',' +
                 p.installAgreementSigned + ',' +
                 p.finalDesignSigned + ',' +
                 p.financialAgreementSent + ',' +
-                p.percentOfCashDeposit + ',' +
-                p.sc + ',' +
-                p.commissionPlan + ',' +
+                p.percentOfCashDeposit + "," +
+                p.sc + '","' +
+                p.commissionPlan + '",' +
                 p.commissionsEarned + ',' +
                 p.commissionPaidToDate + ',' +
                 p.commissionAdjustment + ',' +

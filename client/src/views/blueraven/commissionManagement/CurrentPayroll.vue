@@ -799,14 +799,14 @@
           this.accountingData.forEach(p => {
             if (this.masterSelectedPayrollIds.includes(p.project_id)) {
               csvData +=
-                p.project_id + ',' +
-                p.customer_name + ',' +
-                p.system_size + ',' +
-                p.closer + ',' +
+                p.project_id + ',"' +
+                p.customer_name + '",' +
+                p.system_size + ',"' +
+                p.closer + '",' +
                 p.user_id + ',' +
                 p.employee_id + ',' +
-                p.current_pay + ',' +
-                p.source_name + ',' +
+                p.current_pay + ',"' +
+                p.source_name + '",' +
                 p.cancelled_date + ',' +
                 p.installation_agreement_signed_date + ',' +
                 p.final_design_signed_date + ',' +
@@ -815,14 +815,14 @@
                 p.percent_of_cash_deposit + ',' +
                 p.proof_of_homeowners_insurance_obtained_date + ',' +
                 p.proof_of_howmeowners_insurance_required + ',' +
-                p.substantial_completion_date + ',' +
-                p.commission_plan + ',' +
+                p.substantial_completion_date + ',"' +
+                p.commission_plan + '",' +
                 p.commission_earned + ',' +
                 p.commission_paid_to_date + ',' +
                 p.commission_adjustments + ',' +
                 p.current_pay_commissions + ',' +
-                p.remaining_value_commissions + ',' +
-                p.override_plan + ',' +
+                p.remaining_value_commissions + ',"' +
+                p.override_plan + '",' +
                 p.override_earned + ',' +
                 p.overrides_paid_to_date + ',' +
                 p.current_pay_overrides + ',' +

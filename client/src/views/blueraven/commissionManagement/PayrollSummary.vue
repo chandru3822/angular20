@@ -110,7 +110,7 @@
 
           this.payrollSummary.forEach(p => {
             csvData +=
-              p.closer_user + ',' +
+              '"' + p.closer_user + '",' +
               p.total_commission + ',' +
               p.total_overrides + ',' +
               p.commission_adjustments + ',' +
