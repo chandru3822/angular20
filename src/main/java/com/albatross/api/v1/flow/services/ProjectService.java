@@ -44,7 +44,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -400,7 +399,11 @@ public class ProjectService {
         String timezone = null;
         if (null != contact.getLatitude() && null != contact.getLongitude()) {
           // if we have a lat/long then attempt to load the timezone
-          timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+          try {
+            timezone = mapboxApiService.getTimezone(contact.getLatitude(), contact.getLongitude());
+          } catch (Exception e) {
+            //do nothing because the getTimezone function already logged this error
+          }
         }
         params.put("timezone", timezone);
       } else {

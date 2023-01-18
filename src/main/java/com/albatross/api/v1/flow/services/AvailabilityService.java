@@ -380,7 +380,13 @@ public class AvailabilityService {
       if (null != ra.getReloadCoordinates()
         && ra.getReloadCoordinates()
         && null != ra.getLocation()) {
-        List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        List<Double> coordinates = new ArrayList<>();
+        try {
+          coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        } catch (Exception e) {
+          //do nothing because the getTimezone function already logged this error
+        }
+
         // if we found new coordinates then uses those values
         if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
           // 1 = lat, 0 = long
@@ -399,7 +405,12 @@ public class AvailabilityService {
       sqlCache.updateBySql(AvailabilityQuery.updateAppointment, params);
     } else {
       if (null != ra.getLocation()) {
-        List<Double> coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        List<Double> coordinates = new ArrayList<>();
+        try {
+          coordinates = mapboxApiService.getLatLong(ra.getLocation());
+        } catch (Exception e) {
+          //do nothing because the getTimezone function already logged this error
+        }
         if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
           // 1 = lat, 0 = long
           latitude = coordinates.get(1);
