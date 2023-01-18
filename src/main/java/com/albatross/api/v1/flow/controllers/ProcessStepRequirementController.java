@@ -39,6 +39,11 @@ public class ProcessStepRequirementController {
     return processStepRequirementService.getEventRequirementTypes();
   }
 
+  @GetMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepAction> getActionsUsingRequirement(@PathVariable Long requirementId) {
+      return processStepRequirementService.getActionsUsingRequirement(requirementId);
+  }
+
   @PutMapping(value = "/{requirementId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepAction> deleteRequirement(@PathVariable Long requirementId) {
     return processStepRequirementService.deleteRequirement(requirementId);
