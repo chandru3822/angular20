@@ -442,17 +442,17 @@ export default {
           }
         },
         {
-          label: 'Phone',
+          label: 'Phone number',
           type: constants.OVERVIEW_FIELD_TYPES.PHONE,
           value: this.contact.phone
         },
         {
-          label: 'Mobile',
+          label: 'Mobile number',
           type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
           value: formatPhoneNumber(this.contact.mobile)
         },
         {
-          label: 'Email',
+          label: 'Email address',
           type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.contact.email
         },

@@ -301,6 +301,7 @@ export default {
           statusTypeId: this.project.projectStatusTypeId,
         },
         {
+          label: 'Project id',
           type: constants.OVERVIEW_FIELD_TYPES.ID,
           value: this.project.id
         },
@@ -315,17 +316,17 @@ export default {
           }
         },
         {
-          label: 'Phone',
+          label: 'Phone number',
           type: constants.OVERVIEW_FIELD_TYPES.PHONE,
           value: this.project.phone,
         },
         {
-          label: 'Mobile',
+          label: 'Mobile number',
           type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
           value: this.project.mobile
         },
         {
-          label: 'Email',
+          label: 'Email address',
           type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.project.email
         },

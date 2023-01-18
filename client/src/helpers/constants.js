@@ -173,6 +173,7 @@ constants.OVERVIEW_FIELD_TYPES = {
     STATUS: 'status',
     ADDRESS: 'address',
     PHONE: 'phone',
+    EXTENSION: 'extension',
     MOBILE_PHONE: 'mobile_phone',
     EMAIL:'email',
     OWNER: 'owner',
