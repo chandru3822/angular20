@@ -76,6 +76,7 @@
             :show-edit-btn="userCanEdit"
             @clickEdit="[getUserStatusTypes(), tempUser = cloneDeep(user), showEditModal = true]"
             :details="overviewDetails"
+            :dense="true"
           ></PageOverview>
           <v-divider class="mt-4" v-if="user.loginAttempts >= 9"></v-divider>
           <v-card color="#ffcac7" class="pa-4 mx-2 mt-2" v-if="user.loginAttempts >= 9">
@@ -319,25 +320,25 @@ export default {
           active: this.user.hasAccess
         },
         {
+          label: 'Username',
+          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          value: this.user.username
+        },
+        {
           label: 'Phone',
           type: constants.OVERVIEW_FIELD_TYPES.PHONE,
           value: this.user.phoneNumber
         },
         {
           label: 'Phone Extension',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          type: constants.OVERVIEW_FIELD_TYPES.EXTENSION,
           value: this.user.phoneExtension
         },
         {
           label: 'Email',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.user.email
         },
-        {
-          label: 'Username',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
-          value: this.user.username
-        }
       ]
     },
     companyToDeleteName() {

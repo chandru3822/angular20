@@ -797,7 +797,7 @@
           csvData += '\n';
 
           this.accountingData.forEach(p => {
-            if (this.masterSelectedPayrollIds.includes(p.project_id)) {
+            if (this.masterSelectedPayrollIds?.includes(p.project_id)) {
               csvData +=
                 p.project_id + ',"' +
                 p.customer_name + '",' +

@@ -33,10 +33,10 @@ public class MapboxApiService {
     try {
       String urlEncodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
       String url =
-          "https://api.mapbox.com/geocoding/v5/mapbox.places/"
-              + urlEncodedAddress
-              + ".json?access_token="
-              + MAPBOX_ACCESS_TOKEN;
+        "https://api.mapbox.com/geocoding/v5/mapbox.places/"
+          + urlEncodedAddress
+          + ".json?access_token="
+          + MAPBOX_ACCESS_TOKEN;
       log.debug("MAPBOX: Geocoding API Request: {}", url);
       HttpResponse resp = HttpUtils.call("GET", url);
       if (resp.getResponseCode() != 200) {
@@ -49,10 +49,10 @@ public class MapboxApiService {
 
       List<Double> coordinates = new ArrayList<>();
       if (formattedData.features().size() > 0
-          && null != formattedData.features().get(0)
-          && null != formattedData.features().get(0).center()) {
+            && null != formattedData.features().get(0)
+            && null != formattedData.features().get(0).center()) {
         coordinates =
-            Objects.requireNonNull(formattedData.features().get(0).center()).coordinates();
+          Objects.requireNonNull(formattedData.features().get(0).center()).coordinates();
       }
       // remember that these are reversed as long,lat
       return coordinates;
@@ -89,8 +89,7 @@ public class MapboxApiService {
           + "&fuzzyMatch="
           + fuzzyMatch
           + "&language="
-          + language
-        ;
+          + language;
       log.debug("MAPBOX: Geocoding Suggestions API Request: {}", url);
       HttpResponse resp = HttpUtils.call("GET", url);
       if (resp.getResponseCode() != 200) {
@@ -138,14 +137,14 @@ public class MapboxApiService {
   public String getTimezone(Double latitude, Double longitude) throws Exception {
     try {
       String url =
-          "https://api.mapbox.com/v4/"
-              + MAPBOX_TILESET_ID
-              + "/tilequery/"
-              + longitude
-              + ","
-              + latitude
-              + ".json?radius=25&limit=5&dedupe&access_token="
-              + MAPBOX_ACCESS_TOKEN;
+        "https://api.mapbox.com/v4/"
+          + MAPBOX_TILESET_ID
+          + "/tilequery/"
+          + longitude
+          + ","
+          + latitude
+          + ".json?radius=25&limit=5&dedupe&access_token="
+          + MAPBOX_ACCESS_TOKEN;
       log.debug("MAPBOX: Tilequery API Request: {}", url);
       HttpResponse resp = HttpUtils.call("GET", url);
       if (resp.getResponseCode() != 200) {
@@ -156,9 +155,9 @@ public class MapboxApiService {
       FeatureCollection formattedData = FeatureCollection.fromJson(data.toString());
       String timezone = null;
       if (null != formattedData
-          && null != formattedData.features()
-          && formattedData.features().size() > 0
-          && null != formattedData.features().get(0)) {
+            && null != formattedData.features()
+            && formattedData.features().size() > 0
+            && null != formattedData.features().get(0)) {
         Feature firstFeature = formattedData.features().get(0);
         if (null != firstFeature.properties() && null != firstFeature.properties().get("tzid")) {
           timezone = firstFeature.properties().get("tzid").getAsString();
@@ -180,7 +179,11 @@ public class MapboxApiService {
 
       String timezone = null;
       if (lat != null && lng != null) {
-        timezone = getTimezone(lat, lng);
+        try {
+          timezone = getTimezone(lat, lng);
+        } catch (Exception e) {
+          //do nothing because the getTimezone function already logged this error
+        }
       }
       return Optional.of(new MapboxGeoResponse(lng, lat, timezone));
     }

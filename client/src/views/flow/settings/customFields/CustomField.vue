@@ -242,6 +242,26 @@
         </v-card>
       </v-col>
     </v-row>
+    <v-container v-if="!fieldLoading">
+      <div class="title-medium">Custom Field Usages </div>
+      <span v-if="!usesForField || usesForField.length === 0">Nothing using this custom field.</span>
+      <v-simple-table v-else>
+        <thead>
+        <tr>
+          <th>Object Name</th>
+          <th>Object Type</th>
+          <th>Custom Field Group</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(item, index) in usesForField" :key="index" :class="{'shaded-row': !(index % 2)}">
+          <td>{{item.processStepName || item.eventName}}</td>
+          <td>{{item.objectType}}</td>
+          <td>{{item.groupName}}</td>
+        </tr>
+        </tbody>
+      </v-simple-table>
+    </v-container>
   </v-container>
 </template>
 
@@ -285,6 +305,7 @@ export default {
       companyDataTypes: [],
       availableCustomFields: [],
       companyId: this.$store.state.user.details.companyId,
+      usesForField: [],
       userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
@@ -298,6 +319,8 @@ export default {
       this.getSystemLists()
     ]).then(async () => {
       await this.getCustomField()
+    }).then(async () => {
+      await this.getUsesForField()
       this.fieldLoading = false
     })
   },
@@ -478,6 +501,19 @@ export default {
       }
       return (!customField.fieldName && !customField.newFieldName) || !customField.companyDataType || invalidOptions || invalidCustomSql;
 
+    },
+    async getUsesForField(){
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/customField/getUses/${this.customFieldId}`, this.apiPath, null, []);
+        this.usesForField = data;
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error("*** ERROR ***", e);
+        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     copyToClipBoard(textValue){
       navigator.clipboard.writeText(textValue);
