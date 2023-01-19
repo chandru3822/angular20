@@ -90,6 +90,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .permitAll()
             .antMatchers("/webhook/verse/**")
             .permitAll()
+            .antMatchers("/webhook/genesys/**")
+            .permitAll()
             // export the endpoint for automating s3 uploads of mobile builds from fast lane
             .antMatchers("/api/v1/flow/app/addAttachmentRecord")
             .permitAll()
