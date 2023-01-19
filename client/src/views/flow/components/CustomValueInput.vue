@@ -230,6 +230,14 @@
           @input="handleInput"
           autocomplete="off"
         >
+          <template v-slot:prepend v-if="field.allowSelectSelf">
+            <v-tooltip top small>
+              <template v-slot:activator="{on, attrs}">
+            <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
+              </template>
+              <span class="albatross-body-3">Select Me</span>
+            </v-tooltip>
+          </template>
           <template #item="{ item }">
             <v-list-item-content>
               <v-list-item-title v-text="item.name" />
@@ -401,6 +409,7 @@ export default {
       arrayRequiredRules: constants.BASIC_ARRAY_REQUIRED_RULE,
       timezone: this.$store.state.user.details?.timezone?.value,
       locked: true,
+      currentUserId:null,
     }
   },
   // leaving this here in case we need to start showing the (Parent) / (Primary) stuff on the ancillary fields on the project
@@ -450,6 +459,54 @@ export default {
     },
     handleInput(val) {
       this.callback(this.field, val === null)
+    },
+    selectSelf(){
+      switch(this.field.companySystemListId) {
+        case 1: //Users by Organization
+        case 2: //Users by Position
+          //a field with System List Type "Users by Position" or "Users by Organization" returns a distinct list of user positions (so a user can appear more than once)
+          //and uses the userPositionId as the value.id
+          // if a user appears more than once, we want to use their primary position, so we get the position id of their primary position to find them in the list,
+          let currentUserPrimaryPositionId = this.$store.state.user.details.userPositions.find(position => position.primaryFlag === true)?.id
+          let currentUserValues = this.getListOfValues().filter(value => value.id && value.id === currentUserPrimaryPositionId)
+            if(currentUserValues.length > 0) {
+              //select the primary position
+              this.field.intValue = currentUserValues[0]
+            } else {
+              // if their primary position is not in the list, get the newest position in the list
+              let positions = this.$store.state.user.details.userPositions.filter(position => position.primaryFlag === false)
+              .sort((position1, position2) => {
+                //sort newest to oldest position
+                if(position1.startDate < position2.startDate){
+                  return 1
+                }
+                if (position1.startDate > position2.startDate){
+                  return -1
+                }
+                return 0
+              })
+              for (let alternateUserPosition of positions) {
+                currentUserValues = this.getListOfValues().filter(value => value.id && value.id === alternateUserPosition.id)
+                if(currentUserValues.length > 0){
+                  //the first in the list of positions that also appears in the listOfValues is the newest position,
+                  // so select it and get out of the loop
+                  this.field.intValue = currentUserValues[0]
+                  return
+                }
+              }
+             }
+          break;
+        case 4://All Active Users
+        default: //(just using this for the default case because it's simplest)
+          //a field with System List Type of “All Active Users” returns a distinct list of users and uses the userId as the value.id
+          let currentUserId = this.$store.state.user.details.id
+          let currentUserPosition = this.getListOfValues().find(value => value.id && value.id === currentUserId)
+              if(currentUserPosition){
+                this.field.intValue = currentUserPosition
+              }
+              break;
+      }
+      //if the current user is not found in the list, do nothing
     }
   }
 }
