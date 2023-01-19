@@ -1,9 +1,9 @@
 <template>
-  <v-container id="contacts-container">
+  <v-container id="contacts-container" style = "overflow-x: hidden">
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1 toolbar-z-index-override">
-          <v-toolbar-title class="app-title">Contacts</v-toolbar-title>
+          <v-toolbar-title class="title-large-medium">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-autocomplete
@@ -12,7 +12,7 @@
               :items="smartlists"
               item-text="name"
               item-value="id"
-              class="smartlist-selector pt-3 body-large"
+              class="smartlist-selector pt-3 body-large hide-xs"
               attach
             />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"

@@ -83,12 +83,11 @@
                 </td>
                 <td class="text-right">
                   <div class="item-icons">
-                    <v-btn small text color="primary" @click="getUsesForField(item.id)"><v-icon>mdi-information</v-icon></v-btn>
                     <v-btn class="clickable" small text color="primary"
                            @click="goToCustomField(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="getUsesForField(item)"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -100,33 +99,25 @@
     <ConfirmationDialog :open-dialog="showDeleteDialog"
                                  @confirm="deleteField"
                                  @close-dialog="closeDeleteDialog">
-      Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>
-
-    </ConfirmationDialog>
-    <ConfirmationDialog :open-dialog="showInfoDialog"
-                        hideConfirm
-                        @close-dialog="showInfoDialog=false"
-                        :width="700"
-    >
-      <template v-slot:title>Custom Field Usages: {{usesForField.length !==0 ? usesForField[0].fieldName : ''}}</template>
+      Are you sure you want to delete this field: <strong>{{itemToDeleteName}}</strong>?
+      <div class="mt-4">Custom Field Usages </div>
       <span v-if="!usesForField || usesForField.length === 0">Nothing using this custom field.</span>
-        <v-simple-table v-else>
-          <thead>
-          <tr>
-            <th>Object Name</th>
-            <th>Object Type</th>
-            <th>Custom Field Group</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="(item, index) in usesForField" :key="index" :class="{'shaded-row': !(index % 2)}">
-            <td>{{item.processStepName || item.eventName}}</td>
-            <td>{{item.objectType}}</td>
-            <td>{{item.groupName}}</td>
-          </tr>
-          </tbody>
-        </v-simple-table>
-      <template v-slot:no>Close</template>
+      <v-simple-table v-else>
+        <thead>
+        <tr>
+          <th>Object Name</th>
+          <th>Object Type</th>
+          <th>Custom Field Group</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(item, index) in usesForField" :key="index" :class="{'shaded-row': !(index % 2)}">
+          <td>{{item.processStepName || item.eventName}}</td>
+          <td>{{item.objectType}}</td>
+          <td>{{item.groupName}}</td>
+        </tr>
+        </tbody>
+      </v-simple-table>
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -180,7 +171,6 @@ export default {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
       showDeleteDialog: false,
       itemToDelete: null,
-      showInfoDialog: false,
       usesForField: [],
     };
   },
@@ -217,12 +207,13 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
       }
     },
-    async getUsesForField(customFieldId){
+    async getUsesForField(customField){
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/customField/getUses/${customFieldId}`, this.apiPath, null, []);
+        const {data, status} = await getRequest(`/customField/getUses/${customField.id}`, this.apiPath, null, []);
         this.usesForField = data;
-        this.showInfoDialog = true
+        this.itemToDelete=customField
+        this.showDeleteDialog=true
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error("*** ERROR ***", e);

@@ -445,6 +445,11 @@ export default {
               })
               const uploaded = await this.$store.dispatch(Actions.FILE_UPLOAD_MULTI, filesToUpload)
               this.attachments = [...this.attachments, ...uploaded]
+              if (!this.forceShowUploadBtn) {
+                //so far, if forceShowUploadBtn, then it is on org, user, contact, etc so it is already where it needs to be and doesn't need to refresh again
+                //this value tells the right pane to update when a file is uploaded
+                this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
+              }
               this.$store.commit(AppMutations.SET_LOADING, false)
             } else {
               let file = files[0]

@@ -274,12 +274,12 @@ public class CustomFieldService {
 
     if (null != cf.getCustomFieldSql()) {
       String sql = cf.getCustomFieldSql();
-      if (null != sql) {
-        HashMap<String, Object> params2 = new HashMap<>();
-        params2.put("projectId", null);
-        params2.put("userId", user.getId());
-        return sqlCache.queryBySql(sql, params2, ListOfValue.class);
-      }
+      HashMap<String, Object> params2 = new HashMap<>();
+      //i am pretty sure that this code only gets called from the admin screens. which means we wont have project or ppsId. the other handleListOfValues code that gets called by projects and pps handles this differently
+      params2.put("projectId", null);
+      params2.put("ppsId", null);
+      params2.put("userId", user.getId());
+      return sqlCache.queryBySql(sql, params2, ListOfValue.class);
     } else if (null != cf.getCompanySystemListId()) {
       return systemListService.getSystemListOptionsForCompany(
         cf.getCompanySystemListId(), true, cf.getSystemListOptionIds(), user.getCompanyId());

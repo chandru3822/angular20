@@ -272,7 +272,7 @@ export default {
       try {
         let csvData = 'Project Name,Project ID,Payment #,Payment Amount,Check #\n';
         this.filteredPayments.forEach(p => {
-          csvData += p.projectName + ',' + p.projectId + ',' + p.paymentNbr + ',' + p.paymentAmount
+          csvData += '"' + p.projectName + '",' + p.projectId + ',' + p.paymentNbr + ',' + p.paymentAmount
             + ',' + p.checkNumber + '\n';
         })
         let blob = new Blob([csvData], {

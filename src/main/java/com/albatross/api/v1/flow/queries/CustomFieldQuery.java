@@ -349,7 +349,7 @@ public class CustomFieldQuery {
           and cfga.archived is not true
           and cf.archived is not null
         union all
-        select null, null, null, null, null, null, df.field_name, null, null, null,
+        select null, null, null, null, null, null, null, null, df.field_name, null, null, null,
                null, null, null, null, null, null, null, null, null, null,
                df.id as default_field_id
         from flow.default_field df
