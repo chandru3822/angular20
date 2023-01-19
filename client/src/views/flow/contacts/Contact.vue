@@ -122,7 +122,9 @@
           </v-autocomplete>
         </v-card-text>
       </v-form>
+      <template v-slot:no><div class="body-medium">Cancel</div></template>
       <template v-slot:yes><div class="body-medium">Save</div></template>
+
     </ConfirmationDialog>
     <!-- modal for deleting contact -->
     <ConfirmationDialog :open-dialog="deleteContactConfirm" @confirm="deleteContact"
@@ -151,7 +153,7 @@
       </template>
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
-             class="px-2 height-one-hunned overflow-y-auto">
+             class="px-2 height-one-hunned overflow-y-auto ">
           <PageOverview page-name="Contact"
                         :show-edit-btn="contact && contact.id && userCanEdit"
                         @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"

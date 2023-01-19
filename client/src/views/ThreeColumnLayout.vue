@@ -21,7 +21,8 @@
                                                                                             'collapsed': this.$store.state.project.leftSideSplit,
                                                                                             'narrow': this.leftSmall,
                                                                                             'auto-overflow': this.autoOverflowLeft,
-                                                                                            'white-bg': this.leftSideWhiteBg}">
+                                                                                            'white-bg': this.leftSideWhiteBg,
+                                                                                            'hide-column-xs': !$store.state.project.rightSideSplit && $store.state.project.leftSideSplit}">
         <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
                       'ml-4': !$store.state.project.leftSideSplit}">
           <v-btn small text color="primary" @click="collapseSide('left')">
@@ -30,16 +31,18 @@
         </div>
         <slot name="left-column"></slot>
       </v-col>
-      <v-col class="project-section center-panel pt-0 px-0 auto-overflow" :class="{'white-bg': this.centerWhiteBg}">
+      <v-col class="project-section center-panel pt-0 px-0 auto-overflow" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit || !$store.state.project.rightSideSplit}">
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column px-0 pb-0" :class="{'hidden': this.rightHidden,
                                                                                                   'halvsies': this.leftHidden,
                                                                                                   'collapsed': this.$store.state.project.rightSideSplit && showRightCollapseBtn,
-                                                                                                  'white-bg': this.rightSideWhiteBg}">
+                                                                                                  'white-bg': this.rightSideWhiteBg,
+                                                                                                  'hide-column-xs': !$store.state.project.leftSideSplit}">
         <slot name="right-column">
           <ProjectActivity v-if="!projectLoading && projectId !== 0" :show-sms-tab="true" :allow-sidebar-collapse="showRightCollapseBtn"
                            @closeRight="closeRight()"
+                           @click="collapseSide('right')"
                            @openRight="$store.state.project.rightSideSplit = false">
             <template v-slot:collapse-button><slot name="collapse-button"></slot></template>
           </ProjectActivity>
@@ -117,7 +120,8 @@ export default {
       constants,
       projectLoading: false,
       projectId: parseInt(this.$route.params.projectId) | null,
-    }
+      rightHiddenMobile: this.rightCollapsed
+  }
   },
   created() {
     //have to reset this on creation in case there is already a state then they go to the project url directly
@@ -206,9 +210,24 @@ export default {
   text-align: center;
 }
 
+@media (min-width: 600px) {
+  .left-column {
+    width: calc((2 / 12) * 100%); //col-2
+    max-width: calc((2 / 12) * 100%); //col-2
+  }
+
+  #right-column{
+    width: calc((5 / 12) * 100%); //col-5
+    max-width: calc((5 / 12) * 100%); //col-5
+  }
+}
+
 .left-column {
-  width: calc((2 / 12) * 100%); //col-2
-  max-width: calc((2 / 12) * 100%); //col-2
+
+  &.hidden {
+    display: none;
+  }
+
   &.hidden {
     display: none;
   }
@@ -227,8 +246,6 @@ export default {
 }
 
 #right-column {
-  width: calc((5 / 12) * 100%); //col-5
-  max-width: calc((5 / 12) * 100%); //col-5
   &.hidden {
     display: none;
   }
