@@ -334,7 +334,10 @@ export default {
     ]).then(async () => {
       await this.getCustomField()
     }).then(async () => {
-      await this.getUsesForField()
+      if (this.customField.id) {
+        //don't try to get uses when we're adding a new custom field
+        await this.getUsesForField()
+      }
       this.fieldLoading = false
     })
   },
@@ -412,7 +415,6 @@ export default {
       try {
         const {data, status} = await getRequest(`/systemList`);
         this.systemLists = data;
-        debugger
       } catch (e) {
         console.error("*** ERROR ***", e);
         this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
