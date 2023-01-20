@@ -1,5 +1,5 @@
 <template>
-  <v-container id="contacts-container">
+  <v-container id="contacts-container" style = "overflow-x: hidden">
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1 toolbar-z-index-override">

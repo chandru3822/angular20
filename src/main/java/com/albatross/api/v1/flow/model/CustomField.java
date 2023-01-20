@@ -60,7 +60,8 @@ public class CustomField {
     useParentData,
     sortListValuesAlphabetically,
     lazyLoadValues,
-    allowNow;
+    allowNow,
+    allowSelectSelf;
   private List<ListOfValue> listOfValues;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
   private Date dateCreated, dateModified;
