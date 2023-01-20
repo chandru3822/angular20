@@ -188,7 +188,7 @@ public class GenesysService {
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
       params.put("sourceId", contact.getId());
-      params.put("userId", SystemSettings.BR_SYSTEM_USER.getId());
+      params.put("userId", currentUser.trueUserId());
       sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
       return true;
     }
@@ -199,7 +199,6 @@ public class GenesysService {
   public Boolean updateLeadStatus(Long contactId, String leadStatus) {
     String leadStatusId = checkIfCustomFieldDropdownValueExists(696, leadStatus);
     if (contactId != null && !leadStatusId.equalsIgnoreCase("null")) {
-      User currentUser = securityService.getCurrentUser();
       HashMap<String, Object> params = new HashMap<>();
       params.put("dateValue", null);
       params.put("timestampValue", null);
@@ -211,7 +210,7 @@ public class GenesysService {
       params.put("intArrayValue", null);
       params.put("customFieldGroupAssignmentId", 399L);
       params.put("sourceId", contactId);
-      params.put("userId", currentUser.trueUserId());
+      params.put("userId", SystemSettings.BR_SYSTEM_USER.getId());
       sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
       return true;
     }
