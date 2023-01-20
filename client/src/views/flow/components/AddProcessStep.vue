@@ -8,7 +8,7 @@
 >
 
   <template #activator="{on}">
-    <v-btn text color="primary" class="" x-small v-on="on" @click="[ getSteps() ]">
+    <v-btn text color="primary" class="" x-small v-on="on" @click="[ getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>
     </v-btn>
   </template>
@@ -25,7 +25,7 @@
                     return-object
                      />
     <v-autocomplete v-model="newPps.initialCompanyProcessStepStatusTypeId"
-                    v-if="null != selectedStep"
+                    :disabled="null === selectedStep"
                     :items="activeStatusesAssignedToStep"
                     label="Set initial status to:"
                     item-text="processStepStatusType"
@@ -33,7 +33,7 @@
                     placeholder="Select one..."
                     attach/>
     <v-autocomplete v-model="newPps.existingCompanyProcessStepStatusTypeId"
-                    v-if="null != selectedStep"
+                    :disabled="null === selectedStep"
                     :items="cancelledCompanyStatuses"
                     label="Set status of existing active steps of the same type to:"
                     item-text="processStepStatusType"
@@ -109,8 +109,7 @@ export default {
           this.fetchingSteps = false
         }
       } else {
-        this.selectedStep = null
-        this.newPps = {}
+        this.clear()
       }
     },
     async getActiveStatusesAssignedToStep() {
@@ -171,6 +170,10 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    clear(){
+      this.selectedStep = null
+      this.newPps = {}
     }
   }
 }

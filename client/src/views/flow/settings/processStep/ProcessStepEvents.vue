@@ -67,10 +67,11 @@
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
-                  <td class="text-left">{{item.eventName}} <a :href="`/settings/event/${item.eventId}/components`" target="_blank" :style="{'text-decoration': 'none'}"><v-icon color="primary">mdi-link</v-icon></a></td>
+                  <td class="text-left">{{item.eventName}} </td>
                   <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
                     <div style="display: flex; justify-content: flex-end">
+                      <v-btn small text :to="`/settings/event/${item.eventId}/components`" target="_blank" :style="{'text-decoration': 'none'}"><v-icon color="primary">mdi-cogs</v-icon></v-btn>
                       <router-link v-if="userCanEdit" class="no-text-decoration pr-3"
                                    :to="`/settings/processStep/${processStepId}/event/${item.id}`">
                         <v-btn :disabled="!userCanEdit" small text color="primary">
@@ -112,7 +113,7 @@ import {
   postRequest,
   getSnackbar
 } from '@/helpers/helpers'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepEvents',

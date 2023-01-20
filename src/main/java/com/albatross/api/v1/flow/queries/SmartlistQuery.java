@@ -806,62 +806,70 @@ public class SmartlistQuery {
 
   //language=PostgreSQL
   public final static String getAssignedProjectDetailsFieldById = """
-    select sfa.id,
-    sfa.display_order,
-    sfa.smartlist_id,
-      null                                                                               as process_step_event_id,
-    coalesce(pdc.second_field_to_update, sfa.project_details_column)                   as project_details_column,
-    pdc.display_name                                                                   as name,
-      case
-    when sfa.project_details_column = 'ahj' then 8
-      else coalesce(pdc.second_data_type_id, pdc.data_type_id)
-    end                                                                                as data_type_id,
-      null                                                                               as has_list_values,
-         case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
-         case when sfa.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
-      case when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
-      null                                                                               as list_of_values
-    from flow.smartlist_field_assignment sfa
-    inner join (
-      select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
-      from brs.project_details_config
-    ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
-    where sfa.id = :id
-      union
-    select sfa.id,
-    sfa.display_order,
-    sfa.smartlist_id,
-    pdec.process_step_event_id,
-    coalesce(pdec.second_field_to_update, sfa.project_details_column) as project_details_column,
-    pdec.display_name                                                 as name,
-      case
-    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then 6
-      else 2
-    end                                                               as data_type_id,
-      case
-    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
-    end                                                               as has_list_values,
-      null                                                              as custom_field_sql_key,
-         case
-    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
-      (
-        select to_jsonb(array_agg(row_to_json(listOfValues)))
-    from (
-      select *
-      from flow.get_system_list_options(3, cf.company_system_list_id, true,
-      cf.system_list_option_ids)
-                    ) listOfValues
-             )
-    end                                                               as list_of_values
-    from flow.smartlist_field_assignment sfa
-    inner join (
-      select distinct field_to_update, display_name, second_field_to_update, process_step_event_id
-      from brs.project_detail_events_config
-    ) pdec on coalesce(pdec.second_field_to_update, pdec.field_to_update) = sfa.project_details_column
-    inner join flow.process_step_event pse on pdec.process_step_event_id = pse.id
-    inner join flow.event e on pse.event_id = e.id
-    inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-    where sfa.id = :id
+select sfa.id,
+       sfa.display_order,
+       sfa.smartlist_id,
+       null                                                                               as process_step_event_id,
+       coalesce(pdc.second_field_to_update, sfa.project_details_column)                   as project_details_column,
+       pdc.display_name                                                                   as name,
+       case
+           when sfa.project_details_column = 'ahj' then 8
+           else coalesce(pdc.second_data_type_id, pdc.data_type_id)
+           end                                                                            as data_type_id,
+       null                                                                               as has_list_values,
+       case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
+       case
+           when sfa.project_details_column = 'ahj' then (select custom_field_sql
+                                                         from flow.custom_field
+                                                         where custom_field_sql_key = 'customFieldSql.brs.ahjList'
+                                                           and company_id = 3) end        as custom_field_sql,
+       case
+           when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist
+                                                         from flow.custom_field
+                                                         where custom_field_sql_key = 'customFieldSql.brs.ahjList'
+                                                           and company_id = 3) end        as custom_field_sql_smartlist,
+       null                                                                               as list_of_values
+from flow.smartlist_field_assignment sfa
+         inner join (select distinct field_to_update,
+                                     display_name,
+                                     data_type_id,
+                                     second_field_to_update,
+                                     second_data_type_id
+                     from brs.project_details_config) pdc
+                    on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
+where sfa.id = :id
+union
+select sfa.id,
+       sfa.display_order,
+       sfa.smartlist_id,
+       pdec.process_step_event_id,
+       coalesce(pdec.second_field_to_update, sfa.project_details_column) as project_details_column,
+       pdec.display_name                                                 as name,
+       case
+           when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then 6
+           else 2
+           end                                                           as data_type_id,
+       case
+           when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
+           end                                                           as has_list_values,
+       null                                                              as custom_field_sql_key,
+       null                                                              as custom_field_sql,
+       null                                                              as custom_field_sql_smartlist,
+       case
+           when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
+               (select to_jsonb(array_agg(row_to_json(listOfValues)))
+                from (select *
+                      from flow.get_system_list_options(3, cf.company_system_list_id, true,
+                                                        cf.system_list_option_ids)) listOfValues)
+           end                                                           as list_of_values
+from flow.smartlist_field_assignment sfa
+         inner join (select distinct field_to_update, display_name, second_field_to_update, process_step_event_id
+                     from brs.project_detail_events_config) pdec
+                    on coalesce(pdec.second_field_to_update, pdec.field_to_update) = sfa.project_details_column
+         inner join flow.process_step_event pse on pdec.process_step_event_id = pse.id
+         inner join flow.event e on pse.event_id = e.id
+         inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+where sfa.id = :id
   """;
 
   //language=PostgreSQL

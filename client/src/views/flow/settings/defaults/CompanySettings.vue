@@ -138,7 +138,7 @@ import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 const LogoTypeEnum = Object.freeze({
   Company: "CompanyLogo",

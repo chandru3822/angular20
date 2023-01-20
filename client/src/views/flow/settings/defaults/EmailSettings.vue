@@ -115,12 +115,11 @@ import {
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import constants from "@/helpers/constants";
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: "EmailSettings",
-  components: {ConfirmationDialog, ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   data() {
     return {
       addFormValid: false,

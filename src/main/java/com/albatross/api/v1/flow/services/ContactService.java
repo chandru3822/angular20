@@ -27,7 +27,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -38,7 +37,6 @@ import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('CONTACTS')")
 @RequiredArgsConstructor
 public class ContactService {
 
@@ -242,13 +240,17 @@ public class ContactService {
 
       // if the contact address changed, reload the coordinates
       if (null != contact.getReloadCoordinates() && contact.getReloadCoordinates()) {
-        List<Double> coordinates =
-            mapboxApiService.getLatLong(
+        List<Double> coordinates = new ArrayList<>();
+        try {
+            coordinates = mapboxApiService.getLatLong(
                 stringifyAddress(
                     contact.getStreet1(),
                     contact.getCity(),
                     contact.getState(),
                     contact.getPostalCode()));
+        } catch (Exception e) {
+          //do nothing because the getTimezone function already logged this error
+        }
         // if we found new coordinates then uses those values
         if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
           // 1 = lat, 0 = long
@@ -287,13 +289,17 @@ public class ContactService {
       }
     } else {
       // load contact geo location
-      List<Double> coordinates =
-          mapboxApiService.getLatLong(
+      List<Double> coordinates = new ArrayList<>();
+      try {
+          coordinates = mapboxApiService.getLatLong(
               stringifyAddress(
                   contact.getStreet1(),
                   contact.getCity(),
                   contact.getState(),
                   contact.getPostalCode()));
+      } catch (Exception e) {
+        //do nothing because the getTimezone function already logged this error
+      }
       if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
         // 1 = lat, 0 = long
         latitude = coordinates.get(1);

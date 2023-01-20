@@ -610,7 +610,7 @@ import {
   getRequestWithParams,
   getSnackbar
 } from '@/helpers/helpers'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepRequirements',
@@ -1131,10 +1131,16 @@ export default {
       }
     },
 
-    async getActionsUsingLogic(requirementId){
+    async getActionsUsingLogic(requirementId, andDelete=false){
         let url = this.apiUrl + `/${requirementId}`
+      if(andDelete) {
+        //the put request will archive the requirement if it doesn't find any actions using it
         const {data} = await putRequest(url)
         this.actionsUsingLogic = data
+      } else {
+        const {data} = await getRequest(url)
+        this.actionsUsingLogic = data
+      }
     },
 
     async showActionsUsingLogic(requirementId){
@@ -1155,7 +1161,7 @@ export default {
       const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await this.getActionsUsingLogic(item.id)
+        await this.getActionsUsingLogic(item.id, true)
         if (this.actionsUsingLogic?.length > 0) {
           this.deleteError = true //opens the delete error dialog
           item.deleteConfirm = false

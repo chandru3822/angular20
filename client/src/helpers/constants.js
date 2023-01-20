@@ -27,7 +27,7 @@ constants.STANDARD_IMAGES_ONLY = '.png,.jpg,.jpeg,.gif,.tiff,.psd,.raw,.heif,.he
 //all doc files, must be added one at a time, there is no "doc/*" sort of option
 constants.STANDARD_DOCS_ONLY = '.doc,.docx,.pdf,.xls,.xlsx,.csv,.txt,.xlsm,.xlsb,.dxf,.dwg'
 //all audio files, must be added one at a time
-constants.STANDARD_AUDIO_ONLY = '.mp3,.mp4'
+constants.STANDARD_AUDIO_ONLY = '.mp3,.mp4,.wav'
 //combination of docs and images from above
     //currently used for ahj attachments and proposal attachments
 constants.STANDARD_IMAGES_AND_DOCS = constants.STANDARD_IMAGES_ONLY + ',' + constants.STANDARD_DOCS_ONLY
@@ -167,12 +167,17 @@ constants.SNACKBARS = {
 constants.CSV_BLOB_TYPE = 'text/csv;charset=utf-8'
 
 constants.OVERVIEW_FIELD_TYPES = {
-  DEFAULT: 'default',
-  DATE: 'date',
-  STATUS: 'status',
-  ADDRESS: 'address',
-  PHONE: 'phone',
-  OWNER: 'owner'
+    DEFAULT: 'default',
+    ID: 'id',
+    DATE: 'date',
+    STATUS: 'status',
+    ADDRESS: 'address',
+    PHONE: 'phone',
+    EXTENSION: 'extension',
+    MOBILE_PHONE: 'mobile_phone',
+    EMAIL:'email',
+    OWNER: 'owner',
+    BUTTON: 'button'
 }
 
 export default constants

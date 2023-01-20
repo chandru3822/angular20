@@ -105,12 +105,11 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
-  import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'CompanyStates',
-    components: {ConfirmationDialog, ConfirmDeleteDialog},
+    components: {ConfirmationDialog},
     data() {
       return {
         snackbar: {},

@@ -94,7 +94,7 @@
     getSnackbar,
     getRequestWithParams
   } from '@/helpers/helpers'
-  import ConfirmationDialog from "../../../ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'UserAccess',

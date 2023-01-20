@@ -141,7 +141,7 @@
   import constants from '@/helpers/constants'
   import {getActiveStates} from '@/services/stateService'
   import { AppMutations } from '@/stores/AppStore'
-  import ConfirmationDialog from "@/ConfirmationDialog.vue";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
   import {FEAT_DB_TABS, FILTER_DEFAULTS} from "@/views/blueraven/featDB/FeatDbConstants";
 
   export default {

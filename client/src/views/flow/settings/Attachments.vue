@@ -115,12 +115,11 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'Attachments',
-  components: {ConfirmationDialog, ConfirmDeleteDialog},
+  components: {ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
 
   data() {

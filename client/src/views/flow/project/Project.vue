@@ -160,16 +160,10 @@
         <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 left-panel-scrollable-area overflow-y-auto">
           <PageOverview
             page-name="Project"
-            :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT')
-                    || !projectOwnerFieldIsReadOnly() || !projectStatusIsReadOnly())"
+            :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
             :details="overviewDetails"
           ></PageOverview>
-          <div class="mx-4 address-details">
-            <div class="mt-3">
-              <router-link class="font-size-12" :to="`/contact/${project.contactId}`">Go to contact</router-link>
-            </div>
-          </div>
           <v-divider class="mt-6"></v-divider>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
           <v-divider class="mb-3"></v-divider>
@@ -224,7 +218,7 @@ import constants from "@/helpers/constants";
 import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
 import {ProjectMutations} from "@/stores/ProjectStore";
-import ConfirmationDialog from "../../../ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import debounce from 'lodash.debounce'
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
@@ -307,6 +301,11 @@ export default {
           statusTypeId: this.project.projectStatusTypeId,
         },
         {
+          label: 'Project id',
+          type: constants.OVERVIEW_FIELD_TYPES.ID,
+          value: this.project.id
+        },
+        {
           label: 'Address',
           type: constants.OVERVIEW_FIELD_TYPES.ADDRESS,
           value: {
@@ -317,19 +316,23 @@ export default {
           }
         },
         {
-          label: 'Phone',
+          label: 'Phone number',
           type: constants.OVERVIEW_FIELD_TYPES.PHONE,
           value: this.project.phone,
         },
         {
-          label: 'Mobile',
-          type: constants.OVERVIEW_FIELD_TYPES.PHONE,
+          label: 'Mobile number',
+          type: constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE,
           value: this.project.mobile
         },
         {
-          label: 'Email',
-          type: constants.OVERVIEW_FIELD_TYPES.DEFAULT,
+          label: 'Email address',
+          type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.project.email
+        },
+        {
+          type: constants.OVERVIEW_FIELD_TYPES.BUTTON,
+          value: this.project.contactId
         },
         {
           label: 'Owner',

@@ -8,7 +8,8 @@
            :class="{'title-collapse': isSidebarCollapsed,
                     'title-no-collapse': !isSidebarCollapsed,
                     'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
-                    'mt-0': $route.path.indexOf('project') < 0}">
+                    'mt-0': $route.path.indexOf('project') < 0,
+                    'headline-small': true}">
 
         <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
           <template v-slot:activator="{on, attrs}">
@@ -59,7 +60,7 @@
 
             <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
                    :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
-                   class="text-capitalize my-4 fix-toggle-opacity"
+                   class="text-capitalize my-4 fix-toggle-opacity body-medium"
                    style="width: 50% !important;"
             >
               Focused
@@ -164,7 +165,6 @@ import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest} from '@/
 import TeamAssignmentChips from '@/views/flow/settings/inbox/TeamAssignmentChips'
 import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHistoryDrilldown'
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
-import ConfirmDeleteDialog from '@/ConfirmDeleteDialog'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
 
@@ -172,7 +172,6 @@ export default {
   name: 'ProjectActivity',
   components: {
     ConfirmAssignmentDialog,
-    ConfirmDeleteDialog,
     AddTeamDropdown,
     OwnershipHistoryDrilldown,
     TeamAssignmentChips,

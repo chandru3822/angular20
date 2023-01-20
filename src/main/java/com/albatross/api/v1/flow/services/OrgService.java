@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('ORGS')")
+//@PreAuthorize("hasFeatureAccess('ORGS')")
 @RequiredArgsConstructor
 public class OrgService {
 

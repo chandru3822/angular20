@@ -298,7 +298,7 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
 import {saveAs} from 'file-saver'
 import cloneDeep from 'lodash.clonedeep'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'SubmittedExpenses',
@@ -522,17 +522,17 @@ export default {
           }
 
           csvData +=
-            r.createdBy + ',' +
-            r.positionName + ',' +
+            '"' + r.createdBy + '",' +
+            '"' + r.positionName + '",' +
             r.expenseAmount + ',' +
             moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
             r.glCode + ',' +
             r.budgetType + ',' +
-            r.expenseBudgetUser + ',' +
+            '"' + r.expenseBudgetUser + '",' +
             moment.utc(r.dateCreated).format('MM/DD/YYYY') + ',' +
-            r.createdBy + ',' +
+            '"' + r.createdBy + '",' +
             `${r.dateSubmitted ? moment.utc(r.dateSubmitted).format('MM/DD/YYYY') : null}` + ',' +
-            r.submittedBy + ',' +
+            '"' + r.submittedBy + '",' +
             approvedDate + ',' +
             `${r.skipApproval ? 'Not Required' : r.approvedBy}` + ',' +
             paidDate + ',' +

@@ -1533,21 +1533,45 @@ const router = new Router({
           path: '/finances',
           name: 'finances',
           meta: {title: 'Albatross - Finances'},
-          component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Rebate.vue'),
+          component: () => {
+              if(store.getters.userHasFeature('REBATES')) {
+                  return import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Rebate.vue')
+              } else {
+                  return accessDenied()
+              }
+          },
           children: [
             {
               path: 'rebate/batches',
               meta: {title: 'Albatross - Finances'},
-              component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Batches.vue')
+              component: () => {
+                  if(store.getters.userHasFeature('REBATES')) {
+                      return import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/Batches.vue')
+                  } else {
+                      return accessDenied()
+                  }
+              }
             }, {
               path: 'rebate/viewPayments',
               meta: {title: 'Albatross - Finances'},
-              component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/ViewPayments.vue'),
+              component: () => {
+                  if(store.getters.userHasFeature('REBATES')) {
+                      return import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/ViewPayments.vue')
+                  } else {
+                      return accessDenied()
+                  }
+              },
             }, {
               path: 'rebate/viewPayments/:id',
               name: 'rebateDetails',
               meta: {title: 'Albatross - Finances'},
-              component: () => import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/RebateDetails.vue'),
+              component: () => {
+                  if(store.getters.userHasFeature('REBATES')) {
+                  return import (/* webpackChunkName: "finances" */ './views/blueraven/finances/rebate/RebateDetails.vue')
+                  } else {
+                      return accessDenied()
+                  }
+              }
             }
           ]
         }, {
@@ -1656,13 +1680,25 @@ const router = new Router({
               path: 'inbox',
               name: 'inbox',
               meta: {title: 'Albatross - Inbox'},
-              component: () => import (/* webpackChunkName: "inbox" */ './views/flow/settings/inbox/MainInbox'),
+              component: () => {
+                  if(store.getters.userHasFeature('SMS_INBOX')) {
+                      return import (/* webpackChunkName: "inbox" */ './views/flow/settings/inbox/MainInbox')
+                  } else {
+                      return accessDenied()
+                  }
+              },
               children: [
                   {
                       path: 'inboxConversation/:projectId',
                       name: 'inboxConversation',
                       meta: {title: 'Albatross - Inbox Conversation'},
-                      component: () => import (/* webpackChunkName: "inboxConversation" */ './views/flow/settings/inbox/MainInbox')
+                      component: () => {
+                          if(store.getters.userHasFeature('SMS_INBOX')) {
+                          return import (/* webpackChunkName: "inboxConversation" */ './views/flow/settings/inbox/MainInbox')
+                          } else {
+                              return accessDenied()
+                          }
+                      }
                   }
               ]
           },

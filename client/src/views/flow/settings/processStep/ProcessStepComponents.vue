@@ -268,15 +268,13 @@ import {
   getSnackbar,
   getRequestWithParams
 } from '@/helpers/helpers'
-import ConfirmDeleteDialog from "@/ConfirmDeleteDialog";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'ProcessStepComponents',
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,
-    ConfirmDeleteDialog,
     ProcessStepWorkQueueTypes,
     ProcessStepCustomFieldGroups,
     draggable,

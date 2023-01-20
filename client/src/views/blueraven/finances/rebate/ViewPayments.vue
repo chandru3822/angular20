@@ -191,7 +191,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {saveAs} from 'file-saver'
 import moment from "moment";
 import debounce from "lodash.debounce";
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'Payments',
@@ -402,7 +402,7 @@ export default {
         this.filteredPayments.forEach(p => {
           csvData += p.projectName + ',' + p.projectId + ',' +
             (p.substantialCompletionDate != null ? moment(p.substantialCompletionDate).format('MM/DD/YYYY') : '') +
-            ',' + p.financier + ',' + p.product + ',' + p.totalPromotionAmount;
+            ',"' + p.financier + '","' + p.product + '",' + p.totalPromotionAmount;
 
           if (this.status === 'approval') {
             csvData += ',' + p.numberOfPromotionPayments + ',' + p.paymentAmount + ',' + p.totalPaid + ',' +

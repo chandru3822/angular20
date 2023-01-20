@@ -123,7 +123,7 @@
 import { deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest } from '@/helpers/helpers'
 import NewProposalValueDialog from './NewProposalValueDialog.vue'
 import { AppMutations } from '@/stores/AppStore'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 const defaultActionColumn = { txt: 'Actions', value: 'actions', sortable: false }
 

@@ -196,6 +196,30 @@ public class GenesysService {
     return false;
   }
 
+  public Boolean updateLeadStatus(Long contactId, String leadStatus) {
+    Contact contact = contactService.getContact(contactId);
+    String leadStatusId = checkIfCustomFieldDropdownValueExists(696, leadStatus);
+    if (contact != null && !leadStatusId.equalsIgnoreCase("null")) {
+      User currentUser = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("textValue", null);
+      params.put("numericValue", null);
+      params.put("richTextValue", null);
+      params.put("intValue", Long.parseLong(leadStatusId));
+      params.put("intArrayValue", null);
+      params.put("customFieldGroupAssignmentId", 399L);
+      params.put("sourceId", contact.getId());
+      params.put("userId", currentUser.trueUserId());
+      sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
+      return true;
+    }
+
+    return false;
+  }
+
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot)
       throws IOException, ApiException {
     // Only add contacts if we are in Prod
@@ -287,6 +311,21 @@ public class GenesysService {
             contactListId, List.of(wdc), true, false, false);
     // Store the Genesys Contact ID
     updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+
+    // Add contact to LeadLevel_NBS
+    contactListId = getContactListId(leadLevel, apiInstance, "LeadLevel_NBS");
+    // If no Contact  List is found
+    if (contactListId == null) {
+      return;
+    }
+
+    contactMap.remove("contactcallable");
+    contactMap.remove("zipcodeautomatictimezone");
+    contactMap.put("Custom_LastAttemptTime", "");
+    wdc.setData(contactMap);
+
+    apiInstance.postOutboundContactlistContacts(
+      contactListId, List.of(wdc), true, false, false);
   }
 
   private void updateGenesysCfv(Long contactId, String textValue, Long cfgaId) {

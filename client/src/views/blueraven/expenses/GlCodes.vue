@@ -107,7 +107,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {getGlCodes} from './expenseService'
-import ConfirmationDialog from "@/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
   name: 'GlCodes',

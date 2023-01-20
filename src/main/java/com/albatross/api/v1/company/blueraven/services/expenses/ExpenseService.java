@@ -21,7 +21,6 @@ import java.util.*;
  */
 @Service
 @Slf4j
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('EXPENSES')")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ExpenseService {
 

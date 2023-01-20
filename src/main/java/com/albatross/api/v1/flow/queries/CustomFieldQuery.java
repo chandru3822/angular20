@@ -16,6 +16,7 @@ public class CustomFieldQuery {
          cf.modified_by_id,
          cdt.data_type_id,
          cf.allow_now,
+         cf.allow_select_self,
          cf.company_data_type_id,
          cf.custom_field_sql_key,
          cf.custom_field_sql,
@@ -190,6 +191,7 @@ public class CustomFieldQuery {
              company_system_list_id = :systemListId,
              readonly = :readonly,
              allow_now = :allowNow,
+             allow_select_self = :allowSelectSelf,
              system_readonly = :systemReadonly,
              sort_list_values_alphabetically = :sortListValuesAlphabetically,
              system_list_option_ids = :systemListOptionIds::bigint[],
@@ -206,10 +208,10 @@ public class CustomFieldQuery {
     insert into flow.custom_field(list_of_value_id, company_id, field_name, company_data_type_id, custom_field_sql_key, custom_field_sql,
                                   custom_field_sql_reference_table, company_system_list_id, system_list_option_ids,
                                   readonly, sort_list_values_alphabetically,
-                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now)
+                                  date_created, created_by_id, date_modified, modified_by_id, system_readonly, allow_now, allow_select_self)
     values (:listOfValueId, :companyId, trim(:fieldName), :companyDataTypeId, :customFieldSqlKey, :customFieldSql,
             :customFieldSqlReferenceTable, :systemListId, :systemListOptionIds::bigint[], :readonly,
-            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow)
+            :sortListValuesAlphabetically, now(), :createdById, now(), :createdById, :systemReadonly, :allowNow, :allowSelectSelf)
     returning id
     """;
 
@@ -347,7 +349,7 @@ public class CustomFieldQuery {
           and cfga.archived is not true
           and cf.archived is not null
         union all
-        select null, null, null, null, null, null, df.field_name, null, null, null,
+        select null, null, null, null, null, null, null, null, df.field_name, null, null, null,
                null, null, null, null, null, null, null, null, null, null,
                df.id as default_field_id
         from flow.default_field df

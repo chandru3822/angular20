@@ -79,7 +79,7 @@
                   <td>{{item.postalCodesCount}}</td>
                   <td>{{item.activePhoneNumbersCount}}</td>
                   <td>
-                    <v-select attach style="width: 100px" v-model="item.active" :items="items" @change="updateCallGroup(item)"></v-select>
+                    <v-select attach style="width: 100px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updateCallGroup(item)"></v-select>
                   </td>
                   <td class="text-right">
                     <v-btn small text color="primary" @click="goToCallGroup(item.id)">
@@ -105,7 +105,7 @@
   import Vue2Filters from 'vue2-filters'
   import debounce from 'lodash.debounce'
   import { handleHidingGlobalLoader, getRequestWithParams, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
-  import ConfirmationDialog from "@/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
     name: 'CallGroups',
