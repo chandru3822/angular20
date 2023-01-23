@@ -25,6 +25,8 @@ BEGIN
                  psa.action_type_id = 2
          )
          select
+             concat(creator.first_name, ' ', creator.last_name) as "createdBy",
+             pps.date_created as "dateCreated",
              ps.id as "processStepId",
              ps.company_id as "companyId",
              ps.readonly,
@@ -343,6 +345,7 @@ BEGIN
                         inner join flow.project p on p.id = pps.project_id
                         inner join flow.company_process cp on cp.id = p.company_process_id
                         left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id
+                        inner join flow."user" creator on creator.id = pps.created_by_id
          where pps.id = p_project_process_step_id and
                pps.archived is false and
                --this ensures that a user from company A cannot load pps details from company B

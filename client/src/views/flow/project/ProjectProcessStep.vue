@@ -52,6 +52,9 @@
                 processStep.processStepStatusType
               }})
             </div>
+            <div class="body-small grey--text text--darken-2">
+              Created by {{ processStep.createdBy }} {{processStep.dateCreated | formatDate('timestamp', 'M/D/YYYY [at] h:mm a')}}
+            </div>
             <!--            <v-icon v-if="processStep.processStepStatusTypeId === 1"-->
             <!--                    size="20" color="green">mdi-circle-slice-8-->
             <!--            </v-icon>-->
