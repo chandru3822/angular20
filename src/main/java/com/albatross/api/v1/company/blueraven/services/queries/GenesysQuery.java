@@ -370,55 +370,13 @@ public class GenesysQuery {
              left join future_events fe on p.id = fe.project_id
     where pd.first_appointment_pitched is not null
       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-            'US/Mountain') :: date between current_date - 180 and
-        case
-            when pd.closer_appointment_outcome_name like 'Pitched - Proposal Shown' then current_date - 10
-            when pd.closer_appointment_outcome_name like 'Pitched - Proposal Not Shown' then current_date - 20
-            else current_date - 20
-            end)
+                  'US/Mountain') :: date between current_date - 180 and current_date - 10)
       and lst.name not in ('Cold', 'Unqualified', 'Do Not Call')
       and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
       and ls.name not in ('Closer Gen', 'Referrals')
       and (fe.next_event is null or fe.next_event < current_date)
-      and cr.closer_name not in (
-                                 'Evan Fa',
-                                 'Lance Sauter',
-                                 'Joshua Curtis',
-                                 'Brett Bakanec',
-                                 'James Posford',
-                                 'Cleve Johnson',
-                                 'Harley Davidson',
-                                 'Mack Bjorn',
-                                 'Rob Ercanbrack',
-                                 'Tyler Ballard',
-                                 'Tyler Ballard',
-                                 'Steven Brewington',
-                                 'Justin Chapman',
-                                 'Austin Sedin',
-                                 'Allen Whitehead',
-                                 'Megan Thomason',
-                                 'Isaac Jacobson',
-                                 'Mitchell Weidner',
-                                 'Ted Hummel',
-                                 'Michael Bacon',
-                                 'Krisana Barrett',
-                                 'Sean Nunan',
-                                 'Brian Miller',
-                                 'Jabe Schoenrock',
-                                 'Nolan Eisentrager',
-                                 'Brent Cuyler',
-                                 'Jake LoPresti',
-                                 'Preston Carling',
-                                 'John Steele',
-                                 'Sophia Thompson',
-                                 'Marshall Childers',
-                                 'Scott Windell',
-                                 'Tanja Hew',
-                                 'Mateo Borrego',
-                                 'CJ Forrest',
-                                 'Evan Dwyer',
-                                 'Matt Carrigan')
-    ORDER BY pd.closer_appointment_start DESC
+      and pd.installation_agreement_signed_date IS NULL
+    ORDER BY pd.closer_appointment_start
     """;
 
   //language=PostgreSQL
@@ -434,6 +392,7 @@ public class GenesysQuery {
     from flow.project p
              left join latest_closer_event lse on lse.project_id = p.id AND lse.appointment_start_time >= current_date - 45
     where p.contact_id = :contactId
+    ORDER BY lse.appointment_start_time DESC NULLS LAST limit 1
     """;
 
   //language=PostgreSQL

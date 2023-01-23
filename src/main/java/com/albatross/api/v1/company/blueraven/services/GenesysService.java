@@ -279,6 +279,10 @@ public class GenesysService {
       if (genesysContactListName.equals("Inside Sales Pitched Not Booked")) {
         getPitchedNotBookedValues(contactId, contactMap);
       }
+
+      if (genesysContactListName.equals("Sales Dev Retargeted Leads")) {
+        getRetargetedValues(contactMap);
+      }
     }
 
     String leadLevel = (String) contactMap.remove("lead_level");
@@ -319,7 +323,25 @@ public class GenesysService {
 
     contactMap.remove("contactcallable");
     contactMap.remove("zipcodeautomatictimezone");
+    contactMap.remove("Appointment Date");
+    contactMap.remove("Appointment Outcome");
+    contactMap.remove("PNB");
     contactMap.put("Custom_LastAttemptTime", "");
+
+    if (!contactMap.containsKey("referral")) {
+      contactMap.put("referral", false);
+    }
+
+    if (!contactMap.containsKey("retargeted")) {
+      contactMap.put("retargeted", false);
+    }
+
+    contactMap.put("TotalCallAttempts", contactMap.remove("Total Call Attempts"));
+    contactMap.put("ContactedCallAttempts", contactMap.remove("Contacted Call Attempts"));
+    contactMap.put("CallScheduled", contactMap.remove("Call Scheduled"));
+    contactMap.put("ContactCallable", contactMap.remove("contactcallable"));
+    contactMap.put("ZipCodeAutomaticTimeZone", contactMap.remove("zipcodeautomatictimezone"));
+
     wdc.setData(contactMap);
 
     apiInstance.postOutboundContactlistContacts(
@@ -403,6 +425,9 @@ public class GenesysService {
   }
 
   private void getPitchedNotBookedValues(Long contactId, HashMap<String, Object> contactMap) {
+    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
+    Date date = new Date();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     Optional<Boolean> pitchedNotBooked =
@@ -418,8 +443,34 @@ public class GenesysService {
       contactMap.put("PNB", false);
     }
 
+    // Hard code certain params for this contact list
+    contactMap.remove("contact_type_id");
+    contactMap.put("contact_type_id", 2);
+
+    contactMap.remove("date_created");
+    contactMap.put("date_created", formatterDate.format(date) + "T" + formatterTime.format(date));
+
+    contactMap.remove("lead_status");
+    contactMap.put("lead_status", "Pitched Not Booked");
+
     contactMap.remove("referral");
     contactMap.remove("retargeted");
+  }
+
+  private void getRetargetedValues(HashMap<String, Object> contactMap) {
+    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
+    Date date = new Date();
+
+    // Hard code certain params for this contact list
+    contactMap.remove("contact_type_id");
+    contactMap.put("contact_type_id", 2);
+
+    contactMap.remove("date_created");
+    contactMap.put("date_created", formatterDate.format(date) + "T" + formatterTime.format(date));
+
+    contactMap.remove("lead_status");
+    contactMap.put("lead_status", "Re-Target");
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {
