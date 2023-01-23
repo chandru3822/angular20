@@ -19,11 +19,10 @@
         <v-toolbar-title class="albatross-header-2">
           <div>{{ selectedEvent.eventName }}</div>
           <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
-          <div class="scheduled-time" v-if="selectedEvent.scheduledDate">
+          <div class="body-small grey--text text--darken-2" v-if="selectedEvent.scheduledDate">
             Scheduled {{ selectedEvent.scheduledDate | formatDate('timestamp', 'M/D/YYYY [at] h:mm a') }}
-            <br>
-            Created by {{ selectedEvent.createdBy }}
           </div>
+          <div class="body-small grey--text text--darken-2">Created by {{ selectedEvent.createdBy }} {{selectedEvent.dateCreated | formatDate('timestamp', 'M/D/YYYY [at] h:mm a')}}</div>
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -1052,12 +1051,6 @@ export default {
   text-decoration: none;
   font-size: 12px;
   color: var(--v-anchor-base);
-}
-
-.scheduled-time {
-  color: var(--v-grey-darken2);;
-  font-size: 12px;
-  font-weight: normal;
 }
 
 .action-subheader {
