@@ -55,6 +55,12 @@ public class ProcessStepEventRequirementService {
 
     return results;
   }
+    public List<ProcessStepAction> getActionsUsingRequirement(Long requirementId) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("requirementId", requirementId);
+        List<ProcessStepAction> actionsUsingRequirement = sqlCache.queryBySql(ProcessStepEventRequirementQuery.actionsUsingRequirement, params, ProcessStepAction.class);
+        return actionsUsingRequirement;
+    }
 
   public List<ProcessStepAction> deleteRequirement(Long requirementId) {
     User currentUser = securityService.getCurrentUser();
