@@ -99,23 +99,6 @@
                     <template v-slot:yes>Continue</template>
                   </ConfirmationDialog>
                 </v-col>
-
-                <v-col
-                  cols="12"
-                  md="4"
-                  v-if="smartlist.companyObjectTypeId && !isUserOrgObjectType"
-                  v-cloak
-                >
-                  <v-autocomplete
-                    v-model="smartlist.viewObjectTypeId"
-                    :items="viewObjectTypes"
-                    item-text="objectType"
-                    item-value="objectTypeId"
-                    label="Table View Display"
-                    placeholder="Select one..."
-                    attach
-                  />
-                </v-col>
               </v-row>
 
               <v-row>
@@ -296,12 +279,6 @@ export default {
       logic: [],
       logicUpdated: false,
       resetRequirementForm: false,
-      viewObjectTypes: [
-        {objectTypeId: 2, objectType: 'Contact'},
-        // {objectTypeId: 5, objectType: 'Organization'},
-        {objectTypeId: 1, objectType: 'Project'}
-        // {objectTypeId: 3, objectType: 'User'}
-      ],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       showDeleteDialog: false,
       showToggleDialog: false,
@@ -623,7 +600,7 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data, status} = await postRequest(`/smartlistv1/${this.smartlist.id}/copy`)
-        this.$router.push('/smartlistv1')
+        this.$router.go(-1)
         this.snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)

@@ -109,11 +109,6 @@ public class SmartlistServicev1 {
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.trueUserId());
 
-    // enforce rule that only project, process step, and contact row types can have a table view display
-    if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
-      params.put("viewObjectTypeId", null);
-    }
-
     sqlCache.updateBySql(SmartlistQueryv1.update, params);
   }
 
@@ -360,11 +355,6 @@ public class SmartlistServicev1 {
     return requirements;
   }
 
-  public List<Smartlistv1> getSharedByType(Long objectTypeId) {
-    User user = securityService.getCurrentUser();
-    return sqlCache.queryBySql(SmartlistQueryv1.getSharedByObjectType, Map.of("companyId", user.getCompanyId(), "objectTypeId", objectTypeId, "userId", user.getId()), new SmartlistMapper<>(Smartlistv1.class, om));
-  }
-
   @Transactional
   public Smartlistv1 copy(Long smartlistId) {
 
@@ -388,7 +378,6 @@ public class SmartlistServicev1 {
     newSmartlist.setName(newName);
     newSmartlist.setCompanyObjectTypeId(smartlist.getCompanyObjectTypeId());
     newSmartlist.setShared(smartlist.isShared());
-    newSmartlist.setViewObjectTypeId(smartlist.getViewObjectTypeId());
     newSmartlist.setMainProcessSteps(smartlist.isMainProcessSteps());
     newSmartlist.setProjectDetails(smartlist.isProjectDetails());
 

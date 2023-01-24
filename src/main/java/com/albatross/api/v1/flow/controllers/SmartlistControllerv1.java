@@ -196,15 +196,6 @@ public class SmartlistControllerv1 {
     return new ResponseEntity<>(smartlistServicev1.getAvailableProjectDetailsFields(), HttpStatus.OK);
   }
 
-  @GetMapping(value = "/shared", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<Smartlistv1>> getPublicSmartlistsByType(@RequestParam Long objectTypeId) {
-    User user = securityService.getCurrentUser();
-    if (!securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("VIEW", "VIEW_ALL", "ADMIN"))) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-    }
-    return new ResponseEntity<>(smartlistServicev1.getSharedByType(objectTypeId), HttpStatus.OK);
-  }
-
   @PutMapping(value = "/{smartlistId}/toggleProjectDetails")
   public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
     User user = securityService.getCurrentUser();

@@ -8,12 +8,10 @@ public class SmartlistQueryv1 {
       s.*,
       ot.object_type,
       cot.object_type_id,
-      ot1.object_type as view_object_type,
       concat(u.first_name, ' ', u.last_name) as owner
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
-    left join flow.object_type ot1 on ot1.id = s.view_object_type_id
     inner join flow.user u on u.id = s.owner_id
     where cot.company_id = :companyId and
           s.archived is not true and
@@ -26,12 +24,10 @@ public class SmartlistQueryv1 {
       s.*,
       ot.object_type,
       cot.object_type_id,
-      ot1.object_type as view_object_type,
       concat(u.first_name, ' ', u.last_name) as owner
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
-    left join flow.object_type ot1 on ot1.id = s.view_object_type_id
     inner join flow.user u on u.id = s.owner_id
     where cot.company_id = :companyId and
           (s.owner_id = :userId or s.public is true) and
@@ -46,7 +42,6 @@ public class SmartlistQueryv1 {
           s.public as "shared",
           ot.object_type,
           cot.object_type_id,
-          ot1.object_type as view_object_type,
           concat(u.first_name, ' ', u.last_name) as owner,
           coalesce((
            select array_to_json(array_agg(row_to_json(eventWorkQueueTypes)))
@@ -122,7 +117,6 @@ public class SmartlistQueryv1 {
         from flow.smartlist s
         inner join flow.company_object_type cot on cot.id = s.company_object_type_id
         inner join flow.object_type ot on ot.id = cot.object_type_id
-        left join flow.object_type ot1 on ot1.id = s.view_object_type_id
         inner join flow.user u on u.id = s.owner_id
         where s.id = :smartlistId and
               cot.company_id = :companyId and
@@ -131,36 +125,9 @@ public class SmartlistQueryv1 {
     """;
 
   //language=PostgreSQL
-  public final static String getSharedByObjectType = """
-    -- selecting smartlists via smartlist_field_assignment makes sure we get smartlists with at least 1 field
-    select
-      distinct s.id,
-      s.name,
-      s.company_object_type_id,
-      cot.object_type_id,
-      s.public "shared",
-      s.owner_id,
-      s.date_created,
-      s.date_modified,
-      s.created_by_id,
-      s.modified_by_id,
-      s.archived,
-      s.primary_user_position
-    from flow.smartlist_field_assignment sfa
-    inner join flow.smartlist s on s.id = sfa.smartlist_id
-    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
-    where cot.company_id = :companyId and
-          s.archived is not true and
-          sfa.archived is not true and
-          s.view_object_type_id = :objectTypeId and
-          (s.public is true or s.owner_id = :userId)
-    order by s.name
-  """;
-
-  //language=PostgreSQL
   public final static String add = """
-    insert into flow.smartlist (name, company_object_type_id, public, owner_id, view_object_type_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
-    values (:name, :companyObjectTypeId, :shared, :ownerId,  :viewObjectTypeId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
+    insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
+    values (:name, :companyObjectTypeId, :shared, :ownerId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
     returning id;
   """;
 
@@ -171,7 +138,6 @@ public class SmartlistQueryv1 {
     name = :name,
     company_object_type_id = :companyObjectTypeId,
     public = :shared,
-    view_object_type_id = :viewObjectTypeId,
     modified_by_id = :userId,
     date_modified = now(),
     project_details = :projectDetails,
