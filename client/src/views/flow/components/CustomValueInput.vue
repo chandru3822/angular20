@@ -471,7 +471,7 @@ export default {
           let currentUserValues = this.getListOfValues().filter(value => value.id && value.id === currentUserPrimaryPositionId)
             if(currentUserValues.length > 0) {
               //select the primary position
-              this.field.intValue = currentUserValues[0]
+              this.field.intValue = currentUserValues[0].id
             } else {
               // if their primary position is not in the list, get the newest position in the list
               let positions = this.$store.state.user.details.userPositions.filter(position => position.primaryFlag === false)
@@ -490,7 +490,7 @@ export default {
                 if(currentUserValues.length > 0){
                   //the first in the list of positions that also appears in the listOfValues is the newest position,
                   // so select it and get out of the loop
-                  this.field.intValue = currentUserValues[0]
+                  this.field.intValue = currentUserValues[0].id
                   return
                 }
               }
@@ -502,11 +502,14 @@ export default {
           let currentUserId = this.$store.state.user.details.id
           let currentUserPosition = this.getListOfValues().find(value => value.id && value.id === currentUserId)
               if(currentUserPosition){
-                this.field.intValue = currentUserPosition
+                this.field.intValue = currentUserPosition.id
               }
               break;
       }
       //if the current user is not found in the list, do nothing
+      if(this.field.intValue) {
+        this.handleInput(this.field.intValue)
+      }
     }
   }
 }
