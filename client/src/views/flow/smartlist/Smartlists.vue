@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/smartlist/null" color="primary">
+            <v-btn text to="/smartlistv1/null" color="primary">
               <span>Add Smartlist</span>
             </v-btn>
           </v-toolbar-items>
@@ -15,7 +15,12 @@
           <v-tab :to="'/smartlist/mine'">My Smartlists</v-tab>
           <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>
           <v-tab :to="'/smartlist/public'">Public Smartlists</v-tab>
-          <v-tab :to="'/smartlist/all'">All Smartlists</v-tab>
+          <v-tab
+            v-if="isSmartlistAdmin"
+            :to="'/smartlist/all'"
+          >
+            All Smartlists
+          </v-tab>
         </v-tabs>
       </v-col>
       <v-col cols="12">
@@ -28,7 +33,12 @@
 </template>
 
 <script setup>
+import { getCurrentInstance } from 'vue'
 
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 </script>
 
 <style scoped lang="scss">
