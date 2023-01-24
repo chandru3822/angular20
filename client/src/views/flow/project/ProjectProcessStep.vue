@@ -174,7 +174,7 @@
             item-value="id"
             return-object
             dense
-            class="toolbar-z-index-override mt-2"
+            class="mt-2"
             @input="addEvent()"
           ></v-autocomplete>
         </div>
