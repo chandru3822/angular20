@@ -400,7 +400,7 @@ export default {
         csvData += '\n';
 
         this.filteredPayments.forEach(p => {
-          csvData += p.projectName + ',' + p.projectId + ',' +
+          csvData += '"' + p.projectName + '",' + p.projectId + ',' +
             (p.substantialCompletionDate != null ? moment(p.substantialCompletionDate).format('MM/DD/YYYY') : '') +
             ',"' + p.financier + '","' + p.product + '",' + p.totalPromotionAmount;
 
