@@ -58,6 +58,11 @@ public class BlueravenCustomFieldController {
     return customFieldService.deleteField(id);
   }
 
+    @GetMapping(value="/getUses/{id}")
+    public List<CustomField> getUses(@PathVariable Long id) {
+        return customFieldService.getGroupsUsingField(id);
+    }
+
   @GetMapping(value = "/object/{objectCode}")
   public List<CustomField> findAllByObjectCode(@PathVariable String objectCode) {
     return customFieldService.findCustomFieldsByObjectCode(objectCode);
