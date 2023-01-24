@@ -247,7 +247,7 @@
                 p.installAgreementSigned + ',' +
                 p.finalDesignSigned + ',' +
                 p.financialAgreementSent + ',' +
-                p.percentOfCashDeposit + "," +
+                p.percentOfCashDeposit + ',"' +
                 p.sc + '","' +
                 p.commissionPlan + '",' +
                 p.commissionsEarned + ',' +

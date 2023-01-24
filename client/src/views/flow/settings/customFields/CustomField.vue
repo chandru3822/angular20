@@ -257,14 +257,14 @@
       <v-simple-table v-else>
         <thead>
         <tr>
-          <th>Object Name</th>
+          <th v-if="apiPath === undefined">Object Name</th>
           <th>Object Type</th>
           <th>Custom Field Group</th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="(item, index) in usesForField" :key="index" :class="{'shaded-row': !(index % 2)}">
-          <td>{{item.processStepName || item.eventName}}</td>
+          <td v-if="apiPath === undefined">{{item.processStepName || item.eventName }}</td>
           <td>{{item.objectType}}</td>
           <td>{{item.groupName}}</td>
         </tr>
@@ -456,7 +456,6 @@ export default {
       }
     },
     async saveChanges(object) {
-      debugger
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
         // set the display order to save to DB

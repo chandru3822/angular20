@@ -227,25 +227,29 @@ public class BlueravenCustomFieldService {
     return findCustomFieldById(id);
   }
 
-  public List<CustomField> deleteField(Long id) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("fieldId", id);
-    params.put("modifiedById", currentUser.trueUserId());
-
-    // todo: add in the validations after this is all working
-    //       check if field is in use by a custom field group
-    List<CustomField> fields =
-        sqlCache.queryBySql(BlueravenCustomFieldQuery.getGroupsUsingField, params, CustomField.class);
-
-    // if the field is assigned somewhere, return those values to frontend
-    if (!fields.isEmpty()) {
-      return fields;
-    } else {
-      // archive single custom field
-      sqlCache.updateBySql(BlueravenCustomFieldQuery.deleteField, params);
-      return null;
+    public List<CustomField> getGroupsUsingField(Long id){
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("fieldId", id);
+        return sqlCache.queryBySql(BlueravenCustomFieldQuery.getGroupsUsingField, params, CustomField.class);
     }
+
+    public List<CustomField> deleteField(Long id) {
+        // todo: add in the validations after this is all working
+        //       check if field is in use by a custom field group
+        List<CustomField> fields = this.getGroupsUsingField(id);
+
+        // if the field is assigned somewhere, return those values to frontend
+        if (!fields.isEmpty()) {
+            return fields;
+        } else {
+            // archive single custom field
+            User currentUser = securityService.getCurrentUser();
+            HashMap<String, Object> params = new HashMap<>();
+            params.put("fieldId", id);
+            params.put("modifiedById", currentUser.trueUserId());
+            sqlCache.updateBySql(BlueravenCustomFieldQuery.deleteField, params);
+            return null;
+        }
   }
 
   public Long saveManagementCompany(String companyName){
