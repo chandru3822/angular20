@@ -232,49 +232,8 @@ public class BirdeyeService {
             .build());
 
         if (wrapper.getResponseList() != null && !wrapper.getResponseList().isEmpty()) {
-
           for (BirdEyeApi.BirdEyeSurveyResponse surveyResponse : wrapper.getResponseList()) {
-
-            final Optional<BirdEyeReviewInvitation> customerInvite = getInviteByCustomerId(surveyResponse.getCustomerId());
-
-            //can we match this back up to a project?
-            if (customerInvite.isPresent()) {
-
-              final BirdEyeReviewInvitation invitation = customerInvite.get();
-
-              for (BirdEyeApi.BirdEyeSurveyResponseAnswer answer : surveyResponse.getAnswers()) {
-
-                //names must match exactly
-                final CustomField customField = customFields.getOrDefault(answer.getQuestionTitle(), null);
-                if (customField == null) {
-                  log.warn("[BIRDEYE] Unable to match '{}' to a custom field", answer.getQuestionTitle());
-                  continue;
-                }
-
-                final CustomFieldValue cfv = new CustomFieldValue();
-                cfv.setCustomFieldGroupId(customField.getCustomFieldGroupId());
-                cfv.setCustomFieldGroupAssignmentId(customField.getId());
-                cfv.setCustomFieldId(customField.getCustomFieldId());
-                cfv.setTextValue(answer.getAnswer());
-
-                customFieldValueService.updateCustomFieldValues(List.of(cfv), invitation.getProjectId(), ObjectType.PROJECT);
-
-                final BirdEyeApi.BirdEyeSurveyPageQuestion surveyQuestion = questions.getOrDefault(answer.getQuestionTitle(), null);
-
-                //send out a review invite if the 1st question "Are you happy with your installation experience?" is "yes"
-                if (surveyQuestion != null && surveyQuestion.getOrder().equals(0) &&
-                  answer.getAnswer() != null && answer.getAnswer().equalsIgnoreCase("yes")) {
-                  try {
-                    sendCheckIn(invitation, BirdEyeCheckInType.REVIEW);
-                  } catch (Exception e) {
-                    log.error("[BIRDEYE] Error sending review check in for surveyResponseId={}, customerId={}", surveyResponse.getResponseId(), surveyResponse.getCustomerId());
-                  }
-                }
-              }
-            } else {
-              log.error("[BIRDEYE] Unable to send BirdEye Review Invitation to customerId={}. Unable to find associated projectId", surveyResponse.getCustomerId());
-              return;
-            }
+            handleSurveyResponse(surveyResponse, businessNumber, questions, customFields);
           }
         }
 
@@ -285,6 +244,80 @@ public class BirdeyeService {
       } catch (Exception e) {
         log.error("[BIRDEYE] Error while syncing survey responses, error={}", e.getMessage());
       }
+    }
+  }
+
+  private void handleSurveyResponse(BirdEyeApi.BirdEyeSurveyResponse response, String businessNumber, Map<String, BirdEyeApi.BirdEyeSurveyPageQuestion> questions, Map<String, CustomField> customFields) {
+
+    try {
+      //can we match this back up to a project?
+      final BirdEyeReviewInvitation invitation = getInviteByCustomerId(response.getCustomerId())
+        //if not, try to get the customer data from BirdEye
+        .orElseGet(() -> {
+          BirdEyeApi.BirdEyeCustomer customer = this.birdeyeApi.getCustomer(businessNumber, BirdEyeApi.BirdEyeCustomerGetRequest.builder()
+            .id(response.getCustomerId())
+            .build());
+
+          if (customer == null) {
+            return null;
+          }
+
+          String fieldID = "Project ID";
+          return customer.getCustomFields().stream()
+            .filter(cf -> cf.getFieldName().equals(fieldID))
+            .findFirst()
+            .map(birdEyeCustomField ->
+              new BirdEyeReviewInvitation(null,
+                customer.getFirstName() + " " + customer.getLastName(),
+                customer.getEmail(),
+                customer.getPhone(),
+                customer.getId(),
+                businessNumber,
+                customer.getId(),
+                Long.valueOf(birdEyeCustomField.getFieldValue()),
+                customer.getPhone() != null,
+                false,
+                List.of(),
+                Map.of()))
+            .orElse(null);
+        });
+
+      if (invitation != null) {
+
+        for (BirdEyeApi.BirdEyeSurveyResponseAnswer answer : response.getAnswers()) {
+
+          //names must match exactly
+          final CustomField customField = customFields.getOrDefault(answer.getQuestionTitle(), null);
+          if (customField == null) {
+            log.warn("[BIRDEYE] Unable to match '{}' to a custom field", answer.getQuestionTitle());
+            continue;
+          }
+
+          final CustomFieldValue cfv = new CustomFieldValue();
+          cfv.setCustomFieldGroupId(customField.getCustomFieldGroupId());
+          cfv.setCustomFieldGroupAssignmentId(customField.getId());
+          cfv.setCustomFieldId(customField.getCustomFieldId());
+          cfv.setTextValue(answer.getAnswer());
+
+          customFieldValueService.updateCustomFieldValues(List.of(cfv), invitation.getProjectId(), ObjectType.PROJECT);
+
+          final BirdEyeApi.BirdEyeSurveyPageQuestion surveyQuestion = questions.getOrDefault(answer.getQuestionTitle(), null);
+
+          //send out a review invite if the 1st question "Are you happy with your installation experience?" is "yes"
+          if (surveyQuestion != null && surveyQuestion.getOrder().equals(0) &&
+            answer.getAnswer() != null && answer.getAnswer().equalsIgnoreCase("yes")) {
+            try {
+              sendCheckIn(invitation, BirdEyeCheckInType.REVIEW);
+            } catch (Exception e) {
+              log.error("[BIRDEYE] Error sending review check in for surveyResponseId={}, customerId={}", response.getResponseId(), response.getCustomerId());
+            }
+          }
+        }
+      } else {
+        log.error("[BIRDEYE] Unable to send BirdEye Review Invitation to customerId={}. Unable to find associated projectId", response.getCustomerId());
+      }
+    } catch (Exception e) {
+      log.error("[BIRDEYE] Unable to handle BirdEye survey response, responseId={}, customerId={}, message={}", response.getResponseId(), response.getCustomerId(), e.getMessage());
     }
   }
 

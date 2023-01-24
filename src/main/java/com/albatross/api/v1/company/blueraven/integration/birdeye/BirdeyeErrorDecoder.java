@@ -19,14 +19,14 @@ public class BirdeyeErrorDecoder implements ErrorDecoder {
   public Exception decode(String methodKey, Response response) {
     try (final InputStream inputStream = response.body().asInputStream()) {
       final BirdeyeApiError birdeyeApiError = objectMapper.readValue(inputStream, BirdeyeApiError.class);
-      log.error("[Birdeye] API error; errorCode={}, errorMessage={}", birdeyeApiError.getCode(), birdeyeApiError.getMessage());
+      log.debug("[Birdeye API] error; errorCode={}, errorMessage={}", birdeyeApiError.getCode(), birdeyeApiError.getMessage());
 
       return new BirdeyeApiException(birdeyeApiError.getMessage());
     } catch (IOException e) {
 
       try (final InputStream errorInputStream = response.body().asInputStream()) {
         final String body = new String(errorInputStream.readAllBytes());
-        log.error("[Birdeye] Unable to parse json response; body={}", body);
+        log.debug("[Birdeye API] Unable to parse json response; body={}", body);
       } catch (IOException ex) {
         throw new RuntimeException(ex);
       }

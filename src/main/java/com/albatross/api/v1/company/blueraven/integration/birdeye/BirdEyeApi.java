@@ -56,17 +56,56 @@ public interface BirdEyeApi {
   @RequestLine("POST /resources/v1/review/businessId/{businessId}")
   List<BirdEyeReview> getReviewsByBusinessId(@Param String businessId, BirdEyeReviewRequest request);
 
+  @RequestLine("GET /resources/v1/survey/business/{businessId}/all")
+  List<BirdEyeSurvey> getAllSurveys(@Param String businessId);
+
   @RequestLine("GET /resources/v1/survey/{surveyId}?businessId={businessId}")
   BirdEyeSurvey getSurvey(@Param String surveyId, @Param String businessId);
 
   @RequestLine("POST /resources/v1/survey/ext/list/responses/{surveyId}?businessNumber={businessId}")
   BirdEyeSurveyResponseWrapper getSurveyResponses(@Param String surveyId, @Param String businessId, BirdeyeListSurveyRequest request, @QueryMap BirdEyeListSurveyPageable pageable);
 
+  @RequestLine("POST /resources/v1/customer-v2/external/getCustomer?businessId={businessId}")
+  BirdEyeCustomer getCustomer(@Param String businessId, BirdEyeCustomerGetRequest request);
 
   enum BirdEyeReviewStatus {
     published,
     parked,
     all
+  }
+
+  @Jacksonized
+  @Builder
+  @ToString
+  @Getter
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  class BirdEyeCustomerGetRequest {
+    private String id, email, phone;
+  }
+
+  @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  class BirdEyeCustomField {
+    private String fieldName, type, fieldValue;
+  }
+
+  @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  class BirdEyeContactMapping {
+    private String cid, location, bid, businessNumber;
+  }
+
+  @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  class BirdEyeCustomer {
+    private String id;
+    private String firstName;
+    private String lastName;
+    private String email;
+    private String phone;
+    private boolean smsOptin;
+    private List<BirdEyeCustomField> customFields;
+    private List<BirdEyeContactMapping> mappings;
   }
 
   @Data

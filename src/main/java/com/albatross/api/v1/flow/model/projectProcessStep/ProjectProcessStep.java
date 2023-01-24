@@ -17,7 +17,7 @@ public class ProjectProcessStep {
   private Long projectProcessStepId, processStepId, projectId, processStepStatusTypeId, processStepProcessId, companyProcessStepStatusTypeId,
     parentProjectProcessStepId, companyProjectStatusTypeId, projectStatusTypeId, contactId;
 
-  private String processStepName, processStepStatusType;
+  private String processStepName, processStepStatusType, createdBy;
 
   private Date dateCreated;
 
@@ -28,6 +28,7 @@ public class ProjectProcessStep {
   private List<ProjectProcessStepAction> actions, banners;
 
   private Owner owner;
+
 
   //so far this is only used for saving
   // @TODO: Move saving this to the CustomFieldValue controller so this prop can be killed (like how the project level fields are updated)
