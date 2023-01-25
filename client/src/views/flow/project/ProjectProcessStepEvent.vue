@@ -177,7 +177,8 @@
                  @click="toggleRoundRobinView">{{toggleViewButtonText}}
           </v-btn>
           <!--show startTime, endTime, and resource fields-->
-          <v-container v-if="!showRoundRobin" class="pa-0">
+          <v-container v-if="!showRoundRobin" class="px-4">
+              <div class="title-large pt-1">Manual Assignment</div>
             <v-row>
               <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
                 <DatetimePickerInput
