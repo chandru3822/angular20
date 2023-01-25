@@ -170,47 +170,56 @@
             item-value="id"
             @input="[statusChanged = true, defaultValuesChanged = true]"
           ></v-autocomplete>
-          <DatetimePickerInput
-            v-model="selectedEvent.startTime"
-            :timezone="this.timezone"
-            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-            :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
-            :type="'timestamp'"
-            :format="'MMMM DD, YYYY, h:mm A'"
-            label="Start Time"
-            :change-callback="startTimeChanged"
-          />
-          <DatetimePickerInput
-            v-model="selectedEvent.endTime"
-            :timezone="this.timezone"
-            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-            :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
-            :type="'timestamp'"
-            :format="'MMMM DD, YYYY, h:mm A'"
-            label="End Time"
-            :change-callback="() => { this.defaultValuesChanged = true}"
-          />
-          <v-autocomplete
-            v-if="selectedEvent && selectedEvent.availableResources"
-            v-model="selectedEvent.resourceId"
-            :items="selectedEvent.availableResources"
-            :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-            :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-            :rules="getResourceRequirement()"
-            label="Resource"
-            item-text="name"
-            item-value="id"
-            @input="defaultValuesChanged = true"
-          ></v-autocomplete>
-
           <v-btn color="primary" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
                  class="white--text mb-4"
                  :disabled="uniqueAlreadyHasValue"
                  id="qa-round-robin-button"
-                 @click="showRoundRobin = !showRoundRobin">Round Robin
+                 @click="toggleRoundRobinView">{{toggleViewButtonText}}
           </v-btn>
+          <!--show startTime, endTime, and resource fields-->
+          <v-container v-if="!showRoundRobin" class="pa-0">
+            <v-row>
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
+                <DatetimePickerInput
+                    v-model="selectedEvent.startTime"
+                    :timezone="this.timezone"
+                    :disabled="uniqueAlreadyHasValue || showRoundRobin || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+                    :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+                    :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
+                    :type="'timestamp'"
+                    :format="'MMMM DD, YYYY, h:mm A'"
+                    label="Start Time"
+                    :change-callback="startTimeChanged"
+                />
+              </v-col>
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
+                <DatetimePickerInput
+                    v-model="selectedEvent.endTime"
+                    :timezone="this.timezone"
+                    :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+                    :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+                    :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
+                    :type="'timestamp'"
+                    :format="'MMMM DD, YYYY, h:mm A'"
+                    label="End Time"
+                    :change-callback="() => { this.defaultValuesChanged = true}"
+                />
+              </v-col>
+            </v-row>
+            <v-autocomplete
+                v-if="selectedEvent && selectedEvent.availableResources"
+                v-model="selectedEvent.resourceId"
+                :items="selectedEvent.availableResources"
+                :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+                :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+                :rules="getResourceRequirement()"
+                label="Resource"
+                item-text="name"
+                item-value="id"
+                @input="defaultValuesChanged = true"
+            ></v-autocomplete>
+          </v-container>
+
           <div v-if="selectedEvent.uniqueBehaviorTypeId === 1 && showRoundRobin" class="qa-show-round-robin">
             <v-toolbar flat color="transparent">
               <v-toolbar-title>Lead Allocation</v-toolbar-title>
@@ -219,15 +228,17 @@
               <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !userIsAdmin">
                 You do not have access to schedule projects in this Postal Code
               </v-card-text>
-              <div class="pb-3" v-else>
+              <v-row class="pb-3 px-0" v-else>
+                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   :readonly="!userCanEdit"
                   :min-date="minDate"
                   :callback="checkAvailabilityDate"
                   :field="availabilityDateField"
+                  :show-field-name="false"
                 />
-                <div class="text-right mb-4" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primary" class="white--text mb-2"
+                <div class="text-right mb-4 flex-display justify-end" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primary" class="white--text mx-2"
                          :loading="remoteSearchLoading"
                          :disabled="inPersonSearchLoading"
                          v-if="showRemoteSearch || userIsAdmin"
@@ -244,6 +255,8 @@
                     Search In-person Appt. Slots
                   </v-btn>
                 </div>
+                </v-col>
+                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                 <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged"
                           v-model="selectedTimeSlot"
                           class="qa-round-robin-time-select"
@@ -270,7 +283,8 @@
                     Save Appointment
                   </v-btn>
                 </div>
-              </div>
+                </v-col>
+              </v-row>
             </v-card-text>
 
           </div>
@@ -487,6 +501,13 @@ export default {
         return this.selectedEvent.eventActions
       } else {
         return this.selectedEvent.eventActions.filter(a => a.canPerform === true)
+      }
+    },
+    toggleViewButtonText(){
+      if(this.showRoundRobin){
+        return 'Manually Assign Resources'
+      } else {
+        return 'Round Robin'
       }
     }
   },
@@ -853,6 +874,15 @@ export default {
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    toggleRoundRobinView(){
+      if(!this.showRoundRobin) {
+        // if clicking to open round robin, clear out any manually set dates
+        this.selectedEvent.resourceId = null
+        this.selectedEvent.startTime = null
+        this.selectedEvent.endTime = null
+      }
+      this.showRoundRobin = !this.showRoundRobin
     },
     async getAvailableTimeSlots(remote) {
       this.mostRecentSearchWasRemote = remote
