@@ -901,11 +901,17 @@
                 <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
                 <td>
                   <div style="display: flex; float: right;">
+                    <v-tooltip left small>
+                      <template v-slot:activator="{on, attrs}">
                     <v-btn small text color="primary"
                            v-if="userCanEdit"
+                           v-bind="attrs" v-on="on"
                            @click="duplicateAction(item.id)">
                       <v-icon>mdi-content-copy</v-icon>
                     </v-btn>
+                      </template>
+                      <span class="label-small">Duplicate action</span>
+                    </v-tooltip>
                     <v-btn small text color="primary"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
