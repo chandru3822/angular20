@@ -186,7 +186,7 @@
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
                     </v-text-field>
-                      <v-tooltip left>
+                      <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
                           <v-btn icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
                                  v-on="on"><v-icon>mdi-information</v-icon></v-btn>
@@ -223,9 +223,9 @@
                       @input="ddo.isDirty = true"
                       v-model="ddo.name">
                     </v-text-field>
-                      <v-tooltip left>
+                      <v-tooltip left v-if="!!ddo.id">
                         <template v-slot:activator="{ on, attrs }">
-                          <v-btn icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
+                          <v-btn  icon color="primary" @click="copyToClipBoard(ddo.id)" v-bind="attrs"
                                  v-on="on"><v-icon>mdi-information</v-icon></v-btn>
                         </template>
                         <span>List of Value ID: {{ddo.id}} </span>
