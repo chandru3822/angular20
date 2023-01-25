@@ -170,15 +170,16 @@
             item-value="id"
             @input="[statusChanged = true, defaultValuesChanged = true]"
           ></v-autocomplete>
-          <v-btn color="primary" v-if="selectedEvent.uniqueBehaviorTypeId === 1"
+          <v-btn color="primary" v-if="selectedEvent.uniqueBehaviorTypeId === 1 && !uniqueAlreadyHasValue"
                  class="white--text mb-4"
-                 :disabled="uniqueAlreadyHasValue"
+                 :hidden="uniqueAlreadyHasValue"
                  id="qa-round-robin-button"
                  @click="toggleRoundRobinView">{{toggleViewButtonText}}
           </v-btn>
           <!--show startTime, endTime, and resource fields-->
           <v-container v-if="!showRoundRobin" class="px-4">
-              <div class="title-large pt-1">Manual Assignment</div>
+              <div v-if="!uniqueAlreadyHasValue" class="title-large pt-1">Manual Assignment</div>
+              <div v-if="uniqueAlreadyHasValue" class="title-large pt-1">Assignment</div>
             <v-row>
               <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
                 <DatetimePickerInput
