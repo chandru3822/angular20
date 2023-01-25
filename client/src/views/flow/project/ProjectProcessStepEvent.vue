@@ -882,6 +882,9 @@ export default {
         this.selectedEvent.resourceId = null
         this.selectedEvent.startTime = null
         this.selectedEvent.endTime = null
+      } else {
+        this.availabilityDateField.dateValue = null
+        this.selectedTimeSlot = {}
       }
       this.showRoundRobin = !this.showRoundRobin
     },
