@@ -177,11 +177,10 @@
                  @click="toggleRoundRobinView">{{toggleViewButtonText}}
           </v-btn>
           <!--show startTime, endTime, and resource fields-->
-          <v-container v-if="!showRoundRobin" class="px-4">
-              <div v-if="!uniqueAlreadyHasValue" class="title-large pt-1">Manual Assignment</div>
-              <div v-if="uniqueAlreadyHasValue" class="title-large pt-1">Assignment</div>
+          <v-container v-if="!showRoundRobin" class="px-4" :class="{'pt-0': selectedEvent.uniqueBehaviorTypeId !== 1}">
+              <div v-if="!uniqueAlreadyHasValue && selectedEvent.uniqueBehaviorTypeId === 1" class="title-large pt-1">Manual Assignment</div>
             <v-row>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.startTime"
                     :timezone="this.timezone"
@@ -194,7 +193,7 @@
                     :change-callback="startTimeChanged"
                 />
               </v-col>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.endTime"
                     :timezone="this.timezone"
