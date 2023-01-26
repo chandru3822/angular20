@@ -8,6 +8,7 @@ AS
 $BODY$
 declare
   x                 record;
+  exe               record;
   v_sql             text;
   v_count           bigint;
   v_view_name       text;
@@ -73,6 +74,8 @@ BEGIN
         group by x.schema_name, x.view_name;
 
         if v_sql is not null then
+          raise notice 'v_sql_line: %', v_sql;
+          execute v_sql;
           insert into sql_statements(sql_statements) values (v_sql);
         end if;
       elsif x.data_view_field_config_id is null and x.company_process_ids_added is true then
@@ -86,12 +89,16 @@ BEGIN
         v_sql = null;
         v_sql = flow.populate_data_from_data_maintenance(x.data_view_id, x.company_process_ids);
         if v_sql is not null then
+          raise notice 'v_sql_line: %', v_sql;
+          execute v_sql;
           insert into sql_statements(sql_statements) values (v_sql);
         end if;
       elsif x.data_view_field_config_id is not null and x.company_process_ids_added is false then
         v_sql = null;
         v_sql = flow.populate_data_from_data_maintenance(x.data_view_id);
         if v_sql is not null then
+          raise notice 'v_sql_line: %', v_sql;
+          execute v_sql;
           insert into sql_statements(sql_statements) values (v_sql);
         end if;
       end if;
@@ -117,6 +124,8 @@ BEGIN
               x.lov_new_name || ''' where ' || v_field_to_update || ' = ''' || x.lov_old_name || ''';';
 
       if v_sql is not  null then
+        raise notice 'v_sql_line: %', v_sql;
+        execute v_sql;
         insert into sql_statements(sql_statements) values (v_sql);
       end if;
     end loop;

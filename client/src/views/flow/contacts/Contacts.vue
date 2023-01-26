@@ -242,6 +242,7 @@ export default {
   }
   .contact-table {
     margin-top: 2px;
+    word-break: break-word;
   }
 </style>
 
