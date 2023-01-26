@@ -1,4 +1,4 @@
-package com.albatross.api.v1.flow.model.smartlist;
+package com.albatross.api.v1.flow.model.smartlistv1;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;

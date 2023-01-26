@@ -5,9 +5,11 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlistv2.Smartlist;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistSharable;
+import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -53,6 +55,10 @@ public class SmartlistService {
   private final SecurityService securityService;
 
   private final ObjectMapper om;
+
+  private final UserService userService;
+
+  private final OrgService orgService;
 
   private final SmartlistServicev1 smartlistServicev1;
 
@@ -104,6 +110,27 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId());
     return sqlCache.queryBySql(SmartlistQueryv2.getAll, params, Smartlist.class);
+  }
+
+  public List<SmartlistSharable> getSharableEntities() {
+    List<User> users = userService.getAllActiveUsers();
+    List<Org> orgs = orgService.getAllActive();
+
+    //combine lists
+    List<SmartlistSharable> combinedList = new ArrayList<>();
+    users.forEach(u -> {
+      var share = new SmartlistSharable(u.getId(), u.getFullName(), u.getPosition(), true, false);
+      combinedList.add(share);
+    });
+
+    orgs.forEach(o -> {
+      var share = new SmartlistSharable(o.getId(), o.getOrgName(), null, false, true);
+      combinedList.add(share);
+    });
+
+    combinedList.sort((s1, s2) -> s1.getName().compareToIgnoreCase(s2.getName()));
+
+    return combinedList;
   }
 
   private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {

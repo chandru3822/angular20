@@ -1,7 +1,7 @@
-package com.albatross.api.v1.flow.model.smartlistv2;
+package com.albatross.api.v1.flow.model.smartlist;
 
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.Smartlistv1;
+import com.albatross.api.v1.flow.model.smartlistv1.Smartlistv1;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;

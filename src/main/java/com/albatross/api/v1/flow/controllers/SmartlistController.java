@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.smartlistv2.Smartlist;
+import com.albatross.api.v1.flow.model.smartlist.Smartlist;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistSharable;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -55,5 +56,10 @@ public class SmartlistController {
   public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
     smartlistService.delete(smartlistId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @GetMapping(value = "/sharableEntities", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistSharable>> getSharableEntities() {
+    return new ResponseEntity<>(smartlistService.getSharableEntities(), HttpStatus.OK);
   }
 }

@@ -6,7 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.*;
+import com.albatross.api.v1.flow.model.smartlistv1.*;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;

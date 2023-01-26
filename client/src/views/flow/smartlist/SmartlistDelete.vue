@@ -3,6 +3,7 @@
     <v-icon @click.stop="showDialog = true">mdi-delete</v-icon>
 
     <ConfirmationDialog
+      v-if="showDialog"
       :parent-close="true"
       :open-dialog="showDialog"
       @confirm="deleteSmartlist"
