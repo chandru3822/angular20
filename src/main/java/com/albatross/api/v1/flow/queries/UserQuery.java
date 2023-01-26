@@ -267,15 +267,17 @@ public class UserQuery {
 
   //language=PostgreSQL
   public final static String getAllActiveUsers = """
-     select distinct upv.user_id::bigint as id,
-                       concat(upv.first_name,' ',upv.last_name::text) as full_name
-       from flow.user_positions_vw upv
-       where upv.company_id = :companyId
-         and upv.has_access is true
-         and (upv.start_date <= now() and
-              (upv.end_date IS NULL OR upv.end_date > now()))
-       order by full_name
-    """;
+    select
+      distinct upv.user_id::bigint as id,
+      concat(upv.first_name,' ',upv.last_name::text) as full_name,
+      upv.position
+    from flow.user_positions_vw upv
+    where
+      upv.company_id = :companyId and
+      upv.has_access is true and
+      (upv.start_date <= now() and (upv.end_date IS NULL OR upv.end_date > now()))
+    order by full_name
+  """;
 
   //language=PostgreSQL
   public final static String getOneAlbatross = """
