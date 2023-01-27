@@ -45,6 +45,7 @@ public class GenesysService {
   private final ContactService contactService;
   private final CustomFieldValueService customFieldValueService;
   private final SecurityService securityService;
+  private final SqueezeService squeezeService;
   private final SMSService smsService;
   private final VerseWebhookService verseWebhookService;
   private final SqlCache sqlCache;
@@ -294,6 +295,10 @@ public class GenesysService {
       contactMap.put("state", contact.getState());
       verseWebhookService.postContact(contactMap, true);
       return;
+    } else if (leadLevel.equals("30")) {
+      contactMap.put("state", contact.getState());
+      squeezeService.postContact(contactMap);
+      return;
     }
 
     contactMap.put("QueueName", getQueueName(leadLevel));
@@ -535,6 +540,10 @@ public class GenesysService {
     } else if (leadLevel.equals("21")) {
       contactMap.put("state", contact.getState());
       verseWebhookService.postContact(contactMap, true);
+      return;
+    } else if (leadLevel.equals("30")) {
+      contactMap.put("state", contact.getState());
+      squeezeService.postContact(contactMap);
       return;
     }
 
