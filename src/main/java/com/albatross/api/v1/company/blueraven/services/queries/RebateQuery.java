@@ -12,20 +12,15 @@ public class RebateQuery {
     update flow.project_process_step_custom_field_value
     set numeric_value = :newTotal ,
         date_modified = now()
-    where id = (select pscfv.id
-    from flow.project p
-             inner join flow.project_process_step pps
-                        on pps.project_id = p.id and pps.process_step_id = 4
-             inner join flow.project_process_step_custom_field_value pscfv
-                        on pps.id = pscfv.project_process_step_id
-             inner join flow.custom_field_group_assignment cfga
-                        on cfga.id = pscfv.custom_field_group_assignment_id
-             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-             inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where field_name='Total Promotion Amount')
-      and p.id = :projectId and pps.main = true);
+    where id = (select ppscfv.id
+                from flow.project_process_step_custom_field_value ppscfv
+                where ppscfv.custom_field_group_assignment_id = 19462
+                  and ppscfv.project_process_step_id = (
+                  select id from flow.project_process_step pps
+                  where pps.project_id = :projectId
+                    and pps.process_step_id = 3355
+                    and pps.main is true
+                ));
     """;
 
   //language=PostgreSQL
