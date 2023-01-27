@@ -213,7 +213,7 @@ public class RebateQuery {
            prp.payment_amount,
            coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0) total_paid,
            (select max(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 3) last_payment,
-           (select min(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 1) next_scheduled_payment,
+           (select min(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 1) nextScheduledPayment,
            prps.name state,
            case when (select count(1) from brs.project_rebate_payment where project_id = pd.project_id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
            pd.primary_financier_name as financier,

@@ -12,7 +12,7 @@ public class RebatePayment {
   private String projectName, financier, product, state, voidNote, createdBy;
   private Date substantialCompletionDate, enteredIntoPaymentSystemDate, batchDate, lastPaymentDate;
   private Double totalPromotionAmount, paymentAmount, totalPaid, balanceOwed;
-  private Integer numberOfPromotionPayments;
+  private Integer numberOfPromotionPayments, nextScheduledPayment;
   private Long paymentId, paymentNbr;
   private List<Integer> paymentIds;
   private Boolean individual, selected;
