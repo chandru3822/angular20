@@ -25,6 +25,7 @@ public class SqueezeService {
   public void postContact(HashMap<String, Object> contactMap) {
     SimpleDateFormat formatterDate= new SimpleDateFormat("MM/dd/yyyy");
     String contactId = contactMap.remove("id").toString();
+
     try {
       URIBuilder b = new URIBuilder(apiUrl + "AddToList");
       b.addParameter("F9domain", "Squeeze Media");
