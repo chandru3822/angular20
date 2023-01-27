@@ -88,6 +88,7 @@
             <td class="text-center">{{ it.totalPromotionAmount || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-center">{{ it.numberOfPromotionPayments }}</td>
             <td v-show="status === 'approval'" class="text-center pl-5">{{ it.paymentAmount || 0 | currency('$', 2) }}</td>
+            <td v-show="status === 'approval'" class="text-center pl-5">{{ it.nextScheduledPayment}}</td>
             <td v-show="status === 'approval'" class="text-left">{{ it.totalPaid || 0 | currency('$', 2) }}</td>
             <td v-show="status === 'approval'" class="text-left">{{ it.lastPaymentDate | formatDate('date') }}</td>
             <td v-show="status === 'invalid' || status === 'approval'" class="text-left">
@@ -214,6 +215,7 @@ export default {
         {text: 'Total Promotion Amount', value: 'totalPromotionAmount', show: true},
         {text: '# Payments', value: 'numberOfPromotionPayments', show: false},
         {text: 'Payment Amount', value: 'paymentAmount', show: false},
+        {text: 'Next Payment #', value: 'nextScheduledPayment', show: false},
         {text: 'Total Paid', value: 'totalPaid', show: false},
         {text: 'Last Payment Date', value: 'lastPaymentDate', show: false},
         {text: 'Balance Owed', value: 'balanceOwed', show: false},
@@ -243,6 +245,7 @@ export default {
         totalPromotionAmount: 0,
         numberOfPromotionPayments: 0,
         paymentAmount: 0,
+        nextScheduledPayment: 1,
         verifiedBy: '',
         createdByUserId: '',
         paymentStartDate: '',
@@ -306,14 +309,16 @@ export default {
           this.headers[6].show = true;
           //Payment Amount
           this.headers[7].show = true;
-          // Total Paid
+          // Next Payment #
           this.headers[8].show = true;
-          // Last Payment Date
+          // Total Paid
           this.headers[9].show = true;
-          // Balance Owed
+          // Last Payment Date
           this.headers[10].show = true;
+          // Balance Owed
+          this.headers[11].show = true;
           //empty header
-          this.headers[11].show=false
+          this.headers[12].show=false
 
           this.payments = data;
           this.filteredPayments = data;

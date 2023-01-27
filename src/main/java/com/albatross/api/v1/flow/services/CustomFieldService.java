@@ -2,7 +2,10 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CustomField;
+import com.albatross.api.v1.flow.model.CustomFiledFilterCriteria;
+import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.CustomFieldQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -134,7 +137,7 @@ public class CustomFieldService {
           // do archive of row
           lovParams.put("id", lov.getId());
           sqlCache.updateBySql(CustomFieldQuery.archiveListOfValue, lovParams);
-        } else if(null == lov.getId() && !lov.getArchived()) {
+        } else if (null == lov.getId() && !lov.getArchived()) {
           // do row insert
           sqlCache.updateBySql(CustomFieldQuery.insertListOfValue, lovParams);
         }
@@ -158,31 +161,31 @@ public class CustomFieldService {
     return findCustomFieldById(id);
   }
 
-  public List<CustomField> getGroupsUsingField(Long id){
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("fieldId", id);
-      return sqlCache.queryBySql(CustomFieldQuery.getGroupsUsingField, params, CustomField.class);
+  public List<CustomField> getGroupsUsingField(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("fieldId", id);
+    return sqlCache.queryBySql(CustomFieldQuery.getGroupsUsingField, params, CustomField.class);
   }
 
 
-    public List<CustomField> deleteField(Long id) {
-        // check if field is in use by a custom field group
-        List<CustomField> fields = getGroupsUsingField(id);
+  public List<CustomField> deleteField(Long id) {
+    // check if field is in use by a custom field group
+    List<CustomField> fields = getGroupsUsingField(id);
 
-        // if the field is assigned somewhere, return those values to frontend
-        if (!fields.isEmpty()) {
-            return fields;
-        } else {
-            // archive single custom field
-            User currentUser = securityService.getCurrentUser();
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("fieldId", id);
-            params.put("modifiedById", currentUser.trueUserId());
+    // if the field is assigned somewhere, return those values to frontend
+    if (!fields.isEmpty()) {
+      return fields;
+    } else {
+      // archive single custom field
+      User currentUser = securityService.getCurrentUser();
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("fieldId", id);
+      params.put("modifiedById", currentUser.trueUserId());
 
-            sqlCache.updateBySql(CustomFieldQuery.deleteField, params);
-            return null;
-        }
+      sqlCache.updateBySql(CustomFieldQuery.deleteField, params);
+      return null;
     }
+  }
 
   public List<CustomField> getByProcessStepEvent(Long id) {
     User user = securityService.getCurrentUser();
@@ -257,6 +260,15 @@ public class CustomFieldService {
                  cf.setListOfValues(listOfValues);
                })
              .toList();
+  }
+
+  public List<CustomField> getByDataView(Long dataViewId) {
+    User user = securityService.getCurrentUser();
+    return sqlCache
+             .queryBySql(
+               CustomFieldQuery.getByDataView,
+               Map.of("companyId", user.getCompanyId(), "dataViewId", dataViewId),
+               new CustomField.CustomFieldMapper<>(CustomField.class, om));
   }
 
   public List<ListOfValue> getCustomFieldListOfValues(Long id) {

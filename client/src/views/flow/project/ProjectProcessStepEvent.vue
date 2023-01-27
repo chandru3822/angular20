@@ -171,17 +171,16 @@
             @input="[statusChanged = true, defaultValuesChanged = true]"
           ></v-autocomplete>
           <v-btn color="primary" v-if="selectedEvent.uniqueBehaviorTypeId === 1 && !uniqueAlreadyHasValue"
-                 class="white--text mb-4"
+                 class="white--text mb-4 text-capitalize"
                  :hidden="uniqueAlreadyHasValue"
                  id="qa-round-robin-button"
                  @click="toggleRoundRobinView">{{toggleViewButtonText}}
           </v-btn>
           <!--show startTime, endTime, and resource fields-->
-          <v-container v-if="!showRoundRobin" class="px-4">
-              <div v-if="!uniqueAlreadyHasValue" class="title-large pt-1">Manual Assignment</div>
-              <div v-if="uniqueAlreadyHasValue" class="title-large pt-1">Assignment</div>
+          <v-container v-if="!showRoundRobin" class="px-4" :class="{'pt-0': selectedEvent.uniqueBehaviorTypeId !== 1}">
+              <div v-if="!uniqueAlreadyHasValue && selectedEvent.uniqueBehaviorTypeId === 1" class="title-large pt-1">Manual Assignment</div>
             <v-row>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.startTime"
                     :timezone="this.timezone"
@@ -194,7 +193,7 @@
                     :change-callback="startTimeChanged"
                 />
               </v-col>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="py-0" :class="{'pt-2': selectedEvent.uniqueBehaviorTypeId === 1}">
                 <DatetimePickerInput
                     v-model="selectedEvent.endTime"
                     :timezone="this.timezone"
@@ -230,8 +229,8 @@
               <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !userIsAdmin">
                 You do not have access to schedule projects in this Postal Code
               </v-card-text>
-              <v-row class="pb-3 px-0" v-else>
-                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+              <v-row class="pb-3 px-0 one-hunned" v-else>
+                <v-col :cols="($store.state.project.manualColumnSplit && timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged) ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   :readonly="!userCanEdit"
                   :min-date="minDate"
@@ -239,27 +238,9 @@
                   :field="availabilityDateField"
                   :show-field-name="false"
                 />
-                <div class="text-right mb-4 flex-display justify-end" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primary" class="white--text mx-2"
-                         :loading="remoteSearchLoading"
-                         :disabled="inPersonSearchLoading"
-                         v-if="showRemoteSearch || userIsAdmin"
-                         id="qa-round-robin-search-remote"
-                         @click="getAvailableTimeSlots(true)">
-                    Search Remote Appt. Slots
-                  </v-btn>
-                  <v-btn color="primary" class="white--text"
-                         :loading="inPersonSearchLoading"
-                         v-if="schedulerCanEdit || userIsAdmin"
-                         :disabled="remoteSearchLoading"
-                         id="qa-round-robin-search"
-                         @click="getAvailableTimeSlots(false)">
-                    Search In-person Appt. Slots
-                  </v-btn>
-                </div>
                 </v-col>
-                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
-                <v-select v-if="timeSlots.length > 0 && availabilityDateField.dateValue && !dateValueChanged"
+                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged"">
+                <v-select v-if="timeSlots.length > 0"
                           v-model="selectedTimeSlot"
                           class="qa-round-robin-time-select"
                           :items="timeSlots"
@@ -275,17 +256,33 @@
                     {{ data.item.scheduledStartTime | formatDate('timestamp') }}
                   </template>
                 </v-select>
-                <div v-else-if="searchedTimeSlots && availabilityDateField.dateValue && !dateValueChanged">No Times
+                <div v-else-if="searchedTimeSlots">No Times
                   Available for the
                   Selected Date
                 </div>
-                <div class="text-right" v-if="selectedTimeSlot.scheduledStartTime && availabilityDateField.dateValue">
-                  <v-btn color="primary" class="white--text"
-                         @click="saveCloserAppointment" id="qa-round-robin-save">
+                </v-col>
+                <div class="text-right mb-4 flex-display justify-end one-hunned" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primary" class="text-capitalize mr-2" :outlined="!!selectedTimeSlot.scheduledStartTime"
+                         :loading="remoteSearchLoading"
+                         :disabled="inPersonSearchLoading"
+                         v-if="showRemoteSearch || userIsAdmin"
+                         id="qa-round-robin-search-remote"
+                         @click="getAvailableTimeSlots(true)">
+                    Search Remote Appt. Slots
+                  </v-btn>
+                  <v-btn color="primary" class="text-capitalize mr-2" :outlined="!!selectedTimeSlot.scheduledStartTime"
+                         :loading="inPersonSearchLoading"
+                         v-if="schedulerCanEdit || userIsAdmin"
+                         :disabled="remoteSearchLoading"
+                         id="qa-round-robin-search"
+                         @click="getAvailableTimeSlots(false)">
+                    Search In-person Appt. Slots
+                  </v-btn>
+                  <v-btn color="primary" class="text-capitalize" v-if="availabilityDateField.dateValue"
+                         :disabled="!selectedTimeSlot.scheduledStartTime" @click="saveCloserAppointment" id="qa-round-robin-save">
                     Save Appointment
                   </v-btn>
                 </div>
-                </v-col>
               </v-row>
             </v-card-text>
 
@@ -311,7 +308,7 @@
           </v-toolbar>
           <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
             <v-row>
-              <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+              <v-col :cols="$store.state.project.manualColumnSplit && cfg.customFieldValues && cfg.customFieldValues.length > 1 ? 6 : 12" class="pb-0 pt-2">
                 <CustomValueInput
                   v-for="(field, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
                   :key="idx"

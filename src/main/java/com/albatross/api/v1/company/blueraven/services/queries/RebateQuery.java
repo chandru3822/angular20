@@ -87,7 +87,7 @@ public class RebateQuery {
                     select prp.id,
                       prp.payment_amount as "paymentAmount",
                       prp.payment_nbr as "paymentNbr",
-                      pd.contact_name as "projectName",
+                      pd.project_name as "projectName",
                       prp.check_number as "checkNumber",
                       prp.project_rebate_payment_state_id as "paymentStateId",
                       prp.project_id as "projectId"
@@ -170,7 +170,7 @@ public class RebateQuery {
   public final static String getPaymentsPending = """
     select * from (
         select pd.project_id,
-               pd.contact_name project_name,
+               pd.project_name,
                (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy) as createdBy,
                pd.substantial_completion_date substantialCompletionDate,
                pd.primary_financier_name as financier,
@@ -202,7 +202,7 @@ public class RebateQuery {
   public final static String getPaymentsNeedApproval = """
     select prp.id payment_id,
            pd.project_id,
-           pd.contact_name project_name,
+           pd.project_name,
            pd.substantial_completion_date substantialCompletionDate,
            (select batch_date::date
             from brs.project_rebate_payment prp1
@@ -213,7 +213,7 @@ public class RebateQuery {
            prp.payment_amount,
            coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0) total_paid,
            (select max(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 3) last_payment,
-           (select min(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 1) next_scheduled_payment,
+           (select min(payment_nbr) from brs.project_rebate_payment where project_id = pd.project_id and project_rebate_payment_state_id = 1) nextScheduledPayment,
            prps.name state,
            case when (select count(1) from brs.project_rebate_payment where project_id = pd.project_id and payment_nbr < prp.payment_nbr and project_rebate_payment_state_id=1)>0 then false else true end approvable,
            pd.primary_financier_name as financier,
