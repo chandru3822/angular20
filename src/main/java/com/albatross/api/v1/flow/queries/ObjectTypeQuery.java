@@ -3,6 +3,11 @@ package com.albatross.api.v1.flow.queries;
 public class ObjectTypeQuery {
 
   //language=PostgreSQL
+  public final static String getCustomFieldGroupsAndValues = """
+    select * from flow.get_cfgs_with_values(:objectTypeId::bigint, :sourceId::bigint, :secondaryId::bigint, :companyId::bigint, :systemAdmin::boolean, :userPositions::bigint[], false, false);
+  """;
+
+  //language=PostgreSQL
   public final static String getCompanyObjectTypes = """
     select cot.id,
            cot.id company_object_type_id,

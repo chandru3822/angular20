@@ -36,96 +36,129 @@ public class CustomFieldGroupAssignmentQuery {
   //language=PostgreSQL
   public final static String getByObjectTypeId = """
     select cfg.*,
-               cfg.group_name as original_group_name,
-               cott.tab_name,
-               coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
-               ot.object_type,
-               cott.tab_name,
-               coalesce((
-                          SELECT array_to_json(array_agg(row_to_json(customFields)))
-                          FROM (
-                                 SELECT cfga.id,
-                                        cfga.custom_field_group_id as "customFieldGroupId",
-                                        cfga.custom_field_id as "customFieldId",
-                                        cfga.id as "customFieldGroupAssignmentId",
-                                        cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                        cfga.field_order as "fieldOrder",
-                                        cfga.archived,
-                                        cf.field_name as "fieldName",
-                                        cf.system_readonly as "systemReadonly",
-                                        cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                        cfga.hidden as "customFieldGroupAssignmentHidden",
-                                        cfga.show_on_insert as "showOnInsert",
-                                        cfga.show_on_user_profile as "showOnUserProfile",
-                                        cfga.required,
-                                        cfga.required as "requireOnInsert",
-                                        null as "processStepName",
-                                        null as "groupName",
-                                        coalesce((
-                                                   SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                   FROM (
-                                                          SELECT wlp.id,
-                                                                 wlp.position_id as "positionId",
-                                                                 wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                 wlp.created_by_id as "createdById",
-                                                                 wlp.modified_by_id as "modifiedById",
-                                                                 wlp.archived
-                                                          FROM flow.white_listed_position wlp
-                                                          WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                            AND wlp.white_list_type_id = 1
-                                                            AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
-                                        coalesce((
-                                                   SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                   FROM (
-                                                          SELECT wlp.id,
-                                                                 wlp.position_id as "positionId",
-                                                                 wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                                 wlp.created_by_id as "createdById",
-                                                                 wlp.modified_by_id as "modifiedById",
-                                                                 wlp.archived
-                                                          FROM flow.white_listed_position wlp
-                                                          WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                            AND wlp.white_list_type_id = 2
-                                                            AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
-                                 FROM flow.custom_field_group_assignment cfga
-                                        inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-                                 WHERE cfga.custom_field_group_id = cfg.id
-                                   AND cfga.archived is not true
-                                 union all
-                                 SELECT cfga.id,
-                                        cfga.custom_field_group_id as "customFieldGroupId",
-                                        cfga.custom_field_id as "customFieldId",
-                                        cfga.id as "customFieldGroupAssignmentId",
-                                        cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
-                                        cfga.field_order as "fieldOrder",
-                                        cfga.archived,
-                                        cf.field_name as "fieldName",
-                                        cf.system_readonly as "systemReadonly",
-                                        cfga.read_only as "customFieldGroupAssignmentReadOnly",
-                                        cfga.hidden as "customFieldGroupAssignmentHidden",
-                                        cfga.show_on_insert as "showOnInsert",
-                                        cfga.show_on_user_profile as "showOnUserProfile",
-                                        cfga.required,
-                                        cfga.required as "requireOnInsert",
-                                        ps.process_step_name as "processStepName",
-                                        cfg2.group_name as "groupName",
-                                        '[]' as whiteListedPositions,
-                                        '[]' as hiddenWhiteListedPositions
-                                 FROM flow.custom_field_group_assignment cfga
-                                        inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
-                                        inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
-                                        inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
-                                        left join flow.process_step ps on cfg2.process_step_id = ps.id
-                                 WHERE cfga.custom_field_group_id = cfg.id
-                                   AND cfga.archived is not true
-                                 ORDER BY "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
-        from flow.custom_field_group cfg
-               inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
-               inner join flow.object_type ot on ot.id = cot.object_type_id
-               left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id and cott.archived is not true
-        where cot.id = :companyObjectTypeId
-          and cfg.archived is not true
-        order by cott.display_order, cfg.group_order, cfg.group_name
+           cfg.group_name as original_group_name,
+           cott.tab_name,
+           coalesce(cott.display_order, -1) as company_object_type_tab_display_order,
+           ot.object_type,
+           cott.tab_name,
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(customFields)))
+                      FROM (
+                             SELECT cfga.id,
+                                    cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.custom_field_id as "customFieldId",
+                                    cfga.id as "customFieldGroupAssignmentId",
+                                    cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                    null::int as "dataViewFieldConfigId",
+                                    cfga.field_order as "fieldOrder",
+                                    cfga.archived,
+                                    cf.field_name as "fieldName",
+                                    cf.system_readonly as "systemReadonly",
+                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.show_on_insert as "showOnInsert",
+                                    cfga.show_on_user_profile as "showOnUserProfile",
+                                    cfga.required,
+                                    cfga.required as "requireOnInsert",
+                                    null as "processStepName",
+                                    null as "groupName",
+                                    null as "objectType",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                               FROM (
+                                                      SELECT wlp.id,
+                                                             wlp.position_id as "positionId",
+                                                             wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                             wlp.created_by_id as "createdById",
+                                                             wlp.modified_by_id as "modifiedById",
+                                                             wlp.archived
+                                                      FROM flow.white_listed_position wlp
+                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                        AND wlp.white_list_type_id = 1
+                                                        AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
+                                    coalesce((
+                                               SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                               FROM (
+                                                      SELECT wlp.id,
+                                                             wlp.position_id as "positionId",
+                                                             wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                             wlp.created_by_id as "createdById",
+                                                             wlp.modified_by_id as "modifiedById",
+                                                             wlp.archived
+                                                      FROM flow.white_listed_position wlp
+                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                        AND wlp.white_list_type_id = 2
+                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                             FROM flow.custom_field_group_assignment cfga
+                                    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                             WHERE cfga.custom_field_group_id = cfg.id
+                               AND cfga.archived is not true
+                             union all
+                             SELECT cfga.id,
+                                    cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.custom_field_id as "customFieldId",
+                                    cfga.id as "customFieldGroupAssignmentId",
+                                    cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                    null::int as "dataViewFieldConfigId",
+                                    cfga.field_order as "fieldOrder",
+                                    cfga.archived,
+                                    cf.field_name as "fieldName",
+                                    cf.system_readonly as "systemReadonly",
+                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.show_on_insert as "showOnInsert",
+                                    cfga.show_on_user_profile as "showOnUserProfile",
+                                    cfga.required,
+                                    cfga.required as "requireOnInsert",
+                                    ps.process_step_name as "processStepName",
+                                    cfg2.group_name as "groupName",
+                                    null as "objectType",
+                                    '[]' as whiteListedPositions,
+                                    '[]' as hiddenWhiteListedPositions
+                             FROM flow.custom_field_group_assignment cfga
+                                    inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
+                                    inner join flow.custom_field cf on cf.id = cfga2.custom_field_id
+                                    inner join flow.custom_field_group cfg2 on cfg2.id = cfga2.custom_field_group_id
+                                    left join flow.process_step ps on cfg2.process_step_id = ps.id
+                             WHERE cfga.custom_field_group_id = cfg.id
+                               AND cfga.archived is not true
+                             union all
+                             SELECT cfga.id,
+                                    cfga.custom_field_group_id as "customFieldGroupId",
+                                    cfga.custom_field_id as "customFieldId",
+                                    cfga.id as "customFieldGroupAssignmentId",
+                                    cfga.data_view_field_config_id as "ancillaryCustomFieldGroupAssignmentId",
+                                    cfga.data_view_field_config_id as "dataViewFieldConfigId",
+                                    cfga.field_order as "fieldOrder",
+                                    cfga.archived,
+                                    dvfc.display_name as "fieldName",
+                                    false as "systemReadonly",
+                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.show_on_insert as "showOnInsert",
+                                    cfga.show_on_user_profile as "showOnUserProfile",
+                                    cfga.required,
+                                    cfga.required as "requireOnInsert",
+                                    null as "processStepName",
+                                    dv.display_name as "groupName",
+                                    'Data View' as "objectType",
+                                    '[]' as whiteListedPositions,
+                                    '[]' as hiddenWhiteListedPositions
+                             FROM flow.custom_field_group_assignment cfga
+                                    inner join flow.data_view_field_config dvfc on cfga.data_view_field_config_id = dvfc.id
+                                    inner join flow.data_view dv on dv.id = dvfc.data_view_id
+                             WHERE cfga.custom_field_group_id = cfg.id
+                               AND cfga.archived is not true
+                               and dvfc.archived is not true
+                             ORDER BY "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
+    from flow.custom_field_group cfg
+           inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+           inner join flow.object_type ot on ot.id = cot.object_type_id
+           left join flow.company_object_type_tab cott on cott.id = cfg.company_object_type_tab_id and cott.archived is not true
+    where cot.id = :companyObjectTypeId
+      and cfg.archived is not true
+    order by cott.display_order, cfg.group_order, cfg.group_name
+
         """;
 
   //language=PostgreSQL
@@ -311,8 +344,8 @@ public class CustomFieldGroupAssignmentQuery {
 
   //language=PostgreSQL
   public final static String addFieldToGroup = """
-    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified)
-        values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now())
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified, data_view_field_config_id)
+        values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now(), :dataViewFieldConfigId)
         """;
 
   //language=PostgreSQL

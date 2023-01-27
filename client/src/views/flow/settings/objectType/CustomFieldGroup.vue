@@ -225,13 +225,13 @@
                                   v-model="parent"
                                   :items="parentObjects"
                                   label="Parent Object"
-                                  item-text="processStepName"
+                                  item-text="name"
                                   return-object
                                   autocomplete="off"
                                   @input="loadFieldsByParent"
                   >
                     <template slot='item' slot-scope='{ item }'>
-                      {{ item.processStepName }}
+                      {{ item.name }}
                     </template>
                   </v-autocomplete>
                   <v-autocomplete v-if="newFieldType === 'ancillary' && isProject"
@@ -657,7 +657,9 @@ export default {
           })
           this.availableCustomFields = data
         } else if (this.addField && this.newFieldType === 'ancillary') {
-          const {data} = await getRequest(`/processStep/getParentObjects`)
+          //this is really dumb code i dont have the energy to fix. fyi
+          let url = this.isProject ? `/processStep/getParentObjectsForProject` : `/processStep/getParentObjects`
+          const {data} = await getRequest(url)
           this.selectedAncillaryField = {}
           this.parentObjects = data
           this.availableCustomFields = []
@@ -732,7 +734,8 @@ export default {
         const params = {
           customFieldGroupId: item.id,
           id: null,
-          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId
+          ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+          dataViewFieldConfigId: this.selectedAncillaryField.dataViewFieldConfigId,
         }
         const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.push(data)
@@ -935,9 +938,15 @@ export default {
     async loadFieldsByParent() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
-        this.ancillaryCustomFields = data
-        handleHidingGlobalLoader(this, status)
+        if (this.parent.isProcessStep) {
+          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          handleHidingGlobalLoader(this, status)
+        } else if (this.parent.objectTypeId === 8) {
+          const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          handleHidingGlobalLoader(this, status)
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

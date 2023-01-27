@@ -9,7 +9,6 @@ public enum ObjectType {
     "project",
     ProjectQuery.getAttachmentType,
     ProjectCfvQuery.getCompanyId,
-    ProjectCfvQuery.getCustomFieldGroupsAndValues,
     ProjectCfvQuery.upsertCustomFieldValue,
     ProjectCfvQuery.getAncillaryCustomFieldGroupsAndValuesForAttachments
   ),
@@ -17,7 +16,6 @@ public enum ObjectType {
     "contact",
     ContactQuery.getAttachmentType,
     ContactCfvQuery.getCompanyId,
-    ContactCfvQuery.getCustomFieldGroupsAndValues,
     ContactCfvQuery.upsertCustomFieldValue,
     ContactCfvQuery.getAncillaryCustomFieldGroupsAndValuesForAttachments
   ),
@@ -25,7 +23,6 @@ public enum ObjectType {
     "user",
     UserQuery.getAttachmentType,
     null,
-    UserCfvQuery.getCustomFieldGroupsAndValues,
     UserCfvQuery.upsertCustomFieldValue,
     UserCfvQuery.getAncillaryCustomFieldGroupsAndValuesForAttachments
   ),
@@ -33,7 +30,6 @@ public enum ObjectType {
     "process_step",
     null,
     ProcessStepCfvQuery.getCompanyId,
-    ProcessStepCfvQuery.getCustomFieldGroupsAndValues,
     ProcessStepCfvQuery.upsertCustomFieldValue,
     ProcessStepCfvQuery.getAncillaryCustomFieldGroupsAndValuesForAttachments
   ),
@@ -41,7 +37,6 @@ public enum ObjectType {
     "org",
     OrgQuery.getAttachmentType,
     OrganizationCfvQuery.getCompanyId,
-    OrganizationCfvQuery.getCustomFieldGroupsAndValues,
     OrganizationCfvQuery.upsertCustomFieldValue,
     OrganizationCfvQuery.getAncillaryCustomFieldGroupsAndValuesForAttachments
   ),
@@ -49,7 +44,6 @@ public enum ObjectType {
     "event",
     EventQuery.getAttachmentType,
     null,
-    EventCfvQuery.getCustomFieldGroupsAndValues,
     EventCfvQuery.upsertCustomFieldValue,
     EventCfvQuery.getAncillaryCustomFieldGroupsAndValuesForAttachments
   ),
@@ -57,8 +51,15 @@ public enum ObjectType {
     "attachment_type",
     null,
     AttachmentTypeCfvQuery.getCompanyId,
-    AttachmentTypeCfvQuery.getCustomFieldGroupsAndValues,
     AttachmentTypeCfvQuery.upsertCustomFieldValue,
+    null
+  ),
+  //until i remember how these all work, i am making them all null for data view
+  DATA_VIEW(8L,
+    "not_needed_maybe",
+    null,
+    null,
+    null,
     null
   );
 
@@ -66,18 +67,15 @@ public enum ObjectType {
   public final String tablePrefix;
   public final String getAttachmentTypeQuery;
   public final String getCompanyIdQuery;
-  public final String getCustomFieldGroupsAndValuesQuery;
   public final String upsertCustomFieldValueQuery;
   public final String getAncillaryCustomFieldGroupsAndValuesForAttachmentsQuery;
 
   ObjectType(Long id, String tablePrefix, String getAttachmentTypeQuery, String getCompanyIdQuery,
-             String getCustomFieldGroupsAndValuesQuery, String upsertCustomFieldValueQuery,
-             String getAncillaryCustomFieldGroupsAndValuesForAttachmentsQuery) {
+             String upsertCustomFieldValueQuery, String getAncillaryCustomFieldGroupsAndValuesForAttachmentsQuery) {
     this.id = id;
     this.tablePrefix = tablePrefix;
     this.getAttachmentTypeQuery = getAttachmentTypeQuery;
     this.getCompanyIdQuery = getCompanyIdQuery;
-    this.getCustomFieldGroupsAndValuesQuery = getCustomFieldGroupsAndValuesQuery;
     this.upsertCustomFieldValueQuery = upsertCustomFieldValueQuery;
     this.getAncillaryCustomFieldGroupsAndValuesForAttachmentsQuery = getAncillaryCustomFieldGroupsAndValuesForAttachmentsQuery;
   }

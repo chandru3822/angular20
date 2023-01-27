@@ -16,7 +16,7 @@ public class CustomFieldValue {
 
   private Long id, contactId, customFieldGroupAssignmentId, customFieldGroupId,
       customFieldId, fieldOrder, listOfValueId, companyDataTypeId, dataTypeId, uniqueBehaviorTypeId,
-      companySystemListId, projectProcessStepId, ancillaryCustomFieldGroupAssignmentId;
+      companySystemListId, projectProcessStepId, ancillaryCustomFieldGroupAssignmentId, dataViewFieldConfigId;
 
   private String fieldName, fieldValue, textValue, richTextValue, customFieldSqlKey, customFieldSql, customFieldSqlSmartlist, ancillaryCustomFieldHint;
   private Long intValue;
@@ -24,7 +24,7 @@ public class CustomFieldValue {
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues, readonly, systemReadonly, customFieldGroupAssignmentReadOnly, detailView,
+  private Boolean booleanValue, hasListValues, readonly, systemReadonly, customFieldGroupAssignmentReadOnly, detailView, sortListValuesAlphabetically,
     customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, required, showOnUserProfile, useParentData, allowNow, allowSelectSelf;
 
   private Timestamp dateValue, timestampValue;

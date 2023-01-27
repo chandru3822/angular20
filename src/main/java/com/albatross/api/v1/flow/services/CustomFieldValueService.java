@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.CustomFieldGroupAssignmentQuery;
+import com.albatross.api.v1.flow.queries.ObjectTypeQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.ProjectCfvQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.UserCfvQuery;
@@ -142,10 +143,10 @@ public class CustomFieldValueService {
       params.put("objectTypeId", objectType.id);
       params.put("sourceId", id);
       //this is new and only required for attachments because we need to know the attachmentTypeId AND the attachmentId in order to load these values
-      params.put("secondarySourceId", secondaryId);
-      params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("int", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
+      params.put("secondaryId", secondaryId);
+      params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("bigint", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
       params.put("systemAdmin", systemAdmin);
-      String sqlPrefix = "customFieldValues." + objectType.textValue();
+//      String sqlPrefix = "customFieldValues." + objectType.textValue();
 
 //    note: this company id needs to be the company_id of the object (contact, project, org, process_step, user) so that users in the parent can see the custom field groups still
       Long companyId;
@@ -158,8 +159,22 @@ public class CustomFieldValueService {
       }
       params.put("companyId", companyId);
 
-      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(objectType.getCustomFieldGroupsAndValuesQuery, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));
+//      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(objectType.getCustomFieldGroupsAndValuesQuery, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));;
+      List<CustomFieldGroup> fieldGroups;
+      try {
+        String json = sqlCache.queryForObjectBySql(ObjectTypeQuery.getCustomFieldGroupsAndValues, params, String.class);
+        if (null != json) {
+          fieldGroups = om.readValue(json, new TypeReference<>() {
+          });
+        } else {
+          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Group Data Error", new Exception());
+        }
+      } catch (Exception e) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Group Data Error", e);
+      }
 
+      //todo: refactor this piece to be done in the db too. but might be too big to handle now
+      //this code only loads for attachments
       if(doCustomAttachmentLoad) {
         //secondaryId = attachmentId
         //id = attachmentTypeId
@@ -167,20 +182,6 @@ public class CustomFieldValueService {
         if(null != ancillaryGroups) {
           fieldGroups.addAll(ancillaryGroups);
         }
-      }
-
-      // this allows us to pass project_id and user_id to custom sql queries
-      if(objectType.textValue().equals("project")) {
-        handleCustomListOfValue(fieldGroups, id, user.getId(), companyId, null);
-      } else if (objectType.textValue().equals("process_step")) {
-        Long projectId = projectService.getProjectIdByProjectProcessStepId(id);
-        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId, id);
-      } else if (objectType.textValue().equals("event")) {
-        Long projectId = projectService.getProjectIdByProjectProcessStepEventId(id);
-        handleCustomListOfValue(fieldGroups, projectId, user.getId(), companyId, null);
-      } else if(!objectType.textValue().equals("attachment_type")) {
-        //dont do this for attachment types. it has already been handled and this code all sucks ass.
-        handleCustomListOfValue(fieldGroups, companyId);
       }
 
       return fieldGroups;
@@ -267,13 +268,26 @@ public class CustomFieldValueService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", realCompanyId);
     params.put("objectTypeId", objectTypeId);
-    params.put("userId", user.trueUserId());
+    params.put("sourceId", user.trueUserId());
 
-    List<CustomFieldValue> results = sqlCache.queryBySql(UserCfvQuery.getUserProfileFields, params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
+//    List<CustomFieldValue> results = sqlCache.queryBySql(UserCfvQuery.getUserProfileFields, params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
 
-    for(CustomFieldValue cv : results) {
-      handleCustomListValueForCfv(cv, null, user.trueUserId(), realCompanyId, null);
+    List<CustomFieldValue> results;
+    try {
+      String json = sqlCache.queryForObjectBySql(UserCfvQuery.getUserProfileFields, params, String.class);
+      if (null != json) {
+        results = om.readValue(json, new TypeReference<>() {
+        });
+      } else {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Values Data Error", new Exception());
+      }
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Values Data Error", e);
     }
+
+//    for(CustomFieldValue cv : results) {
+//      handleCustomListValueForCfv(cv, null, user.trueUserId(), realCompanyId, null);
+//    }
 
     return results;
   }

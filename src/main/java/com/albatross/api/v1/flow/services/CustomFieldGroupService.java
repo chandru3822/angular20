@@ -41,6 +41,9 @@ public class CustomFieldGroupService {
     params.put(
         "ancillaryCustomFieldGroupAssignmentId",
         customField.getAncillaryCustomFieldGroupAssignmentId());
+    params.put(
+        "dataViewFieldConfigId",
+        customField.getDataViewFieldConfigId());
     params.put("fieldOrder", customField.getFieldOrder());
 
     Long id =

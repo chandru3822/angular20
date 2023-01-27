@@ -358,7 +358,7 @@
                             <div v-else>
                               <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
                                 (Ancillary)</a>
-                              <div v-if="cf.edit" class="mt-3">
+                              <div v-if="cf.edit && !cf.dataViewFieldConfigId" class="mt-3">
                                 <label>Use Parent Data: </label>
                                 <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
                                        @change="saveUseParentData(cf)"
@@ -691,6 +691,10 @@
             const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
             this.ancillaryCustomFields = data
             handleHidingGlobalLoader(this, status)
+          } else if (this.parent.objectTypeId === 8) {
+            const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
+            this.ancillaryCustomFields = data
+            handleHidingGlobalLoader(this, status)
           } else {
             const {data, status} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
             this.ancillaryCustomFields = data
@@ -803,6 +807,7 @@
             customFieldGroupId: cfg.id,
             id: null,
             ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+            dataViewFieldConfigId: this.selectedAncillaryField.dataViewFieldConfigId,
             fieldOrder: 0
           }
           const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)

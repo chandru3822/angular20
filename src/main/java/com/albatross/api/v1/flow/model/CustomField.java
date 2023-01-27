@@ -28,6 +28,7 @@ public class CustomField {
       customFieldId,
       customFieldGroupId,
       ancillaryCustomFieldGroupAssignmentId,
+      dataViewFieldConfigId,
       customFieldGroupAssignmentId,
       customFieldObjectTypeId,
       dataTypeId,
