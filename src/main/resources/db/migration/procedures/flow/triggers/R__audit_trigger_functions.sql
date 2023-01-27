@@ -609,6 +609,33 @@ CREATE TRIGGER concrete_contact_audit_trg
   FOR EACH ROW
 EXECUTE PROCEDURE flow.concrete_contact_audit();
 
+
+drop function if exists flow.concrete_org_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.concrete_org_audit()
+  RETURNS TRIGGER AS
+$$
+BEGIN
+
+  insert into flow.org_audit(org_id,org_name,parent_org_id,org_type_id,active_flag,archived,schedulable,
+                             company_timezone_id,company_state_id,created_by_id,modified_by_id,
+                             date_created,date_modified,default_appointment_length)
+  values (new.id, new.org_name, new.parent_org_id, new.org_type_id,
+          new.active_flag, new.archived, new.schedulable, new.company_timezone_id, new.company_state_id,
+          new.created_by_id, new.modified_by_id, new.date_created, new.date_modified,
+          new.default_appointment_length);
+
+  RETURN NULL;
+END
+$$
+  LANGUAGE plpgsql;
+
+drop trigger if exists concrete_org_audit_trg ON flow.org;
+CREATE TRIGGER concrete_org_audit_trg
+  after INSERT or update
+  ON flow.org
+  FOR EACH ROW
+EXECUTE PROCEDURE flow.concrete_org_audit();
+
 drop function if exists flow.concrete_user_audit() cascade;
 CREATE OR REPLACE FUNCTION flow.concrete_user_audit()
   RETURNS TRIGGER AS
