@@ -71,7 +71,8 @@
             </div>
             <div class="configuration-save-container" v-if="!proposal.locked">
               <v-btn depressed
-                     color="white"
+                     text
+                     color="primary"
                      :disabled="dirtyCfvs.length === 0"
                      class="text-capitalize"
                      @click="resetToDefault"
