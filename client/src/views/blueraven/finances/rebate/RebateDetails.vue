@@ -343,7 +343,7 @@
           await this.getStates();
           const {data, status} = await getRequest(`/rebate/details/` + this.projectIdIn, 'blueraven')
           this.rebateDetails = data[0];
-          this.rebateDetails.sc = moment(this.rebateDetails.sc).format('MM/DD/YYYY')
+          this.rebateDetails.sc = moment(this.rebateDetails.substantialcompletiondate).format('MM/DD/YYYY')
 
           let payment_amount = 0;
           if (this.rebateDetails.numberofpromotionpayments > 0) {
