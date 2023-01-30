@@ -281,6 +281,27 @@ public class CustomFieldGroupAssignmentQuery {
        """;
 
   //language=PostgreSQL
+  public final static String getDataViewField = """
+    SELECT cfga.id,
+           cfga.id as custom_field_group_assignment_id,
+           cfga.custom_field_group_id as "customFieldGroupId",
+           cfga.custom_field_id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+           cfga.data_view_field_config_id as "dataViewFieldConfigId",
+           cfga.field_order as "fieldOrder",
+           cfga.archived,
+           dvfc.display_name as "fieldName",
+           true as "systemReadonly",
+           null as "processStepName",
+           dv.display_name as "groupName",
+           'Data View' as "objectType"
+    FROM flow.custom_field_group_assignment cfga
+           inner join flow.data_view_field_config dvfc on dvfc.id = cfga.data_view_field_config_id
+           inner join flow.data_view dv on dv.id = dvfc.data_view_id
+    WHERE cfga.id = :cfgaId
+        """;
+
+  //language=PostgreSQL
   public final static String getDefaultField = """
     SELECT cfga.id,
                cfga.id as custom_field_group_assignment_id,

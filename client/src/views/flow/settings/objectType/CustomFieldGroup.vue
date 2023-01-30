@@ -260,7 +260,7 @@
                           <v-icon color="primary">drag_handle</v-icon>
                         </v-list-item-action>
                         <v-list-item-content>
-                          <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null">
+                          <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && cf.dataViewFieldConfigId == null">
                             <a :href="`/settings/customField/${cf.customFieldId}`">{{cf.fieldName}}</a>
                             <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
@@ -440,7 +440,7 @@
 
                         </v-menu>
                         <v-btn text small color="primary" v-else></v-btn>
-                        <v-btn text color="primary" small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
+                        <v-btn text color="primary" small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null && cf.dataViewFieldConfigId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>

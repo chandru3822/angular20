@@ -51,7 +51,8 @@ public class CustomFieldGroupService {
             .updateBySqlReturningId(CustomFieldGroupAssignmentQuery.addFieldToGroup, params, "id")
             .longValue();
 
-    return null != customField.getDefaultFieldId() ? getDefaultCustomField(id) : getCustomField(id);
+    return null != customField.getDefaultFieldId() ? getDefaultCustomField(id) :
+             null != customField.getDataViewFieldConfigId() ? getDataViewCustomField(id) : getCustomField(id);
   }
 
   public CustomField moveFieldToOtherGroup(CustomField customField, Long newGroupId) {
@@ -65,6 +66,13 @@ public class CustomFieldGroupService {
     sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.moveFieldToOtherGroup, params);
 
     return getCustomField(customField.getCustomFieldGroupAssignmentId());
+  }
+
+  public CustomField getDataViewCustomField(Long cfgaId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cfgaId", cfgaId);
+    Optional<CustomField> result = sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getDataViewField, params, CustomField.class);
+    return result.orElse(null);
   }
 
   public CustomField getDefaultCustomField(Long cfgaId) {
