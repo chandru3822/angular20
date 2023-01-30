@@ -239,7 +239,7 @@
                   :show-field-name="false"
                 />
                 </v-col>
-                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged"">
+                <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2" v-if="availabilityDateField.dateValue && !dateValueChanged">
                 <v-select v-if="timeSlots.length > 0"
                           v-model="selectedTimeSlot"
                           class="qa-round-robin-time-select"
@@ -261,8 +261,8 @@
                   Selected Date
                 </div>
                 </v-col>
-                <div class="text-right mb-4 flex-display justify-end one-hunned" v-if="availabilityDateField.dateValue">
-                  <v-btn color="primary" class="text-capitalize mr-2" :outlined="!!selectedTimeSlot.scheduledStartTime"
+                <div class="text-right flex-display flex-wrap justify-end one-hunned" v-if="availabilityDateField.dateValue">
+                  <v-btn color="primary" class="text-capitalize mr-2 mb-4" :outlined="!!selectedTimeSlot.scheduledStartTime"
                          :loading="remoteSearchLoading"
                          :disabled="inPersonSearchLoading"
                          v-if="showRemoteSearch || userIsAdmin"
@@ -270,7 +270,7 @@
                          @click="getAvailableTimeSlots(true)">
                     Search Remote Appt. Slots
                   </v-btn>
-                  <v-btn color="primary" class="text-capitalize mr-2" :outlined="!!selectedTimeSlot.scheduledStartTime"
+                  <v-btn color="primary" class="text-capitalize mr-2 mb-4" :outlined="!!selectedTimeSlot.scheduledStartTime"
                          :loading="inPersonSearchLoading"
                          v-if="schedulerCanEdit || userIsAdmin"
                          :disabled="remoteSearchLoading"
@@ -278,7 +278,7 @@
                          @click="getAvailableTimeSlots(false)">
                     Search In-person Appt. Slots
                   </v-btn>
-                  <v-btn color="primary" class="text-capitalize" v-if="availabilityDateField.dateValue"
+                  <v-btn color="primary" class="text-capitalize mb-4" v-if="availabilityDateField.dateValue"
                          :disabled="!selectedTimeSlot.scheduledStartTime" @click="saveCloserAppointment" id="qa-round-robin-save">
                     Save Appointment
                   </v-btn>
