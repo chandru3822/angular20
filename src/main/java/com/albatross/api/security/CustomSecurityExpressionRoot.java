@@ -1,5 +1,6 @@
 package com.albatross.api.security;
 
+import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.expression.SecurityExpressionRoot;
@@ -60,7 +61,8 @@ public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
           .collect(Collectors.toSet());
       final boolean anyMatch = Arrays.stream(featureAccess).anyMatch(features::contains);
       final boolean isSystemAdminUser = Objects.equals(details.getHighestCompanyId(), SYS_ADMIN_ID);
-      return anyMatch || isSystemAdminUser;
+      final boolean isCronUser = Objects.equals(details.getId(), SystemSettings.CRON_USER.getId());
+      return anyMatch || isSystemAdminUser || isCronUser;
     }
 
     return false;
