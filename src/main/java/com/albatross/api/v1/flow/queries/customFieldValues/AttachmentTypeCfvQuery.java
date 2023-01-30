@@ -3,7 +3,7 @@ package com.albatross.api.v1.flow.queries.customFieldValues;
 public class AttachmentTypeCfvQuery {
 
   //language=PostgreSQL
-  public final static String getCustomFieldGroupsAndValues = """
+  public final static String getOldCustomFieldGroupsAndValues = """
     select
             cfg.id,
             cfg.group_name as "groupName",
@@ -69,7 +69,7 @@ public class AttachmentTypeCfvQuery {
                               from flow.custom_field_group_assignment cfga
                                      inner join flow.custom_field cf on cf.id = cfga.custom_field_id
                                      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                     left join flow.attachment_custom_field_value acv on acv.custom_field_group_assignment_id = cfga.id and acv.attachment_id = :secondarySourceId
+                                     left join flow.attachment_custom_field_value acv on acv.custom_field_group_assignment_id = cfga.id and acv.attachment_id = :secondaryId
                               where cfga.custom_field_group_id = cfg.id
                                 and cfga.archived is not true
                               order by cfga.field_order, cf.field_name

@@ -65,6 +65,12 @@ public class ProcessStepController {
     return processStepService.getParentObjects(id);
   }
 
+  //being super special...should fix this when i come back to do data config fields as requirements
+  @GetMapping(value = "/getParentObjectsForProject", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<CombinedStepAndType> getParentObjectsForProject (@RequestParam(required = false) Long id) {
+    return processStepService.getParentObjectsForProject(id);
+  }
+
   @GetMapping(value = "/getParentObjectsWithTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<CombinedStepAndType> getParentObjectsIncludingTypes (@RequestParam(required = false) Long id) {
     return processStepService.getParentObjectsIncludingTypes(id);

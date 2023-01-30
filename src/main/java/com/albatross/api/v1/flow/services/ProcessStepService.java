@@ -143,6 +143,15 @@ public class ProcessStepService {
     return sqlCache.queryBySql(ProcessStepQuery.getParentObjects, params, ProcessStep.class);
   }
 
+  public List<CombinedStepAndType> getParentObjectsForProject(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("id", id);
+
+    return sqlCache.queryBySql(ProcessStepQuery.getParentObjectsForProject, params, CombinedStepAndType.class);
+  }
+
   public List<CombinedStepAndType> getParentObjectsIncludingTypes(Long id) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();

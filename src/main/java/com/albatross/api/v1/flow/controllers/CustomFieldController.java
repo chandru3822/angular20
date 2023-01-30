@@ -66,4 +66,9 @@ public class CustomFieldController {
                                            @RequestParam(required = false) Boolean excludedUnhandledDataTypes) {
     return customFieldService.getByParentType(id, excludedUnhandledDataTypes);
   }
+
+  @GetMapping(value = "/getByDataView/{id}")
+  public List<CustomField> getByDataView(@PathVariable Long id) {
+    return customFieldService.getByDataView(id);
+  }
 }

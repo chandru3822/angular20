@@ -223,14 +223,15 @@ select oat.id,
              company_timezone_id = :companyTimezoneId,
              company_state_id = :companyStateId,
              active_flag = :active,
-             date_modified = now()
+             date_modified = now(),
+             modified_by_id = :modifiedById
         where id = :id
         """;
 
   //language=PostgreSQL
   public final static String insertOrg = """
-    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id, date_created, date_modified)
-        values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId, now(), now())
+    insert into flow.org(company_id, org_name, parent_org_id, org_type_id, schedulable, company_state_id, available_to_children, company_timezone_id, date_created, date_modified, created_by_id)
+        values(:companyId, :orgName, :parentOrgId, :orgTypeId, :schedulable, :companyStateId, :availableToChildren, :companyTimezoneId, now(), now(), :createdById)
         """;
 
   //language=PostgreSQL

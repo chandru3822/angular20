@@ -130,6 +130,7 @@ public class ProcessStepQuery {
                                                                      cfga.use_parent_data as "useParentData",
                                                                      cfga.id as "customFieldGroupAssignmentId",
                                                                      cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                     cfga.data_view_field_config_id as "dataViewFieldConfigId",
                                                                      cfga.field_order as "fieldOrder",
                                                                      cfga.archived,
                                                                      cfga.read_only as "customFieldGroupAssignmentReadOnly",
@@ -182,6 +183,7 @@ public class ProcessStepQuery {
                                                                      cfga.use_parent_data as "useParentData",
                                                                      cfga.id as "customFieldGroupAssignmentId",
                                                                      cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                     cfga.data_view_field_config_id as "dataViewFieldConfigId",
                                                                      cfga.field_order as "fieldOrder",
                                                                      cfga.archived,
                                                                      cfga.read_only as "customFieldGroupAssignmentReadOnly",
@@ -215,6 +217,43 @@ public class ProcessStepQuery {
                                                               WHERE cfga.custom_field_group_id = cfg.id
                                                                 AND cfga.archived is not true
                                                                 and cf.archived is not true
+                                                                union all
+                                                                SELECT cfga.id,
+                                                                       cfga.custom_field_group_id as "customFieldGroupId",
+                                                                       cfga.custom_field_id as "customFieldId",
+                                                                       cfga.use_parent_data as "useParentData",
+                                                                       cfga.id as "customFieldGroupAssignmentId",
+                                                                       cfga.data_view_field_config_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                       cfga.data_view_field_config_id as "dataViewFieldConfigId",
+                                                                       cfga.field_order as "fieldOrder",
+                                                                       cfga.archived,
+                                                                       cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                       cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                       dvfc.display_name as "fieldName",
+                                                                       false as "systemReadonly",
+                                                                       dv.display_name as "groupName",
+                                                                       null as "processStepName",
+                                                                       'Data View' as "objectType",
+                                                                       '[]' as whiteListedPositions,
+                                                                       coalesce((
+                                                                                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                                  FROM (
+                                                                                         SELECT wlp.id,
+                                                                                                wlp.position_id as "positionId",
+                                                                                                wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                                wlp.created_by_id as "createdById",
+                                                                                                wlp.modified_by_id as "modifiedById",
+                                                                                                wlp.archived
+                                                                                         FROM flow.white_listed_position wlp
+                                                                                         WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                           AND wlp.white_list_type_id = 2
+                                                                                           AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                                FROM flow.custom_field_group_assignment cfga
+                                                                       inner join flow.data_view_field_config dvfc on cfga.data_view_field_config_id = dvfc.id
+                                                                       inner join flow.data_view dv on dv.id = dvfc.data_view_id
+                                                                WHERE cfga.custom_field_group_id = cfg.id
+                                                                  AND cfga.archived is not true
+                                                                  and dvfc.archived is not true
                                                               ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
                                        FROM flow.custom_field_group cfg
                                            inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
@@ -357,6 +396,25 @@ public class ProcessStepQuery {
         """;
 
   //language=PostgreSQL
+  public final static String getParentObjectsForProject = """
+    select ps.id,
+               4 as object_type_id,
+               ps.process_step_name as name,
+               true as is_process_step
+        from flow.process_step ps
+        where ps.company_id = :companyId
+          and ps.archived is not true
+        union all
+          select id,
+                 (select id from flow.object_type o where flow_type_id = 6) as object_type_id,
+                 dv.display_name as name,
+                 false as is_process_step
+          from flow.data_view dv
+          where dv.archived is false
+        order by name
+        """;
+
+  //language=PostgreSQL
   public final static String getParentObjectsIncludingTypes = """
     select ps.id,
                4 as object_type_id,
@@ -375,6 +433,13 @@ public class ProcessStepQuery {
         where cot.company_id = :companyId
           and (ot.flow_type_id = 1 OR ot.flow_type_id = 3)
           and cot.archived is not true
+        union all
+          select id,
+                 (select id from flow.object_type o where flow_type_id = 6) as object_type_id,
+                 dv.display_name as name,
+                 false as is_process_step
+          from flow.data_view dv
+          where dv.archived is false
         order by name
         """;
 
