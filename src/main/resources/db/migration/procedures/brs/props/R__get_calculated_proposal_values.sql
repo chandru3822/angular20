@@ -186,7 +186,6 @@ create type brs.excluded_proposal_value as
   instant_use_assumption                         numeric,
   net_metring_rate                               numeric,
   cost_of_solar                                  numeric,
-  monthly_cost_30_year_average_with_solar        varchar,
   reamortized_payment_factor_without_itc_paydown numeric,
   proposal_id                                    bigint,
   project_id                                     bigint,
@@ -1378,7 +1377,7 @@ BEGIN
 
   raise notice 'v_utility_company_id = % ',v_utility_company_id;
 --call first formula
-  select value::numeric * 100
+  select value::numeric
   into v_panel_degradation_factor
   from proposal_value
   where field_id = 136
@@ -1790,8 +1789,8 @@ BEGIN
 
   v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
                                               ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
-                                                v_loan_term) / 300)
-    + (v_down_payment_amount / 300);
+                                                v_loan_term) / 342)
+    + (v_down_payment_amount / 342);
   raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
 
   v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
@@ -2030,7 +2029,7 @@ BEGIN
            round(v_apr * 100, 2),
            v_loan_term,
            cast(round(v_assumed_payment_by_month_18, 2) as money)::varchar,
-           round(v_panel_degradation_factor, 2),
+           round(v_panel_degradation_factor*100, 2),
            TO_CHAR(round(v_system_production_25_year, 0), 'FM9,999,999'),--comma not money
            round(round(v_estimated_offset, 2) * 100, 0),
            v_led_light_bulbs,
@@ -2117,11 +2116,11 @@ BEGIN
 
   drop table proposal_value;
 
-  insert into flow.company_function_log(function_name, parameters, run_by_id)
-  values ('Get Calculated Proposal Values', 'p_proposal_id: ' || p_proposal_id ||
-                                            ' p_insert_prop_log_history: ' || p_insert_prop_log_history ||
-                                            ' p_run_by_id: ' || p_run_by_id,
-          p_run_by_id);
+--   insert into flow.company_function_log(function_name, parameters, run_by_id)
+--   values ('Get Calculated Proposal Values', 'p_proposal_id: ' || p_proposal_id ||
+--                                             ' p_insert_prop_log_history: ' || p_insert_prop_log_history ||
+--                                             ' p_run_by_id: ' || p_run_by_id,
+--           p_run_by_id);
 
 
 END

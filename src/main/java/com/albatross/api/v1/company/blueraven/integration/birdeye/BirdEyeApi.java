@@ -63,10 +63,13 @@ public interface BirdEyeApi {
   BirdEyeSurvey getSurvey(@Param String surveyId, @Param String businessId);
 
   @RequestLine("POST /resources/v1/survey/ext/list/responses/{surveyId}?businessNumber={businessId}")
-  BirdEyeSurveyResponseWrapper getSurveyResponses(@Param String surveyId, @Param String businessId, BirdeyeListSurveyRequest request, @QueryMap BirdEyeListSurveyPageable pageable);
+  BirdEyeSurveyResponseWrapper getSurveyResponses(@Param String surveyId, @Param String businessId, BirdeyeListSurveyRequest request, @QueryMap BirdEyeListPageable pageable);
 
   @RequestLine("POST /resources/v1/customer-v2/external/getCustomer?businessId={businessId}")
   BirdEyeCustomer getCustomer(@Param String businessId, BirdEyeCustomerGetRequest request);
+
+  @RequestLine("POST /resources/v2/customer/list?bid={businessId}")
+  BirdEyeCustomerResponseWrapper getAllCustomers(@Param String businessId, BirdEyeCustomerListRequest request, @QueryMap BirdEyeListPageable pageable);
 
   enum BirdEyeReviewStatus {
     published,
@@ -82,6 +85,18 @@ public interface BirdEyeApi {
   class BirdEyeCustomerGetRequest {
     private String id, email, phone;
   }
+
+  @Jacksonized
+  @Builder
+  @ToString
+  @Getter
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  class BirdEyeCustomerListRequest {
+    @JsonFormat
+      (shape = JsonFormat.Shape.STRING, pattern = "MM/dd/yyyy")
+    private LocalDate startDate, endDate;
+  }
+
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
@@ -107,6 +122,14 @@ public interface BirdEyeApi {
     private List<BirdEyeCustomField> customFields;
     private List<BirdEyeContactMapping> mappings;
   }
+
+  @Data
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  class BirdEyeCustomerResponseWrapper {
+    private List<BirdEyeCustomer> customers;
+    private Integer page, size, totalPages, totalCount;
+  }
+
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)
@@ -171,7 +194,7 @@ public interface BirdEyeApi {
   }
 
   @Builder
-  class BirdEyeListSurveyPageable {
+  class BirdEyeListPageable {
     @Builder.Default
     private Integer page = 0;
     private Integer size;
