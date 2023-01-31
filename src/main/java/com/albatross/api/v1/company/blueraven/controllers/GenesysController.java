@@ -148,16 +148,16 @@ public class GenesysController {
     }
   }
 
-//  @PostMapping(value = "/triggerProcessGenesysContacts")
-//  public ResponseEntity triggerProcessGenesysContacts() {
-//    try {
-//      genesysService.processGenesysContacts();
-//      return ResponseEntity.ok("Success.");
-//    } catch (Exception e) {
-//      String msg = "GENE: Error with process Genesys Contacts: {}";
-//      log.error(msg, e.getMessage());
-//      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
-//    }
-//  }
+  @PostMapping(value = "/triggerProcessGenesysContacts")
+  public ResponseEntity triggerProcessGenesysContacts() {
+    try {
+      genesysService.processGenesysContactsDay1();//genesysService.processGenesysContacts();
+      return ResponseEntity.ok("Success.");
+    } catch (Exception e) {
+      String msg = "GENE: Error with process Genesys Contacts: {}";
+      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
+    }
+  }
 
 }
