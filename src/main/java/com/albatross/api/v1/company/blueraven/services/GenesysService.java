@@ -351,8 +351,8 @@ public class GenesysService {
 
       wdc.setData(contactMap);
 
-      apiInstance.postOutboundContactlistContacts(
-        contactListId, List.of(wdc), true, false, false);
+      //apiInstance.postOutboundContactlistContacts(
+        //contactListId, List.of(wdc), true, false, false);
     }
   }
 
@@ -812,7 +812,6 @@ public class GenesysService {
     GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
-    contactListNames.add("LeadLevel_NBS");
     contactListNames.add(getContactListName(leadLevel));
 
     for (ContactList cl : contactListEntity.getEntities()) {
