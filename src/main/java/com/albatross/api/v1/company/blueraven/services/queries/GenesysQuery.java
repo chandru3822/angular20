@@ -369,7 +369,7 @@ public class GenesysQuery {
 
   //language=PostgreSQL
   public final static String getContactIdProcessDay1 = """
-    select contact_id, int_value as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (1, 2, 3, 9 ,10)
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (1, 2, 3, 9 ,10)
                                                                    and contact_id in (
             select id
             from flow.contact
