@@ -368,8 +368,52 @@ public class GenesysQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getContactIdProcessDay1 = """
-    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (1, 2, 3, 9 ,10)
+  public final static String getContactIdProcessLevel1 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (1)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel2 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (2)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel3 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (3)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel9 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (9)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel10 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (10)
                                                                    and contact_id in (
             select id
             from flow.contact

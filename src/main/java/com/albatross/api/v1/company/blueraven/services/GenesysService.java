@@ -884,13 +884,49 @@ public class GenesysService {
     addContactsToGenesys(contacts, "Inside Sales Pitched Not Booked");
   }
 
-  public void processGenesysContactsDay1(Long offset) {
+  public void processGenesysContactsLevel1(Long offset) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("offset", offset);
     // Get list of Contact IDs that need to be put into each Genesys Contact List
     List<Contact> contacts =
-      sqlCache.queryBySql(GenesysQuery.getContactIdProcessDay1, params, Contact.class);
+      sqlCache.queryBySql(GenesysQuery.getContactIdProcessLevel1, params, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_Day1");
+  }
+
+  public void processGenesysContactsLevel2(Long offset) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("offset", offset);
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts =
+      sqlCache.queryBySql(GenesysQuery.getContactIdProcessLevel2, params, Contact.class);
+    addContactsToGenesys(contacts, "Leadlevel2");
+  }
+
+  public void processGenesysContactsLevel3(Long offset) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("offset", offset);
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts =
+      sqlCache.queryBySql(GenesysQuery.getContactIdProcessLevel3, params, Contact.class);
+    addContactsToGenesys(contacts, "Leadlevel3");
+  }
+
+  public void processGenesysContactsLevel9(Long offset) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("offset", offset);
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts =
+      sqlCache.queryBySql(GenesysQuery.getContactIdProcessLevel9, params, Contact.class);
+    addContactsToGenesys(contacts, "Level 9");
+  }
+
+  public void processGenesysContactsLevel10(Long offset) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("offset", offset);
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts =
+      sqlCache.queryBySql(GenesysQuery.getContactIdProcessLevel10, params, Contact.class);
+    addContactsToGenesys(contacts, "Leadlevel10");
   }
 
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
