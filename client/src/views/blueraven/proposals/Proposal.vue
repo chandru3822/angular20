@@ -71,7 +71,8 @@
             </div>
             <div class="configuration-save-container" v-if="!proposal.locked">
               <v-btn depressed
-                     color="white"
+                     text
+                     color="primary"
                      :disabled="dirtyCfvs.length === 0"
                      class="text-capitalize"
                      @click="resetToDefault"
@@ -112,13 +113,13 @@
                 <v-spacer />
                 <v-btn v-if="proposal && !proposal.locked"
                        color="grey lighten-4"
-                       class="proposal-container-buttons text-capitalize"
+                       class="proposal-container-buttons text-capitalize primary--text"
                        @click="deleteProposal">
                   Delete
                 </v-btn>
                 <v-btn v-if="pages && pages.length"
                        color="grey lighten-4"
-                       class="proposal-container-buttons text-capitalize"
+                       class="proposal-container-buttons text-capitalize primary--text"
                        :disabled="dirtyCfvs.length > 0"
                        @click="duplicate">
                   Duplicate
@@ -126,7 +127,7 @@
                 <v-btn v-if="pages && pages.length"
                        color="grey lighten-4"
                        :disabled="dirtyCfvs.length > 0"
-                       class="proposal-container-buttons text-capitalize"
+                       class="proposal-container-buttons text-capitalize primary--text"
                        @click="downloadPdf">
                   Download
                 </v-btn>
