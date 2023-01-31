@@ -372,5 +372,6 @@ public class GenesysQuery {
     select id, date_created
     from flow.contact
     where date_created >= (now() - interval '16 hours')
+    offset :offset limit 100
     """;
 }

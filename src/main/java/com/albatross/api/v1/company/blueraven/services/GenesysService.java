@@ -884,10 +884,12 @@ public class GenesysService {
     addContactsToGenesys(contacts, "Inside Sales Pitched Not Booked");
   }
 
-  public void processGenesysContactsDay1() {
+  public void processGenesysContactsDay1(Long offset) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("offset", offset);
     // Get list of Contact IDs that need to be put into each Genesys Contact List
     List<Contact> contacts =
-      sqlCache.queryBySql(GenesysQuery.getContactIdProcessDay1, null, Contact.class);
+      sqlCache.queryBySql(GenesysQuery.getContactIdProcessDay1, params, Contact.class);
     addContactsToGenesys(contacts, "leadlevel1_Day1");
   }
 
