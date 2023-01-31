@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -24,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('AHJ')")
 @RequiredArgsConstructor
 public class AhjInspectionService {
   private final SqlCache sqlCache;

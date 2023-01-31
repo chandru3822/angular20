@@ -226,7 +226,7 @@ public class BirdeyeService {
           surveyId,
           businessNumber,
           request,
-          BirdEyeApi.BirdEyeListSurveyPageable.builder()
+          BirdEyeApi.BirdEyeListPageable.builder()
             .size(pageSize)
             .page(page)
             .build());
