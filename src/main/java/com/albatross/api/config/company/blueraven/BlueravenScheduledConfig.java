@@ -91,11 +91,11 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
   public void syncBirdeyeResponses(){
-    log.info("*** CRON: start sync surveys from BirdEye ***");
+    log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
 
     birdeyeService.syncSurveyResponses();
-    log.info("*** CRON: end sync surveys from BirdEye ***");
+    log.debug("*** CRON: end sync surveys from BirdEye ***");
   }
 
   @Bean(destroyMethod = "shutdown")
