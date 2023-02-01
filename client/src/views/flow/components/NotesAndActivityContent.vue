@@ -136,7 +136,7 @@
             </td>
           </tr>
           <tr class="text-left" :class="{'shaded-row': index % 2}" v-else>
-            <td class="py-2 note-column">
+            <td class="py-2 note-column left-column-mobile">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
                    @click="expanded=[item]" class="pl-4 note-see-comments clickable body-small">
@@ -147,13 +147,13 @@
                 Hide comments...
               </div>
             </td>
-            <td class="note-created-by">
+            <td class="note-created-by center-column-mobile">
               {{ item.createdBy }} {{ item.dateCreated | formatDate('timestamp') }}
             </td>
-            <td class="note-follow-up-date" v-if="isPsWqtNote || isEventWqtNote">
+            <td class="note-follow-up-date center-column-mobile" v-if="isPsWqtNote || isEventWqtNote">
               {{ item.followUpDate | formatDate('date') }}
             </td>
-            <td class="text-right" style="width: 50px;">
+            <td class="text-right right-column-mobile" style="width: 50px;">
               <v-menu v-model="item.noteMenu"
                       :close-on-content-click="true"
                       min-width="290px">
@@ -538,5 +538,19 @@ export default {
   display: flex;
   align-items: center;
   width: 500px !important;
+}
+
+@media (max-width: 600px) {
+  .center-column-mobile {
+    width: 33%;
+  }
+
+  .left-column-mobile {
+    width: 33%;
+  }
+
+  .right-column-mobile {
+    width: 33%;
+  }
 }
 </style>
