@@ -22,7 +22,7 @@
                                                                                             'narrow': this.leftSmall,
                                                                                             'auto-overflow': this.autoOverflowLeft,
                                                                                             'white-bg': this.leftSideWhiteBg,
-                                                                                            'hide-column-xs': !$store.state.project.rightSideSplit && $store.state.project.leftSideSplit}">
+                                                                                            'hide-column-xs': $store.state.project.leftSideSplit}">
         <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
                       'ml-4': !$store.state.project.leftSideSplit}">
           <v-btn small text color="primary" @click="collapseSide('left')">
@@ -38,7 +38,7 @@
                                                                                                   'halvsies': this.leftHidden,
                                                                                                   'collapsed': this.$store.state.project.rightSideSplit && showRightCollapseBtn,
                                                                                                   'white-bg': this.rightSideWhiteBg,
-                                                                                                  'hide-column-xs': !$store.state.project.leftSideSplit}">
+                                                                                                  'hide-column-xs': true  }">
         <slot name="right-column">
           <ProjectActivity v-if="!projectLoading && projectId !== 0" :show-sms-tab="true" :allow-sidebar-collapse="showRightCollapseBtn"
                            @closeRight="closeRight()"
