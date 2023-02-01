@@ -1,6 +1,9 @@
 package com.albatross.api.config;
 
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +17,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -34,6 +38,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final ContactService contactService;
   private final MessagingService messagingService;
   private final DataViewService dataViewService;
+  private final SecurityService securityService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
   private Boolean sendSmsNotifications;
@@ -102,6 +107,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void runViewMaintenance() {
     if (doViewMaintenance) {
       log.info("*** CRON: start data view maintenance ***");
+      setCronUser();
       dataViewService.runViewMaintenance();
       log.info("*** CRON: end data view maintenance ***");
     }
@@ -167,5 +173,20 @@ public class ScheduledConfig implements SchedulingConfigurer {
   @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
   public Executor taskExecutor() {
     return Executors.newScheduledThreadPool(10);
+  }
+
+  private void setCronUser() {
+    log.debug("Setting CRON User");
+    final SystemSettings cronUser = SystemSettings.CRON_USER;
+
+    final User user = new User();
+    user.setId(cronUser.getId());
+    user.setCompanyId(cronUser.getCompanyId());
+    user.setHighestCompanyId(cronUser.getCompanyId());
+    user.setHighestParentCompanyId(cronUser.getCompanyId());
+
+    final UserAccountDetails uad = new UserAccountDetails(user, List.of());
+
+    securityService.setCurrentUserDetails(uad);
   }
 }
