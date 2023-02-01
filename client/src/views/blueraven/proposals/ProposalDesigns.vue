@@ -191,6 +191,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn text
+                 color="primary"
                  class="text-capitalize"
                  @click="showNewDesignRequestForm = false">
             Cancel

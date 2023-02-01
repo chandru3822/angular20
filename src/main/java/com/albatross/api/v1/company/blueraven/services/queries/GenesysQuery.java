@@ -12,15 +12,6 @@ public class GenesysQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getTextelPhoneKeyByContactId = """
-    select text_value
-    from flow.contact_custom_field_value
-    where contact_id = :contactId
-      and custom_field_group_assignment_id = 22530
-    limit 1
-    """;
-
-  //language=PostgreSQL
   public final static String getGenesysContactIdByContactId = """
     select text_value
     from flow.contact_custom_field_value
@@ -222,54 +213,6 @@ public class GenesysQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getContactIdsWeek1Level1Textel = """
-    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
-        and contact_id in (
-          select contact_id
-          from flow.contact_custom_field_value
-          where custom_field_group_assignment_id = 399
-            and int_value in (697,700)
-            and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-    )
-    """;
-
-  //language=PostgreSQL
-  public final static String getContactIdsWeek1Level2Textel = """
-    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
-        and contact_id in (
-          select contact_id
-          from flow.contact_custom_field_value
-          where custom_field_group_assignment_id = 399
-            and int_value in (697,700)
-            and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-    )
-    """;
-
-  //language=PostgreSQL
-  public final static String getContactIdsWeek1Level3Textel = """
-    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
-        and contact_id in (
-          select contact_id
-          from flow.contact_custom_field_value
-          where custom_field_group_assignment_id = 399
-            and int_value in (697,700)
-            and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-    )
-    """;
-
-  //language=PostgreSQL
-  public final static String getContactIdsWeek1Level10Textel = """
-    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
-        and contact_id in (
-          select contact_id
-          from flow.contact_custom_field_value
-          where custom_field_group_assignment_id = 399
-            and int_value in (697,700)
-            and date_created::date = ((now() at time zone 'US/Mountain')::date - 1)
-    )
-    """;
-
-  //language=PostgreSQL
   public final static String getContactIdsSalDevRetargets = """
     with cfv AS (
     SELECT
@@ -422,5 +365,60 @@ public class GenesysQuery {
            END as "PNB"
     from flow.project p left join pitched_not_booked pnb on pnb.id = p.id
     where p.contact_id = :contactId
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel1 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (1)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel2 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (2)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel3 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (3)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel9 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (9)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdProcessLevel10 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value in (10)
+                                                                   and contact_id in (
+            select id
+            from flow.contact
+            where date_created >= (now() - interval '16 hours')
+        )
+    offset :offset limit 100
     """;
 }
