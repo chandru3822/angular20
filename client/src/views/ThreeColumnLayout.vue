@@ -31,7 +31,7 @@
         </div>
         <slot name="left-column"></slot>
       </v-col>
-      <v-col class="project-section center-panel pt-0 px-0 auto-overflow" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit || !$store.state.project.rightSideSplit}">
+      <v-col class="project-section center-panel pt-0 px-0 auto-overflow" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit}">
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column px-0 pb-0" :class="{'hidden': this.rightHidden,

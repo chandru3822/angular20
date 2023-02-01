@@ -1,7 +1,7 @@
 <template>
 <v-container class="pa-0">
   <v-toolbar flat color="transparent">
-    <div class=" headline-small"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
+    <div class=" headline-small"><v-icon class="show-xs" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
