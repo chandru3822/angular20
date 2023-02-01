@@ -148,31 +148,16 @@ public class GenesysController {
     }
   }
 
-  @PostMapping(value = "/triggerProcessGenesysContacts/{leadLevel}/{offset}")
-  public ResponseEntity triggerProcessGenesysContacts(@PathVariable Long leadLevel, @PathVariable Long offset) {
-    try {
-      if (leadLevel == 1) {
-        genesysService.processGenesysContactsLevel1(offset);
-      }
-      else if (leadLevel == 2) {
-        genesysService.processGenesysContactsLevel2(offset);
-      }
-      else if (leadLevel == 3) {
-        genesysService.processGenesysContactsLevel3(offset);
-      }
-      else if (leadLevel == 9) {
-        genesysService.processGenesysContactsLevel9(offset);
-      }
-      else if (leadLevel == 10) {
-        genesysService.processGenesysContactsLevel10(offset);
-      }
-
-      return ResponseEntity.ok("Success.");
-    } catch (Exception e) {
-      String msg = "GENE: Error with process Genesys Contacts: {}";
-      log.error(msg, e.getMessage());
-      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
-    }
-  }
+//  @PostMapping(value = "/triggerProcessGenesysContacts")
+//  public ResponseEntity triggerProcessGenesysContacts() {
+//    try {
+//      genesysService.processGenesysContacts();
+//      return ResponseEntity.ok("Success.");
+//    } catch (Exception e) {
+//      String msg = "GENE: Error with process Genesys Contacts: {}";
+//      log.error(msg, e.getMessage());
+//      return ResponseEntity.badRequest().body("Error occurred during process Genesys Contacts");
+//    }
+//  }
 
 }
