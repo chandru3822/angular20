@@ -34,7 +34,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -225,7 +224,8 @@ public class SMSService {
         jdbcTemplate.update(queueUpdate, params);
         String errorMsg = e.toString();
         if (!errorMsg.contains("violates a blacklist rule")
-          && !errorMsg.contains("is not a valid phone number")) {
+          && !errorMsg.contains("is not a valid phone number")
+          && !errorMsg.contains("Attempt to send to unsubscribed recipient")) {
           // cron logs are noisy. only log error if not one we are expecting
           log.error("TWILIO: error={}", e.toString());
         }
