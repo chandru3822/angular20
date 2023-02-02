@@ -83,7 +83,8 @@ public interface BirdEyeApi {
   @Getter
   @JsonInclude(JsonInclude.Include.NON_NULL)
   class BirdEyeCustomerGetRequest {
-    private String id, email, phone;
+    private Long id;
+    private String email, phone;
   }
 
   @Jacksonized
@@ -234,6 +235,7 @@ public interface BirdEyeApi {
     private String locationName;
     private String customerId;
     private String customerName;
+    private String customerPhone;
     private Boolean ticketed;
     private List<BirdEyeSurveyResponseAnswer> answers;
   }

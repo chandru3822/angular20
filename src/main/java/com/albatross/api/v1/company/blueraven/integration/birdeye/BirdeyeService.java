@@ -255,7 +255,7 @@ public class BirdeyeService {
         //if not, try to get the customer data from BirdEye
         .orElseGet(() -> {
           BirdEyeApi.BirdEyeCustomer customer = this.birdeyeApi.getCustomer(businessNumber, BirdEyeApi.BirdEyeCustomerGetRequest.builder()
-            .id(response.getCustomerId())
+            .phone(response.getCustomerPhone())
             .build());
 
           if (customer == null) {
