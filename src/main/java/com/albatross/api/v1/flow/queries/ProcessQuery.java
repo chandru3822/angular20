@@ -27,6 +27,24 @@ public class ProcessQuery {
            cp.archived,
            p.parent_company_id,
            coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(denyListPositions)))
+                      FROM (
+                           select dlp.id,
+                                  dlp.position_id as "positionId",
+                                  dlp.company_process_id as "companyProcessId",
+                                  dlp.archived,
+                                  dlp.deny_list_type_id as denyListTypeId,
+                                  dlp.date_created as dateCreated,
+                                  dlp.created_by_id as createdById,
+                                  dlp.date_modified as dateModified,
+                                  dlp.modified_by_id as modifiedById,
+                                  dlt.deny_list_type as denyListType
+                          from flow.deny_list_position dlp
+           	                    left join flow.deny_list_type dlt on dlt.id = dlp.deny_list_type_id
+                          where dlp.company_process_id = cp.id
+           	                )
+           	                denyListPositions), '[]') AS "denyListPositions",
+           coalesce((
                       SELECT array_to_json(array_agg(row_to_json(processSteps)))
                       FROM (
                            select psp.id,
@@ -104,6 +122,39 @@ public class ProcessQuery {
       insert into flow.company_process (company_id, process_id, status_type_id)
         values (:companyId, :processId, :statusTypeId)
     """;
+
+  //language=PostgreSQL
+  public final static String insertDenyListPosition = """
+    insert into flow.deny_list_position(position_id, company_process_id, created_by_id, date_created, modified_by_id, date_modified, deny_list_type_id)
+    select :positionId, :companyProcessId,  :userId, now(), :userId, now(), :denyListTypeId
+    where not exists ( select id 
+                        from flow.deny_list_position
+                        where company_process_id = :companyProcessId
+                            and position_id = :positionId
+                            and deny_list_type_id = :denyListTypeId
+                            and archived is not true)
+    """;
+
+  //language=PostgreSQL
+  public final static String archiveAllDenyListPositionsForProcess = """
+    update flow.deny_list_position
+        set archived = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where company_process_id = :companyProcessId
+        and deny_list_type_id = :denyListTypeId
+    """;
+
+  //language=PostgreSQL
+  public final static String archiveDenyListPositionsNoLongerUsed = """
+    update flow.deny_list_position
+        set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+    where company_process_id = :companyProcessId
+    and position_id not in (:positionIdsUsed)
+    and deny_list_type_id = :denyListTypeId
+""";
 
   //language=PostgreSQL
   public final static String deleteProcessStepFromProcess = """

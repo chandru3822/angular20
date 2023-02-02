@@ -58,6 +58,11 @@ public class ProcessController {
         return processService.insertProcess(process);
     }
 
+    @PutMapping(value = "/saveDenyListPositions", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void saveDenyListPositions(@RequestBody CompanyProcess companyProcess) {
+        processService.saveDenyList(companyProcess);
+    }
+
     // process step process stuff, put in different controller??
     @DeleteMapping(value = "/processStepProcess/{id}")
     public ResponseEntity<?> deleteProcessStepFromProcess(@PathVariable("id") Long processStepProcessId) {
