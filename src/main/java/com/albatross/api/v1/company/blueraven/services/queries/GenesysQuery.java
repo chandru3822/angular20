@@ -334,8 +334,7 @@ public class GenesysQuery {
     select lse.appointment_start_time as "Appointment Date"
     from flow.project p
              left join latest_closer_event lse on lse.project_id = p.id AND lse.appointment_start_time >= current_date - 45
-    where p.contact_id = :contactId
-    ORDER BY lse.appointment_start_time DESC NULLS LAST limit 1
+    where p.contact_id = :contactId ORDER BY lse.appointment_start_time DESC NULLS LAST limit 1
     """;
 
   //language=PostgreSQL
@@ -345,8 +344,7 @@ public class GenesysQuery {
             else pd.closer_appointment_outcome_name
            end
     from flow.project p inner join brs.project_details pd on pd.project_id = p.id
-    where p.contact_id = :contactId
-    order by p.id desc limit 1
+    where p.contact_id = :contactId order by p.id desc limit 1
     """;
 
   //language=PostgreSQL
@@ -365,6 +363,6 @@ public class GenesysQuery {
             ELSE pnb.checked
            END as "PNB"
     from flow.project p left join pitched_not_booked pnb on pnb.id = p.id
-    where p.contact_id = :contactId
+    where p.contact_id = :contactId order by p.id desc limit 1
     """;
 }
