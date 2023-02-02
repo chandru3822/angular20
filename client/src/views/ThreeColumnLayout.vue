@@ -210,7 +210,7 @@ export default {
   text-align: center;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 960px) {
   .left-column {
     width: calc((2 / 12) * 100%); //col-2
     max-width: calc((2 / 12) * 100%); //col-2
