@@ -10,7 +10,7 @@
             <v-btn color="primary white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
           </div>
         </v-toolbar>
-        <v-toolbar flat class="app-toolbar">
+        <v-toolbar flat class="">
             <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="process.processName"></v-text-field>
             <span v-else>
               {{  processId ? process.processName : 'New Process Step'}}
@@ -27,21 +27,21 @@
               {{addNew ? 'Cancel' : 'Add Process Step'}}
             </v-btn>
           </v-toolbar-items>
-          <template v-slot:extension>
-            <v-autocomplete
-                v-model="process.denyListPositions"
-                :items="owningPositions"
-                multiple
-                clearable
-                item-text="position"
-                item-value="positionId"
-                return-object
-                style="max-width: 400px;"
-                label="Positions that Cannot Add Project to Process">
-            </v-autocomplete>
-            <v-btn @click="saveDeniedPositions" icon color="primary" class="mb-5"><v-icon>save</v-icon></v-btn>
-          </template>
         </v-toolbar>
+        <div class="flex-display align-baseline">
+          <v-autocomplete
+            v-model="process.denyListPositions"
+            :items="owningPositions"
+            multiple
+            clearable
+            item-text="position"
+            item-value="positionId"
+            return-object
+            label="Positions that Cannot Add Project to Process"
+        >
+        </v-autocomplete>
+          <v-btn @click="saveDeniedPositions" icon color="primary" class="mb-5"><v-icon>save</v-icon></v-btn>
+        </div>
         <v-container v-if="addNew">
           <v-autocomplete v-model="newProcessStep.processStepId"
                           :items="availableProcessSteps"
@@ -248,7 +248,6 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/processes/${this.processId}`)
-        debugger
         this.process = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -261,7 +260,6 @@ export default {
     async saveDeniedPositions() {
       this.$store.commit(AppMutations.SET_LOADING, true);
       try {
-        debugger
         const {status} = await putRequest(`/processes/saveDenyListPositions`, this.process)
         this.snackbar = getSnackbar('SUCCESS', 'Denied Positions Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

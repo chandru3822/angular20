@@ -42,6 +42,7 @@ public class ProcessQuery {
                           from flow.deny_list_position dlp
            	                    left join flow.deny_list_type dlt on dlt.id = dlp.deny_list_type_id
                           where dlp.company_process_id = cp.id
+                          and dlp.archived is not true
            	                )
            	                denyListPositions), '[]') AS "denyListPositions",
            coalesce((
