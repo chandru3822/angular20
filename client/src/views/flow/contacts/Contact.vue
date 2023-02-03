@@ -582,6 +582,7 @@ export default {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
       companyId: this.$store.state.user.details.companyId,
+      userPositionIds: [],
       timezone: this.$store.state.user.details.timezone?.value,
       selectedProcess: null,
       processesLoading: true,
@@ -652,6 +653,7 @@ export default {
     await Promise.all(requests).then(async () => {
       this.fieldsLoading = false
     })
+    this.getUserPositionIds();
   },
   beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to
@@ -704,6 +706,9 @@ export default {
         this.getCompanyStates()
         this.getCountries()
       }
+    },
+    getUserPositionIds: function () {
+      this.userPositionIds = this.$store.state.user.details.userPositions.map(p => p.positionId)
     },
     async validateForm() {
       if (this.$refs.contactEditForm.validate()) {
@@ -865,7 +870,17 @@ export default {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/processes`, {params})
-        this.availableProcesses = data
+        this.availableProcesses = data.filter(p => {
+          if (this.userPositionIds.length === 0) {
+            //super user
+            return p;
+          }
+          for(let id of this.userPositionIds) {
+            if(!p.denyListPositions.find(dlp => dlp.positionId === id)){
+              return p;
+            }
+          }
+        })
         this.selectedProcess = data?.length === 1 ? data[0] : {}
         this.processesLoading = false
       } catch (e) {

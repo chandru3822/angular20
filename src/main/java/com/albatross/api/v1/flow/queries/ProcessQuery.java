@@ -10,7 +10,26 @@ public class ProcessQuery {
                     cp.company_id,
                     process.created_by_id,
                     cp.archived,
-                    process.parent_company_id
+                    process.parent_company_id,
+                    coalesce((
+                                          SELECT array_to_json(array_agg(row_to_json(denyListPositions)))
+                                          FROM (
+                                               select dlp.id,
+                                                      dlp.position_id as "positionId",
+                                                      dlp.company_process_id as "companyProcessId",
+                                                      dlp.archived,
+                                                      dlp.deny_list_type_id as denyListTypeId,
+                                                      dlp.date_created as dateCreated,
+                                                      dlp.created_by_id as createdById,
+                                                      dlp.date_modified as dateModified,
+                                                      dlp.modified_by_id as modifiedById,
+                                                      dlt.deny_list_type as denyListType
+                                              from flow.deny_list_position dlp
+                               	                    left join flow.deny_list_type dlt on dlt.id = dlp.deny_list_type_id
+                                              where dlp.company_process_id = cp.id
+                                              and dlp.archived is not true
+                               	                )
+                               	                denyListPositions), '[]') AS "denyListPositions"
              from flow.company_process cp
              inner join flow.process on process.id = cp.process_id
              where company_id = :companyId
