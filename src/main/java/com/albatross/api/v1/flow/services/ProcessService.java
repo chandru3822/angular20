@@ -46,7 +46,7 @@ public class ProcessService {
     }
 
     return sqlCache.queryBySql(
-      ProcessQuery.getAllForCompany, ImmutableMap.of("companyId", companyId), CompanyProcess.class);
+      ProcessQuery.getAllForCompany, ImmutableMap.of("companyId", companyId), new CompanyProcessMapper<>(CompanyProcess.class, om));
   }
 
   public Optional<CompanyProcess> getProcess(Long companyId, Long processId, Long projectId) {
@@ -327,6 +327,24 @@ public class ProcessService {
           List.class,
           "owningPositions",
           new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+    }
+  }
+
+  public static class CompanyProcessMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public CompanyProcessMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<DenyListPosition>> denyListPositionsRef = new TypeReference<>() {};
+      TypeReference<List<ProcessStepProcess>> processStepProcessesRef = new TypeReference<>() {};
+
+      bw.registerCustomEditor(List.class, "denyListPositions", new JsonCollectionDeserializer(denyListPositionsRef, objectMapper));
+      bw.registerCustomEditor(List.class, "processStepProcesses", new JsonCollectionDeserializer(processStepProcessesRef, objectMapper));
     }
   }
 }
