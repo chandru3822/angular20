@@ -10,7 +10,7 @@
             <v-btn color="primary white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
           </div>
         </v-toolbar>
-        <v-toolbar flat class="app-toolbar">
+        <v-toolbar flat class="">
             <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="process.processName"></v-text-field>
             <span v-else>
               {{  processId ? process.processName : 'New Process Step'}}
@@ -28,6 +28,20 @@
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
+        <div class="flex-display align-baseline">
+          <v-autocomplete
+            v-model="process.denyListPositions"
+            :items="owningPositions"
+            multiple
+            clearable
+            item-text="position"
+            item-value="positionId"
+            return-object
+            label="Positions that Cannot Add Project to Process"
+        >
+        </v-autocomplete>
+          <v-btn @click="saveDeniedPositions" icon color="primary" class="mb-5"><v-icon>save</v-icon></v-btn>
+        </div>
         <v-container v-if="addNew">
           <v-autocomplete v-model="newProcessStep.processStepId"
                           :items="availableProcessSteps"
@@ -243,6 +257,20 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async saveDeniedPositions() {
+      this.$store.commit(AppMutations.SET_LOADING, true);
+      try {
+        const {status} = await putRequest(`/processes/saveDenyListPositions`, this.process)
+        this.snackbar = getSnackbar('SUCCESS', 'Denied Positions Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async saveRowChanges (rows) {
       if(rows?.length > 0) {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -389,6 +417,10 @@ export default {
 
 .v-data-table ::v-deep .v-data-table__wrapper {
   max-height: calc(100vh - 350px);
+}
+
+.limit-positions-label.theme--light.v-label {
+  color: purple !important;
 }
 
 </style>
