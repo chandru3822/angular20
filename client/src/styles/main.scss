@@ -629,7 +629,7 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.6;
 }
 
-@media (min-width: 600px) {
+@media (min-width: 960px) {
   .title-large-medium {
     font-family: lato;
     font-weight: 400;
@@ -638,11 +638,15 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   }
 
   .show-xs {
-    visibility: hidden;
+    display: none;
+  }
+
+  button.v-icon.notranslate.show-xs{
+    display: none;
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 960px) {
   .title-large-medium {
     font-family: lato;
     font-weight: 400;

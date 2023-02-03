@@ -69,6 +69,150 @@ public class GenesysQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getContactIdsWeek1Level1 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek2Level1 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsAgedLevel1 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=1
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek1Level2 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek2Level2 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsAgedLevel2 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=2
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek1Level3 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek2Level3 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsAgedLevel3 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=3
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek1Level10 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 2)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsWeek2Level10 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 7)
+    )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsAgedLevel10 = """
+    select contact_id as id from flow.contact_custom_field_value where custom_field_group_assignment_id=20977 and int_value=10
+        and contact_id in (
+          select contact_id
+          from flow.contact_custom_field_value
+          where custom_field_group_assignment_id = 399
+            and int_value in (697,700)
+            and date_created::date = ((now() at time zone 'US/Mountain')::date - 14)
+    )
+    """;
+
+  //language=PostgreSQL
   public final static String getContactIdsSalDevRetargets = """
     with cfv AS (
     SELECT
@@ -190,8 +334,7 @@ public class GenesysQuery {
     select lse.appointment_start_time as "Appointment Date"
     from flow.project p
              left join latest_closer_event lse on lse.project_id = p.id AND lse.appointment_start_time >= current_date - 45
-    where p.contact_id = :contactId
-    ORDER BY lse.appointment_start_time DESC NULLS LAST limit 1
+    where p.contact_id = :contactId ORDER BY lse.appointment_start_time DESC NULLS LAST limit 1
     """;
 
   //language=PostgreSQL
@@ -201,7 +344,7 @@ public class GenesysQuery {
             else pd.closer_appointment_outcome_name
            end
     from flow.project p inner join brs.project_details pd on pd.project_id = p.id
-    where p.contact_id = :contactId
+    where p.contact_id = :contactId order by p.id desc limit 1
     """;
 
   //language=PostgreSQL
@@ -220,6 +363,6 @@ public class GenesysQuery {
             ELSE pnb.checked
            END as "PNB"
     from flow.project p left join pitched_not_booked pnb on pnb.id = p.id
-    where p.contact_id = :contactId
+    where p.contact_id = :contactId order by p.id desc limit 1
     """;
 }

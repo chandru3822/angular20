@@ -153,7 +153,7 @@
       </template>
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
-             class="px-2 height-one-hunned overflow-y-auto ">
+             class="px-2 height-one-hunned overflow-y-auto hide-xs">
           <PageOverview page-name="Contact"
                         :show-edit-btn="contact && contact.id && userCanEdit"
                         @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
@@ -221,9 +221,95 @@
             </v-card>
           </div>
         </div>
+        <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
+             class="px-2 height-one-hunned overflow-y-auto show-xs">
+          <div @click="openTab('summary')">Summary</div>
+          <div @click="openTab('overview')">Overview</div>
+          <div @click="openTab('associatedProjects')">Associated Projects</div>
+          <div @click="openTab('notes')">Notes</div>
+          <div @click="openTab('documents')">Documents</div>
+        </div>
       </template>
       <template v-slot:main-column>
-        <div>
+        <div v-if="contact && contact.id && (showMobileNotes || showMobileDocuments)"
+             class="px-2 height-one-hunned overflow-y-auto " style="background-color: white">
+          <ProjectActivity v-if="!contactLoading && contactId !== 0"
+                           :contact-id="contactId"
+                           :force-show-upload-btn="true"
+                           :show-notes="showMobileNotes"
+                           :show-sms-tab="false"></ProjectActivity>
+        </div>
+        <div v-if="contact && contact.id && showMobileOverview"
+             class="px-2 height-one-hunned overflow-y-auto ">
+          <PageOverview page-name="Contact"
+                        :show-edit-btn="contact && contact.id && userCanEdit"
+                        @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
+                        :details="overviewDetails"
+          ></PageOverview>
+        </div>
+        <div class="show-xs" v-if="showMobileAssociatedProjects">
+          <v-toolbar color="transparent" flat>
+            <div class="headline-small"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-menu
+                v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
+                bottom
+                offset-y
+                :close-on-content-click="false"
+              >
+                <template v-slot:activator="{ on: menu }">
+                  <!--                  <v-tooltip top :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId">-->
+                  <v-tooltip top
+                             :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
+                    <template v-slot:activator="{ on: tooltip }">
+                      <div v-on="{ ...tooltip }" class="d-inline-block mt-4">
+                        <v-btn v-on="{ ...menu }"
+                               text
+                               x-small
+                               :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                               color="primary"
+                               id="qa-create-project-button"
+                               @click="getAvailableProcesses">
+                          <v-icon>add</v-icon>
+                        </v-btn>
+                      </div>
+                    </template>
+                    <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
+                    <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
+                  </v-tooltip>
+                </template>
+                <v-card class="pa-5 body-large">
+                  Select a process to be used
+                  <v-select v-model="selectedProcess"
+                            :items="availableProcesses"
+                            label="Process"
+                            id="qa-process-selector"
+                            :loading="processesLoading"
+                            placeholder="Select one..."
+                            item-text="processName"
+                            return-object
+                            class="mt-2 qa-process-selector"
+                  ></v-select>
+                  <v-btn text class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
+                    Add Project
+                  </v-btn>
+                </v-card>
+              </v-menu>
+            </v-toolbar-items>
+          </v-toolbar>
+          <div class="mx-2">
+            <v-card flat v-for="p in contact.projects"
+                    class="project-button albatross-body-1"
+                    :href="`/project/${p.id}/details`">
+              <div class="body-large" >{{ p.projectName }} </div>
+              <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
+              <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
+
+            </v-card>
+          </div>
+        </div>
+        <div class="hide-xs">
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="headline-small">
@@ -237,7 +323,7 @@
               </v-btn>
               <div>
                 <v-btn color="primary"
-                       class="hide-xs body-medium"
+                       class="body-medium white--text mt-3 hide-xs"
                        v-if="userCanEdit"
                        :loading="fieldsLoading"
                        :disabled="fieldsSaving"
@@ -245,7 +331,7 @@
                   Save Fields
                 </v-btn>
                 <v-btn color="primary"
-                       class="white--text mt-3 show-xs"
+                       class="body-medium white--text mt-3 show-xs"
                        v-if="userCanEdit"
                        :loading="fieldsLoading"
                        :disabled="fieldsSaving"
@@ -309,6 +395,94 @@
             <SpinnerInline centered :size="50" color="primary"/>
           </div>
         </div>
+        <div class = "show-xs" v-if="showMobileSummary">
+          <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
+          <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
+            <v-toolbar-title class="headline-small">
+              <v-icon @click="openMenu()">mdi-menu</v-icon>
+              Contact Summary
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0 hide-xs">
+                <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
+                <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
+              </v-btn>
+              <div>
+                <v-btn color="primary"
+                       class="body-medium white--text mt-3 hide-xs"
+                       v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validateFields(true)">
+                  Save Fields
+                </v-btn>
+                <v-btn color="primary"
+                       class="body-medium white--text mt-3 show-xs"
+                       v-if="userCanEdit"
+                       :loading="fieldsLoading"
+                       :disabled="fieldsSaving"
+                       @click="validateFields(true)">
+                  Save
+                </v-btn>
+              </div>
+            </v-toolbar-items>
+          </v-toolbar>
+          <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
+            <v-row class="px-5">
+              <v-col cols="12" class="text-left py-0 px-0">
+                <!--    process field groups-->
+                <v-form ref="contactForm">
+                  <v-col
+                    class="pt-0"
+                    v-for="(cfg, index) in customFieldGroups"
+                    :key="index"
+                  >
+                    <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar body-large" dense>
+                      <v-toolbar-title>
+                        {{ cfg.groupName }}
+                      </v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-toolbar-items>
+                      </v-toolbar-items>
+                    </v-toolbar>
+
+                    <v-card class="px-4 square-card" v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0">
+                      <v-row>
+                        <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 1)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            class = "body-large"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                        <v-col cols="6" v-if="$store.state.project.manualColumnSplit" class="pb-0 pt-2">
+                          <CustomValueInput v-for="(cf, idx) in getCustomFieldValuesToDisplay(cfg.customFieldValues, 2)"
+                                            :key="idx"
+                                            :required="cf.required"
+                                            :readonly="getReadOnly(cf)"
+                                            :callback="populateDirtyCfvs"
+                                            :field="cf"
+                                            class = "body-large"
+                                            :show-field-name="false"></CustomValueInput>
+                        </v-col>
+                      </v-row>
+
+                    </v-card>
+                  </v-col>
+
+                </v-form>
+              </v-col>
+            </v-row>
+          </div>
+          <div v-else>
+            <SpinnerInline centered :size="50" color="primary"/>
+          </div>
+        </div>
+
       </template>
       <template v-slot:right-column>
         <ProjectActivity v-if="!contactLoading && contactId !== 0"
@@ -412,6 +586,12 @@ export default {
       selectedProcess: null,
       processesLoading: true,
       availableProcesses: [],
+      showMobileOverview: false,
+      showMobileSummary: true,
+      showMobileAssociatedProjects: false,
+      showMobileNotes: false,
+      showMobileDocuments: false
+
     }
   },
   computed: {
@@ -487,6 +667,17 @@ export default {
     }
   },
   methods: {
+    openTab(tab){
+      this.showMobileOverview = (tab == 'overview');
+      this.showMobileSummary = (tab == 'summary');
+      this.showMobileAssociatedProjects = (tab == 'associatedProjects');
+      this.showMobileNotes = (tab == 'notes');
+      this.showMobileDocuments = (tab == 'documents');
+      this.$store.state.project.leftSideSplit = true;
+    },
+    openMenu(){
+      this.$store.state.project.leftSideSplit = false;
+    },
     setSplitColumnValue() {
       //flip the flag
       this.$store.commit(ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT)

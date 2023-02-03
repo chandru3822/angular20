@@ -19,15 +19,15 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SqueezeService {
 
-  //@Value(value = "${squeeze.api.host}")
-  //private String apiUrl;
+  @Value(value = "${squeeze.api.host}")
+  private String apiUrl;
 
   public void postContact(HashMap<String, Object> contactMap) {
     SimpleDateFormat formatterDate= new SimpleDateFormat("MM/dd/yyyy");
     String contactId = contactMap.remove("id").toString();
 
     try {
-      URIBuilder b = new URIBuilder( "AddToList");//URIBuilder b = new URIBuilder(apiUrl + "AddToList");
+      URIBuilder b = new URIBuilder(apiUrl + "/AddToList");
       b.addParameter("F9domain", "Squeeze Media");
       b.addParameter("F9list", "Blue Raven Solar Post");
       b.addParameter("F9CallASAP", "true");
@@ -53,7 +53,7 @@ public class SqueezeService {
       b.addParameter("Created Date", formatterDate.format(new Date()));
       b.addParameter("Lead Source", contactMap.remove("lead_source").toString());
       b.addParameter("Lead Status", contactMap.remove("lead_status").toString());
-      //HttpResponse resp = POST(b.build().toString().replaceAll("\\+", "%20"), null);
+      HttpResponse resp = POST(b.build().toString().replaceAll("\\+", "%20"), null);
     } catch (Exception e) {
       log.error(
         "SQUEEZE: Error in posting contactId={}, msg={}",

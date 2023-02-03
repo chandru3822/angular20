@@ -1,60 +1,207 @@
 <template>
 
   <v-row id="project-activity-container" class="flex-column flex-nowrap" no-gutters>
+      <div class="project-activity-header-container hide-xs" :class="{'pt-n2':selectedOption === 0}">
 
-    <div class="project-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
+        <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
+             :class="{'title-collapse': isSidebarCollapsed,
+                      'title-no-collapse': !isSidebarCollapsed,
+                      'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
+                      'mt-0': $route.path.indexOf('project') < 0,
+                      'headline-small': true}">
 
-      <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
-           :class="{'title-collapse': isSidebarCollapsed,
-                    'title-no-collapse': !isSidebarCollapsed,
-                    'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
-                    'mt-0': $route.path.indexOf('project') < 0,
-                    'headline-small': true}">
-
-        <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
-          <template v-slot:activator="{on, attrs}">
-
-            <a v-if="!isSidebarCollapsed"
-               v-bind="attrs" v-on="on"
-               class="d-inline-block clickable project-name-link"
-              :href="`/project/${projectId}/details`">
-              {{ projectMessageProperties.projectName }}
-            </a>
-          </template>
-          <span class="albatross-body-3">Go to project</span>
-        </v-tooltip>
-        <div v-else-if="!isSidebarCollapsed" >
-          {{sidebarTitle}}
-        </div>
-        <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
-        <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
-
-          <v-tooltip bottom small>
+          <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
             <template v-slot:activator="{on, attrs}">
-              <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
-                <v-icon>mdi-history</v-icon>
-              </v-btn>
+
+              <a v-if="!isSidebarCollapsed"
+                 v-bind="attrs" v-on="on"
+                 class="d-inline-block clickable project-name-link"
+                :href="`/project/${projectId}/details`">
+                {{ projectMessageProperties.projectName }}
+              </a>
             </template>
-            <span class="albatross-body-3">History</span></v-tooltip>
-          <v-dialog v-model="showHistoryDialog" max-width="800px">
-            <OwnershipHistoryDrilldown
-              class="overflow-y-hidden"
-              :project-history="this.projectHistory"
-              @historyDialogClosed="showHistoryDialog = false"
-            ></OwnershipHistoryDrilldown>
-          </v-dialog>
+            <span class="albatross-body-3">Go to project</span>
+          </v-tooltip>
+          <div v-else-if="!isSidebarCollapsed" >
+            {{sidebarTitle}}
+          </div>
+          <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
+          <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
 
+            <v-tooltip bottom small>
+              <template v-slot:activator="{on, attrs}">
+                <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
+                  <v-icon>mdi-history</v-icon>
+                </v-btn>
+              </template>
+              <span class="albatross-body-3">History</span></v-tooltip>
+            <v-dialog v-model="showHistoryDialog" max-width="800px">
+              <OwnershipHistoryDrilldown
+                class="overflow-y-hidden"
+                :project-history="this.projectHistory"
+                @historyDialogClosed="showHistoryDialog = false"
+              ></OwnershipHistoryDrilldown>
+            </v-dialog>
+
+          </div>
+
+          <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
+
+            <v-btn-toggle
+                v-model="toggleFocused"
+                mandatory
+                borderless
+                color="primary"
+                class="d-inline-block one-hunned"
+                style="opacity: 1 !important;"
+            >
+
+
+              <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
+                     :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
+                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
+                     style="width: 50% !important;"
+              >
+                Focused
+              </v-btn>
+              <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
+                     :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
+                     class="text-capitalize  fix-toggle-opacity"
+                     style="width: 50% !important;"
+              >
+                All
+              </v-btn>
+            </v-btn-toggle>
+          </div>
+          <slot name="collapse-button">
+          <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+          </slot>
         </div>
+        <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
+        <TeamAssignmentChips
+          v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
+          :sms-team-owners="projectMessageProperties.smsTeamOwners"
+          :team-names-associated-to-user="teamNamesAssociatedToUser"
+          :reloading="projectIsLoading"
+          :show-assign-to-me-button="!userAssigned && userHasTeam"
+          :project-id="projectId"
+          class="px-6 pb-1 mt-n1"
+          @updateOwner="loadProject"
+          @joinConversation="startJoinConversation"
+        />
 
-        <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
+        <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
+        <div class="mb-3" v-if="!isSidebarCollapsed"></div>
+      </div>
+      <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
+      <div class="project-activity-inner-container hide-xs">
+        <div v-show="!isSidebarCollapsed" class="scrollable-area">
+          <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
+          <ProjectNotes :contact-id="contactId" :user-id="userId"
+                        :object-type-id="objectTypeId" :project-id="projectId"
+                        :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
+          <div v-else-if="selectedOption === 2">
+            <AttachmentsFolderList :contact-id="contactId"
+                                 :user-id="userId"
+                                 :object-type-id="objectTypeId"
+                                 :org-id="orgId"
+                                 :force-show-upload-btn="forceShowUploadBtn"
+                                 :activity-tab="true"
+                                 :focused="toggleFocused === 0"
+                                 :project-id="projectId"
+                                 :reload-on-key-change="true"
+                                 :project-process-step-id="projectProcessStepId" />
+          </div>
+        </div>
+      </div>
+      <div class="footer-container hide-xs"
+           :style="{'width': isSidebarCollapsed ? '72px' : '100%',
+                      }">
+        <v-row
+          :value="selectedOption"
+          :style="{'flex-direction': isSidebarCollapsed ? 'column' : 'row',
+                        'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
+          class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
+        >
+          <v-col cols="4" class="px-0">
+            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
+                   :class="{'section-selected': selectedOption===0}">
+              <v-icon>mdi-forum-outline</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
+                   :class="{'section-selected': selectedOption===1}">
+              <v-icon>mdi-text-long</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+                   :class="{'section-selected': selectedOption===2}">
+              <v-icon>mdi-folder-outline</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
+      <ConfirmAssignmentDialog
+        :show-join-conversation-dialog.sync="showJoinConversationDialog"
+        :teams-associated-to-user="teamsAssociatedToUser"
+        @joinConversation="joinConversation" />
+
+    <div class="show-xs">
+      <div class="project-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
+
+        <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
+        <TeamAssignmentChips
+          v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
+          :sms-team-owners="projectMessageProperties.smsTeamOwners"
+          :team-names-associated-to-user="teamNamesAssociatedToUser"
+          :reloading="projectIsLoading"
+          :show-assign-to-me-button="!userAssigned && userHasTeam"
+          :project-id="projectId"
+          class="px-6 pb-1 mt-n1"
+          @updateOwner="loadProject"
+          @joinConversation="startJoinConversation"
+        />
+
+        <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
+        <div class="mb-3" v-if="!isSidebarCollapsed"></div>
+      </div>
+      <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
+      <div v-if="showNotes" class="project-activity-inner-container">
+        <div class="scrollable-area">
+          <div class="headline-small"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>Contact Notes</div>
+          <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
+          <ProjectNotes :contact-id="contactId" :user-id="userId"
+                        :object-type-id="objectTypeId" :project-id="projectId"
+                        :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
+          <div v-else-if="selectedOption === 2">
+            <AttachmentsFolderList :contact-id="contactId"
+                                   :user-id="userId"
+                                   :object-type-id="objectTypeId"
+                                   :org-id="orgId"
+                                   :force-show-upload-btn="forceShowUploadBtn"
+                                   :activity-tab="true"
+                                   :focused="toggleFocused === 0"
+                                   :project-id="projectId"
+                                   :reload-on-key-change="true"
+                                   :project-process-step-id="projectProcessStepId" />
+          </div>
+        </div>
+      </div>
+      <div v-else>
+        <div class="headline-large"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>Contact Documents</div>
+        <div style="width: 168px;" class="mr-2">
 
           <v-btn-toggle
-              v-model="toggleFocused"
-              mandatory
-              borderless
-              color="primary"
-              class="d-inline-block one-hunned"
-              style="opacity: 1 !important;"
+            v-model="toggleFocused"
+            mandatory
+            borderless
+            color="primary"
+            class="d-inline-block one-hunned"
+            style="opacity: 1 !important;"
           >
 
 
@@ -74,37 +221,8 @@
             </v-btn>
           </v-btn-toggle>
         </div>
-        <slot name="collapse-button">
-        <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
-          <v-icon>mdi-menu</v-icon>
-        </v-btn>
-        </slot>
-      </div>
-      <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
-      <TeamAssignmentChips
-        v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
-        :sms-team-owners="projectMessageProperties.smsTeamOwners"
-        :team-names-associated-to-user="teamNamesAssociatedToUser"
-        :reloading="projectIsLoading"
-        :show-assign-to-me-button="!userAssigned && userHasTeam"
-        :project-id="projectId"
-        class="px-6 pb-1 mt-n1"
-        @updateOwner="loadProject"
-        @joinConversation="startJoinConversation"
-      />
 
-      <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
-      <div class="mb-3" v-if="!isSidebarCollapsed"></div>
-    </div>
-    <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-    <div class="project-activity-inner-container">
-      <div v-show="!isSidebarCollapsed" class="scrollable-area">
-        <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
-        <ProjectNotes :contact-id="contactId" :user-id="userId"
-                      :object-type-id="objectTypeId" :project-id="projectId"
-                      :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
-        <div v-else-if="selectedOption === 2">
-          <AttachmentsFolderList :contact-id="contactId"
+        <AttachmentsFolderList :contact-id="contactId"
                                :user-id="userId"
                                :object-type-id="objectTypeId"
                                :org-id="orgId"
@@ -114,43 +232,45 @@
                                :project-id="projectId"
                                :reload-on-key-change="true"
                                :project-process-step-id="projectProcessStepId" />
-        </div>
       </div>
+      <div class="footer-container hide-xs"
+           :style="{'width': isSidebarCollapsed ? '72px' : '100%',
+                      }">
+        <v-row
+          :value="selectedOption"
+          :style="{'flex-direction': isSidebarCollapsed ? 'column' : 'row',
+                        'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
+          class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
+        >
+          <v-col cols="4" class="px-0">
+            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
+                   :class="{'section-selected': selectedOption===0}">
+              <v-icon>mdi-forum-outline</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
+                   :class="{'section-selected': selectedOption===1}">
+              <v-icon>mdi-text-long</v-icon>
+            </v-btn>
+          </v-col>
+          <v-col cols="4" class="px-0">
+            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+                   :class="{'section-selected': selectedOption===2}">
+              <v-icon>mdi-folder-outline</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </div>
+      <ConfirmAssignmentDialog
+        :show-join-conversation-dialog.sync="showJoinConversationDialog"
+        :teams-associated-to-user="teamsAssociatedToUser"
+        @joinConversation="joinConversation" />
     </div>
-    <div class="footer-container"
-         :style="{'width': isSidebarCollapsed ? '72px' : '100%',
-                    }">
-      <v-row
-        :value="selectedOption"
-        :style="{'flex-direction': isSidebarCollapsed ? 'column' : 'row',
-                      'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
-        class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
-      >
-        <v-col cols="4" class="px-0">
-          <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
-                 :class="{'section-selected': selectedOption===0}">
-            <v-icon>mdi-forum-outline</v-icon>
-          </v-btn>
-        </v-col>
-        <v-col cols="4" class="px-0">
-          <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
-                 :class="{'section-selected': selectedOption===1}">
-            <v-icon>mdi-text-long</v-icon>
-          </v-btn>
-        </v-col>
-        <v-col cols="4" class="px-0">
-          <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
-                 :class="{'section-selected': selectedOption===2}">
-            <v-icon>mdi-folder-outline</v-icon>
-          </v-btn>
-        </v-col>
-      </v-row>
-    </div>
-    <ConfirmAssignmentDialog
-      :show-join-conversation-dialog.sync="showJoinConversationDialog"
-      :teams-associated-to-user="teamsAssociatedToUser"
-      @joinConversation="joinConversation" />
+
   </v-row>
+
+
 </template>
 
 <script>
@@ -192,7 +312,8 @@ export default {
     allowSidebarCollapse: {
       type: Boolean,
       default: true
-    }
+    },
+    showNotes: Boolean
   },
   watch: {
     // whenever userImage changes, this function will run
@@ -288,6 +409,9 @@ export default {
         // If the User has multiple teams available, have them select a team to join with first
         this.showJoinConversationDialog = true
       }
+    },
+    openMenu(){
+      this.$store.state.project.leftSideSplit = false;
     },
     async joinConversation(selectedTeam) {
       try {
