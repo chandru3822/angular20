@@ -58,7 +58,7 @@
         </span>
       </div>
 
-      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(`${detail.value.street} ${detail.value.city}, ${detail.value.state} ${detail.value.zip}`, detail.label)">
           <span class="detail-label label-small pr-2"><v-icon small>mdi-map-marker</v-icon></span>
           <div v-if="detail.value && (detail.value.street || detail.value.city || detail.value.state || detail.value.zip)" class="d-inline-block vertical-top detail-item body-medium">
             <span>{{detail.value.street}}</span><br/>
