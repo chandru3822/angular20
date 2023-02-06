@@ -325,7 +325,7 @@ export default {
           value: this.user.username
         },
         {
-          label: 'Phone',
+          label: 'Phone number',
           type: constants.OVERVIEW_FIELD_TYPES.PHONE,
           value: this.user.phoneNumber
         },
@@ -335,7 +335,7 @@ export default {
           value: this.user.phoneExtension
         },
         {
-          label: 'Email',
+          label: 'Email address',
           type: constants.OVERVIEW_FIELD_TYPES.EMAIL,
           value: this.user.email
         },

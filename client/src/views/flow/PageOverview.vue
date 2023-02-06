@@ -1,7 +1,7 @@
 <template>
 <v-container class="pa-0">
   <v-toolbar flat color="transparent">
-    <div class=" headline-small"><v-icon class="show-xs" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
+    <div class="mobile-contact-header"><v-icon class="show-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
@@ -58,7 +58,7 @@
         </span>
       </div>
 
-      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(`${detail.value.street} ${detail.value.city}, ${detail.value.state} ${detail.value.zip}`, detail.label)">
           <span class="detail-label label-small pr-2"><v-icon small>mdi-map-marker</v-icon></span>
           <div v-if="detail.value && (detail.value.street || detail.value.city || detail.value.state || detail.value.zip)" class="d-inline-block vertical-top detail-item body-medium">
             <span>{{detail.value.street}}</span><br/>
@@ -95,7 +95,7 @@
         </div>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.OWNER" :class="{'flex-display': !detail.value}">
-        <span class="detail-label label-small">{{detail.label}}:</span>
+        <div class="detail-label label-small">{{detail.label}}:</div>
         <div v-if="detail.value" class="d-inline-block detail-item body-medium" @dblclick="selectValue">
                 <span :class="{'error-text': !detail.value.hasAccess}">{{
                     detail.value.fullName
@@ -176,5 +176,13 @@ export default {
 
 .vertical-top {
   margin-top: -2px;
+}
+
+.mobile-contact-header{
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 27px;
 }
 </style>
