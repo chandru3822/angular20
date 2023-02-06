@@ -95,7 +95,7 @@
         </div>
       </div>
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.OWNER" :class="{'flex-display': !detail.value}">
-        <span class="detail-label label-small">{{detail.label}}:</span>
+        <div class="detail-label label-small">{{detail.label}}:</div>
         <div v-if="detail.value" class="d-inline-block detail-item body-medium" @dblclick="selectValue">
                 <span :class="{'error-text': !detail.value.hasAccess}">{{
                     detail.value.fullName
