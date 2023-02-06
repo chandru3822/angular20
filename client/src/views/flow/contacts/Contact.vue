@@ -161,7 +161,7 @@
           ></PageOverview>
           <v-divider class="mt-4"></v-divider>
           <v-toolbar color="transparent" flat>
-            <div class="headline-small">Associated Projects</div>
+            <div class="mobile-contact-header">Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
@@ -223,11 +223,14 @@
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto show-xs">
-          <div @click="openTab('summary')">Summary</div>
-          <div @click="openTab('overview')">Overview</div>
-          <div @click="openTab('associatedProjects')">Associated Projects</div>
-          <div @click="openTab('notes')">Notes</div>
-          <div @click="openTab('documents')">Documents</div>
+          <div class="menu-option" @click="openTab('summary')">Summary</div>
+          <div class="menu-option" @click="openTab('overview')">Overview</div>
+          <div class="menu-option" @click="openTab('associatedProjects')">Associated Projects</div>
+          <div class="menu-option" @click="openTab('notes')">Notes</div>
+          <div class="menu-option" @click="openTab('documents')">Documents</div>
+          <div v-if="userCanDelete" class="menu-option" @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
+          <div v-else class="menu-option" style="color: #FECDD2">Delete Contact</div>
+
         </div>
       </template>
       <template v-slot:main-column>
@@ -249,7 +252,7 @@
         </div>
         <div class="show-xs" v-if="showMobileAssociatedProjects">
           <v-toolbar color="transparent" flat>
-            <div class="headline-small"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
+            <div class="headline-small"><v-icon class="hide-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
@@ -312,7 +315,7 @@
         <div class="hide-xs">
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
-            <v-toolbar-title class="headline-small">
+            <v-toolbar-title class="mobile-contact-header">
               Contact Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -399,7 +402,7 @@
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="headline-small">
-              <v-icon @click="openMenu()">mdi-menu</v-icon>
+              <v-icon @click="openMenu()" class="hamburger-menu">mdi-menu</v-icon>
               Contact Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -582,6 +585,7 @@ export default {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CONTACTS', 'DELETE'),
       companyId: this.$store.state.user.details.companyId,
+      userPositionIds: [],
       timezone: this.$store.state.user.details.timezone?.value,
       selectedProcess: null,
       processesLoading: true,
@@ -652,6 +656,7 @@ export default {
     await Promise.all(requests).then(async () => {
       this.fieldsLoading = false
     })
+    this.getUserPositionIds();
   },
   beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to
@@ -704,6 +709,9 @@ export default {
         this.getCompanyStates()
         this.getCountries()
       }
+    },
+    getUserPositionIds: function () {
+      this.userPositionIds = this.$store.state.user.details.userPositions.map(p => p.positionId)
     },
     async validateForm() {
       if (this.$refs.contactEditForm.validate()) {
@@ -865,7 +873,17 @@ export default {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/processes`, {params})
-        this.availableProcesses = data
+        this.availableProcesses = data.filter(p => {
+          if (this.userPositionIds.length === 0) {
+            //super user
+            return p;
+          }
+          for(let id of this.userPositionIds) {
+            if(!p.denyListPositions.find(dlp => dlp.positionId === id)){
+              return p;
+            }
+          }
+        })
         this.selectedProcess = data?.length === 1 ? data[0] : {}
         this.processesLoading = false
       } catch (e) {
@@ -1033,6 +1051,21 @@ export default {
   border: solid 1px #C4C4C4;
   padding: 10px;
   margin-bottom: 10px;
+}
+
+.menu-option{
+  font-family: Lato;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 25px;
+}
+
+.mobile-contact-header{
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 27px;
 }
 
 </style>

@@ -14,6 +14,7 @@ public class CompanyProcess {
     private Long id, companyId, createdById, modifiedById, parentCompanyId, processId;
     private String processName;
     private Boolean archived;
+    private List<DenyListPosition> denyListPositions;
     private List<ProcessStepProcess> processStepProcesses;
 
 }

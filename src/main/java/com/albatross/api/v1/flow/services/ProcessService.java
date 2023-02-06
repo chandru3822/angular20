@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.DenyListType;
 import com.albatross.api.v1.flow.enums.StatusType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStep;
@@ -45,7 +46,7 @@ public class ProcessService {
     }
 
     return sqlCache.queryBySql(
-      ProcessQuery.getAllForCompany, ImmutableMap.of("companyId", companyId), CompanyProcess.class);
+      ProcessQuery.getAllForCompany, ImmutableMap.of("companyId", companyId), new CompanyProcessMapper<>(CompanyProcess.class, om));
   }
 
   public Optional<CompanyProcess> getProcess(Long companyId, Long processId, Long projectId) {
@@ -121,6 +122,34 @@ public class ProcessService {
             StatusType.ACTIVE.id));
 
     return getProcess(process.getCompanyId(), id, null);
+  }
+
+  public void saveDenyList(CompanyProcess process) {
+      User currentUser = securityService.getCurrentUser();
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", currentUser.trueUserId());
+      params.put("companyProcessId", process.getId());
+      params.put("denyListTypeId", DenyListType.PROCESS_LIMIT_ADD_PROJECT.id);
+
+      if(process.getDenyListPositions().isEmpty()){
+          // this means they removed ALL deny list positions
+          sqlCache.updateBySql(ProcessQuery.archiveAllDenyListPositionsForProcess, params);
+      } else {
+          List<Long> positionIdsUsed = process.getDenyListPositions().stream()
+                  .map(DenyListPosition::getPositionId)
+                  .collect(Collectors.toList());
+          params.put("positionIdsUsed", positionIdsUsed);
+          //archive any positions that are no longer in the list
+          sqlCache.updateBySql(ProcessQuery.archiveDenyListPositionsNoLongerUsed, params);
+
+          //insert any positions that are new to the list
+          for(Long denyListPositionId : positionIdsUsed) {
+              params.put("positionId", denyListPositionId);
+              // this insert checks if there is already a non-archived row with the same values
+              sqlCache.updateBySql(ProcessQuery.insertDenyListPosition, params);
+          }
+      }
   }
 
   // process step process stuff, put in other service??
@@ -261,8 +290,14 @@ public class ProcessService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<DenyListPosition>> denyListPositionsRef = new TypeReference<>() {};
       TypeReference<List<ProcessStepProcess>> processStepProcessRef = new TypeReference<>() {};
       TypeReference<List<OwningPosition>> owningPositionsRef = new TypeReference<>() {};
+
+      bw.registerCustomEditor(
+              List.class,
+              "denyListPositions",
+              new JsonCollectionDeserializer(denyListPositionsRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,
@@ -292,6 +327,24 @@ public class ProcessService {
           List.class,
           "owningPositions",
           new JsonCollectionDeserializer(owningPositionsRef, objectMapper));
+    }
+  }
+
+  public static class CompanyProcessMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public CompanyProcessMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<DenyListPosition>> denyListPositionsRef = new TypeReference<>() {};
+      TypeReference<List<ProcessStepProcess>> processStepProcessesRef = new TypeReference<>() {};
+
+      bw.registerCustomEditor(List.class, "denyListPositions", new JsonCollectionDeserializer(denyListPositionsRef, objectMapper));
+      bw.registerCustomEditor(List.class, "processStepProcesses", new JsonCollectionDeserializer(processStepProcessesRef, objectMapper));
     }
   }
 }

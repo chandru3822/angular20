@@ -294,4 +294,9 @@ public class ContactLeadController {
   public void updateContactBlueraven(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/pointer", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactPointer(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
