@@ -85,6 +85,7 @@ export default {
     },
     projectProcessStep: function () {
       //need to re-get cancelled statuses for the correct process step when it changes
+      this.cancelledCompanyStatuses = [] //clear out any existing cancelled statuses to make sure we re-fetch for the new process
       this.getCancelledStatuses()
     }
   },
