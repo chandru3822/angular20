@@ -25,7 +25,7 @@
                                                                                             'hide-column-xs': $store.state.project.leftSideSplit}">
         <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
                       'ml-4': !$store.state.project.leftSideSplit}">
-          <v-btn small text color="primary" @click="collapseSide('left')">
+          <v-btn small text color="primary" class="hamburger-menu" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>

@@ -172,7 +172,7 @@
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
       <div v-if="showNotes" class="project-activity-inner-container">
         <div class="scrollable-area">
-          <div class="headline-small"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>Contact Notes</div>
+          <div class="mobile-contact-header"><v-icon class="hide-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Contact Notes</div>
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
           <ProjectNotes :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
@@ -192,7 +192,7 @@
         </div>
       </div>
       <div v-else>
-        <div class="headline-large"><v-icon class="hide-xs" @click="openMenu()">mdi-menu</v-icon>Contact Documents</div>
+        <div class="mobile-contact-header"><v-icon class="hamburger-menu hide-xs" @click="openMenu()">mdi-menu</v-icon>Contact Documents</div>
         <div style="width: 168px;" class="mr-2">
 
           <v-btn-toggle
@@ -593,5 +593,13 @@ export default {
 
 #project-activity-container .fix-toggle-opacity:before {
   background-color: unset !important;
+}
+
+.mobile-contact-header{
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 27px;
 }
 </style>

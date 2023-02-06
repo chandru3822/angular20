@@ -1,7 +1,7 @@
 <template>
 <v-container class="pa-0">
   <v-toolbar flat color="transparent">
-    <div class=" headline-small"><v-icon class="show-xs" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
+    <div class="mobile-contact-header"><v-icon class="show-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
@@ -176,5 +176,13 @@ export default {
 
 .vertical-top {
   margin-top: -2px;
+}
+
+.mobile-contact-header{
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 27px;
 }
 </style>
