@@ -287,7 +287,11 @@ public class GenesysService {
     }
 
     String leadLevel = (String) contactMap.remove("lead_level");
-    if (leadLevel.equals("20")) {
+
+    // Genesys contacts will have a lead level
+    if (leadLevel == null || leadLevel.isEmpty()) {
+      return;
+    } else if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
       verseWebhookService.postContact(contactMap, false);
       return;
@@ -308,17 +312,52 @@ public class GenesysService {
     Configuration.setDefaultApiClient(initGenesysApi());
     OutboundApi apiInstance = new OutboundApi();
 
-    String contactListId = getContactListId(leadLevel, apiInstance, genesysContactListName);
-    // If no Contact  List is found
-    if (contactListId == null) {
-      return;
-    }
+    String contactListId = "";
+    // Add contact for crons
+    if (genesysContactListName != null && !genesysContactListName.isEmpty()) {
+      contactListId = getContactListId(apiInstance, genesysContactListName);
 
-    List<DialerContact> dc =
+      // Contact list is found in Genesys
+      if (contactListId != null && !contactListId.isBlank()) {
+        List<DialerContact> dc =
+          apiInstance.postOutboundContactlistContacts(
+            contactListId, List.of(wdc), true, false, false);
+        // Store the Genesys Contact ID
+        updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+      }
+    }
+    else {
+      // Add contact to LeadLevel_NBS
+      contactListId = getContactListId(apiInstance, "LeadLevel_NBS");
+      // If no Contact  List is found
+      if (contactListId == null || contactListId.isBlank()) {
+        return;
+      }
+
+      contactMap.remove("Appointment Date");
+      contactMap.remove("Appointment Outcome");
+      contactMap.remove("PNB");
+      contactMap.put("Custom_LastAttemptTime", "");
+
+      if (!contactMap.containsKey("referral")) {
+        contactMap.put("referral", false);
+      }
+
+      if (!contactMap.containsKey("retargeted")) {
+        contactMap.put("retargeted", false);
+      }
+
+      contactMap.put("TotalCallAttempts", contactMap.remove("Total Call Attempts"));
+      contactMap.put("ContactedCallAttempts", contactMap.remove("Contacted Call Attempts"));
+      contactMap.put("CallScheduled", contactMap.remove("Call Scheduled"));
+      contactMap.put("ContactCallable", contactMap.remove("contactcallable"));
+      contactMap.put("ZipCodeAutomaticTimeZone", contactMap.remove("zipcodeautomatictimezone"));
+
+      wdc.setData(contactMap);
+
       apiInstance.postOutboundContactlistContacts(
-        contactListId, List.of(wdc), true, false, false);
-    // Store the Genesys Contact ID
-    updateGenesysCfv(contact.getId(), dc.get(0).getId(), 19357L);
+      contactListId, List.of(wdc), true, false, false);
+    }
   }
 
   private void updateGenesysCfv(Long contactId, String textValue, Long cfgaId) {
@@ -542,7 +581,24 @@ public class GenesysService {
         contactMap.put("Contacted Call Attempts", 0);
       }
 
-      dc.setData(contactMap);
+      HashMap<String, Object> contactMapNbs = (HashMap<String, Object>) contactMap.clone();
+      contactMapNbs.put("Custom_LastAttemptTime", "");
+
+      if (!contactMapNbs.containsKey("referral")) {
+        contactMapNbs.put("referral", false);
+      }
+
+      if (!contactMapNbs.containsKey("retargeted")) {
+        contactMapNbs.put("retargeted", false);
+      }
+
+      contactMapNbs.put("TotalCallAttempts", contactMapNbs.remove("Total Call Attempts"));
+      contactMapNbs.put("ContactedCallAttempts", contactMapNbs.remove("Contacted Call Attempts"));
+      contactMapNbs.put("CallScheduled", contactMapNbs.remove("Call Scheduled"));
+      contactMapNbs.put("ContactCallable", contactMapNbs.remove("contactcallable"));
+      contactMapNbs.put("ZipCodeAutomaticTimeZone", contactMapNbs.remove("zipcodeautomatictimezone"));
+
+      dc.setData(contactMapNbs);
 
       // Try with the Contact ID first (for imported contacts)
       // if that doesn't work use the Genesys Agent ID (newly created Contacts)
@@ -552,10 +608,10 @@ public class GenesysService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("contactId", contact.getId());
         Optional<String> genesysContactId =
-            sqlCache.getBySql(
-                GenesysQuery.getGenesysContactIdByContactId,
-                params,
-                new SingleColumnRowMapper<>(String.class));
+          sqlCache.getBySql(
+            GenesysQuery.getGenesysContactIdByContactId,
+            params,
+            new SingleColumnRowMapper<>(String.class));
         if (genesysContactId.isPresent()) {
           try {
             apiInstance.putOutboundContactlistContact(contactListId, genesysContactId.get(), dc);
@@ -571,7 +627,7 @@ public class GenesysService {
     }
 
     // Attempt to update contact in Sales Dev Retargeted Leads
-    String contactListId = getContactListId(leadLevel, apiInstance, "Sales Dev Retargeted Leads");
+    String contactListId = getContactListId(apiInstance, "Sales Dev Retargeted Leads");
 
     HashMap<String, Object> contactMapRetargetedLeads = (HashMap<String, Object>) contactMap.clone();
     getAppointmentValues(contactId, contactMapRetargetedLeads);
@@ -585,7 +641,7 @@ public class GenesysService {
     }
 
     // Attempt to update contact in Inside Sales Pitched Not Booked
-    contactListId = getContactListId(leadLevel, apiInstance, "Inside Sales Pitched Not Booked");
+    contactListId = getContactListId(apiInstance, "Inside Sales Pitched Not Booked");
     HashMap<String, Object> contactMapPNB = (HashMap<String, Object>) contactMap.clone();
     getAppointmentValues(contactId, contactMapPNB);
     getPitchedNotBookedValues(contactId, contactMapPNB);
@@ -703,58 +759,17 @@ public class GenesysService {
 
   private String getContactListName(String leadLevel) {
     if (leadLevel.equals("1")) {
-      return "leadlevel1_Day1";
+      return "LeadLevel1_All";
     } else if (leadLevel.equals("2")) {
-      return "Leadlevel2";
+      return "LeadLevel2_All";
     } else if (leadLevel.equals("3")) {
-      return "Leadlevel3";
-    } else if (leadLevel.equals("9")) {
-      return "Level 9";
+      return "LeadLevel3_All";
     } else if (leadLevel.equals("10")) {
-      return "Leadlevel10";
+      return "LeadLevel10_All";
     }
 
     return null;
   }
-
-  private HashSet<String> getContactListNameCron(String leadLevel) {
-    if (leadLevel.equals("1")) {
-      return new HashSet<>() {
-        {
-          add("leadlevel1_week1");
-          add("leadlevel1_week2");
-          add("leadlevel1_aged");
-        }
-      };
-    } else if (leadLevel.equals("2")) {
-      return new HashSet<>() {
-        {
-          add("leadlevel2_week1");
-          add("leadlevel2_week2");
-          add("leadlevel2_aged");
-        }
-      };
-    } else if (leadLevel.equals("3")) {
-      return new HashSet<>() {
-        {
-          add("leadlevel3_week1");
-          add("leadlevel3_week2");
-          add("leadlevel3_aged");
-        }
-      };
-    } else if (leadLevel.equals("10")) {
-      return new HashSet<>() {
-        {
-          add("leadlevel10_week1");
-          add("leadlevel10_week2");
-          add("leadlevel10_aged");
-        }
-      };
-    }
-
-    return new HashSet<>();
-  }
-
   private String getQueueName(String leadLevel) {
     if (leadLevel.equals("1")) {
       return "SMS Level 1";
@@ -771,27 +786,16 @@ public class GenesysService {
 
   // Get the Genesys id of the Contact List from Genesys
   private String getContactListId(
-    String leadLevel,
     OutboundApi apiInstance,
     String genesysContactListName)
     throws IOException, ApiException {
     GetOutboundContactlistsRequest goclr = new GetOutboundContactlistsRequest();
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
-    String contactListName = "";
-    if (genesysContactListName == null || genesysContactListName.isEmpty()) {
-      contactListName = getContactListName(leadLevel);
-
-      if (contactListName == null) {
-        return null;
-      }
-    } else {
-      contactListName = genesysContactListName;
-    }
 
     String contactListId = "";
     for (ContactList cl : contactListEntity.getEntities()) {
-      if (cl.getName().equals(contactListName)) {
+      if (cl.getName().equals(genesysContactListName)) {
         contactListId = cl.getId();
         break;
       }
@@ -813,7 +817,6 @@ public class GenesysService {
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
     contactListNames.add(getContactListName(leadLevel));
-    contactListNames.addAll(getContactListNameCron(leadLevel));
 
     for (ContactList cl : contactListEntity.getEntities()) {
       if (contactListNames.contains(cl.getName())) {
@@ -826,58 +829,7 @@ public class GenesysService {
 
   public void processGenesysContacts() {
     // Get list of Contact IDs that need to be put into each Genesys Contact List
-
-    /*
-     Lead Level 1
-    */
-    List<Contact> contacts =
-      sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level1, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel1_week1");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level1, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel1_week2");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel1, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel1_aged");
-
-    /*
-     Lead Level 2
-    */
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level2, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel2_week1");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level2, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel2_week2");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel2, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel2_aged");
-
-    /*
-     Lead Level 3
-    */
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level3, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel3_week1");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level3, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel3_week2");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel3, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel3_aged");
-
-    /*
-     Lead Level 10
-    */
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek1Level10, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel10_week1");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsWeek2Level10, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel10_week2");
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsAgedLevel10, null, Contact.class);
-    addContactsToGenesys(contacts, "leadlevel10_aged");
-
-
-    contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsSalDevRetargets, null, Contact.class);
+    List<Contact> contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsSalDevRetargets, null, Contact.class);
     addContactsToGenesys(contacts, "Sales Dev Retargeted Leads");
 
     contacts = sqlCache.queryBySql(GenesysQuery.getContactIdsInsideSalesPitchedNotBooked, null, Contact.class);
@@ -887,8 +839,8 @@ public class GenesysService {
   private void addContactsToGenesys(List<Contact> contacts, String contactListName) {
     for (Contact contact : contacts) {
       List<CustomFieldGroup> customFieldGroups =
-          customFieldValueService.getCustomFieldGroupsAndValues(
-              ObjectType.CONTACT, contact.getId());
+        customFieldValueService.getCustomFieldGroupsAndValues(
+          ObjectType.CONTACT, contact.getId());
       List<CustomFieldValue> values = customFieldGroups.get(0).getCustomFieldValues();
 
       CustomFieldValue genesysContactListName = new CustomFieldValue();
