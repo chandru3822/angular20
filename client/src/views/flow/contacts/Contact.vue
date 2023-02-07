@@ -160,6 +160,7 @@
                         :details="overviewDetails"
           ></PageOverview>
           <v-divider class="mt-4"></v-divider>
+          <v-container>
           <v-toolbar color="transparent" flat>
             <div class="mobile-contact-header">Associated Projects</div>
             <v-spacer></v-spacer>
@@ -220,6 +221,7 @@
 
             </v-card>
           </div>
+          </v-container>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto show-xs">
@@ -878,10 +880,14 @@ export default {
             //super user
             return p;
           }
+          let positionIsAvailable = true
           for(let id of this.userPositionIds) {
-            if(!p.denyListPositions.find(dlp => dlp.positionId === id)){
-              return p;
+            if(p.denyListPositions.find(dlp => dlp.positionId === id)){
+              positionIsAvailable = false
             }
+          }
+          if(positionIsAvailable) {
+            return p;
           }
         })
         this.selectedProcess = data?.length === 1 ? data[0] : {}

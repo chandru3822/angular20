@@ -171,10 +171,6 @@ $default-text: rgba(0,0,0,0.87);
     height: calc(100vh - 108px);
     max-height: calc(100vh - 108px);
   }
-  &.two-extra-banners {
-    height: calc(100vh - 168px);
-    max-height: calc(100vh - 168px);
-  }
 }
 // this is the default css for a page layout. can change locally as needed
 .app-container {
@@ -630,7 +626,7 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.6;
 }
 
-.body-medium, tr, .v-snack__content, .v-btn__content{
+.body-medium, tr, .v-snack__content, .body-medium.v-btn__content{
   font-family: lato;
   font-weight: 400;
   font-size: .875rem;

@@ -28,7 +28,7 @@
     </v-toolbar>
     <AppNav v-if="!noNavRoutes.includes($route.name) && !hideHeader" />
     <v-main>
-      <v-container class="router-container" :class="{'extra-banner': inUAT || userIsMasquerading, 'two-extra-banners': inUAT && userIsMasquerading}">
+      <v-container class="router-container" :class="{'extra-banner': userIsMasquerading}">
         <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
         <router-view class="router-view" />
       </v-container>
@@ -43,7 +43,6 @@ import { AppMutations } from '@/stores/AppStore'
 import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
-const { VITE_ENV } =  import.meta.env
 
 export default {
   name: 'App',
@@ -57,7 +56,6 @@ export default {
       hideHeader: this.$store.state.user.hideHeader || false,
       hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
       userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
-      inUAT: VITE_ENV === 'uat',
       noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance'],
       showMobileBanner: false,
       dismissMobileToolbar: false

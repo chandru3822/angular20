@@ -2,18 +2,6 @@
   <div v-if="loadComplete">
     <v-row class="toolbar-z-index-override">
       <v-col
-        v-if="VITE_ENV === 'uat'"
-        cols="12"
-        style="font-size: 18px; text-align: center; background-color: orange; color: white;"
-      >
-        THIS IS UAT - YOU SHOULD BE WORKING IN PRODUCTION
-        <v-btn
-          href="https://albatross.myblueraven.com"
-        >
-          CLICK HERE
-        </v-btn>
-      </v-col>
-      <v-col
         v-if="userIsMasquerading"
         cols="12"
         style="font-size: 18px; text-align: center; background-color: var(--v-error-base); color: white;"

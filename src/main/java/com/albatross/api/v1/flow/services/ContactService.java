@@ -173,6 +173,27 @@ public class ContactService {
     sqlCache.updateBySql(ContactQuery.delete, params);
   }
 
+  public String getMapboxAddressString(Contact contact) {
+    //mapbox query strings cannot exceed 256 chars OR 20 total words/tokens
+    String addressString = stringifyAddress(
+      contact.getStreet1(),
+      contact.getCity(),
+      contact.getState(),
+      contact.getPostalCode());
+
+    String tokenLimitedString = "";
+    int count = 0;
+    int maxTokens = 20;
+    StringTokenizer tokens = new StringTokenizer(addressString);
+
+    while(count < maxTokens && tokens.hasMoreTokens()) {
+      tokenLimitedString += tokens.nextToken().toString();
+      count++;
+    }
+
+    return tokenLimitedString.substring(0, 255);
+  }
+
   // todo: take this function away after we update the 1.6 million records geo temp
   public void updateContactLatLong(Integer limit) throws Exception {
     // limit = how many to try and run, is passed in from endpoint
@@ -186,13 +207,8 @@ public class ContactService {
 
     for (Contact contact : contactsToUpdate) {
       Double latitude = null, longitude = null;
-      List<Double> coordinates =
-          mapboxApiService.getLatLong(
-              stringifyAddress(
-                  contact.getStreet1(),
-                  contact.getCity(),
-                  contact.getState(),
-                  contact.getPostalCode()));
+      List<Double> coordinates = mapboxApiService.getLatLong(getMapboxAddressString(contact));
+
       // if we found new coordinates then uses those values
       if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
         // 1 = lat, 0 = long
