@@ -98,12 +98,12 @@ public class CustomFieldValueService {
         params.put("intValue", cfv.getIntValue());
         params.put("intArrayValue", null != cfv.getIntArrayValue() && cfv.getIntArrayValue().size() > 0 ? sqlArrayService.createSqlArrayOfType("int", cfv.getIntArrayValue()) : null);
         params.put("customFieldGroupAssignmentId", cfv.getCustomFieldGroupAssignmentId());
-        params.put("sourceId", currentUser.trueUserId());
+        params.put("sourceId", sourceId);
         //this is new and only required for attachments because we need to know the attachmentTypeId
         // AND the attachmentId in order to load these values
         // attachment upsert uses the secondary id to insert
         params.put("secondarySourceId", secondaryId);
-        params.put("userId", sourceId);
+        params.put("userId", currentUser.trueUserId());
 
         //only used on upsert
         params.put("id", cfv.getId());
