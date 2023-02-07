@@ -268,7 +268,7 @@ public class CustomFieldValueService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", realCompanyId);
     params.put("objectTypeId", objectTypeId);
-    params.put("sourceId", user.trueUserId());
+    params.put("sourceId", user.getId());
 
 //    List<CustomFieldValue> results = sqlCache.queryBySql(UserCfvQuery.getUserProfileFields, params, new CustomFieldValueMapper<>(CustomFieldValue.class, om));
 
