@@ -289,7 +289,7 @@ public class BirdeyeService {
           //names must match exactly
           final CustomField customField = customFields.getOrDefault(answer.getQuestionTitle(), null);
           if (customField == null) {
-            log.warn("[BIRDEYE] Unable to match '{}' to a custom field", answer.getQuestionTitle());
+            log.debug("[BIRDEYE] Unable to match '{}' to a custom field", answer.getQuestionTitle());
             continue;
           }
 

@@ -160,6 +160,7 @@
                         :details="overviewDetails"
           ></PageOverview>
           <v-divider class="mt-4"></v-divider>
+          <v-container>
           <v-toolbar color="transparent" flat>
             <div class="mobile-contact-header">Associated Projects</div>
             <v-spacer></v-spacer>
@@ -220,6 +221,7 @@
 
             </v-card>
           </div>
+          </v-container>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned overflow-y-auto show-xs">
