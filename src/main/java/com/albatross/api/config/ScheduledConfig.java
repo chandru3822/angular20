@@ -118,6 +118,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   // zone = "America/Denver")
   public void closeProjectConversations() {
     if (closeProjectConversations) {
+      setCronUser();
       log.info("*** CRON: start close SMS project conversations ***");
       messagingService.closeStaleProjects(SystemSettings.CRON_USER.getId());
       log.info("*** CRON: end close SMS project conversations ***");
