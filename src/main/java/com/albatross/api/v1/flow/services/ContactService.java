@@ -173,26 +173,7 @@ public class ContactService {
     sqlCache.updateBySql(ContactQuery.delete, params);
   }
 
-  public String getMapboxAddressString(Contact contact) {
-    //mapbox query strings cannot exceed 256 chars OR 20 total words/tokens
-    String addressString = stringifyAddress(
-      contact.getStreet1(),
-      contact.getCity(),
-      contact.getState(),
-      contact.getPostalCode());
 
-    String tokenLimitedString = "";
-    int count = 0;
-    int maxTokens = 20;
-    StringTokenizer tokens = new StringTokenizer(addressString);
-
-    while(count < maxTokens && tokens.hasMoreTokens()) {
-      tokenLimitedString += tokens.nextToken().toString();
-      count++;
-    }
-
-    return tokenLimitedString.substring(0, 255);
-  }
 
   // todo: take this function away after we update the 1.6 million records geo temp
   public void updateContactLatLong(Integer limit) throws Exception {
@@ -207,7 +188,8 @@ public class ContactService {
 
     for (Contact contact : contactsToUpdate) {
       Double latitude = null, longitude = null;
-      List<Double> coordinates = mapboxApiService.getLatLong(getMapboxAddressString(contact));
+      List<Double> coordinates = mapboxApiService.getLatLong(contact.getStreet1(), contact.getCity(),
+        contact.getState(), contact.getPostalCode());
 
       // if we found new coordinates then uses those values
       if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
@@ -259,11 +241,10 @@ public class ContactService {
         List<Double> coordinates = new ArrayList<>();
         try {
             coordinates = mapboxApiService.getLatLong(
-                stringifyAddress(
                     contact.getStreet1(),
                     contact.getCity(),
                     contact.getState(),
-                    contact.getPostalCode()));
+                    contact.getPostalCode());
         } catch (Exception e) {
           //do nothing because the getTimezone function already logged this error
         }
@@ -308,11 +289,10 @@ public class ContactService {
       List<Double> coordinates = new ArrayList<>();
       try {
           coordinates = mapboxApiService.getLatLong(
-              stringifyAddress(
                   contact.getStreet1(),
                   contact.getCity(),
                   contact.getState(),
-                  contact.getPostalCode()));
+                  contact.getPostalCode());
       } catch (Exception e) {
         //do nothing because the getTimezone function already logged this error
       }
@@ -346,15 +326,6 @@ public class ContactService {
     }
 
     return getContact(id);
-  }
-
-  public String stringifyAddress(String street1, String city, String state, String postalCode) {
-    StringJoiner sj = new StringJoiner(", ");
-    sj.add(street1);
-    sj.add(city);
-    sj.add(state + " " + postalCode);
-
-    return sj.toString();
   }
 
   public void updateOwner(Long id, Owner owner) {

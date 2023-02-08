@@ -34,15 +34,6 @@ public class ContactLeadService {
   private final SystemListService systemListService;
   private final UserPositionService userPositionService;
 
-  public String stringifyAddress(String street1, String city, String state, String postalCode) {
-    StringJoiner sj = new StringJoiner(", ");
-    sj.add(street1);
-    sj.add(city);
-    sj.add(state + " " + postalCode);
-
-    return sj.toString();
-  }
-
   public void saveContactLead(ContactLead cl) {
     HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
@@ -95,11 +86,10 @@ public class ContactLeadService {
       try {
         List<Double> coordinates =
             mapboxApiService.getLatLong(
-                stringifyAddress(
                     cl.getAddress(),
                     cl.getCity(),
                     stateValue,
-                    formattedZip));
+                    formattedZip);
         if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
           // 1 = lat, 0 = long
           latitude = coordinates.get(1);
