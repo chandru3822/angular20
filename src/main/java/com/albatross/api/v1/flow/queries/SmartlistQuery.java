@@ -1140,6 +1140,8 @@ where sfa.id = :id
     when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
     end                                                                    as has_list_values,
       null                                                                   as custom_field_sql_key,
+      null                                                                   as custom_field_sql,
+      null                                                                   as custom_field_sql_smartlist,
          case
     when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
       (
