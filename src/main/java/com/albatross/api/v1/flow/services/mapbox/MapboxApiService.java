@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -29,9 +26,39 @@ public class MapboxApiService {
   @Value(value = "${mapbox.tilesetId}")
   private String MAPBOX_TILESET_ID;
 
+  public String stringifyAddress(String street1, String city, String state, String postalCode) {
+    StringJoiner sj = new StringJoiner(", ");
+    sj.add(street1);
+    sj.add(city);
+    sj.add(state + " " + postalCode);
+
+    return sj.toString();
+  }
+
+  public String getMapboxAddressString(String address) {
+    //mapbox query strings cannot exceed 256 chars OR 20 total words/tokens
+    String tokenLimitedString = "";
+    int count = 0;
+    int maxTokens = 20;
+    StringTokenizer tokens = new StringTokenizer(address);
+
+    while(count < maxTokens && tokens.hasMoreTokens()) {
+      tokenLimitedString += tokens.nextToken().toString() + " ";
+      count++;
+    }
+
+    return tokenLimitedString.substring(0, Math.min(tokenLimitedString.length(), 255));
+  }
+
+  public List<Double> getLatLong(String street1, String city, String state, String postalCode) throws Exception {
+    String address = stringifyAddress(street1, city, state, postalCode);
+    return getLatLong(address);
+  }
+
   public List<Double> getLatLong(String address) throws Exception {
     try {
-      String urlEncodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8);
+      String mapboxAddress = getMapboxAddressString(address);
+      String urlEncodedAddress = URLEncoder.encode(mapboxAddress, StandardCharsets.UTF_8);
       String url =
         "https://api.mapbox.com/geocoding/v5/mapbox.places/"
           + urlEncodedAddress
@@ -169,6 +196,11 @@ public class MapboxApiService {
       log.error("MAPBOX: Error retrieving lat long.", ex);
       throw ex;
     }
+  }
+
+  public Optional<MapboxGeoResponse> getLatLongAndTimezone(String street1, String city, String state, String postalCode) throws Exception {
+    String address = stringifyAddress(street1, city, state, postalCode);
+    return getLatLongAndTimezone(address);
   }
 
   public Optional<MapboxGeoResponse> getLatLongAndTimezone(String address) throws Exception {

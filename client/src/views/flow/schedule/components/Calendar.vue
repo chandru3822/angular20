@@ -745,6 +745,7 @@
                   d.colorForBorder = matchingResource?.color
                 }
               })
+              console.log('the events: ',data)
               this.eventSources[0].events = cloneDeep(data)
 
               this.calendarLoading = false
@@ -848,6 +849,7 @@
         }
 
         //if this is an org (first char === 1) then make it a hyperlink to the org screen
+        console.log('resource: ', renderInfo)
         let isOrg = false
         let anchorHref = ''
         if(renderInfo?.resource?.id?.charAt(0) === '1') {

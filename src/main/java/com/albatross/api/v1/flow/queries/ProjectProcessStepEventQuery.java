@@ -290,12 +290,12 @@ public class ProjectProcessStepEventQuery {
            inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
            inner join flow.event e on pse.event_id = e.id
            inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-           left join flow.user_position up on up.id = ppse.resource_id
-           left join flow.user u on u.id = up.user_id
-           left join flow.org o on o.id = ppse.resource_id
-           left join flow.user creator on creator.id = ppse.created_by_id
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
+           inner join flow.user creator on creator.id = ppse.created_by_id
+           left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+           left join flow.user u on u.id = up.user_id
+           left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
     where ppse.id = :id
       and ppse.project_process_step_id = :ppsId
       and ppse.archived is false
@@ -591,11 +591,11 @@ public class ProjectProcessStepEventQuery {
                  inner join flow.process_step ps on ps.id = pps.process_step_id
                  inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
                  inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-                 left join flow.user_position up on up.id = ppse.resource_id
-                 left join flow.user u on u.id = up.user_id
-                 left join flow.org o on o.id = ppse.resource_id
                  inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
                  inner join flow.system_list sl on sl.id = csl.system_list_id
+                 left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+                 left join flow.user u on u.id = up.user_id
+                 left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
           where p.id = :projectId
             and pps.archived is not true
             and ppse.archived is not true
@@ -636,11 +636,11 @@ public class ProjectProcessStepEventQuery {
                  inner join flow.process_step ps on ps.id = pps.process_step_id
                  inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
                  inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-                 left join flow.user_position up on up.id = ppse.resource_id
-                 left join flow.user u on u.id = up.user_id
-                 left join flow.org o on o.id = ppse.resource_id
                  inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
                  inner join flow.system_list sl on sl.id = csl.system_list_id
+                 left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+                 left join flow.user u on u.id = up.user_id
+                 left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
           where p.id = :projectId
             and pps.archived is not true
             and ppse.archived is not true
@@ -682,11 +682,11 @@ public class ProjectProcessStepEventQuery {
                  inner join flow.process_step ps on ps.id = pps.process_step_id
                  inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
                  inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-                 left join flow.user_position up on up.id = ppse.resource_id
-                 left join flow.user u on u.id = up.user_id
-                 left join flow.org o on o.id = ppse.resource_id
                  inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
                  inner join flow.system_list sl on sl.id = csl.system_list_id
+                 left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+                 left join flow.user u on u.id = up.user_id
+                 left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
           where p.id = :projectId
             and pps.archived is not true
             and ppse.archived is not true

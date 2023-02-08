@@ -41,8 +41,8 @@ BEGIN
              inner join flow.custom_field cf on e.resource_custom_field_id = cf.id
              inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
              inner join flow.system_list sl on sl.id = csl.system_list_id
-             left join flow.org o on o.id = ppse.resource_id
-             left join flow.user_position up on up.id = ppse.resource_id
+             left join flow.org o on o.id = ppse.resource_id  and sl.system_list_type_id = 1
+             left join flow.user_position up on up.id = ppse.resource_id  and sl.system_list_type_id = 2
              left join flow.user u on up.user_id = u.id
       where ppse.id = p_pps_event_id;
     elseif (p_property_to_save = 'status_id') then
