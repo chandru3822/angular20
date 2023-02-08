@@ -331,11 +331,8 @@ public class ProjectService {
 
     // if the project address changed, reload the coordinates
     if (null != project.getReloadCoordinates() && project.getReloadCoordinates()) {
-      final String address =
-          stringifyAddress(
-              project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode());
 
-      final var latLongAndTimezone = mapboxApiService.getLatLongAndTimezone(address);
+      final var latLongAndTimezone = mapboxApiService.getLatLongAndTimezone(project.getStreet1(), project.getCity(), project.getState(), project.getPostalCode());
       if (latLongAndTimezone.isPresent()) {
         final var mapboxGeoResponse = latLongAndTimezone.get();
         latitude = mapboxGeoResponse.latitude();
@@ -368,8 +365,7 @@ public class ProjectService {
     sqlCache.updateBySql(ProjectQuery.updateOwner, params);
   }
 
-  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress)
-      throws Exception {
+  public Optional<Project> insertProject(Long contactId, Long processId, Contact contact, Boolean saveAddress) throws Exception {
     User user = securityService.getCurrentUser();
 
     if (null != contactId && null != processId) {
@@ -420,44 +416,6 @@ public class ProjectService {
           "Contact ID and Process ID are required to add a project.",
           new Exception());
     }
-  }
-
-  public void getProjectCoordinates(Project project, Long id) throws Exception {
-    // when the contact is new or the address changes,
-    // need to reload/save their lat/long from mapbox
-    String projectAddress = getProjectAddress(project);
-    mapboxApiService
-        .getLatLongAndTimezone(projectAddress)
-        .ifPresent(
-            res -> {
-              HashMap<String, Object> params = new HashMap<>();
-              params.put("latitude", res.latitude());
-              params.put("longitude", res.longitude());
-              params.put("timeZone", res.timezone());
-              params.put("id", id);
-
-              sqlCache.updateBySql(ProjectQuery.updateGeoLocation, params);
-            });
-  }
-
-  private String stringifyAddress(String street1, String city, String state, String postalCode) {
-    StringJoiner sj = new StringJoiner(", ");
-    sj.add(street1);
-    sj.add(city);
-    sj.add(state + " " + postalCode);
-
-    return sj.toString();
-  }
-
-  private String getProjectAddress(Project project) {
-    StringJoiner sj = new StringJoiner(", ");
-    sj.add(project.getStreet1());
-    sj.add(project.getCity());
-    sj.add(
-        project.getState()
-            + (null == project.getPostalCode() ? "" : " " + project.getPostalCode()));
-
-    return sj.toString();
   }
 
   public List<Attachment> getAttachments(Long projectId, Boolean isMobile, Boolean linked) {
