@@ -329,12 +329,12 @@ BEGIN
                                     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                                     inner join flow.event e on pse.event_id = e.id
                                     inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
-                                    left join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-                                    left join flow.user_position up on up.id = ppse.resource_id
-                                    left join flow.user u on u.id = up.user_id
-                                    left join flow.org o on o.id = ppse.resource_id
                                     inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
                                     inner join flow.system_list sl on sl.id = csl.system_list_id
+                                    left join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+                                    left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+                                    left join flow.user u on u.id = up.user_id
+                                    left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
                                WHERE ppse.project_process_step_id = pps.id
                                  and ppse.archived is not true
                               order by ppse.start_time, ppse.end_time, resource, e.event_name

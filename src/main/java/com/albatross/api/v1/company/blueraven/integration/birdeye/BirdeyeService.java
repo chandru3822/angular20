@@ -90,9 +90,13 @@ public class BirdeyeService {
     try {
 
       final List<String> requesterEmails = getRequestEmail(invitation.getProjectId());
-      final String businessId = getBusinessId(invitation.getProjectId());
 
-      invitation.setBirdeyeBusinessId(businessId);
+      // in some places this is already set but if we don't have one try to associate it by the installation resource
+      if (invitation.getBirdeyeBusinessId() == null) {
+        final String businessId = getBusinessId(invitation.getProjectId());
+        invitation.setBirdeyeBusinessId(businessId);
+      }
+
       invitation.setRequestersEmails(requesterEmails);
       invitation.setAdditionalParams(Map.of(BIRD_EYE_FIELD_TYPE_ID, checkInType.getValue()));
 
@@ -262,6 +266,11 @@ public class BirdeyeService {
             return null;
           }
 
+          String customerBusinessNumber = customer.getMappings().stream()
+            .findFirst()
+            .map(BirdEyeApi.BirdEyeContactMapping::getBusinessNumber)
+            .orElse(businessNumber);
+
           String fieldID = "Project ID";
           return customer.getCustomFields().stream()
             .filter(cf -> cf.getFieldName().equals(fieldID))
@@ -272,7 +281,7 @@ public class BirdeyeService {
                 customer.getEmail(),
                 customer.getPhone(),
                 customer.getId(),
-                businessNumber,
+                customerBusinessNumber,
                 customer.getId(),
                 Long.valueOf(birdEyeCustomField.getFieldValue()),
                 customer.getPhone() != null,

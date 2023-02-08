@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.StringJoiner;
 
 @Slf4j
 @Service
@@ -36,7 +35,7 @@ public class HubspotWebhookService {
         //even if the state value is null, try to get a valid lat/long if there is at least an address and a city
         if(null != lead.getCustomer() && null != lead.getCustomer().getAddress()) {
           try {
-            List<Double> coordinates = mapboxApiService.getLatLong(stringifyAddress(lead.getCustomer().getAddress().getAddress1(), lead.getCustomer().getAddress().getCity(), lead.getCustomer().getAddress().getState(), lead.getCustomer().getAddress().getZip()));
+            List<Double> coordinates = mapboxApiService.getLatLong(lead.getCustomer().getAddress().getAddress1(), lead.getCustomer().getAddress().getCity(), lead.getCustomer().getAddress().getState(), lead.getCustomer().getAddress().getZip());
             if (!coordinates.isEmpty() && null != coordinates.get(0) && null != coordinates.get(1)) {
               //1 = lat, 0 = long
               latitude = coordinates.get(1);
@@ -58,14 +57,5 @@ public class HubspotWebhookService {
 
         log.debug("HUBSPOT: New HubSpot contact information was successfully saved to database for Contact ID={} / Hubspot ID={}",  contactId , lead.getHubspot_id());
         return contactId;
-    }
-
-    public String stringifyAddress(String street1, String city, String state, String postalCode) {
-      StringJoiner sj = new StringJoiner(", ");
-      sj.add(street1);
-      sj.add(city);
-      sj.add(state + " " + postalCode);
-
-      return sj.toString();
     }
 }
