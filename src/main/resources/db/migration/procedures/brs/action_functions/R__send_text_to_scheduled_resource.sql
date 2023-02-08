@@ -35,7 +35,7 @@ BEGIN
       inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
       inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
       inner join flow.system_list sl on sl.id = csl.system_list_id
-      left join flow.user_position up on up.id = ppse.resource_id
+      left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
     where ppse.id = p_pps_event_id;
 
     --2 = user, 1 = org
