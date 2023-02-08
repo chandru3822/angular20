@@ -384,6 +384,9 @@ public class InstallAgreementService {
       if (interestRate.equals("0.0699")) {
         financeOption = "brs699";
       }
+      else if (interestRate.equals("0.0799")) {
+        financeOption = "799";
+      }
     } else if (loanTerm.equals(TEN_YEAR_TERM)) {
       if (interestRate.equals("0.0299")) {
         financeOption = "blueraven";
