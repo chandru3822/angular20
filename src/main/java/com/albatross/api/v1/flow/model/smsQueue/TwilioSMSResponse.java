@@ -33,6 +33,13 @@ public class TwilioSMSResponse {
   @JsonProperty(value = "MessageStatus")
   private String messageStatus;
 
+  /**
+   * See the following for more details:
+   * https://www.twilio.com/docs/sms/api/message-resource#delivery-related-errors
+   */
+  @JsonProperty(value = "ErrorMessage")
+  private String errorMessage;
+
   @JsonProperty(value = "To")
   private String to;
 
