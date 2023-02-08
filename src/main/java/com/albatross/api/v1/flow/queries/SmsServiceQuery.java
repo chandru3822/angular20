@@ -219,6 +219,7 @@ public class SmsServiceQuery {
     UPDATE flow.sms_queue SET
                   updated          = now(),
                   from_phone       = :fromPhone,
+                  error_message    = :errorMessage,
                   message_status   = (
                     -- don't set the message status to a previous state (for updates that
                     -- arrive out of order)
