@@ -51,6 +51,7 @@ public class ProcessStepRequirementService {
         if (null != sql) {
           HashMap<String, Object> params2 = new HashMap<>();
           params2.put("projectId", null);
+          params2.put("ppsId", null);
           params2.put("userId", user.getId());
           List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           psr.setAvailableListOfValues(listOfValues);
