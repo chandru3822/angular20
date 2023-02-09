@@ -623,7 +623,7 @@ public class AvailabilityService {
           currentEventStart = currentEventStart.plusDays(1);
         }
 
-        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("US/Mountain"));
+        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(timezone));
         if ((ra.getAllDay() == null || !ra.getAllDay()) && zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
           long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
           // depending on DST status offset could be negative or positive
