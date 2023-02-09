@@ -880,14 +880,10 @@ export default {
             //super user
             return p;
           }
-          let positionIsAvailable = true
           for(let id of this.userPositionIds) {
-            if(p.denyListPositions.find(dlp => dlp.positionId === id)){
-              positionIsAvailable = false
+            if(!p.denyListPositions.find(dlp => dlp.positionId === id)){
+              return p;
             }
-          }
-          if(positionIsAvailable) {
-            return p;
           }
         })
         this.selectedProcess = data?.length === 1 ? data[0] : {}
