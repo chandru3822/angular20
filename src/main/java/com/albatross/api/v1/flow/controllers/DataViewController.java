@@ -82,6 +82,8 @@ public class DataViewController {
   @PreAuthorize("hasRootLevelAccess()")
   @GetMapping(value = "/doMaintenance", produces = MediaType.APPLICATION_JSON_VALUE)
   public void doMaintenance() {
+    log.info("*** DATA VIEW: manually started data view maintenance ***");
     dataViewService.runViewMaintenance();
+    log.info("*** DATA VIEW: ended manual data view maintenance ***");
   }
 }
