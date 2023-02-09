@@ -290,17 +290,17 @@ public class SMSService {
    * @param dateReceived the time the status update arrived from Twilio
    * @return
    */
-  public boolean updateMessageBySid(
-    String sid, String status, String fromPhone, Date dateReceived) {
+  private boolean updateMessageBySid(
+    String sid, String status, String fromPhone, String errorMessage, Date dateReceived) {
     log.debug(
       "TWILIO: WEBHOOK: Message SID: {} From: {} Status: {} | updating", sid, fromPhone, status);
 
-    Map<String, Object> params =
-      Map.of(
-        "messageSid", sid,
-        "messageStatus", status,
-        "fromPhone", fromPhone,
-        "dateReceived", dateReceived);
+    Map<String, Object> params = new HashMap<>();
+    params.put("messageSid", sid);
+    params.put("messageStatus", status);
+    params.put("fromPhone", fromPhone);
+    params.put("errorMessage", errorMessage);
+    params.put("dateReceived", dateReceived);
 
     return jdbcTemplate.update(SmsServiceQuery.updateByMessageSid, params) > 0;
   }
@@ -314,7 +314,7 @@ public class SMSService {
   private void updateOrQueueSMSStatusUpdate(TwilioSMSResponse msg) {
     boolean recordUpdated =
       updateMessageBySid(
-        msg.getMessageSid(), msg.getMessageStatus(), msg.getFrom(), msg.getDateReceived());
+        msg.getMessageSid(), msg.getMessageStatus(), msg.getFrom(), msg.getErrorMessage(), msg.getDateReceived());
 
     if (!recordUpdated) {
       msg.addAttempt();

@@ -39,6 +39,27 @@
             return-object
             label="Positions that Cannot Add Project to Process"
         >
+            <template v-slot:selection="{item, index}">
+              <v-chip small v-if="process.denyListPositions && process.denyListPositions.length < 10">
+              <span>{{ item.position }}</span>
+              </v-chip>
+              <span
+                  v-if="index == 1 && process.denyListPositions && process.denyListPositions.length >= 10"
+                  class="primary--text text-caption"
+              >{{ process.denyListPositions.length }} selected</span>
+            </template>
+            <template v-slot:prepend-item>
+            <v-list-item
+              @click="toggleSelectAllPositions(process)">
+            <v-list-item-action>
+              <v-icon>{{ icon }}</v-icon>
+            </v-list-item-action>
+            <v-list-item-title>Select All</v-list-item-title>
+          </v-list-item>
+            <v-divider
+                class="mt-2"
+            ></v-divider>
+            </template>
         </v-autocomplete>
           <v-btn @click="saveDeniedPositions" icon color="primary" class="mb-5"><v-icon>save</v-icon></v-btn>
         </div>
@@ -237,7 +258,22 @@ export default {
   computed: {
     processStepToDeleteName(){
       return this.processStepToDelete ? this.processStepToDelete.processStepName : ''
-    }
+    },
+    selectAll() {
+      return this.process.denyListPositions?.length === this.owningPositions?.length
+    },
+    selectSome() {
+      return this.process.denyListPositions?.length > 0 && !this.selectAll
+    },
+    icon() {
+      if (this.selectAll) {
+        return 'check_box'
+      }
+      if (this.selectSome) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
   },
   methods: {
     filterProcesses () {
@@ -256,6 +292,19 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+
+
+    toggleSelectAllPositions() {
+      this.$nextTick(() => {
+        if (this.selectAll) {
+          this.process.denyListPositions = []
+          this.process.positionsChanged = true
+        } else {
+          this.process.denyListPositions = cloneDeep(this.owningPositions)
+          this.process.positionsChanged = true
+        }
+      })
     },
     async saveDeniedPositions() {
       this.$store.commit(AppMutations.SET_LOADING, true);

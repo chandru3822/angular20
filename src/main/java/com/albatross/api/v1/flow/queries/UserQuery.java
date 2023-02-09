@@ -581,6 +581,7 @@ public class UserQuery {
                                             inner join flow.org o on o.id = up.org_id
                                      WHERE up.user_id = u.id
                                        and up.archived is not true
+                                       and p.company_id = coalesce(u.default_company_id, uc.company_id)
                                        and (up.end_date is null or up.end_date >= now())) positions), '[]') AS "userPositions"
           from flow.user u
                  inner join flow.user_company uc on uc.user_id = u.id

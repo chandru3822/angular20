@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.SQLException;
@@ -78,4 +79,11 @@ public class DataViewController {
     return dataViewService.getUniqueBehaviorTypes();
   }
 
+  @PreAuthorize("hasRootLevelAccess()")
+  @GetMapping(value = "/doMaintenance", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void doMaintenance() {
+    log.info("*** DATA VIEW: manually started data view maintenance ***");
+    dataViewService.runViewMaintenance();
+    log.info("*** DATA VIEW: ended manual data view maintenance ***");
+  }
 }

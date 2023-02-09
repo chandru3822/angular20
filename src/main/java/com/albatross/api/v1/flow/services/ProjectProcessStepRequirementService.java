@@ -54,6 +54,7 @@ public class ProjectProcessStepRequirementService {
           //i think we can get away with not passing project_id here because they can never set up a requirement for a specific value for a specific project they can only check null/not null etc
           HashMap<String, Object> params2 = new HashMap<>();
           params2.put("projectId", null);
+          params2.put("ppsId", null);
           params2.put("userId", user.getId());
           List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params2, ListOfValue.class);
           req.setAvailableListOfValues(listOfValues);
