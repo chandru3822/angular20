@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
@@ -22,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -90,6 +92,38 @@ public class ProcessStepEventService {
       // save each display_order
       sqlCache.updateBySql(ProcessStepEventQuery.updateDisplayOrder, params);
     }
+  }
+
+  public void saveProcessStepEventReadonlyWhiteList(ProcessStepEvent processStepEvent, Boolean savePositions){
+      User currentUser = securityService.getCurrentUser();
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", currentUser.trueUserId());
+      params.put("companyId", currentUser.getCompanyId());
+//      params.put("processStepEventId", processStepEvent.getId());
+      params.put("eventId", processStepEvent.getEventId());
+      params.put("processStepId", processStepEvent.getProcessStepId());
+      params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY);
+
+      if(processStepEvent.getReadonlyWhiteListPositions().isEmpty()){
+          //this means they removed ALL white listed positions
+          sqlCache.updateBySql(ProcessStepEventQuery.archiveAllWhiteListPositionsForPSEvent, params);
+      } else {
+          List<Long> positionIdsUsed = processStepEvent.getReadonlyWhiteListPositions().stream()
+                  .map(WhiteListedPosition::getPositionId)
+                  .collect(Collectors.toList());
+          params.put("positionIdsUsed", positionIdsUsed);
+          //archive any positions that are no longer in the list
+          sqlCache.updateBySql(ProcessStepEventQuery.archiveWhiteListPositionsNoLongerUsed, params);
+
+          //insert any positions that are new to the list
+          for (Long whiteListPositionId : positionIdsUsed) {
+              params.put("positionId", whiteListPositionId);
+              //this insert checks if there is already a non-archived row with the same values
+              sqlCache.updateBySql(ProcessStepEventQuery.insertWhiteListPosition, params);
+          }
+
+      }
   }
 
   public Boolean userCanEditStartTime(Long processStepEventId) {

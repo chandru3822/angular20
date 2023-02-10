@@ -27,6 +27,46 @@
           >Save
           </v-btn>
         </v-card>
+        <v-card class="pa-4 mt-4">
+          <div class="title-medium">Readonly</div>
+          <v-autocomplete
+            v-model="selectedEvent.readonlyWhiteListPositions"
+            :items="positions"
+            label="Whitelisted Positions"
+            item-text="position"
+            item-value="positionId"
+            return-object
+            multiple
+            clearable
+          >
+            <template v-slot:selection="{item, index}">
+              <v-chip small
+                      v-if="selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length < 6">
+                <span>{{ item.position }}</span>
+              </v-chip>
+              <span
+                  v-if="index === 1 && selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length >= 6"
+                  class="primary--text text-caption"
+              >{{ selectedEvent.readonlyWhiteListPositions.length }} selected</span>
+            </template>
+            <template v-slot:prepend-item>
+              <v-list-item
+                  @click="toggleSelectAllPositions()">
+                <v-list-item-action>
+                  <v-icon>{{ icon }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  class="mt-2"
+              ></v-divider>
+            </template>
+          </v-autocomplete>
+          <v-btn color="primary"
+                 @click="saveEventDetails(selectedEvent)"
+          >Save
+          </v-btn>
+        </v-card>
       </v-col>
 
       <ProcessStepWorkQueueTypes v-if="!eventLoading && selectedEvent.id"
@@ -821,6 +861,8 @@ export default {
       companyEventStatuses: [],
       processStepStatuses: [],
       newEventStatuses: [],
+      positions: [],
+      positionsLoading: false,
       addChildFunction: false,
       selectedChildFunction: {},
       childFunctions: [],
@@ -903,10 +945,27 @@ export default {
       eventActionToDelete: null
     }
   },
-  computed: {},
+  computed: {
+    selectAll() {
+      return this.selectedEvent.readonlyWhiteListPositions?.length === this.positions?.length
+    },
+    selectSome() {
+      return this.selectedEvent.readonlyWhiteListPositions?.length > 0 && !this.selectAll
+    },
+    icon() {
+      if (this.selectAll) {
+        return 'check_box'
+      }
+      if (this.selectSome) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
+  },
   async created() {
     //get event details
     this.getCompanyProcessStepStatuses()
+    this.getPositions()
     await this.getEventDetails()
     this.getAssignedEventStatusTypes()
     this.getOperationTypes()
@@ -1041,6 +1100,23 @@ export default {
         logError(e)
       }
     },
+    async getPositions() {
+      if (this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data, status} = await getRequest(`/position/withParent`)
+          this.positions = data
+          this.positionsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
     filterEventActions() {
       // return this.selectedEvent?.processStepEventActions.filter(e => {
       //   return !e.archived
@@ -1048,6 +1124,17 @@ export default {
       return orderBy(this.selectedEvent?.processStepEventActions.filter(psea => {
         return !psea.archived
       }), [psea => psea.displayOrder])
+    },
+    toggleSelectAllPositions() {
+      this.$nextTick(() => {
+        if (this.selectAll) {
+          this.selectedEvent.readonlyWhiteListPositions = []
+          this.selectedEvent.positionsChanged = true
+        } else {
+          this.selectedEvent.readonlyWhiteListPositions = cloneDeep(this.positions)
+          this.selectedEvent.positionsChanged = true
+        }
+      })
     },
     async saveEventDetails(psEvent) {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1060,6 +1147,22 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveReadOnlyWhiteList(psEvent) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)
+        field.positionsChanged = false
+        if (!field.customFieldGroupAssignmentReadOnly) {
+          this.$set(field, 'whiteListedPositions', [])
+        }
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
