@@ -4,9 +4,9 @@
     <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath)]"
                         @close-dialog="unsavedFieldsModal = false">
       <template v-slot:title>Confirm</template>
-      You have unsaved fields. <br/>
+      You have unsaved fields in <span class="label-large">Contact Summary</span>.<br/>
       Are you sure you want to continue without saving?
-      <template v-slot:yes>Continue and Don't Save</template>
+      <template v-slot:yes>Don't Save</template>
     </ConfirmationDialog>
     <!--    modal for editing contact fields -->
     <ConfirmationDialog :open-dialog="showEditModal" parent-close
@@ -162,7 +162,7 @@
           <v-divider class="mt-4"></v-divider>
           <v-container>
           <v-toolbar color="transparent" flat>
-            <div class="mobile-contact-header">Associated Projects</div>
+            <div class="headline-small">Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
@@ -214,7 +214,7 @@
           <div class="mx-2">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
-                    :href="`/project/${p.id}/details`">
+                    :to="`/project/${p.id}/details`">
               <div class="body-large" >{{ p.projectName }} </div>
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
@@ -224,14 +224,14 @@
           </v-container>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
-             class="px-2 height-one-hunned overflow-y-auto show-xs">
-          <div class="menu-option" @click="openTab('summary')">Summary</div>
-          <div class="menu-option" @click="openTab('overview')">Overview</div>
-          <div class="menu-option" @click="openTab('associatedProjects')">Associated Projects</div>
-          <div class="menu-option" @click="openTab('notes')">Notes</div>
-          <div class="menu-option" @click="openTab('documents')">Documents</div>
-          <div v-if="userCanDelete" class="menu-option" @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
-          <div v-else class="menu-option" style="color: #FECDD2">Delete Contact</div>
+             class="px-2 height-one-hunned scrollable show-xs mobile-padding-menu">
+          <div class=menu-option :class="{'body-large': !showMobileSummary, 'label-large': showMobileSummary}" @click="openTab('summary')">Summary</div>
+          <div class=menu-option :class="{'body-large': !showMobileOverview, 'label-large': showMobileOverview}" @click="openTab('overview')">Overview</div>
+          <div class=menu-option :class="{'body-large': !showMobileAssociatedProjects, 'label-large': showMobileAssociatedProjects}" @click="openTab('associatedProjects')">Associated Projects</div>
+          <div class=menu-option :class="{'body-large': !showMobileNotes, 'label-large': showMobileNotes}" @click="openTab('notes')">Notes</div>
+          <div class=menu-option :class="{'body-large': !showMobileDocuments, 'label-large': showMobileDocuments}" @click="openTab('documents')">Documents</div>
+          <div v-if="userCanDelete" class="body-large menu-option" @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
+          <div v-else class="body-large menu-option" style="color: #FECDD2">Delete Contact</div>
 
         </div>
       </template>
@@ -252,9 +252,9 @@
                         :details="overviewDetails"
           ></PageOverview>
         </div>
-        <div class="show-xs" v-if="showMobileAssociatedProjects">
+        <div class="show-xs mobile-background" v-if="showMobileAssociatedProjects">
           <v-toolbar color="transparent" flat>
-            <div class="headline-small"><v-icon class="hide-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
+            <div class="mobile-contact-header headline-small"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
@@ -317,7 +317,7 @@
         <div class="hide-xs">
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
-            <v-toolbar-title class="mobile-contact-header">
+            <v-toolbar-title class="headline-small">
               Contact Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -357,7 +357,7 @@
                     :key="index"
                   >
                     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar body-large" dense>
-                      <v-toolbar-title>
+                      <v-toolbar-title class="body-medium">
                         {{ cfg.groupName }}
                       </v-toolbar-title>
                       <v-spacer></v-spacer>
@@ -400,12 +400,12 @@
             <SpinnerInline centered :size="50" color="primary"/>
           </div>
         </div>
-        <div class = "show-xs" v-if="showMobileSummary">
+        <div class = "show-xs mobile-contact-header" v-if="showMobileSummary">
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
           <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="headline-small">
-              <v-icon @click="openMenu()" class="hamburger-menu">mdi-menu</v-icon>
-              Contact Summary
+              <v-icon class="mobile-hamburger-menu grey lighten-4" @click="openMenu()">mdi-menu</v-icon>
+              Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -1056,18 +1056,27 @@ export default {
 }
 
 .menu-option{
-  font-family: Lato;
-  font-weight: 600;
-  font-size: 16px;
-  line-height: 25px;
+  padding-top: 12px;
+  padding-bottom: 12px;
 }
 
 .mobile-contact-header{
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 27px;
+  padding-right: 24px;
+}
+
+.scrollable {
+  overflow-y: scroll !important;
+}
+
+.mobile-padding-menu{
+  padding-left: 24px !important;
+  padding-bottom: 16px !important;
+}
+
+@media (max-width: 960px) {
+  .mobile-background {
+    background-color: white;
+  }
 }
 
 </style>
