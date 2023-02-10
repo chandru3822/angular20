@@ -182,7 +182,7 @@ public class RebateQuery {
                 pd.company_id = 3 and
             pd.archived is false
         group by pd.project_id,
-                 pd.contact_name,
+                 pd.project_name,
                  (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = :createdBy),
                  pd.substantial_completion_date,
                  pd.primary_financier_name,
