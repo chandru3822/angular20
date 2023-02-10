@@ -440,6 +440,8 @@ public class InstallAgreementService {
         financeOption = "349";
       } else if (interestRate.equals("0.0398")) {
         financeOption = "flexpay398";
+      } else if (interestRate.equals("0.0399")) {
+        financeOption = "399";
       } else if (interestRate.equals("0.0498")) {
         financeOption = "flexpay498";
       } else if (interestRate.equals("0.0598")) {
