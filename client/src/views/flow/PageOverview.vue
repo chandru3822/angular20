@@ -13,7 +13,7 @@
       </v-btn>
     </v-toolbar-items>
   </v-toolbar>
-  <div class="mx-4" v-if="details">
+  <div class="mx-4 mobile-content-padding" v-if="details">
     <div v-for="detail in details">
       <div v-if="!detail.type || detail.type === constants.OVERVIEW_FIELD_TYPES.DEFAULT" class="mb-2">
         <span class="detail-label label-small">{{detail.label}}: </span>
@@ -188,12 +188,18 @@ export default {
   }
 
   .mobile-hamburger-menu{
-    padding-right:16px;
+    padding-left: 16px;
+    padding-right: 28px;
   }
 
   .mobile-contact-header{
     padding-right: 24px;
     padding-top: 12px;
+  }
+
+  .mobile-content-padding{
+    padding-top: 8px;
+    padding-left: 16px;
   }
 }
 

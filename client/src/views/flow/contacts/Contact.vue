@@ -303,7 +303,7 @@
               </v-menu>
             </v-toolbar-items>
           </v-toolbar>
-          <div class="mx-2">
+          <div class="mx-2 mobile-content-padding">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
                     :href="`/project/${p.id}/details`">
@@ -1079,6 +1079,12 @@ export default {
   .mobile-contact-header{
     padding-top: 12px;
     padding-right: 24px;
+  }
+
+  .mobile-content-padding{
+    padding-top: 16px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
 }

@@ -178,9 +178,11 @@
           <div class="headline-small hide-xs">Contact Notes</div>
           <div class="headline-small mobile-contact-header show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Notes</div>
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
+          <div class="mobile-content-padding" v-else-if="selectedOption === 1">
           <ProjectNotes :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
+                        :org-id="orgId"></ProjectNotes>
+          </div>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                    :user-id="userId"
@@ -197,7 +199,7 @@
       </div>
       <div v-else>
         <div class="headline-small mobile-contact-header"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Documents</div>
-        <div style="width: 168px;" class="mr-2">
+        <div style="width: 168px;" class="mr-2 mobile-content-padding">
 
           <v-btn-toggle
             v-model="toggleFocused"
@@ -512,12 +514,18 @@ export default {
 
 @media (max-width: 960px) {
   .mobile-hamburger-menu {
-    padding-left: 16px;
+    padding-left: 32px;
+    padding-right: 24px;
   }
 
   .mobile-contact-header{
     padding-top: 14px;
-    padding-right: 24px;
+    padding-right: 36px;
+  }
+
+  .mobile-content-padding{
+    padding-top: 16px;
+    padding-left: 16px;
   }
 }
 
