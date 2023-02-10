@@ -1,8 +1,8 @@
 <template>
 <v-container class="pa-0 mobile-background">
-  <v-toolbar flat color="transparent">
+  <v-toolbar flat color="transparent" class="mobile-contact-header">
     <div class="headline-small hide-xs">{{pageName}} Overview</div>
-    <div class="mobile-contact-header headline-small show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>
+    <div class=" headline-small show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
@@ -181,18 +181,18 @@ export default {
   margin-top: -2px;
 }
 
-.mobile-contact-header{
-
-}
-
-
 @media (max-width: 960px) {
   .mobile-background {
     background-color: white;
   }
 
+  .mobile-hamburger-menu{
+    padding-right:16px;
+  }
+
   .mobile-contact-header{
     padding-right: 24px;
+    padding-top: 12px;
   }
 }
 
