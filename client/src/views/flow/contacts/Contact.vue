@@ -230,7 +230,7 @@
           <div class=menu-option :class="{'body-large': !showMobileAssociatedProjects, 'label-large': showMobileAssociatedProjects}" @click="openTab('associatedProjects')">Associated Projects</div>
           <div class=menu-option :class="{'body-large': !showMobileNotes, 'label-large': showMobileNotes}" @click="openTab('notes')">Notes</div>
           <div class=menu-option :class="{'body-large': !showMobileDocuments, 'label-large': showMobileDocuments}" @click="openTab('documents')">Documents</div>
-          <div v-if="userCanDelete" class="body-large menu-option" @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
+          <div v-if="userCanDelete && !(contact.projects && contact.projects.length > 0)" class="body-large menu-option" @click="deleteContactConfirm = true" style="color: #B4221F">Delete Contact</div>
           <div v-else class="body-large menu-option" style="color: #FECDD2">Delete Contact</div>
 
         </div>

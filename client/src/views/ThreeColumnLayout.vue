@@ -191,7 +191,6 @@ export default {
 
 .project-section {
   max-height: 100%;
-  padding-top: 24px;
 }
 
 .project-section.left-column,

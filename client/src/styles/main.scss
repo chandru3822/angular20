@@ -672,7 +672,9 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
     border-left: 16px;
     border-right: 12px;
     border-bottom: 16px;
-    color: var(--v-primary-base);
+    color: var(--v-primary-base)!important;
+    width: 50px !important;
+    height: 20px !important;
   }
 }
 
