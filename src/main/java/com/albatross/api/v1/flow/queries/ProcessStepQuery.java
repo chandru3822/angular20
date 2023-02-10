@@ -433,14 +433,6 @@ public class ProcessStepQuery {
         where cot.company_id = :companyId
           and (ot.flow_type_id = 1 OR ot.flow_type_id = 3)
           and cot.archived is not true
-        union all
-          select id,
-                 (select id from flow.object_type o where flow_type_id = 6) as object_type_id,
-                 dv.display_name as name,
-                 false as is_process_step
-          from flow.data_view dv
-          where dv.archived is false
-        order by name
         """;
 
   //language=PostgreSQL
