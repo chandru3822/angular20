@@ -627,11 +627,12 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.6;
 }
 
-.body-small, .body-large .v-messages__message, label.v-label.v-label--active.theme--light, .v-select__selection {
+.body-small, .body-large .v-messages__message, .body-large label.v-label.v-label--active.theme--light, .body-large.v-select__selection {
   font-family: lato;
   font-weight: 400;
   font-size: .75rem;
   line-height: 1.6;
+  color: red!important;
 }
 
 @media (min-width: 960px) {
