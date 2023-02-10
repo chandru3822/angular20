@@ -68,7 +68,7 @@
           </div>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
       </div>
-      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value), detail.label)">
         <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>
         <span v-if="detail.value" class="detail-item body-medium">{{formatPhoneNumber(detail.value)}}</span>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
@@ -85,7 +85,7 @@
         <span v-if="detail.value" class="detail-item body-medium">{{detail.value}}</span>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
       </div>
-      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value), detail.label)">
         <span class="detail-label label-small pr-2">
           <v-icon small>mdi-cellphone</v-icon>
         </span>
@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import {formatPhoneNumber, getSnackbar} from "../../helpers/helpers";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "../../helpers/helpers";
 import constants from "../../helpers/constants"
 import {getStatusColorClass} from "../../services/projectStatusTypeService";
 import {AppMutations} from "../../stores/AppStore";
@@ -134,6 +134,7 @@ export default {
     return {
       constants,
       formatPhoneNumber,
+      cleanPhoneNumberForCopying,
       getStatusColorClass
     }
   },
