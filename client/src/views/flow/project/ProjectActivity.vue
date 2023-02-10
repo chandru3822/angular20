@@ -196,7 +196,7 @@
         </div>
       </div>
       <div v-else>
-        <div class="mobile-contact-header"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Documents</div>
+        <div class="headline-small mobile-contact-header"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Documents</div>
         <div style="width: 168px;" class="mr-2">
 
           <v-btn-toggle

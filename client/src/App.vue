@@ -13,7 +13,7 @@
       v-if="!dismissMobileToolbar && showMobileBanner && !noNavRoutes.includes($route.name) && $route.path !== '/apps'"
       class="clickable"
       dense>
-      <v-toolbar-title @click="goToApps" class="body-large">
+      <v-toolbar-title @click="goToApps" class="body-large primary--text">
         Go to App Download Page
         <v-icon color="primary" class="ml-3">
           mdi-arrow-right
