@@ -57,6 +57,7 @@
               :class="{'clickable underline anchor':detail.clickable}" >
           {{detail.value}}
         </span>
+        <span v-else class="d-inline-block detail-item body-medium">N/A</span>
       </div>
 
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(`${detail.value.street} ${detail.value.city}, ${detail.value.state} ${detail.value.zip}`, detail.label)">
@@ -71,7 +72,8 @@
         <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>
         <span v-if="detail.value" class="detail-item body-medium">{{formatPhoneNumber(detail.value)}}</span>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
-      </div><div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.EXTENSION" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      </div>
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.EXTENSION" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
         <span class="detail-label label-small pr-2">
           <v-tooltip top>
             <template v-slot:activator="{on, attrs}">
