@@ -625,7 +625,6 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   font-weight: 400;
   font-size: .875rem;
   line-height: 1.6;
-
 }
 
 .body-small, .body-large .v-messages__message, label.v-label.v-label--active.theme--light, .v-select__selection {
@@ -670,8 +669,8 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 
   .mobile-hamburger-menu{
     border-top: 16px;
-    border-left: 16px;
-    border-right: 12px;
+    padding-left: 12px;
+    padding-right: 12px;
     border-bottom: 16px;
     color: var(--v-primary-base)!important;
     width: 50px !important;
