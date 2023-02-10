@@ -216,7 +216,7 @@
                     class="project-button albatross-body-1"
                     :to="`/project/${p.id}/details`">
               <div class="body-large" >{{ p.projectName }} </div>
-              <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
+              <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
 
             </v-card>
@@ -444,8 +444,10 @@
                     :key="index"
                   >
                     <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar body-large" dense>
-                      <v-toolbar-title>
+                      <v-toolbar-title class="body-medium">
+                        <span class="body-medium">
                         {{ cfg.groupName }}
+                          </span>
                       </v-toolbar-title>
                       <v-spacer></v-spacer>
                       <v-toolbar-items>
