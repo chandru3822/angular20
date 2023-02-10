@@ -552,5 +552,6 @@ export default {
   .right-column-mobile {
     width: 33%;
   }
+
 }
 </style>

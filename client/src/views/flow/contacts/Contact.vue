@@ -253,8 +253,8 @@
           ></PageOverview>
         </div>
         <div class="show-xs mobile-background" v-if="showMobileAssociatedProjects">
-          <v-toolbar color="transparent" flat>
-            <div class="mobile-contact-header headline-small"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
+          <v-toolbar class="mobile-contact-header" color="transparent" flat>
+            <div class=" headline-small"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-menu
@@ -1060,10 +1060,6 @@ export default {
   padding-bottom: 12px;
 }
 
-.mobile-contact-header{
-  padding-right: 24px;
-}
-
 .scrollable {
   overflow-y: scroll !important;
 }
@@ -1077,6 +1073,12 @@ export default {
   .mobile-background {
     background-color: white;
   }
+
+  .mobile-contact-header{
+    padding-top: 12px;
+    padding-right: 24px;
+  }
+
 }
 
 </style>

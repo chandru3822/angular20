@@ -509,6 +509,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+@media (max-width: 960px) {
+  .mobile-hamburger-menu {
+    padding-left: 16px;
+  }
+
+  .mobile-contact-header{
+    padding-top: 14px;
+    padding-right: 24px;
+  }
+}
+
 #project-activity-container {
   height: 100%;
   width: 100%;
@@ -597,9 +609,5 @@ export default {
 
 #project-activity-container .fix-toggle-opacity:before {
   background-color: unset !important;
-}
-
-.mobile-contact-header{
-  padding-right: 24px;
 }
 </style>
