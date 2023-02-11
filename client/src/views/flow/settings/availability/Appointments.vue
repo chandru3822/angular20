@@ -430,6 +430,7 @@
 
           const {status} = await deleteRequest(url)
           item.archived = true
+          this.itemToDelete.archived = true
           if(deleteAllRecurring) {
             //reload appointments if we deleted more than one
             await this.getAppointments()
