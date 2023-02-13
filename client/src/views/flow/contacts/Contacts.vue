@@ -1,5 +1,5 @@
 <template>
-  <v-container id="contacts-container" style = "overflow-x: hidden">
+  <v-container id="contacts-container" style = "overflow-x: hidden; overflow-y: hidden">
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1 toolbar-z-index-override">
@@ -73,7 +73,7 @@
             :footer-props="footerProps"
             :loading="dataLoading"
             :server-items-length="totalContacts"
-            class="elevation-1 fix-column-width-bug contact-table"
+            class="elevation-1 fix-column-width-bug contact-table body-small"
         >
           <template #no-data>
             <div class="default-text-color">No available contacts</div>

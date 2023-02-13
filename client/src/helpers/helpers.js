@@ -117,6 +117,17 @@ export function formatPhoneNumber(phoneNumberString) {
   return null
 }
 
+export function cleanPhoneNumberForCopying(phoneNumberString) {
+    let cleaned = ('' + phoneNumberString).replace(/\D/g, '')
+    //dont allow a 1 to be the first char
+    cleaned = cleaned.replace(/^1/, '')
+    let match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/)
+    if(match) {
+        return '' + match[1] + match[2] + match[3]
+    }
+    return null
+}
+
 export function handleHidingGlobalLoader(instance, status) {
   //if a request is cancelled we should not turn off the spinner because the route changed and may have already turned the spinner back on
   //if the status is null it means that the request was cancelled (otherwise it will have a success or error status)

@@ -158,6 +158,16 @@ public class ProcessStepService {
     params.put("companyId", user.getCompanyId());
     params.put("id", id);
 
+    //todo: put this back in when i fix the child data view stuff
+//            union all
+//          select id,
+//                 (select id from flow.object_type o where flow_type_id = 6) as object_type_id,
+//                 dv.display_name as name,
+//                 false as is_process_step
+//          from flow.data_view dv
+//          where dv.archived is false
+//        order by name
+
     return sqlCache.queryBySql(
       ProcessStepQuery.getParentObjectsIncludingTypes, params, CombinedStepAndType.class);
   }

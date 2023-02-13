@@ -611,7 +611,9 @@ public class AvailabilityService {
       // Arbitrary limit for recurring events that never end.
       boolean limitReached = false;
 
-      String timezone = ra.getOriginTimezone();
+      // this isn't a great fix but i need to fix this for the release.  all day appointments dont send in an originTimezone.
+      //making this mork for now
+      String timezone = null != ra.getOriginTimezone() ? ra.getOriginTimezone() : "US/Mountain";
       final long duration = ChronoUnit.MINUTES.between(ra.getStartTime().toInstant(), ra.getEndTime().toInstant());
       // todo: get list of events for the event id
       while (it.hasNext() && !limitReached) {
@@ -623,7 +625,7 @@ public class AvailabilityService {
           currentEventStart = currentEventStart.plusDays(1);
         }
 
-        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of("US/Mountain"));
+        ZonedDateTime zonedStartTime = currentEventStart.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneId.of(timezone));
         if ((ra.getAllDay() == null || !ra.getAllDay()) && zonedStartTime.getOffset().getTotalSeconds() != ra.getOriginTimezoneOffset()) {
           long offsetDifference = zonedStartTime.getOffset().getTotalSeconds() - ra.getOriginTimezoneOffset();
           // depending on DST status offset could be negative or positive

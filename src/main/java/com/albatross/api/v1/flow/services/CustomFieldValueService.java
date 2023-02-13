@@ -160,14 +160,13 @@ public class CustomFieldValueService {
       params.put("companyId", companyId);
 
 //      List<CustomFieldGroup> fieldGroups = sqlCache.queryBySql(objectType.getCustomFieldGroupsAndValuesQuery, params, new CustomFieldGroupMapper<>(CustomFieldGroup.class, om));;
-      List<CustomFieldGroup> fieldGroups;
+      List<CustomFieldGroup> fieldGroups = new ArrayList<>();
       try {
         String json = sqlCache.queryForObjectBySql(ObjectTypeQuery.getCustomFieldGroupsAndValues, params, String.class);
+        //it is valid for json to be null if no cfgs have been assigned so dont throw an error
         if (null != json) {
           fieldGroups = om.readValue(json, new TypeReference<>() {
           });
-        } else {
-          throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Group Data Error", new Exception());
         }
       } catch (Exception e) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Custom Field Group Data Error", e);
