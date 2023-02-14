@@ -289,7 +289,7 @@ public class GenesysService {
     String leadLevel = (String) contactMap.remove("lead_level");
 
     // Genesys contacts will have a lead level
-    if (leadLevel == null || leadLevel.isEmpty()) {
+    if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
     } else if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
@@ -534,7 +534,7 @@ public class GenesysService {
     String leadLevel = (String) contactMap.remove("lead_level");
 
     // Genesys contacts will have a lead level
-    if (leadLevel == null || leadLevel.isEmpty()) {
+    if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
     }
 
