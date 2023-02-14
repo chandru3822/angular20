@@ -11,7 +11,7 @@ import com.albatross.api.v1.flow.model.smartlist.SmartlistSharable;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
-import com.albatross.api.v1.flow.queries.SmartlistQueryv2;
+import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,7 +65,7 @@ public class SmartlistService {
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
-    Smartlist smartlist = sqlCache.getBySql(SmartlistQueryv2.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
+    Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
                                   .orElse(null);
 
     if (smartlist != null) {
@@ -97,19 +97,19 @@ public class SmartlistService {
   public List<Smartlist> getMine() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
-    return sqlCache.queryBySql(SmartlistQueryv2.getMine, params, Smartlist.class);
+    return sqlCache.queryBySql(SmartlistQuery.getMine, params, Smartlist.class);
   }
 
   public List<Smartlist> getPublic() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
-    return sqlCache.queryBySql(SmartlistQueryv2.getPublic, params, Smartlist.class);
+    return sqlCache.queryBySql(SmartlistQuery.getPublic, params, Smartlist.class);
   }
 
   public List<Smartlist> getAll() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId());
-    return sqlCache.queryBySql(SmartlistQueryv2.getAll, params, Smartlist.class);
+    return sqlCache.queryBySql(SmartlistQuery.getAll, params, Smartlist.class);
   }
 
   public List<SmartlistSharable> getSharableEntities() {
@@ -399,7 +399,7 @@ public class SmartlistService {
 
     do {
       newName = String.format("%s (%s)", smartlist.getName(), ++copyNumber);
-      unique = sqlCache.queryForObjectBySql(SmartlistQueryv2.isNameUnique, Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
+      unique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", newName, "companyId", user.getCompanyId()), Boolean.class);
     } while (!unique);
 
     Smartlist newSmartlist = new Smartlist();
@@ -412,10 +412,10 @@ public class SmartlistService {
     HashMap<String, Object> params = om.convertValue(newSmartlist, HashMap.class);
     params.put("ownerId", user.getId());
     params.put("createdById", user.getId());
-    Long newSmartlistId = sqlCache.updateBySqlReturningId(SmartlistQueryv2.create, params, "id").longValue();
+    Long newSmartlistId = sqlCache.updateBySqlReturningId(SmartlistQuery.create, params, "id").longValue();
 
-    sqlCache.updateBySql(SmartlistQueryv2.copyAssignedFields, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
-    sqlCache.updateBySql(SmartlistQueryv2.copyRequirements, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
+    sqlCache.updateBySql(SmartlistQuery.copyAssignedFields, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
+    sqlCache.updateBySql(SmartlistQuery.copyRequirements, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
 
     return getById(newSmartlistId);
   }

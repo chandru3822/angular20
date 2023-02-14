@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.queries;
 
-public class SmartlistQueryv2 {
+public class SmartlistQuery {
 
   //language=PostgreSQL
   public final static String getMine = """

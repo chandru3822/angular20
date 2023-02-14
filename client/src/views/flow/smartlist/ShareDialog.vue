@@ -10,7 +10,22 @@
       </v-card-title>
 
       <v-card-text>
-        Share stuff here
+
+        <v-autocomplete
+          class="body-large"
+          :items="sharables"
+          label="Add Users and Organizations"
+          :item-text="getSharableText"
+          return-object
+          @input="addSharable"
+        ></v-autocomplete>
+
+        <v-checkbox
+          v-model="smartlist.isPublic"
+          label="Make Public"
+          :hide-details="true"
+          :ripple="false"
+        />
       </v-card-text>
 
       <v-card-actions>
@@ -55,11 +70,23 @@ const props = defineProps({
 
 const emit = defineEmits(['closed-dialog'])
 
+//a list of user positions and orgs the smartlist can be shared with
 let sharables = ref([])
 
-let getSharables = async () => {
+//a list of user positions and orgs the smartlist is CURRENTLY shared with
+let shares = ref([])
+
+const getSharables = async () => {
   const {data} = await getRequest(`/smartlist/sharableEntities`)
   sharables.value = data
+}
+
+//append position to name if the sharable item is a user
+const getSharableText = (sharable) => (sharable.isUser) ? `${sharable.name} - ${sharable.position}` : sharable.name
+
+const addSharable = (sharable) => {
+  console.log(sharable)
+  //append to items this smartlist is shared with
 }
 
 getSharables()
