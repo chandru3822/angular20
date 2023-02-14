@@ -1,7 +1,8 @@
 <template>
-<v-container class="pa-0">
-  <v-toolbar flat color="transparent">
-    <div class="mobile-contact-header"><v-icon class="show-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>{{pageName}} Overview</div>
+<v-container class="pa-0 mobile-background">
+  <v-toolbar flat color="transparent" class="mobile-contact-header">
+    <div class="headline-small hide-xs">{{pageName}} Overview</div>
+    <div class=" headline-small show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>
     <v-spacer></v-spacer>
     <v-toolbar-items>
       <v-btn
@@ -12,7 +13,7 @@
       </v-btn>
     </v-toolbar-items>
   </v-toolbar>
-  <div class="mx-4" v-if="details">
+  <div class="mx-4 mobile-content-padding" v-if="details">
     <div v-for="detail in details">
       <div v-if="!detail.type || detail.type === constants.OVERVIEW_FIELD_TYPES.DEFAULT" class="mb-2">
         <span class="detail-label label-small">{{detail.label}}: </span>
@@ -56,6 +57,7 @@
               :class="{'clickable underline anchor':detail.clickable}" >
           {{detail.value}}
         </span>
+        <span v-else class="d-inline-block detail-item body-medium">N/A</span>
       </div>
 
       <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.ADDRESS" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(`${detail.value.street} ${detail.value.city}, ${detail.value.state} ${detail.value.zip}`, detail.label)">
@@ -66,11 +68,12 @@
           </div>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
       </div>
-      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value), detail.label)">
         <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>
         <span v-if="detail.value" class="detail-item body-medium">{{formatPhoneNumber(detail.value)}}</span>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
-      </div><div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.EXTENSION" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      </div>
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.EXTENSION" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
         <span class="detail-label label-small pr-2">
           <v-tooltip top>
             <template v-slot:activator="{on, attrs}">
@@ -82,7 +85,7 @@
         <span v-if="detail.value" class="detail-item body-medium">{{detail.value}}</span>
         <span v-else class="d-inline-block detail-item body-medium">N/A</span>
       </div>
-      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(detail.value, detail.label)">
+      <div v-if="detail.type === constants.OVERVIEW_FIELD_TYPES.MOBILE_PHONE" class="flex-display mb-2" :class="{'clickable':!!detail.value}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value), detail.label)">
         <span class="detail-label label-small pr-2">
           <v-icon small>mdi-cellphone</v-icon>
         </span>
@@ -110,7 +113,7 @@
 </template>
 
 <script>
-import {formatPhoneNumber, getSnackbar} from "../../helpers/helpers";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "../../helpers/helpers";
 import constants from "../../helpers/constants"
 import {getStatusColorClass} from "../../services/projectStatusTypeService";
 import {AppMutations} from "../../stores/AppStore";
@@ -131,6 +134,7 @@ export default {
     return {
       constants,
       formatPhoneNumber,
+      cleanPhoneNumberForCopying,
       getStatusColorClass
     }
   },
@@ -178,11 +182,25 @@ export default {
   margin-top: -2px;
 }
 
-.mobile-contact-header{
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 27px;
+@media (max-width: 960px) {
+  .mobile-background {
+    background-color: white;
+  }
+
+  .mobile-hamburger-menu{
+    padding-left: 16px;
+    padding-right: 28px;
+  }
+
+  .mobile-contact-header{
+    padding-right: 24px;
+    padding-top: 12px;
+  }
+
+  .mobile-content-padding{
+    padding-top: 8px;
+    padding-left: 16px;
+  }
 }
+
 </style>

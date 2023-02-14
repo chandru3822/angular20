@@ -11,7 +11,7 @@
             offset="6"
             insert-space
         >
-          <v-textarea class="py-2" hide-details
+          <v-textarea class="body-medium" hide-details
                       auto-grow
                       rows="4"
                       @change="dirtyNote = true"
@@ -139,11 +139,11 @@
             <td class="py-2 note-column left-column-mobile">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
-                   @click="expanded=[item]" class="pl-4 note-see-comments clickable body-small">
+                   @click="expanded=[item]" class="pl-4 note-see-comments clickable label-small">
                 See {{ item.childNotes.length }} comment{{ item.childNotes.length > 1 ? 's' : '' }}...
               </div>
               <div v-else-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)"
-                   @click="expanded=[]" class="pl-4 note-see-comments clickable body-small">
+                   @click="expanded=[]" class="label-small pl-4 note-see-comments clickable">
                 Hide comments...
               </div>
             </td>
@@ -253,11 +253,11 @@
                 </Mentionable>
 
                 <div class="text-left mb-2">
-                  <v-btn color="primary" class="white--text"
+                  <v-btn color="primary" class="body-medium white--text"
                          :disabled="!cn.note"
                          @click="[cn.edit = false, cn.noteMenu = false, saveNote(cn)]">Save
                   </v-btn>
-                  <v-btn text color="primary" @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
+                  <v-btn text color="primary body-medium" @click="[dirtyNote = false, cn.note = cn.oldNote, cn.edit = false, cn.noteMenu = false]">
                     <span>cancel</span>
                   </v-btn>
                 </div>
@@ -552,5 +552,6 @@ export default {
   .right-column-mobile {
     width: 33%;
   }
+
 }
 </style>

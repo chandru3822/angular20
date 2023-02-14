@@ -52,12 +52,14 @@
                 mandatory
                 borderless
                 color="primary"
-                class="d-inline-block one-hunned"
+                class="d-inline-block one-hunned body-medium"
                 style="opacity: 1 !important;"
+                id="focused-toggle"
             >
 
 
               <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
+                     id="focused-toggle"
                      :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
                      class="text-capitalize my-4 fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
@@ -65,8 +67,9 @@
                 Focused
               </v-btn>
               <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
+                     id="focused-toggle"
                      :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
-                     class="text-capitalize  fix-toggle-opacity"
+                     class="text-capitalize  fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
               >
                 All
@@ -172,11 +175,14 @@
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
       <div v-if="showNotes" class="project-activity-inner-container">
         <div class="scrollable-area">
-          <div class="mobile-contact-header"><v-icon class="hide-xs hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Contact Notes</div>
+          <div class="headline-small hide-xs">Contact Notes</div>
+          <div class="headline-small mobile-contact-header show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Notes</div>
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
+          <div class="mobile-content-padding" v-else-if="selectedOption === 1">
           <ProjectNotes :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
+                        :org-id="orgId"></ProjectNotes>
+          </div>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                    :user-id="userId"
@@ -192,8 +198,8 @@
         </div>
       </div>
       <div v-else>
-        <div class="mobile-contact-header"><v-icon class="hamburger-menu hide-xs" @click="openMenu()">mdi-menu</v-icon>Contact Documents</div>
-        <div style="width: 168px;" class="mr-2">
+        <div class="headline-small mobile-contact-header"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Documents</div>
+        <div style="width: 168px;" class="mr-2 mobile-content-padding">
 
           <v-btn-toggle
             v-model="toggleFocused"
@@ -505,6 +511,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+
+@media (max-width: 960px) {
+  .mobile-hamburger-menu {
+    padding-left: 32px;
+    padding-right: 24px;
+  }
+
+  .mobile-contact-header{
+    padding-top: 14px;
+    padding-right: 36px;
+  }
+
+  .mobile-content-padding{
+    padding-top: 16px;
+    padding-left: 16px;
+  }
+}
+
 #project-activity-container {
   height: 100%;
   width: 100%;
@@ -593,13 +617,5 @@ export default {
 
 #project-activity-container .fix-toggle-opacity:before {
   background-color: unset !important;
-}
-
-.mobile-contact-header{
-  font-family: 'Lato';
-  font-style: normal;
-  font-weight: 600;
-  font-size: 18px;
-  line-height: 27px;
 }
 </style>

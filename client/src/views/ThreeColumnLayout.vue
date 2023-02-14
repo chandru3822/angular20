@@ -3,7 +3,7 @@
     <v-row>
       <slot name="header">
         <v-toolbar v-if="!headerHidden" flat class="three-column-header px-4">
-          <v-toolbar-title class="albatross-header-1 d-flex align-center mr-6">
+          <v-toolbar-title class="headline-medium d-flex align-center mr-6">
             <slot name="back-btn"></slot>
             {{ headerText }}
           </v-toolbar-title>
@@ -20,12 +20,13 @@
       <v-col id="left-column" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
                                                                                             'collapsed': this.$store.state.project.leftSideSplit,
                                                                                             'narrow': this.leftSmall,
+                                                                                            'mobile-overflow': true,
                                                                                             'auto-overflow': this.autoOverflowLeft,
                                                                                             'white-bg': this.leftSideWhiteBg,
                                                                                             'hide-column-xs': $store.state.project.leftSideSplit}">
-        <div :class="{'title-collapsed': $store.state.project.leftSideSplit,
+        <div class="mobile-padding-menu-button" :class="{'title-collapsed': $store.state.project.leftSideSplit,
                       'ml-4': !$store.state.project.leftSideSplit}">
-          <v-btn small text color="primary" class="hamburger-menu" @click="collapseSide('left')">
+          <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
@@ -190,7 +191,6 @@ export default {
 
 .project-section {
   max-height: 100%;
-  padding-top: 24px;
 }
 
 .project-section.left-column,
@@ -219,6 +219,17 @@ export default {
   #right-column{
     width: calc((5 / 12) * 100%); //col-5
     max-width: calc((5 / 12) * 100%); //col-5
+  }
+}
+@media (max-width: 960px) {
+  .mobile-overflow {
+    overflow: auto;
+  }
+
+  .mobile-padding-menu-button{
+    padding-top: 16px;
+
+    padding-bottom: 16px;
   }
 }
 
@@ -258,8 +269,7 @@ export default {
   &.collapsed {
     width: 72px;
     max-width: 72px;
-    width: calc((1 / 24) * 100%); //half a col
-    max-width: calc((1 / 24) * 100%); //half a col
+    min-width: 72px;
   }
 }
 </style>
