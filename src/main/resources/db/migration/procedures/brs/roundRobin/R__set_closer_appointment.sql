@@ -167,6 +167,9 @@ BEGIN
       update brs.set_closer_appointment_audit
       set closer_selected = true
       where id = v_set_closer_appointment_audit_id;
+      --set the Scheduled Via Round Robin field on the event - BR uses this to know how the event was scheduled
+      perform flow.set_pps_event_cfv(p_project_process_step_event_id, p_current_user_id, 24658::bigint, 'true'::text, true);
+
       --set the proposal due date on the process step to the start time
       perform flow.set_pps_cfv(p_project_id, p_current_user_id, 22680::bigint, p_appointment_start_time::text, true);
       --change the status of the event to pending
