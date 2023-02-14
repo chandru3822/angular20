@@ -199,6 +199,18 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String getShares = """
+    
+  """;
+
+  //language=PostgreSQL
+  public final static String addShare = """
+    insert into flow.smartlist_share (smartlist_id, org_id, user_position_id,created_by_id)
+    values (:smartlistId, :orgId, :userPositionId, :userId)
+    returning id
+  """;
+
+  //language=PostgreSQL
   public final static String create = """
     insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
     values (:name, :companyObjectTypeId, :public, :ownerId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())

@@ -58,8 +58,13 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @GetMapping(value = "/sharableEntities", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/sharables", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistSharable>> getSharableEntities() {
     return new ResponseEntity<>(smartlistService.getSharableEntities(), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{smartlistId}/share", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SmartlistSharable> addSmartlistShare(@RequestBody SmartlistSharable share) {
+    return new ResponseEntity<>(smartlistService.addShare(share), HttpStatus.OK);
   }
 }

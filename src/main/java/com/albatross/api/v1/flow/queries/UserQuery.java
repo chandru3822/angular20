@@ -270,7 +270,8 @@ public class UserQuery {
     select
       distinct upv.user_id::bigint as id,
       concat(upv.first_name,' ',upv.last_name::text) as full_name,
-      upv.position
+      upv.position,
+      upv.user_position_id
     from flow.user_positions_vw upv
     where
       upv.company_id = :companyId and

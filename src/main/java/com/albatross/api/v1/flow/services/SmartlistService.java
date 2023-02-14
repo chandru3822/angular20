@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -62,36 +64,83 @@ public class SmartlistService {
 
   private final SmartlistServicev1 smartlistServicev1;
 
+  private boolean isSmartlistAdmin() {
+    User user = securityService.getCurrentUser();
+    return securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
+  }
+
+  private boolean isOwnerOrAdmin(Smartlist smartlist) {
+    User user = securityService.getCurrentUser();
+    return Objects.equals(smartlist.getOwnerId(), user.getId()) || isSmartlistAdmin();
+  }
+
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
     Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
                                   .orElse(null);
 
-    if (smartlist != null) {
-      // grant access to smartlist if user is owner, admin, or smartlist is public
-      final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
-      if (Objects.equals(smartlist.getOwnerId(), user.getId()) || smartlist.isPublic() || isSmartlistAdmin) {
-        return smartlist;
-      } else {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
-      }
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Smartlist not found", new NotFoundException("Smartlist not found"));
     }
 
-    return null;
+    //grant access to smartlist if user is owner, admin, or smartlist is public
+    if (!isOwnerOrAdmin(smartlist) && !smartlist.isPublic()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    return smartlist;
+  }
+
+//  public List<SmartlistSharable> getShares(Long smartlistId) {
+//    //only smartlist owner and admins can see smartlist shares
+//    Smartlist smartlist = getById(smartlistId);
+//
+//    if (smartlist == null) {
+//      return Collections.emptyList();
+//    }
+//
+//    User user = securityService.getCurrentUser();
+//
+//    if (!isOwnerOrAdmin(smartlist)) {
+//      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
+//    }
+//
+//    //get and return sharables
+//  }
+
+  public SmartlistSharable addShare(@NotNull SmartlistSharable share) {
+    User user = securityService.getCurrentUser();
+    Smartlist smartlist = getById(share.getSmartlistId());
+
+    if (!isOwnerOrAdmin(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    //add and return sharable
+    try {
+      HashMap<String, Object> params = om.convertValue(share, HashMap.class);
+      params.put("userId", user.getId());
+      Long newId = sqlCache.updateBySqlReturningId(SmartlistQuery.addShare, params, "id").longValue();
+      var newShare = new SmartlistSharable();
+      newShare.setId(newId);
+      return newShare;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
+    }
   }
 
   public void delete(Long smartlistId) {
     User user = securityService.getCurrentUser();
     Smartlist smartlist = getById(smartlistId);
-    final boolean isSmartlistAdmin = securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
 
     // allow delete only if user is smartlist owner or admin
-    if (smartlist == null || (!smartlist.getOwnerId().equals(user.getId()) && !isSmartlistAdmin)) {
+    if (!isOwnerOrAdmin(smartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
     }
 
-    sqlCache.updateBySql(SmartlistQueryv1.delete, Map.of("id", smartlistId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.updateBySql(SmartlistQueryv1.delete, Map.of("id", smartlistId, "userId", user.getId()));
   }
 
   public List<Smartlist> getMine() {
@@ -119,12 +168,21 @@ public class SmartlistService {
     //combine lists
     List<SmartlistSharable> combinedList = new ArrayList<>();
     users.forEach(u -> {
-      var share = new SmartlistSharable(u.getId(), u.getFullName(), u.getPosition(), true, false);
+      var share = new SmartlistSharable();
+      share.setUserPositionId(u.getUserPositionId());
+      share.setIsUser(true);
+      share.setIsOrg(false);
+      share.setName(u.getFullName());
+      share.setPosition(u.getPosition());
       combinedList.add(share);
     });
 
     orgs.forEach(o -> {
-      var share = new SmartlistSharable(o.getId(), o.getOrgName(), null, false, true);
+      var share = new SmartlistSharable();
+      share.setOrgId(o.getId());
+      share.setIsOrg(true);
+      share.setIsOrg(false);
+      share.setName(o.getOrgName());
       combinedList.add(share);
     });
 
@@ -159,9 +217,6 @@ public class SmartlistService {
 
   public String export(Long smartlistId, String timezone) throws JsonProcessingException {
     Smartlist smartlist = this.getById(smartlistId);
-    if (smartlist == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
-    }
 
     List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
 
@@ -388,10 +443,6 @@ public class SmartlistService {
 
     User user = securityService.getCurrentUser();
     Smartlist smartlist = getById(smartlistId);
-
-    if (smartlist.getId() == null) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No smartlist with given ID", new RuntimeException());
-    }
 
     long copyNumber = 0L;
     String newName;

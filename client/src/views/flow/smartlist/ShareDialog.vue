@@ -38,15 +38,13 @@
         >
            Cancel
         </v-btn>
-<!--        <v-btn-->
-<!--          v-if="!hideConfirm"-->
-<!--          color="primary"-->
-<!--          class="white&#45;&#45;text elevation-2 text-capitalize mr-2 mb-2"-->
-<!--          :disabled="disableConfirm"-->
-<!--          :class="confirmClass"-->
-<!--          @click="yes">-->
-<!--          Share-->
-<!--        </v-btn>-->
+        <v-btn
+          color="primary"
+          class="white--text elevation-2 text-capitalize mr-2 mb-2"
+          @click="addSharable"
+        >
+          Share
+        </v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -54,8 +52,12 @@
 
 <script setup>
 
-import { getRequest } from '@/helpers/helpers'
-import { ref } from 'vue'
+import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
+import { getCurrentInstance, ref } from 'vue'
+import { AppMutations } from '@/stores/AppStore'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
 const props = defineProps({
   openDialog: {
@@ -77,16 +79,28 @@ let sharables = ref([])
 let shares = ref([])
 
 const getSharables = async () => {
-  const {data} = await getRequest(`/smartlist/sharableEntities`)
+  const {data} = await getRequest(`/smartlist/sharables`)
   sharables.value = data
 }
 
 //append position to name if the sharable item is a user
 const getSharableText = (sharable) => (sharable.isUser) ? `${sharable.name} - ${sharable.position}` : sharable.name
 
-const addSharable = (sharable) => {
-  console.log(sharable)
-  //append to items this smartlist is shared with
+const addSharable = async (sharable) => {
+
+  let snackbar
+
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    const {data} = await postRequest(`/smartlist/${props.smartlist.id}/share`, {...sharable, smartlistId: props.smartlist.id})
+    snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
+  } catch (err) {
+    logError(err)
+    snackbar = getSnackbar('ERROR', 'Error while Sharing Smartlist')
+  } finally {
+    handleHidingGlobalLoader(vueInstance, true)
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  }
 }
 
 getSharables()
