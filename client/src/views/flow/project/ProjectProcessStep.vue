@@ -785,6 +785,20 @@ export default {
       try {
         const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
+        //todo: filter this data on whitelisted positions if readonly
+        //     .filter(pse => {
+        //   debugger
+        //   if(pse.readonly) {
+        //     for(let wlp in pse.readonlyWhiteListPositions) {
+        //       let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+        //       if (match) {
+        //         return true
+        //       }
+        //     }
+        //     return false
+        //   }
+        // })
+        // debugger
         return status
       } catch (e) {
         console.error('*** ERROR ***', e)

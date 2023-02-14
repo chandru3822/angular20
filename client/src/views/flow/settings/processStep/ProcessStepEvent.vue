@@ -68,11 +68,11 @@
               ></v-divider>
             </template>
           </v-autocomplete>
-          <v-btn color="primary" v-if="selectedEvent.readonly && userCanEdit"
-                 @click="saveReadOnlyWhiteList(selectedEvent)"
-          >Save
-          </v-btn>
           </v-card-text>
+          <v-btn color="primary" v-if="userCanEdit"
+                 @click="saveReadOnlyWhiteList(selectedEvent)"
+          >Save Read Only
+          </v-btn>
         </v-card>
       </v-col>
 

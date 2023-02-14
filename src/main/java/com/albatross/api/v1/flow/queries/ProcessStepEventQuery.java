@@ -9,6 +9,7 @@ public class ProcessStepEventQuery {
            pse.initial_company_event_status_type_id,
            cest.event_status_type as initial_event_status_type,
            pse.event_id,
+           pse.readonly,
            pse.archived,
            e.event_name,
            pse.display_order,
@@ -42,7 +43,27 @@ public class ProcessStepEventQuery {
                                     left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
                              WHERE psea.process_step_event_id = pse.id
                                AND psea.archived is not true
-                               ORDER BY psea.display_order) psea), '[]') AS "processStepEventActions"
+                               ORDER BY psea.display_order) psea), '[]') AS "processStepEventActions",
+            coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(readonlyWhiteListPositions)))
+                          FROM (
+                                select wlp.id,
+                                wlp.process_step_event_id as "processStepEventId",
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.process_step_id as "processId",
+                                wlp.company_id as "companyId",
+                                wlp.archived,
+                                wlp.white_list_type_id as "whiteListTypeId",
+                                wlp.date_created as dateCreated,
+                                wlp.created_by_id as createdById,
+                                wlp.date_modified as dateModified,
+                                wlp.modified_by_id as modifiedById,
+                                wlt.white_list_type as whiteListType
+                                from flow.white_listed_position wlp
+                                    left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
+                                    where wlp.process_step_event_id = pse.id and wlp.archived is false)
+                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
     from flow.process_step_event pse
            inner join flow.event e on pse.event_id = e.id
            left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
