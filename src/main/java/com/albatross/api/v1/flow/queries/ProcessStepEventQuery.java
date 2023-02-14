@@ -417,7 +417,7 @@ public class ProcessStepEventQuery {
                                 wlt.white_list_type as whiteListType
                                 from flow.white_listed_position wlp
                                     left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
-                                    where wlp.process_step_event_id = pse.id)
+                                    where wlp.process_step_event_id = pse.id and wlp.archived is false)
                         readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
         from flow.process_step_event pse
                inner join flow.event e on pse.event_id = e.id

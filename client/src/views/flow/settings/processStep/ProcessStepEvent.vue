@@ -63,7 +63,7 @@
             </template>
           </v-autocomplete>
           <v-btn color="primary"
-                 @click="saveEventDetails(selectedEvent)"
+                 @click="saveReadOnlyWhiteList(selectedEvent)"
           >Save
           </v-btn>
         </v-card>
@@ -1155,14 +1155,14 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)
-        field.positionsChanged = false
-        if (!field.customFieldGroupAssignmentReadOnly) {
-          this.$set(field, 'whiteListedPositions', [])
-        }
+        psEvent.positionsChanged = false
         handleHidingGlobalLoader(this, status)
+        this.snackbar = getSnackbar('SUCCESS', 'Event Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Field')
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Event')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
