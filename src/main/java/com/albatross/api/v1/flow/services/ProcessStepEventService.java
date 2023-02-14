@@ -101,11 +101,14 @@ public class ProcessStepEventService {
       params.put("userId", currentUser.trueUserId());
       params.put("companyId", currentUser.getCompanyId());
       params.put("processStepEventId", processStepEvent.getId());
+      params.put("readOnly", processStepEvent.getReadonly());
       params.put("eventId", processStepEvent.getEventId());
       params.put("processStepId", processStepEvent.getProcessStepId());
       params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY.id);
 
-      if(processStepEvent.getReadonlyWhiteListPositions().isEmpty()){
+      sqlCache.updateBySql(ProcessStepEventQuery.saveReadOnly, params);
+
+      if(!processStepEvent.getReadonly() || processStepEvent.getReadonlyWhiteListPositions().isEmpty()){
           //this means they removed ALL white listed positions
           sqlCache.updateBySql(ProcessStepEventQuery.archiveAllWhiteListPositionsForPSEvent, params);
       } else {

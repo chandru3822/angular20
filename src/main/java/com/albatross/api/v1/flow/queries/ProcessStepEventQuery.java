@@ -91,6 +91,7 @@ public class ProcessStepEventQuery {
                pse.process_step_id,
                pse.event_id,
                pse.initial_company_event_status_type_id,
+               pse.readonly,
                cest.event_status_type as initialEventStatusType,
                e.event_name,
                pse.archived,
@@ -450,6 +451,15 @@ public class ProcessStepEventQuery {
                modified_by_id = :modifiedById,
                date_modified = now()
            where id = :id
+       """;
+
+    //language=PostgreSQL
+    public final static String saveReadOnly = """
+    update flow.process_step_event
+         set readonly = :readOnly,
+             modified_by_id = :userId,
+             date_modified = now()
+         where id = :processStepEventId
        """;
 
   //language=PostgreSQL

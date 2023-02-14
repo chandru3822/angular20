@@ -28,13 +28,19 @@
           </v-btn>
         </v-card>
         <v-card class="pa-4 mt-4">
-          <div class="title-medium">Readonly</div>
+          <v-card-title class="title-medium pa-0 mb-4" style="height: 40px">Readonly
+          <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
+                                                               v-model="selectedEvent.readonly"></v-checkbox>
+          </v-card-title>
+          <v-card-text>
           <v-autocomplete
+              v-if="selectedEvent.readonly"
             v-model="selectedEvent.readonlyWhiteListPositions"
             :items="positions"
             label="Whitelisted Positions"
             item-text="position"
             item-value="positionId"
+              :disabled="!userCanEdit"
             return-object
             multiple
             clearable
@@ -62,10 +68,11 @@
               ></v-divider>
             </template>
           </v-autocomplete>
-          <v-btn color="primary"
+          <v-btn color="primary" v-if="selectedEvent.readonly && userCanEdit"
                  @click="saveReadOnlyWhiteList(selectedEvent)"
           >Save
           </v-btn>
+          </v-card-text>
         </v-card>
       </v-col>
 
