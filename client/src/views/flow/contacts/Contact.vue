@@ -877,17 +877,16 @@ export default {
           contactId: parseInt(this.contactId)
         }
         const {data, status} = await getRequestWithParams(`/processes`, {params})
-        this.availableProcesses = data.filter(p => {
-          if (this.userPositionIds.length === 0) {
-            //super user
-            return p;
-          }
-          for(let id of this.userPositionIds) {
-            if(!p.denyListPositions.find(dlp => dlp.positionId === id)){
-              return p;
+        this.availableProcesses = data
+            if(!this.$store.getters.isFullAdmin) { //7 Oaks admin should be able to see all processes
+            this.availableProcesses = this.availableProcesses.filter(p => {
+                for (let id of this.userPositionIds) {
+                  if (!p.denyListPositions.find(dlp => dlp.positionId === id)) {
+                    return p;
+                  }
+                }
+              })
             }
-          }
-        })
         this.selectedProcess = data?.length === 1 ? data[0] : {}
         this.processesLoading = false
       } catch (e) {
