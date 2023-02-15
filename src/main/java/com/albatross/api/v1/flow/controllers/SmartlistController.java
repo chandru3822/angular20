@@ -1,13 +1,15 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistSharable;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessDTO;
 import com.albatross.api.v1.flow.services.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -59,12 +61,30 @@ public class SmartlistController {
   }
 
   @GetMapping(value = "/sharables", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistSharable>> getSharableEntities() {
+  public ResponseEntity<List<SmartlistAccessControl>> getSharableEntities() {
     return new ResponseEntity<>(smartlistService.getSharableEntities(), HttpStatus.OK);
   }
 
-  @PostMapping(value = "/{smartlistId}/share", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<SmartlistSharable> addSmartlistShare(@RequestBody SmartlistSharable share) {
-    return new ResponseEntity<>(smartlistService.addShare(share), HttpStatus.OK);
+  @GetMapping(value = "/access", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistAccessControl>> getSmartlistAvailableAccess() {
+    return new ResponseEntity<>(smartlistService.getAvailableAccess(), HttpStatus.OK);
+  }
+
+  @Transactional
+  @PostMapping(value = "/{smartlistId}/access")
+  public ResponseEntity<Void> updateSmartlistAccess(@RequestBody SmartlistAccessDTO smartlistAccess) {
+    if (smartlistAccess.getNewAccess() != null) {
+      smartlistService.addAccess(smartlistAccess.getNewAccess());
+    }
+
+    if (smartlistAccess.isUpdatePublic()) {
+      //smartlistService.updatePublic(smartlistAccess.smartlist.getId(), smartlistAccess.isPublic);
+    }
+
+    if (smartlistAccess.getUpdatedAccess() != null && !smartlistAccess.getUpdatedAccess().isEmpty()) {
+      //smartlistService.updateAccess(smartlistAccess.getUpdatedAccess);
+    }
+
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

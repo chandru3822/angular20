@@ -15,13 +15,21 @@
           class="body-large"
           :items="sharables"
           label="Add Users and Organizations"
-          :item-text="getSharableText"
+          :item-text="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
           return-object
-          @input="addSharable"
-        ></v-autocomplete>
+          @input="updateNewAccess"
+        />
+
+        <v-autocomplete
+          v-model="newAccess.accessControlId"
+          class="body-large"
+          :items="accessLevels"
+          :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+          item-value="accessControlId"
+        />
 
         <v-checkbox
-          v-model="smartlist.isPublic"
+          v-model="isPublic"
           label="Make Public"
           :hide-details="true"
           :ripple="false"
@@ -41,7 +49,7 @@
         <v-btn
           color="primary"
           class="white--text elevation-2 text-capitalize mr-2 mb-2"
-          @click="addSharable"
+          @click="updateAccess"
         >
           Share
         </v-btn>
@@ -75,35 +83,72 @@ const emit = defineEmits(['closed-dialog'])
 //a list of user positions and orgs the smartlist can be shared with
 let sharables = ref([])
 
+let accessLevels = ref([])
+
 //a list of user positions and orgs the smartlist is CURRENTLY shared with
-let shares = ref([])
+let currentAccess = ref([])
+
+let newAccess = ref({accessControlId: 1})
+let isPublic = ref(props.smartlist.public)
+
+const updateNewAccess = (access) => {
+  newAccess.value = {
+    ...access,
+    smartlistId: props.smartlist.id,
+    accessControlId: newAccess.value.accessControlId,
+    updated: true
+  }
+}
 
 const getSharables = async () => {
   const {data} = await getRequest(`/smartlist/sharables`)
   sharables.value = data
 }
 
-//append position to name if the sharable item is a user
-const getSharableText = (sharable) => (sharable.isUser) ? `${sharable.name} - ${sharable.position}` : sharable.name
+const getAccessLevels = async () => {
+  const {data} = await getRequest(`/smartlist/access`)
+  accessLevels.value = data
+}
 
-const addSharable = async (sharable) => {
+const updateAccess = async () => {
+
+  let payload = {}
+
+  if (newAccess.value.updated) {
+    payload.newAccess = newAccess.value
+  }
+
+  if (props.smartlist.public !== isPublic.value) {
+    payload.updatePublic = true
+    payload.isPublic = isPublic.value
+  }
+
+  //add modified access levels to payload
 
   let snackbar
 
-  try {
-    store.commit(AppMutations.SET_LOADING, true)
-    const {data} = await postRequest(`/smartlist/${props.smartlist.id}/share`, {...sharable, smartlistId: props.smartlist.id})
+  if (Object.keys(payload).length > 0) {
+    try {
+      store.commit(AppMutations.SET_LOADING, true)
+      await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
+      snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
+      emit('closed-dialog')
+    } catch (err) {
+      logError(err)
+      snackbar = getSnackbar('ERROR', 'Error while Sharing Smartlist')
+    } finally {
+      handleHidingGlobalLoader(vueInstance, true)
+      store.commit(AppMutations.SHOW_SNACK, snackbar)
+    }
+  } else {
     snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
-  } catch (err) {
-    logError(err)
-    snackbar = getSnackbar('ERROR', 'Error while Sharing Smartlist')
-  } finally {
-    handleHidingGlobalLoader(vueInstance, true)
     store.commit(AppMutations.SHOW_SNACK, snackbar)
+    emit('closed-dialog')
   }
 }
 
 getSharables()
+getAccessLevels()
 </script>
 
 <style scoped lang="scss">

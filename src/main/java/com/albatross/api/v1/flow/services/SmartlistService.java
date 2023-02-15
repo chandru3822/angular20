@@ -8,7 +8,7 @@ import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistSharable;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
@@ -92,6 +92,10 @@ public class SmartlistService {
     return smartlist;
   }
 
+  public List<SmartlistAccessControl> getAvailableAccess() {
+    return sqlCache.queryBySql(SmartlistQuery.getAvailableAccess, null, SmartlistAccessControl.class);
+  }
+
 //  public List<SmartlistSharable> getShares(Long smartlistId) {
 //    //only smartlist owner and admins can see smartlist shares
 //    Smartlist smartlist = getById(smartlistId);
@@ -109,9 +113,9 @@ public class SmartlistService {
 //    //get and return sharables
 //  }
 
-  public SmartlistSharable addShare(@NotNull SmartlistSharable share) {
+  public SmartlistAccessControl addAccess(@NotNull SmartlistAccessControl access) {
     User user = securityService.getCurrentUser();
-    Smartlist smartlist = getById(share.getSmartlistId());
+    Smartlist smartlist = getById(access.getSmartlistId());
 
     if (!isOwnerOrAdmin(smartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
@@ -119,12 +123,12 @@ public class SmartlistService {
 
     //add and return sharable
     try {
-      HashMap<String, Object> params = om.convertValue(share, HashMap.class);
+      HashMap<String, Object> params = om.convertValue(access, HashMap.class);
       params.put("userId", user.getId());
-      Long newId = sqlCache.updateBySqlReturningId(SmartlistQuery.addShare, params, "id").longValue();
-      var newShare = new SmartlistSharable();
-      newShare.setId(newId);
-      return newShare;
+      Long newId = sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id").longValue();
+      var newAccess = new SmartlistAccessControl();
+      newAccess.setId(newId);
+      return newAccess;
     } catch (Exception e) {
       e.printStackTrace();
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
@@ -161,14 +165,14 @@ public class SmartlistService {
     return sqlCache.queryBySql(SmartlistQuery.getAll, params, Smartlist.class);
   }
 
-  public List<SmartlistSharable> getSharableEntities() {
+  public List<SmartlistAccessControl> getSharableEntities() {
     List<User> users = userService.getAllActiveUsers();
     List<Org> orgs = orgService.getAllActive();
 
     //combine lists
-    List<SmartlistSharable> combinedList = new ArrayList<>();
+    List<SmartlistAccessControl> combinedList = new ArrayList<>();
     users.forEach(u -> {
-      var share = new SmartlistSharable();
+      var share = new SmartlistAccessControl();
       share.setUserPositionId(u.getUserPositionId());
       share.setIsUser(true);
       share.setIsOrg(false);
@@ -178,7 +182,7 @@ public class SmartlistService {
     });
 
     orgs.forEach(o -> {
-      var share = new SmartlistSharable();
+      var share = new SmartlistAccessControl();
       share.setOrgId(o.getId());
       share.setIsOrg(true);
       share.setIsOrg(false);

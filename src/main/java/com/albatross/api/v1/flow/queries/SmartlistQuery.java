@@ -199,14 +199,19 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
-  public final static String getShares = """
-    
+  public final static String getAvailableAccess = """
+    select
+      id as "access_control_id",
+      access_level
+    from flow.access_control
+    where id = any(array[1,2]::bigint[])
+    order by display_order
   """;
 
   //language=PostgreSQL
-  public final static String addShare = """
-    insert into flow.smartlist_share (smartlist_id, org_id, user_position_id,created_by_id)
-    values (:smartlistId, :orgId, :userPositionId, :userId)
+  public final static String addAccess = """
+    insert into flow.smartlist_access_control (smartlist_id, org_id, user_position_id, access_control_id, created_by_id)
+    values (:smartlistId, :orgId, :userPositionId, :accessControlId, :userId)
     returning id
   """;
 
