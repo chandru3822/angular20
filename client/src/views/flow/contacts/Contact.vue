@@ -9,7 +9,7 @@
       <template v-slot:yes>Don't Save</template>
     </ConfirmationDialog>
     <!--    modal for editing contact fields -->
-    <ConfirmationDialog :open-dialog="showEditModal" parent-close
+    <ConfirmationDialog v-if="showEditModal" :open-dialog="showEditModal" parent-close
                         @confirm="validateForm()" @close-dialog="showEditModal = false">
       <template v-slot:title><div class="title-large">Contact Overview</div></template>
       <v-form ref="contactEditForm">
@@ -160,7 +160,6 @@
                         :details="overviewDetails"
           ></PageOverview>
           <v-divider class="mt-4"></v-divider>
-          <v-container>
           <v-toolbar color="transparent" flat>
             <div class="headline-small">Associated Projects</div>
             <v-spacer></v-spacer>
@@ -221,7 +220,6 @@
 
             </v-card>
           </div>
-          </v-container>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned scrollable show-xs mobile-padding-menu">
@@ -245,7 +243,7 @@
                            :show-sms-tab="false"></ProjectActivity>
         </div>
         <div v-if="contact && contact.id && showMobileOverview"
-             class="px-2 height-one-hunned overflow-y-auto ">
+             class="px-2 height-one-hunned overflow-y-auto mobile-background">
           <PageOverview page-name="Contact"
                         :show-edit-btn="contact && contact.id && userCanEdit"
                         @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
@@ -761,6 +759,8 @@ export default {
         this.fieldsSaving = true
         await this.saveContact()
         this.fieldsSaving = false
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -1072,9 +1072,6 @@ export default {
 }
 
 @media (max-width: 960px) {
-  .mobile-background {
-    background-color: white;
-  }
 
   .mobile-contact-header{
     padding-top: 12px;

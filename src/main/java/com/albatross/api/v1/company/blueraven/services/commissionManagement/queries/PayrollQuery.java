@@ -184,7 +184,7 @@ public class PayrollQuery {
     SET period_end        = :periodEndDate::date,
       description       = :description,
       updated_by        = :currentUserId,
-      selected_project_ids = :projectIds::BIGINT[],
+      selected_project_ids = coalesce(:projectIds::BIGINT[], '{}'::bigint[]),
       updated           = now()
     WHERE id = :payrollId
     """;
