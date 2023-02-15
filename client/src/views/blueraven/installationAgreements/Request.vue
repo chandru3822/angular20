@@ -311,6 +311,7 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'Email address updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
+        await this.fetchProjects(this.searchQuery);
       } catch (e) {
         this.$store.commit(AppMutations.SET_LOADING, false)
         console.error('*** ERROR ***', e)

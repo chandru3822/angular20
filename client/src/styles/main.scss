@@ -652,6 +652,10 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 }
 
 @media (max-width: 960px) {
+  .mobile-background {
+    background-color: white;
+  }
+
   .title-large-medium {
     font-family: lato;
     font-weight: 400;
