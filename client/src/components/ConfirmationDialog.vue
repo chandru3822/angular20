@@ -1,9 +1,12 @@
 <template>
   <v-dialog
+    class="confirmation-dialog"
     v-model="show"
     :retain-focus="retainFocus"
     :width="width || 500"
     @click:outside="no"
+    id = "dialogBox"
+    ref="dialogBox"
   >
     <v-card>
       <v-card-title
@@ -94,5 +97,10 @@ export default {
 <style lang="scss" scoped>
 .align-center {
   align-self: center;
+}
+
+.v-card__actions{
+  flex-wrap: wrap;
+  justify-content: right;
 }
 </style>
