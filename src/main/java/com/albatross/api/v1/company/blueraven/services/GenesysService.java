@@ -818,7 +818,6 @@ public class GenesysService {
     goclr.setPageSize(100);
     ContactListEntityListing contactListEntity = apiInstance.getOutboundContactlists(goclr);
     contactListNames.add(getContactListName(leadLevel));
-    contactListNames.add("LeadLevel_NBS");
 
     for (ContactList cl : contactListEntity.getEntities()) {
       if (contactListNames.contains(cl.getName())) {
