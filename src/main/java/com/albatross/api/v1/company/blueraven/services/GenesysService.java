@@ -289,7 +289,7 @@ public class GenesysService {
     String leadLevel = (String) contactMap.remove("lead_level");
 
     // Genesys contacts will have a lead level
-    if (leadLevel == null || leadLevel.isEmpty()) {
+    if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
     } else if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
@@ -509,7 +509,6 @@ public class GenesysService {
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
-    contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
@@ -534,7 +533,7 @@ public class GenesysService {
     String leadLevel = (String) contactMap.remove("lead_level");
 
     // Genesys contacts will have a lead level
-    if (leadLevel == null || leadLevel.isEmpty()) {
+    if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
     }
 
@@ -574,15 +573,28 @@ public class GenesysService {
       try {
         DialerContact currentContact = apiInstance.getOutboundContactlistContact(contactListId, contact.getId().toString());
         Map<String, Object> genesysContactData = currentContact.getData();
-        contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts") == null ? 0 : genesysContactData.get("Total Call Attempts"));
-        contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts") == null ? 0 : genesysContactData.get("Contacted Call Attempts"));
+        // Some list use the param TotalCallAttempts, others use Total Call Attempts (brilliant idea right?)
+        // Find the version being used and grab the value
+        if (genesysContactData.get("TotalCallAttempts") == null) {
+          contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts") == null ? 0 : genesysContactData.get("Total Call Attempts"));
+          contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts") == null ? 0 : genesysContactData.get("Contacted Call Attempts"));
+          contactMap.put("Call Scheduled", genesysContactData.get("Call Scheduled") == null ? "" : genesysContactData.get("Call Scheduled"));
+          contactMap.put("Custom_LastAttemptTime", "");
+        }
+        else {
+          contactMap.put("Total Call Attempts", genesysContactData.get("TotalCallAttempts") == null ? 0 : genesysContactData.get("TotalCallAttempts"));
+          contactMap.put("Contacted Call Attempts", genesysContactData.get("ContactedCallAttempts") == null ? 0 : genesysContactData.get("ContactedCallAttempts"));
+          contactMap.put("Call Scheduled", genesysContactData.get("CallScheduled") == null ? "" : genesysContactData.get("CallScheduled"));
+          contactMap.put("Custom_LastAttemptTime", genesysContactData.get("Custom_LastAttemptTime") == null ? "" : genesysContactData.get("Custom_LastAttemptTime"));
+        }
       } catch (Exception e) {
         contactMap.put("Total Call Attempts", 0);
         contactMap.put("Contacted Call Attempts", 0);
+        contactMap.put("Call Scheduled", "");
+        contactMap.put("Custom_LastAttemptTime", "");
       }
 
       HashMap<String, Object> contactMapNbs = (HashMap<String, Object>) contactMap.clone();
-      contactMapNbs.put("Custom_LastAttemptTime", "");
 
       if (!contactMapNbs.containsKey("referral")) {
         contactMapNbs.put("referral", false);
@@ -626,6 +638,8 @@ public class GenesysService {
       }
     }
 
+    // Custom_LastAttemptTime is not used the two cron lists below
+    contactMap.remove("Custom_LastAttemptTime");
     // Attempt to update contact in Sales Dev Retargeted Leads
     String contactListId = getContactListId(apiInstance, "Sales Dev Retargeted Leads");
 
@@ -770,6 +784,7 @@ public class GenesysService {
 
     return null;
   }
+
   private String getQueueName(String leadLevel) {
     if (leadLevel.equals("1")) {
       return "SMS Level 1";
