@@ -781,24 +781,24 @@ export default {
       }
     },
     getProcessStepEvents: async function () {
-      //this gets the events assigned to the process step so we know which ADD buttons to show
+      //this gets the events assigned to the procez_ss step so we know which ADD buttons to show
       try {
         const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
-        //todo: filter this data on whitelisted positions if readonly
-        //     .filter(pse => {
-        //   debugger
-        //   if(pse.readonly) {
-        //     for(let wlp in pse.readonlyWhiteListPositions) {
-        //       let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
-        //       if (match) {
-        //         return true
-        //       }
-        //     }
-        //     return false
-        //   }
-        // })
-        // debugger
+        if(!this.$store.getters.isFullAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
+          this.processStepEvents = this.processStepEvents.filter(pse => {
+                if(pse.readonly) {
+                  for(let wlp of pse.readonlyWhiteListPositions) {
+                    let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+                    if (match) {
+                      return true //if the user has a position that matches any of the whiteList positions, the user should see the event
+                    }
+                  }
+                  return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+                }
+                return true //if the event is not readonly, the user should see the event
+              })
+        }
         return status
       } catch (e) {
         console.error('*** ERROR ***', e)
