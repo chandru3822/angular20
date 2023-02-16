@@ -8,7 +8,7 @@ public class SmartlistQuery {
       s.id,
       s.name,
       s.company_object_type_id,
-      s.public "isPublic",
+      s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
@@ -40,7 +40,7 @@ public class SmartlistQuery {
       s.id,
       s.name,
       s.company_object_type_id,
-      s.public "isPublic",
+      s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
@@ -73,7 +73,7 @@ public class SmartlistQuery {
       s.id,
       s.name,
       s.company_object_type_id,
-      s.public "isPublic",
+      s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
@@ -104,7 +104,7 @@ public class SmartlistQuery {
       s.id,
       s.name,
       s.company_object_type_id,
-      s.public "isPublic",
+      s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
@@ -246,5 +246,15 @@ public class SmartlistQuery {
     where lower(s.name) = lower(:name::text) and
     cot.company_id = :companyId and
     s.archived is not true
+  """;
+
+  //language=PostgreSQL
+  public final static String updatePublic = """
+    update flow.smartlist
+    set
+      public = :public,
+      date_modified = now(),
+      modified_by_id = :userId
+    where id = :smartlistId
   """;
 }

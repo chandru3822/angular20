@@ -69,9 +69,21 @@ public class SmartlistService {
     return securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
   }
 
-  private boolean isOwnerOrAdmin(Smartlist smartlist) {
+  private boolean isOwnerOrAdmin(@NotNull Smartlist smartlist) {
     User user = securityService.getCurrentUser();
     return Objects.equals(smartlist.getOwnerId(), user.getId()) || isSmartlistAdmin();
+  }
+
+  public void updatePublicStatus(Long smartlistId, boolean isPublic) {
+    var smartlist = getById(smartlistId);
+
+    if (isOwnerOrAdmin(smartlist)) {
+      User user = securityService.getCurrentUser();
+      Map<String, Object> params = Map.of("smartlistId", smartlistId, "public", isPublic, "userId", user.getId());
+      sqlCache.updateBySql(SmartlistQuery.updatePublic, params);
+    } else {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
   }
 
   public Smartlist getById(Long id) {
@@ -113,9 +125,9 @@ public class SmartlistService {
 //    //get and return sharables
 //  }
 
-  public SmartlistAccessControl addAccess(@NotNull SmartlistAccessControl access) {
+  public SmartlistAccessControl addAccess(Long smartlistId, SmartlistAccessControl access) {
     User user = securityService.getCurrentUser();
-    Smartlist smartlist = getById(access.getSmartlistId());
+    Smartlist smartlist = getById(smartlistId);
 
     if (!isOwnerOrAdmin(smartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));

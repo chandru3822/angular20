@@ -39,7 +39,7 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn
-          @click.native="emit('closed-dialog')"
+          @click.native="emit('dialog-closed')"
           text
           color="primary"
           class="text-capitalize mr-2 mb-2"
@@ -78,7 +78,11 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['closed-dialog'])
+const emit = defineEmits([
+  'dialog-closed',
+  'updated-public',
+  'updated-owner'
+])
 
 //a list of user positions and orgs the smartlist can be shared with
 let sharables = ref([])
@@ -120,7 +124,7 @@ const updateAccess = async () => {
 
   if (props.smartlist.public !== isPublic.value) {
     payload.updatePublic = true
-    payload.isPublic = isPublic.value
+    payload.public = isPublic.value
   }
 
   //add modified access levels to payload
@@ -132,7 +136,10 @@ const updateAccess = async () => {
       store.commit(AppMutations.SET_LOADING, true)
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
       snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
-      emit('closed-dialog')
+      emit('dialog-closed')
+      if (props.smartlist.public !== isPublic.value) {
+        emit('updated-public', isPublic.value)
+      }
     } catch (err) {
       logError(err)
       snackbar = getSnackbar('ERROR', 'Error while Sharing Smartlist')
@@ -143,7 +150,7 @@ const updateAccess = async () => {
   } else {
     snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
     store.commit(AppMutations.SHOW_SNACK, snackbar)
-    emit('closed-dialog')
+    emit('dialog-closed')
   }
 }
 

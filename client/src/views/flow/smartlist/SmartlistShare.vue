@@ -6,7 +6,9 @@
       v-if="showDialog"
       :smartlist="smartlist"
       :open-dialog="showDialog"
-      @closed-dialog="showDialog = false"
+      @dialog-closed="showDialog = false"
+      @updated-public="(isPublic) => $emit('updated-public', isPublic)"
+      @updated-owner="$emit('updated-owner')"
     />
   </fragment>
 </template>
@@ -24,6 +26,8 @@ const props = defineProps({
     required: true
   }
 })
+
+const emit = defineEmits(['updated-public', 'updated-owner'])
 </script>
 
 <style scoped lang="scss">

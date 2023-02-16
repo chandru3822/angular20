@@ -72,13 +72,13 @@ public class SmartlistController {
 
   @Transactional
   @PostMapping(value = "/{smartlistId}/access")
-  public ResponseEntity<Void> updateSmartlistAccess(@RequestBody SmartlistAccessDTO smartlistAccess) {
+  public ResponseEntity<Void> updateSmartlistAccess(@PathVariable Long smartlistId, @RequestBody SmartlistAccessDTO smartlistAccess) {
     if (smartlistAccess.getNewAccess() != null) {
-      smartlistService.addAccess(smartlistAccess.getNewAccess());
+      smartlistService.addAccess(smartlistId, smartlistAccess.getNewAccess());
     }
 
     if (smartlistAccess.isUpdatePublic()) {
-      //smartlistService.updatePublic(smartlistAccess.smartlist.getId(), smartlistAccess.isPublic);
+      smartlistService.updatePublicStatus(smartlistId, smartlistAccess.isPublic());
     }
 
     if (smartlistAccess.getUpdatedAccess() != null && !smartlistAccess.getUpdatedAccess().isEmpty()) {

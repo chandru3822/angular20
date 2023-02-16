@@ -41,7 +41,10 @@
               />
             </td>
             <td class="td-action">
-              <smartlist-share :smartlist="smartlist" />
+              <smartlist-share
+                :smartlist="smartlist"
+                @updated-public="(isPublic) => smartlist.public = isPublic"
+              />
             </td>
             <td class="td-action">
               <smartlist-export :smartlist="smartlist" />

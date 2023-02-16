@@ -40,7 +40,10 @@
               />
             </td>
             <td class="td-action">
-              <smartlist-share :smartlist="smartlist" />
+              <smartlist-share
+                :smartlist="smartlist"
+                @updated-public="(isPublic) => smartlist.public = isPublic"
+              />
             </td>
             <td class="td-action">
               <smartlist-export :smartlist="smartlist" />
@@ -91,7 +94,7 @@ let smartlists = ref([])
 
 onMounted(async () => await getSmartlists())
 
-let getSmartlists = async () => {
+const getSmartlists = async () => {
   try {
     isLoading.value = true
     const {data} = await getRequest(`/smartlist/mine`)
