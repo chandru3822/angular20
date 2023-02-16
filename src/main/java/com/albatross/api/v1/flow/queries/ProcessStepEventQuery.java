@@ -9,6 +9,7 @@ public class ProcessStepEventQuery {
            pse.initial_company_event_status_type_id,
            cest.event_status_type as initial_event_status_type,
            pse.event_id,
+           pse.readonly,
            pse.archived,
            e.event_name,
            pse.display_order,
@@ -42,7 +43,27 @@ public class ProcessStepEventQuery {
                                     left join flow.company_event_status_type cest on psea.company_event_status_type_id = cest.id
                              WHERE psea.process_step_event_id = pse.id
                                AND psea.archived is not true
-                               ORDER BY psea.display_order) psea), '[]') AS "processStepEventActions"
+                               ORDER BY psea.display_order) psea), '[]') AS "processStepEventActions",
+            coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(readonlyWhiteListPositions)))
+                          FROM (
+                                select wlp.id,
+                                wlp.process_step_event_id as "processStepEventId",
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.process_step_id as "processId",
+                                wlp.company_id as "companyId",
+                                wlp.archived,
+                                wlp.white_list_type_id as "whiteListTypeId",
+                                wlp.date_created as dateCreated,
+                                wlp.created_by_id as createdById,
+                                wlp.date_modified as dateModified,
+                                wlp.modified_by_id as modifiedById,
+                                wlt.white_list_type as whiteListType
+                                from flow.white_listed_position wlp
+                                    left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
+                                    where wlp.process_step_event_id = pse.id and wlp.archived is false)
+                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
     from flow.process_step_event pse
            inner join flow.event e on pse.event_id = e.id
            left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
@@ -91,6 +112,7 @@ public class ProcessStepEventQuery {
                pse.process_step_id,
                pse.event_id,
                pse.initial_company_event_status_type_id,
+               pse.readonly,
                cest.event_status_type as initialEventStatusType,
                e.event_name,
                pse.archived,
@@ -398,7 +420,27 @@ public class ProcessStepEventQuery {
                                         inner join flow.work_queue_category wqc on wqc.id = wqt.work_queue_category_id
                                  WHERE pswqt.process_step_event_id = pse.id AND pswqt.archived is not true
                                  order by wqt.work_queue_type
-                               ) workQueueTypes), '[]') AS "workQueueTypes"
+                               ) workQueueTypes), '[]') AS "workQueueTypes",
+                coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(readonlyWhiteListPositions)))
+                          FROM (
+                                select wlp.id,
+                                wlp.process_step_event_id as "processStepEventId",
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.process_step_id as "processId",
+                                wlp.company_id as "companyId",
+                                wlp.archived,
+                                wlp.white_list_type_id as "whiteListTypeId",
+                                wlp.date_created as dateCreated,
+                                wlp.created_by_id as createdById,
+                                wlp.date_modified as dateModified,
+                                wlp.modified_by_id as modifiedById,
+                                wlt.white_list_type as whiteListType
+                                from flow.white_listed_position wlp
+                                    left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
+                                    where wlp.process_step_event_id = pse.id and wlp.archived is false)
+                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
         from flow.process_step_event pse
                inner join flow.event e on pse.event_id = e.id
                inner join flow.company_event_status_type cest on pse.initial_company_event_status_type_id = cest.id
@@ -431,6 +473,49 @@ public class ProcessStepEventQuery {
                date_modified = now()
            where id = :id
        """;
+
+    //language=PostgreSQL
+    public final static String saveReadOnly = """
+    update flow.process_step_event
+         set readonly = :readOnly,
+             modified_by_id = :userId,
+             date_modified = now()
+         where id = :processStepEventId
+       """;
+
+  //language=PostgreSQL
+    public final static String archiveAllWhiteListPositionsForPSEvent = """
+        update flow.white_listed_position
+            set archived = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where company_id = :companyId
+        and white_list_type_id = :whiteListTypeId
+    """;
+
+    //language=PostgreSQL
+    public final static String archiveWhiteListPositionsNoLongerUsed = """
+        update flow.white_listed_position
+            set archived = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where company_id = :companyId
+        and position_id not in (:positionIdsUsed)
+        and white_list_type_id = :whiteListTypeId
+    """;
+
+    //language=PostgreSQL
+    public final static String insertWhiteListPosition = """
+        insert into flow.white_listed_position(position_id, process_step_event_id, event_id, process_step_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+            select :positionId, :processStepEventId, :eventId, :processStepId, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
+            where not exists ( select id 
+                                from flow.white_listed_position
+                                where process_step_event_id = :processStepEventId
+                                and position_id = :positionId
+                                and company_id = :companyId
+                                and white_list_type_id = :whiteListTypeId
+                                and archived is not true)
+    """;
 
   //language=PostgreSQL
   public final static String deleteEventFromStep = """
