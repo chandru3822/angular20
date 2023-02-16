@@ -507,7 +507,6 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
@@ -535,6 +534,14 @@ public class GenesysService {
     // Genesys contacts will have a lead level
     if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
+    }
+
+    String leadStatus = (String) contactMap.get("lead_status");
+    if (leadStatus.equals("New") || leadStatus.equals("Attempted Contact")) {
+      contactMap.put("contactcallable", 1);
+    }
+    else {
+      contactMap.put("contactcallable", 0);
     }
 
     contactMap.put("QueueName", getQueueName(leadLevel));
