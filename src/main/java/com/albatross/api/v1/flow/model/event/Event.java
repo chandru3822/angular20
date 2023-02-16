@@ -17,9 +17,12 @@ public class Event {
 
   private Long id, companyId, resourceCustomFieldId;
   private String eventName;
-  private Boolean archived, startTimeReadOnly, endTimeReadOnly, resourceReadOnly;
+  private Boolean archived, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden;
   private List<CustomFieldGroup> customFieldGroups;
   private List<EventCompanyEventStatusType> companyEventStatusTypes;
-  private List<WhiteListedPosition> startTimeWhiteListedPositions, endTimeWhiteListedPositions, resourceWhiteListedPositions;
+  private List<WhiteListedPosition>
+          startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions,
+          endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions,
+          resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
 }
 
