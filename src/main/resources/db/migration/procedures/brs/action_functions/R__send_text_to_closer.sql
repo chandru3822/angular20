@@ -16,6 +16,7 @@ declare
     v_appt_end_time text;
     v_system_size text;
     v_installation_start_time text;
+    v_project_name text;
 BEGIN
 
     -- get the closers phone number
@@ -24,7 +25,7 @@ BEGIN
     select u.phone_number, u.first_name, u.id, (closer_appointment_start at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
            (closer_appointment_end at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text, pd.contact_name, pd.project_street1,
            pd.project_city, pd.project_state_abbreviation, pd.system_size::text,
-           (pd.installation_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text
+           (pd.installation_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text, pd.project_name
     into v_closer_phone_number,
          v_closer_first_name,
          v_closer_user_id,
@@ -35,7 +36,8 @@ BEGIN
          v_contact_city,
          v_contact_state,
          v_system_size,
-         v_installation_start_time
+         v_installation_start_time,
+         v_project_name
     from brs.project_details pd
         inner join flow."user" u on u.id = pd.closer_user_id
         inner join flow.user_position up on up.id = pd.closer_user_position_id
@@ -150,6 +152,30 @@ BEGIN
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
                  concat('The zip code approval request for ', v_contact_name, '(', p_project_id, ') has been denied'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 18 then
+          -- do the message for id 18 = proposal started
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('Proposal started: The proposal for ', v_project_name, '(', p_project_id, ') has been claimed and is actively being worked on.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 19 then
+          -- do the message for id 19 = proposal complete - project
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('The proposal for ' , v_project_name, '(', p_project_id, ') is complete.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 20 then
+          -- do the message for id 20 = regen started
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('Regen started: A regen for ' , v_project_name, '(', p_project_id, ') has been claimed and is actively being worked on.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 21 then
+          -- do the message for id 21 = regen completed
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('The regen for ' , v_project_name, '(', p_project_id, ') is complete.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
