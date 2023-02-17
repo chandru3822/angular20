@@ -17,9 +17,9 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-card color="transparent">
-          <v-row class="mx-3">
+          <v-row class="mx-3" cols="12">
             <!--Start Time White Listed Fields-->
-            <v-col cols="5">
+            <v-col cols="12" md="5" class="py-0">
               <v-text-field
                 label="Start Time"
                 readonly disabled
@@ -128,9 +128,9 @@
               </v-card>
               </v-row>
             </v-col>
-            <v-col cols="1"></v-col>
+            <v-col style="height: 0" cols="0" md="1"></v-col>
             <!--End Time White Listed Fields-->
-            <v-col cols="5">
+            <v-col cols="12" md="5" class="py-0">
               <v-text-field
                 label="End Time"
                 readonly disabled
@@ -241,7 +241,7 @@
           </v-row>
           <v-row class="mx-3">
             <!--Resource Fields-->
-            <v-col cols="5">
+            <v-col cols="12" md="5">
               <v-autocomplete
                 v-model="event.resourceCustomFieldId"
                 :items="eventResourceFields"
