@@ -721,7 +721,6 @@
         }
       },
       async saveReadOnlyAndWhiteList(field) {
-        debugger
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)

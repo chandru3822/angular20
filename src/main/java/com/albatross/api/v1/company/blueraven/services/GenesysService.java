@@ -257,7 +257,6 @@ public class GenesysService {
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("Total Call Attempts", 0);
     contactMap.put("Contacted Call Attempts", 0);
-    contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
@@ -350,10 +349,10 @@ public class GenesysService {
       contactMap.put("TotalCallAttempts", contactMap.remove("Total Call Attempts"));
       contactMap.put("ContactedCallAttempts", contactMap.remove("Contacted Call Attempts"));
       contactMap.put("CallScheduled", contactMap.remove("Call Scheduled"));
-      contactMap.put("ContactCallable", contactMap.remove("contactcallable"));
       contactMap.put("ZipCodeAutomaticTimeZone", contactMap.remove("zipcodeautomatictimezone"));
 
       wdc.setData(contactMap);
+      wdc.setCallable(true);
 
       apiInstance.postOutboundContactlistContacts(
       contactListId, List.of(wdc), true, false, false);
@@ -507,9 +506,7 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
-    contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
     contactMap.put("postal_code", contact.getPostalCode() != null ? contact.getPostalCode() : "");
@@ -536,6 +533,14 @@ public class GenesysService {
     // Genesys contacts will have a lead level
     if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
+    }
+
+    String leadStatus = (String) contactMap.get("lead_status");
+    if (leadStatus.equals("New") || leadStatus.equals("Attempted Contact")) {
+      dc.setCallable(true);
+    }
+    else {
+      dc.setCallable(false);
     }
 
     contactMap.put("QueueName", getQueueName(leadLevel));
@@ -574,15 +579,28 @@ public class GenesysService {
       try {
         DialerContact currentContact = apiInstance.getOutboundContactlistContact(contactListId, contact.getId().toString());
         Map<String, Object> genesysContactData = currentContact.getData();
-        contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts") == null ? 0 : genesysContactData.get("Total Call Attempts"));
-        contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts") == null ? 0 : genesysContactData.get("Contacted Call Attempts"));
+        // Some list use the param TotalCallAttempts, others use Total Call Attempts (brilliant idea right?)
+        // Find the version being used and grab the value
+        if (genesysContactData.get("TotalCallAttempts") == null) {
+          contactMap.put("Total Call Attempts", genesysContactData.get("Total Call Attempts") == null ? 0 : genesysContactData.get("Total Call Attempts"));
+          contactMap.put("Contacted Call Attempts", genesysContactData.get("Contacted Call Attempts") == null ? 0 : genesysContactData.get("Contacted Call Attempts"));
+          contactMap.put("Call Scheduled", genesysContactData.get("Call Scheduled") == null ? "" : genesysContactData.get("Call Scheduled"));
+          contactMap.put("Custom_LastAttemptTime", "");
+        }
+        else {
+          contactMap.put("Total Call Attempts", genesysContactData.get("TotalCallAttempts") == null ? 0 : genesysContactData.get("TotalCallAttempts"));
+          contactMap.put("Contacted Call Attempts", genesysContactData.get("ContactedCallAttempts") == null ? 0 : genesysContactData.get("ContactedCallAttempts"));
+          contactMap.put("Call Scheduled", genesysContactData.get("CallScheduled") == null ? "" : genesysContactData.get("CallScheduled"));
+          contactMap.put("Custom_LastAttemptTime", genesysContactData.get("Custom_LastAttemptTime") == null ? "" : genesysContactData.get("Custom_LastAttemptTime"));
+        }
       } catch (Exception e) {
         contactMap.put("Total Call Attempts", 0);
         contactMap.put("Contacted Call Attempts", 0);
+        contactMap.put("Call Scheduled", "");
+        contactMap.put("Custom_LastAttemptTime", "");
       }
 
       HashMap<String, Object> contactMapNbs = (HashMap<String, Object>) contactMap.clone();
-      contactMapNbs.put("Custom_LastAttemptTime", "");
 
       if (!contactMapNbs.containsKey("referral")) {
         contactMapNbs.put("referral", false);
@@ -595,7 +613,6 @@ public class GenesysService {
       contactMapNbs.put("TotalCallAttempts", contactMapNbs.remove("Total Call Attempts"));
       contactMapNbs.put("ContactedCallAttempts", contactMapNbs.remove("Contacted Call Attempts"));
       contactMapNbs.put("CallScheduled", contactMapNbs.remove("Call Scheduled"));
-      contactMapNbs.put("ContactCallable", contactMapNbs.remove("contactcallable"));
       contactMapNbs.put("ZipCodeAutomaticTimeZone", contactMapNbs.remove("zipcodeautomatictimezone"));
 
       dc.setData(contactMapNbs);
@@ -626,6 +643,8 @@ public class GenesysService {
       }
     }
 
+    // Custom_LastAttemptTime is not used the two cron lists below
+    contactMap.remove("Custom_LastAttemptTime");
     // Attempt to update contact in Sales Dev Retargeted Leads
     String contactListId = getContactListId(apiInstance, "Sales Dev Retargeted Leads");
 
@@ -770,6 +789,7 @@ public class GenesysService {
 
     return null;
   }
+
   private String getQueueName(String leadLevel) {
     if (leadLevel.equals("1")) {
       return "SMS Level 1";

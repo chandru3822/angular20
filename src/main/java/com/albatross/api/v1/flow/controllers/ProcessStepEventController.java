@@ -62,6 +62,12 @@ public class ProcessStepEventController {
     processStepEventService.deleteEventFromStep(processStepEventId);
   }
 
+  @PutMapping(value = "/{processStepEventId}/saveReadOnlyWhiteList")
+  public void saveReadOnlyWhiteList(@RequestParam(required = false) Boolean savePositions,
+                                    @RequestBody ProcessStepEvent processStepEvent) {
+      processStepEventService.saveProcessStepEventReadonlyWhiteList(processStepEvent, savePositions);
+  }
+
   //this endpoint is specifically made for the BR mobile app, BUT it is generic and anyone could use it so i put it here
   @GetMapping(value = "/{processStepEventId}/userCanEditStartTime", produces = MediaType.APPLICATION_JSON_VALUE)
   public Boolean userCanEditStartTime(@PathVariable Long processStepEventId) {
