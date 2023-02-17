@@ -4,6 +4,17 @@
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">Default Event Fields</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items class="flex-display">
+            <div class="flex-display align-center">
+              <v-btn class="save-btn text-capitalize"
+                     @click="saveChangesToDefaultFields"
+                     color="primary"
+                     v-if="userCanEdit"
+              >Save Default Event Fields
+              </v-btn>
+            </div>
+          </v-toolbar-items>
         </v-toolbar>
         <v-card color="transparent">
           <v-row class="mx-3">
@@ -17,7 +28,7 @@
               ></v-text-field>
               <v-row class="flex-display">
               <v-card flat color="primary lighten-9" class="square-card flex-grow-1" style="width: 50%">
-                <v-card-title style="height: 40px" class="py-0 text-no-wrap">
+                <v-card-title style="height: 40px" class="py-0 title-medium flex-display align-center">
                   Read Only
                   <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.startTimeReadOnly"></v-checkbox>
@@ -65,7 +76,7 @@
                 </v-card-text>
               </v-card>
               <v-card flat color="primary lighten-9" class="square-card flex-grow-1" style="width: 50%">
-                <v-card-title style="height: 40px" class="py-0">
+                <v-card-title style="height: 40px" class="py-0 title-medium">
                   Hidden
                   <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-2"
                               v-model="event.startTimeHidden"></v-checkbox>
@@ -128,7 +139,7 @@
               ></v-text-field>
               <v-row class="flex-display">
               <v-card flat color="primary lighten-9" class="square-card" style="width: 50%">
-                <v-card-title style="height: 40px" class="py-0">
+                <v-card-title style="height: 40px" class="py-0 title-medium">
                   Read Only
                   <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.endTimeReadOnly"></v-checkbox>
@@ -176,7 +187,7 @@
                 </v-card-text>
               </v-card>
                 <v-card flat color="primary lighten-9" class="square-card" style="width: 50%">
-                  <v-card-title style="height: 40px" class="py-0">
+                  <v-card-title style="height: 40px" class="py-0 title-medium">
                     Hidden
                     <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                                 v-model="event.endTimeHidden"></v-checkbox>
@@ -242,7 +253,7 @@
               ></v-autocomplete>
               <v-row class="flex-display">
               <v-card flat color="primary lighten-9" class="square-card" style="width:50%">
-                <v-card-title style="height: 40px" class="py-0">
+                <v-card-title style="height: 40px" class="py-0 title-medium">
                   Read Only
                   <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.resourceReadOnly"></v-checkbox>
@@ -290,7 +301,7 @@
                 </v-card-text>
               </v-card>
               <v-card flat color="primary lighten-9" class="square-card" style="width:50%">
-                <v-card-title style="height: 40px" class="py-0">
+                <v-card-title style="height: 40px" class="py-0 title-medium">
                   Hidden
                   <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                               v-model="event.resourceHidden"></v-checkbox>
@@ -339,16 +350,6 @@
               </v-card>
               </v-row>
             </v-col>
-            <v-col cols="1"></v-col>
-            <v-col cols="5">
-              <v-btn class="save-btn"
-                     @click="saveChangesToDefaultFields"
-                     color="primary"
-                     v-if="userCanEdit"
-              >Save Changes
-              </v-btn>
-            </v-col>
-
           </v-row>
         </v-card>
         <v-divider></v-divider>
