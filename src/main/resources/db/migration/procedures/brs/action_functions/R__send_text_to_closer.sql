@@ -157,25 +157,25 @@ BEGIN
           -- do the message for id 18 = proposal started
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
-                 concat('Proposal started: The proposal for ', v_project_name, '(', p_project_id, ') has been claimed and is actively being worked on.'),
+                 concat('Proposal started: The proposal for ', v_project_name, ' (', p_project_id, ') has been claimed and is actively being worked on.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         elseif p_message_type_id = 19 then
           -- do the message for id 19 = proposal complete - project
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
-                 concat('The proposal for ' , v_project_name, '(', p_project_id, ') is complete.'),
+                 concat('The proposal for ' , v_project_name, ' (', p_project_id, ') is complete.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         elseif p_message_type_id = 20 then
           -- do the message for id 20 = regen started
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
-                 concat('Regen started: A regen for ' , v_project_name, '(', p_project_id, ') has been claimed and is actively being worked on.'),
+                 concat('Regen started: A regen for ' , v_project_name, ' (', p_project_id, ') has been claimed and is actively being worked on.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         elseif p_message_type_id = 21 then
           -- do the message for id 21 = regen completed
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
-                 concat('The regen for ' , v_project_name, '(', p_project_id, ') is complete.'),
+                 concat('The regen for ' , v_project_name, ' (', p_project_id, ') is complete.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
