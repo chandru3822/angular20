@@ -132,7 +132,6 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
-    //add and return sharable
     try {
       HashMap<String, Object> params = om.convertValue(access, HashMap.class);
       params.put("userId", user.getId());
@@ -144,6 +143,24 @@ public class SmartlistService {
       e.printStackTrace();
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
     }
+  }
+
+  public void updateAccess(Long smartlistId, List<SmartlistAccessControl> access) {
+    User user = securityService.getCurrentUser();
+    Smartlist smartlist = getById(smartlistId);
+
+    if (!isOwnerOrAdmin(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    var params = access.stream().map(i -> Map.of(
+                                            "smartlistId", smartlistId,
+                                            "id", i.getId(),
+                                            "accessControlId", i.getAccessControlId(),
+                                            "userId", user.getId()
+                                          )).toList();
+
+    sqlCache.updateBatchBySql(SmartlistQuery.updateAccess, params);
   }
 
   public void delete(Long smartlistId) {

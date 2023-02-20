@@ -39,22 +39,30 @@
 
         <v-list>
           <template v-for="(accessLevel) in currentAccess">
-              <v-list-item>
-                <v-row>
-                  <v-col cols="7">
-                    {{ (accessLevel.isUser) ? `${accessLevel.name} - ${accessLevel.position}` : accessLevel.name }}
-                  </v-col>
+            <v-list-item>
+              <v-row>
+                <v-col cols="7">
+                  {{ (accessLevel.isUser) ? `${accessLevel.name} - ${accessLevel.position}` : accessLevel.name }}
+                </v-col>
 
-                  <v-col cols="5">
-                    <v-select
-                      :items="accessLevels"
-                      :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
-                      item-value="accessControlId"
-                      :value="accessLevel.accessControlId"
-                    />
-                  </v-col>
-                </v-row>
-              </v-list-item>
+                <v-col cols="5">
+                  <v-select
+                    v-model="accessLevel.accessControlId"
+                    :items="accessLevels"
+                    :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+                    item-value="accessControlId"
+                    @input="accessLevel.updated = true"
+                  >
+                    <template #append-item>
+                      <v-divider />
+                      <v-list-item @click="confirmOwnershipChange(accessLevel)">
+                        Transfer Ownership
+                      </v-list-item>
+                    </template>
+                  </v-select>
+                </v-col>
+              </v-row>
+            </v-list-item>
           </template>
         </v-list>
 
@@ -118,6 +126,7 @@ let currentAccess = ref([])
 
 let newAccess = ref({accessControlId: 1})
 let isPublic = ref(props.smartlist.public)
+let showOwnershipDialog = ref(false)
 
 const updateNewAccess = (access) => {
   newAccess.value = {
@@ -145,7 +154,9 @@ const getSmartlistAccess = async () => {
 
 const updateAccess = async () => {
 
-  let payload = {}
+  let payload = {
+    updatedAccess: []
+  }
 
   if (newAccess.value.updated) {
     payload.newAccess = newAccess.value
@@ -157,6 +168,14 @@ const updateAccess = async () => {
   }
 
   //add modified access levels to payload
+  currentAccess.value.forEach((i) => {
+    if (i.updated) {
+      payload.updatedAccess.push({
+        id: i.id,
+        accessControlId: i.accessControlId
+      })
+    }
+  })
 
   let snackbar
 
@@ -181,6 +200,10 @@ const updateAccess = async () => {
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     emit('dialog-closed')
   }
+}
+
+const confirmOwnershipChange = async (accessLevel) => {
+  showOwnershipDialog.value = true
 }
 
 getSharables()

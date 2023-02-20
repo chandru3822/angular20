@@ -87,7 +87,7 @@ public class SmartlistController {
     }
 
     if (smartlistAccess.getUpdatedAccess() != null && !smartlistAccess.getUpdatedAccess().isEmpty()) {
-      //smartlistService.updateAccess(smartlistAccess.getUpdatedAccess);
+      smartlistService.updateAccess(smartlistId, smartlistAccess.getUpdatedAccess());
     }
 
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);

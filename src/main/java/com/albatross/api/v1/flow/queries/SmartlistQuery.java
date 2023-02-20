@@ -240,6 +240,19 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String updateAccess = """
+    --using smartlistId for security so users can't arbitrarily update access controls for other smartlists
+    update flow.smartlist_access_control
+      set
+        access_control_id = :accessControlId,
+        modified_by_id = :userId,
+        date_modified = now()
+      where
+        id = :id and
+        smartlist_id = :smartlistId
+  """;
+
+  //language=PostgreSQL
   public final static String create = """
     insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
     values (:name, :companyObjectTypeId, :public, :ownerId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
