@@ -70,6 +70,11 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.getAvailableAccess(), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/{smartlistId}/access", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistAccessControl>> getSmartlistAccess(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getAccessById(smartlistId), HttpStatus.OK);
+  }
+
   @Transactional
   @PostMapping(value = "/{smartlistId}/access")
   public ResponseEntity<Void> updateSmartlistAccess(@PathVariable Long smartlistId, @RequestBody SmartlistAccessDTO smartlistAccess) {

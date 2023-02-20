@@ -209,6 +209,30 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String getAccessById = """
+    select
+      sac.id,
+      sac.smartlist_id,
+      sac.org_id,
+      sac.user_position_id,
+      sac.user_position_id is not null as "isUser",
+      sac.org_id is not null as "isOrg",
+      sac.access_control_id,
+      ac.access_level,
+      case when sac.org_id is not null then o.org_name else u.first_name || ' ' || u.last_name end as "name",
+      p.position
+    from flow.smartlist_access_control sac
+    inner join flow.access_control ac on sac.access_control_id = ac.id
+    left join flow.user_position up on sac.user_position_id = up.id
+    left join flow.user u on up.user_id = u.id
+    left join flow.position p on up.position_id = p.id
+    left join flow.org o on sac.org_id = o.id
+    where
+      sac.smartlist_id = :smartlistId and
+      sac.archived is false
+  """;
+
+  //language=PostgreSQL
   public final static String addAccess = """
     insert into flow.smartlist_access_control (smartlist_id, org_id, user_position_id, access_control_id, created_by_id)
     values (:smartlistId, :orgId, :userPositionId, :accessControlId, :userId)

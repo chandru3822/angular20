@@ -108,22 +108,21 @@ public class SmartlistService {
     return sqlCache.queryBySql(SmartlistQuery.getAvailableAccess, null, SmartlistAccessControl.class);
   }
 
-//  public List<SmartlistSharable> getShares(Long smartlistId) {
-//    //only smartlist owner and admins can see smartlist shares
-//    Smartlist smartlist = getById(smartlistId);
-//
-//    if (smartlist == null) {
-//      return Collections.emptyList();
-//    }
-//
-//    User user = securityService.getCurrentUser();
-//
-//    if (!isOwnerOrAdmin(smartlist)) {
-//      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
-//    }
-//
-//    //get and return sharables
-//  }
+  public List<SmartlistAccessControl> getAccessById(Long smartlistId) {
+    Smartlist smartlist = getById(smartlistId);
+
+    if (!isOwnerOrAdmin(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
+    }
+
+    User user = securityService.getCurrentUser();
+
+    return sqlCache.queryBySql(
+      SmartlistQuery.getAccessById,
+      Map.of("smartlistId", smartlistId, "userId", user.getId(), "companyId", user.getCompanyId()),
+      SmartlistAccessControl.class
+    );
+  }
 
   public SmartlistAccessControl addAccess(Long smartlistId, SmartlistAccessControl access) {
     User user = securityService.getCurrentUser();

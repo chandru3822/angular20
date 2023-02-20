@@ -34,6 +34,30 @@
           :hide-details="true"
           :ripple="false"
         />
+
+        People with Access
+
+        <v-list>
+          <template v-for="(accessLevel) in currentAccess">
+              <v-list-item>
+                <v-row>
+                  <v-col cols="7">
+                    {{ (accessLevel.isUser) ? `${accessLevel.name} - ${accessLevel.position}` : accessLevel.name }}
+                  </v-col>
+
+                  <v-col cols="5">
+                    <v-select
+                      :items="accessLevels"
+                      :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+                      item-value="accessControlId"
+                      :value="accessLevel.accessControlId"
+                    />
+                  </v-col>
+                </v-row>
+              </v-list-item>
+          </template>
+        </v-list>
+
       </v-card-text>
 
       <v-card-actions>
@@ -114,6 +138,11 @@ const getAccessLevels = async () => {
   accessLevels.value = data
 }
 
+const getSmartlistAccess = async () => {
+  const {data} = await getRequest(`/smartlist/${props.smartlist.id}/access`)
+  currentAccess.value = data
+}
+
 const updateAccess = async () => {
 
   let payload = {}
@@ -156,6 +185,7 @@ const updateAccess = async () => {
 
 getSharables()
 getAccessLevels()
+getSmartlistAccess()
 </script>
 
 <style scoped lang="scss">
