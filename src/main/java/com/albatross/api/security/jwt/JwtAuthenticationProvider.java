@@ -67,9 +67,14 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
   private Optional<UserAccountDetails> retrieveUserAccountDetails(JwtClaims token) {
     Long id = token.getUserId();
 
-    if (id.equals(SystemSettings.BR_SYSTEM_USER.getId())) {
+    SystemSettings brSystemUser = SystemSettings.BR_SYSTEM_USER;
+    if (id.equals(brSystemUser.getId())) {
       User systemUser = new User();
       systemUser.setId(id);
+      systemUser.setCompanyId(brSystemUser.getCompanyId());
+      systemUser.setHighestCompanyId(brSystemUser.getCompanyId());
+      systemUser.setParentCompanyId(brSystemUser.getCompanyId());
+      systemUser.setHighestParentCompanyId(brSystemUser.getCompanyId());
       // @TODO hardcoded the BR system user email since we're under a tight time constraint. This
       // needs to be more generalized with the system settings enum
       // @TODO in case we use other system users here
