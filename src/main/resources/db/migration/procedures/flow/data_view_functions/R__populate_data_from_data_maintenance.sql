@@ -1,5 +1,6 @@
 drop function if exists flow.populate_data_from_data_maintenance(p_data_view_id bigint,p_company_process_ids bigint[] );
-CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_id bigint,p_company_process_ids bigint[] default null)
+drop function if exists flow.populate_data_from_data_maintenance(p_data_view_maintenance_id bigint,p_data_view_id bigint,p_company_process_ids bigint[] );
+CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_maintenance_id bigint,p_data_view_id bigint,p_company_process_ids bigint[] default null)
   RETURNS text
 AS
 $BODY$
@@ -51,7 +52,7 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 2
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
       dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is null
       and processed is false
@@ -122,7 +123,7 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 1
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is null
       and processed is false
@@ -197,7 +198,7 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 4
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
@@ -241,7 +242,7 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 1
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
@@ -286,7 +287,7 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 2
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is null
       and dvfc2.default_field_id is null
@@ -332,7 +333,7 @@ BEGIN
            inner join flow.object_type ot on cot.object_type_id = ot.id and ot.id = 6
            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
            inner join flow.data_type dt on cdt.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.custom_field_group_assignment_id is not null
       and dvfc2.process_step_event_id is not null
       and dvfc2.default_field_id is null
@@ -373,7 +374,7 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 6
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.default_field_id is not null
       and dvfc2.process_step_event_id is not null
       and processed is false
@@ -413,7 +414,7 @@ BEGIN
            inner join flow.default_field df on dvfc2.default_field_id = df.id and df.object_type_id = 4
            inner join flow.object_type ot on df.object_type_id = ot.id
            inner join flow.data_type dt on df.data_type_id = dt.id
-    where dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
+    where dvfcd.id = p_data_view_maintenance_id and dvfcd.lov_old_name is null and dvfcd.lov_new_name is null and
           dvfc2.default_field_id is not null
       and dvfc2.process_step_id is not null
       and processed is false
@@ -445,7 +446,7 @@ BEGIN
     LOOP
       select substring(v_table, position(' ' in v_table) + 1)
       into v_alias_value;
-      v_sql = v_sql || $$ left join $$ || v_table || $$ on o.project_id = $$ || v_alias_value || $$.id$$;
+      v_sql = v_sql || $$ inner join $$ || v_table || $$ on o.project_id = $$ || v_alias_value || $$.id$$;
     END LOOP;
   v_sql = v_sql || $$)$$;
 
