@@ -43,6 +43,7 @@
               <smartlist-share
                 :smartlist="smartlist"
                 @updated-public="(isPublic) => smartlist.public = isPublic"
+                @updated-owner="removeFromList(smartlist)"
               />
             </td>
             <td class="td-action">
@@ -104,6 +105,10 @@ const getSmartlists = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+const removeFromList = (smartlist) => {
+  smartlists.value = smartlists.value.filter(i => i.id !== smartlist.id)
 }
 </script>
 
