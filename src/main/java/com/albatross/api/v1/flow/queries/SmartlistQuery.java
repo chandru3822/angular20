@@ -257,6 +257,17 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String deleteAccess = """
+    update flow.smartlist_access_control
+    set
+      archived = true,
+      modified_by_id = :userId,
+      date_modified = now()
+    where
+      id = :id
+  """;
+
+  //language=PostgreSQL
   public final static String updateOwner = """
     update flow.smartlist
     set

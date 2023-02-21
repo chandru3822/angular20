@@ -262,6 +262,7 @@ const updateOwner = async () => {
   } catch (err) {
     logError(err)
     snackbar = getSnackbar('ERROR', 'Error while transferring ownership')
+  } finally {
     handleHidingGlobalLoader(vueInstance, true)
     store.commit(AppMutations.SHOW_SNACK, snackbar)
   }

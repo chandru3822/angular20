@@ -93,16 +93,27 @@ public class SmartlistService {
   @Transactional
   public void updateOwner(Long smartlistId, SmartlistAccessControl newOwner) {
 
-    var smartlist = getById(smartlistId);
+    var smartlist = getById(smartlistId, true);
 
     if (!isOwnerOrAdmin(smartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
     }
 
+    //verify smartlist is currently shared with new owner
+    var currentAccess = smartlist.getAccessControl().stream()
+                                                       .filter(i -> i.getUserPositionId().equals(newOwner.getUserPositionId()))
+                                                       .findFirst()
+                                                       .orElse(null);
+
+    if (currentAccess == null) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "New owner does not have access to smartlist", new AccessDeniedException("New owner does not have access to smartlist"));
+    }
+
     var user = securityService.getCurrentUser();
 
-    //verify the position getting ownership is in the same company as the smartlist
+    //verify the user position getting ownership is in the same company as the smartlist
     var newOwnerPosition = userPositionService.getOne(newOwner.getUserPositionId());
+
     if (newOwnerPosition == null ||  !Objects.equals(smartlist.getCompanyId(), newOwnerPosition.getCompanyId())) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "New owner not found", new NotFoundException("New owner not found"));
     }
@@ -114,7 +125,7 @@ public class SmartlistService {
     ));
 
     //remove previous access of new owner
-
+    sqlCache.updateBySql(SmartlistQuery.deleteAccess, Map.of("id", currentAccess.getId(), "userId", user.getId()));
 
     //give old owner edit access
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
@@ -155,6 +166,16 @@ public class SmartlistService {
     return smartlist;
   }
 
+  public Smartlist getById(Long id, boolean includeAccessControl) {
+    var smartlist = getById(id);
+
+    if (includeAccessControl) {
+      smartlist.setAccessControl(getAccessById(id));
+    }
+
+    return smartlist;
+  }
+
   public List<SmartlistAccessControl> getAvailableAccess() {
     return sqlCache.queryBySql(SmartlistQuery.getAvailableAccess, null, SmartlistAccessControl.class);
   }
@@ -170,7 +191,7 @@ public class SmartlistService {
 
     return sqlCache.queryBySql(
       SmartlistQuery.getAccessById,
-      Map.of("smartlistId", smartlistId, "userId", user.getId(), "companyId", user.getCompanyId()),
+      Map.of("smartlistId", smartlistId, "userId", user.getId()),
       SmartlistAccessControl.class
     );
   }
