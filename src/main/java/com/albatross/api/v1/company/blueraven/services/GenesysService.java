@@ -257,7 +257,6 @@ public class GenesysService {
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
     contactMap.put("Total Call Attempts", 0);
     contactMap.put("Contacted Call Attempts", 0);
-    contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("Call Scheduled", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
@@ -350,10 +349,10 @@ public class GenesysService {
       contactMap.put("TotalCallAttempts", contactMap.remove("Total Call Attempts"));
       contactMap.put("ContactedCallAttempts", contactMap.remove("Contacted Call Attempts"));
       contactMap.put("CallScheduled", contactMap.remove("Call Scheduled"));
-      contactMap.put("ContactCallable", contactMap.remove("contactcallable"));
       contactMap.put("ZipCodeAutomaticTimeZone", contactMap.remove("zipcodeautomatictimezone"));
 
       wdc.setData(contactMap);
+      wdc.setCallable(true);
 
       apiInstance.postOutboundContactlistContacts(
       contactListId, List.of(wdc), true, false, false);
@@ -507,7 +506,6 @@ public class GenesysService {
         "mobile", contact.getMobile() != null ? contact.getMobile().replaceAll("[^0-9]", "") : "");
     contactMap.put(
         "contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId() : "");
-    contactMap.put("contactcallable", 1);
     contactMap.put("zipcodeautomatictimezone", "");
     contactMap.put("callerId", getCallerGroupNumber(contact));
     contactMap.put("city", contact.getCity() != null ? contact.getCity() : "");
@@ -535,6 +533,14 @@ public class GenesysService {
     // Genesys contacts will have a lead level
     if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
       return;
+    }
+
+    String leadStatus = (String) contactMap.get("lead_status");
+    if (leadStatus.equals("New") || leadStatus.equals("Attempted Contact")) {
+      dc.setCallable(true);
+    }
+    else {
+      dc.setCallable(false);
     }
 
     contactMap.put("QueueName", getQueueName(leadLevel));
@@ -607,7 +613,6 @@ public class GenesysService {
       contactMapNbs.put("TotalCallAttempts", contactMapNbs.remove("Total Call Attempts"));
       contactMapNbs.put("ContactedCallAttempts", contactMapNbs.remove("Contacted Call Attempts"));
       contactMapNbs.put("CallScheduled", contactMapNbs.remove("Call Scheduled"));
-      contactMapNbs.put("ContactCallable", contactMapNbs.remove("contactcallable"));
       contactMapNbs.put("ZipCodeAutomaticTimeZone", contactMapNbs.remove("zipcodeautomatictimezone"));
 
       dc.setData(contactMapNbs);
