@@ -1104,6 +1104,7 @@ export default {
         '1,2', // open and close paren next to each other
         '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
         '0,0', // two requirements right next to each other
+        '0,1', //requirement then open paren next to each other like 1 (3)
         '3,4', // AND OR next to each other
         '1,3', // open paren then AND
         '1,4', // open paren then OR
