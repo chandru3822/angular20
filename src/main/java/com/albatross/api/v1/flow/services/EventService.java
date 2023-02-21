@@ -57,8 +57,11 @@ public class EventService {
     params.put("modifiedById", currentUser.trueUserId());
     params.put("resourceCustomFieldId", event.getResourceCustomFieldId());
     params.put("startTimeReadOnly", event.getStartTimeReadOnly());
+    params.put("startTimeHidden", event.getStartTimeHidden());
     params.put("endTimeReadOnly", event.getEndTimeReadOnly());
+    params.put("endTimeHidden", event.getEndTimeHidden());
     params.put("resourceReadOnly", event.getResourceReadOnly());
+    params.put("resourceHidden", event.getResourceHidden());
     sqlCache.updateBySql(EventQuery.saveChangesToDefaultFields, params);
   }
 
@@ -347,6 +350,13 @@ public class EventService {
           "startTimeWhiteListedPositions",
           new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
 
+      TypeReference<List<WhiteListedPosition>> startTimeHiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "startTimeHiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(startTimeHiddenWhiteListedPositionsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> endTimeWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
@@ -354,12 +364,26 @@ public class EventService {
           "endTimeWhiteListedPositions",
           new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
 
+      TypeReference<List<WhiteListedPosition>> endTimeHiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "endTimeHiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(endTimeHiddenWhiteListedPositionsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> resourceWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
           List.class,
           "resourceWhiteListedPositions",
           new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> resourceHiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "resourceHiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 }

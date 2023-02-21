@@ -1,14 +1,10 @@
 drop function if exists flow.run_view_maintenance();
 CREATE OR REPLACE function flow.run_view_maintenance()
-  returns table
-          (
-            v_sql text
-          )
+  returns void
 AS
 $BODY$
 declare
   x                 record;
-  exe               record;
   v_sql             text;
   v_count           bigint;
   v_view_name       text;
@@ -16,31 +12,7 @@ declare
   v_schema_name     text;
 BEGIN
 
-  create temp table sql_statements
-  (
-    sql_statements text
-  ) on commit drop;
-
-  create temp table temp_data_view_maintenance on commit drop as
-    (select distinct coalesce(dv.id, dvm.data_view_id)       as data_view_id,
-                     coalesce(c.schema_name, c1.schema_name) as schema_name,
-                     coalesce(dv.view_name, dv1.view_name)   as view_name,
-                     dvm.company_process_ids,
-                     dvm.company_process_ids_added,
-                     dvm.data_view_field_config_id,
-                     coalesce(c.id, c1.id)                   as company_id,
-                     dvm.id
-     from flow.data_view_maintenance dvm
-            left join flow.data_view_field_config dvfc on dvm.data_view_field_config_id = dvfc.id
-            left join flow.data_view dv on dvfc.data_view_id = dv.id
-            left join flow.company c on dv.company_id = c.id
-            left join flow.data_view dv1 on dvm.data_view_id = dv1.id
-            left join flow.company c1 on dv1.company_id = c1.id
-     where dvm.processed is false
-       and dvm.lov_new_name is null
-       and dvm.lov_old_name is null);
-
-  for x in select data_view_id
+  for x in select data_view_id,id
            from flow.data_view_maintenance
            where company_process_ids_added is true
              and processed = false
@@ -48,21 +20,32 @@ BEGIN
     loop
       insert into flow.data_view_maintenance(data_view_field_config_id, processed, date_created,
                                              company_process_ids_added)
-        (select id, false, now(), true
+        (select id, false, now(), false
          from flow.data_view_field_config dvfc2
          where dvfc2.data_view_id = x.data_view_id);
+      update flow.data_view_maintenance d
+    set processed = true
+    where d.id = x.id;
     end loop;
 
-  for x in select data_view_id,
-                  schema_name,
-                  view_name,
-                  company_process_ids,
-                  company_process_ids_added,
-                  data_view_field_config_id,
-                  company_id,
-                  id
-           from temp_data_view_maintenance
-
+  for x in select distinct coalesce(dv.id, dvm.data_view_id)       as data_view_id,
+                           coalesce(c.schema_name, c1.schema_name) as schema_name,
+                           coalesce(dv.view_name, dv1.view_name)   as view_name,
+                           dvm.company_process_ids,
+                           dvm.company_process_ids_added,
+                           dvm.data_view_field_config_id,
+                           coalesce(c.id, c1.id)                   as company_id,
+                           dvm.id
+           from flow.data_view_maintenance dvm
+                  left join flow.data_view_field_config dvfc on dvm.data_view_field_config_id = dvfc.id
+                  left join flow.data_view dv on dvfc.data_view_id = dv.id
+                  left join flow.company c on dv.company_id = c.id
+                  left join flow.data_view dv1 on dvm.data_view_id = dv1.id
+                  left join flow.company c1 on dv1.company_id = c1.id
+           where dvm.processed is false
+             and dvm.lov_new_name is null
+             and dvm.lov_old_name is null
+            order by dvm.id
     loop
       v_sql = null;
       if x.data_view_field_config_id is null and x.company_process_ids_added is false then
@@ -74,9 +57,8 @@ BEGIN
         group by x.schema_name, x.view_name;
 
         if v_sql is not null then
-          raise notice 'v_sql_line: %', v_sql;
+         -- raise notice 'v_sql_line: %', v_sql;
           execute v_sql;
-          insert into sql_statements(sql_statements) values (v_sql);
         end if;
       elsif x.data_view_field_config_id is null and x.company_process_ids_added is true then
         v_sql = $$insert into $$ || x.schema_name || $$.$$ || x.view_name || $$(project_id, contact_id,company_id, date_modified)
@@ -84,26 +66,29 @@ BEGIN
             from flow.project p
             where p.company_process_id = any('$$ || x.company_process_ids::text || $$')); $$;
         if v_sql is not null then
+          --raise notice 'v_sql_line: %', v_sql;
           execute v_sql;
         end if;
         v_sql = null;
-        v_sql = flow.populate_data_from_data_maintenance(x.data_view_id, x.company_process_ids);
+        v_sql = flow.populate_data_from_data_maintenance(x.id,x.data_view_id, x.company_process_ids);
         if v_sql is not null then
-          raise notice 'v_sql_line: %', v_sql;
+          --raise notice 'v_sql_line: %', v_sql;
           execute v_sql;
-          insert into sql_statements(sql_statements) values (v_sql);
         end if;
       elsif x.data_view_field_config_id is not null and x.company_process_ids_added is false then
         v_sql = null;
-        v_sql = flow.populate_data_from_data_maintenance(x.data_view_id);
+        v_sql = flow.populate_data_from_data_maintenance(x.id,x.data_view_id);
         if v_sql is not null then
-          raise notice 'v_sql_line: %', v_sql;
+          --raise notice 'v_sql_line: %', v_sql;
           execute v_sql;
-          insert into sql_statements(sql_statements) values (v_sql);
         end if;
       end if;
+      update flow.data_view_maintenance dvm2
+      set processed = true
+      where processed = false and dvm2.id = x.id;
     end loop;
   v_sql = null;
+
   for x in select *
            from flow.data_view_maintenance dvm
            where dvm.lov_old_name is not null
@@ -124,24 +109,10 @@ BEGIN
               x.lov_new_name || ''' where ' || v_field_to_update || ' = ''' || x.lov_old_name || ''';';
 
       if v_sql is not  null then
-        raise notice 'v_sql_line: %', v_sql;
+        --raise notice 'v_sql_line: %', v_sql;
         execute v_sql;
-        insert into sql_statements(sql_statements) values (v_sql);
       end if;
     end loop;
-
-
-  select count(1)
-  into v_count
-  from sql_statements;
-
-  if v_count > 0 then
-    update flow.data_view_maintenance
-    set processed = true
-    where processed = false;
-  end if;
-  return query
-    select distinct * from sql_statements;
 
 END
 $BODY$

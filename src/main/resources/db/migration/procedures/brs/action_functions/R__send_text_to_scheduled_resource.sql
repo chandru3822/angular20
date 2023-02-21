@@ -90,6 +90,8 @@ BEGIN
 
     if p_message_type_id = 1 then
       select concat('A site survey has been added to your calendar. Project: ', v_project_id, ' Date: ', v_appt_start_time) into v_message;
+    elsif p_message_type_id = 2 then
+      select concat('A new event has been scheduled on your calendar for tomorrow: ', v_appt_start_time) into v_message;
     end if;
 
   for r in
