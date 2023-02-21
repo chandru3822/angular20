@@ -187,6 +187,7 @@
                     :disabled="uniqueAlreadyHasValue || showRoundRobin || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
                     :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
                     :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
+                    :hidden="getDefaultFieldHidden(selectedEvent.startTimeHiddenWhiteListedPositions, selectedEvent.startTimeHidden)"
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
                     label="Start Time"
@@ -756,6 +757,14 @@ export default {
       // if not readonly and the user can manage then ignore event status check
       return ((!this.userIsAdmin && !this.userCanManage && !readOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
         || readOnly
+        || !this.userCanEdit
+    },
+    getDefaultFieldHidden: function (wlp, hiddenFieldValue) {
+      let hidden = getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue)
+      // if events admin then they can edit any event fields, otherwise idk???
+      // if not readonly and the user can manage then ignore event status check
+      return ((!this.userIsAdmin && !this.userCanManage && !hidden) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+        || hidden
         || !this.userCanEdit
     },
     populateDirtyCfvs(field) {
