@@ -766,7 +766,6 @@ export default {
       // if not readonly and the user can manage then ignore event status check
       return ((!this.userIsAdmin && !this.userCanManage && !hidden) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
         || hidden
-        || !this.userCanEdit
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
