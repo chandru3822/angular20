@@ -187,7 +187,7 @@
                     :disabled="uniqueAlreadyHasValue || showRoundRobin || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
                     :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
                     :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
-                    :hidden="getDefaultFieldHidden(selectedEvent.startTimeHiddenWhiteListedPositions, selectedEvent.startTimeHidden)"
+                    v-if="!getDefaultFieldHidden(selectedEvent.startTimeHiddenWhiteListedPositions, selectedEvent.startTimeHidden)"
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
                     label="Start Time"
@@ -200,6 +200,7 @@
                     :timezone="this.timezone"
                     :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
                     :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
+                    v-if="!getDefaultFieldHidden(selectedEvent.endTimeHiddenWhiteListedPositions, selectedEvent.endTimeHidden)"
                     :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
@@ -209,7 +210,7 @@
               </v-col>
             </v-row>
             <v-autocomplete
-                v-if="selectedEvent && selectedEvent.availableResources"
+                v-if="selectedEvent && selectedEvent.availableResources && !getDefaultFieldHidden(selectedEvent.resourceHiddenWhiteListedPositions, selectedEvent.resourceHidden)"
                 v-model="selectedEvent.resourceId"
                 :items="selectedEvent.availableResources"
                 :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
@@ -359,7 +360,7 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
-import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly} from "@/services/customFieldService";
+import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly, getEventDefaultFieldHidden} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
