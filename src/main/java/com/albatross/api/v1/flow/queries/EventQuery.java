@@ -114,8 +114,11 @@ public class EventQuery {
                resource_custom_field_id,
                company_id,
                start_time_read_only,
+               start_time_hidden,
                end_time_read_only,
+               end_time_hidden,
                resource_read_only,
+               resource_hidden,
                archived,
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
@@ -260,6 +263,18 @@ public class EventQuery {
                                  WHERE wlp.white_list_type_id = 6
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
+                coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(wlp)))
+                          FROM (
+                                 SELECT wlp.id,
+                                        wlp.position_id as "positionId",
+                                        wlp.created_by_id as "createdById",
+                                        wlp.modified_by_id as "modifiedById",
+                                        wlp.archived
+                                 FROM flow.white_listed_position wlp
+                                 WHERE wlp.white_list_type_id = 13
+                                   and wlp.event_id = e.id
+                                   AND wlp.archived is not true) wlp), '[]') AS "startTimeHiddenWhiteListedPositions",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(wlp)))
                           FROM (
@@ -272,6 +287,18 @@ public class EventQuery {
                                  WHERE wlp.white_list_type_id = 7
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
+                coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(wlp)))
+                          FROM (
+                                 SELECT wlp.id,
+                                        wlp.position_id as "positionId",
+                                        wlp.created_by_id as "createdById",
+                                        wlp.modified_by_id as "modifiedById",
+                                        wlp.archived
+                                 FROM flow.white_listed_position wlp
+                                 WHERE wlp.white_list_type_id = 14
+                                   and wlp.event_id = e.id
+                                   AND wlp.archived is not true) wlp), '[]') AS "endTimeHiddenWhiteListedPositions",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(wlp)))
                           FROM (
@@ -283,7 +310,19 @@ public class EventQuery {
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 8
                                    and wlp.event_id = e.id
-                                   AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
+                                   AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions",
+                coalesce((
+                          SELECT array_to_json(array_agg(row_to_json(wlp)))
+                          FROM (
+                                 SELECT wlp.id,
+                                        wlp.position_id as "positionId",
+                                        wlp.created_by_id as "createdById",
+                                        wlp.modified_by_id as "modifiedById",
+                                        wlp.archived
+                                 FROM flow.white_listed_position wlp
+                                 WHERE wlp.white_list_type_id = 15
+                                   and wlp.event_id = e.id
+                                   AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions"
         from flow.event e
         where e.id = :id
         """;
@@ -304,8 +343,11 @@ public class EventQuery {
           date_modified = now(),
           resource_custom_field_id = :resourceCustomFieldId,
           start_time_read_only = :startTimeReadOnly,
+          start_time_hidden = :startTimeHidden,
           end_time_read_only = :endTimeReadOnly,
-          resource_read_only = :resourceReadOnly
+          end_time_hidden = :endTimeHidden,
+          resource_read_only = :resourceReadOnly,
+          resource_hidden = :resourceHidden
       where id = :id
     """;
 

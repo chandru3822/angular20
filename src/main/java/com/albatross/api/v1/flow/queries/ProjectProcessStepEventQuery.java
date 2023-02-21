@@ -82,8 +82,11 @@ public class ProjectProcessStepEventQuery {
            ps.process_step_name,
            e.resource_custom_field_id,
            e.start_time_read_only,
+           e.start_time_hidden,
            e.end_time_read_only,
+           e.end_time_hidden,
            e.resource_read_only,
+           e.resource_hidden,
            pse.event_id,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type_id,
@@ -257,6 +260,18 @@ public class ProjectProcessStepEventQuery {
                              WHERE wlp.white_list_type_id = 6
                                and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
+                  coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                      FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 13
+                               and wlp.event_id = e.id
+                               AND wlp.archived is not true) wlp), '[]') AS "startTimeHiddenWhiteListedPositions",
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(wlp)))
                       FROM (
@@ -278,9 +293,33 @@ public class ProjectProcessStepEventQuery {
                                     wlp.modified_by_id as "modifiedById",
                                     wlp.archived
                              FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 14
+                               and wlp.event_id = e.id
+                               AND wlp.archived is not true) wlp), '[]') AS "endTimeHiddenWhiteListedPositions",
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                      FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
                              WHERE wlp.white_list_type_id = 8
                                and wlp.event_id = e.id
-                               AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions"
+                               AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions",
+           coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(wlp)))
+                      FROM (
+                             SELECT wlp.id,
+                                    wlp.position_id as "positionId",
+                                    wlp.created_by_id as "createdById",
+                                    wlp.modified_by_id as "modifiedById",
+                                    wlp.archived
+                             FROM flow.white_listed_position wlp
+                             WHERE wlp.white_list_type_id = 15
+                               and wlp.event_id = e.id
+                               AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions"
     from flow.project_process_step_event ppse
            inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
            inner join flow.process_step ps on pps.process_step_id = ps.id

@@ -728,6 +728,13 @@ public class ProjectProcessStepEventService {
           "startTimeWhiteListedPositions",
           new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
 
+      TypeReference<List<WhiteListedPosition>> startTimeHiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "startTimeHiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(startTimeHiddenWhiteListedPositionsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> endTimeWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
@@ -735,12 +742,26 @@ public class ProjectProcessStepEventService {
           "endTimeWhiteListedPositions",
           new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
 
+      TypeReference<List<WhiteListedPosition>> endTimeHiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "endTimeHiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(endTimeHiddenWhiteListedPositionsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> resourceWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
           List.class,
           "resourceWhiteListedPositions",
           new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> resourceHiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "resourceHiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 }
