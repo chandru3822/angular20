@@ -46,7 +46,7 @@
                     item-value="positionId"
                     return-object
                     height="35px"
-                    class="mr-3"
+                    class="mr-3 mt-3"
                     @change="event.startTimePositionsChanged = true">
                     <template v-slot:prepend-item>
                     <v-list-item
@@ -94,7 +94,7 @@
                       item-value="positionId"
                       return-object
                       height="35px"
-                      class="mr-3"
+                      class="mr-3 mt-3"
                       @change="event.startTimeHiddenPositionsChanged = true"
                   >
                     <template v-slot:prepend-item>
@@ -157,7 +157,7 @@
                     item-value="positionId"
                     return-object
                     height="35px"
-                    class="mr-3"
+                    class="mr-3 mt-3"
                     @change="event.endTimePositionsChanged = true">
                     <template v-slot: prepend-item>
                     <v-list-item
@@ -205,7 +205,7 @@
                         item-value="positionId"
                         return-object
                         height="35px"
-                        class="mr-3"
+                        class="mr-3 mt-3"
                         @change="event.endTimeHiddenPositionsChanged = true">
                       <template v-slot: prepend-item>
                         <v-list-item
@@ -271,7 +271,7 @@
                     item-value="positionId"
                     return-object
                     height="35px"
-                    class="mr-3"
+                    class="mr-3 mt-3"
                     @change="event.resourcePositionsChanged = true">
                     <template v-slot:prepend-item>
                     <v-list-item
@@ -319,7 +319,7 @@
                     item-value="positionId"
                     return-object
                     height="35px"
-                    class="mr-3"
+                    class="mr-3 mt-3"
                     @change="event.resourceHiddenPositionsChanged = true">
                     <template v-slot:prepend-item>
                     <v-list-item
@@ -539,7 +539,7 @@
                                         item-value="positionId"
                                         return-object
                                         height="35px"
-                                        class="mr-3"
+                                        class="mr-3 mt-3"
                                         @change="cf.positionsChanged = true">
                                         <v-list-item
                                           slot="prepend-item"
@@ -597,7 +597,7 @@
                                         item-value="positionId"
                                         return-object
                                         height="35px"
-                                        class="mr-3"
+                                        class="mr-3 mt-3"
                                         @change="cf.hiddenPositionsChanged = true">
                                         <template v-slot:prepend-item>
                                         <v-list-item
