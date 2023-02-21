@@ -333,7 +333,7 @@
                                             slot="selection"
                                             slot-scope="{ item, index }"
                                           >
-                                            <v-chip small
+                                            <v-chip small closeable
                                                     v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
                                               <span>{{ item.position }}</span>
                                             </v-chip>
