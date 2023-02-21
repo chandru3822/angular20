@@ -8,7 +8,7 @@
       :open-dialog="showDialog"
       @dialog-closed="showDialog = false"
       @updated-public="(isPublic) => $emit('updated-public', isPublic)"
-      @updated-owner="$emit('updated-owner')"
+      @updated-owner="(newOwner) => $emit('updated-owner', newOwner)"
     />
   </fragment>
 </template>

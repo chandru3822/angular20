@@ -44,6 +44,7 @@
               <smartlist-share
                 :smartlist="smartlist"
                 @updated-public="(isPublic) => smartlist.public = isPublic"
+                @updated-owner="updateOwnerInfo"
               />
             </td>
             <td class="td-action">
@@ -95,7 +96,7 @@ let smartlists = ref([])
 
 onMounted(async () => await getSmartlists())
 
-let getSmartlists = async () => {
+const getSmartlists = async () => {
   try {
     isLoading.value = true
     const {data} = await getRequest(`/smartlist/all`)
@@ -105,6 +106,11 @@ let getSmartlists = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+const updateOwnerInfo = (newOwner) => {
+  const index = smartlists.value.findIndex(i => i.id === newOwner.smartlistId)
+  smartlists.value[index].owner = newOwner.name
 }
 </script>
 

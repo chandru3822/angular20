@@ -258,7 +258,11 @@ const updateOwner = async () => {
     await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
     snackbar = getSnackbar('SUCCESS', `Ownership successfully transferred`)
     emit('dialog-closed')
-    emit('updated-owner')
+    emit('updated-owner', {
+      name: newOwner.value.name,
+      position: newOwner.value.position,
+      smartlistId: props.smartlist.id
+    })
   } catch (err) {
     logError(err)
     snackbar = getSnackbar('ERROR', 'Error while transferring ownership')
