@@ -21,6 +21,7 @@ public class SmartlistQuery {
       s.primary_user_position,
       ot.object_type,
       cot.object_type_id,
+      cot.company_id,
       concat(u.first_name, ' ', u.last_name) "owner"
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
@@ -53,6 +54,7 @@ public class SmartlistQuery {
       s.primary_user_position,
       ot.object_type,
       cot.object_type_id,
+      cot.company_id,
       concat(u.first_name, ' ', u.last_name) "owner"
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
@@ -86,6 +88,7 @@ public class SmartlistQuery {
       s.primary_user_position,
       ot.object_type,
       cot.object_type_id,
+      cot.company_id,
       concat(u.first_name, ' ', u.last_name) "owner"
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
@@ -117,6 +120,7 @@ public class SmartlistQuery {
       s.primary_user_position,
       ot.object_type,
       cot.object_type_id,
+      cot.company_id,
       concat(u.first_name, ' ', u.last_name) as owner,
       coalesce((
        select array_to_json(array_agg(row_to_json(eventWorkQueueTypes)))
@@ -250,6 +254,17 @@ public class SmartlistQuery {
       where
         id = :id and
         smartlist_id = :smartlistId
+  """;
+
+  //language=PostgreSQL
+  public final static String updateOwner = """
+    update flow.smartlist
+    set
+      owner_id = :newOwnerId,
+      modified_by_id = :userId,
+      date_modified = now()
+    where
+      id = :smartlistId
   """;
 
   //language=PostgreSQL

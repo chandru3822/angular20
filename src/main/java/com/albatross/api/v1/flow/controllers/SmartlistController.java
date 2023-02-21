@@ -92,4 +92,10 @@ public class SmartlistController {
 
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+  @PutMapping(value = "/{smartlistId}/owner")
+  public ResponseEntity<Void> updateSmartlistOwner(@PathVariable Long smartlistId, @RequestBody SmartlistAccessControl newOwner) {
+    smartlistService.updateOwner(smartlistId, newOwner);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
 }

@@ -13,10 +13,12 @@ import java.util.List;
 @Setter
 public class Smartlist {
 
-  private Long id, companyObjectTypeId, ownerId, createdById, modifiedById, objectTypeId, workQueueTypeId;
+  private Long id, companyObjectTypeId, companyId, ownerId, createdById, modifiedById, objectTypeId, workQueueTypeId;
   private String name, objectType, viewObjectType, owner;
   private boolean isPublic, archived, mainProcessSteps, projectDetails, primaryUserPosition;
   private Timestamp dateCreated, dateModified;
+
+  private List<SmartlistAccessControl> accessControl;
 
   // workQueueTypes is used only for workqueue generation
   @JsonIgnore

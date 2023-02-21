@@ -62,6 +62,8 @@ public class SmartlistService {
 
   private final OrgService orgService;
 
+  private final UserPositionService userPositionService;
+
   private final SmartlistServicev1 smartlistServicev1;
 
   private boolean isSmartlistAdmin() {
@@ -71,7 +73,9 @@ public class SmartlistService {
 
   private boolean isOwnerOrAdmin(@NotNull Smartlist smartlist) {
     User user = securityService.getCurrentUser();
-    return Objects.equals(smartlist.getOwnerId(), user.getId()) || isSmartlistAdmin();
+    final var sameCompany = Objects.equals(user.getCompanyId(), smartlist.getCompanyId());
+    final var isOwnerOrAdmin = Objects.equals(smartlist.getOwnerId(), user.getId()) || isSmartlistAdmin();
+    return sameCompany && isOwnerOrAdmin;
   }
 
   public void updatePublicStatus(Long smartlistId, boolean isPublic) {
@@ -83,6 +87,53 @@ public class SmartlistService {
       sqlCache.updateBySql(SmartlistQuery.updatePublic, params);
     } else {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+  }
+
+  @Transactional
+  public void updateOwner(Long smartlistId, SmartlistAccessControl newOwner) {
+
+    var smartlist = getById(smartlistId);
+
+    if (!isOwnerOrAdmin(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
+    }
+
+    var user = securityService.getCurrentUser();
+
+    //verify the position getting ownership is in the same company as the smartlist
+    var newOwnerPosition = userPositionService.getOne(newOwner.getUserPositionId());
+    if (newOwnerPosition == null ||  !Objects.equals(smartlist.getCompanyId(), newOwnerPosition.getCompanyId())) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "New owner not found", new NotFoundException("New owner not found"));
+    }
+
+    sqlCache.updateBySql(SmartlistQuery.updateOwner, Map.of(
+                                                       "smartlistId", smartlistId,
+                                                       "newOwnerId", newOwnerPosition.getUserId(),
+                                                       "userId", user.getId()
+    ));
+
+    //remove previous access of new owner
+
+
+    //give old owner edit access
+    var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
+    if (oldOwnerPosition == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original owner not found", new NotFoundException("Original owner not found"));
+    }
+
+    try {
+      Map<String, Object> params = new HashMap<>();
+      params.put("smartlistId", smartlistId);
+      params.put("orgId", null);
+      params.put("userPositionId", oldOwnerPosition.getId());
+      params.put("accessControlId", 2);
+      params.put("userId", user.getId());
+      sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
+              .longValue();
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
     }
   }
 
@@ -515,6 +566,9 @@ public class SmartlistService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "eventWorkQueueTypes", new JsonCollectionDeserializer(processStepEventWqtRef, om));
+
+      TypeReference<List<SmartlistAccessControl>> accessControlRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "accessControl", new JsonCollectionDeserializer(accessControlRef, om));
     }
   }
 

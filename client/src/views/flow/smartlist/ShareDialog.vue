@@ -1,4 +1,5 @@
 <template>
+<fragment>
   <v-dialog
     v-model="openDialog"
     :width="500"
@@ -10,7 +11,6 @@
       </v-card-title>
 
       <v-card-text>
-
         <v-autocomplete
           class="body-large"
           :items="sharables"
@@ -53,8 +53,11 @@
                     item-value="accessControlId"
                     @input="accessLevel.updated = true"
                   >
-                    <template #append-item>
-                      <v-divider />
+                    <template
+                      #append-item
+                      v-if="accessLevel.isUser"
+                    >
+                      <v-divider/>
                       <v-list-item @click="confirmOwnershipChange(accessLevel)">
                         Transfer Ownership
                       </v-list-item>
@@ -76,7 +79,7 @@
           color="primary"
           class="text-capitalize mr-2 mb-2"
         >
-           Cancel
+          Cancel
         </v-btn>
         <v-btn
           color="primary"
@@ -88,13 +91,51 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
+
+  <v-dialog
+    v-model="openOwnershipDialog"
+    :width="500"
+    persistent
+  >
+    <v-card>
+      <v-card-title>Transfer Ownership</v-card-title>
+
+      <v-card-text>
+        You will lose ownership and the following user will become the new Owner:
+        <br />
+        <br />
+        <div class="new-owner-name">{{ `${newOwner.name} - ${newOwner.position}` }}</div>
+      </v-card-text>
+
+      <v-card-actions>
+        <v-spacer></v-spacer>
+        <v-btn
+          @click.native="openOwnershipDialog = false"
+          text
+          color="primary"
+          class="text-capitalize mr-2 mb-2"
+        >
+          Cancel
+        </v-btn>
+        <v-btn
+          color="primary"
+          class="white--text elevation-2 text-capitalize mr-2 mb-2"
+          @click="updateOwner"
+        >
+          Transfer
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</fragment>
 </template>
 
 <script setup>
 
-import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
+import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { getCurrentInstance, ref } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
+import { Fragment } from 'vue-frag'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -126,7 +167,8 @@ let currentAccess = ref([])
 
 let newAccess = ref({accessControlId: 1})
 let isPublic = ref(props.smartlist.public)
-let showOwnershipDialog = ref(false)
+let openOwnershipDialog = ref(false)
+let newOwner = ref({})
 
 const updateNewAccess = (access) => {
   newAccess.value = {
@@ -203,7 +245,26 @@ const updateAccess = async () => {
 }
 
 const confirmOwnershipChange = async (accessLevel) => {
-  showOwnershipDialog.value = true
+  openOwnershipDialog.value = true
+  newOwner.value = accessLevel
+}
+
+const updateOwner = async () => {
+
+  let snackbar
+
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
+    snackbar = getSnackbar('SUCCESS', `Ownership successfully transferred`)
+    emit('dialog-closed')
+    emit('updated-owner')
+  } catch (err) {
+    logError(err)
+    snackbar = getSnackbar('ERROR', 'Error while transferring ownership')
+    handleHidingGlobalLoader(vueInstance, true)
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  }
 }
 
 getSharables()
@@ -212,5 +273,7 @@ getSmartlistAccess()
 </script>
 
 <style scoped lang="scss">
-
+.new-owner-name {
+  border-bottom: 1px solid black;
+}
 </style>
