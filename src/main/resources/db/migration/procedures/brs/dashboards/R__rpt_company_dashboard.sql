@@ -593,8 +593,10 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                                       ON pswqtpsst.process_step_work_queue_type_id = pswqt.id
 --                                            inner join flow.user u on u.id = pps.created_by_id
 --                                            JOIN flow.work_queue_type wqt ON pswqt.work_queue_type_id = wqt.id
---                                            inner join flow.project p ON pps.project_id = p.id and p.archived is false
+                                      -- this project line needs to be here in order to filter out archived projects. but is otherwise useless
+                                           inner join flow.project p ON pps.project_id = p.id and p.archived is false
                                     WHERE pps.process_step_id = 3365
+                                      and pps.archived is false
                                       AND work_queue_type_id = 93
                                     group by pps.project_id
                                   )
