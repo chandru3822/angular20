@@ -29,6 +29,7 @@ public class CustomField {
       customFieldGroupId,
       ancillaryCustomFieldGroupAssignmentId,
       dataViewFieldConfigId,
+      dataViewChildFieldConfigId,
       customFieldGroupAssignmentId,
       customFieldObjectTypeId,
       dataTypeId,
