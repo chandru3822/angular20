@@ -219,7 +219,7 @@
                             <v-icon color="primary" v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && cf.dataViewFieldConfigId == null">
+                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId == null && cf.dataViewFieldConfigId == null && cf.dataViewChildFieldConfigId == null">
                               <a :href="`/settings/customField/${cf.customFieldId}`">{{cf.fieldName}}</a>
                               <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
                               <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
@@ -358,7 +358,7 @@
                             <div v-else>
                               <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}}
                                 (Ancillary)</a>
-                              <div v-if="cf.edit && !cf.dataViewFieldConfigId" class="mt-3">
+                              <div v-if="cf.edit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId" class="mt-3">
                                 <label>Use Parent Data: </label>
                                 <input type="checkbox" class="ml-3 mb-4" v-model="cf.useParentData"
                                        @change="saveUseParentData(cf)"
@@ -396,7 +396,7 @@
                             </v-list>
                           </v-menu>
                           <v-btn text color="primary" small @click="[$set(cf, 'edit', !cf.edit), getPositions()]"
-                                 v-if="userCanEdit && !cf.dataViewFieldConfigId">
+                                 v-if="userCanEdit && !cf.dataViewFieldConfigId && !cf.dataViewChildFieldConfigId">
                             <v-icon>edit</v-icon>
                           </v-btn>
                           <v-btn v-if="userCanEdit" text color="primary" small @click="[assignmentToDelete=cf, customFieldGroupToDelete=item]"><v-icon>delete</v-icon></v-btn>
@@ -808,7 +808,8 @@
             customFieldGroupId: cfg.id,
             id: null,
             ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-            dataViewFieldConfigId: this.selectedAncillaryField.dataViewFieldConfigId,
+            dataViewFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId ? null : this.selectedAncillaryField.dataViewFieldConfigId,
+            dataViewChildFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId,
             fieldOrder: 0
           }
           const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)

@@ -398,7 +398,7 @@
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
                           </div>
-                          <div class="text-left" v-if="!cf.edit && cf.ancillaryCustomFieldGroupAssignmentId == null">
+                          <div class="text-left" v-if="!cf.edit && !cf.ancillaryCustomFieldGroupAssignmentId">
                             <div>
                               <input type="checkbox" v-model="cf.required" :readonly="!userCanEdit"
                                      :disabled="!userCanEdit" @change="updateShowOrRequire(cf)">
@@ -735,7 +735,8 @@ export default {
           customFieldGroupId: item.id,
           id: null,
           ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
-          dataViewFieldConfigId: this.selectedAncillaryField.dataViewFieldConfigId,
+          dataViewFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId ? null : this.selectedAncillaryField.dataViewFieldConfigId,
+          dataViewChildFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId,
         }
         const {data, status} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
         item.customFields.push(data)

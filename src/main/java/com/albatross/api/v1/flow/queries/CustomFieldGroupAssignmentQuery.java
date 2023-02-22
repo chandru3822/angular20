@@ -50,6 +50,7 @@ public class CustomFieldGroupAssignmentQuery {
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                     null::int as "dataViewFieldConfigId",
+                                    null::int as "dataViewChildFieldConfigId",
                                     cfga.field_order as "fieldOrder",
                                     cfga.archived,
                                     cf.field_name as "fieldName",
@@ -100,6 +101,7 @@ public class CustomFieldGroupAssignmentQuery {
                                     cfga.id as "customFieldGroupAssignmentId",
                                     cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
                                     null::int as "dataViewFieldConfigId",
+                                    null::int as "dataViewChildFieldConfigId",
                                     cfga.field_order as "fieldOrder",
                                     cfga.archived,
                                     cf.field_name as "fieldName",
@@ -127,11 +129,12 @@ public class CustomFieldGroupAssignmentQuery {
                                     cfga.custom_field_group_id as "customFieldGroupId",
                                     cfga.custom_field_id as "customFieldId",
                                     cfga.id as "customFieldGroupAssignmentId",
-                                    cfga.data_view_field_config_id as "ancillaryCustomFieldGroupAssignmentId",
+                                    coalesce(cfga.data_view_child_field_config_id, cfga.data_view_field_config_id) as "ancillaryCustomFieldGroupAssignmentId",
                                     cfga.data_view_field_config_id as "dataViewFieldConfigId",
+                                    cfga.data_view_child_field_config_id as "dataViewChildFieldConfigId",
                                     cfga.field_order as "fieldOrder",
                                     cfga.archived,
-                                    dvfc.display_name as "fieldName",
+                                    coalesce(dvcfc.display_name, dvfc.display_name) as "fieldName",
                                     false as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
@@ -145,7 +148,8 @@ public class CustomFieldGroupAssignmentQuery {
                                     '[]' as whiteListedPositions,
                                     '[]' as hiddenWhiteListedPositions
                              FROM flow.custom_field_group_assignment cfga
-                                    inner join flow.data_view_field_config dvfc on cfga.data_view_field_config_id = dvfc.id
+                                    left join flow.data_view_child_field_config dvcfc on dvcfc.id = cfga.data_view_child_field_config_id
+                                                                    inner join flow.data_view_field_config dvfc on (cfga.data_view_field_config_id = dvfc.id or dvfc.id = dvcfc.data_view_field_config_id)
                                     inner join flow.data_view dv on dv.id = dvfc.data_view_id
                              WHERE cfga.custom_field_group_id = cfg.id
                                AND cfga.archived is not true
@@ -302,6 +306,28 @@ public class CustomFieldGroupAssignmentQuery {
         """;
 
   //language=PostgreSQL
+  public final static String getDataViewChildField = """
+    SELECT cfga.id,
+           cfga.id as custom_field_group_assignment_id,
+           cfga.custom_field_group_id as "customFieldGroupId",
+           cfga.custom_field_id as "customFieldId",
+           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+           cfga.data_view_child_field_config_id as "dataViewChildFieldConfigId",
+           cfga.field_order as "fieldOrder",
+           cfga.archived,
+           dvcfc.display_name as "fieldName",
+           true as "systemReadonly",
+           null as "processStepName",
+           dv.display_name as "groupName",
+           'Data View' as "objectType"
+    FROM flow.custom_field_group_assignment cfga
+           inner join flow.data_view_child_field_config dvcfc on dvcfc.id = cfga.data_view_child_field_config_id
+           inner join flow.data_view_field_config dvfc on dvfc.id = dvcfc.data_view_field_config_id
+           inner join flow.data_view dv on dv.id = dvfc.data_view_id
+    WHERE cfga.id = :cfgaId
+        """;
+
+  //language=PostgreSQL
   public final static String getDefaultField = """
     SELECT cfga.id,
                cfga.id as custom_field_group_assignment_id,
@@ -365,8 +391,8 @@ public class CustomFieldGroupAssignmentQuery {
 
   //language=PostgreSQL
   public final static String addFieldToGroup = """
-    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified, data_view_field_config_id)
-        values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now(), :dataViewFieldConfigId)
+    insert into flow.custom_field_group_assignment(custom_field_group_id, custom_field_id, default_field_id, ancillary_custom_field_group_assignment_id, field_order, created_by_id, date_created, modified_by_id, date_modified, data_view_field_config_id, data_view_child_field_config_id)
+        values (:customFieldGroupId, :customFieldId, :defaultFieldId, :ancillaryCustomFieldGroupAssignmentId, (select coalesce(max(field_order) + 1, 0) from flow.custom_field_group_assignment where custom_field_group_id = :customFieldGroupId and archived is not true), :createdById, now(), :createdById, now(), :dataViewFieldConfigId, :dataViewChildFieldConfigId)
         """;
 
   //language=PostgreSQL
