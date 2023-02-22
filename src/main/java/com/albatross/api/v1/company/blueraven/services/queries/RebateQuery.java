@@ -90,7 +90,7 @@ public class RebateQuery {
                       INNER JOIN flow.project p on p.id = prp.project_id
                       left join brs.project_details pd on pd.project_id = p.id
                     where prp.project_rebate_batch_id = drb.id
-                    group by prp.id, prp.payment_nbr, pd.contact_name
+                    group by prp.id, prp.payment_nbr, pd.project_name
                     order by payment_nbr) rebatePayments), '[]') AS "rebatePayments"
          from brs.project_rebate_batch drb
            LEFT JOIN flow."user" u on u.id = drb.updated_by_user_id

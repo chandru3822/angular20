@@ -318,7 +318,7 @@
                       {{ childSaveErrorMsg }}
                     </div>
                     <v-btn
-                      :disabled="!childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
+                      :disabled="!childField.displayName || !childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
                       color="primary" class="white--text mr-2"
                       @click="validateChildField(item, childField, true)">
                       Add Child Field
