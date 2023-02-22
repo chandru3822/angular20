@@ -62,7 +62,7 @@
             target="_blank">
             Open Process Step
           </router-link>
-          <v-icon small>mdi-open-in-new</v-icon>
+          <v-icon small class="anchor">mdi-open-in-new</v-icon>
         </div>
         <v-btn color="primary"
                dark
@@ -120,18 +120,18 @@
                @click="handleNewRequest">
           <v-icon :size="60">add</v-icon>
         </v-btn>
-        <div class="mt-5 primary--text">
+        <div class="mt-5 primary--text" :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
           Request New Design
         </div>
 
-        <div class="request-new-details" v-if="hasActiveDesign">
+        <div class="request-new-details grey--text text--darken-2" v-if="hasActiveDesign">
           <div>
             <router-link
               :to="{ name : 'projectProcessStep', params: {projectId: project.id, processStepId: activeDesign.projectProcessStepId}}"
               target="_blank">
               Open Process Step
             </router-link>
-            <v-icon small>mdi-open-in-new</v-icon>
+            <v-icon small class="anchor">mdi-open-in-new</v-icon>
           </div>
 
           Current Step: {{ activeDesign.processStepName }} <br />
@@ -146,7 +146,7 @@
     <v-dialog width="500" v-model="showNewDesignRequestForm">
       <v-card>
         <v-card-title>Request New Design</v-card-title>
-        <v-card-text>
+        <v-card-text class="default-text-color">
           Describe your request (Required)
           <v-textarea required
                       auto-grow
@@ -510,6 +510,6 @@ export default {
 }
 
 .disable-new {
-  color: #BDBDBD !important;
+  color: var(--v-grey-darken1);
 }
 </style>
