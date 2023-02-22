@@ -29,6 +29,7 @@ BEGIN
     custom_field_group_assignment_hidden       boolean,
     ancillary_custom_field_group_assignment_id bigint,
     data_view_field_config_id                  bigint,
+    data_view_child_field_config_id                  bigint,
     custom_field_id                            bigint,
     field_order                                int,
     object_type_id                             int,
@@ -67,6 +68,7 @@ BEGIN
   create index cfvs_cfg_id on cfvs (custom_field_group_id);
   create index cfvs_cf_id on cfvs (custom_field_id);
   create index cfvs_dvfc_id on cfvs (data_view_field_config_id);
+  create index cfvs_dvcfc_id on cfvs (data_view_child_field_config_id);
   create index cfvs_dt_id on cfvs (data_type_id);
   create index cfvs_cdt_id on cfvs (company_data_type_id);
   create index cfvs_csl_id on cfvs (company_system_list_id);
@@ -80,7 +82,7 @@ BEGIN
   insert into cfvs(project_id, contact_id, custom_field_group_assignment_id, custom_field_group_id,
                    custom_field_group_assignment_read_only, required,
                    custom_field_group_assignment_hidden, ancillary_custom_field_group_assignment_id,
-                   data_view_field_config_id,
+                   data_view_field_config_id, data_view_child_field_config_id,
                    custom_field_id, field_order, object_type_id, show_on_user_profile, use_parent_data,
                    ancillary_process_step_id, ancillary_object_type_id,
                    ancillary_custom_field_hint, list_of_value_id, field_name, allow_now,
@@ -117,6 +119,7 @@ BEGIN
          native_cfga.hidden                                                          as custom_field_group_assignment_hidden,
          native_cfga.ancillary_custom_field_group_assignment_id,
          native_cfga.data_view_field_config_id,
+         native_cfga.data_view_child_field_config_id,
          native_cfga.custom_field_id,
          native_cfga.field_order,
          native_cot.object_type_id,
@@ -507,6 +510,61 @@ BEGIN
            left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where dvfc.id = new_data.data_view_field_config_id
       and new_data.data_view_field_config_id is not null;
+
+    --update the data view child rows
+    update cfvs new_data
+    set id                                         = dvcfc.id,
+        --this is dumb but if i don't do this then i think mobile will break
+        ancillary_custom_field_group_assignment_id = dvcfc.id,
+        readonly                                   = true,
+        system_readonly                            = true,
+        company_data_type_id                       = null,
+        data_type_id                               = ubt.return_data_type_id,
+        field_name                                 = dvcfc.display_name,
+        date_value                                 = case
+                                                       when ubt.return_data_type_id = 1
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::date
+                                                       else null::date end,
+        timestamp_value                            = case
+                                                       when ubt.return_data_type_id = 2
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::timestamp
+                                                       else null::timestamp end,
+        boolean_value                              = case
+                                                       when ubt.return_data_type_id = 3
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_field(dvcfc.id, new_data.project_id))::boolean
+                                                       else null::boolean end,
+        text_value                                 = case
+                                                       when ubt.return_data_type_id = 5
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::text
+                                                       else null::text end,
+        rich_text_value                            = case
+                                                       when ubt.return_data_type_id = 13
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::text
+                                                       else null::text end,
+        numeric_value                              = case
+                                                       when ubt.return_data_type_id = 4
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::numeric
+                                                       else null::numeric end,
+        int_value                                  = case
+                                                       when ubt.return_data_type_id = 6
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_field(dvcfc.id, new_data.project_id))::int
+                                                       else null::int end,
+        int_array_value                            = case
+                                                       when ubt.return_data_type_id = 7
+                                                         then (select *
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::int[]
+                                                       else null::int[] end
+    from flow.data_view_child_field_config dvcfc
+        inner join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
+    where dvcfc.id = new_data.data_view_child_field_config_id
+      and new_data.data_view_child_field_config_id is not null;
   end if;
 
   --this has to be done after the values are populated because company system lists include the selected value even if it would otherwise be excluded

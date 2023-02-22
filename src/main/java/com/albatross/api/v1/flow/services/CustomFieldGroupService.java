@@ -44,6 +44,9 @@ public class CustomFieldGroupService {
     params.put(
         "dataViewFieldConfigId",
         customField.getDataViewFieldConfigId());
+    params.put(
+      "dataViewChildFieldConfigId",
+      customField.getDataViewChildFieldConfigId());
     params.put("fieldOrder", customField.getFieldOrder());
 
     Long id =
@@ -52,6 +55,7 @@ public class CustomFieldGroupService {
             .longValue();
 
     return null != customField.getDefaultFieldId() ? getDefaultCustomField(id) :
+             null != customField.getDataViewChildFieldConfigId() ? getDataViewChildCustomField(id) :
              null != customField.getDataViewFieldConfigId() ? getDataViewCustomField(id) : getCustomField(id);
   }
 
@@ -72,6 +76,13 @@ public class CustomFieldGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("cfgaId", cfgaId);
     Optional<CustomField> result = sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getDataViewField, params, CustomField.class);
+    return result.orElse(null);
+  }
+
+  public CustomField getDataViewChildCustomField(Long cfgaId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("cfgaId", cfgaId);
+    Optional<CustomField> result = sqlCache.getBySql(CustomFieldGroupAssignmentQuery.getDataViewChildField, params, CustomField.class);
     return result.orElse(null);
   }
 

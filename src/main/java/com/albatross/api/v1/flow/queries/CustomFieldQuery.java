@@ -475,25 +475,47 @@ public class CustomFieldQuery {
   public final static String getByDataView = """
     select  dvfc.id,
             dvfc.id as data_view_field_config_id,
+            null::int as data_view_child_field_config_id,
             dv.company_id,
             dvfc.display_name as field_name,
-            cf.company_data_type_id,
+            cf.company_data_type_id, --note we will not always have this
             dvfc.date_created,
             dvfc.date_modified,
             dvfc.created_by_id,
             dvfc.modified_by_id,
             dvfc.archived,
-            coalesce(df.data_type_id, cdt.data_type_id) as data_type_id
+            case when df.object_type_id = 6 and df.column_name = 'resource_id' then 6
+                 else coalesce(df.data_type_id, cdt.data_type_id) end as data_type_id
     from flow.data_view_field_config dvfc
-      inner join flow.data_view dv on dv.id = dvfc.data_view_id
-      left join flow.default_field df on df.id = dvfc.default_field_id
-      left join flow.custom_field_group_assignment cfga on cfga.id = dvfc.custom_field_group_assignment_id
-      left join flow.custom_field cf on cf.id = cfga.custom_field_id
-      left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+           inner join flow.data_view dv on dv.id = dvfc.data_view_id
+           left join flow.default_field df on df.id = dvfc.default_field_id
+           left join flow.custom_field_group_assignment cfga on cfga.id = dvfc.custom_field_group_assignment_id
+           left join flow.custom_field cf on cf.id = cfga.custom_field_id
+           left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
     where dv.id = :dataViewId
       and dv.company_id = :companyId
       and dvfc.archived is not true
-    order by dvfc.display_name
+    union all
+    select  dvcfc.id,
+            dvfc.id as data_view_field_config_id,
+            dvcfc.id as data_view_child_field_config_id,
+            dv.company_id,
+            dvcfc.display_name as field_name,
+            null::int as company_data_type_id,
+            dvcfc.date_created,
+            dvcfc.date_modified,
+            dvcfc.created_by_id,
+            dvcfc.modified_by_id,
+            dvcfc.archived,
+            ubt.return_data_type_id as data_type_id
+    from flow.data_view_child_field_config dvcfc
+           inner join flow.data_view_field_config dvfc on dvfc.id = dvcfc.data_view_field_config_id
+           inner join flow.data_view dv on dv.id = dvfc.data_view_id
+           inner join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
+    where dv.id = :dataViewId
+      and dv.company_id = :companyId
+      and dvfc.archived is not true
+    order by field_name
         """;
 
 
