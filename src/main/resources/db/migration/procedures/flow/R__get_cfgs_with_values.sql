@@ -534,7 +534,7 @@ BEGIN
         boolean_value                              = case
                                                        when ubt.return_data_type_id = 3
                                                          then (select *
-                                                               from flow.get_value_for_data_view_field(dvcfc.id, new_data.project_id))::boolean
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::boolean
                                                        else null::boolean end,
         text_value                                 = case
                                                        when ubt.return_data_type_id = 5
@@ -554,7 +554,7 @@ BEGIN
         int_value                                  = case
                                                        when ubt.return_data_type_id = 6
                                                          then (select *
-                                                               from flow.get_value_for_data_view_field(dvcfc.id, new_data.project_id))::int
+                                                               from flow.get_value_for_data_view_child_field(dvcfc.id, new_data.project_id))::int
                                                        else null::int end,
         int_array_value                            = case
                                                        when ubt.return_data_type_id = 7
