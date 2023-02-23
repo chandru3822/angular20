@@ -253,6 +253,12 @@ public class SmartlistService {
     return sqlCache.queryBySql(SmartlistQuery.getMine, params, Smartlist.class);
   }
 
+  public List<Smartlist> getShared() {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
+    return sqlCache.queryBySql(SmartlistQuery.getShared, params, Smartlist.class);
+  }
+
   public List<Smartlist> getPublic() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());

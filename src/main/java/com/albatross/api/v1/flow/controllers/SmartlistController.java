@@ -28,6 +28,11 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.getMine(), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/shared", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Smartlist>> getSharedSmartlists() {
+    return new ResponseEntity<>(smartlistService.getShared(), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/public", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getPublicSmartlists() {
     return new ResponseEntity<>(smartlistService.getPublic(), HttpStatus.OK);

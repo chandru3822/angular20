@@ -36,6 +36,84 @@ public class SmartlistQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getShared = """
+    select
+      s.id,
+      s.name,
+      s.company_object_type_id,
+      s.public,
+      s.owner_id,
+      s.date_created,
+      s.date_modified,
+      s.created_by_id,
+      s.modified_by_id,
+      s.archived,
+      s.main_process_steps,
+      s.project_details,
+      s.work_queue_type_id,
+      s.primary_user_position,
+      ot.object_type,
+      cot.object_type_id,
+      cot.company_id,
+      concat(u.first_name, ' ', u.last_name) "owner",
+      sac.access_control_id,
+      ac.access_level
+    from flow.smartlist_access_control sac
+    inner join flow.smartlist s on sac.smartlist_id = s.id
+    inner join flow.user_position up on sac.user_position_id = up.id
+    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+    inner join flow.object_type ot on ot.id = cot.object_type_id
+    inner join flow.user u on u.id = s.owner_id
+    inner join flow.access_control ac on sac.access_control_id = ac.id
+    where
+      up.user_id = :userId and
+      cot.company_id = :companyId and
+      sac.archived is false and
+      s.archived is false and
+      up.archived is false and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
+    union distinct
+    select
+      s.id,
+      s.name,
+      s.company_object_type_id,
+      s.public,
+      s.owner_id,
+      s.date_created,
+      s.date_modified,
+      s.created_by_id,
+      s.modified_by_id,
+      s.archived,
+      s.main_process_steps,
+      s.project_details,
+      s.work_queue_type_id,
+      s.primary_user_position,
+      ot.object_type,
+      cot.object_type_id,
+      cot.company_id,
+      concat(u.first_name, ' ', u.last_name) "owner",
+      sac.access_control_id,
+      ac.access_level
+    from flow.smartlist_access_control sac
+    inner join flow.smartlist s on sac.smartlist_id = s.id
+    inner join flow.user_position up on sac.org_id = up.org_id
+    inner join flow.org o on up.org_id = o.id
+    inner join flow.company_object_type cot on cot.id = s.company_object_type_id
+    inner join flow.object_type ot on ot.id = cot.object_type_id
+    inner join flow.user u on u.id = s.owner_id
+    inner join flow.access_control ac on sac.access_control_id = ac.id
+    where
+      up.user_id = :userId and
+      cot.company_id = :companyId and
+      sac.archived is false and
+      s.archived is false and
+      up.archived is false and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+      o.archived is false
+    order by name
+  """;
+
+  //language=PostgreSQL
   public final static String getPublic = """
     select
       s.id,
