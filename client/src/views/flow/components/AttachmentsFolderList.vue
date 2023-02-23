@@ -51,6 +51,19 @@
           Compare
         </v-btn>
       </div>
+      <v-toolbar v-if="this.search != null && this.search !== ''"  dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
+        <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
+                                  'albatross-body-2': this.smallTitle}">
+          Search Results
+        </v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-chip label outlined color="primary--text" class="sort-chip align-self-center albatross-body-2 flex-shrink-0"
+                  @click="sortOldToNew = !sortOldToNew">
+            {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
+          </v-chip>
+        </v-toolbar-items>
+      </v-toolbar>
       <v-toolbar v-if="title" dense color="transparent" class="elevation-0 process-step-toolbar cfg-name-toolbar">
         <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
                                   'albatross-body-2': this.smallTitle}">
@@ -58,8 +71,9 @@
         </v-toolbar-title>
       </v-toolbar>
       <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
-        <v-expansion-panels accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
-          <v-expansion-panel v-for="(type, index) in attachmentTypes" :key="type.attachmentTypeId">
+        <div v-if="getFilteredAttachmentTypes().length === 0" class="body-medium text-center">No documents found.</div>
+        <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
+          <v-expansion-panel v-for="(type, index) in getFilteredAttachmentTypes()" :key="type.attachmentTypeId" >
             <v-expansion-panel-header class="albatross-body-1">
               <template v-slot:default="{ open }">
                 <v-row v-if="(allowUpload || forceShowUploadBtn)"
@@ -112,7 +126,7 @@
                 :display-type="type"
                 :allow-upload="allowUpload || forceShowUploadBtn"
                 :load-linked="loadLinked"
-                :attachments="attachments"
+                :attachments="sortedAttachments"
                 :projectId="projectId"
                 :projectProcessStepId="projectProcessStepId"
                 :userId="userId"
@@ -133,6 +147,7 @@
       </v-card>
 
     </div>
+    <div v-else class="body-large text-center">Attachments Not Available</div>
   </div>
 </template>
 
@@ -210,13 +225,24 @@ export default {
         {text: null, value: 'icons', show: true},
       ],
       search: '',
+      sortOldToNew: false,
       compare: false,
       showCompareModal: false,
+      opened:[]
     }
   },
   watch: {
     focused: function () {
       this.loadAllPageDetails()
+    },
+    search: function () {
+      if(this.search != null && this.search !== '') {
+        for(let i = 0; i < this.sortedAttachments.length; i++){
+          this.opened.push(i)
+        }
+      } else {
+        this.opened = []
+      }
     },
     // // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
@@ -243,7 +269,11 @@ export default {
     this.updateProcessStepAndEventIds();
     this.loadAllPageDetails();
   },
-  computed: {},
+  computed: {
+    sortedAttachments() {
+      return orderBy(this.attachments, [a => a.dateCreated], this.search != null && this.search !== '' && this.sortOldToNew ? 'asc' : 'desc')
+    }
+  },
   mounted() {
     if (this.loadLinked) {
       //if in the linked section and a new record was linked, add it here
@@ -376,7 +406,16 @@ export default {
         d.editableNameCopy = d.editableName
       })
 
-      this.attachments = orderBy(data, [a => a.dateCreated], 'desc')
+      this.attachments = orderBy(data, [a => a.dateCreated], this.sortOldToNew ? 'asc' : 'desc')
+    },
+    getFilteredAttachmentTypes: function() {
+      //if there's a search value, only show folders with an attachment that matches the search
+      return (this.search != null && this.search !== '') ? this.attachmentTypes.filter(type => {
+        return this.attachments.filter(a => {
+          return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === this.loadLinked
+              && a.filename.toLowerCase().includes(this.search.toLowerCase())
+        })?.length > 0
+      }) : this.attachmentTypes
     },
     getTypeCount: function (typeId) {
       try {
