@@ -359,7 +359,7 @@ export default {
     async exportCsv() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequestWithParams(`/smartlist/${this.smartlistId}/csv`, {
+        const {data, status} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/csv`, {
           params: {
             timezone: this.timezone
           }
