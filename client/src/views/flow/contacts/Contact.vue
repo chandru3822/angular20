@@ -37,6 +37,8 @@
               label="Street"
               :readonly="!userCanEdit"
               :disabled="!userCanEdit"
+              maxlength="100"
+              counter
               @change="tempContact.reloadCoordinates = true"
             ></v-text-field>
             <v-text-field
