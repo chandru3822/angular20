@@ -22,6 +22,8 @@
             label="Street"
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
+            counter
+            maxlength="100"
             @change="tempProject.reloadCoordinates = true"
           ></v-text-field>
           <v-text-field

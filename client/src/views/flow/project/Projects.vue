@@ -4,22 +4,9 @@
       <v-col cols="12">
         <v-toolbar class="elevation-1 toolbar-z-index-override" width="100%">
           <v-toolbar-title>Projects</v-toolbar-title>
-
-          <v-spacer/>
-
-          <v-autocomplete
-            v-if="$store.getters.userHasFeature('SMARTLIST')"
-            v-model="selectedSmartlistId"
-            :items="smartlists"
-            item-text="name"
-            item-value="id"
-            class="smartlist-selector pt-3"
-            attach
-          />
         </v-toolbar>
 
         <v-toolbar
-          v-if="selectedSmartlistId === 0"
           class="white elevation-1 mt-3"
         >
           <v-text-field
@@ -34,19 +21,10 @@
           />
 
           <v-spacer/>
-
-          <!--                <v-btn-->
-          <!--                    text-->
-          <!--                    :disabled="isProjectsLoading && !totalProjects > 0"-->
-          <!--                    @click="showConfirmDialog = true"-->
-          <!--                >-->
-          <!--                    Export-->
-          <!--                </v-btn>-->
         </v-toolbar>
 
         <v-divider/>
         <v-data-table
-          v-if="selectedSmartlistId === 0"
           class="elevation-1 fix-column-width-bug"
           :headers="headers"
           :items="projects"
@@ -99,44 +77,20 @@
             </tr>
           </template>
         </v-data-table>
-
-        <SmartlistTable
-          class="mt-3"
-          :type="'PROJECT'"
-          v-else
-          :smartlistId="selectedSmartlistId"
-          @row-selected="goToSelectedProject"
-        />
       </v-col>
     </v-row>
-
-    <ExportDialog
-      :show="showConfirmDialog"
-      :totalItems="totalProjects"
-      @cancel="showConfirmDialog = false"
-      @confirm="[showConfirmDialog = false, generateReport()]"
-    />
-
   </v-container>
 </template>
 
 <script>
 
-  import {handleHidingGlobalLoader, logError, getRequestWithParams} from '@/helpers/helpers'
-  import {AppMutations} from '@/stores/AppStore'
+  import {logError, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
-  import saveAs from 'file-saver'
-  import SmartlistTable from '@/components/SmartlistTable'
-  import ExportDialog from '@/components/ExportDialog'
   import axios from 'axios'
 
   export default {
     name: 'Projects',
-    components: {
-      SmartlistTable,
-      ExportDialog,
-    },
     beforeRouteEnter(to, from, next) {
       //if coming to this page from the project details - use the previously used searchQuery
       next((vm) => {
@@ -172,8 +126,6 @@
         page: 1,
         isProjectsLoading: false,
         showConfirmDialog: false,
-        selectedSmartlistId: 0,
-        smartlists: [{id: 0, name: 'Default View'}],
         snackbar: {},
         source: null
       }
@@ -192,11 +144,6 @@
 
         this.$vuetify.goTo(table); // to table
         this.$vuetify.goTo(table, {container: wrapper}); // to header
-      }
-    },
-    created() {
-      if (this.$store.getters.userHasFeature('SMARTLIST')) {
-        this.getSharedSmartlists()
       }
     },
     methods: {
@@ -232,35 +179,12 @@
           this.isProjectsLoading = false
         }
       },
-      async getSharedSmartlists() {
-        try {
-          const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 1}}, null, [])
-          this.smartlists = [...this.smartlists, ...data]
-        } catch (e) {
-          logError(e)
-        }
-      },
       searchProjects: debounce(function () {
         //don't allow searchQuery to be null - causes issues
         this.searchQuery = this.searchQuery || ''
         localStorage.setItem('projectSearch', this.searchQuery)
         this.getProjects()
-      }, 500),
-      async generateReport() {
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequestWithParams(`/project/generate`, {params: {query: this.searchQuery}})
-          let report = new Blob([data], {type: constants.CSV_BLOB_TYPE})
-          saveAs(report, 'projects.csv')
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          logError(e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      goToSelectedProject(selectedRow) {
-        this.$router.push({name: 'projectDetails', params: {projectId: selectedRow.project_id}})
-      }
+      }, 500)
     }
   }
 </script>
@@ -271,7 +195,6 @@
   }
 </style>
 <style scoped lang="scss">
-
   @import "@/styles/main.scss";
 
   ::v-deep {
@@ -283,9 +206,5 @@
 
   tr:nth-of-type(even) {
     @extend .shaded-row;
-  }
-
-  .smartlist-selector {
-    max-width: 350px;
   }
 </style>

@@ -6,15 +6,6 @@
           <v-toolbar-title class="title-large-medium">Contacts</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-autocomplete
-              v-if="$store.getters.userHasFeature('SMARTLIST')"
-              v-model="selectedSmartlistId"
-              :items="smartlists"
-              item-text="name"
-              item-value="id"
-              class="smartlist-selector pt-3 body-large hide-xs"
-              attach
-            />
             <v-btn text v-if="canAdd && (!$store.getters.isParent(parentId) || !companies || companies.length === 1)"
                    to="/newContact" color="primary" >
               <v-icon>add</v-icon>
@@ -45,7 +36,6 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-toolbar
-          v-if="selectedSmartlistId === 0"
           color="white"
           class="elevation-1 mt-3"
         >
@@ -61,7 +51,6 @@
           <v-spacer></v-spacer>
         </v-toolbar>
         <v-data-table
-            v-if="selectedSmartlistId === 0"
             :headers="headers"
             :items="contacts"
             :fixed-header="true"
@@ -109,17 +98,8 @@
             </tr>
           </template>
         </v-data-table>
-
-        <SmartlistTable
-          class="mt-3"
-          :type="'CONTACT'"
-          v-else
-          :smartlistId="selectedSmartlistId"
-          @row-selected="goToContact"
-        />
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
@@ -129,20 +109,14 @@ import {AppMutations} from '@/stores/AppStore'
 import {
   handleHidingGlobalLoader,
   getRequestWithParams,
-  getSnackbar,
-  logError,
+  getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import debounce from 'lodash.debounce'
-import { saveAs } from 'file-saver'
-import SmartlistTable from '@/components/SmartlistTable'
 import axios from 'axios'
 
 export default {
   name: 'Contacts',
-  components: {
-    SmartlistTable
-  },
   data () {
     return {
       initialLoad: true,
@@ -173,8 +147,6 @@ export default {
         { text: 'Date Created', value: 'dateCreated', show: true },
       ],
       search: '',
-      selectedSmartlistId: 0,
-      smartlists: [{id: 0, name: 'Default View'}],
       source: null
     }
   },
@@ -206,20 +178,7 @@ export default {
       vm.getContacts()
     });
   },
-  created () {
-    if (this.$store.getters.userHasFeature('SMARTLIST')) {
-      this.getSharedSmartlists()
-    }
-  },
   methods: {
-    async getSharedSmartlists() {
-      try {
-        const {data} = await getRequestWithParams(`/smartlist/shared`, {params: {objectTypeId: 2}}, null, [])
-        this.smartlists = [...this.smartlists, ...data]
-      } catch (e) {
-        logError(e)
-      }
-    },
     clickRow(id){
       this.$router.push({name: 'contact', params: {id}})
     },
@@ -259,28 +218,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async exportContacts () {
-      this.dialog = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/contact/exportContacts`, { params: {
-            query: this.search
-        }})
-        let blob = new Blob([data], {
-          type: 'text/csv;charset=utf-8'
-        });
-        saveAs(blob, "contacts.csv");
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Exporting Contacts')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    goToContact (selectedRow) {
-      this.$router.push({name: 'contact', params: {id: selectedRow.contact_id}})
     }
   }
 }
@@ -307,7 +244,5 @@ export default {
     margin-top: 2px;
     word-break: break-word;
   }
-
-
 </style>
 

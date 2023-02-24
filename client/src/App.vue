@@ -94,19 +94,6 @@ export default {
 </script>
 
 <style scoped lang="scss">
-#app {
-  letter-spacing: .4px;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  padding-top: 0 !important;
-  background-color: var(--v-grey-lighten4);
-  min-height: 100vh;
-
-  .app-title {
-    font-size: 25px;
-    margin-top: 7px;
-  }
-}
 
 @media (min-width: 769px) {
   #app {

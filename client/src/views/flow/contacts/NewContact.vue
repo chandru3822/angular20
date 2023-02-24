@@ -32,6 +32,8 @@
                             class="body-large"
                             label="Address"
                             id="qa-address-field"
+                            maxlength="35"
+                            counter
                             :rules="addressRules"
                             v-model="contact.street1"></v-text-field>
               <v-text-field text

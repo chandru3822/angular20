@@ -9,7 +9,6 @@ import com.albatross.api.v1.company.blueraven.services.queries.CallGroupQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
@@ -19,9 +18,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Slf4j
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('CALL_GROUPS')")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @Service
+@PreAuthorize("hasCompanyAccess(3)")
+@RequiredArgsConstructor
 public class CallGroupService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
@@ -32,8 +31,7 @@ public class CallGroupService {
     params.put("companyId", user.getCompanyId());
     params.put("searchQuery", searchQuery);
 
-    List<CallGroup> results = sqlCache.queryBySql(CallGroupQuery.getGroups, params, CallGroup.class);
-    return results;
+    return sqlCache.queryBySql(CallGroupQuery.getGroups, params, CallGroup.class);
   }
 
   public CallGroup getGroupDetails(Long id) {
@@ -48,16 +46,14 @@ public class CallGroupService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("callGroupId", callGroupId);
 
-    List<CallGroupPostalCode> results = sqlCache.queryBySql(CallGroupQuery.getCodesForGroup, params, CallGroupPostalCode.class);
-    return results;
+    return sqlCache.queryBySql(CallGroupQuery.getCodesForGroup, params, CallGroupPostalCode.class);
   }
 
   public List<CallGroupPhoneNumber> getNumbersForGroup(Long callGroupId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("callGroupId", callGroupId);
 
-    List<CallGroupPhoneNumber> results = sqlCache.queryBySql(CallGroupQuery.getNumbersForGroup, params, CallGroupPhoneNumber.class);
-    return results;
+    return sqlCache.queryBySql(CallGroupQuery.getNumbersForGroup, params, CallGroupPhoneNumber.class);
   }
 
   public CallGroup saveGroup(CallGroup cg) {

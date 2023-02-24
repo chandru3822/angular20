@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.smartlist.SmartlistResult;
+import com.albatross.api.v1.flow.model.smartlistv1.SmartlistResult;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueue;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueMetric;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueOwner;
