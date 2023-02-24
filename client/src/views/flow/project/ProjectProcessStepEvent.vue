@@ -108,7 +108,7 @@
         <v-row>
           <v-col cols="12" class="text-left py-0 px-0 pb-4" v-if="!collapsedAttachments">
             <AttachmentsFolderList :object-type-id="6"
-                                   :allow-upload="true"
+                                   :allow-upload="!isEventReadonly"
                                    :small-title="true"
                                    is-card
                                    title="Uploaded Documents"/>
@@ -134,7 +134,7 @@
             <div>
               <v-btn class="white--text mt-3 ml-2"
                      @click="checkFieldsForUnique()"
-                     :disabled="!userCanEdit || getReadOnly()"
+                     :disabled="!userCanEdit || getIsEventReadonly()"
                      color="primary">
                 Save Fields
               </v-btn>
@@ -165,7 +165,7 @@
             v-model="selectedEvent.companyEventStatusTypeId"
             :items="companyEventStatuses"
             label="Event Status"
-            :disabled="!userCanManage"
+            :disabled="!userCanManage || isEventReadonly"
             item-text="eventStatusType"
             item-value="id"
             @input="[statusChanged = true, defaultValuesChanged = true]"
@@ -316,7 +316,7 @@
                   :key="idx"
                   :required="field.required && !eventSaveOverrideRequired"
                   :callback="populateDirtyCfvs"
-                  :readonly="getReadOnly(field)"
+                  :readonly="getFieldReadOnly(field)"
                   :field="field"
                   :use-field-ancillary-name="true"
                   :show-field-name="false"
@@ -328,7 +328,7 @@
                   :key="idx"
                   :required="field.required && !eventSaveOverrideRequired"
                   :callback="populateDirtyCfvs"
-                  :readonly="getReadOnly(field)"
+                  :readonly="getFieldReadOnly(field)"
                   :field="field"
                   :use-field-ancillary-name="true"
                   :show-field-name="false"
@@ -440,6 +440,7 @@ export default {
       dateValueChanged: false,
       showUnperformableActions: false,
       eventDetailsLoading: true,
+      isEventReadonly: false,
       // windowWidth: window.innerWidth,
       // splitColumnMinWidth: 1700,
       getStatusClass,
@@ -742,23 +743,37 @@ export default {
         console.log('END TOWN', this.selectedEvent.endTime)
       }
     },
-    getReadOnly: function (field) {
+    userIsWhitelisted(){
+      if(this.selectedEvent?.readonlyWhiteListPositions) {
+        for (let wlp of this.selectedEvent?.readonlyWhiteListPositions) {
+          let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
+          if (match) {
+            return true //if the user has a position that matches any of the whiteList positions, the user should see the event
+          }
+        }
+        return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+      }
+    },
+    isEventEditableByThisUserIgnoringReadOnly(){
+      return this.userIsAdmin || this.userCanManage || (this.userCanEdit && this.selectedEvent.eventStatusTypeId === 1 && this.selectedEvent.processStepStatusId === 1)
+    },
+    getIsEventReadonly() {
+      return !this.$store.getters.isFullAdmin && (
+          (this.selectedEvent?.readonly && !this.userIsWhitelisted())
+          || !this.isEventEditableByThisUserIgnoringReadOnly()
+        )
+    },
+    getFieldReadOnly: function (field) {
       // if events admin then they can edit any event fields, otherwise idk???
       // if not readonly and the user can manage then ignore event status check
-      let fieldReadOnly = false
       if (null != field) {
-        fieldReadOnly = getEventCustomFieldReadOnly(this.$store, field)
+        return (!this.$store.getters.isFullAdmin && getEventCustomFieldReadOnly(this.$store, field)) || this.getIsEventReadonly()
       }
-      return ((!this.userIsAdmin && !this.userCanManage && !fieldReadOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
-        || fieldReadOnly || !this.userCanEdit
+      return false
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
-      let readOnly = getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)
-      // if events admin then they can edit any event fields, otherwise idk???
-      // if not readonly and the user can manage then ignore event status check
-      return ((!this.userIsAdmin && !this.userCanManage && !readOnly) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
-        || readOnly
-        || !this.userCanEdit
+      return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)) || this.getIsEventReadonly()
+
     },
     getDefaultFieldHidden: function (wlp, hiddenFieldValue) {
       let hidden = getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue)
@@ -809,6 +824,7 @@ export default {
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
             : `${this.selectedEvent.eventName}`
           this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
+          this.isEventReadonly = this.getIsEventReadonly()
           if (data.uniqueBehaviorTypeId === 1) {
             this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
             this.getRoundRobinNumDays()
