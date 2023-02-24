@@ -721,6 +721,13 @@ public class ProjectProcessStepEventService {
           "availableResources",
           new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
 
+      TypeReference<List<WhiteListedPosition>> readonlyWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "readonlyWhiteListedPositions",
+          new JsonCollectionDeserializer(readonlyWhiteListedPositionsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(

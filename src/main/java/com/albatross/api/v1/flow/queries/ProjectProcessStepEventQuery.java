@@ -88,6 +88,7 @@ public class ProjectProcessStepEventQuery {
            e.resource_read_only,
            e.resource_hidden,
            pse.event_id,
+           pse.readonly,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type_id,
            pse.unique_behavior_type_id,
@@ -319,7 +320,27 @@ public class ProjectProcessStepEventQuery {
                              FROM flow.white_listed_position wlp
                              WHERE wlp.white_list_type_id = 15
                                and wlp.event_id = e.id
-                               AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions"
+                               AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions",
+          coalesce((
+                      SELECT array_to_json(array_agg(row_to_json(readonlyWhiteListPositions)))
+                          FROM (
+                                select wlp.id,
+                                wlp.process_step_event_id as "processStepEventId",
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.process_step_id as "processId",
+                                wlp.company_id as "companyId",
+                                wlp.archived,
+                                wlp.white_list_type_id as "whiteListTypeId",
+                                wlp.date_created as dateCreated,
+                                wlp.created_by_id as createdById,
+                                wlp.date_modified as dateModified,
+                                wlp.modified_by_id as modifiedById,
+                                wlt.white_list_type as whiteListType
+                                from flow.white_listed_position wlp
+                                    left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
+                                    where wlp.process_step_event_id = pse.id and wlp.archived is false)
+                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
     from flow.project_process_step_event ppse
            inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
            inner join flow.process_step ps on pps.process_step_id = ps.id
