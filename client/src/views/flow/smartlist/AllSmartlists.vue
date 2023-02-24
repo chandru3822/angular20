@@ -40,13 +40,14 @@
                 @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
               />
             </td>
-            <td class="td-action">
-              <smartlist-share
-                :smartlist="smartlist"
-                @updated-public="(isPublic) => smartlist.public = isPublic"
-                @updated-owner="updateOwnerInfo"
-              />
-            </td>
+<!--            @TODO: #smartlistsv2 Please leave while smartlists v2 is being developed-->
+<!--            <td class="td-action">-->
+<!--              <smartlist-share-->
+<!--                :smartlist="smartlist"-->
+<!--                @updated-public="(isPublic) => smartlist.public = isPublic"-->
+<!--                @updated-owner="updateOwnerInfo"-->
+<!--              />-->
+<!--            </td>-->
             <td class="td-action">
               <smartlist-export :smartlist="smartlist" />
             </td>
@@ -81,7 +82,8 @@ const headers = ref([
   {text: 'Name', value: 'name'},
   {text: 'Owner', value: 'owner'},
   {text: 'Duplicate'},
-  {text: 'Share'},
+  //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
+  // {text: 'Share'},
   {text: 'Export'},
   {text: 'Delete'}
 ])

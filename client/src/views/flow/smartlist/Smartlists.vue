@@ -13,7 +13,8 @@
         </v-toolbar>
         <v-tabs>
           <v-tab :to="'/smartlist/mine'">My Smartlists</v-tab>
-          <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>
+<!--          @TODO: #smartlistsv2 Please leave while smartlists v2 is being developed-->
+<!--          <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>-->
           <v-tab :to="'/smartlist/public'">Public Smartlists</v-tab>
           <v-tab
             v-if="isSmartlistAdmin"
