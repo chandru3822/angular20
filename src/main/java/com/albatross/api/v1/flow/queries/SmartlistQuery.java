@@ -22,11 +22,15 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      concat(cb.first_name, ' ', cb.last_name) as created_by,
+      concat(mb.first_name, ' ', mb.last_name) as modified_by
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    inner join flow.user cb on cb.id = s.created_by_id
+    left join flow.user mb on mb.id = s.created_by_id
     where
       cot.company_id = :companyId and
       s.owner_id = :userId and
@@ -57,13 +61,17 @@ public class SmartlistQuery {
       cot.company_id,
       concat(u.first_name, ' ', u.last_name) "owner",
       sac.access_control_id,
-      ac.access_level
+      ac.access_level,
+      concat(cb.first_name, ' ', cb.last_name) as created_by,
+      concat(mb.first_name, ' ', mb.last_name) as modified_by
     from flow.smartlist_access_control sac
     inner join flow.smartlist s on sac.smartlist_id = s.id
     inner join flow.user_position up on sac.user_position_id = up.id
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    inner join flow.user cb on cb.id = s.created_by_id
+    left join flow.user mb on mb.id = s.created_by_id
     inner join flow.access_control ac on sac.access_control_id = ac.id
     where
       up.user_id = :userId and
@@ -93,7 +101,9 @@ public class SmartlistQuery {
       cot.company_id,
       concat(u.first_name, ' ', u.last_name) "owner",
       sac.access_control_id,
-      ac.access_level
+      ac.access_level,
+      concat(cb.first_name, ' ', cb.last_name) as created_by,
+      concat(mb.first_name, ' ', mb.last_name) as modified_by
     from flow.smartlist_access_control sac
     inner join flow.smartlist s on sac.smartlist_id = s.id
     inner join flow.user_position up on sac.org_id = up.org_id
@@ -101,6 +111,8 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    inner join flow.user cb on cb.id = s.created_by_id
+    left join flow.user mb on mb.id = s.created_by_id
     inner join flow.access_control ac on sac.access_control_id = ac.id
     where
       up.user_id = :userId and
@@ -133,11 +145,15 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      concat(cb.first_name, ' ', cb.last_name) as created_by,
+      concat(mb.first_name, ' ', mb.last_name) as modified_by
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    inner join flow.user cb on cb.id = s.created_by_id
+    left join flow.user mb on mb.id = s.created_by_id
     where
       cot.company_id = :companyId and
       s.owner_id != :userId and
@@ -167,11 +183,15 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      concat(cb.first_name, ' ', cb.last_name) as created_by,
+      concat(mb.first_name, ' ', mb.last_name) as modified_by
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    inner join flow.user cb on cb.id = s.created_by_id
+    left join flow.user mb on mb.id = s.created_by_id
     where
       cot.company_id = :companyId and
       s.archived is not true and
