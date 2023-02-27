@@ -146,7 +146,15 @@ const router = new Router({
             } else {
               return accessDenied()
             }
-          }
+          },
+          children: [
+            {
+              path: '/userImages',
+              name: 'userImages',
+              meta: {title: 'Albatross - Users'},
+              component: () => import (/* webpackChunkName: "userDetails" */ './views/flow/users/UserImages.vue'),
+            }
+          ]
         }, {
           path: '/user/:id',
           name: 'user',
