@@ -489,7 +489,7 @@
         <span v-else>Reset Filters</span>
       </v-btn>
     </v-row>
-    <user-images :users="imageUsers" :headers = "headers" :users-per-page="usersPerPage"
+    <user-images :users="imageUsers" :headers = "headers" :users-per-page="usersPerPage" v-if="!userImagesLoading"
     :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
 
     </user-images>
@@ -577,6 +577,7 @@
           1000
         ],
         usersPerPage: 10,
+        userImagesLoading: true,
         headers: [
           { text: '', value: 'selectBox', selectFilter:true, show: true, width: '50px' },
           { text: 'First Name', value: 'firstName', show: true, width: '125px' },
@@ -695,6 +696,7 @@
         this.getUserImage((this.currentPage-1) * this.usersPerPage + 1, this.min(this.currentPage * this.usersPerPage, this.imageUsers.length));
       },
       async getUserImage (startUser, endUser) {
+        this.userImagesLoading = true
         let userIds = [];
         for(let x = startUser; x < this.min(endUser, this.imageUsers.length); x++){
           userIds.push(this.imageUsers[x].id);
@@ -719,6 +721,9 @@
               user.userImageAltText = 'User photo placeholder'
             }
           })
+          this.userImagesLoading = false
+        } else {
+          this.userImagesLoading = false
         }
       },
       clickRow(id){
