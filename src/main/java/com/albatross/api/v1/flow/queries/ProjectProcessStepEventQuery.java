@@ -322,7 +322,7 @@ public class ProjectProcessStepEventQuery {
                                and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions",
           coalesce((
-                      SELECT array_to_json(array_agg(row_to_json(readonlyWhiteListPositions)))
+                      SELECT array_to_json(array_agg(row_to_json(readonlyWhiteListedPositions)))
                           FROM (
                                 select wlp.id,
                                 wlp.process_step_event_id as "processStepEventId",
@@ -340,7 +340,7 @@ public class ProjectProcessStepEventQuery {
                                 from flow.white_listed_position wlp
                                     left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
                                     where wlp.process_step_event_id = pse.id and wlp.archived is false)
-                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
+                        readonlyWhiteListedPositions), '[]') AS "readonlyWhiteListedPositions"
     from flow.project_process_step_event ppse
            inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
            inner join flow.process_step ps on pps.process_step_id = ps.id

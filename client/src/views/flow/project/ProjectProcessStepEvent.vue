@@ -744,8 +744,8 @@ export default {
       }
     },
     userIsWhitelisted(){
-      if(this.selectedEvent?.readonlyWhiteListPositions) {
-        for (let wlp of this.selectedEvent?.readonlyWhiteListPositions) {
+      if(this.selectedEvent?.readonlyWhiteListedPositions) {
+        for (let wlp of this.selectedEvent?.readonlyWhiteListedPositions) {
           let match = this.$store.state.user.details.userPositions.find(up => up.positionId === wlp.positionId)
           if (match) {
             return true //if the user has a position that matches any of the whiteList positions, the user should see the event
@@ -767,12 +767,12 @@ export default {
       // if events admin then they can edit any event fields, otherwise idk???
       // if not readonly and the user can manage then ignore event status check
       if (null != field) {
-        return (!this.$store.getters.isFullAdmin && getEventCustomFieldReadOnly(this.$store, field)) || this.getIsEventReadonly()
+        return (!this.$store.getters.isFullAdmin && getEventCustomFieldReadOnly(this.$store, field)) || this.isEventReadonly
       }
       return false
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
-      return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)) || this.getIsEventReadonly()
+      return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)) || this.isEventReadonly
 
     },
     getDefaultFieldHidden: function (wlp, hiddenFieldValue) {
