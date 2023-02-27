@@ -59,12 +59,14 @@
                     <v-list-item-content class="text-left">
                       <ZonelessTimePickerInput
                         v-model="st.startTime"
+                        :change="() => {}"
                         :allowed-minutes="allowedMinutesStep"
                         :hide-details="true"
                         label="Start Time"
                       />
                       <ZonelessTimePickerInput
                         v-model="st.endTime"
+                        :change="() => {}"
                         :allowed-minutes="allowedMinutesStep"
                         :hide-details="true"
                         label="End Time"
@@ -169,7 +171,7 @@
           this.saveError = false
           this.saveErrorMsg = ''
 
-          schedule.slotTimes?.forEach((st, stIdx) => {
+          schedule.slotTimes?.filter(st => !st.archived)?.forEach((st, stIdx) => {
             //verify that no slot start time is >= the slot end time
             if(!st.archived && (!st.startTime || !st.endTime)) {
               this.saveError = true
@@ -179,7 +181,7 @@
               this.saveErrorMsg = 'Slot Start Time Cannot Be Before End Time'
             } else {
               //verify that no slots overlap
-              schedule.slotTimes?.forEach((st2, st2Idx) => {
+              schedule.slotTimes?.filter(st => !st.archived)?.forEach((st2, st2Idx) => {
                 if (stIdx !== st2Idx && (moment(st.startTime, 'HH:mm').isBetween(moment(st2.startTime, 'HH:mm'), moment(st2.endTime, 'HH:mm'))
                   || moment(st.endTime, 'HH:mm').isBetween(moment(st2.startTime, 'HH:mm'), moment(st2.endTime, 'HH:mm')))) {
                   this.saveError = true
