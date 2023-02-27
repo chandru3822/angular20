@@ -118,7 +118,7 @@ export default {
         async getSmartlistData() {
             try {
                 this.isLoading = true
-                const {data} = await getRequestWithParams(`/smartlist/${this.smartlistId}/data`)
+                const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/data`)
                 this.reportData = data.data
                 this.headers = data.headers.map(h => ({text: h.name, value: h.name, id: h.id}))
             } catch (e) {
@@ -130,7 +130,7 @@ export default {
         async generateReport () {
           try {
             this.$store.commit(AppMutations.SET_LOADING, true)
-            const {data} = await getRequest(`/smartlist/${this.smartlistId}/csv`)
+            const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/csv`)
             let blob = new Blob([data], {
               type: 'text/csv;charset=utf-8'
             });

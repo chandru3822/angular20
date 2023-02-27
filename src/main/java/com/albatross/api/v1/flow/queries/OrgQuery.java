@@ -19,6 +19,19 @@ public class OrgQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getAllActive = """
+    select
+        o.id,
+        o.org_name
+    from flow.org o
+    where
+      o.company_id = :companyId and
+      o.archived is not true and
+      o.active_flag is true
+    order by o.org_name
+  """;
+
+  //language=PostgreSQL
   public final static String getAttachmentType = """
 select oat.id,
               oat.company_id,

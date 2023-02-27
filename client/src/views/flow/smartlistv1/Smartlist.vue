@@ -99,23 +99,6 @@
                     <template v-slot:yes>Continue</template>
                   </ConfirmationDialog>
                 </v-col>
-
-                <v-col
-                  cols="12"
-                  md="4"
-                  v-if="smartlist.companyObjectTypeId && !isUserOrgObjectType"
-                  v-cloak
-                >
-                  <v-autocomplete
-                    v-model="smartlist.viewObjectTypeId"
-                    :items="viewObjectTypes"
-                    item-text="objectType"
-                    item-value="objectTypeId"
-                    label="Table View Display"
-                    placeholder="Select one..."
-                    attach
-                  />
-                </v-col>
               </v-row>
 
               <v-row>
@@ -133,49 +116,6 @@
                     v-model="smartlist.primaryUserPosition"
                     label="Primary Position"
                   />
-
-<!--                  <v-dialog-->
-<!--                    v-if="!isUserOrgObjectType"-->
-<!--                    v-model="showToggleDialog"-->
-<!--                    width="500"-->
-<!--                  >-->
-<!--                    <template #activator="{on}">-->
-<!--                      <v-checkbox-->
-<!--                        v-model="smartlist.projectDetails"-->
-<!--                        label="Project Details"-->
-<!--                        v-on="smartlist.id && on"-->
-<!--                      />-->
-<!--                    </template>-->
-
-<!--                    <v-card>-->
-<!--                      <v-card-title-->
-<!--                        class="text-h5 grey lighten-2"-->
-<!--                        primary-title-->
-<!--                      >-->
-<!--                        Confirm-->
-<!--                      </v-card-title>-->
-
-<!--                      <v-card-text>-->
-<!--                        Toggling project details will reset your smartlist, are you sure you want to continue?-->
-<!--                      </v-card-text>-->
-
-<!--                      <v-divider></v-divider>-->
-
-<!--                      <v-card-actions>-->
-<!--                        <v-spacer></v-spacer>-->
-<!--                        <v-btn-->
-<!--                          @click="resetToggleProjectDetails">-->
-<!--                          No-->
-<!--                        </v-btn>-->
-<!--                        <v-btn-->
-<!--                          color="primary"-->
-<!--                          text-->
-<!--                          @click="[showToggleDialog = false, toggleProjectDetails()]">-->
-<!--                          Yes-->
-<!--                        </v-btn>-->
-<!--                      </v-card-actions>-->
-<!--                    </v-card>-->
-<!--                  </v-dialog>-->
                   <v-checkbox
                       v-if="!isUserOrgObjectType"
                       v-model="smartlist.projectDetails"
@@ -313,7 +253,7 @@ import constants from '@/helpers/constants'
 
 
 import SmartlistRequirement from './SmartlistRequirement'
-import SmartlistColumn from '@/views/flow/smartlist/SmartlistColumn'
+import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -339,12 +279,6 @@ export default {
       logic: [],
       logicUpdated: false,
       resetRequirementForm: false,
-      viewObjectTypes: [
-        {objectTypeId: 2, objectType: 'Contact'},
-        // {objectTypeId: 5, objectType: 'Organization'},
-        {objectTypeId: 1, objectType: 'Project'}
-        // {objectTypeId: 3, objectType: 'User'}
-      ],
       requiredRules: constants.BASIC_REQUIRED_RULE,
       showDeleteDialog: false,
       showToggleDialog: false,
@@ -400,7 +334,7 @@ export default {
   methods: {
     async getSmartlist () {
       try {
-        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}`)
+        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}`)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
       } catch (e) {
@@ -411,7 +345,7 @@ export default {
     },
     async getCompanyObjectTypes () {
       try {
-        const {data} = await getRequest(`/smartlist/companyObjectTypes`)
+        const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
         this.companyObjectTypes = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
       } catch (e) {
         logError(e)
@@ -421,7 +355,7 @@ export default {
     },
     async getRequirements () {
       try {
-        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/requirement`)
+        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}/requirement`)
         this.requirements = data
       } catch (e) {
         logError(e)
@@ -431,7 +365,7 @@ export default {
     },
     async getLogic () {
       try {
-        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/logic`)
+        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}/logic`)
         this.fetchedLogic = [...data]
         this.logic = data
       } catch (e) {
@@ -442,7 +376,7 @@ export default {
     },
     async getProjectDetailsColumns () {
       try {
-        const {data} = await getRequest(`/smartlist/availableProjectDetailsFields`)
+        const {data} = await getRequest(`/smartlistv1/availableProjectDetailsFields`)
         this.projectDetailsColumns = data
       } catch (e) {
         logError(e)
@@ -468,7 +402,7 @@ export default {
           this.smartlist.mainProcessSteps = true
         }
 
-        const {data, status} = await postRequest(`/smartlist`, this.smartlist)
+        const {data, status} = await postRequest(`/smartlistv1`, this.smartlist)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
@@ -484,7 +418,7 @@ export default {
       try {
         const maxNumber = this.requirements.map(r => r.displayOrder).reduce((max, cur) => Math.max(max, cur), 0)
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
+        const {data, status} = await postRequest(`/smartlistv1/${this.smartlist.id}/requirement`, {
           ...requirement,
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
@@ -510,7 +444,7 @@ export default {
           this.smartlist.mainProcessSteps = true
         }
 
-        const {status} = await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
+        const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}`, this.smartlist)
 
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.originalObjectTypeId = companyObjectType.objectTypeId
@@ -525,7 +459,7 @@ export default {
     async updateLogic () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await putRequest(`/smartlist/${this.smartlist.id}/logic`, this.logic)
+        const {data, status} = await putRequest(`/smartlistv1/${this.smartlist.id}/logic`, this.logic)
         this.fetchedLogic = [...data]
         this.logic = data
         handleHidingGlobalLoader(this, status)
@@ -539,7 +473,7 @@ export default {
     async updateRequirement (requirement) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await putRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
+        const {data, status} = await putRequest(`/smartlistv1/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
         this.requirements.splice(this.requirements.findIndex(r => r.id === requirement.id), 1, data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -552,7 +486,7 @@ export default {
     async deleteSmartlist () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await deleteRequest(`/smartlist/${this.$route.params.smartlistId}`)
+        const {status} = await deleteRequest(`/smartlistv1/${this.$route.params.smartlistId}`)
         handleHidingGlobalLoader(this, status)
         this.$router.go(-1)
       } catch (e) {
@@ -569,7 +503,7 @@ export default {
           throw 'Given requirement not found in requirement list'
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`)
+        await deleteRequest(`/smartlistv1/${this.smartlist.id}/requirement/${requirement.id}`)
         this.requirements.splice(deleteIndex, 1)
       } catch (e) {
         logError(e)
@@ -582,7 +516,7 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/csv`)
+        const {data, status} = await getRequest(`/smartlistv1/${this.smartlist.id}/csv`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         })
@@ -606,7 +540,7 @@ export default {
     async toggleProjectDetails () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
+        const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}/toggleProjectDetails`)
         this.refreshData = true
         this.requirements = []
         handleHidingGlobalLoader(this, status)
@@ -646,7 +580,7 @@ export default {
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.smartlist.objectTypeId = companyObjectType.objectTypeId
 
-        const {data, status} = await putRequest((`/smartlist/${this.smartlist.id}/toggleObjectType`), this.smartlist)
+        const {data, status} = await putRequest((`/smartlistv1/${this.smartlist.id}/toggleObjectType`), this.smartlist)
 
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
@@ -665,8 +599,8 @@ export default {
     async copy () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/copy`)
-        this.$router.push('/smartlist')
+        const {data, status} = await postRequest(`/smartlistv1/${this.smartlist.id}/copy`)
+        this.$router.go(-1)
         this.snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -679,7 +613,7 @@ export default {
     },
     async buildSql() {
       try {
-        const {data} = await getRequest(`/smartlist/${this.smartlist.id}/getSqlString`)
+        const {data} = await getRequest(`/smartlistv1/${this.smartlist.id}/getSqlString`)
         this.sql = data
         navigator.clipboard.writeText(this.sql);
         this.snackbar = getSnackbar('SUCCESS', 'Copied query to clipboard')

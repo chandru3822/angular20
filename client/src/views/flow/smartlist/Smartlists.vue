@@ -1,116 +1,74 @@
 <template>
-<v-container id="smartlists-container">
-  <v-row>
-    <v-col cols="12">
-      <v-toolbar color="white" class="elevation-1">
-        <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
-        <v-spacer></v-spacer>
-        <v-toolbar-items>
-          <v-btn text to="/smartlist/null" color="primary">
-            <v-icon>add</v-icon>
-            <span v-if="!constants.IS_MOBILE">Add Smartlist</span>
-          </v-btn>
-        </v-toolbar-items>
-      </v-toolbar>
-    </v-col>
+  <v-container id="smartlists-container" class="fill-height align-start">
+    <v-row class="align-content-start">
+      <v-col cols="12">
+        <v-toolbar color="white" class="elevation-0">
+          <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn text to="/smartlistv1/null" color="primary">
+              <span>Add Smartlist</span>
+            </v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <v-tabs>
+          <v-tab :to="'/smartlist/mine'">My Smartlists</v-tab>
+<!--          @TODO: #smartlistsv2 Please leave while smartlists v2 is being developed-->
+<!--          <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>-->
+          <v-tab :to="'/smartlist/public'">Public Smartlists</v-tab>
+          <v-tab
+            v-if="isSmartlistAdmin"
+            :to="'/smartlist/all'"
+          >
+            All Smartlists
+          </v-tab>
+        </v-tabs>
+      </v-col>
+      <v-col cols="12">
+        <router-view></router-view>
+      </v-col>
+    </v-row>
+  </v-container>
 
-    <v-col cols="12">
-      <v-card flat class="square-card pb-3 px-3" color="white">
-        <v-text-field
-          v-model="search"
-          append-icon="mdi-magnify"
-          label="Search"
-          single-line
-          hide-details
-        ></v-text-field>
-      </v-card>
-      <v-divider></v-divider>
-      <v-data-table
-        class="elevation-1"
-        :headers="headers"
-        :items="smartlists"
-        fixed-header
-        multi-sort
-        :search="search"
-        :items-per-page="25"
-        :footer-props="footerProps"
-        :loading="isSmartlistsLoading"
-      >
-        <template #no-data>
-          <span class="default-text-color">No available smartlists</span>
-        </template>
 
-        <template #no-results>
-          <span class="default-text-color">No available smartlists</span>
-        </template>
-
-        <template #item="{item: smartlist}">
-          <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
-            <td class="text-left">{{smartlist.name}}</td>
-            <td class="text-left">{{smartlist.viewObjectType}}</td>
-            <td class="text-left">{{smartlist.owner}}</td>
-            <td class="text-left">{{smartlist.shared ? 'Yes' : 'No'}}</td>
-          </tr>
-        </template>
-      </v-data-table>
-    </v-col>
-  </v-row>
-</v-container>
 </template>
 
-<script>
+<script setup>
+import { getCurrentInstance } from 'vue'
 
-import {getRequest, logError} from '@/helpers/helpers'
-import constants from '@/helpers/constants'
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 
-
-export default {
-  name: 'Smartlists',
-  data () {
-    return {
-      constants,
-      isSmartlistsLoading: false,
-      snackbar: {},
-      search: '',
-      smartlists: [],
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 500]
-      },
-      headers: [
-        {text: 'Name', value: 'name'},
-        {text: 'Table Display View', value: 'objectType'},
-        {text: 'Owner', value: 'owner'},
-        {text: 'Public', value: 'shared'}
-      ]
-    }
-  },
-  created () {
-    this.getSmartlists()
-  },
-  methods: {
-    async getSmartlists () {
-      try {
-        const {data} = await getRequest(`/smartlist`)
-        this.smartlists = data
-      } catch (e) {
-        logError(e)
-      }
-    }
-  }
-}
+const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 </script>
 
 <style scoped lang="scss">
 @import "@/styles/main.scss";
 
-::v-deep {
-  .v-data-table__wrapper {
-    height: calc(100vh - 290px);
-    min-height: 300px;
-  }
+
+// Putting styling here in the parent which affects child components to keep it DRY.
+// Will probably move to children when they each move to use a unified table component
+:deep(.v-data-table__wrapper) {
+  height: calc(100vh - 305px);
 }
 
-tr:nth-of-type(even) {
+:deep(.v-data-footer) {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+}
+
+:deep(tr:nth-of-type(even)) {
   @extend .shaded-row;
+}
+
+:deep(.td-action) {
+  width: 8%;
+}
+
+:deep(.td-name) {
+  width: 37%;
 }
 </style>

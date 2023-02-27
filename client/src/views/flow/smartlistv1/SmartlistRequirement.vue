@@ -558,7 +558,7 @@ export default {
   methods: {
     async getAvailableFields () {
       try {
-        const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newRequirement.objectTypeId}`)
+        const {data} = await getRequest(`/smartlistv1/availableFieldsByType?objectTypeId=${this.newRequirement.objectTypeId}`)
         this.fetchedAvailableFields = data
         if (this.newRequirement.objectTypeId === 4) {
           this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
@@ -598,7 +598,7 @@ export default {
     async getProcessStepFieldData () {
       if (this.newRequirement.selectedField.customFieldGroupAssignmentId !== null) {
         try {
-          const {data} = await getRequest(`/smartlist/availableFieldByCfgaId/${this.newRequirement.selectedField.customFieldGroupAssignmentId}`)
+          const {data} = await getRequest(`/smartlistv1/availableFieldByCfgaId/${this.newRequirement.selectedField.customFieldGroupAssignmentId}`)
           this.newRequirement.selectedField = data
         } catch (e) {
           logError(e)

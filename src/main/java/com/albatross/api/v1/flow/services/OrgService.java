@@ -67,6 +67,11 @@ public class OrgService {
     return sqlCache.queryBySql(OrgQuery.getAllForCompany, params, Org.class);
   }
 
+  public List<Org> getAllActive() {
+    var user = securityService.getCurrentUser();
+    return sqlCache.queryBySql(OrgQuery.getAllActive, Map.of("companyId", user.getCompanyId()), Org.class);
+  }
+
   public List<User> getUsersInOrg(Long orgId) {
     Map<String, Object> params = new HashMap<>();
     params.put("orgId", orgId);

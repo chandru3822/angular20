@@ -263,7 +263,7 @@ export default {
     },
     async getAssignedFields () {
       try {
-        const {data} = await getRequest(`/smartlist/${this.smartlistId}/field`)
+        const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/field`)
         this.assignedFields = data
       } catch (e) {
         logError(e)
@@ -274,7 +274,7 @@ export default {
     async getAvailableFields () {
       this.newField = {objectTypeId: this.newField.objectTypeId}
       try {
-        const {data} = await getRequest(`/smartlist/availableFieldsByType?objectTypeId=${this.newField.objectTypeId}`)
+        const {data} = await getRequest(`/smartlistv1/availableFieldsByType?objectTypeId=${this.newField.objectTypeId}`)
         this.fetchedAvailableFields = data
         if (this.newField.objectTypeId === 4) {
           this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
@@ -309,7 +309,7 @@ export default {
     async addNewField () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlist/${this.smartlistId}/field`, {
+        const {data, status} = await postRequest(`/smartlistv1/${this.smartlistId}/field`, {
           ...this.newField.selectedField,
           smartlistId: this.smartlistId,
           displayOrder: this.assignedFields.length + 1,
@@ -332,7 +332,7 @@ export default {
       try {
         const fieldToDelete = this.assignedFields[fieldIndex]
         this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/smartlist/${this.smartlistId}/field/${fieldToDelete.id}`)
+        await deleteRequest(`/smartlistv1/${this.smartlistId}/field/${fieldToDelete.id}`)
         this.assignedFields.splice(fieldIndex, 1)
         const {status} = await this.reorderFields({moved: {newIndex: 0, oldIndex: 1}})
         handleHidingGlobalLoader(this, status)
@@ -353,7 +353,7 @@ export default {
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/smartlist/${this.smartlistId}/order`, this.assignedFields)
+        const {status} = await putRequest(`/smartlistv1/${this.smartlistId}/order`, this.assignedFields)
         handleHidingGlobalLoader(this, status)
         return {status}
       } catch (e) {
