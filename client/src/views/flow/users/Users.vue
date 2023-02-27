@@ -1,5 +1,5 @@
 <template>
-  <v-container id="users-container">
+  <v-container id="users-container" v-if="!showImages">
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
@@ -32,6 +32,10 @@
           <span class="flex-display justify-end user-selected" @click="selectedUsersDialog = true">{{this.usersSelected}} user(s) selected</span>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text color="primary" @click="toggleImages()" :disabled="allUsersLoading">
+              <v-icon v-if="constants.IS_MOBILE">View Images</v-icon>
+              <span v-else>View Images</span>
+            </v-btn>
             <v-btn text color="primary" @click="msgDialog = true" :disabled="allUsersLoading">
               <v-icon v-if="constants.IS_MOBILE">email</v-icon>
               <span v-else>Send Email/Text</span>
@@ -198,7 +202,7 @@
 
           <template #item="{ item, index }">
             <tr
-              :class="{'shaded-row': index % 2}"
+              :class="{'shaded-row': index % 2}" v-if="!showImages"
             >
               <td><v-checkbox v-model="item.selected" :disabled="allUsersLoading" @change="toggleSingleSelect(item)"></v-checkbox></td>
               <td @click="clickRow(item.id)" class="text-left user-column clickable">{{item.firstName}}</td>
@@ -214,6 +218,7 @@
             </tr>
           </template>
         </v-data-table>
+
       </v-col>
     </v-row>
 
@@ -446,13 +451,68 @@
     </v-dialog>
 
   </v-container>
+  <v-container  v-else>
+    <v-btn small text color="primary" @click="toggleImages()">
+      <v-icon small>mdi-chevron-left</v-icon>
+      Back to users
+    </v-btn>
+
+    <v-row style="width: 90%; margin-left: auto; margin-right: auto;" >
+      <v-autocomplete v-for="header of headers"
+                      v-model="filters.orgs[header.level]"
+                      :items="header.orgs"
+                      :label="header.text"
+                      v-if="header.orgFilter"
+                      item-text="orgName"
+                      item-value="id"
+                      return-object
+                      multiple
+                      placeholder="Select..."
+                      height="35px"
+                      outlined
+                      class="user-images-filter-select"
+                      @change="changeImageFilter(false, header.level)"
+      >
+      </v-autocomplete>
+      <v-autocomplete attach
+                label="Users per page"
+                v-model="usersPerPage"
+                :items="usersPerPageOptions"
+                item-text="email"
+                item-value="email"
+                class="user-images-filter-select"
+                auto-select-first
+                outlined
+      />
+      <v-btn text color="primary" @click="changeImageFilter(true)">
+        <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
+        <span v-else>Reset Filters</span>
+      </v-btn>
+    </v-row>
+    <user-images :users="imageUsers" :headers = "headers" :users-per-page="usersPerPage"
+    :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
+
+    </user-images>
+    {{(currentPage-1)*(usersPerPage) + 1}} - {{min((currentPage)*(usersPerPage), imageUsers.length)}} of {{imageUsers.length}}
+    <v-btn icon :disabled="leftArrowDisabled" @click="currentPage--">
+    <v-icon color="primary">
+      mdi-arrow-left
+    </v-icon>
+    </v-btn>
+    <v-btn icon :disabled="rightArrowDisabled" @click="nextPage()">
+    <v-icon color="primary">
+      mdi-arrow-right
+    </v-icon>
+    </v-btn>
+  </v-container>
+
 </template>
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import { Actions } from '@/store'
 
-  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, logError} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, logError, getRequestWithParams} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
@@ -462,12 +522,13 @@
   import {quillEditor} from 'vue-quill-editor'
   import { saveAs } from 'file-saver'
   import axios from 'axios'
+  import UserImages from "./UserImages";
 
   const defaultEmailMessage = '${user.firstName},\n'
 
   export default {
     name: 'Users',
-    components: {QuillEditor: quillEditor},
+    components: {UserImages, QuillEditor: quillEditor},
     watch: {
       options: {
         handler() {
@@ -492,7 +553,9 @@
         snackbar: {},
         users: [],
         initialLoad: true,
+        currentPage: 1,
         allUsers: [],
+        imageUsers: [],
         selectedLevel: null,
         masterOrgFilterList: [],
         orgFilters: [],
@@ -508,6 +571,12 @@
         },
         totalUsers: 0,
         dataLoading: true,
+        usersPerPageOptions: [
+          10,
+          100,
+          1000
+        ],
+        usersPerPage: 10,
         headers: [
           { text: '', value: 'selectBox', selectFilter:true, show: true, width: '50px' },
           { text: 'First Name', value: 'firstName', show: true, width: '125px' },
@@ -532,6 +601,7 @@
           { text: 'Name', value: 'fullName', show: true, width: '125px' },
           { text: 'Position', value: 'position', show: true, width: '125px' }
         ],
+        showImages: false,
         selectAllUsers: false,
         selectedUsers: [],
         selectedUsersDetails: [],
@@ -554,10 +624,17 @@
         primaryPositionsOnly: true,
         source: null,
         allUsersLoading: false,
-        companyId: this.$store.state.user.details.companyId
+        companyId: this.$store.state.user.details.companyId,
+        attachmentTypeId: 9,
       }
     },
     computed: {
+      leftArrowDisabled(){
+        return this.currentPage == 1;
+      },
+      rightArrowDisabled(){
+        return this.currentPage*this.usersPerPage >= this.imageUsers.length;
+      },
       selectAll () {
         return this.filters.statuses.length === this.statuses.length
       },
@@ -613,9 +690,44 @@
         this.textFile = null
         this.msgDialog = false
       },
+      async nextPage(){
+        this.currentPage++;
+        this.getUserImage((this.currentPage-1) * this.usersPerPage + 1, this.min(this.currentPage * this.usersPerPage, this.imageUsers.length));
+      },
+      async getUserImage (startUser, endUser) {
+        let userIds = [];
+        for(let x = startUser; x < this.min(endUser, this.imageUsers.length); x++){
+          userIds.push(this.imageUsers[x].id);
+        }
+        userIds = encodeURI(userIds);
+        let params = {
+          sourceIds: userIds,
+          attachmentTypeId: 9
+        }
+
+        const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
+
+        if (data) {
+          this.imageUsers.forEach(user => {
+            if (user.id && data[user.id]) {
+              user.imageUrl = data[user.id]
+            }
+
+            if (user.imageUrl) {
+              user.userImageAltText = 'Photo of ' + user.name + ', a Blue Raven Solar employee'
+            } else {
+              user.userImageAltText = 'User photo placeholder'
+            }
+          })
+        }
+      },
       clickRow(id){
         this.$router.push({name: 'userDetails', params: {id}})
       },
+      async toggleImages(){
+        await this.getUserImage(0, 10);
+        this.showImages = !this.showImages;
+       },
       debounceGetUsers: debounce( function () {
         this.getUsers(true)
       }, 500),
@@ -641,6 +753,7 @@
           }
           const {data, status} = await postRequest(`/user/search?page=0&size=9999`, params)
           this.allUsers = data?.content || []
+          this.imageUsers = this.allUsers
           this.allUsersLoading = false
           // handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -649,6 +762,14 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.allUsersLoading = false
           // this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      min(x, y){
+        if(x < y){
+          return x;
+        }
+        else{
+          return y;
         }
       },
       async getUsers (resetPage) {
@@ -683,7 +804,8 @@
               primaryFlag: this.primaryPositionsOnly
             }
 
-            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${itemsPerPage}`, params, null, [], {
+            let length = this.allUsers.length;
+            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${length}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
             })
@@ -711,6 +833,69 @@
         } else {
           this.dataLoading = false
           this.users = []
+        }
+      },
+      async getImageUsers (resetPage) {
+        localStorage.setItem('userFilters', JSON.stringify(this.filters))
+
+        if(resetPage) {
+          this.options.page = 1
+        }
+
+        if(this.source){
+          this.source.cancel()
+        }
+        const CancelToken = axios.CancelToken
+        this.source = CancelToken.source()
+
+        if (this.filters.statuses && this.filters.statuses.length > 0) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          this.dataLoading = true
+          const { page, itemsPerPage } = this.options
+
+          try {
+            const params = {
+              search: this.filters.search,
+              firstName: this.filters.firstName,
+              lastName: this.filters.lastName,
+              email: this.filters.email,
+              phone: this.filters.phone,
+              statuses: this.filters.statuses,
+              positions: this.filters.positions,
+              orgs: this.getOrgIdsForMax(),
+              //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
+              primaryFlag: this.primaryPositionsOnly
+            }
+
+            let length = this.allUsers.length;
+            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${length}`, params, null, [], {
+              source: this.source,
+              cancelToken: this.source.token
+            })
+
+            if(status) {
+              this.imageUsers = data?.content || []
+              this.totalUsers = data?.totalElements || 0
+
+              this.imageUsers.forEach(u => {
+                // If the user isn't already a selected user, add to list of selected users
+                if (this.selectedUsers.indexOf(u.id) !== -1) {
+                  u.selected = true;
+                }
+              })
+            }
+            this.dataLoading = false
+            this.initialLoad = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
+          this.dataLoading = false
+          this.imageUsers = []
         }
       },
       async getOrgFilters (initialLoad) {
@@ -892,6 +1077,10 @@
           return this.getOrgIdsForMax(true)
         }
       },
+      async changeImageFilter(reset, selectedLevel){
+        await this.handleImageFilterChange(reset, selectedLevel);
+        await this.getUserImage(0, 10);
+      },
       handleOrgFilterChange (reset, selectedLevel) {
         this.selectedLevel = selectedLevel
         if(reset) {
@@ -919,6 +1108,34 @@
         //reload the users
         this.getUsers(true)
       },
+      async handleImageFilterChange (reset, selectedLevel) {
+        this.selectedLevel = selectedLevel
+        if(reset) {
+          this.filters.orgs = {}
+          this.orgFilters = cloneDeep(this.masterOrgFilterList)
+          this.filters.positions = []
+          this.filters.statuses = this.statuses.filter(s => s.hasAccess).map(s => s.id)
+          this.filters.search = ''
+          this.filters.firstName = ''
+          this.filters.lastName = ''
+          this.filters.email = ''
+          this.filters.phone = ''
+
+        } else {
+          Object.keys(this.filters.orgs).forEach(k => {
+            if(k > this.selectedLevel) {
+              delete this.filters.orgs[k]
+            }
+          })
+          //reload the filters
+          this.getOrgFilters();
+        }
+
+        this.selectAllUsers = false
+        //reload the users
+        await this.getImageUsers(true)
+      },
+
       itemChecked(level, item) {
         if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
           let match = this.filters.orgs[level].find(of => of.id === item.id)
@@ -1130,6 +1347,26 @@
   }
   .user-autocomplete {
     width: 350px;
+  }
+  ::v-deep .user-filter-select .v-label{
+    color: red!important;
+    vertical-align: center;
+  }
+
+  .user-images-filter-select,
+  .user-images-filter-select .v-input__control,
+  .user-images-filter-select .v-input__control .v-input__slot,
+  .user-images-filter-select .v-input__control .v-input__slot fieldset {
+    height: 40px !important;
+    min-height: 40px !important;
+    width:10%;
+  }
+  .user-images-filter-select .v-select__selections {
+    padding: 0 0 5px 0 !important;
+    height: 40px !important;
+  }
+  .user-images-filter-select .v-input__append-inner {
+    margin-top: 5px !important;
   }
 
 </style>
