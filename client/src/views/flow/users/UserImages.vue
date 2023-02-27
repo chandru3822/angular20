@@ -1,7 +1,7 @@
 <template>
   <v-container>
     <v-row>
-      <v-col cols="3" v-for="(user,index) of users" v-if="index >= startingUser && index < endingUser">
+      <v-col cols="6" xl = "4" lg = "4" md="3" v-for="(user,index) of users" v-if="index >= startingUser && index < endingUser">
         <v-card>
           <v-list-item>
             <v-list-item-avatar
