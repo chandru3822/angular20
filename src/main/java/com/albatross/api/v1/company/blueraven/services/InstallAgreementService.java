@@ -341,7 +341,7 @@ public class InstallAgreementService {
         }
 
         try {
-          String financeOption = null != pd.getFinancialOption() ? pd.getFinancialOption() : getFinanceOption(pd.getLoanTerm(), pd.getInterestRate(), pd.getProposalLogHistoryId());
+          String financeOption = null != pd.getFinancialOption() ? pd.getFinancialOption() : getFinanceOption(pd.getLoanType(), pd.getLoanTerm(), pd.getInterestRate(), pd.getProposalLogHistoryId());
           URIBuilder b = new URIBuilder(goodleapNewLoanUrl + financeOption + ".html");
           b.addParameter("fname", s(pd.getCustomerFirstName()));
           b.addParameter("lname", s(pd.getCustomerLastName()));
@@ -367,9 +367,10 @@ public class InstallAgreementService {
     return goodleapNewLoanUrl;
   }
 
-  private String getFinanceOption(String loanTerm, String interestRate, Long proposalLogHistoryId) {
+  private String getFinanceOption(String loanType, String loanTerm, String interestRate, Long proposalLogHistoryId) {
     //if proposalLogHistoryId is not null then it will update the row in the db to save the value it finds
     HashMap<String, Object> params = new HashMap<>();
+    params.put("loanType", loanType);
     params.put("loanTerm", loanTerm);
     params.put("interestRate", interestRate);
     params.put("proposalLogHistoryId", proposalLogHistoryId);

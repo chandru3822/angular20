@@ -446,7 +446,7 @@ BEGIN
     new.proposal->>'Site Survey Resource Type',
     new.proposal->>'Site Survey Time Estimate',
     new.proposal->>'Site Survey Items',
-    brs.get_goodleap_financial_option(new.proposal->>'Loan Term', new.proposal->>'Interest Rate'));
+    brs.get_goodleap_financial_option(new.proposal->>'Loan Type', new.proposal->>'Loan Term', new.proposal->>'Interest Rate'));
   RETURN NEW;
 END;
 $$;
