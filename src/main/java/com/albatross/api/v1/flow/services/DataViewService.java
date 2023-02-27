@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -30,6 +31,7 @@ public class DataViewService {
   private final SqlArrayService sqlArrayService;
   private final SecurityService securityService;
   private final ObjectMapper om;
+  private final NamedParameterJdbcTemplate jdbc;
 
   public List<DataView> getCompanyDataViews() {
     User user = securityService.getCurrentUser();
@@ -230,10 +232,11 @@ public class DataViewService {
   }
 
   public void runViewMaintenance() {
-    sqlCache.queryBySql(DataViewQuery.runMaintenance, Collections.emptyMap(), String.class);
+
+    sqlCache.updateBySql(DataViewQuery.runMaintenance, Collections.emptyMap());
   }
 
-  public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
+      public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
     public DataViewMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
