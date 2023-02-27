@@ -14,7 +14,7 @@ import java.util.List;
 public class Smartlist {
 
   private Long id, companyObjectTypeId, companyId, ownerId, createdById, modifiedById, objectTypeId, workQueueTypeId, accessControlId;
-  private String name, objectType, viewObjectType, owner, accessLevel, modifiedBy, createdBy;
+  private String name, objectType, viewObjectType, owner, accessLevel;
   private boolean isPublic, archived, mainProcessSteps, projectDetails, primaryUserPosition;
   private Timestamp dateCreated, dateModified;
 

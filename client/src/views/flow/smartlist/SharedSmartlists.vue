@@ -34,7 +34,7 @@
           <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
             <td class="text-left td-name">{{ smartlist.name }}</td>
             <td class="text-left">{{ smartlist.owner }}</td>
-            <td>{{ smartlist.modifiedBy || smartlist.createdBy }}</td>
+            <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
             <td class="text-left">{{ `${smartlist.accessLevel.substring(0,1).toUpperCase()}${smartlist.accessLevel.substring(1)} Access` }}</td>
             <td class="td-action">
               <smartlist-copy :smartlist="smartlist" />
@@ -64,7 +64,7 @@ const footerProps = ref({
 const headers = ref([
   {text: 'Name', value: 'name'},
   {text: 'Owner', value: 'owner'},
-  {text: 'Last Modified By', value: 'modifiedBy'},
+  {text: 'Last Modified', value: 'dateModified'},
   {text: 'Access', value: 'accessLevel'},
   {text: 'Duplicate'},
   {text: 'Export'}
