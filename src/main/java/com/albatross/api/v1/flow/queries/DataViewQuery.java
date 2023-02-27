@@ -329,7 +329,7 @@ public class DataViewQuery {
 
   //language=PostgreSQL
   public final static String runMaintenance = """
-    select from flow.run_view_maintenance()
+    call flow.run_view_maintenance()
         """;
 
 }

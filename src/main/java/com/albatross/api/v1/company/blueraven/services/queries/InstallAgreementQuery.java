@@ -122,6 +122,12 @@ public class InstallAgreementQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getFinancialOption = """
+      select *
+      from brs.get_goodleap_financial_option(:loanTerm::varchar, :interestRate::varchar, :proposalLogHistoryId::bigint);
+    """;
+
+  //language=PostgreSQL
   public final static String getLoanType = """
     select plh.loan_type from brs.proposal_log_history plh
     WHERE project_id = :projectId and proposal_nbr = :proposalNbr;

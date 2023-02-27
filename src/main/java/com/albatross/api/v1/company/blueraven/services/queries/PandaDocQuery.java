@@ -6,6 +6,8 @@ public class PandaDocQuery {
   public final static String getProjectDetails = """
     SELECT
       plh.project_id,
+      plh.id as proposal_log_history_id,
+      plh.financial_option,
       plh.proposal_nbr,
       s.state,
       (select lov.name
