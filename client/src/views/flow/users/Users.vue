@@ -483,6 +483,8 @@
                 class="user-images-filter-select"
                 auto-select-first
                 outlined
+                @change="getUserImage((currentPage-1)*usersPerPage, (currentPage)*(usersPerPage));
+"
       />
       <v-btn text color="primary" @click="changeImageFilter(true)">
         <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
@@ -1084,7 +1086,7 @@
       },
       async changeImageFilter(reset, selectedLevel){
         await this.handleImageFilterChange(reset, selectedLevel);
-        await this.getUserImage(0, 10);
+        await this.getUserImage((this.currentPage-1)*this.usersPerPage, (this.currentPage)*(this.usersPerPage));
       },
       handleOrgFilterChange (reset, selectedLevel) {
         this.selectedLevel = selectedLevel

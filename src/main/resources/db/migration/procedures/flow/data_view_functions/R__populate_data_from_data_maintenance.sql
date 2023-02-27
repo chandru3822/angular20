@@ -1,7 +1,5 @@
-drop function if exists flow.populate_data_from_data_maintenance(p_data_view_id bigint,p_company_process_ids bigint[] );
-drop function if exists flow.populate_data_from_data_maintenance(p_data_view_maintenance_id bigint,p_data_view_id bigint,p_company_process_ids bigint[] );
-CREATE OR REPLACE FUNCTION flow.populate_data_from_data_maintenance(p_data_view_maintenance_id bigint,p_data_view_id bigint,p_company_process_ids bigint[] default null)
-  RETURNS text
+drop procedure if exists flow.populate_data_from_data_maintenance(in p_data_view_maintenance_id bigint, in p_data_view_id bigint,out p_sql text, in p_company_process_ids bigint[]);
+CREATE OR REPLACE procedure flow.populate_data_from_data_maintenance(in p_data_view_maintenance_id bigint,in p_data_view_id bigint,out p_sql text,in p_company_process_ids bigint[] default null)
 AS
 $BODY$
 declare
@@ -450,21 +448,18 @@ BEGIN
     END LOOP;
   v_sql = v_sql || $$)$$;
 
-  v_sql = v_sql || $$ update $$ || v_schema_name || $$.$$ || v_table_name || $$ foo set $$;
+  v_sql = v_sql || $$ select 'update $$ || v_schema_name || $$.$$ || v_table_name || $$ foo set $$;
   if array_length(v_text_array_columns, 1) > 0 then
-
     FOREACH v_second_value IN ARRAY v_text_array_columns
       LOOP
-        v_sql = v_sql || $$  $$ || v_second_value || $$ = ud.$$ || v_second_value || $$,$$;
+        v_sql = concat(v_sql, v_second_value, ' = ''||quote_literal(ud.', v_second_value, ')||''' || ' ,');
       END LOOP;
   end if;
-
   v_sql = trim(trailing ' ,' from v_sql);
-  v_sql = v_sql || $$ from update_data ud where ud.project_id = foo.project_id;$$;
-  return v_sql;
+  v_sql = v_sql || $$ where ' ||ud.project_id|| ' = foo.project_id' as generated_update from update_data ud $$;
 
+  p_sql = v_sql;
 END
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-                   COST 100;
+  LANGUAGE plpgsql;
 
