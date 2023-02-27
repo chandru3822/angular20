@@ -117,6 +117,7 @@
           v-if="field.dataTypeId === 6 && field.hasListValues"
           v-model="field.intValue"
           text
+          attach
           :hide-no-data="field.lazyLoadValues"
           :required="required"
           :clearable="!readonly"
@@ -147,6 +148,7 @@
         <v-autocomplete
           v-if="field.dataTypeId === 7 || field.dataTypeId === 10"
           text
+          attach
           :required="required"
           multiple
           placeholder=" "
@@ -180,6 +182,7 @@
           v-if="field.dataTypeId === 8 && !field.systemReadonly"
           v-model="field.intValue"
           text
+          attach
           :required="required"
           :search-input.sync="search"
           :hide-no-data="field.lazyLoadValues"
@@ -213,6 +216,7 @@
           :search-input.sync="search"
           :hide-no-data="field.lazyLoadValues"
           text
+          attach
           :filled="filledStyle"
           :required="required"
           :clearable="!readonly"
