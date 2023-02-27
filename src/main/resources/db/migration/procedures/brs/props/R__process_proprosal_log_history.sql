@@ -224,7 +224,8 @@ BEGIN
                                         storage_cost_with_fees,
                                         site_survey_resource_type,
                                         site_survey_time_estimate,
-                                        site_survey_items
+                                        site_survey_items,
+                                        financial_option
   )
   VALUES (new.proposal->>'_filename',
     new.project_id,
@@ -444,8 +445,8 @@ BEGIN
     new.proposal->>'Storage Cost With Fees',
     new.proposal->>'Site Survey Resource Type',
     new.proposal->>'Site Survey Time Estimate',
-    new.proposal->>'Site Survey Items'
-         );
+    new.proposal->>'Site Survey Items',
+    brs.get_goodleap_financial_option(new.proposal->>'Loan Term', new.proposal->>'Interest Rate'));
   RETURN NEW;
 END;
 $$;

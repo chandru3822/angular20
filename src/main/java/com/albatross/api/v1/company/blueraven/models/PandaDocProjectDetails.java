@@ -10,12 +10,12 @@ import java.util.StringJoiner;
 public class PandaDocProjectDetails {
     private String state, utilityCompany, financier;
     private Integer companyId;
-    private Long projectId, proposalNbr;
+    private Long projectId, proposalNbr, proposalLogHistoryId;
     private String closerFirstName, closerLastName, closerEmail;
     private String customerFirstName, customerLastName, customerEmail;
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
         projectName, optionalDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
-        loanTerm, interestRate, loanType, loanAmount, totalCost, solarRebate, itc, stateTaxCredit, systemCost;
+        loanTerm, interestRate, financialOption, loanType, loanAmount, totalCost, solarRebate, itc, stateTaxCredit, systemCost;
 
     public String getTemplateName(Boolean isSpanish, String genericName) {
         StringJoiner sj = new StringJoiner("_");

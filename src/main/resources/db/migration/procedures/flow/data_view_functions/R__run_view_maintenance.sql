@@ -1,6 +1,5 @@
-drop function if exists flow.run_view_maintenance();
-CREATE OR REPLACE function flow.run_view_maintenance()
-  returns void
+drop procedure  if exists flow.run_view_maintenance();
+CREATE OR REPLACE procedure flow.run_view_maintenance()
 AS
 $BODY$
 declare
@@ -10,6 +9,7 @@ declare
   v_view_name       text;
   v_field_to_update text;
   v_schema_name     text;
+  v_insert_sql      text;
 BEGIN
 
   for x in select data_view_id,id
@@ -57,8 +57,8 @@ BEGIN
         group by x.schema_name, x.view_name;
 
         if v_sql is not null then
-         -- raise notice 'v_sql_line: %', v_sql;
-          execute v_sql;
+          --raise notice 'v_sql_line: %', v_sql;
+         execute v_sql;
         end if;
       elsif x.data_view_field_config_id is null and x.company_process_ids_added is true then
         v_sql = $$insert into $$ || x.schema_name || $$.$$ || x.view_name || $$(project_id, contact_id,company_id, date_modified)
@@ -70,17 +70,22 @@ BEGIN
           execute v_sql;
         end if;
         v_sql = null;
-        v_sql = flow.populate_data_from_data_maintenance(x.id,x.data_view_id, x.company_process_ids);
+        call flow.populate_data_from_data_maintenance(x.id,x.data_view_id, v_sql,x.company_process_ids);
         if v_sql is not null then
           --raise notice 'v_sql_line: %', v_sql;
-          execute v_sql;
+         insert into flow.data_view_update(generated_update)
+          values(v_sql);
         end if;
       elsif x.data_view_field_config_id is not null and x.company_process_ids_added is false then
         v_sql = null;
-        v_sql = flow.populate_data_from_data_maintenance(x.id,x.data_view_id);
+        v_insert_sql =  null;
+        call flow.populate_data_from_data_maintenance(x.id,x.data_view_id,v_sql);
         if v_sql is not null then
-          --raise notice 'v_sql_line: %', v_sql;
-          execute v_sql;
+          v_insert_sql = $$insert into flow.data_view_update(generated_update)
+          ($$||v_sql||$$);$$;
+          raise notice 'v_insert_sql: %', v_insert_sql;
+          --raise notice 'v_sql: %', v_sql;
+         execute  v_insert_sql;
         end if;
       end if;
       update flow.data_view_maintenance dvm2
@@ -113,12 +118,10 @@ BEGIN
         execute v_sql;
       end if;
     end loop;
-
+    call flow.process_data_view_updates();
 END
 $BODY$
-  LANGUAGE plpgsql
-  VOLATILE
-  COST 100;
+  LANGUAGE plpgsql;
 
 
 

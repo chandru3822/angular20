@@ -196,22 +196,25 @@ export default {
   },
   methods: {
     async submitCreditCheck() {
-      if (this.proposal.creditCheckSubmitted) {
-        return
-      }
-
-      this.menu = false
-      const { ok, value } = await this.$refs.confirmEmail.open()
-      if (!ok) {
-        return
-      }
-      if (value.email?.trim().length > 0 && value.updated) {
-        const body = { email: value.email }
-        try {
-          await putRequest(`/install-agreement/updateEmailAddress/${this.proposal.projectId}`, body, 'blueraven')
-        } catch (e) {
-          this.$snackbar('ERROR', 'Error updating email')
+      //we are going to allow them to click this multiple times to open the credit check and update the credit checked timestamp
+      // if (this.proposal.creditCheckSubmitted) {
+      //   return
+      // }
+      if(!this.proposal.creditCheckSubmitted) {
+        //only do this if it wasn't already done on the first submit
+        this.menu = false
+        const { ok, value } = await this.$refs.confirmEmail.open()
+        if (!ok) {
           return
+        }
+        if (value.email?.trim().length > 0 && value.updated) {
+          const body = { email: value.email }
+          try {
+            await putRequest(`/install-agreement/updateEmailAddress/${this.proposal.projectId}`, body, 'blueraven')
+          } catch (e) {
+            this.$snackbar('ERROR', 'Error updating email')
+            return
+          }
         }
       }
 
