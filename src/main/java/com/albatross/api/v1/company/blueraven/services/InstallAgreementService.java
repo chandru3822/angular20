@@ -361,10 +361,11 @@ public class InstallAgreementService {
           log.error("IARQ: uri error={}", e.getMessage());
         }
       }
+      sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
+      return goodleapNewLoanUrl;
+    } else {
+      throw new ApiException("Proposal Log not found");
     }
-
-    sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
-    return goodleapNewLoanUrl;
   }
 
   private String getFinanceOption(String loanType, String loanTerm, String interestRate, Long proposalLogHistoryId) {
