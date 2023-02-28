@@ -357,7 +357,9 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .text-wrap {
   white-space: normal !important;
 }
-
+.auto-overflow {
+  overflow: auto;
+}
 .app-pre-wrapper {
   white-space: pre-line;
   font-family: 'Lato', sans-serif;
@@ -605,12 +607,26 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.5;
 }
 
-.label-large{
+.label-large {
   font-family: lato;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.563rem;
   line-height: 1.6;
+  @media (min-width: 960px) {
+    font-size: 1rem;
+  }
 }
+//@media (min-width: 960px) {
+//  .label-large {
+//    font-size: 1rem;
+//  }
+//  .label-medium {
+//    font-size: 1.375rem;
+//  }
+//  .label-small, div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
+//
+//  }
+//  }
 
 .label-medium{
   font-family: lato;
@@ -635,12 +651,23 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.6;
 }
 
-.body-medium, tr, .v-snack__content, #focused-toggle, .body-medium textarea, .body-medium span.v-btn__content {
+//mobile
+.body-medium, tr, .v-snack__content, #focused-toggle, .body-medium textarea, .body-medium span.v-btn__content, .v-list--dense .v-list-item .v-list-item__title.body-medium {
   font-family: lato;
   font-weight: 400;
-  font-size: .875rem;
+  font-size: 1.563rem;
   line-height: 1.6;
 }
+@media (min-width: 960px) {
+  //not mobile
+  .body-medium, tr, .v-snack__content, #focused-toggle, .body-medium textarea, .body-medium span.v-btn__content, .v-list--dense .v-list-item .v-list-item__title.body-medium {
+    font-family: lato;
+    font-weight: 400;
+    font-size: .875rem;
+    line-height: 1.6;
+  }
+}
+
 
 .body-small, .body-large .v-messages__message, .body-large label.v-label.v-label--active.theme--light, .body-large.v-select__selection {
   font-family: lato;

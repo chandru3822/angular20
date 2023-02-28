@@ -1,39 +1,34 @@
 <template>
-  <v-container class="pt-0">
-    <v-row class="settings-container" :class="{'d-inline-block': constants.IS_MOBILE}">
-      <v-col cols="12" md="3" class="text-left pa-0">
-        <v-menu data-app
-                v-if="constants.IS_MOBILE"
-                offset-y
-                attach
-                v-model="menuOpen"
-                min-width="100%"
-                class="account-menu"
-                :close-on-content-click="false">
-          <template v-slot:activator="{ on }">
-            <v-toolbar
-              color="white"
-              v-on="on"
-              class="label-large"
-            >
-              {{ title }}
-              <v-spacer></v-spacer>
-              <v-btn text>
-                <v-icon>expand_more</v-icon>
-              </v-btn>
-            </v-toolbar>
-          </template>
-          <SettingsMenu class="pa-3" :title="title" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
-        </v-menu>
-        <v-card class=" left-menu square-card" v-else>
-          <SettingsMenu class="px-5 py-2 settings-container"></SettingsMenu>
-        </v-card>
-      </v-col>
-      <v-col cols="12" md="9" class="px-4 pt-0 main-section">
-        <router-view/>
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-list :dense="!constants.IS_MOBILE" class="left-menu">
+    <template v-for="(item, index) in filterBy(items, true, 'show')">
+      <h3 class="label-large" v-if="item.header">{{item.header}}</h3>
+      <v-list-item
+          v-else
+          :key="item.title"
+          @click="selectMenuItem(item.title)"
+          :to="item.path"
+          class="dense-setting-row"
+          :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
+                                          : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+      >
+        <v-list-item-content>
+          <v-list-item-title class="body-medium">{{item.title}}</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <v-list-item :dense="!constants.IS_MOBILE" v-for="o in filterBy(companyObjectTypes, (cot) => { return [1,3,4,5].includes(cot.flowTypeId) })" :key="o.id"
+                 :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` :
+                                      o.flowTypeId === 4 ? `/settings/events` :
+                                      o.flowTypeId === 5 ? `/settings/attachments` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
+                 @click="selectMenuItem(o.objectType)"
+                 class="dense-setting-row"
+                 :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || ($route.query && $route.query.companyObjectTypeId && parseInt($route.query.companyObjectTypeId) === o.id)}">
+      <v-list-item-content>
+        <v-list-item-title class="body-medium">{{o.objectType}}</v-list-item-title>
+      </v-list-item-content>
+    </v-list-item>
+  </v-list>
+
 </template>
 
 <script>
@@ -42,26 +37,19 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import SettingsMenu from "./SettingsMenu";
-
 export default {
-  name: 'Settings',
-  components: {SettingsMenu},
-  mixins: [Vue2Filters.mixin],
-
-  data () {
+  name: "SettingsMenu",
+  props: {
+    title: String
+  },
+  data(){
     return {
-      snackbar: {},
-      menuOpen: false,
       constants,
-      title: null,
       hasSettingsAccess: this.$store.getters.userHasFeature('SETTINGS'),
       companyObjectTypes: [],
-      companyId: this.$store.state.user.details.companyId,
-      parentId: this.$store.state.user.details.parentCompanyId,
-
     }
   },
+  mixins: [Vue2Filters.mixin],
   computed: {
     items() { return [
       {
@@ -153,10 +141,6 @@ export default {
         title: 'Message Templates',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/hashtags',
-        title: 'Topic Hashtags',
-        show: this.hasSettingsAccess
-      }, {
         header: 'Configurations',
         show: this.hasSettingsAccess
       }, {
@@ -221,6 +205,7 @@ export default {
         try {
           const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
           this.companyObjectTypes = data
+          console.log(data)
           this.setTitle()
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -232,19 +217,12 @@ export default {
       }
     },
     setTitle (title) {
-      //title passed in on item click
-      if(title){
-        this.title = title
-      }
-      // this determines the title if the page is refreshed
-      else if( this.$route.path.includes('/settings/customFieldGroup') || this.$route.path.includes('/customFieldGroups')) {
-        if(this.companyObjectTypes.length > 0) {
-          const match = this.companyObjectTypes.find(ot => ot.id.toString() === this.$route.params.id)
-          this.title = match?.objectType
-        }
-      } else {
-        this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
-      }
+      this.$emit('updateTitle', title)
+    },
+    selectMenuItem(title){
+      this.setTitle(title)
+      this.$emit('closeMenu')
+
     }
   },
   created () {
@@ -253,34 +231,11 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
-.settings-container {
-  height: calc(100vh - 50px);
-  max-width: 100vw;
+<style lang="scss" scoped>
+@media (min-width: 960px) {
+  .dense-setting-row {
+    height: 30px !important;
+    min-height: 30px !important;
+  }
 }
-
-a {
-  text-decoration: none;
-}
-
-.left-menu {
-  max-height: calc(100vh - 50px);
-  height: calc(100vh - 50px);
-  overflow: auto;
-  background-color: var(--v-grey-lighten4);
-}
-
-.left-column {
-  background-color: var(--v-grey-lighten4);
-  height: 100%;
-  max-height: 100%;
-}
-
-.main-section {
-  background-color: #fff;
-  max-height: 100%;
-  overflow: auto;
-}
-
-
 </style>
