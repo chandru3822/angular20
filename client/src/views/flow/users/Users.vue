@@ -495,13 +495,13 @@
     :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
 
     </user-images>
-    {{(currentPage-1)*(usersPerPage) + 1}} - {{min((currentPage)*(usersPerPage), imageUsers.length)}} of {{imageUsers.length}}
-    <v-btn icon :disabled="leftArrowDisabled" @click="currentPage--">
+    <span v-if="!userImagesLoading">{{min((currentPage-1)*(usersPerPage) + 1, imageUsers.length)}} - {{min((currentPage)*(usersPerPage), imageUsers.length)}} of {{imageUsers.length}} </span>
+    <v-btn icon :disabled="leftArrowDisabled"  v-if="!userImagesLoading" @click="currentPage--">
     <v-icon color="primary">
       mdi-arrow-left
     </v-icon>
     </v-btn>
-    <v-btn icon :disabled="rightArrowDisabled" @click="nextPage()">
+    <v-btn icon  v-if="!userImagesLoading" :disabled="rightArrowDisabled" @click="nextPage()">
     <v-icon color="primary">
       mdi-arrow-right
     </v-icon>
@@ -732,8 +732,12 @@
         this.$router.push({name: 'userDetails', params: {id}})
       },
       async toggleImages(){
-        await this.getUserImage(0, 10);
+        this.userImagesLoading = true;
         this.showImages = !this.showImages;
+        if(this.showImages) {
+          this.currentPage = 1;
+        }
+        await this.changeImageFilter(true);
        },
       debounceGetUsers: debounce( function () {
         this.getUsers(true)
@@ -810,8 +814,6 @@
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
               primaryFlag: this.primaryPositionsOnly
             }
-
-            let length = this.allUsers.length;
             const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${this.options.itemsPerPage}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
@@ -1085,6 +1087,7 @@
         }
       },
       async changeImageFilter(reset, selectedLevel){
+        this.currentPage = 1;
         await this.handleImageFilterChange(reset, selectedLevel);
         await this.getUserImage((this.currentPage-1)*this.usersPerPage, (this.currentPage)*(this.usersPerPage));
       },
@@ -1356,7 +1359,6 @@
     width: 350px;
   }
   ::v-deep .user-filter-select .v-label{
-    color: red!important;
     vertical-align: center;
   }
 
