@@ -93,7 +93,7 @@ let getSmartlists = async () => {
 
 let editSmartlist = (smartlist) => {
   if(userCanEdit) {
-    $router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})
+    router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})
   }
 }
 </script>

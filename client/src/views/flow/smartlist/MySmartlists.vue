@@ -35,7 +35,7 @@
             <td>{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
             <td class="td-action">
-              <smartlist-copy
+              <smartlist-copy v-if="userCanAdd"
                 :smartlist="smartlist"
                 @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
               />
@@ -49,7 +49,7 @@
 <!--              />-->
 <!--            </td>-->
             <td class="td-action">
-              <smartlist-export :smartlist="smartlist"  v-if="userCanAdd" />
+              <smartlist-export :smartlist="smartlist" />
             </td>
             <td class="td-action">
               <smartlist-delete v-if="userCanDelete"
@@ -116,7 +116,7 @@ const getSmartlists = async () => {
 
 let editSmartlist = (smartlist) => {
   if(userCanEdit) {
-    $router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})
+    router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})
   }
 }
 
