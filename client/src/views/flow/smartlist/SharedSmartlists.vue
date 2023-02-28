@@ -31,13 +31,13 @@
         </template>
 
         <template #item="{item: smartlist}">
-          <tr class="clickable" @click="$router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
+          <tr class="clickable" @click="editSmartlist(smartlist)">
             <td class="text-left td-name">{{ smartlist.name }}</td>
             <td class="text-left">{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
             <td class="text-left">{{ `${smartlist.accessLevel.substring(0,1).toUpperCase()}${smartlist.accessLevel.substring(1)} Access` }}</td>
             <td class="td-action">
-              <smartlist-copy :smartlist="smartlist" />
+              <smartlist-copy :smartlist="smartlist"  v-if="userCanAdd"/>
             </td>
             <td class="td-action">
               <smartlist-export :smartlist="smartlist" />
@@ -75,6 +75,8 @@ const isLoading = ref(false)
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const userCanEdit = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
 
 let smartlists = ref([])
 
@@ -91,6 +93,13 @@ let getSmartlists = async () => {
     isLoading.value = false
   }
 }
+
+let editSmartlist = (smartlist) => {
+  if(userCanEdit) {
+    $router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})
+  }
+}
+
 </script>
 
 <style scoped lang="scss">
