@@ -75,6 +75,7 @@ const isLoading = ref(false)
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const router = vueInstance.$router
 const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 const userCanEdit = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
 
