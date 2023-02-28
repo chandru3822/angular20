@@ -53,7 +53,7 @@
                 </v-btn>
                 <v-btn
                     text
-                    v-if="userCanDelete"
+                    v-if="canDelete"
                     color="primary"
                     @click="showDeleteDialog=true"
                 >
@@ -296,7 +296,6 @@ export default {
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT'),
-      userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE'),
       userId: this.$store.state.user.details.id,
       refreshData: false
     }
@@ -324,6 +323,9 @@ export default {
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    },
+    canDelete () {
+      return ((!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) && this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     },
     filteredCompanyObjectTypes () {
       if (this.smartlist.id) {
