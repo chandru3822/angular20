@@ -488,4 +488,26 @@ public class ProposalQuery {
     from (select exists(select apc.postal_code from approved_postal_code apc) as approved) as t
              left join requested_process_step rps on true
     """;
+
+  //language=PostgreSQL
+  public final static String getLockedProposalsForProcessing = """
+    select p.id
+    from brs.proposal p
+    where p.locked_tsz is not null
+      and p.processed_tsz is null
+      and p.error_msg is null
+    order by locked_tsz
+    LIMIT 10 FOR UPDATE SKIP LOCKED
+    """;
+
+  //language=PostgreSQL
+  public final static String setProcessingErrorMessage = """
+    update brs.proposal set error_msg = :errorMsg,
+        date_modified = now(),
+        modified_by_id = :modifiedById
+    where id = :id
+      and locked_tsz is not null
+      and processed_tsz is null
+      and error_msg is null
+    """;
 }
