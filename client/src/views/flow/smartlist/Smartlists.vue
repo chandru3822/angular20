@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/smartlistv1/null" color="primary">
+            <v-btn text to="/smartlistv1/null" color="primary" v-if="userCanAdd">
               <span>Add Smartlist</span>
             </v-btn>
           </v-toolbar-items>
@@ -38,7 +38,7 @@ import { getCurrentInstance } from 'vue'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
-
+const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 </script>
 
