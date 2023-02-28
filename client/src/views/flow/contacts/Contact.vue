@@ -306,7 +306,7 @@
           <div class="mx-2 mobile-content-padding">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
-                    :href="`/project/${p.id}/details`">
+                    :to="`/project/${p.id}/details`">
               <div class="body-large" >{{ p.projectName }} </div>
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
@@ -402,9 +402,9 @@
         </div>
         <div class = "show-xs mobile-contact-header" v-if="showMobileSummary">
           <!-- this cannot be inside the v-if display or else the fixed toolbar doesn't work -->
-          <v-toolbar flat color="secondary" class="cfg-name-header fixed-toolbar toolbar-z-index-override">
+          <v-toolbar flat class="cfg-name-header mobile-background fixed-toolbar toolbar-z-index-override">
             <v-toolbar-title class="headline-small">
-              <v-icon class="mobile-hamburger-menu grey lighten-4" @click="openMenu()">mdi-menu</v-icon>
+              <v-icon class="mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>
               Summary
             </v-toolbar-title>
             <v-spacer></v-spacer>
