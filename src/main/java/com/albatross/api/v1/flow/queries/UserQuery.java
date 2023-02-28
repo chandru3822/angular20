@@ -76,46 +76,51 @@ public class UserQuery {
   //language=PostgreSQL
   public final static String searchUserCount = """
     with t1 as (
-            select distinct upv.user_id as id
-            from flow.user_positions_vw upv
-                inner join flow.user_position_hierarchy_vw uphv on uphv.user_id = upv.user_id
-                                                         and uphv.position_id = upv.position_id
-                                                         and uphv.org_id = upv.org_id
-                inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-            where upv.company_id = :companyId
-              and upv.position_level = 0
-              and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
-              and upv.first_name ILIKE '%' || :firstName || '%'
-              and upv.last_name ILIKE '%' || :lastName || '%'
-              and coalesce(upv.email, '') ILIKE '%' || :email || '%'
-              and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-              and case when :primaryFlag::boolean is not null then upv.primary_flag = :primaryFlag else 1=1 end
-              and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then upv.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
-              and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id = any(array [ :positions ]::bigint[]) else 1=1 end
-              and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id  = any(array [ :orgs ]::bigint[]) else 1=1 end
-           union
-             select u.id
-              from flow."user" u
-                       inner join flow.user_company uc on u.id = uc.user_id
-                       inner join flow.user_status_type ust on ust.company_id = uc.company_id
-                        inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
-              where uc.company_id = :companyId
-                  and not exists (select up2.id from flow.user_position up2
-                            inner join flow.position p on p.id = up2.position_id
-                          where up2.user_id = u.id
-                            and p.company_id = uc.company_id
-                            and up2.archived is false)
-                and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
-                and u.first_name ILIKE '%' || :firstName || '%'
-                and u.last_name ILIKE '%' || :lastName || '%'
-                and coalesce(u.email, '') ILIKE '%' || :email || '%'
-                and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
-                and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
-                and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-                and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then ust.id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
-          )
-         select count(*)
-          from t1
+                   with beat_off as (
+                     SELECT (value->'orgId')::bigint as org_id,vw.position_id,user_id, hierarchy, user_position_id
+                     FROM flow.user_position_hierarchy_vw vw
+                            left join lateral jsonb_array_elements(vw.hierarchy) dr1
+                                      on true
+                   )
+                   select distinct upv.user_id as id
+                   from flow.user_positions_vw upv
+                          inner join beat_off uphv on uphv.user_id = upv.user_id and uphv.position_id = upv.position_id and uphv.org_id = upv.org_id and uphv.user_position_id = upv.user_position_id
+                          inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
+                   where upv.company_id = :companyId
+                     and upv.archived is false
+                     and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
+                     and upv.first_name ILIKE '%' || :firstName || '%'
+                     and upv.last_name ILIKE '%' || :lastName || '%'
+                     and coalesce(upv.email, '') ILIKE '%' || :email || '%'
+                     and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
+                     and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
+                     and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then upv.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
+                     and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id  = any( array[ :positions ]::bigint[] ) else 1=1 end
+                     and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id = any( array [ :orgs ]::bigint[] ) else 1=1 end
+                   union
+                   select u.id
+                   from flow."user" u
+                          inner join flow.user_company uc on u.id = uc.user_id
+                          inner join flow.user_status_type ust on ust.company_id = uc.company_id
+                          inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
+                   where uc.company_id = :companyId
+                     and not exists (select up2.id from flow.user_position up2
+                                                          inner join flow.position p on p.id = up2.position_id
+                                     where up2.user_id = u.id
+                                       and p.company_id = uc.company_id
+                                       and up2.archived is false)
+                     and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
+                     and u.first_name ILIKE '%' || :firstName || '%'
+                     and u.last_name ILIKE '%' || :lastName || '%'
+                     and coalesce(u.email, '') ILIKE '%' || :email || '%'
+                     and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
+                     and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
+                     and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
+                     and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then ust.id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
+                 )
+                 select count(distinct id)
+                 from t1
+
         """;
 
   //language=PostgreSQL
