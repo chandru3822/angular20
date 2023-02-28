@@ -812,7 +812,7 @@
             }
 
             let length = this.allUsers.length;
-            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${length}`, params, null, [], {
+            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${this.options.itemsPerPage}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
             })
