@@ -755,7 +755,7 @@ export default {
       }
     },
     isEventEditableByThisUserIgnoringReadOnly(){
-      return this.userIsAdmin || this.userCanManage || (this.userCanEdit && this.selectedEvent.eventStatusTypeId === 1 && this.selectedEvent.processStepStatusId === 1)
+      return this.userIsAdmin || this.userCanManage || (this.userCanEdit && this.selectedEvent.eventStatusTypeId === 1 && this.selectedEvent.processStepStatusTypeId === 1)
     },
     getIsEventReadonly() {
       return !this.$store.getters.isFullAdmin && (
