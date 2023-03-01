@@ -11,7 +11,7 @@
              dark
              v-on="on"
       >
-        <span v-if="!constants.IS_MOBILE">{{userFirstName}} Account</span>
+        <span v-if="!constants.IS_MOBILE" class="label-medium">{{userFirstName}} Account</span>
         <v-avatar :tile="false"
                   :size="35"
                   color="grey lighten-4"
