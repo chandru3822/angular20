@@ -587,8 +587,11 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 .title-large{
   font-family: lato;
   font-weight: 400;
-  font-size: 1.25rem;
+  font-size: 1.75rem;
   line-height: 1.4;
+  @media (min-width: 960px) {
+    font-size: 1.25rem;
+  }
 }
 
 .title-medium{
