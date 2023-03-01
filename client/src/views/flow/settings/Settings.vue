@@ -15,6 +15,7 @@
               color="white"
               v-on="on"
               class="label-large"
+              style="z-index: 1"
             >
               {{ title }}
               <v-spacer></v-spacer>

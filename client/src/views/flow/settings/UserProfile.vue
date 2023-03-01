@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false"
+    <confirmation-dialog :open-dialog="!!unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false"
                          @confirm="[navigationOverride = true, goToPath(toPath)]">
       <template v-slot:title>Unsaved Changes</template>
       You have unsaved changes. Are you sure you want to continue without saving?
@@ -9,16 +9,25 @@
     </confirmation-dialog>
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">User Profile</v-toolbar-title>
+        <v-toolbar flat elevation="0" class="app-toolbar">
+          <v-toolbar-title class="title-large">User Profile</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="validate">
+            <!--mobile save button-->
+            <v-btn v-if="constants.IS_MOBILE" icon x-large color="primary" @click="validate">
+              <v-icon>mdi-content-save</v-icon>
+            </v-btn>
+            <!--normal save button-->
+            <v-btn v-else text color="primary" @click="validate">
               <v-icon class="mr-2">mdi-content-save</v-icon>
               Save Changes
             </v-btn>
-
-            <v-btn text color="primary" v-if="userIsAdmin" :to="`/settings/userProfileAdmin`">
+            <!--mobile admin button-->
+            <v-btn v-if="constants.IS_MOBILE && userIsAdmin" icon x-large color="primary" class="pl-6" :to="`/settings/userProfileAdmin`">
+              <v-icon>mdi-cogs</v-icon>
+            </v-btn>
+            <!--normal admin button-->
+            <v-btn text color="primary" v-else-if="userIsAdmin" :to="`/settings/userProfileAdmin`">
               <v-icon class="mr-2">mdi-cogs</v-icon>
               Admin
             </v-btn>
@@ -118,10 +127,11 @@
     <v-divider class="mt-3 mb-3" v-if="smsTeams && smsTeams.length > 0"></v-divider>
     <v-row v-if="smsTeams && smsTeams.length > 0">
       <v-col cols="12" md="6">
-        <h3>Notification Preferences</h3>
+        <h3 class="title-medium">Notification Preferences</h3>
         <v-card flat color="transparent">
-          <div v-for="item in smsTeams" class="unassigned-notif-div">
-              {{ item.teamName }} SMS Team:<v-checkbox class="d-inline-block pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
+          <div v-for="item in smsTeams" class="unassigned-notif-div d-flex">
+            <span class="mt-4">{{ item.teamName }} SMS Team:</span>
+            <v-checkbox class="pl-4 py-0" @change="checkForDeselect(item)" v-model="item.receiveUnassignedNotifications" label="Receive notifications for team's unassigned messages"></v-checkbox>
           </div>
         </v-card>
       </v-col>
@@ -129,26 +139,28 @@
     <v-divider class="mt-3 mb-3" v-if="userProfileCustomFields && userProfileCustomFields.length > 0"></v-divider>
     <v-row v-if="userProfileCustomFields && userProfileCustomFields.length > 0">
       <v-col cols="12" md="6">
-        <h3>Custom Fields</h3>
+        <h3 class="title-medium pb-2">Custom Fields</h3>
         <SpinnerInline v-if="loadingUserProfileCustomFields" :text="'Checking For Additional Fields...'" :size="20" color="primary"/>
         <CustomValueInput v-for="(cf, idx) in userProfileCustomFields"
-                        :key="idx"
-                        :callback="populateDirtyCfvs"
-                        :required="cf.required"
-                        :field="cf"></CustomValueInput>
+                          :key="idx"
+                          :callback="populateDirtyCfvs"
+                          :required="cf.required"
+                          :field="cf"
+                          :showFieldName="false">
+        </CustomValueInput>
       </v-col>
     </v-row>
     <v-divider class="mt-3 mb-3"></v-divider>
     <v-row v-if="showOnUserProfile('Profile Image')">
       <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">Profile Image</v-toolbar-title>
+        <v-toolbar color="white" flat>
+          <v-toolbar-title class="title-large">Profile Image</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-btn text v-if="!savingUserImage && !profileImage.presignedUrl"  @click="addImage = !addImage">
             <v-icon v-if="addImage">remove</v-icon>
             <v-icon v-else>add</v-icon>
           </v-btn>
-          <v-btn v-else text color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)">
+          <v-btn v-else icon color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)">
             <v-icon>delete</v-icon>
           </v-btn>
         </v-toolbar>
@@ -515,8 +527,13 @@ export default {
   border-radius: 50%;
 }
 
+.app-toolbar {
+  width: 100vw;
+}
+
 .unassigned-notif-div {
   width: 700px;
   height: 40px;
+  max-width: calc(100vw - 28px);
 }
 </style>
