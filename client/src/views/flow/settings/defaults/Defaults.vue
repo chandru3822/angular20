@@ -4,8 +4,8 @@
       <v-col cols="12"  class="pt-0">
         <v-tabs class="tabs-bar">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
-                 class="text-capitalize ma-0"
-                 :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+                 class="text-capitalize ma-0 label-medium"
+                 :style="{'margin-left': (index === 0 && constants.IS_MOBILE) ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
         </v-tabs>
@@ -17,6 +17,8 @@
 </template>
 
 <script>
+import constants from '@/helpers/constants'
+
   export default {
     name: 'Defaults',
 
@@ -27,6 +29,7 @@
     },
     data() {
       return {
+        constants,
         tabs: [
           {
             label: 'Settings',

@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar" v-if="!constants.IS_MOBILE">
-          <v-toolbar-title class="app-title">Company Settings</v-toolbar-title>
+          <v-toolbar-title class="title-large">Company Settings</v-toolbar-title>
         </v-toolbar>
       </v-col>
     </v-row>
@@ -15,6 +15,7 @@
                         required
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
+                        class="body-large"
                         label="Company Name">
           </v-text-field>
           <v-text-field v-model="company.defaultPassword"
@@ -23,6 +24,7 @@
                         :rules="[passwordRule]"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
+                        class="body-large"
                         label="Default Password">
           </v-text-field>
           <v-text-field v-model.number="company.minuteIncrement"
@@ -33,7 +35,7 @@
                         :step="1"
                         :key="damnKeyThing"
                         type="number"
-                        class="minute-increment-field"
+                        class="minute-increment-field body-large"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         label="Minute Increment">
@@ -42,10 +44,10 @@
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
-                 color="primary" @click="saveCompany" v-if="userCanEdit">
-            <v-icon class="pr-2">mdi-content-save</v-icon>
-            Save Changes
+          <v-btn :x-large="constants.IS_MOBILE" :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
+                 color="primary" @click="saveCompany" v-if="userCanEdit" class="full-width-btn-mobile">
+            <v-icon :x-large="constants.IS_MOBILE" class="pr-2">mdi-content-save</v-icon>
+            <span class="body-medium text-capitalize">Save Changes</span>
           </v-btn>
         </v-col>
       </v-row>
@@ -54,14 +56,14 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">Company Logo</v-toolbar-title>
+          <v-toolbar-title class="title-large">Company Logo</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn text color="primary" v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
+            <v-btn icon :x-large="constants.IS_MOBILE" color="primary" v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
               <v-icon v-if="addImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn text color="primary" v-else @click="logoToDelete=LogoTypeEnum.Company"><v-icon>delete</v-icon></v-btn>
+            <v-btn icon :x-large="constants.IS_MOBILE" color="primary" v-else @click="logoToDelete=LogoTypeEnum.Company"><v-icon>delete</v-icon></v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -70,7 +72,7 @@
               <input
                   type="file"
                   :accept="acceptedFileTypes"
-                  class="file-input clickable"
+                  class="file-input clickable body-medium mx-6"
                   :disabled="savingCompanyLogo"
                   @change="uploadFile(true, $event.target.files, attachmentTypeId, companyId, 1048576)"
                   name="avatar"
@@ -93,14 +95,14 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="app-title">Home Page Logo</v-toolbar-title>
+          <v-toolbar-title class="title-large">Home Page Logo</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn text color="primary" v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
+            <v-btn icon :x-large="constants.IS_MOBILE" color="primary" v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
               <v-icon v-if="addHomePageImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn text color="primary" v-else @click="logoToDelete=LogoTypeEnum.HomePage"><v-icon>delete</v-icon></v-btn>
+            <v-btn icon :x-large="constants.IS_MOBILE" color="primary" v-else @click="logoToDelete=LogoTypeEnum.HomePage"><v-icon>delete</v-icon></v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -109,7 +111,7 @@
               <input
                 type="file"
                 :accept="acceptedFileTypes"
-                class="file-input clickable"
+                class="file-input clickable mx-6 body-medium"
                 :disabled="savingHomePageLogo"
                 @change="uploadFile(false, $event.target.files, homePageAttachmentTypeId, companyId, 1048576)"
                 name="avatar"
@@ -358,6 +360,12 @@ export default {
 }
 
 .minute-increment-field {
-  width: 200px;
+  @media (min-width: 960px) {
+    width: 200px;
+  }
+}
+
+.file-input {
+  max-width: calc(100vw - 100px);
 }
 </style>

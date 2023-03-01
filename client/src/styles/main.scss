@@ -288,6 +288,12 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   table-layout: fixed;
 }
 
+.full-width-btn-mobile {
+  @media (max-width: 960px) {
+    width: 100%;
+  }
+}
+
 // this is for input fields in column headers
 .filter-input .v-input__slot {
   height: 35px !important;
@@ -634,16 +640,30 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 .label-small, div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   font-family: lato;
   font-weight: 600;
-  font-size: .75rem;
+  font-size: 1.188rem;
   line-height: 1.6;
+  @media (min-width: 960px) {
+    font-size: .75rem;
+
+  }
 }
 
 .body-large, .body-large .v-select__selection, .body-large .v-label, .body-large input,
 .body-large .v-list-item__content, .v-list-item__title, textarea {
   font-family: lato;
   font-weight: 400;
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: 1.563rem;
+  line-height: 0.6;
+  @media (min-width: 960px) {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+.body-large label.v-label.v-label--active.theme--light {
+  @media(max-width: 960px) {
+    font-size: 0.875rem;
+    line-height: 0.6;
+  }
 }
 
 //mobile
@@ -652,16 +672,14 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   font-weight: 400;
   font-size: 1.563rem;
   line-height: 1.6;
-}
-@media (min-width: 960px) {
-  //not mobile
-  .body-medium, tr, .v-snack__content, #focused-toggle, .body-medium textarea, .body-medium span.v-btn__content, .v-list--dense .v-list-item .v-list-item__title.body-medium {
-    font-family: lato;
-    font-weight: 400;
+
+  @media (min-width: 960px) {
+    //not mobile
     font-size: .875rem;
-    line-height: 1.6;
+
   }
 }
+
 
 
 .body-small, .body-large .v-messages__message, .body-large label.v-label.v-label--active.theme--light, .body-large.v-select__selection {
