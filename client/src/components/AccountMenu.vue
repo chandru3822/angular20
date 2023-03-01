@@ -16,6 +16,7 @@
                   :size="35"
                   color="grey lighten-4"
                   class="account-img"
+                  :class="{'mx-0 mr-n5':constants.IS_MOBILE}"
         >
           <v-img name="accountImg" v-if="loadComplete && userImage && userImage.presignedUrl" :src="userImage.presignedUrl"></v-img>
           <img name="accountImg" v-else src="../assets/flow/user_img_placeholder.png">
