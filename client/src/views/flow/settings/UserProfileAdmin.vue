@@ -3,9 +3,14 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">User Profile Admin</v-toolbar-title>
+          <v-toolbar-title class="title-large" :class="{'ml-n6': constants.IS_MOBILE}">
+            <v-btn icon color="primary" v-if="userIsAdmin && constants.IS_MOBILE" :to="`/settings/userProfile`">
+              <v-icon x-large>mdi-chevron-left</v-icon>
+            </v-btn>
+            User Profile Admin
+          </v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-toolbar-items>
+          <v-toolbar-items v-if="!constants.IS_MOBILE">
             <v-btn text color="primary" v-if="userIsAdmin" :to="`/settings/userProfile`">
               Back to User Profile
             </v-btn>
@@ -17,6 +22,7 @@
       <v-col cols="12" md="6">
         <v-data-table
           :headers="headers"
+          :mobile-breakpoint="0"
           :items="userProfileDefaultFields"
           disable-sort
           hide-default-footer
@@ -108,3 +114,9 @@ export default {
   }
 }
 </script>
+<style scoped lang="scss">
+  .app-toolbar {
+    width: 100vw;
+    }
+
+</style>
