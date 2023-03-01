@@ -44,6 +44,7 @@
             <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
             <v-icon v-else>mdi-office-building</v-icon>
           </v-btn>
+          <v-spacer v-if="constants.IS_MOBILE"></v-spacer>
           <v-menu v-if="constants.IS_MOBILE" data-app left
                   offset-y
                   :max-height="`calc(100vh - 20px)`"
@@ -51,7 +52,7 @@
                   class="account-menu"
                   :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <v-btn class="account-menu-button"
+              <v-btn class="account-menu-button label-medium px-3"
                      :color="headerColor"
                      dark
                      v-on="on">
@@ -76,7 +77,7 @@
           </v-menu>
           <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor" v-model="model" dark
                   slider-color="secondary">
-            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
+            <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path" class="label-medium">
               {{ tab.label }}
               <v-badge
                 class="notif-badge"
@@ -87,11 +88,11 @@
               </v-badge>
             </v-tab>
           </v-tabs>
-          <v-spacer class="ml-5"></v-spacer>
+          <v-spacer v-if="!constants.IS_MOBILE" class="ml-5"></v-spacer>
           <v-toolbar-items v-if="companyTools.length > 0">
             <CompanyTools :company-tools="companyTools" />
           </v-toolbar-items>
-          <v-spacer class="ml-5"></v-spacer>
+          <v-spacer v-if="!constants.IS_MOBILE" class="ml-5"></v-spacer>
           <v-toolbar-items>
             <AccountMenu :showImage="true"></AccountMenu>
           </v-toolbar-items>
