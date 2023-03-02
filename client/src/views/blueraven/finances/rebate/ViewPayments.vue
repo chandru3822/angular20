@@ -390,7 +390,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let filename = '';
-        let csvData = 'Project Name,Project ID,Substantial Completion,Financier,Product,Total Promotion Amount';
+        let csvData = 'Project Name,Project ID,Substantial Completion,Financier,Product,Total Promotion Amount, Next Payment #';
         if (this.status === 'approval') {
           filename = 'Needs Approval Payments.csv';
           csvData += ',# of Payments,$ / Promotion Payment,' +
@@ -407,7 +407,7 @@ export default {
         this.filteredPayments.forEach(p => {
           csvData += '"' + p.projectName + '",' + p.projectId + ',' +
             (p.substantialCompletionDate != null ? moment(p.substantialCompletionDate).format('MM/DD/YYYY') : '') +
-            ',"' + p.financier + '","' + p.product + '",' + p.totalPromotionAmount;
+            ',"' + p.financier + '","' + p.product + '","' + p.totalPromotionAmount + '",' + p.nextScheduledPayment;
 
           if (this.status === 'approval') {
             csvData += ',' + p.numberOfPromotionPayments + ',' + p.paymentAmount + ',' + p.totalPaid + ',' +
