@@ -722,41 +722,23 @@ public class GenesysService {
     User user = securityService.getCurrentUser();
     params.put("postalCode", contact.getPostalCode());
 
-    List<CallGroupPhoneNumber> callGroupPhoneNumbers =
-        sqlCache.queryBySql(CallGroupQuery.getCallerGroupNumbers, params, CallGroupPhoneNumber.class);
-
-    // Update the Contacts Assigned/Call Count for this Call Group for each phone number
-    for (CallGroupPhoneNumber cgpn : callGroupPhoneNumbers) {
-      HashMap<String, Object> currParams = new HashMap<>();
-      currParams.put("callGroupId", cgpn.getCallGroupId());
-      currParams.put("phoneNumber", cgpn.getPhoneNumber());
-      sqlCache.updateBySql(CallGroupQuery.updatePhoneCallCount, currParams);
-    }
-
-    // Get the Call groups again after the Call Counts have been updated
-    callGroupPhoneNumbers =
-        sqlCache.queryBySql(CallGroupQuery.getCallerGroupNumbers, params, CallGroupPhoneNumber.class);
-
-    Long currentlyUsedGroupPhoneId = null;
-    Long currentlyUsedGroupId = null;
-    String phoneNumber = "";
+    // Get the Call Group number with the lowest call count
+    Optional<CallGroupPhoneNumber> callGroupPhoneNumber =
+      sqlCache.getBySql(
+        CallGroupQuery.getLowestCallsCallGroupNumber, params, CallGroupPhoneNumber.class);
 
     // Return default number if no numbers are found for this postal code
-    if (callGroupPhoneNumbers.isEmpty()) {
+    if (!callGroupPhoneNumber.isPresent()) {
       return "+13852921523";
     }
 
-    // Select the number with the lowest call count
-    currentlyUsedGroupPhoneId = callGroupPhoneNumbers.get(0).getId();
-    currentlyUsedGroupId = callGroupPhoneNumbers.get(0).getCallGroupId();
-    phoneNumber = callGroupPhoneNumbers.get(0).getPhoneNumber();
+    String phoneNumber = callGroupPhoneNumber.get().getPhoneNumber();
 
     // Increment call count of the number used
-    params.put("currentlyUsedId", currentlyUsedGroupPhoneId);
-    sqlCache.updateBySql(CallGroupQuery.updatePhoneNumberCallCount, params);
+    params.put("currentlyUsedId", callGroupPhoneNumber.get().getId());
 
     // Add a row to the phone log table
-    params.put("callGroupId", currentlyUsedGroupId);
+    params.put("callGroupId", callGroupPhoneNumber.get().getCallGroupId());
     params.put("phoneNumber", phoneNumber);
 
     // if user is null then it is coming from the cron, use the cron user id
