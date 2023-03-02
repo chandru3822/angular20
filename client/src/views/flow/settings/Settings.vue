@@ -258,6 +258,9 @@ export default {
 .settings-container {
   height: calc(100vh - 50px);
   max-width: 100vw;
+  @media (max-width: 960px) {
+    width: 100vw;
+  }
 }
 
 a {

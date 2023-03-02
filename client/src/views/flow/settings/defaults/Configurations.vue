@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Configurations</v-toolbar-title>
+          <v-toolbar-title class="title-large">Configurations</v-toolbar-title>
         </v-toolbar>
 
         <div class="ma-3">
@@ -33,6 +33,7 @@
               </td>
               <td class="text-left">
                 <v-text-field text
+                              style="overflow-wrap: anywhere"
                               type="text"
                               v-if="index === editIndex"
                               label="Value"
@@ -43,13 +44,15 @@
                 </div>
               </td>
               <td>
-                <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
+                <v-btn small :large="constants.IS_MOBILE" icon color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
+                <v-btn small :large="constants.IS_MOBILE" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" @click="editIndex = null" v-if="index === editIndex">
+                <v-btn small :large="constants.IS_MOBILE" icon color="primary" @click="editIndex = null" v-if="index === editIndex && constants.IS_MOBILE">
+                  <v-icon>close</v-icon>
+                </v-btn><v-btn small text color="primary" @click="editIndex = null" v-else-if="index === editIndex">
                   cancel
                 </v-btn>
               </td>

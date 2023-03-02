@@ -14,7 +14,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <!--mobile save button-->
-            <v-btn v-if="constants.IS_MOBILE" icon x-large color="primary" @click="validate">
+            <v-btn v-if="constants.IS_MOBILE" icon large color="primary" @click="validate">
               <v-icon>mdi-content-save</v-icon>
             </v-btn>
             <!--normal save button-->
@@ -23,7 +23,7 @@
               Save Changes
             </v-btn>
             <!--mobile admin button-->
-            <v-btn v-if="constants.IS_MOBILE && userIsAdmin" icon x-large color="primary" class="pl-6" :to="`/settings/userProfileAdmin`">
+            <v-btn v-if="constants.IS_MOBILE && userIsAdmin" icon large color="primary" class="pl-6" :to="`/settings/userProfileAdmin`">
               <v-icon>mdi-cogs</v-icon>
             </v-btn>
             <!--normal admin button-->
