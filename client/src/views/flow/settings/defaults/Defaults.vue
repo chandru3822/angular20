@@ -2,7 +2,7 @@
   <v-container>
     <v-row  class="pt-0">
       <v-col cols="12"  class="pt-0">
-        <v-tabs class="tabs-bar">
+        <v-tabs class="tabs-bar" id="default-settings-tabs">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0 label-medium"
                  :style="{'margin-left': (index === 0 && constants.IS_MOBILE) ? '12px !important' : '0'}">
@@ -53,3 +53,10 @@ import constants from '@/helpers/constants'
     methods: {}
   }
 </script>
+<style lang="scss">
+@media (max-width: 960px) {
+  #default-settings-tabs > div > div.v-slide-group__wrapper > div {
+    justify-content: center;
+  }
+}
+</style>
