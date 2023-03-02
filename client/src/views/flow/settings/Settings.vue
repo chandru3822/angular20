@@ -277,6 +277,7 @@ a {
 }
 
 .main-section {
+  height: 100vh;
   background-color: #fff;
   max-height: 100%;
   overflow: auto;
