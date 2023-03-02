@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Email Settings</v-toolbar-title>
+          <v-toolbar-title class="title-large">Email Settings</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" v-if="addNew" @click="addEmail()" :disabled="!addFormValid">
@@ -39,8 +39,8 @@
             >
             </v-text-field>
           </v-col>
-          <v-col>
-            <v-checkbox v-model="newEmail.checked" :value="newEmail.isDefault" label="Default"></v-checkbox>
+          <v-col class="text-center">
+            <v-checkbox v-model="newEmail.checked" :value="newEmail.isDefault" label="" width="24px"></v-checkbox>
           </v-col>
         </v-row>
       </v-form>
@@ -74,16 +74,16 @@
                               v-if="index === editIndex"
                               v-model="item.emailAddress">
                 </v-text-field>
-                <div v-else>
+                <div v-else style="overflow-wrap: anywhere">
                   {{ item.emailAddress }}
                 </div>
               </td>
-              <td>
+              <td class="text-center">
                 <v-icon v-show="item.isDefault" v-if="index !== editIndex" class="centered">mdi-check</v-icon>
-                <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label="Default"></v-checkbox>
+                <v-checkbox v-if="index == editIndex" v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" label=""></v-checkbox>
               </td>
               <td>
-                <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
+                <v-btn icon color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text color="primary" @click="updateEmailAddress(item)" :disabled="!isEditValid(item)" v-if="index === editIndex">
@@ -92,7 +92,7 @@
                 <v-btn small text color="primary" v-if="index === editIndex" @click="clearChanges()">
                   cancel
                 </v-btn>
-                <v-btn :disabled="item.isDefault" small text color="primary" @click="emailToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <v-btn :disabled="item.isDefault" small icon color="primary" @click="emailToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -135,7 +135,7 @@ export default {
       headers: [
         {text: 'Sender Name', value: 'name', show: true},
         {text: 'Email Address', value: 'value', show: true},
-        {text: 'Default', value: 'isDefault', show: true},
+        {text: 'Default', value: 'isDefault', show: true, width:'90px', align:'center'},
         {text: null, value: 'icons', show: true, sortable: false}
       ],
       emailValues: [],
@@ -146,7 +146,8 @@ export default {
       addNew: false,
       senderRequiredRule: [v => !!v || 'Sender name is required'],
       emailRules: constants.EMAIL_RULES,
-      emailToDelete: null
+      emailToDelete: null,
+      constants
     }
   },
   computed:{
