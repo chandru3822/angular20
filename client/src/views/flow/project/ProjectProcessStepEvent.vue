@@ -111,11 +111,13 @@
                                    :allow-upload="!isEventReadonly"
                                    :small-title="true"
                                    is-card
+                                   hide-empty
                                    title="Uploaded Documents"/>
             <AttachmentsFolderList :object-type-id="6"
                                    :load-linked="true"
                                    :small-title="true"
                                    is-card
+                                   hide-empty
                                    title="Linked Documents"/>
           </v-col>
         </v-row>

@@ -245,11 +245,13 @@
                                    :allow-upload="true"
                                    :small-title="true"
                                    is-card
+                                   hide-empty
                                    title="Uploaded Documents"/>
             <AttachmentsFolderList :object-type-id="4"
                                    :load-linked="true"
                                    :small-title="true"
                                    is-card
+                                   hide-empty
                                    title="Linked Documents"/>
           </v-col>
         </div>

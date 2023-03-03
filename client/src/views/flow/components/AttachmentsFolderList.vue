@@ -72,7 +72,6 @@
       </v-toolbar>
       <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
         <div v-if="filteredAttachmentTypes.length === 0" class="body-medium text-center">No documents found.</div>
-        {{opened}}
         <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
           <v-expansion-panel v-for="(type, index) in filteredAttachmentTypes" :key="type.attachmentTypeId">
             <v-expansion-panel-header class="albatross-body-1">
@@ -148,7 +147,7 @@
       </v-card>
 
     </div>
-    <div v-else class="body-large text-center">Attachments Not Available</div>
+    <div v-else-if="!hideEmpty" class="body-large text-center">Attachments Not Available</div>
   </div>
 </template>
 
@@ -193,6 +192,7 @@ export default {
     orgId: Number,
     objectTypeId: Number,
     isCard: Boolean,
+    hideEmpty: Boolean,
     reloadOnKeyChange: {
       type: Boolean,
       default: false
