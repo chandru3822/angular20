@@ -483,8 +483,7 @@
                 class="user-images-filter-select"
                 auto-select-first
                 outlined
-                @change="getUserImage();
-"
+                @change="returnToPageOne()"
       />
       <v-btn text color="primary" @click="changeImageFilter(true)">
         <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
@@ -861,6 +860,10 @@
           this.dataLoading = false
           this.users = []
         }
+      },
+      async returnToPageOne(){
+        this.currentPage = 1;
+        await this.getUserImage();
       },
       async getImageUsers (resetPage) {
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
