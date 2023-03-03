@@ -147,7 +147,7 @@ BEGIN
            inner join flow.company_project_status_type cpst3 on cpst3.id = p.company_project_status_type_id
            inner join flow.project_status_type pst4 on cpst3.project_status_type_id = pst4.id
       and pst4.id in (1, 4)
-    where (ppse.start_time,  ppse.end_time) overlaps ( p_appointment_start_time,(p_appointment_start_time + (case when p_remote is true then 60 else 90 end || 'minutes')::interval)::timestamp)
+    where (ppse.start_time,  ppse.end_time) overlaps ( p_appointment_start_time,(p_appointment_start_time + (90 || 'minutes')::interval)::timestamp) --todo: come back and use user default_appointment_length
       and ppse.resource_id = v_user_position_id;
 
     if  v_user_already_assigned_to_another_project_id < 1 then
@@ -160,7 +160,7 @@ BEGIN
             resource_id = v_user_position_id,
             start_time = p_appointment_start_time,
             end_time = (p_appointment_start_time +
-                        (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp
+                        (90 || 'minutes')::interval)::timestamp --todo: come back and use user default_appointment_length
             where id = p_project_process_step_event_id;
 
 
@@ -190,7 +190,7 @@ BEGIN
                           v_user_id::bigint,
                           p_appointment_start_time::timestamp,
                           (p_appointment_start_time +
-                           (case when p_remote is false then 90 else 60 end || 'minutes')::interval)::timestamp,
+                           (90 || 'minutes')::interval)::timestamp, --todo: come back and use user default_appointment_length
                           v_user_full_name,
                           v_user_email,
                           v_user_position_id;

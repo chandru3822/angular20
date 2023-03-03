@@ -1,4 +1,4 @@
-drop function if exists brs.call_group_phone_log_trigger();
+drop function if exists brs.call_group_phone_log_trigger() cascade;
 CREATE OR REPLACE FUNCTION brs.call_group_phone_log_trigger()
     RETURNS TRIGGER AS
 $$
