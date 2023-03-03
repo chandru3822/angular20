@@ -51,7 +51,7 @@
           Compare
         </v-btn>
       </div>
-      <v-toolbar v-if="this.search != null && this.search !== ''"  dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
+      <v-toolbar v-if="this.search != null && this.search !== '' && getFilteredAttachmentTypes().length > 0"  dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
         <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
                                   'albatross-body-2': this.smallTitle}">
           Search Results
@@ -73,7 +73,7 @@
       <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
         <div v-if="getFilteredAttachmentTypes().length === 0" class="body-medium text-center">No documents found.</div>
         <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
-          <v-expansion-panel v-for="(type, index) in getFilteredAttachmentTypes()" :key="type.attachmentTypeId" >
+          <v-expansion-panel v-for="(type, index) in getFilteredAttachmentTypes()" :key="type.attachmentTypeId">
             <v-expansion-panel-header class="albatross-body-1">
               <template v-slot:default="{ open }">
                 <v-row v-if="(allowUpload || forceShowUploadBtn)"
@@ -236,13 +236,7 @@ export default {
       this.loadAllPageDetails()
     },
     search: function () {
-      if(this.search != null && this.search !== '') {
-        for(let i = 0; i < this.sortedAttachments.length; i++){
-          this.opened.push(i)
-        }
-      } else {
-        this.opened = []
-      }
+      this.$emit('scrollToTop')
     },
     // // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
@@ -271,7 +265,15 @@ export default {
   },
   computed: {
     sortedAttachments() {
-      return orderBy(this.attachments, [a => a.dateCreated], this.search != null && this.search !== '' && this.sortOldToNew ? 'asc' : 'desc')
+      const sortedAttachments = orderBy(this.attachments, [a => a.dateCreated], this.search != null && this.search !== '' && this.sortOldToNew ? 'asc' : 'desc')
+      if(this.search != null && this.search !== '') {
+        for(let i = 0; i < this.getFilteredAttachmentTypes().length; i++){
+          this.opened.push(i)
+        }
+      } else {
+        this.opened = []
+      }
+      return sortedAttachments
     }
   },
   mounted() {
