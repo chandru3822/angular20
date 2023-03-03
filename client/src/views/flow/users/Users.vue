@@ -491,6 +491,10 @@
         <span v-else>Reset Filters</span>
       </v-btn>
     </v-row>
+    <div v-if="userImagesLoading" class="section-spinner">
+      <br>
+      <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
+    </div>
     <user-images :users="imageUsers" :headers = "headers" :users-per-page="usersPerPage" v-if="!userImagesLoading"
     :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
 
@@ -703,13 +707,22 @@
         for(let x = startUser; x < this.min(endUser, this.imageUsers.length); x++){
           userIds.push(this.imageUsers[x].id);
         }
-        userIds = encodeURI(userIds);
         let params = {
-          sourceIds: userIds,
+          sourceIds: encodeURI(userIds),
           attachmentTypeId: 9
         }
 
-        const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
+        let data = [];
+        while(userIds.length > 0){
+          params.sourceIds =  encodeURI(userIds.slice(0,this.min(userIds.length,100)));
+          userIds = userIds.slice(this.min(userIds.length,100), userIds.length)
+          if(Object.keys(data).length > 0) {
+            data = Object.assign({}, data, (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data);
+          }
+        else{
+            data = (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data;
+          }
+        }
 
         if (data) {
           this.imageUsers.forEach(user => {
