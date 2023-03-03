@@ -280,7 +280,7 @@ export default {
       return (this.search != null && this.search !== '') ? this.attachmentTypes.filter(type => {
         return this.attachments.filter(a => {
           return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === this.loadLinked
-            && a.filename.toLowerCase().includes(this.search.toLowerCase())
+            && a.displayName.toLowerCase().includes(this.search.toLowerCase())
         })?.length > 0
       }) : this.attachmentTypes
     },
