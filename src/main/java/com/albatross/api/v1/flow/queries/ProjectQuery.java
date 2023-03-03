@@ -969,7 +969,8 @@ insert into flow.company_project_status_type(project_status_type_id, project_sta
   public final static String updateStatus = """
     update flow.project
     set company_project_status_type_id = :companyProjectStatusTypeId,
-        date_modified = now()
+        date_modified = now(),
+        modified_by_id = :userId
     where id = :projectId
     """;
 
