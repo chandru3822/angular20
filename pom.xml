@@ -104,11 +104,6 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
-<!--    <dependency>-->
-<!--      <groupId>org.springframework.boot</groupId>-->
-<!--      <artifactId>spring-boot-starter-data-jdbc</artifactId>-->
-<!--    </dependency>-->
-
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -287,12 +282,6 @@
       <groupId>com.mypurecloud</groupId>
       <artifactId>platform-client-v2</artifactId>
       <version>156.0.0</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.github.sonus21</groupId>
-      <artifactId>rqueue-spring-boot-starter</artifactId>
-      <version>2.11.1-RELEASE</version>
     </dependency>
 
     <dependency>

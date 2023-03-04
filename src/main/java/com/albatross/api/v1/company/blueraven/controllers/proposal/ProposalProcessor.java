@@ -1,24 +1,27 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
-import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.ProjectService;
-import com.github.sonus21.rqueue.annotation.RqueueListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class ProposalRqueueListeners {
+public class ProposalProcessor {
 
   private static final Long PROPOSAL_ATTACHMENT_TYPE = 37L;
   private final BlueravenProposalService proposalService;
@@ -26,14 +29,20 @@ public class ProposalRqueueListeners {
   private final SecurityService securityService;
 
   @Transactional
-  @RqueueListener(value = "proposal_job", numRetries = "2")
-  public void doGenerateFinalPDF(ProposalJobMessage job) {
+  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
+  public void doGenerateFinalPDF() {
     // system needs to be aware of a user to access methods
     setBlueravenSystemUser();
 
-    proposalService.getProposal(job.proposalId())
-      .ifPresent(proposal -> {
-        log.info("[Proposal] Generating final PDF for proposalId={}", job.proposalId());
+    Instant startTime = Instant.now();
+
+    AtomicInteger count = new AtomicInteger();
+
+    proposalService.getLockedProposalsBatchForProcessing().stream()
+      .map(proposalService::getProposal)
+      .flatMap(Optional::stream)
+      .forEach(proposal -> {
+        log.info("[Proposal] Generating final PDF for proposalId={}", proposal.getId());
 
         try {
           proposalService.generateProposalPDF(proposal.getId(), 1L, true)
@@ -51,12 +60,21 @@ public class ProposalRqueueListeners {
 
               log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
               proposalService.setProposalAsProcessed(proposal.getId());
+
+              count.getAndIncrement();
             });
         } catch (Exception e) {
-          log.error("[RQUEUE] Error processing final PDF");
-          throw new ApiException(e);
+          log.error("[Proposal] Error processing final PDF for proposalId={}", proposal.getId(), e);
+          proposalService.setProcessingErrorMessage(proposal.getId(), e.getMessage(), SystemSettings.BR_SYSTEM_USER.getId());
         }
       });
+
+    Instant endTime = Instant.now();
+    if (count.get() > 0) {
+      log.info("[Proposal] Generating PDF batch took {}ms to generate {} files",
+        TimeUnit.MILLISECONDS.convert(endTime.toEpochMilli() - startTime.toEpochMilli(), TimeUnit.MILLISECONDS)
+        , count.get());
+    }
   }
 
   private void setBlueravenSystemUser() {

@@ -192,7 +192,7 @@
                                    :org-id="orgId"
                                    :force-show-upload-btn="forceShowUploadBtn"
                                    :activity-tab="true"
-                                   :focused="toggleFocused === 0"
+                                   :focused="toggleFocusedXs === 0"
                                    :project-id="projectId"
                                    :reload-on-key-change="true"
                                    :project-process-step-id="projectProcessStepId"
@@ -206,7 +206,7 @@
         <div style="width: 168px;" class="mr-2 mobile-content-padding">
 
           <v-btn-toggle
-            v-model="toggleFocused"
+            v-model="toggleFocusedXs"
             mandatory
             borderless
             color="primary"
@@ -215,15 +215,15 @@
           >
 
 
-            <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
+            <v-btn :color="toggleFocusedXs === 0 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocusedXs === 0, 'primary--text' : toggleFocusedXs === 1}"
                    class="text-capitalize my-4 fix-toggle-opacity body-medium"
                    style="width: 50% !important;"
             >
               Focused
             </v-btn>
-            <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
+            <v-btn :color="toggleFocusedXs === 1 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocusedXs === 1, 'primary--text' : toggleFocusedXs === 0}"
                    class="text-capitalize  fix-toggle-opacity"
                    style="width: 50% !important;"
             >
@@ -238,7 +238,7 @@
                                :org-id="orgId"
                                :force-show-upload-btn="forceShowUploadBtn"
                                :activity-tab="true"
-                               :focused="toggleFocused === 0"
+                               :focused="toggleFocusedXs === 0"
                                :project-id="projectId"
                                :reload-on-key-change="true"
                                :project-process-step-id="projectProcessStepId"
@@ -358,7 +358,8 @@ export default {
       myOwner: [],
       projectHistory: [],
       projectIsLoading: true,
-      toggleFocused: 0
+      toggleFocused: 0,
+      toggleFocusedXs: 0,
     }
   },
   created() {
