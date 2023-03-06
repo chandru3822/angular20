@@ -47,7 +47,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('SMARTLIST')")
+//todo: @humes work queue calls this and some users dont have both permissions. turning off for nwo
+//@PreAuthorize("hasFeatureAccess('SMARTLIST')")
 @RequiredArgsConstructor
 @Deprecated
 public class SmartlistServicev1 {
