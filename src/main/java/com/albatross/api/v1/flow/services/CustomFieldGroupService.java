@@ -186,7 +186,7 @@ public class CustomFieldGroupService {
               ? customField.getWhiteListedPositions()
               : customField.getHiddenWhiteListedPositions();
       List<Long> positionIdsUsed =
-          customField.getWhiteListedPositions().stream()
+          positionsToUse.stream()
               .map(WhiteListedPosition::getPositionId)
               .collect(Collectors.toList());
       params.put("positionIdsUsed", positionIdsUsed);
