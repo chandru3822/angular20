@@ -483,25 +483,28 @@
                 class="user-images-filter-select"
                 auto-select-first
                 outlined
-                @change="getUserImage((currentPage-1)*usersPerPage, (currentPage)*(usersPerPage));
-"
+                @change="returnToPageOne()"
       />
       <v-btn text color="primary" @click="changeImageFilter(true)">
         <v-icon v-if="constants.IS_MOBILE">filter_list</v-icon>
         <span v-else>Reset Filters</span>
       </v-btn>
     </v-row>
+    <div v-if="userImagesLoading" class="section-spinner">
+      <br>
+      <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
+    </div>
     <user-images :users="imageUsers" :headers = "headers" :users-per-page="usersPerPage" v-if="!userImagesLoading"
     :startingUser="(currentPage-1)*(usersPerPage)" :endingUser="min((currentPage)*(usersPerPage), imageUsers.length)">
 
     </user-images>
-    {{(currentPage-1)*(usersPerPage) + 1}} - {{min((currentPage)*(usersPerPage), imageUsers.length)}} of {{imageUsers.length}}
-    <v-btn icon :disabled="leftArrowDisabled" @click="currentPage--">
+    <span v-if="!userImagesLoading">{{min((currentPage-1)*(usersPerPage) + 1, this.totalUsers)}} - {{min((currentPage)*(usersPerPage), this.totalUsers)}} of {{totalUsers}} </span>
+    <v-btn icon :disabled="leftArrowDisabled"  v-if="!userImagesLoading" @click="previousPage()">
     <v-icon color="primary">
       mdi-arrow-left
     </v-icon>
     </v-btn>
-    <v-btn icon :disabled="rightArrowDisabled" @click="nextPage()">
+    <v-btn icon  v-if="!userImagesLoading" :disabled="rightArrowDisabled" @click="nextPage()">
     <v-icon color="primary">
       mdi-arrow-right
     </v-icon>
@@ -636,7 +639,7 @@
         return this.currentPage == 1;
       },
       rightArrowDisabled(){
-        return this.currentPage*this.usersPerPage >= this.imageUsers.length;
+        return this.currentPage*this.usersPerPage >= this.totalUsers;
       },
       selectAll () {
         return this.filters.statuses.length === this.statuses.length
@@ -695,21 +698,35 @@
       },
       async nextPage(){
         this.currentPage++;
-        this.getUserImage((this.currentPage-1) * this.usersPerPage + 1, this.min(this.currentPage * this.usersPerPage, this.imageUsers.length));
+        await this.getUserImage();
       },
-      async getUserImage (startUser, endUser) {
+      async previousPage(){
+        this.currentPage--;
+        await this.getUserImage();
+      },
+      async getUserImage () {
+        await this.getImageUsers()
         this.userImagesLoading = true
         let userIds = [];
-        for(let x = startUser; x < this.min(endUser, this.imageUsers.length); x++){
-          userIds.push(this.imageUsers[x].id);
+        for(let user of this.imageUsers){
+          userIds.push(user.id);
         }
-        userIds = encodeURI(userIds);
         let params = {
-          sourceIds: userIds,
+          sourceIds: encodeURI(userIds),
           attachmentTypeId: 9
         }
 
-        const {data} = await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})
+        let data = [];
+        while(userIds.length > 0){
+          params.sourceIds =  encodeURI(userIds.slice(0,this.min(userIds.length,100)));
+          userIds = userIds.slice(this.min(userIds.length,100), userIds.length)
+          if(Object.keys(data).length > 0) {
+            data = Object.assign({}, data, (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data);
+          }
+        else{
+            data = (await getRequestWithParams('/attachment/getAttachmentPresignedUrlsForUserList', {params})).data;
+          }
+        }
 
         if (data) {
           this.imageUsers.forEach(user => {
@@ -732,8 +749,12 @@
         this.$router.push({name: 'userDetails', params: {id}})
       },
       async toggleImages(){
-        await this.getUserImage(0, 10);
+        this.userImagesLoading = true;
         this.showImages = !this.showImages;
+        if(this.showImages) {
+          this.currentPage = 1;
+        }
+        await this.changeImageFilter(true);
        },
       debounceGetUsers: debounce( function () {
         this.getUsers(true)
@@ -810,9 +831,7 @@
               //todo: if this changes to allow primary only, secondary only, or both this flag the backend is ready to have that work using this flag (true, false, null)
               primaryFlag: this.primaryPositionsOnly
             }
-
-            let length = this.allUsers.length;
-            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${length}`, params, null, [], {
+            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${this.options.itemsPerPage}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
             })
@@ -841,6 +860,10 @@
           this.dataLoading = false
           this.users = []
         }
+      },
+      async returnToPageOne(){
+        this.currentPage = 1;
+        await this.getUserImage();
       },
       async getImageUsers (resetPage) {
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
@@ -875,7 +898,7 @@
             }
 
             let length = this.allUsers.length;
-            const {data, status} = await postRequest(`/user/search?page=${page-1}&size=${length}`, params, null, [], {
+            const {data, status} = await postRequest(`/user/search?page=${this.currentPage-1}&size=${this.usersPerPage}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
             })
@@ -1085,8 +1108,9 @@
         }
       },
       async changeImageFilter(reset, selectedLevel){
+        this.currentPage = 1;
         await this.handleImageFilterChange(reset, selectedLevel);
-        await this.getUserImage((this.currentPage-1)*this.usersPerPage, (this.currentPage)*(this.usersPerPage));
+        await this.getUserImage();
       },
       handleOrgFilterChange (reset, selectedLevel) {
         this.selectedLevel = selectedLevel
@@ -1140,7 +1164,6 @@
 
         this.selectAllUsers = false
         //reload the users
-        await this.getImageUsers(true)
       },
 
       itemChecked(level, item) {
@@ -1356,7 +1379,6 @@
     width: 350px;
   }
   ::v-deep .user-filter-select .v-label{
-    color: red!important;
     vertical-align: center;
   }
 

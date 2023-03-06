@@ -51,7 +51,7 @@
           Compare
         </v-btn>
       </div>
-      <v-toolbar v-if="this.search != null && this.search !== ''"  dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
+      <v-toolbar v-if="this.search != null && this.search !== '' && filteredAttachmentTypes.length > 0" dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
         <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
                                   'albatross-body-2': this.smallTitle}">
           Search Results
@@ -71,9 +71,9 @@
         </v-toolbar-title>
       </v-toolbar>
       <v-card class="text-left square-card" :class="{'elevation-0': !isCard}">
-        <div v-if="getFilteredAttachmentTypes().length === 0" class="body-medium text-center">No documents found.</div>
+        <div v-if="filteredAttachmentTypes.length === 0" class="body-medium text-center">No documents found.</div>
         <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
-          <v-expansion-panel v-for="(type, index) in getFilteredAttachmentTypes()" :key="type.attachmentTypeId" >
+          <v-expansion-panel v-for="(type, index) in filteredAttachmentTypes" :key="type.attachmentTypeId">
             <v-expansion-panel-header class="albatross-body-1">
               <template v-slot:default="{ open }">
                 <v-row v-if="(allowUpload || forceShowUploadBtn)"
@@ -147,7 +147,7 @@
       </v-card>
 
     </div>
-    <div v-else class="body-large text-center">Attachments Not Available</div>
+    <div v-else-if="!hideEmpty" class="body-large text-center">Attachments Not Available</div>
   </div>
 </template>
 
@@ -192,6 +192,7 @@ export default {
     orgId: Number,
     objectTypeId: Number,
     isCard: Boolean,
+    hideEmpty: Boolean,
     reloadOnKeyChange: {
       type: Boolean,
       default: false
@@ -236,14 +237,15 @@ export default {
       this.loadAllPageDetails()
     },
     search: function () {
+      this.$emit('scrollToTop')
+    },
+    filteredAttachmentTypes: function (val) {
+      this.opened = []
       if(this.search != null && this.search !== '') {
-        for(let i = 0; i < this.sortedAttachments.length; i++){
+        for(let i = 0; i < val.length; i++){
           this.opened.push(i)
         }
-      } else {
-        this.opened = []
-      }
-    },
+      }    },
     // // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
       // reset the selected item
@@ -272,7 +274,16 @@ export default {
   computed: {
     sortedAttachments() {
       return orderBy(this.attachments, [a => a.dateCreated], this.search != null && this.search !== '' && this.sortOldToNew ? 'asc' : 'desc')
-    }
+    },
+    filteredAttachmentTypes() {
+      //if there's a search value, only show folders with an attachment that matches the search
+      return (this.search != null && this.search !== '') ? this.attachmentTypes.filter(type => {
+        return this.attachments.filter(a => {
+          return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === this.loadLinked
+            && a.displayName.toLowerCase().includes(this.search.toLowerCase())
+        })?.length > 0
+      }) : this.attachmentTypes
+    },
   },
   mounted() {
     if (this.loadLinked) {
@@ -408,15 +419,7 @@ export default {
 
       this.attachments = orderBy(data, [a => a.dateCreated], this.sortOldToNew ? 'asc' : 'desc')
     },
-    getFilteredAttachmentTypes: function() {
-      //if there's a search value, only show folders with an attachment that matches the search
-      return (this.search != null && this.search !== '') ? this.attachmentTypes.filter(type => {
-        return this.attachments.filter(a => {
-          return a.attachmentTypeId === type.attachmentTypeId && !a.archived && a.linked === this.loadLinked
-              && a.filename.toLowerCase().includes(this.search.toLowerCase())
-        })?.length > 0
-      }) : this.attachmentTypes
-    },
+
     getTypeCount: function (typeId) {
       try {
         return this.attachments.filter(a => {

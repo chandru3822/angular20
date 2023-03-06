@@ -33,7 +33,7 @@
                 </v-btn>
 
                 <v-btn
-                  v-if="smartlist.id"
+                  v-if="smartlist.id && userCanAdd"
                   text
                   color="primary"
                   @click="copy"
@@ -53,6 +53,7 @@
                 </v-btn>
                 <v-btn
                     text
+                    v-if="canDelete"
                     color="primary"
                     @click="showDeleteDialog=true"
                 >
@@ -74,6 +75,7 @@
                   <v-text-field
                     text
                     label="Smartlist Name"
+                    :readonly="!userCanEdit"
                     v-model="smartlist.name"
                     :rules="requiredRules"
                   />
@@ -84,6 +86,7 @@
                       v-model="smartlist.companyObjectTypeId"
                       :items="companyObjectTypes"
                       item-text="objectType"
+                      :readonly="!userCanEdit"
                       item-value="companyObjectTypeId"
                       label="Rows"
                       placeholder="Select one..."
@@ -106,6 +109,7 @@
                   <v-checkbox
                     v-model="smartlist.shared"
                     label="Public"
+                    :readonly="!userCanEdit"
                   />
                 </v-col>
 
@@ -113,12 +117,14 @@
 
                   <v-checkbox
                     v-if="isUserOrgObjectType"
+                    :readonly="!userCanEdit"
                     v-model="smartlist.primaryUserPosition"
                     label="Primary Position"
                   />
                   <v-checkbox
                       v-if="!isUserOrgObjectType"
                       v-model="smartlist.projectDetails"
+                      :readonly="!userCanEdit"
                       label="Project Details"
                       @click="smartlist.id ? showToggleDialog=true : showToggleDialog"
                   />
@@ -135,6 +141,7 @@
                 <v-col cols="4" md="2">
                   <v-checkbox
                       v-if="isProcessStepOrEvent"
+                      :readonly="!userCanEdit"
                       v-model="smartlist.mainProcessSteps"
                       label="Primary Steps Only"
                   />
@@ -287,6 +294,8 @@ export default {
       projectDetailsColumns: [],
       sql: '',
       is7oaksAdmin: this.$store.getters.isFullAdmin,
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT'),
       userId: this.$store.state.user.details.id,
       refreshData: false
     }
@@ -314,6 +323,9 @@ export default {
     },
     canEdit () {
       return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    },
+    canDelete () {
+      return ((!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) && this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     },
     filteredCompanyObjectTypes () {
       if (this.smartlist.id) {

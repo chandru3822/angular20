@@ -515,9 +515,13 @@ public class ProjectService {
   }
 
   public Optional<Project> updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+    User currentUser = securityService.getCurrentUser();
+
     sqlCache.updateBySql(
       ProjectQuery.updateStatus,
-        Map.of("projectId", projectId, "companyProjectStatusTypeId", companyProjectStatusTypeId));
+        Map.of("projectId", projectId,
+          "companyProjectStatusTypeId", companyProjectStatusTypeId,
+          "userId", currentUser.trueUserId()));
     return getStatus(projectId);
   }
 

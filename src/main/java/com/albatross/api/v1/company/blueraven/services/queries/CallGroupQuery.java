@@ -191,7 +191,7 @@ public class CallGroupQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getCallerGroupNumbers = """
+  public final static String getLowestCallsCallGroupNumber = """
     select cgpn.id,
            cgpn.phone_number as "phoneNumber",
            cgpn.date_created as "dateCreated",
@@ -204,7 +204,7 @@ public class CallGroupQuery {
         inner join brs.call_group_phone_number cgpn on cg.id = cgpn.call_group_id
     where cgpc.postal_code = :postalCode and cg.active is true and cgpn.active is true
         and cg.archived is not true and cgpc.archived is not true and cgpn.archived is not true
-    order by cgpn.call_count asc, cgpn.id asc
+    order by cgpn.call_count asc, cgpn.id asc limit 1
     """;
 
   //language=PostgreSQL
@@ -229,25 +229,9 @@ public class CallGroupQuery {
     """;
 
   //language=PostgreSQL
-  public final static String updatePhoneNumberCallCount = """
-    update brs.call_group_phone_number
-    set call_count = call_count+1, date_modified = now()
-    where id = :currentlyUsedId
-    """;
-
-  //language=PostgreSQL
   public final static String addPhoneLog = """
     insert into brs.call_group_phone_log(call_group_id, phone_number, date_created, created_by_id)
     values (:callGroupId, :phoneNumber, now(), :createdById)
     """;
 
-  //language=PostgreSQL
-  public final static String updatePhoneCallCount = """
-    update brs.call_group_phone_number cgpn set date_modified = now(), call_count  =
-      (select count(*) from brs.call_group_phone_log cgpl
-      inner join brs.call_group cg on cgpl.call_group_id = cg.id
-      where cg.id = :callGroupId and phone_number = :phoneNumber
-            and cgpl.date_created between now() -(cg.days_per_period || 'days')::interval and now())
-      where cgpn.call_group_id = :callGroupId and cgpn.phone_number = :phoneNumber
-    """;
 }

@@ -124,7 +124,7 @@ public class InstallAgreementQuery {
   //language=PostgreSQL
   public final static String getFinancialOption = """
       select *
-      from brs.get_goodleap_financial_option(:loanTerm::varchar, :interestRate::varchar, :proposalLogHistoryId::bigint);
+      from brs.get_goodleap_financial_option(:loanType::varchar, :loanTerm::varchar, :interestRate::varchar, :proposalLogHistoryId::bigint);
     """;
 
   //language=PostgreSQL

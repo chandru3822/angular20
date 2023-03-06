@@ -28,7 +28,6 @@ import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.sonus21.rqueue.core.RqueueMessageEnqueuer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +36,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +46,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -64,7 +67,6 @@ public class BlueravenProposalService {
   private final ProjectService projectService;
   private final ProposalTemplateService proposalTemplateService;
   private final AttachmentService attachmentService;
-  private final RqueueMessageEnqueuer rqueueMessageEnqueuer;
   private final AppProperties appProperties;
   private final SecurityService securityService;
 
@@ -263,7 +265,6 @@ public class BlueravenProposalService {
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
-    rqueueMessageEnqueuer.enqueue("proposal_job", UUID.randomUUID().toString(), new ProposalJobMessage(proposalId));
     return getProposal(proposalId);
   }
 
@@ -380,6 +381,16 @@ public class BlueravenProposalService {
 
     final Map<String, Object> params = Map.of("projectId", projectId);
     return sqlCache.getBySql(ProposalQuery.postalCodeApproved, params, ProposalPostalCodeStatus.class).orElse(other);
+  }
+
+  public List<Long> getLockedProposalsBatchForProcessing() {
+    return sqlCache.queryBySql(ProposalQuery.getLockedProposalsForProcessing, Map.of(), new SingleColumnRowMapper<>(Long.class));
+  }
+
+  @Transactional
+  public void setProcessingErrorMessage(Long proposalId, String errorMessage, Long modifiedBy) {
+    sqlCache.updateBySql(ProposalQuery.setProcessingErrorMessage,
+      Map.of("id", proposalId, "errorMsg", errorMessage, "modifiedById", modifiedBy));
   }
 
 }
