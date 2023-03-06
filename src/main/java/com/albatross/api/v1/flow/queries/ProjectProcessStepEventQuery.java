@@ -465,7 +465,8 @@ public class ProjectProcessStepEventQuery {
         update flow.project_process_step_event
         set company_event_status_type_id = :companyEventStatusTypeId,
             date_modified = now(),
-            modified_by_id = :userId
+            modified_by_id = :userId,
+            save_version = save_version + 1
         where id = :projectProcessStepEventId
   """;
 
