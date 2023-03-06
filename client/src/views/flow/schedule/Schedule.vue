@@ -232,7 +232,7 @@
                   v-model="selectedProject.unscheduleConfirm"
                   width="500">
                 <template #activator="{ on }">
-                  <v-btn color="secondary"
+                  <v-btn color="primary" outlined
                          class="unschedule-button"
                          @click="getCancelledCompanyEventStatuses"
                          v-on="on">Unschedule Event</v-btn>
