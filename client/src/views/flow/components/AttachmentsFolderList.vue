@@ -240,12 +240,16 @@ export default {
       this.$emit('scrollToTop')
     },
     filteredAttachmentTypes: function (val) {
-      this.opened = []
-      if(this.search != null && this.search !== '') {
-        for(let i = 0; i < val.length; i++){
-          this.opened.push(i)
+      clearTimeout(this._filterTimerId)
+      this._filterTimerId = setTimeout(() => {
+        this.opened = []
+        if(this.search != null && this.search !== '') {
+          for(let i = 0; i < val.length; i++){
+            this.opened.push(i)
+          }
         }
-      }    },
+      }, 5)
+    },
     // // whenever pps id changes, this function will run
     '$route.params.processStepId': async function () {
       // reset the selected item
