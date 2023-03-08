@@ -44,13 +44,13 @@
                 </div>
               </td>
               <td>
-                <v-btn small :large="constants.IS_MOBILE" icon color="primary" @click="editIndex = index" v-if="index !== editIndex">
+                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small :large="constants.IS_MOBILE" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
+                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small :large="constants.IS_MOBILE" icon color="primary" @click="editIndex = null" v-if="index === editIndex && constants.IS_MOBILE">
+                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = null" v-if="index === editIndex && $vuetify.breakpoint.smAndDown">
                   <v-icon>close</v-icon>
                 </v-btn><v-btn small text color="primary" @click="editIndex = null" v-else-if="index === editIndex">
                   cancel

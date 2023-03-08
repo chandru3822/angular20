@@ -281,12 +281,6 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 
 }
 
-.full-width-btn-mobile {
-  @media (max-width: 960px) {
-    width: 100%;
-  }
-}
-
 // this is for input fields in column headers
 .filter-input .v-input__slot {
   height: 35px !important;

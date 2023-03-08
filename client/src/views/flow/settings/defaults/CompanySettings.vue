@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-toolbar flat class="app-toolbar" v-if="!constants.IS_MOBILE">
+        <v-toolbar flat class="app-toolbar" v-if="$vuetify.breakpoint.smAndUp">
           <v-toolbar-title class="title-large">Company Settings</v-toolbar-title>
         </v-toolbar>
       </v-col>
@@ -44,9 +44,9 @@
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn :large="constants.IS_MOBILE" :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
-                 color="primary" @click="saveCompany" v-if="userCanEdit" class="full-width-btn-mobile">
-            <v-icon :large="constants.IS_MOBILE" class="pr-2">mdi-content-save</v-icon>
+          <v-btn :large="$vuetify.breakpoint.smAndDown" :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
+                 color="primary" @click="saveCompany" v-if="userCanEdit" :class="{'one-hunned': $vuetify.breakpoint.smAndDown}">
+            <v-icon :large="$vuetify.breakpoint.smAndDown" class="pr-2">mdi-content-save</v-icon>
             <span class="body-medium text-capitalize">Save Changes</span>
           </v-btn>
         </v-col>
@@ -59,11 +59,11 @@
           <v-toolbar-title class="title-large">Company Logo</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn icon :large="constants.IS_MOBILE" color="primary" v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
               <v-icon v-if="addImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn icon :large="constants.IS_MOBILE" color="primary" v-else @click="logoToDelete=LogoTypeEnum.Company"><v-icon>delete</v-icon></v-btn>
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else @click="logoToDelete=LogoTypeEnum.Company"><v-icon>delete</v-icon></v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
@@ -98,11 +98,11 @@
           <v-toolbar-title class="title-large">Home Page Logo</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn icon :large="constants.IS_MOBILE" color="primary" v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
               <v-icon v-if="addHomePageImage">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn icon :large="constants.IS_MOBILE" color="primary" v-else @click="logoToDelete=LogoTypeEnum.HomePage"><v-icon>delete</v-icon></v-btn>
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else @click="logoToDelete=LogoTypeEnum.HomePage"><v-icon>delete</v-icon></v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
