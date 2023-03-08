@@ -15,6 +15,7 @@
           :headers="headers"
           :items="configurationValues"
           :items-per-page="-1"
+          :mobile-breakpoint="960"
           hide-default-footer
           class="elevation-1 square-card table-striped"
         >
