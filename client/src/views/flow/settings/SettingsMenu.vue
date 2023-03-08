@@ -1,5 +1,5 @@
 <template>
-  <v-list :dense="!constants.IS_MOBILE" class="left-menu">
+  <v-list :dense="$vuetify.breakpoint.smAndUp" class="left-menu">
     <template v-for="(item, index) in filterBy(items, true, 'show')">
       <h3 class="label-large" v-if="item.header">{{item.header}}</h3>
       <v-list-item
@@ -16,7 +16,7 @@
         </v-list-item-content>
       </v-list-item>
     </template>
-    <v-list-item :dense="!constants.IS_MOBILE" v-for="o in filterBy(companyObjectTypes, (cot) => { return [1,3,4,5].includes(cot.flowTypeId) })" :key="o.id"
+    <v-list-item :dense="$vuetify.breakpoint.smAndDown" v-for="o in filterBy(companyObjectTypes, (cot) => { return [1,3,4,5].includes(cot.flowTypeId) })" :key="o.id"
                  :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` :
                                       o.flowTypeId === 4 ? `/settings/events` :
                                       o.flowTypeId === 5 ? `/settings/attachments` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
@@ -205,7 +205,7 @@ export default {
         try {
           const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
           this.companyObjectTypes = data
-          console.log(data)
+
           this.setTitle()
           handleHidingGlobalLoader(this, status)
         } catch (e) {

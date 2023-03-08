@@ -1,9 +1,9 @@
 <template>
   <v-container class="pt-0">
-    <v-row class="settings-container" :class="{'d-inline-block': constants.IS_MOBILE}">
+    <v-row class="settings-container" :class="{'d-inline-block': isMobile}">
       <v-col cols="12" md="3" class="text-left pa-0">
         <v-menu data-app
-                v-if="constants.IS_MOBILE"
+                v-if="isMobile"
                 offset-y
                 attach
                 v-model="menuOpen"
@@ -64,6 +64,9 @@ export default {
     }
   },
   computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
     items() { return [
       {
         header: 'Preferences',

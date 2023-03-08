@@ -5,7 +5,7 @@
         <v-tabs class="tabs-bar" id="default-settings-tabs">
           <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0 label-medium"
-                 :style="{'margin-left': (index === 0 && constants.IS_MOBILE) ? '12px !important' : '0'}">
+                 :style="{'margin-left': (index === 0 && $vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
             {{ tab.label }}
           </v-tab>
         </v-tabs>
@@ -54,7 +54,7 @@ import constants from '@/helpers/constants'
   }
 </script>
 <style lang="scss">
-@media (max-width: 960px) {
+@media (max-width: 959px) {
   #default-settings-tabs > div > div.v-slide-group__wrapper > div {
     justify-content: center;
   }
