@@ -58,5 +58,8 @@ import constants from '@/helpers/constants'
   #default-settings-tabs > div > div.v-slide-group__wrapper > div {
     justify-content: center;
   }
+  #default-settings-tabs > div > div.v-slide-group__prev.v-slide-group__prev--disabled {
+    display: none;
+  }
 }
 </style>
