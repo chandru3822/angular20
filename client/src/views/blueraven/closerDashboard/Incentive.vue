@@ -1,7 +1,7 @@
 <template>
   <v-row justify="center" no-gutters>
     <v-col cols="12" id="incentive-container" class="justify-end">
-      <img id="incentive-banner" src="../../../assets/blueraven/Ravens_Cup_Logo_I4_1.svg" alt="incentive competition banner">
+      <img id="incentive-banner" src="../../../assets/blueraven/Ravens_Cup_Logo_2023.svg" alt="incentive competition banner">
       <div id="milestones-container">
         <incentive-milestone
             :milestone-level="milestoneLevel(counts.q1)"
@@ -126,11 +126,12 @@ export default {
   height: 100vh;
 
   #incentive-banner {
-    padding-top: 0;
+    padding-top: 20px;
     padding-bottom: 50px;
     margin-bottom: -50px;
     width: 100%;
     max-height: 30vh;
+    filter: drop-shadow(0 0 5rem rgb(0 0 0 / 0.4));
   }
 }
 
@@ -215,6 +216,7 @@ export default {
 
     #incentive-banner {
       margin-bottom: -80px;
+      padding-bottom: 75px;
       max-width: 673px;
       max-height: 40vh;
     }
@@ -241,6 +243,13 @@ export default {
 }
 
 @media (min-width: 1070px) {
+  #incentive-container {
+
+    #incentive-banner {
+      padding-top: 0;
+      padding-bottom: 100px;
+    }
+  }
 
   #milestones-container {
     width: 65%;
