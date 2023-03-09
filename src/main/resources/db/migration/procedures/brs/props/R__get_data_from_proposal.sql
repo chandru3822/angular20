@@ -132,7 +132,15 @@ begin
                           coalesce((non_standard_work_3_cost)::numeric,0)::numeric,
                           'custom_fields.Total Ancillary Cost with Fees',
                           coalesce(round((round(((non_standard_work_1_cost)::numeric),2) + round(((non_standard_work_2_cost)::numeric),2) +
-                          round(((non_standard_work_3_cost)::numeric),2)) /* (1+(proposal->>'Dealer Fee')::numeric)*/,2),0) --+ ((proposal->>'System Size (w)')::numeric * (proposal->>'Extra Promotion Cost')::numeric),2)
+                          round(((non_standard_work_3_cost)::numeric),2)) /* (1+(proposal->>'Dealer Fee')::numeric)*/,2),0), --+ ((proposal->>'System Size (w)')::numeric * (proposal->>'Extra Promotion Cost')::numeric),2)
+                          'custom_fields.Number of Batteries',
+                          (number_of_batteries),
+                          'custom_fields.Estimated Backup Days',
+                          (estimated_backup_days),
+                          'custom_fields.Solar Rebate for HIC',
+                          (solar_rebate_for_hic),
+                          'custom_fields.Storage Size',
+                          (storage_size_kwh)
                       ) as results
                from brs.proposal_log_history pl
                  INNER JOIN flow.project p on p.id = pl.project_id
