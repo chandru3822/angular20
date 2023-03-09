@@ -1,6 +1,6 @@
 <template>
 
-  <v-row id="project-activity-container" class="flex-column flex-nowrap" no-gutters>
+  <v-row id="project-activity-container" ref="projectActivityContainer" class="flex-column flex-nowrap" no-gutters>
       <div class="project-activity-header-container hide-xs" :class="{'pt-n2':selectedOption === 0}">
 
         <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
@@ -115,7 +115,9 @@
                                  :focused="toggleFocused === 0"
                                  :project-id="projectId"
                                  :reload-on-key-change="true"
-                                 :project-process-step-id="projectProcessStepId" />
+                                 :project-process-step-id="projectProcessStepId"
+                                   @scrollToTop="scrollToTop"
+            />
           </div>
         </div>
       </div>
@@ -190,10 +192,12 @@
                                    :org-id="orgId"
                                    :force-show-upload-btn="forceShowUploadBtn"
                                    :activity-tab="true"
-                                   :focused="toggleFocused === 0"
+                                   :focused="toggleFocusedXs === 0"
                                    :project-id="projectId"
                                    :reload-on-key-change="true"
-                                   :project-process-step-id="projectProcessStepId" />
+                                   :project-process-step-id="projectProcessStepId"
+                                   @scrollToTop="scrollToTop()"
+            />
           </div>
         </div>
       </div>
@@ -202,7 +206,7 @@
         <div style="width: 168px;" class="mr-2 mobile-content-padding">
 
           <v-btn-toggle
-            v-model="toggleFocused"
+            v-model="toggleFocusedXs"
             mandatory
             borderless
             color="primary"
@@ -211,15 +215,15 @@
           >
 
 
-            <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
+            <v-btn :color="toggleFocusedXs === 0 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocusedXs === 0, 'primary--text' : toggleFocusedXs === 1}"
                    class="text-capitalize my-4 fix-toggle-opacity body-medium"
                    style="width: 50% !important;"
             >
               Focused
             </v-btn>
-            <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
+            <v-btn :color="toggleFocusedXs === 1 ? 'primary' : 'white'"
+                   :class="{'white--text': toggleFocusedXs === 1, 'primary--text' : toggleFocusedXs === 0}"
                    class="text-capitalize  fix-toggle-opacity"
                    style="width: 50% !important;"
             >
@@ -234,10 +238,12 @@
                                :org-id="orgId"
                                :force-show-upload-btn="forceShowUploadBtn"
                                :activity-tab="true"
-                               :focused="toggleFocused === 0"
+                               :focused="toggleFocusedXs === 0"
                                :project-id="projectId"
                                :reload-on-key-change="true"
-                               :project-process-step-id="projectProcessStepId" />
+                               :project-process-step-id="projectProcessStepId"
+                               @scrollToTop="scrollToTop"
+        />
       </div>
       <div class="footer-container hide-xs"
            :style="{'width': isSidebarCollapsed ? '72px' : '100%',
@@ -352,7 +358,8 @@ export default {
       myOwner: [],
       projectHistory: [],
       projectIsLoading: true,
-      toggleFocused: 0
+      toggleFocused: 0,
+      toggleFocusedXs: 0,
     }
   },
   created() {
@@ -406,6 +413,11 @@ export default {
         this.collapseSide()
         this.$emit('openRight')
       }
+    },
+    scrollToTop(){
+      //have to get ref of something not stuck behind a v-if, the query down to the actual element we want
+      this.$vuetify.goTo(this.$refs.projectActivityContainer.querySelector('div.scrollable-area'),
+          {container: '.project-activity-inner-container'}) //if you don't set the container, it defaults to document.scrollingElement, which is the page scroll, not the component we want to scroll
     },
     startJoinConversation() {
       if (this.teamsAssociatedToUser?.length === 1) {

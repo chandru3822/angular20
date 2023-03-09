@@ -111,11 +111,13 @@
                                    :allow-upload="!isEventReadonly"
                                    :small-title="true"
                                    is-card
+                                   hide-empty
                                    title="Uploaded Documents"/>
             <AttachmentsFolderList :object-type-id="6"
                                    :load-linked="true"
                                    :small-title="true"
                                    is-card
+                                   hide-empty
                                    title="Linked Documents"/>
           </v-col>
         </v-row>
@@ -779,7 +781,7 @@ export default {
       let hidden = getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue)
       // if events admin then they can edit any event fields, otherwise idk???
       // if not readonly and the user can manage then ignore event status check
-      return ((!this.userIsAdmin && !this.userCanManage && !hidden) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
+      return ((!this.userIsAdmin && !this.userCanManage && !hidden) && this?.selectedEvent?.processStepStatusTypeId !== 1)
         || hidden
     },
     populateDirtyCfvs(field) {

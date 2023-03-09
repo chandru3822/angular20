@@ -158,7 +158,7 @@ export default {
       } else {
         return this.attachments.filter(a => {
           return !a.archived && a.attachmentTypeId === this.displayType.attachmentTypeId && a.linked === this.loadLinked
-            && ((this.search != null && this.search !== '') ? a.filename.toLowerCase().includes(this.search.toLowerCase()) : true)
+            && ((this.search != null && this.search !== '') ? a.displayName.toLowerCase().includes(this.search.toLowerCase()) : true)
         })
       }
     },
