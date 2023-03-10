@@ -22,7 +22,8 @@
         No proposals available.
       </div>
       <v-card v-if="versions.length" class="square-card">
-        <v-data-table :headers="headers"
+        <v-data-table id="proposal-version-table"
+            :headers="headers"
                       :items="versions"
                       :options.sync="options"
                       :server-items-length="totalVersions"
@@ -74,7 +75,7 @@ export default {
         { text: 'modified by', value: 'modifiedBy', sortable: false }
       ],
       footerProps: {
-        'items-per-page-options': [5, 10, 20, 50, 100]
+        'items-per-page-options': [5, 10, 20, 50, 100],
       },
       totalVersions: -1,
       versions: []
@@ -156,6 +157,38 @@ tr:nth-of-type(even) {
 }.toolbar-btn-icon {
   @media (min-width: 961px) {
     display: none;
+  }
+}
+</style>
+<style lang="scss">
+@media (max-width: 770px) {
+  #proposal-version-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
   }
 }
 </style>

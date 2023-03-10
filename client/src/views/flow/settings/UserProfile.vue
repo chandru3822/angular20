@@ -14,7 +14,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <!--mobile save button-->
-            <v-btn v-if="constants.IS_MOBILE" icon large color="primary" @click="validate">
+            <v-btn v-if="isMobile" icon large color="primary" @click="validate">
               <v-icon>mdi-content-save</v-icon>
             </v-btn>
             <!--normal save button-->
@@ -23,7 +23,7 @@
               Save Changes
             </v-btn>
             <!--mobile admin button-->
-            <v-btn v-if="constants.IS_MOBILE && userIsAdmin" icon large color="primary" class="pl-6" :to="`/settings/userProfileAdmin`">
+            <v-btn v-if="isMobile && userIsAdmin" icon large color="primary" class="pl-6" :to="`/settings/userProfileAdmin`">
               <v-icon>mdi-cogs</v-icon>
             </v-btn>
             <!--normal admin button-->
@@ -160,7 +160,7 @@
             <v-icon v-if="addImage">remove</v-icon>
             <v-icon v-else>add</v-icon>
           </v-btn>
-          <v-btn v-else icon color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)">
+          <v-btn v-else icon :large="isMobile" color="primary" class="mr-2" @click="deleteAttachment(profileImage.id)">
             <v-icon>delete</v-icon>
           </v-btn>
         </v-toolbar>
@@ -273,7 +273,10 @@ export default {
   computed: {
     teamNameToRemoveNotif() {
       return this.notificationToRemove ? this.notificationToRemove.teamName : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created () {
     if(this.$store.state.user.details.highestCompanyId === 1) {
