@@ -645,6 +645,23 @@ public class PandaDocService {
       tokens.put("Proposal.Loan Term", result.get("custom_fields.Loan Term"));
       tokens.put("Proposal.Panel Quantity", result.get("custom_fields.Panel Quantity"));
 
+      Double numberOfBatteries =
+        Double.parseDouble(
+          result.get("custom_fields.Number of Batteries") == null
+            ? "0"
+            : result.get("custom_fields.Number of Batteries").toString());
+
+      Double storageSize =
+        Double.parseDouble(
+          result.get("custom_fields.Storage Size") == null
+            ? "0"
+            : result.get("custom_fields.Storage Size").toString());
+
+      tokens.put("Proposal.Number Of Batteries", numberOfBatteries);
+      tokens.put("Proposal.Storage Size", storageSize);
+      tokens.put("Proposal.Estimated Backup Days", result.get("custom_fields.Estimated Backup Days"));
+      tokens.put("Proposal.Solar Rebate For HIC", result.get("custom_fields.Solar Rebate for HIC"));
+
       Double totalCost =
           Double.parseDouble(
               result.get("custom_fields.Total Cost") == null

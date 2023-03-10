@@ -13,15 +13,15 @@ const closerThirdMilestoneGoal = 15
 const closerFourthMilestoneGoal = 18
 
 //Setters
-const setterFirstMilestoneGoal = 60
-const setterSecondMilestoneGoal = 80
-const setterThirdMilestoneGoal = 100
-const setterFourthMilestoneGoal = 120
+const setterFirstMilestoneGoal = 65
+const setterSecondMilestoneGoal = 91
+const setterThirdMilestoneGoal = 117
+const setterFourthMilestoneGoal = 130
 
 //Setter Managers
-const setterMgrFirstMilestoneGoal = 325
-const setterMgrSecondMilestoneGoal = 455
-const setterMgrThirdMilestoneGoal = 585
+const setterMgrFirstMilestoneGoal = 390
+const setterMgrSecondMilestoneGoal = 494
+const setterMgrThirdMilestoneGoal = 598
 const setterMgrFourthMilestoneGoal = 780
 
 /** */
