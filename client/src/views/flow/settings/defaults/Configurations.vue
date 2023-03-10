@@ -11,6 +11,7 @@
         </div>
 
         <v-data-table
+            id="defaults-config-table"
           :headers="headers"
           :items="configurationValues"
           :items-per-page="-1"
@@ -114,7 +115,8 @@ export default {
 }
 </script>
 <style lang="scss">
-#app > div.v-application--wrap > main > div > div > div > div > div.px-4.pt-0.main-section.col-md-9.col-12 > div > div > div > div.container > div > div > div.v-data-table.elevation-1.square-card.table-striped.theme--light.v-data-table--mobile > div > table > thead > tr > th > div > div > div > div > div.v-select__slot > div.v-select__selections > span > span > div {
+//keeps the arrow icon on the sort chip (mobile dropdown) from having a light blue background
+#defaults-config-table > div > table > thead > tr > th > div > div > div > div > div.v-select__slot > div.v-select__selections > span > span > div {
   background-color: inherit !important;
 }
 </style>
