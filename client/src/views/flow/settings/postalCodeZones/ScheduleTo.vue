@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addUser = !addUser, selectedUser = {}, getUsers()]">
               <v-icon v-if="addUser">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -61,7 +61,7 @@
           :expanded.sync="expanded"
           :search="search"
           :loading="dataLoading"
-          class="elevation-0"
+          class="elevation-0 table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No available users</span>
@@ -71,10 +71,7 @@
             <span class="default-text-color">No available users</span>
           </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{ item.fullName }}</td>
-              <td class="text-left timezone-column" v-if="zone.remote">
+          <template #item.timezone="{ item, index }" class="text-left timezone-column" v-if="zone.remote">
                 <span v-if="!item.edit">{{item.timezone || '--'}}</span>
                 <v-autocomplete v-if="item.edit"
                                 v-model="item.companyTimezoneId"
@@ -93,8 +90,8 @@
                 <v-btn class="d-inline-block" x-small text v-if="item.edit" @click="saveUserTimezone(item)">
                   <v-icon size="18">save</v-icon>
                 </v-btn>
-              </td>
-              <td class="text-left">
+              </template>
+              <template #item.prescribedAllocation="{item}" class="text-left">
                 <v-tooltip top>
                   <template v-slot:activator="{ on }">
                     <span v-on="on">
@@ -103,9 +100,8 @@
                   </template>
                   <span>{{ getAllocationValue(item.prescribedAllocation) }}</span>
                 </v-tooltip>
-
-              </td>
-              <td class="text-left">
+              </template>
+              <template #item.manuallySetAllocation="{item}" class="text-left">
                 <input type="checkbox" v-if="item.manualAllocationWhole || item.manualAllocationWhole === 0" checked
                        disabled readonly>
                 <input type="checkbox" v-else disabled readonly>
@@ -121,8 +117,8 @@
                               class="ml-2 allocation-input d-inline-block"
                               v-model.number="item.manualAllocationWhole"></v-text-field>
                 <span class="ml-2">%</span>
-              </td>
-              <td class="text-left">
+              </template>
+              <template #item.targetLeadAllocation="{item}" class="text-left">
                 <v-tooltip top v-if="item.targetLeadAllocation || item.targetLeadAllocation === 0">
                   <template v-slot:activator="{ on }">
                     <span v-on="on">
@@ -132,12 +128,11 @@
                   <span>{{ getAllocationValue(item.targetLeadAllocation) }}</span>
                 </v-tooltip>
                 <span v-else>--</span>
-              </td>
-              <td class="text-right">
-                <v-btn v-if="userCanEdit" small text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
-              </td>
-            </tr>
-          </template>
+              </template>
+              <template #item.icons="{item}" class="text-right">
+                <v-btn v-if="userCanEdit" small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
+              </template>
+
 
           <template v-slot:body.append="{headers}">
             <tr>
@@ -228,7 +223,7 @@ export default {
       {text: 'Prescribed Allocation', value: 'prescribedAllocation', show: true},
       {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
       {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
-      {text: '', value: 'icons', show: true},
+      {text: '', value: 'icons', show: true, align: 'end'},
     ]
     if (this.zone?.remote) {
       this.getCompanyTimezones()
