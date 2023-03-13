@@ -103,7 +103,9 @@
                 <span :class="{'error-text': !detail.value.hasAccess}">{{
                     detail.value.fullName
                   }} - {{detail.value.position }} <br/></span>
-          <span v-if="detail.value.hasAccess">{{ formatPhoneNumber(detail.value.phoneNumber) }}<br/></span>
+          <span v-if="detail.value.hasAccess && detail.value.phoneNumber" :class="{'clickable':!!detail.value.phoneNumber}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value.phoneNumber), `${detail.label} Phone Number`)">
+             <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>{{ formatPhoneNumber(detail.value.phoneNumber) }}<br/>
+          </span>
         </div>
         <span v-else class="d-inline-block detail-item body-medium pl-2">N/A</span>
       </div>
