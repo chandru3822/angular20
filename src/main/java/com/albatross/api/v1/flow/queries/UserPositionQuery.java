@@ -128,4 +128,20 @@ public class UserPositionQuery {
     where primary_flag = true and user_id = :userId and archived = false
     """;
 
+  //language=PostgreSQL
+  public final static String getPrimaryUserPositions = """
+    select
+      distinct upv.user_id::bigint as user_id,
+      upv.user_position_id as id,
+      concat(upv.first_name,' ',upv.last_name::text) as full_name,
+      upv.position,
+      upv.primary_flag
+    from flow.user_positions_vw upv
+    where
+      upv.company_id = :companyId and
+      upv.has_access is true and
+      (upv.start_date <= now() and (upv.end_date IS NULL OR upv.end_date > now())) and
+      upv.primary_flag is true
+    order by full_name
+  """;
 }

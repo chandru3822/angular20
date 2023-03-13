@@ -10,7 +10,7 @@ import java.util.List;
 public class UserPosition {
 
     private Long id, userId, positionId, orgId, companyStateId, stateId, companyId;
-    private String position, orgName;
+    private String position, orgName, fullName;
     private String startDate, endDate;
     private Boolean archived, primaryFlag, scheduler, schedulable, useSlotSchedule;
     private List<UserOrgHierarchy> hierarchy;

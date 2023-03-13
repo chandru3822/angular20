@@ -272,18 +272,18 @@ public class SmartlistService {
   }
 
   public List<SmartlistAccessControl> getSharableEntities() {
-    List<User> users = userService.getAllActiveUsers();
+    List<UserPosition> userPositions = userPositionService.getPrimaryUserPositions();
     List<Org> orgs = orgService.getAllActive();
 
     //combine lists
     List<SmartlistAccessControl> combinedList = new ArrayList<>();
-    users.forEach(u -> {
+    userPositions.forEach(up -> {
       var share = new SmartlistAccessControl();
-      share.setUserPositionId(u.getUserPositionId());
+      share.setUserPositionId(up.getId());
       share.setIsUser(true);
       share.setIsOrg(false);
-      share.setName(u.getFullName());
-      share.setPosition(u.getPosition());
+      share.setName(up.getFullName());
+      share.setPosition(up.getPosition());
       combinedList.add(share);
     });
 
