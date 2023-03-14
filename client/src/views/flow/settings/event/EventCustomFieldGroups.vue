@@ -159,7 +159,7 @@
                     height="35px"
                     class="mr-3 mt-3"
                     @change="event.endTimePositionsChanged = true">
-                    <template v-slot: prepend-item>
+                    <template v-slot:prepend-item>
                     <v-list-item
                       ripple
                       @click="[event.endTimePositionsChanged = true, toggleSelectAllPositions(event, 'endTimeWhiteListedPositions')]"
@@ -207,7 +207,7 @@
                         height="35px"
                         class="mr-3 mt-3"
                         @change="event.endTimeHiddenPositionsChanged = true">
-                      <template v-slot: prepend-item>
+                      <template v-slot:prepend-item>
                         <v-list-item
                             ripple
                             @click="[event.endTimePositionsChanged = true, toggleSelectAllPositions(event, 'endTimeHiddenWhiteListedPositions')]"
