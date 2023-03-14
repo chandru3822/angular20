@@ -270,7 +270,7 @@ public class ProjectProcessStepEventQuery {
                                     wlp.modified_by_id as "modifiedById",
                                     wlp.archived
                              FROM flow.white_listed_position wlp
-                             WHERE wlp.white_list_type_id = 13
+                             WHERE wlp.white_list_type_id = 14
                                and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "startTimeHiddenWhiteListedPositions",
            coalesce((
@@ -294,7 +294,7 @@ public class ProjectProcessStepEventQuery {
                                     wlp.modified_by_id as "modifiedById",
                                     wlp.archived
                              FROM flow.white_listed_position wlp
-                             WHERE wlp.white_list_type_id = 14
+                             WHERE wlp.white_list_type_id = 15
                                and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "endTimeHiddenWhiteListedPositions",
            coalesce((
@@ -318,7 +318,7 @@ public class ProjectProcessStepEventQuery {
                                     wlp.modified_by_id as "modifiedById",
                                     wlp.archived
                              FROM flow.white_listed_position wlp
-                             WHERE wlp.white_list_type_id = 15
+                             WHERE wlp.white_list_type_id = 16
                                and wlp.event_id = e.id
                                AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions",
           coalesce((

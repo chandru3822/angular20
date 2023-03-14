@@ -757,6 +757,8 @@ export default {
       }
     },
     isEventEditableByThisUserIgnoringReadOnly(){
+      //can the user edit the field if the readonly setting is false
+      // if events admin/manager then they can edit any event fields regardless of event/process step status
       return this.userIsAdmin || this.userCanManage || (this.userCanEdit && this.selectedEvent.eventStatusTypeId === 1 && this.selectedEvent.processStepStatusTypeId === 1)
     },
     getIsEventReadonly() {
@@ -766,23 +768,21 @@ export default {
         )
     },
     getFieldReadOnly: function (field) {
-      // if events admin then they can edit any event fields, otherwise idk???
-      // if not readonly and the user can manage then ignore event status check
       if (null != field) {
+        //full Admin is never read only
+        // read only if either the field or the event is read only
         return (!this.$store.getters.isFullAdmin && getEventCustomFieldReadOnly(this.$store, field)) || this.isEventReadonly
       }
       return false
     },
     getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
+      //full Admin is never read only
+      // read only if either the field or the event is read only
       return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)) || this.isEventReadonly
 
     },
     getDefaultFieldHidden: function (wlp, hiddenFieldValue) {
-      let hidden = getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue)
-      // if events admin then they can edit any event fields, otherwise idk???
-      // if not readonly and the user can manage then ignore event status check
-      return ((!this.userIsAdmin && !this.userCanManage && !hidden) && (this?.selectedEvent?.eventStatusTypeId !== 1 || this?.selectedEvent?.processStepStatusTypeId !== 1))
-        || hidden
+      return getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue)
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
