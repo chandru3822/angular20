@@ -346,7 +346,7 @@ export default {
   methods: {
     async getSmartlist () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}`)
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}`)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
       } catch (e) {

@@ -78,6 +78,58 @@ public class SmartlistService {
     return sameCompany && isOwnerOrAdmin;
   }
 
+  private boolean isSharedWithCurrentUser(@NotNull Smartlist smartlist) {
+    if (smartlist.getAccessControl().isEmpty()) {
+      return false;
+    }
+
+    User user = securityService.getCurrentUser();
+
+    List<Long> userPositionIds = user.getUserPositions().stream().map(UserPosition::getId).toList();
+
+    var hasUserAccess = smartlist.getAccessControl().stream().anyMatch(a -> {
+      if (a.getUserPositionId() == null) {
+        return false;
+      }
+
+      return userPositionIds.contains(a.getUserPositionId());
+    });
+
+    if (!hasUserAccess) {
+      //do org stuff
+    }
+
+    return hasUserAccess;
+  }
+
+  public Smartlist getById(Long id) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
+    Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
+                                  .orElse(null);
+
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Smartlist not found", new NotFoundException("Smartlist not found"));
+    }
+
+    //grant access to smartlist if user is owner, admin, or smartlist is public
+    if (!isOwnerOrAdmin(smartlist) && !smartlist.isPublic() && !isSharedWithCurrentUser(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    return smartlist;
+  }
+
+  public Smartlist getById(Long id, boolean includeAccessControl) {
+    var smartlist = getById(id);
+
+    if (includeAccessControl) {
+      smartlist.setAccessControl(getAccessById(id));
+    }
+
+    return smartlist;
+  }
+
   public void updatePublicStatus(Long smartlistId, boolean isPublic) {
     var smartlist = getById(smartlistId);
 
@@ -125,7 +177,8 @@ public class SmartlistService {
     ));
 
     //remove previous access of new owner
-    sqlCache.updateBySql(SmartlistQuery.deleteAccess, Map.of("id", currentAccess.getId(), "userId", user.getId()));
+    Map<String, Object> deleteParams = Map.of("id", currentAccess.getId(), "userId", user.getId(), "smartlistId", smartlistId);
+    sqlCache.updateBySql(SmartlistQuery.deleteAccess, deleteParams);
 
     //give old owner edit access
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
@@ -146,34 +199,6 @@ public class SmartlistService {
       e.printStackTrace();
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
     }
-  }
-
-  public Smartlist getById(Long id) {
-    User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
-    Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
-                                  .orElse(null);
-
-    if (smartlist == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Smartlist not found", new NotFoundException("Smartlist not found"));
-    }
-
-    //grant access to smartlist if user is owner, admin, or smartlist is public
-    if (!isOwnerOrAdmin(smartlist) && !smartlist.isPublic()) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
-    }
-
-    return smartlist;
-  }
-
-  public Smartlist getById(Long id, boolean includeAccessControl) {
-    var smartlist = getById(id);
-
-    if (includeAccessControl) {
-      smartlist.setAccessControl(getAccessById(id));
-    }
-
-    return smartlist;
   }
 
   public List<SmartlistAccessControl> getAvailableAccess() {
@@ -226,13 +251,34 @@ public class SmartlistService {
     }
 
     var params = access.stream().map(i -> Map.of(
-                                            "smartlistId", smartlistId,
-                                            "id", i.getId(),
-                                            "accessControlId", i.getAccessControlId(),
-                                            "userId", user.getId()
-                                          )).toList();
+      "smartlistId", smartlistId,
+      "id", i.getId(),
+      "accessControlId", i.getAccessControlId(),
+      "userId", user.getId()
+    )).toList();
 
     sqlCache.updateBatchBySql(SmartlistQuery.updateAccess, params);
+  }
+
+  public void deleteAccess(Long smartlistId, List<SmartlistAccessControl> access) {
+    User user = securityService.getCurrentUser();
+    Smartlist smartlist = getById(smartlistId);
+
+    if (!isOwnerOrAdmin(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    var params = access.stream().map(i -> Map.of(
+      "id", i.getId(),
+      "smartlistId", smartlistId,
+      "userId", user.getId()
+    )).toList();
+
+    try {
+      sqlCache.updateBatchBySql(SmartlistQuery.deleteAccess, params);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), new RuntimeException("Error when removing access"));
+    }
   }
 
   public void delete(Long smartlistId) {

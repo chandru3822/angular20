@@ -23,6 +23,19 @@ public class SmartlistController {
 
   private final SmartlistService smartlistService;
 
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADMIN')")
+  @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Smartlist> getSmartlistById(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getById(smartlistId), HttpStatus.OK);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_DELETE', 'SMARTLIST_ADMIN')")
+  @DeleteMapping(value = "/{smartlistId}")
+  public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
+    smartlistService.delete(smartlistId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
   @GetMapping(value = "/mine", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Smartlist>> getMySmartlists() {
     return new ResponseEntity<>(smartlistService.getMine(), HttpStatus.OK);
@@ -58,13 +71,6 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.copy(smartlistId), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_DELETE', 'SMARTLIST_ADMIN')")
-  @DeleteMapping(value = "/{smartlistId}")
-  public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
-    smartlistService.delete(smartlistId);
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-  }
-
   @GetMapping(value = "/sharables", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistAccessControl>> getSharableEntities() {
     return new ResponseEntity<>(smartlistService.getSharableEntities(), HttpStatus.OK);
@@ -95,8 +101,18 @@ public class SmartlistController {
       smartlistService.updateAccess(smartlistId, smartlistAccess.getUpdatedAccess());
     }
 
+    if (smartlistAccess.getDeletedAccess() != null && !smartlistAccess.getDeletedAccess().isEmpty()) {
+      smartlistService.deleteAccess(smartlistId, smartlistAccess.getDeletedAccess());
+    }
+
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+//  @DeleteMapping(value = "{smartlistId}/access/{smartlistAccessControlId}")
+//  public ResponseEntity<Void> deleteSmartlistAccess(@PathVariable Long smartlistId, @PathVariable Long smartlistAccessControlId) {
+//    smartlistService.deleteAccess(smartlistId, smartlistAccessControlId);
+//    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//  }
 
   @PutMapping(value = "/{smartlistId}/owner")
   public ResponseEntity<Void> updateSmartlistOwner(@PathVariable Long smartlistId, @RequestBody SmartlistAccessControl newOwner) {

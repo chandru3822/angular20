@@ -270,7 +270,31 @@ public class SmartlistQuery {
               where pswqt.work_queue_type_id = s.work_queue_type_id AND
                     pswqt.archived is not true
               order by wqt.work_queue_type
-      ) eventWorkQueueTypes), '[]') AS "eventWorkQueueTypes"
+      ) eventWorkQueueTypes), '[]') AS "eventWorkQueueTypes",
+      coalesce((
+       select array_to_json(array_agg(row_to_json(accessControl)))
+       from (
+         select
+               sac.id,
+               sac.smartlist_id as "smartlistId",
+               sac.org_id as "orgId",
+               sac.user_position_id as "userPositionId",
+               sac.user_position_id is not null as "isUser",
+               sac.org_id is not null as "isOrg",
+               sac.access_control_id as "accessControlId",
+               ac.access_level as "accessLevel",
+               case when sac.org_id is not null then o.org_name else u.first_name || ' ' || u.last_name end as "name",
+               p.position
+             from flow.smartlist_access_control sac
+             inner join flow.access_control ac on sac.access_control_id = ac.id
+             left join flow.user_position up on sac.user_position_id = up.id
+             left join flow.user u on up.user_id = u.id
+             left join flow.position p on up.position_id = p.id
+             left join flow.org o on sac.org_id = o.id
+             where
+               sac.smartlist_id = s.id and
+               sac.archived is false
+      ) accessControl), '[]') AS "accessControl"
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
@@ -325,24 +349,26 @@ public class SmartlistQuery {
   public final static String updateAccess = """
     --using smartlistId for security so users can't arbitrarily update access controls for other smartlists
     update flow.smartlist_access_control
-      set
-        access_control_id = :accessControlId,
-        modified_by_id = :userId,
-        date_modified = now()
-      where
-        id = :id and
-        smartlist_id = :smartlistId
+    set
+      access_control_id = :accessControlId,
+      modified_by_id = :userId,
+      date_modified = now()
+    where
+      id = :id and
+      smartlist_id = :smartlistId
   """;
 
   //language=PostgreSQL
   public final static String deleteAccess = """
+    --using smartlistId for security so users can't arbitrarily update access controls for other smartlists
     update flow.smartlist_access_control
     set
       archived = true,
       modified_by_id = :userId,
       date_modified = now()
     where
-      id = :id
+      id = :id and
+      smartlist_id = :smartlistId
   """;
 
   //language=PostgreSQL

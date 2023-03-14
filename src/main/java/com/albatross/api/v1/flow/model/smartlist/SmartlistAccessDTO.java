@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 //Ugly data holder class to know if smartlist's public status should be updated,
-//new access should be added, and/or existing access should be updated
+//new access should be added, and/or existing access should be updated/deleted
 @Data
 public class SmartlistAccessDTO {
 
@@ -16,4 +16,6 @@ public class SmartlistAccessDTO {
   private SmartlistAccessControl newAccess;
 
   private List<SmartlistAccessControl> updatedAccess;
+
+  private List<SmartlistAccessControl> deletedAccess;
 }
