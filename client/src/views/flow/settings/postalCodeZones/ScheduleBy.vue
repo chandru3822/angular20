@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addScheduler = !addScheduler, selectedScheduler = {}, getSchedulers()]">
               <v-icon v-if="addScheduler">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -43,7 +43,7 @@
           ></v-text-field>
         </v-card-title>
         <v-divider></v-divider>
-        <v-data-table
+        <v-data-table id="round-robin-schedule-by-table"
           :headers="schedulerHeaders"
           :items="filterSchedulers()"
           :fixed-header="true"
@@ -51,7 +51,7 @@
           disable-sort
           :search="schedulerSearch"
           :loading="schedulersLoading"
-          class="elevation-0"
+          class="elevation-0 table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No available users</span>
@@ -62,10 +62,10 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.fullName}}</td>
-              <td>
-                <v-btn v-if="userCanEdit" text color="primary" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
+            <tr>
+              <td class="text-left name-col">{{item.fullName}}</td>
+              <td :class="{'text-right': $vuetify.breakpoint.smAndDown}">
+                <v-btn v-if="userCanEdit" icon color="primary" :large="$vuetify.breakpoint.smAndDown" @click="userToDelete = item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -102,7 +102,7 @@
         addScheduler: false,
         schedulerSearch: '',
         schedulerHeaders: [
-          {text: 'Name', value: 'fullName', show: true},
+          {text: 'Name', value: 'fullName', show: true },
           {text: '', value: 'icons', show: true},
         ],
         userToDelete: null
@@ -184,10 +184,44 @@
     }
   }
 </script>
-
+<style scoped lang="scss">
+@media (max-width: 770px) {
+  .name-col {
+    width: 100%;
+  }
+}
+</style>
 <style lang="scss">
   #schedule-by-container .v-data-table__wrapper {
     max-height: calc(100vh - 410px);
     min-height: 300px;
+  }
+  @media (max-width: 770px) {
+    #round-robin-schedule-by-table {
+      padding-bottom: 12px;
+      div.v-data-footer {
+        display: inline-block;
+        width: 100%;
+        padding-bottom: 12px;
+
+        div.v-data-footer__select {
+          justify-content: center;
+        }
+
+        div.v-data-footer__pagination {
+
+        }
+
+        div.v-data-footer__icons-before {
+          display: inline;
+          margin-left: calc(50% - 36px);
+        }
+
+        div.v-data-footer__icons-after {
+          display: inline;
+        }
+
+      }
+    }
   }
 </style>

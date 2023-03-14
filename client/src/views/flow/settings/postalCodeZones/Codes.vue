@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -40,7 +40,7 @@
           ></v-text-field>
         </v-card-title>
         <v-divider></v-divider>
-        <v-data-table
+        <v-data-table id="round-robin-codes-table"
           :headers="codeHeaders"
           :items="filterPostalCodes()"
           :fixed-header="true"
@@ -48,7 +48,7 @@
           disable-sort
           :search="codeSearch"
           :loading="dataLoading"
-          class="elevation-0"
+          class="elevation-0 table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No available postal codes</span>
@@ -59,10 +59,10 @@
           </template>
 
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.postalCode}}</td>
-              <td>
-                <v-btn v-if="userCanEdit" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+            <tr>
+              <td class="text-left code-col">{{item.postalCode}}</td>
+              <td :class="{'text-right': $vuetify.breakpoint.smAndDown}">
+                <v-btn v-if="userCanEdit" icon color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -183,12 +183,47 @@
     }
   }
 </script>
-
+<style scoped lang="scss">
+@media (max-width: 770px) {
+  .code-col {
+    width: 100%;
+  }
+}
+</style>
 <style lang="scss">
   #codes-container .v-data-table__wrapper {
     max-height: calc(100vh - 410px);
     min-height: 300px;
   }
+  @media (max-width: 770px) {
+    #round-robin-codes-table {
+      padding-bottom: 12px;
+      div.v-data-footer {
+        display: inline-block;
+        width: 100%;
+        padding-bottom: 12px;
+
+        div.v-data-footer__select {
+          justify-content: center;
+        }
+
+        div.v-data-footer__pagination {
+
+        }
+
+        div.v-data-footer__icons-before {
+          display: inline;
+          margin-left: calc(50% - 36px);
+        }
+
+        div.v-data-footer__icons-after {
+          display: inline;
+        }
+
+      }
+    }
+  }
+
 </style>
 
 
