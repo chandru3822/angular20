@@ -111,7 +111,7 @@ public class WorkQueueTypeQuery {
 
   //language=PostgreSQL
   public final static String addSmartlist = """
-    insert into flow.smartlist (name, company_object_type_id, shared, owner_id, main_process_steps, project_details, work_queue_type_id, created_by_id, date_created, modified_by_id, date_modified)
+    insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, work_queue_type_id, created_by_id, date_created, modified_by_id, date_modified)
         values (:workQueueType,
                 (select id from flow.company_object_type cot where cot.company_id = :companyId and cot.object_type_id = :objectTypeId),
                 true, 99999999, true, false, :workQueueTypeId, :createdById, now(), :createdById, now())

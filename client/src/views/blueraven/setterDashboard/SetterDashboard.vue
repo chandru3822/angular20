@@ -107,35 +107,6 @@
       <!-- RANKING TABLES LEFT COLUMN START -->
       <div id="setter-ranking-tables-left-col">
         <!-- TOP OFFICES -->
-        <div id="setter-ranking-top-offices-table" class="ranking-table">
-          <div v-if="topOfficesLoading" class="section-spinner">
-            <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-          </div>
-          <div class="ranking-table-header">
-            <v-icon class="ranking-table-icon mr-2">mdi-flag-variant</v-icon>
-            <span>Top Offices</span>
-          </div>
-          <table v-if="offices.length > 0">
-            <tr>
-              <th class="center-text">Rank</th>
-              <th class="left-text">Office</th>
-              <th class="center-text">
-                Total Pitched Appointments<br/>
-                {{ getTimeIntervalText() }}
-              </th>
-            </tr>
-            <tr v-for="office in offices"
-                :key="office.org_id"
-                :class="{'highlight-user-row': office.org_id === userOfficeId}">
-              <td class="center-text">{{ office.rank }}</td>
-              <td class="left-text">{{ office.name }}</td>
-              <td class="center-text">{{ office.pitches }}</td>
-            </tr>
-          </table>
-          <div v-if="offices.length === 0" class="ranking-tables-no-data">
-            Data is not yet available for the selected time period. Try selecting another time period, or check back again at a later date.
-          </div>
-        </div>
 
         <!-- TOP REPS -->
         <div class="ranking-table">
@@ -195,8 +166,8 @@
                 Total Appointments<br/>
                 {{ getTimeIntervalText() }}
               </th>
-              <th class="center-text">Pitches</th>
-              <th class="center-text">Pitch %</th>
+              <th class="center-text">Total Pitched Appointments <br/>
+                {{ getTimeIntervalText() }}</th>
             </tr>
             <tr v-for="office in officeRankingData" :key="office.org_id"
                 :class="{'highlight-user-row': office.org_id === userOfficeId}">
@@ -204,7 +175,6 @@
               <td class="left-text">{{ office.org }}</td>
               <td class="center-text">{{ office.total_appointments }}</td>
               <td class="center-text">{{ office.total_pitches }}</td>
-              <td class="center-text">{{ office.pitch_percentage }}%</td>
             </tr>
           </table>
           <div v-if="officeRankingData.length === 0"
@@ -415,7 +385,7 @@
       async getTopReps () {
         try {
           this.topRepsLoading = true
-          const params = {limit: 5, days: this.timeInterval, interval: this.timeIntervalString}
+          const params = {limit: 15, days: this.timeInterval, interval: this.timeIntervalString}
           const {data} = await getRequestWithParams('/setterDashboard/topReps', {params}, 'blueraven')
           this.reps = data
 
