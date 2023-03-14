@@ -334,14 +334,6 @@ BEGIN
   set TimeZone = 'UTC';
   drop table if exists excluded_appointments;
 
-  insert into flow.company_function_log(function_name, parameters, run_by_id)
-  values ('Get Availability Time Slots', 'p_project_id: ' || p_project_id ||
-                                         ' p_start_time: '|| p_start_time ||
-                                         ' p_end_time: '|| p_end_time ||
-                                         ' p_available_date: '|| p_available_date ||
-                                         ' p_remote: '|| p_remote ||
-                                         ' p_run_by_id: '|| p_run_by_id,
-        p_run_by_id);
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE

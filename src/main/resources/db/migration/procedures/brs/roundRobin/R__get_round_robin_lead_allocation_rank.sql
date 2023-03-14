@@ -237,11 +237,7 @@ BEGIN
                                                                                                                             foo2.score else
                                                                                                                                 foo2.score *
                                                                                                                                 (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric;
-insert into flow.company_function_log(function_name, parameters, run_by_id)
-values ('Get Round Robin Lead Allocation Rank', 'p_postal_code_zone_id: ' || p_postal_code_zone_id ||
-                                                ' p_time_interval: '|| p_time_interval ||
-                                                ' p_run_by_id: '|| p_run_by_id ,
-        p_run_by_id);
+
 
 END
 $BODY$

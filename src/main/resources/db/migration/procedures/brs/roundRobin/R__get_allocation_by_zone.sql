@@ -55,11 +55,6 @@ BEGIN
                  inner join flow."user" u on u.id = t.user_id
         order by t.total_lead_allocation desc, p.prescribed_allocation desc, t.manual_allocation desc;
 
-        insert into flow.company_function_log(function_name, parameters, run_by_id)
-        values ('Get Allocation by Zone', 'p_postal_code_zone_id: ' || p_postal_code_zone_id ||
-                                          ' p_run_by_id: ' || p_run_by_id,
-                p_run_by_id);
-
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE
