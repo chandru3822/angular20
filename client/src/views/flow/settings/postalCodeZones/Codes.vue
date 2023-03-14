@@ -62,7 +62,7 @@
             <tr>
               <td class="text-left code-col">{{item.postalCode}}</td>
               <td :class="{'text-right': $vuetify.breakpoint.smAndDown}">
-                <v-btn v-if="userCanEdit" icon color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                <v-btn v-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
