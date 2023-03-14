@@ -48,14 +48,6 @@ BEGIN
                       order by owner_name, pd.project_created_date
                     ) as funnel_rows;
 
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Closer Funnel Appointments Created Pipeline Drilldown Report',
-                'p_start_date: ' || p_start_date ||
-                ' p_end_date: ' || p_end_date ||
-                ' p_funnel_id: ' || p_funnel_id ||
-                ' p_source_ids: ' || p_source_ids::text ||
-                ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
 
 END
 $function$

@@ -57,12 +57,5 @@ BEGIN
       limit p_limit
     ) as sub_rows;
 
-insert into flow.company_function_log(function_name, parameters, run_by_id)
-values ('Get Top Setter Reps', 'p_limit: ' || p_limit ||
-                               ' p_time_interval: ' || p_time_interval ||
-                               ' p_days: ' || p_days ||
-                               ' p_run_by_id: ' || p_run_by_id,
-        p_run_by_id);
-
 END
 $function$

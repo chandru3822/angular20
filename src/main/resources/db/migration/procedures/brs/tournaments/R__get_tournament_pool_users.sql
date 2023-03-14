@@ -54,11 +54,6 @@ BEGIN
                                --group by 1, 2, 3, t.tournament_formula_id, tp.start_date, tp.end_date
                              order by 4 desc nulls last, 1) as pools), '[]') as pools;
 
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get Tournament Pool Users', 'p_tournament_id: ' || p_tournament_id ||
-                                         ' p_tournament_pool_type_id: '|| p_tournament_pool_type_id ||
-                                         ' p_run_by_id: '|| p_run_by_id,
-            p_run_by_id);
 
 END
 $BODY$

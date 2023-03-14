@@ -64,7 +64,8 @@ BEGIN
                     then ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
                     else ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                     end
-                and ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days::integer and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days::integer else (now() at time zone 'US/Mountain')::date end)
+                    --removed per carlin request 3/14/23
+--                 and ((ppse.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() at time zone 'US/Mountain')::date) - p_days::integer and (case when p_time_interval = 'Yesterday' then ((now() at time zone 'US/Mountain')::date) - p_days::integer else (now() at time zone 'US/Mountain')::date end)
                 and (((case when pd.first_appointment_pitched is not null
                                 then pd.first_appointment_pitched
                             when pd.first_appointment_pitched is null
@@ -87,12 +88,6 @@ BEGIN
         order by total_pitches desc, org_id
     ) as sub_rows;
 
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get Setter Office Rankings', 'p_limit: ' || p_limit ||
-                                          ' p_time_interval: ' || p_time_interval ||
-                                          ' p_days: ' || p_days ||
-                                          ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
 
 END
 $BODY$
