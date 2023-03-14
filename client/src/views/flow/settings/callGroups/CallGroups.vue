@@ -3,7 +3,20 @@
     <v-row>
       <v-col>
         <v-app-bar flat class="elevation-1 call-group-bar">
-          <v-toolbar-title class="pt-2" style="margin-top: 45px">Call Groups
+          <v-toolbar-title class="pt-2 title-large">Call Groups
+
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editGroup = !editGroup">
+              <v-icon v-if="editGroup">mdi-close</v-icon>
+              <v-icon v-else>edit</v-icon>
+            </v-btn>
+            <v-btn text color="primary" @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
+              {{'Add New'}}
+            </v-btn>
+          </v-toolbar-items>
+          <template v-slot:extension>
             <div v-if="editGroup">
               <v-text-field text class="d-inline-block mt-4 edit-text"
                             label="Contacts per Phone Number"
@@ -17,25 +30,16 @@
                             tabindex=1
                             v-model="daysPerPeriod">
               </v-text-field>
-              <v-btn :disabled="!maxCallCount || !daysPerPeriod" text color="primary" @click="saveGroupInfo()">
+              <v-btn :disabled="!maxCallCount || !daysPerPeriod" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="saveGroupInfo()">
                 <v-icon>save</v-icon>
               </v-btn>
             </div>
-            <div v-else>
+            <div v-else class="title-medium">
               <b>Contacts per Phone Number:</b> {{maxCallCount}}
               <br/>
               <b>Time Period:</b> {{daysPerPeriod}} days
             </div>
-          </v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanEdit" @click="editGroup = !editGroup">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" @click="[addNew = !addNew, newCallGroup = {}]" v-if="userCanAdd">
-              {{'Add New'}}
-            </v-btn>
-          </v-toolbar-items>
+          </template>
         </v-app-bar>
         <v-container>
           <v-card color="transparent" flat v-if="addNew">
@@ -59,35 +63,31 @@
               ></v-text-field>
             </v-card-title>
             <v-data-table
-              :headers="headers"
-              :items="filterCallGroups()"
-              :fixed-header="true"
-              :items-per-page="-1"
-              disable-sort
-              :loading="dataLoading"
-              hide-default-footer
-              class="elevation-1"
+                :headers="headers"
+                :items="filterCallGroups()"
+                :fixed-header="true"
+                :items-per-page="-1"
+                disable-sort
+                :loading="dataLoading"
+                hide-default-footer
+                class="elevation-1"
             >
-              <template #item="{ item, index }">
-                <tr>
-                  <td class="text-left clickable" @click="goToCallGroup(item.id)">
-                    <img v-if="item.maxCallCountHit"
-                         name="userImg" src="../../../../assets/blueraven/alert_icon.jpg" class="icon-height"
-                         title="All active phone numbers exceed max call count">
-                    {{item.callGroupName}}
-                  </td>
-                  <td>{{item.postalCodesCount}}</td>
-                  <td>{{item.activePhoneNumbersCount}}</td>
-                  <td>
-                    <v-select attach style="width: 100px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updateCallGroup(item)"></v-select>
-                  </td>
-                  <td class="text-right">
-                    <v-btn small text color="primary" @click="goToCallGroup(item.id)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" small text color="primary" @click="callGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
-                  </td>
-                </tr>
+              <template #item.callGroupName="{ item }" class="text-left clickable" @click="goToCallGroup(item.id)">
+                <img v-if="item.maxCallCountHit"
+                     name="userImg" src="../../../../assets/blueraven/alert_icon.jpg" class="icon-height"
+                     title="All active phone numbers exceed max call count">
+                {{item.callGroupName}}
+              </template>
+              <template #item.activePostalCodes="{item}">{{item.postalCodesCount}}</template>
+              <template #item.activePhoneNumbers="{item}">{{item.activePhoneNumbersCount}}</template>
+              <template #item.active="{item}">
+                <v-select attach style="width: 100px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updateCallGroup(item)"></v-select>
+              </template>
+              <template #item.icons="{item}" class="text-right">
+                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToCallGroup(item.id)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn v-if="userCanDelete" small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="callGroupToDelete=item"><v-icon>delete</v-icon></v-btn>
               </template>
             </v-data-table>
           </v-card>

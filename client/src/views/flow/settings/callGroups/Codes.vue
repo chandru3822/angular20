@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -60,9 +60,9 @@
 
           <template #item="{ item, index }">
             <tr>
-              <td class="text-left">{{item.postalCode}}</td>
+              <td class="text-left code-col">{{item.postalCode}}</td>
               <td class="text-right">
-                <v-btn small text color="primary" v-if="userCanDelete" @click="postalCodeToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="postalCodeToDelete=item"><v-icon>delete</v-icon></v-btn>
               </td>
             </tr>
           </template>
@@ -175,7 +175,13 @@
     }
   }
 </script>
-
+<style scoped lang="scss">
+@media (max-width: 770px) {
+  .code-col {
+    width: 100%;
+  }
+}
+</style>
 <style lang="scss">
   #codes-container .v-data-table__wrapper {
     max-height: calc(100vh - 410px);
