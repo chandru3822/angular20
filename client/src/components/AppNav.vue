@@ -44,8 +44,8 @@
             <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
             <v-icon v-else>mdi-office-building</v-icon>
           </v-btn>
-          <v-spacer v-if="constants.IS_MOBILE"></v-spacer>
-          <v-menu v-if="constants.IS_MOBILE" data-app left
+          <v-spacer v-if="isMobile"></v-spacer>
+          <v-menu v-if="isMobile" data-app left
                   offset-y
                   :max-height="`calc(100vh - 20px)`"
                   v-model="tabMenuOpen"
@@ -88,11 +88,11 @@
               </v-badge>
             </v-tab>
           </v-tabs>
-          <v-spacer v-if="!constants.IS_MOBILE" class="ml-5"></v-spacer>
+          <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items v-if="companyTools.length > 0">
             <CompanyTools :company-tools="companyTools" />
           </v-toolbar-items>
-          <v-spacer v-if="!constants.IS_MOBILE" class="ml-5"></v-spacer>
+          <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items>
             <AccountMenu :showImage="true"></AccountMenu>
           </v-toolbar-items>
@@ -201,7 +201,10 @@ export default {
     },
     smsNotification() {
       return this.$store.getters.getNotificationsByTopic('sms_reply')
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   methods: {
     async changeContext(companyId) {

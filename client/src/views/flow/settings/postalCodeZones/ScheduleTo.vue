@@ -51,7 +51,7 @@
           ></v-text-field>
         </v-card-title>
         <v-divider></v-divider>
-        <v-data-table
+        <v-data-table id="schedule-to-table"
           :headers="filterHeaders"
           :items="filterUsers()"
           :fixed-header="true"
@@ -156,9 +156,10 @@
                 <div v-if="header.value === 'icons'">
                   <v-btn @click="saveAllocationChanges"
                          color="primary"
-                         :class="{'white--text': userCanEdit && totalManualAllocation <= 100 && valuesUpdated}"
+                         :icon="isMobile"
                          :disabled="!userCanEdit || totalManualAllocation > 100 || !valuesUpdated">
-                    Save Changes
+                    <v-icon v-if="isMobile">save</v-icon>
+                    <span v-else>Save Changes</span>
                   </v-btn>
                 </div>
 
@@ -235,7 +236,10 @@ export default {
     },
     userToDeleteName(){
       return this.userToDelete ? this.userToDelete.fullName : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   methods: {
     getAllocationValue(value) {
@@ -409,6 +413,39 @@ export default {
 #schedule-to-container .v-data-table__wrapper {
   height: calc(100vh - 510px);
   min-height: 400px;
+}
+@media (max-width: 770px) {
+  #schedule-to-table {
+    padding-bottom: 12px;
+
+    div.v-data-table__wrapper {
+      min-height: unset;
+    }
+
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
 }
 </style>
 
