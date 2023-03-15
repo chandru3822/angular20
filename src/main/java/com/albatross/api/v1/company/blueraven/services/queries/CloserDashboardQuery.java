@@ -144,7 +144,7 @@ public class CloserDashboardQuery {
   public final static String getCloserResiduals = """
       select row_to_json(rows)
       from (
-             select * from brs.get_closer_residual_details(2433935::bigint)
+             select * from brs.get_closer_residual_details(:userId::bigint)
              ) as rows
     """;
 
