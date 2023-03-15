@@ -59,11 +59,14 @@
           </v-col>
         </v-row>
 
-        <v-list class="bordered rounded-lg">
+        <v-list
+          v-if="currentAccess.length > 0"
+          class="bordered rounded-lg"
+        >
             <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)">
               <v-row>
                 <v-col
-                  cols="7"
+                  cols="6"
                   align-self="center"
                   class="py-0"
                 >
@@ -90,9 +93,6 @@
                       #append-item
                     >
                       <v-divider/>
-                      <v-list-item @click="[accessLevel.deleted = true, accessLevel.updated = false]">
-                        Remove Access
-                      </v-list-item>
                       <v-list-item
                         v-if="accessLevel.isUser"
                         @click="confirmOwnershipChange(accessLevel)"
@@ -101,6 +101,14 @@
                       </v-list-item>
                     </template>
                   </v-select>
+                </v-col>
+
+                <v-col
+                  cols="1"
+                  align-self="center"
+                  class="pl-0"
+                >
+                  <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
                 </v-col>
               </v-row>
             </v-list-item>
@@ -312,6 +320,17 @@ const updateOwner = async () => {
     handleHidingGlobalLoader(vueInstance, true)
     store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
+}
+
+const markDeleted = (accessLevel) => {
+  //find index in the non-filtered array
+  const index = currentAccess.value.findIndex(i => i.id === accessLevel.id)
+
+  currentAccess.value.splice(index, 1, {
+    ...currentAccess.value[index],
+    updated: false,
+    deleted: true
+  })
 }
 
 getSharables()
