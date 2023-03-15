@@ -41,8 +41,8 @@
             <td class="text-left">{{item.substantialCompletionDate}}</td>
             <td class="text-left">{{item.cancelledDate}}</td>
             <td class="text-left">{{item.onHoldDate}}</td>
-            <td class="text-left">{{item.totalCashDownPayment}}</td>
-            <td class="text-left">{{item.firstCashPaymentAmount}}</td>
+            <td class="text-left">{{item.totalCashDownPayment | currency('$', 0)}}</td>
+            <td class="text-left">{{item.firstCashPaymentAmount | currency('$', 0)}}</td>
           </tr>
         </template>
       </v-data-table>
