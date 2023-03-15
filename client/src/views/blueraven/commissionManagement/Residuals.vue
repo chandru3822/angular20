@@ -621,7 +621,7 @@
                 p.lastName + '",' +
                 p.employeeId + ',"' +
                 p.regionName + '",' +
-                p.officeName + ',' +
+                "\"" + p.officeName + '\",' +
                 p.officeState + ',' +
                 p.userPositionName + ',"' +
                 p.userStatusType + '",' +

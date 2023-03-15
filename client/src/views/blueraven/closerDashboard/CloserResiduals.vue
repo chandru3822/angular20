@@ -87,7 +87,7 @@
       <v-card-title>
         Monthly Residual Quota - Qualified FDC's
         <v-spacer></v-spacer>
-        Count: {{residualData.qualified_fdc.length}}
+        Count: {{ residualData.qualified_fdc?.length || 0 }}
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -107,7 +107,7 @@
       <v-card-title>
         Current Clawbacks
         <v-spacer></v-spacer>
-        Count: {{residualData.current_clawbacks.length}}
+        Count: {{residualData.current_clawbacks?.length || 0}}
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -127,7 +127,7 @@
       <v-card-title>
         FDA in month - Not Qualifying
         <v-spacer></v-spacer>
-        Count: {{residualData.fda_in_month_not_qualifying.length}}
+        Count: {{residualData.fda_in_month_not_qualifying?.length || 0}}
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -148,7 +148,7 @@
       <v-card-title>
         Total Qualifying FDC's to date
         <v-spacer></v-spacer>
-        Count: {{residualData.total_qualifying_fdc_to_date.length}}
+        Count: {{residualData.total_qualifying_fdc_to_date?.length || 0}}
       </v-card-title>
       <v-card-text>
         <v-data-table
