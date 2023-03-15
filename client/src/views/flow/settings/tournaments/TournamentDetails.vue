@@ -86,15 +86,15 @@
             <!--            tournament image -->
             <v-divider></v-divider>
             <v-toolbar flat class="app-toolbar">
-              <v-toolbar-title class="app-title">Tournament Background Image</v-toolbar-title>
+              <v-toolbar-title class="title-large text-wrap">Tournament Background Image</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn text color="primary" v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
+                <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !savingImage && !tournament.backgroundAttachmentPresignedUrl"
                        @click="addImage = !addImage">
                   <v-icon v-if="addImage">remove</v-icon>
                   <v-icon v-else>add</v-icon>
                 </v-btn>
-                <v-btn v-else-if="userCanEdit" text color="primary" class="mr-2"
+                <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" class="mr-2"
                        @click="deleteAttachment(tournament.backgroundAttachmentId)">
                   <v-icon>delete</v-icon>
                 </v-btn>
@@ -317,6 +317,9 @@
     margin-top: 15px;
     max-width: 400px;
     height: auto;
+    @media (max-width: 500px){
+      max-width: 100%;
+    }
   }
 
 </style>

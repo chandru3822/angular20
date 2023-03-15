@@ -3,9 +3,9 @@
     <v-row>
       <v-col cols="12" class="pt-0" v-if="!poolLoading">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">{{pool.customName || pool.poolType + ' Pool'}}</v-toolbar-title>
+          <v-toolbar-title class="title-large">{{pool.customName || pool.poolType + ' Pool'}}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="editPool = !editPool">
+          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="editPool = !editPool">
             <v-icon v-if="!editPool">edit</v-icon>
             <v-icon v-else>close</v-icon>
           </v-btn>
@@ -50,15 +50,15 @@
           <v-divider class="mt-2"></v-divider>
 
           <v-toolbar flat class="app-toolbar">
-            <v-toolbar-title class="app-title">Winner Background Image</v-toolbar-title>
+            <v-toolbar-title class="title-large text-wrap">Winner Background Image</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="primary" v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
+              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !savingImage && !pool.backgroundAttachmentPresignedUrl"
                      @click="addImage = !addImage">
                 <v-icon v-if="addImage">remove</v-icon>
                 <v-icon v-else>add</v-icon>
               </v-btn>
-              <v-btn v-else-if="userCanEdit" text color="primary" @click="deleteWinnerBackgroundDialog = true"><v-icon>delete</v-icon></v-btn>
+              <v-btn v-else-if="userCanEdit" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="deleteWinnerBackgroundDialog = true"><v-icon>delete</v-icon></v-btn>
               <ConfirmationDialog :open-dialog="deleteWinnerBackgroundDialog" @confirm="deleteAttachment(pool.backgroundAttachmentId)" @close-dialog="deleteWinnerBackgroundDialog = false">Are you sure you want to delete the Winner Background Image?</ConfirmationDialog>
             </v-toolbar-items>
           </v-toolbar>
@@ -88,9 +88,9 @@
 
         <div v-if="poolTypeId === 1" class="mb-2">
           <v-toolbar flat class="wqt-header-bar">
-            <v-toolbar-title class="app-title">Positions</v-toolbar-title>
+            <v-toolbar-title class="title-large">Positions</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="addPosition = !addPosition">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addPosition = !addPosition">
               <v-icon>add</v-icon>
             </v-btn>
           </v-toolbar>
@@ -147,9 +147,9 @@
 
         <div id="pool-container">
           <v-toolbar flat class="wqt-header-bar">
-            <v-toolbar-title class="app-title">Users</v-toolbar-title>
+            <v-toolbar-title class="title-large">Users</v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-btn text color="primary" @click="addUser = !addUser">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addUser = !addUser">
               <v-icon>add</v-icon>
             </v-btn>
           </v-toolbar>
@@ -179,7 +179,7 @@
             single-line
             hide-details
           ></v-text-field>
-          <v-data-table
+          <v-data-table id="tournament-pool-table"
             :headers="userHeaders"
             :items="filterUsers()"
             :fixed-header="true"
@@ -200,7 +200,7 @@
               <tr class="text-left" :class="{'shaded-row': pool.users.indexOf(item) % 2}">
                 <td class="text-left">{{ item.fullName }}</td>
                 <td class="text-right">
-                  <v-btn text color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
+                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="userToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </td>
               </tr>
             </template>
@@ -476,6 +476,38 @@
     max-height: calc(100vh - 650px);
     min-height: 300px;
   }
+
+  @media (max-width: 770px) {
+    #tournament-pool-table {
+      padding-bottom: 12px;
+      div.v-data-footer {
+        display: inline-block;
+        width: 100%;
+        padding-bottom: 12px;
+
+        div.v-data-footer__select {
+          justify-content: center;
+        }
+
+        div.v-data-footer__pagination {
+
+        }
+
+        div.v-data-footer__icons-before {
+          display: inline;
+          margin-left: calc(50% - 36px);
+
+
+        }
+
+        div.v-data-footer__icons-after {
+          display: inline;
+        }
+
+      }
+    }
+  }
+
 </style>
 
 <style scoped lang="scss">
@@ -484,5 +516,8 @@
     margin-top: 15px;
     max-width: 400px;
     height: auto;
+    @media (max-width: 500px){
+      max-width: 100%;
+    }
   }
 </style>

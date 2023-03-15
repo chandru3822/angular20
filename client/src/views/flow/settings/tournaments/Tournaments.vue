@@ -70,31 +70,28 @@
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
-            <v-data-table
-              :headers="headers"
-              :items="filterTournaments()"
-              :fixed-header="true"
-              :items-per-page="100"
-              disable-sort
-              :loading="dataLoading"
-              class="elevation-1 round-robin-table"
+            <v-data-table id="tournaments-table"
+                :headers="headers"
+                :items="filterTournaments()"
+                :fixed-header="true"
+                :items-per-page="100"
+                disable-sort
+                :loading="dataLoading"
+                class="elevation-1 round-robin-table table-striped"
             >
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left clickable" @click="goToTournament(item.id)">{{item.tournamentName}}</td>
-                  <td class="text-left clickable" @click="goToTournament(item.id)">{{item.startDate | formatDate('date', 'M/D/YYYY')}}</td>
-                  <td class="text-left clickable" @click="goToTournament(item.id)">{{item.endDate | formatDate('date', 'M/D/YYYY')}}</td>
-                  <td class="text-left clickable" @click="goToTournament(item.id)">
-                    <input type="checkbox" v-model="item.active" readonly disabled>
-                  </td>
-                  <td class="text-right">
-                    <v-btn small text color="primary" @click="goToTournament(item.id)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="userCanDelete" small text color="primary" @click="tournamentToDelete=item"><v-icon>delete</v-icon></v-btn>
-                  </td>
-                </tr>
+              <template #item.tournamentName="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.tournamentName}}</template>
+              <template #item.startDate="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.startDate | formatDate('date', 'M/D/YYYY')}}</template>
+              <template #item.endDate="{item}" class="text-left clickable" @click="goToTournament(item.id)">{{item.endDate | formatDate('date', 'M/D/YYYY')}}</template>
+              <template #item.active="{item}" class="text-left clickable" @click="goToTournament(item.id)">
+                <input type="checkbox" v-model="item.active" readonly disabled>
               </template>
+              <template #item.icons="{item}" class="text-right">
+                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToTournament(item.id)">
+                  <v-icon>edit</v-icon>
+                </v-btn>
+                <v-btn v-if="userCanDelete" small text color="primary" @click="tournamentToDelete=item"><v-icon>delete</v-icon></v-btn>
+              </template>
+
             </v-data-table>
           </v-card>
           <ConfirmationDialog :open-dialog="!!tournamentToDelete" @confirm="[tournamentToDelete.archived = true, deleteTournament()]" @close-dialog="tournamentToDelete=null">
@@ -281,4 +278,34 @@
     max-height: calc(100vh - 250px);
     min-height: 300px;
   }
+
+  @media (max-width: 770px) {
+    #tournaments-table {
+      padding-bottom: 12px;
+      div.v-data-footer {
+        display: inline-block;
+        width: 100%;
+        padding-bottom: 12px;
+
+        div.v-data-footer__select {
+          justify-content: center;
+        }
+
+        div.v-data-footer__pagination {
+
+        }
+
+        div.v-data-footer__icons-before {
+          display: inline;
+          margin-left: calc(50% - 36px);
+        }
+
+        div.v-data-footer__icons-after {
+          display: inline;
+        }
+
+      }
+    }
+  }
+
 </style>
