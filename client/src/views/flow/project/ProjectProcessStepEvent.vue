@@ -108,7 +108,7 @@
         <v-row>
           <v-col cols="12" class="text-left py-0 px-0 pb-4" v-if="!collapsedAttachments">
             <AttachmentsFolderList :object-type-id="6"
-                                   :allow-upload="!isEventReadonly"
+                                   :allow-upload="userCanEdit"
                                    :small-title="true"
                                    is-card
                                    hide-empty
