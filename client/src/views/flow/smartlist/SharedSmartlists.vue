@@ -31,7 +31,7 @@
         </template>
 
         <template #item="{item: smartlist}">
-          <tr class="clickable" @click="editSmartlist(smartlist)">
+          <tr :class="{'clickable': userCanEdit}" @click="editSmartlist(smartlist)">
             <td class="text-left td-name">{{ smartlist.name }}</td>
             <td class="text-left">{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>

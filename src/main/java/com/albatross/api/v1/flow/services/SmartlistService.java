@@ -86,20 +86,17 @@ public class SmartlistService {
     User user = securityService.getCurrentUser();
 
     List<Long> userPositionIds = user.getUserPositions().stream().map(UserPosition::getId).toList();
+    List<Long> orgIds = user.getUserPositions().stream().map(UserPosition::getOrgId).toList();
 
-    var hasUserAccess = smartlist.getAccessControl().stream().anyMatch(a -> {
-      if (a.getUserPositionId() == null) {
-        return false;
+    return smartlist.getAccessControl().stream().anyMatch(a -> {
+      if (a.getUserPositionId() != null) {
+        return userPositionIds.contains(a.getUserPositionId());
+      } else if (a.getOrgId() != null) {
+        return orgIds.contains(a.getOrgId());
       }
 
-      return userPositionIds.contains(a.getUserPositionId());
+      return false;
     });
-
-    if (!hasUserAccess) {
-      //do org stuff
-    }
-
-    return hasUserAccess;
   }
 
   public Smartlist getById(Long id) {

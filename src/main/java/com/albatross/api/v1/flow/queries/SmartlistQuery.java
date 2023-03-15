@@ -37,6 +37,7 @@ public class SmartlistQuery {
 
   //language=PostgreSQL
   public final static String getShared = """
+    -- shared to user
     select
       s.id,
       s.name,
@@ -67,12 +68,14 @@ public class SmartlistQuery {
     inner join flow.access_control ac on sac.access_control_id = ac.id
     where
       up.user_id = :userId and
+      up.primary_flag is true and
       cot.company_id = :companyId and
       sac.archived is false and
       s.archived is false and
       up.archived is false and
       (up.end_date is null or (up.end_date is not null and up.end_date > now()))
     union distinct
+    -- shared to org
     select
       s.id,
       s.name,
@@ -104,6 +107,7 @@ public class SmartlistQuery {
     inner join flow.access_control ac on sac.access_control_id = ac.id
     where
       up.user_id = :userId and
+      up.primary_flag is true and
       cot.company_id = :companyId and
       sac.archived is false and
       s.archived is false and
