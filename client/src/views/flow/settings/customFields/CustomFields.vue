@@ -1,47 +1,30 @@
 <template>
   <v-container id="custom-fields-container">
-    <v-dialog
-      v-model="deleteError"
-    >
-      <v-card>
-        <v-card-title class="text-h5 error--text">Error Deleting Custom Field</v-card-title>
-
-        <v-card-text>
-          You cannot delete a field that is currently in use. Please remove the field from the following locations
-          before deleting.
-          <v-list v-for="(item, index) in fieldsInUse" :key="index">
-            <v-list-item-content>
-              {{ item.objectType }} <span v-if="item.processStepName">{{ item.processStepName }}</span>{{
-                item.groupName
-              }} - {{ item.fieldName }}
-            </v-list-item-content>
-          </v-list>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primary"
-            text
-            dark
-            class="white--text"
-            @click="deleteError = false"
-          >
-            OK
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+<!--todo: update dialog-->
+    <ConfirmationDialog :open-dialog="deleteError" hideConfirm @close-dialog="deleteError=false">
+      <template v-slot:title><span class="error--text">Error Deleting Custom Field</span></template>
+      You cannot delete a field that is currently in use. Please remove the field from the following locations
+      before deleting.
+      <v-list v-for="(item, index) in fieldsInUse" :key="index">
+        <v-list-item-content>
+          {{ item.objectType }} <span v-if="item.processStepName">{{ item.processStepName }}</span>{{
+            item.groupName
+          }} - {{ item.fieldName }}
+        </v-list-item-content>
+      </v-list>
+      <template v-slot:no>Ok</template>
+    </ConfirmationDialog>
     <v-row>
       <v-col cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Custom Fields</v-toolbar-title>
+          <v-toolbar-title v-if="!isMobile" class="title-large">Custom Fields</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary"
                    @click="goToCustomField()"
                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              {{ 'Add New'}}
+              <v-icon large v-if="$vuetify.breakpoint.smAndDown">add</v-icon>
+              <span v-else>{{ 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -56,7 +39,7 @@
               hide-details
             ></v-text-field>
           </v-card-title>
-          <v-data-table
+          <v-data-table id="custom-fields-table"
             :headers="headers"
             :items="filterCustomFields()"
             :fixed-header="true"
@@ -65,7 +48,7 @@
             :search="search"
             hide-default-header
             :footer-props="footerProps"
-            class="elevation-1 mt-1 square-card"
+            class="elevation-1 mt-1 square-card table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available fields</span>
@@ -76,18 +59,18 @@
             </template>
 
             <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
-                <td class="text-left clickable"
+              <tr>
+                <td class="text-left clickable field-name-col"
                     @click="goToCustomField(item.id)">
                   {{ item.fieldName }}
                 </td>
-                <td class="text-right">
+                <td class="text-right icon-col">
                   <div class="item-icons">
-                    <v-btn class="clickable" small text color="primary"
+                    <v-btn class="clickable" small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
                            @click="goToCustomField(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" text color="primary" @click="getUsesForField(item)"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="getUsesForField(item)"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
               </tr>
@@ -138,7 +121,6 @@ import {
   postRequest,
   putRequest
 } from "@/helpers/helpers";
-import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
@@ -154,7 +136,6 @@ export default {
   data() {
     return {
       snackbar: {},
-      constants,
       deleteError: false,
       fieldsInUse: [],
       headers: [
@@ -177,7 +158,10 @@ export default {
   computed : {
     itemToDeleteName() {
       return this.itemToDelete ? this.itemToDelete.fieldName : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     this.fieldsLoading = true
@@ -231,8 +215,8 @@ export default {
           item.deleteConfirm = false;
           this.deleteError = true;
           this.fieldsInUse = data;
-          this.snackbar = getSnackbar("ERROR", "Field Cannot Be Deleted");
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+          // this.snackbar = getSnackbar("ERROR", "Field Cannot Be Deleted");
+          // this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
         } else {
           item.archived = true;
           this.fieldsInUse = [];
@@ -269,6 +253,40 @@ export default {
   height: calc(100vh - 275px);
   min-height: 300px;
 }
+
+@media (max-width: 770px) {
+  #custom-fields-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {}
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+      }
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+
+.field-name-col {
+  width: 100%;
+}
+  .icon-col {
+    min-width: 120px;
+  }
+}
+
 </style>
 
 <style scoped lang="scss">
