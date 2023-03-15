@@ -4,11 +4,11 @@
     <v-row v-if="!fieldLoading">
       <v-col cols="12">
         <v-toolbar flat>
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
+          <v-toolbar-title  class="title-large">
             <v-btn fab text small color="primary" class="mr-2" :to="null == apiPath ? `/settings/customFields` : `/settings/companyCustomFields`">
               <v-icon>mdi-chevron-left</v-icon>
             </v-btn>
-            Custom Field
+            <span v-if="!isMobile">Custom Field</span>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -16,7 +16,8 @@
               color="primary"
               :disabled="invalid(customField)"
               @click="saveChanges(customField)">
-              {{ 'Save Changes' }}
+              <v-icon large v-if="$vuetify.breakpoint.smAndDown">save</v-icon>
+              <span v-else>{{ 'Save Changes' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -287,7 +288,6 @@ import {
   handleHidingGlobalLoader,
   postRequest
 } from "@/helpers/helpers";
-import constants from "@/helpers/constants";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
@@ -302,7 +302,6 @@ export default {
   data() {
     return {
       snackbar: {},
-      constants,
       customFieldId: this.$route.params.id,
       customField: {},
       fieldLoading: false,
@@ -322,7 +321,10 @@ export default {
     selectedSystemListTypeIsUsers(){
       let selectedSystemList = this.systemLists.find(sl => sl.id === this.customField.companySystemListId)
       return selectedSystemList.systemListTypeId === 2; //user type id
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     this.fieldLoading = true
