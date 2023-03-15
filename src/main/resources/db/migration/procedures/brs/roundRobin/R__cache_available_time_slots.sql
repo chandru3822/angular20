@@ -43,8 +43,6 @@ BEGIN
                      d::date,ap.timezone) as t on true) as foo
     group by foo.user);
 
-    insert into flow.company_function_log(function_name, run_by_id)
-    values ('Cache Available Time Slots', p_run_by_id);
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

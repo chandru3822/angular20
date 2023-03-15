@@ -608,14 +608,5 @@ BEGIN
                             end) as funnel_rows;
     end case;
 
-insert into flow.company_function_log(function_name, parameters, run_by_id)
-values ('Company Dashboard Drilldown Report', 'p_custom_start_date: ' || p_custom_start_date ||
-                                              ' p_custom_end_date: ' || p_custom_end_date ||
-                                              ' p_company_id: ' || p_company_id ||
-                                              ' p_milestone_type_id: ' || p_milestone_type_id ||
-                                              ' p_load_partners: ' || p_load_partners ||
-                                              ' p_run_by_id: ' || p_run_by_id,
-        p_run_by_id);
-
 END
 $function$

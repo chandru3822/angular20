@@ -299,4 +299,9 @@ public class ContactLeadController {
   public void updateContactPointer(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/coredigital", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactCoreDigital(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
