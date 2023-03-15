@@ -348,6 +348,8 @@ export default {
       try {
         const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}`)
         this.smartlist = data
+        //This is for smartlists v2 compatability while this v1 editor is still in use
+        this.smartlist.shared = this.smartlist.public
         this.originalObjectTypeId = data.objectTypeId
       } catch (e) {
         logError(e)
@@ -367,7 +369,7 @@ export default {
     },
     async getRequirements () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}/requirement`)
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/requirement`)
         this.requirements = data
       } catch (e) {
         logError(e)

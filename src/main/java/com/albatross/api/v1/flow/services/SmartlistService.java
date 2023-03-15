@@ -11,6 +11,7 @@ import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
+import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -71,13 +72,26 @@ public class SmartlistService {
     return securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
   }
 
+  /**
+   * Determine if current user has access to given smartlist by either being it's owner, smartlist admin, or system admin
+   *
+   * @param smartlist
+   * @return boolean
+   */
   private boolean isOwnerOrAdmin(@NotNull Smartlist smartlist) {
     User user = securityService.getCurrentUser();
     final var sameCompany = Objects.equals(user.getCompanyId(), smartlist.getCompanyId());
     final var isOwnerOrAdmin = Objects.equals(smartlist.getOwnerId(), user.getId()) || isSmartlistAdmin();
-    return sameCompany && isOwnerOrAdmin;
+    return (sameCompany && isOwnerOrAdmin) || user.isSystemAdmin();
   }
 
+  /**
+   * Determine if current user has access to given smartlist by the smartlist being shared with user's current primary user position or shared with an org
+   * in which the user's current primary position belongs
+   *
+   * @param smartlist
+   * @return
+   */
   private boolean isSharedWithCurrentUser(@NotNull Smartlist smartlist) {
     if (smartlist.getAccessControl().isEmpty()) {
       return false;
@@ -99,6 +113,10 @@ public class SmartlistService {
     });
   }
 
+  public boolean currentUserHasAccess(@NotNull Smartlist smartlist) {
+    return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist);
+  }
+
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
@@ -109,8 +127,8 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Smartlist not found", new NotFoundException("Smartlist not found"));
     }
 
-    //grant access to smartlist if user is owner, admin, or smartlist is public
-    if (!isOwnerOrAdmin(smartlist) && !smartlist.isPublic() && !isSharedWithCurrentUser(smartlist)) {
+    //grant access to smartlist if user is owner, admin, or smartlist is public (public covers workqueue smartlists)
+    if (!currentUserHasAccess(smartlist) && !smartlist.isPublic()) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
@@ -622,6 +640,36 @@ public class SmartlistService {
     sqlCache.updateBySql(SmartlistQuery.copyRequirements, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
 
     return getById(newSmartlistId);
+  }
+
+  // @TODO: #smartlistsv2 - this was pull from v1, for sure revamp
+  public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
+    var smartlist = getById(smartlistId);
+
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany, "parentCompanyId", user.getHighestParentCompanyId());
+
+    List<SmartlistRequirement> requirements;
+
+    if (smartlist.isProjectDetails()) {
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+    } else {
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+
+      if (includeListValues) {
+        for (SmartlistRequirement r : requirements) {
+          if (r.getCustomFieldSql() != null) {
+            final String sql = r.getCustomFieldSql();
+            if (sql != null) {
+              r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+            }
+          }
+        }
+      }
+    }
+
+    return requirements;
   }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {
