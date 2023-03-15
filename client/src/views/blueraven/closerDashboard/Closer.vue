@@ -21,6 +21,10 @@
         <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('incentive')}" @click="goToRoute('closerIncentive')">
           Incentive
         </span>
+<!--        <div class="tab-separator mx-2"></div>-->
+<!--        <span class="clickable primary&#45;&#45;text" :class="{'font-weight-bold': $route.path.includes('residuals')}" @click="goToRoute('closerResiduals')">-->
+<!--          Residuals-->
+<!--        </span>-->
       </v-col>
     </v-row>
     <router-view></router-view>

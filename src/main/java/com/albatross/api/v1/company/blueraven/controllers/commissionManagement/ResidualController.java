@@ -1,11 +1,9 @@
 package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.Residual;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.ResidualPlan;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.ResidualPlanAllocation;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.ResidualService;
 import io.swagger.v3.oas.annotations.Hidden;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,25 +21,48 @@ public class ResidualController {
 
     private final ResidualService residualService;
 
-    @PostMapping(value = "")
-    public Residual updateResidual(@RequestBody Residual residual) {
-        return residualService.updateResidual(residual);
-    }
+  @GetMapping(value = "")
+  public List<Residual> getResiduals() {
+      return residualService.getResiduals();
+  }
 
-    @DeleteMapping(value = "/{id}")
-    public void deleteResidual(@PathVariable Long id) {
-        residualService.deleteResidual(id);
-    }
+  @GetMapping(value = "/projects")
+  public List<ResidualService.ResidualProject> getResidualProjects(@RequestParam String search) {
+    return residualService.getResidualProjects(search);
+  }
 
-    @GetMapping(value = "")
-    public List<Residual> getResiduals() {
-        return residualService.getResiduals();
-    }
+  @Data
+  public static class ProjectOverride {
+    Long projectId;
+    String overrideDate;
+  }
 
-    @GetMapping(value = "{id}")
-    public Residual getResidual(@PathVariable Long id) {
-        return residualService.getResidual(id);
-    }
+  @PostMapping(value = "/projectOverride")
+  public void saveProjectOverride(@RequestBody ProjectOverride projectOverride) {
+    residualService.saveProjectOverride(projectOverride);
+  }
+
+  @GetMapping(value = "/qualifiedLifetime/{userId}")
+  public List<ResidualDetail> getResidualQualifiedLifetimeFds(@PathVariable Long userId) {
+    return residualService.getResidualQualifiedLifetimeFds(userId);
+  }
+
+  @GetMapping(value = "/qualifiedPeriod/{userId}")
+  public List<ResidualDetail> getResidualQualifiedFdsThisPeriod(@PathVariable Long userId) {
+    return residualService.getResidualQualifiedFdsThisPeriod(userId);
+  }
+
+  @GetMapping(value = "/notQualifiedPeriod/{userId}")
+  public List<ResidualDetail> getResidualNotQualifiedFdsThisPeriod(@PathVariable Long userId) {
+    return residualService.getResidualNotQualifiedFdsThisPeriod(userId);
+  }
+
+  @GetMapping(value = "/{residualId}/snapshotFdc")
+  public List<ResidualDetail> getSnapshotFdc(@PathVariable Long residualId,
+                                             @RequestParam Long userId,
+                                             @RequestParam Long snapshotTypeId) {
+    return residualService.getSnapshotFdc(residualId, userId, snapshotTypeId);
+  }
 
     @GetMapping(value = "/plans")
     public List<ResidualPlan> getResidualPlans() {
@@ -52,6 +73,13 @@ public class ResidualController {
     public String getResidualPlanDetails(@PathVariable Long planId) {
         return residualService.getResidualPlanDetails(planId);
     }
+
+  @GetMapping(value = "/_search")
+  public String findResidualPlanUsers(
+    @RequestParam String query,
+    @RequestParam(required = false) Long planId) {
+    return residualService.findUserForResidual(query, planId);
+  }
 
     @PostMapping(value = "/plan")
     public ResponseEntity<Object> updateCommissionPlan(@RequestBody ResidualPlan residualPlan) {

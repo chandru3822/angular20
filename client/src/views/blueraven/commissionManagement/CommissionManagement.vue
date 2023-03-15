@@ -22,6 +22,7 @@
           </v-toolbar-items>
           <v-tabs :optional="false" color="primary"
                   slot="extension"
+                  show-arrows
                   background-color="white" v-model="model" slider-color="primary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path">
               {{tab.label}}
@@ -80,16 +81,19 @@
           label: 'Payroll Search',
           path: `/commissionManagement/payroll`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
-        },
-        //   {
-        //   label: 'Residual Plans',
-        //   path: '/commissionManagement/residualPlans',
-        //   display: this.$store.getters.userHasFeature('COMMISSIONS')
-        // }, {
-        //   label: 'Residuals',
-        //   path: '/commissionManagement/residuals',
-        //   display: this.$store.getters.userHasFeature('COMMISSIONS')
-        // }
+        }, {
+          label: 'Residual Plans',
+          path: '/commissionManagement/residualPlans',
+          display: this.$store.getters.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Residuals',
+          path: '/commissionManagement/residuals',
+          display: this.$store.getters.userHasFeature('COMMISSIONS')
+        }, {
+          label: 'Residual Search',
+          path: `/commissionManagement/residualSearch`,
+          display: this.$store.getters.userHasFeature('COMMISSIONS')
+        }
         ]
       }
     },

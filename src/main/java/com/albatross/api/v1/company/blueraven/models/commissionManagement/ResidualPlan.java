@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 public class ResidualPlan {
 
-    private Long id, positionId, residualStatusId;
+    private Long id, positionId, residualPlanStatusId;
     private String name, description, notes, approved, statusType, position;
     private List<ResidualPlanAllocation> residualPlanAllocations;
     private List<Long> users;

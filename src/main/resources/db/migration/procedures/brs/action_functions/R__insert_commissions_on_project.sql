@@ -8,14 +8,25 @@ declare
     v_override_plan_id                 bigint;
     v_commission_plan_id               bigint;
     v_residual_plan_id                 bigint;
+    v_residual_start_date              date;
+    v_residual_user_count              bigint;
     v_user_id                          bigint;
     v_company_feature_id               bigint;
     v_company_id                       bigint;
-    v_custom_field_group_assignment_id bigint;
     v_override_plan_found              bigint;
     v_commission_plan_found             bigint;
     v_start_date                       timestamp;
 BEGIN
+
+  select rp.id
+  into v_residual_plan_id
+  from brs.residual_plan rp
+         inner join brs.residual_plan_user r on r.residual_plan_id = rp.id and r.user_id = v_user_id
+  where (now() AT TIME ZONE 'US/Mountain')::date >= r.start_date
+    and case
+          when r.end_date is not null then
+              (now() AT TIME ZONE 'US/Mountain')::date <= r.end_date
+          else 1 = 1 end;
 
     select min(process_step_complete_date) milestone_one_complete_date
     into v_start_date
@@ -70,16 +81,6 @@ BEGIN
               else 1 = 1 end
     and cp.position_id = 1;
 
-    --     select rp.id
---     into v_residual_plan_id
---     from brs.residual_plan rp
---              inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = v_user_id
---     where (now() AT TIME ZONE 'US/Mountain') >= rpu.start_date and case when rpu.end_date is not null then
---                                                                                 (now() AT TIME ZONE 'US/Mountain') <= rpu.end_date else 1=1 end;
-
-
---    delete from brs.project_residual where project_id = p_project_id;
-
     if v_user_id is not null and v_commission_plan_id is not null and v_commission_plan_found < 1 then
         --delete from brs.project_commission where project_id = p_project_id;
         insert into brs.project_commission(project_id, commission_plan_id)
@@ -96,6 +97,7 @@ BEGIN
         values (v_company_feature_id, 'Unable to assign Commission Plan to Project ' || p_project_id || '.', 1, now(),
                 99999999);
     end if;
+
     if v_user_id is not null and v_override_plan_id is not null and v_override_plan_found < 1 then
         --delete from brs.project_override where project_id = p_project_id;
         insert into brs.project_override(project_id, override_plan_id)
@@ -113,8 +115,24 @@ BEGIN
         values (v_company_feature_id, 'Unable to assign Override Plan to Project ' || p_project_id || '.', 1, now(),
                 99999999);
     end if;
-    --         insert into brs.project_residual( project_id, residual_plan_id)
---         values (p_project_id,v_residual_plan_id);
+
+
+    if v_user_id is not null and v_residual_plan_id is not null then
+      insert into brs.user_residual(user_id, residual_plan_id,date_created,created_by_id)
+      values (v_user_id, v_residual_plan_id,now(),99999999);
+    else
+
+      select cf.id
+      into v_company_feature_id
+      from flow.company_feature cf
+             inner join flow.feature f on f.id = cf.feature_id
+      where f.feature_code = 'COMMISSIONS'
+        and cf.company_id = v_company_id;
+      insert into flow.company_error_log(company_feature_id, error_message, error_log_status_id,
+                                         date_created, created_by_id)
+      values (v_company_feature_id, 'Unable to assign Residual Plan to Project  ' || p_project_id || 'and for User ID '||v_user_id||'.', 1, now(),
+              99999999);
+    end if;
 
     insert into flow.company_function_log(function_name, db_function_id, parameters)
         values ('Insert Commissions on Project', 18, 'p_project_id: ' || p_project_id);

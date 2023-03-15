@@ -2,18 +2,21 @@ package com.albatross.api.v1.company.blueraven.services.commissionManagement;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.commissionManagement.ResidualController;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.Residual;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.ResidualPlan;
-import com.albatross.api.v1.company.blueraven.models.commissionManagement.ResidualPlanAllocation;
+import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.ResidualQuery;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.project.Project;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.sql.DataSource;
 import java.sql.Array;
@@ -30,42 +33,68 @@ public class ResidualService {
   private final SecurityService securityService;
   private final DataSource dataSource;
 
-  public Residual updateResidual(Residual residual) {
+  public List<Residual> getResiduals() {
+    List<Residual> results = sqlCache.queryBySql(ResidualQuery.getAll, Collections.emptyMap(), Residual.class);
+    return results;
+  }
 
+  @Data
+  public static class ResidualProject {
+    Long id;
+    String projectName, projectNameWithId;
+  }
+
+  public List<ResidualProject> getResidualProjects(String search) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("name", "put name here or whatever");
+    params.put("search", search);
+    List<ResidualProject> results = sqlCache.queryBySql(ResidualQuery.getProjects, params, ResidualProject.class);
+    return results;
+  }
 
+  public void saveProjectOverride(ResidualController.ProjectOverride projectOverride) {
     User currentUser = securityService.getCurrentUser();
 
-    long id;
-    if (residual.getId() == null) {
-      params.put("createdBy", currentUser.trueUserId());
-      id = sqlCache.updateBySqlReturningId(ResidualQuery.insert, params, "id").longValue();
-    } else {
-      params.put("updatedBy", currentUser.trueUserId());
-      params.put("id", residual.getId());
-      id = sqlCache.updateBySqlReturningId(ResidualQuery.update, params, "id").longValue();
+    try {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectOverride.getProjectId());
+    params.put("overrideDate", projectOverride.getOverrideDate());
+    params.put("userId", currentUser.trueUserId());
+    sqlCache.updateBySql(ResidualQuery.addProjectOverride, params);
+    } catch (DuplicateKeyException e) {
+      String msg = "An override date already exists for this project";
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
     }
-
-
-
-    return getResidual(id);
   }
 
-  public List<Residual> getResiduals() {
-    return sqlCache.queryBySql(ResidualQuery.getAll, Collections.emptyMap(), Residual.class);
-  }
-
-  public Residual getResidual(Long id) {
+  public List<ResidualDetail> getResidualQualifiedLifetimeFds(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    return sqlCache.getBySql(ResidualQuery.getOne, params, Residual.class).orElse(null);
+    params.put("userId", userId);
+    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getResidualQualifiedLifetimeFds, params, ResidualDetail.class);
+    return results;
   }
 
-  public void deleteResidual(Long id) {
+  public List<ResidualDetail> getResidualQualifiedFdsThisPeriod(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    sqlCache.getBySql(ResidualQuery.delete, params, Residual.class);
+    params.put("userId", userId);
+    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getResidualQualifiedFdsThisPeriod, params, ResidualDetail.class);
+    return results;
+  }
+
+  public List<ResidualDetail> getResidualNotQualifiedFdsThisPeriod(Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getResidualNotQualifiedFdsThisPeriod, params, ResidualDetail.class);
+    return results;
+  }
+
+  public List<ResidualDetail> getSnapshotFdc(Long residualId, Long userId, Long snapshotTypeId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("residualId", residualId);
+    params.put("userId", userId);
+    params.put("snapshotTypeId", snapshotTypeId);
+    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getSnapshotFdc, params, ResidualDetail.class);
+    return results;
   }
 
   public List<ResidualPlan> getResidualPlans() {
@@ -82,7 +111,7 @@ public class ResidualService {
 
     long planId;
     if (residualPlan.getId() == null) {
-      params.put("createdBy", currentUser.trueUserId());
+      params.put("createdById", currentUser.trueUserId());
       planId = sqlCache.updateBySqlReturningId(ResidualQuery.createPlan, params, "id").longValue();
     } else {
       params.put("updatedBy", currentUser.trueUserId());
@@ -100,6 +129,17 @@ public class ResidualService {
     return sqlCache
         .getBySql(ResidualQuery.getResidualPlanDetails, params, new SingleColumnRowMapper<>(String.class))
         .orElse("{}");
+  }
+
+  public String findUserForResidual(String search, Long planId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("search", search + "%");
+    params.put("planId", planId);
+
+    List<String> query =
+      sqlCache.queryBySql(
+        ResidualQuery.findUsers, params, new SingleColumnRowMapper<>(String.class));
+    return query.isEmpty() ? "[]" : query.get(0);
   }
 
   public String getResidualPlanUserHistory(Long userId) {
@@ -149,7 +189,7 @@ public class ResidualService {
   public void approvePlan(Long planId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("planId", planId);
-    params.put("approvedBy", securityService.getCurrentUser().getId());
+    params.put("approvedById", securityService.getCurrentUser().getId());
     params.put("statusId", CommissionPlanStatus.ACTIVE.getId());
 
     sqlCache.updateBySql(ResidualQuery.approvePlan, params);
@@ -160,12 +200,10 @@ public class ResidualService {
 
     Map<String, Object> params = new HashMap<>();
     params.put("planId", planId);
-    params.put("name", rpa.getName());
-    params.put("level", rpa.getLevel());
-    params.put("total", rpa.getTotal());
     params.put("createdById", currentUser.trueUserId());
-    params.put("nbrFdcLower", rpa.getNbrFdcLower());
-    params.put("nbrFdcUpper", rpa.getNbrFdcUpper());
+    params.put("min", rpa.getMin());
+    params.put("max", rpa.getMax());
+    params.put("allocation", rpa.getAllocation());
 
     Long id = sqlCache.updateBySqlReturningId(ResidualQuery.insertAllocation, params, "id").longValue();
     return getResidualPlanAllocation(id);
@@ -173,11 +211,9 @@ public class ResidualService {
 
   public void updateAllocation(Long planId, ResidualPlanAllocation rpa) {
     Map<String, Object> params = new HashMap<>();
-    params.put("name", rpa.getName());
-    params.put("level", rpa.getLevel());
-    params.put("total", rpa.getTotal());
-    params.put("nbrFdcLower", rpa.getNbrFdcLower());
-    params.put("nbrFdcUpper", rpa.getNbrFdcUpper());
+    params.put("min", rpa.getMin());
+    params.put("max", rpa.getMax());
+    params.put("allocation", rpa.getAllocation());
     params.put("id", rpa.getId());
 
     sqlCache.updateBySql(ResidualQuery.updateAllocation, params);
@@ -204,7 +240,7 @@ public class ResidualService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("planId", id);
     params.put("startDate", residualPlan.getStartDate());
-    params.put("createdBy", securityService.getCurrentUser().trueUserId());
+    params.put("createdById", securityService.getCurrentUser().trueUserId());
 
     try (Connection connection = dataSource.getConnection()) {
 
