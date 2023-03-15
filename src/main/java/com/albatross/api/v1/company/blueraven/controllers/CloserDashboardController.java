@@ -22,6 +22,11 @@ public class CloserDashboardController {
     return closerDashboardService.getIncentiveFdcCounts();
   }
 
+  @GetMapping(value = "/residuals")
+  public String getCloserResiduals() {
+    return closerDashboardService.getCloserResiduals();
+  }
+
   @GetMapping(value = "/finalDesignsCompletedDrilldown")
   public String finalDesignsCompletedDrilldown(@RequestParam Integer quarter) {
     return closerDashboardService.finalDesignsCompletedDrilldown(quarter);

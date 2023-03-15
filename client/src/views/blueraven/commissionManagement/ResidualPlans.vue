@@ -7,9 +7,9 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" @click="goToDetails({})">
-          <v-icon>add</v-icon>
-        </v-btn>
+<!--        <v-btn text color="primary" @click="goToDetails({})">-->
+<!--          <v-icon>add</v-icon>-->
+<!--        </v-btn>-->
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>

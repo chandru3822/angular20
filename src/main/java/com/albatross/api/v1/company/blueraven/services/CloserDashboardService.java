@@ -4,14 +4,15 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CloserDashboardQuery;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
-import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,6 +42,16 @@ public class CloserDashboardService {
     return sqlCache
         .queryBySql(CloserDashboardQuery.getIncentiveFdcCounts, params, IncentiveCounts.class)
         .get(0);
+  }
+
+  public String getCloserResiduals() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", user.getId());
+
+    return sqlCache
+             .getBySql(CloserDashboardQuery.getCloserResiduals, params, new SingleColumnRowMapper<>(String.class))
+             .orElse("{}");
   }
 
   public String finalDesignsCompletedDrilldown(int quarter) {
