@@ -2,7 +2,7 @@
   <v-container class="pa-0" id="residuals-container">
       <v-toolbar flat class="app-toolbar">
         <v-toolbar-title class="app-title">
-          {{userFullName}} Lifetime Qualified FDS
+          {{userFullName}} - {{title}}
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -27,7 +27,11 @@
 
         <template #item="{ item, index }">
           <tr class="text-left" :class="{'shaded-row': index % 2}">
-            <td class="text-left">{{item.projectId}}</td>
+            <td class="text-left">
+              <v-btn outlined :to="`/project/${item.projectId}`">
+                {{item.projectId}}
+              </v-btn>
+            </td>
             <td class="text-left">{{item.state}}</td>
             <td class="text-left">{{item.finalDesignSignedDate}}</td>
             <td class="text-left">{{item.finalDesignCompleteDate}}</td>
@@ -54,6 +58,7 @@
     props: {
       userFullName: String,
       data: Array,
+      title: String
     },
     created() {
     },
@@ -63,8 +68,8 @@
         headers: [
           {text: 'Project ID', value: 'projectId', show: true},
           {text: 'State', value: 'state', show: true},
-          {text: 'FDS', value: 'finalDesignSignedDate', show: true},
-          {text: 'FDS Complete', value: 'finalDesignCompleteDate', show: true},
+          {text: 'FDA', value: 'finalDesignSignedDate', show: true},
+          {text: 'FDC', value: 'finalDesignCompleteDate', show: true},
           {text: 'Utility Bill Verified', value: 'utilityBillVerifiedDate', show: true},
           {text: 'FAS', value: 'financialAgreementSignedDate', show: true},
           {text: 'Proof Of Homeowners Insurance', value: 'proofOfHomeownersInsuranceObtainedDate', show: true},

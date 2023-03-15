@@ -2,6 +2,7 @@
   <v-container class="pa-0" id="residuals-container">
     <v-dialog v-model="showModal" class="square-card">
       <ResidualDetailModal :data="modalData"
+                           :title="modalTitle"
                            :user-full-name="modalUserFullName"
                            @residualDetailModalClosed="showModal = false"
       ></ResidualDetailModal>
@@ -335,6 +336,7 @@
         showModal: false,
         modalUserFullName: '',
         modalData: [],
+        modalTitle: '',
         headers: [
           {text: 'User First Name', value: 'firstName', show: true},
           {text: 'User Last Name', value: 'lastName', show: true},
@@ -469,6 +471,8 @@
         //typeId: 1 = lifetime qualified, 2 = qualified fds in period, 3 = fds not qualified this period
         this.showModal = false
         this.modalData = []
+        this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDS' :
+          typeId === 2 ? 'Qualified FDS in Period' : 'FDS Not Qualified this Period'
         this.modalUserFullName = ''
         try {
           let url = typeId === 1 ? `/commissionManagement/residuals/qualifiedLifetime/${residualItem.userId}` :

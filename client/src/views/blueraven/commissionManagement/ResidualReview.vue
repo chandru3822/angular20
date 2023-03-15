@@ -2,6 +2,7 @@
   <v-container class="pa-0">
     <v-dialog v-model="showModal" class="square-card">
       <ResidualDetailModal :data="modalData"
+                           :title="modalTitle"
                            :user-full-name="modalUserFullName"
                            @residualDetailModalClosed="showModal = false"
       ></ResidualDetailModal>
@@ -131,6 +132,7 @@ export default {
       showModal: false,
       modalUserFullName: '',
       modalData: [],
+      modalTitle: '',
       dataLoading: false,
       residualSnapshot: [],
       footerProps: {
@@ -284,6 +286,8 @@ export default {
       //typeId: 1 = lifetime qualified, 2 = qualified fds in period, 3 = fds not qualified this period
       this.showModal = false
       this.modalData = []
+      this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDS' :
+                        typeId === 2 ? 'Qualified FDS in Period' : 'FDS Not Qualified this Period'
       this.modalUserFullName = ''
       try {
         let params = {
