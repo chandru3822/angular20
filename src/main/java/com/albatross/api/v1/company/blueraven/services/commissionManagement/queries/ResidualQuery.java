@@ -6,7 +6,7 @@ public class ResidualQuery {
   //language=PostgreSQL
   public final static String getAll = """
     select *
-    from brs.get_residual_account_details(now()::date)
+    from brs.get_residual_account_details()
     """;
 
   //language=PostgreSQL
@@ -166,7 +166,7 @@ public class ResidualQuery {
 
   //language=PostgreSQL
   public final static String createPlan = """
-    insert into brs.residual_plan(name, residual_status_id, position_id, created, created_by_id, description)
+    insert into brs.residual_plan(name, residual_plan_status_id, position_id, created, created_by_id, description)
     values(:name, 1, 1, now(), :createdById, :description)
     """;
 
@@ -187,11 +187,11 @@ public class ResidualQuery {
                  rpu.end_date    AS "endDate",
                  rp.name         ,
                  rps.status_type AS status,
-                 rp.residual_status_id    AS residualStatusId,
+                 rp.residual_plan_status_id    AS residualPlanStatusId,
                  rp.id
           FROM brs.residual_plan_user rpu
                    INNER JOIN brs.residual_plan rp ON rpu.residual_plan_id = rp.id
-                   INNER JOIN brs.residual_plan_status rps ON rp.residual_status_id = rps.id
+                   INNER JOIN brs.residual_plan_status rps ON rp.residual_plan_status_id = rps.id
           WHERE rpu.user_id = :userId
           ORDER BY rpu.end_date DESC) aup;
     """;
@@ -206,7 +206,7 @@ public class ResidualQuery {
 
   //language=PostgreSQL
   public final static String insertPlanEndDate = """
-    WITH active_commission_plans AS (SELECT rpu.id,
+    WITH active_residual_plans AS (SELECT rpu.id,
                                             rp.id   AS plan_id,
                                             rp.name AS plan_name,
                                             rpu.user_id,
@@ -214,20 +214,29 @@ public class ResidualQuery {
                                             rpu.end_date
                                      FROM brs.residual_plan rp
                                             INNER JOIN brs.residual_plan_user rpu ON rp.id = rpu.residual_plan_id
-                                     WHERE rp.residual_status_id <> 3
+                                     WHERE rp.residual_plan_status_id <> 3
                                        AND rpu.end_date IS NULL
                                        AND rpu.start_date <= :startDate
                                        AND rpu.user_id = :userId)
     UPDATE brs.residual_plan_user rpu
     SET end_date = :startDate :: DATE - INTERVAL  '1 day'
-    FROM active_commission_plans p
+    FROM active_residual_plans p
     WHERE rpu.id = p.id
     """;
 
   //language=PostgreSQL
   public final static String insertPlanUser = """
-    INSERT INTO brs.residual_plan_user (residual_plan_id, user_id, start_date, end_date)
-    VALUES (:planId, :userId, :startDate, :endDate)
+    INSERT INTO brs.residual_plan_user (residual_plan_id, user_id, start_date, end_date, date_created, created_by_id, modified_by_id)
+    VALUES (:planId, :userId, :startDate, :endDate, now(), :currentUserId, :currentUserId)
+    """;
+
+  //language=PostgreSQL
+  public final static String updateUserResidualPlans = """
+    update brs.user_residual ur
+    set residual_plan_id = :planId,
+        date_modified = now(),
+        modified_by_id = :currentUserId
+    where user_id = :userId
     """;
 
   //language=PostgreSQL
@@ -237,26 +246,10 @@ public class ResidualQuery {
                  concat(u.first_name, ' ', u.last_name) AS name,
                  u.id                               AS "userId",
                  rpu.start_date                     AS "startDate",
-                 rpu.end_date                       AS "endDate",
-                 string_agg(DISTINCT p.position, ', ') FILTER (WHERE
-                     CASE WHEN rp.position_id = 1
-                              THEN up.id IN (select up5.id
-                                              from flow.user_position up5
-                                                       inner join flow.custom_field cf on up5.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
-                                              where up5.primary_flag is true
-                                                and up5.archived is false
-                                                and cf.archived is false)
-                          WHEN rp.position_id = 4
-                              THEN up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
-                                                                                                    from flow.company_configuration_value
-                                                                                                    where code = 'SETTER_POSITION_IDS')
-                         END
-                     )                                  AS position
+                 rpu.end_date                       AS "endDate"
           FROM brs.residual_plan_user rpu
                    INNER JOIN brs.residual_plan rp ON rpu.residual_plan_id = rp.id
                    INNER JOIN flow.user u ON rpu.user_id = u.id
-                   INNER JOIN flow.user_position up ON up.user_id = u.id
-                   INNER JOIN flow.position p ON p.id = up.position_id
           WHERE rp.id = :planId
           GROUP BY rpu.id, u.id) AS users
     """;
@@ -281,7 +274,7 @@ public class ResidualQuery {
     UPDATE brs.residual_plan
     SET approved_date  = now(),
       approved_by_id = :approvedById,
-      residual_status_id   = :statusId
+      residual_plan_status_id   = :statusId
     WHERE id = :planId
     """;
 

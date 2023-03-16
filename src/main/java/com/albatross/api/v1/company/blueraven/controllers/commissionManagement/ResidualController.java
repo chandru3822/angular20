@@ -82,7 +82,7 @@ public class ResidualController {
   }
 
     @PostMapping(value = "/plan")
-    public ResponseEntity<Object> updateCommissionPlan(@RequestBody ResidualPlan residualPlan) {
+    public ResponseEntity<Object> updateResidualPlan(@RequestBody ResidualPlan residualPlan) {
         String detail = residualService.updateResidualPlan(residualPlan);
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }

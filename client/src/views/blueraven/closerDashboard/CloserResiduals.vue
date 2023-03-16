@@ -1,5 +1,26 @@
 <template>
-  <v-container id="closer-residuals-container" ref="closerResidualsContainer" v-if="!dataLoading && residualData">
+  <v-container id="closer-residuals-container" ref="closerResidualsContainer">
+    <v-row>
+      <v-col cols="12">
+          <v-toolbar color="white" class="elevation-1">
+            <v-toolbar-title class="app-title">
+              <input type="month" id="viewing-date" name="viewing-date"
+                     :min="minDate"
+                     :max="maxDate"
+                     @input="loadResidualData()"
+                     v-model="viewingDataFor">
+            </v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+<!--            <div class="pt-4">-->
+<!--              <v-btn @click="setViewingDate(false)">Last Month</v-btn>-->
+<!--              <v-btn class="ml-3" @click="setViewingDate(true)">Current Month</v-btn>-->
+<!--            </div>-->
+            </v-toolbar-items>
+          </v-toolbar>
+      </v-col>
+    </v-row>
+    <div   v-if="!dataLoading && residualData">
       <v-row>
         <v-col cols="12" md="4">
           <table class="residual-table">
@@ -48,7 +69,9 @@
               </td>
             </tr>
             <tr >
-              <td class="bold">Total Residual Paid</td>
+              <td class="bold">
+                {{ residualData.has_current_snapshot ? 'Total Residual Paid' : 'Expected Residual Payout'}}
+              </td>
               <td class="residual-number-col">
                 <span v-if="residualData.total_residual_paid < 0">({{residualData.total_residual_paid | currency('$', 0)}})</span>
                 <span v-else>{{residualData.total_residual_paid | currency('$', 0)}}</span>
@@ -57,7 +80,7 @@
           </table>
         </v-col>
         <v-col cols="12" md="4">
-          <table class="residual-table">
+          <table class="residual-table" v-if="residualData.has_previous_snapshot">
             <tr>
               <td>Prior period qualified FDC's</td>
               <td class="residual-number-col">{{residualData.prior_period_qualified_fdc}}</td>
@@ -79,15 +102,18 @@
               <td class="residual-number-col bold">{{residualData.residual_qualified_fdc}}</td>
             </tr>
           </table>
+          <div v-else class="residual-table">
+            {{ residualData.no_previous_month_message }}
+          </div>
         </v-col>
       </v-row>
 
 
-    <v-card class="mt-3">
+    <v-card class="mt-3 square-card">
       <v-card-title>
         Monthly Residual Quota - Qualified FDC's
         <v-spacer></v-spacer>
-        Count: {{ residualData.qualified_fdc?.length || 0 }}
+        <div class="residual-total-count">Total: {{ residualData.qualified_fdc?.length || 0 }}</div>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -95,39 +121,47 @@
           :items="residualData.qualified_fdc"
           :items-per-page="-1"
           single-expand
+          dense
           :mobile-breakpoint="0"
           hide-default-footer
           class="elevation-0"
         >
+          <template #item.project_id="{item}">
+            <a @click="goToProject(item.project_id)">{{item.project_id}}</a>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
 
-    <v-card class="mt-3">
+    <v-card class="mt-3 square-card">
       <v-card-title>
         Current Clawbacks
         <v-spacer></v-spacer>
-        Count: {{residualData.current_clawbacks?.length || 0}}
+        <div class="residual-total-count">Total: {{residualData.clawback_projects?.length || 0}}</div>
       </v-card-title>
       <v-card-text>
         <v-data-table
           :headers="clawbackHeaders"
-          :items="residualData.current_clawbacks"
+          :items="residualData.clawback_projects"
           :items-per-page="-1"
           single-expand
           :mobile-breakpoint="0"
+          dense
           hide-default-footer
           class="elevation-0"
         >
+          <template #item.project_id="{item}">
+            <a @click="goToProject(item.project_id)">{{item.project_id}}</a>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
 
-    <v-card class="mt-3">
+    <v-card class="mt-3 square-card">
       <v-card-title>
         FDA in month - Not Qualifying
         <v-spacer></v-spacer>
-        Count: {{residualData.fda_in_month_not_qualifying?.length || 0}}
+        <div class="residual-total-count">Total: {{residualData.fda_in_month_not_qualifying?.length || 0}}</div>
       </v-card-title>
       <v-card-text>
         <v-data-table
@@ -137,48 +171,65 @@
           single-expand
           :mobile-breakpoint="0"
           hide-default-footer
+          dense
           class="elevation-0"
         >
+          <template #item.project_id="{item}">
+            <a @click="goToProject(item.project_id)">{{item.project_id}}</a>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
 
 
-    <v-card class="mt-3">
+    <v-card class="mt-3 square-card">
       <v-card-title>
         Total Qualifying FDC's to date
         <v-spacer></v-spacer>
-        Count: {{residualData.total_qualifying_fdc_to_date?.length || 0}}
+        <div class="residual-total-count">Total: {{residualData.total_qualifying_fdc_to_date?.length || 0}}</div>
       </v-card-title>
       <v-card-text>
+        <v-text-field
+          v-model="totalQualifyingSearch"
+          prepend-inner-icon="search"
+          label="Search"
+          single-line
+          dense
+          hide-details
+        ></v-text-field>
         <v-data-table
+          :search="totalQualifyingSearch"
           :headers="totalQualifyingFdcHeaders"
           :items="residualData.total_qualifying_fdc_to_date"
-          :items-per-page="-1"
-          single-expand
-          :mobile-breakpoint="0"
-          hide-default-footer
-          class="elevation-0"
+          :options.sync="options"
+          :footer-props="footerProps"
+          :server-items-length="-1"
+          dense
+          class="elevation-0 mt-3"
         >
+          <template #item.project_id="{item}">
+            <a @click="goToProject(item.project_id)">{{item.project_id}}</a>
+          </template>
         </v-data-table>
       </v-card-text>
     </v-card>
+    </div>
   </v-container>
 </template>
 
 <script>
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
+  import moment from 'moment'
 
   export default {
     name: 'closerResiduals',
     components: {
       SpinnerInline,
     },
-    computed: {
-    },
+    computed: {},
     watch: {},
     created () {
       this.loadResidualData()
@@ -189,39 +240,85 @@
         constants,
         currentUserId: this.$store.state.user.details.id,
         residualData: {},
+        totalQualifyingSearch: '',
+        minDate: '2023-02',
+        maxDate: moment().format('YYYY-MM'),
+        viewingDataFor: moment().startOf('month').format('YYYY-MM'),
         dataLoading: true,
         totalQualifyingFdcHeaders: [
           {text: 'Contact Name', value: 'contact_name', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
-          {text: 'Total', value: 'total', show: true},
         ],
         monthlyQualifiedHeaders: [
           {text: 'Contact Name', value: 'contact_name', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
+          {text: 'FDA', value: 'final_design_signed_date', show: true},
+          {text: 'FDC', value: 'final_design_complete_date', show: true},
+          {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
+          {text: 'FAS', value: 'financial_agreement_signed_date', show: true},
+          {text: 'Proof Of Homeowners Insurance', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
+          {text: 'SC', value: 'substantial_completion_date', show: true},
+          {text: 'Cancelled', value: 'cancelled_date', show: true},
+          {text: 'On Hold', value: 'on_hold_date', show: true},
+          {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
+          {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
         ],
         clawbackHeaders: [
           {text: 'Contact Name', value: 'contact_name', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
-          {text: 'Total Clawbacks', value: 'total_clawbacks', show: true},
+          {text: 'Cancelled Date', value: 'cancelled_date', show: true},
+          {text: 'Current Clawbacks', value: 'current_clawbacks', show: true},
           {text: 'Existing Clawbacks', value: 'existing_clawbacks', show: true},
         ],
         notQualifyingHeaders: [
           {text: 'Contact Name', value: 'contact_name', show: true},
           {text: 'Project ID', value: 'project_id', show: true},
+          {text: 'FDA', value: 'final_design_signed_date', show: true},
+          {text: 'FDC', value: 'final_design_complete_date', show: true},
+          {text: 'Utility Bill Verified', value: 'utility_bill_verified_date', show: true},
+          {text: 'FAS', value: 'financial_agreement_signed_date', show: true},
+          {text: 'Proof Of Homeowners Insurance', value: 'proof_of_homeowners_insurance_obtained_date', show: true},
+          {text: 'SC', value: 'substantial_completion_date', show: true},
+          {text: 'Cancelled', value: 'cancelled_date', show: true},
+          {text: 'On Hold', value: 'on_hold_date', show: true},
+          {text: 'Total Cash Down Payment', value: 'total_cash_down_payment', show: true},
+          {text: 'First Cash Payment Amount', value: 'first_cash_payment_amount', show: true},
         ],
+        footerProps: {
+          'items-per-page-options': [10, 20, 50],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        options: {
+          itemsPerPage: 20
+        },
       }
     },
     methods: {
+      // setViewingDate(isCurrent) {
+      //   this.viewingDataFor = isCurrent ? moment().startOf('month') : moment().startOf('month').subtract(1, 'month').format('YYYY-MM')
+      //   this.loadResidualData()
+      // },
+      goToProject(projectId) {
+        this.$router.push(`/project/${projectId}`)
+      },
       async loadResidualData () {
+        console.log('randaLogger', this.viewingDataFor)
+        console.log('formatted', moment(this.viewingDataFor).format('YYYY-MM-DD'))
+        this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
-          const {data} = await getRequest('/closerDashboard/residuals', 'blueraven')
+          let params = {
+            residualDate: moment(this.viewingDataFor).format('YYYY-MM-DD')
+          }
+          const {data} = await getRequestWithParams('/closerDashboard/residuals', {params}, 'blueraven')
           this.residualData = data
           this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
           this.snackbar = getSnackbar('ERROR', 'Error retrieving residual data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.dataLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 
@@ -245,6 +342,10 @@
 .total-row {
   border-top: solid black 1px;
   border-bottom: solid black 1px;
+}
+
+.residual-total-count {
+  font-size: 14px;
 }
 
 </style>

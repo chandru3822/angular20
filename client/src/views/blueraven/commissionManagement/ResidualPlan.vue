@@ -218,9 +218,6 @@
                               autocomplete="off"
                               attach
               >
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.name }} - {{ item.position }}
-                </template>
               </v-autocomplete>
               <DatetimePickerInput
                 v-model="newUser.startDate"
@@ -671,7 +668,7 @@
               query,
               planId: this.planId
             }
-            const {data} = await getRequestWithParams(`/commissionManagement/_search`, {params}, 'blueraven')
+            const {data} = await getRequestWithParams(`/commissionManagement/residuals/_search`, {params}, 'blueraven')
             this.usersToAdd = data
             this.usersLoading = false
           } catch (e) {

@@ -23,7 +23,7 @@ BEGIN
 
   -- create a new residual plan with defaults from the copied plan
   INSERT INTO brs.residual_plan
-  (name, description, residual_status_id, position_id, created, created_by)
+  (name, description, residual_plan_status_id, position_id, created, created_by)
   VALUES (
     coalesce(_cloned.name, '') || ' - [COPY]',
     _cloned.description,

@@ -6,9 +6,12 @@
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" @click="$emit('residualDetailModalClosed')">
-            Close
-          </v-btn>
+          <div class="pt-3">
+            <v-btn color="primary" class="ml-3" dark @click="exportData()">Export</v-btn>
+            <v-btn text color="primary" @click="$emit('residualDetailModalClosed')">
+              Close
+            </v-btn>
+          </div>
         </v-toolbar-items>
       </v-toolbar>
       <v-data-table
@@ -83,7 +86,43 @@
       }
     },
     methods: {
+      async exportData () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let filename = `${this.userFullName} - ${this.title}.csv`;
+          let csvData = 'Project ID, State, FDA, FDC, Utility Bill Verified, FAS, Proof Of Homeowners Insurance, SC, Cancelled, On Hold, Total Cash Down Payment, First Cash Payment Amount';
+          csvData += '\n';
 
+          this.data.forEach(p => {
+            csvData +=
+              p.projectId + ',"' +
+              p.state + '",' +
+              (p.finalDesignSignedDate || '') + ',"' +
+              (p.finalDesignCompleteDate || '') + '",' +
+              (p.utilityBillVerifiedDate || '') + ',' +
+              (p.financialAgreementSignedDate || '') + ',"' +
+              (p.proofOfHomeownersInsuranceObtainedDate || '') + '",' +
+              (p.substantialCompletionDate || '') + ',' +
+              (p.cancelledDate || '') + ',' +
+              (p.onHoldDate || '') + ',' +
+              (p.totalCashDownPayment || '') + ',' +
+              (p.firstCashPaymentAmount || '')
+            csvData += '\n';
+          })
+
+          let blob = new Blob([csvData], {
+            type: 'text/csv;charset=utf-8'
+          });
+
+          saveAs(blob, filename);
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Exporting Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
     }
   }
 </script>

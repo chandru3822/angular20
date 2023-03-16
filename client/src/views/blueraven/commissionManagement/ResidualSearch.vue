@@ -4,25 +4,11 @@
       <v-container>
         <v-row>
           <v-col cols="12" sm="6">
-            <DatetimePickerInput
-                v-model="payrollSearch.startDate"
-                :timezone="this.timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="Start Date"
-            />
             <v-text-field text
                           label="User ID"
                           v-model="payrollSearch.userId"></v-text-field>
           </v-col>
           <v-col cols="12" sm="6">
-            <DatetimePickerInput
-                v-model="payrollSearch.endDate"
-                :timezone="this.timezone"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="End Date"
-            />
             <div class="text-left">
               <v-btn color="primary" dark @click="getPayrollData">Search</v-btn>
               <v-btn text color="primary" class="ml-3" @click="payrollSearch = {}">Reset</v-btn>
