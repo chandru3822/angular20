@@ -18,7 +18,22 @@ CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_clos
           )
 AS
 $BODY$
-begin
+  declare
+    v_last_period_end_date        date;
+    v_end_of_previous_month       date;
+    v_beginning_of_previous_month date;
+  begin
+
+    select r.period_end
+    into v_last_period_end_date
+    from brs.residual r
+    order by id desc limit 1;
+
+    SELECT (date_trunc('month', v_last_period_end_date ) - interval '1 day' )::date
+    into v_end_of_previous_month;
+
+    select cast(date_trunc('month', v_last_period_end_date - interval '1 month') as date)
+    into v_beginning_of_previous_month;
 
   return query
     select foo.project_id,
@@ -47,27 +62,29 @@ begin
                  pd.substantial_completion_date,
                  pd.cancelled_date,
                  pd.on_hold_date,
-                 (pd.proof_of_homeowners_insurance_required is not null and
-                  pd.proof_of_homeowners_insurance_required = 305 and
+                 (pd.proof_of_homeowners_insurance_required = 305 and
                   pd.proof_of_homeowners_insurance_obtained_date is not null) or
                  (pd.proof_of_homeowners_insurance_required is not null and
-                  pd.proof_of_homeowners_insurance_required != 305)                           as proof_of_homeowners_insurance,
+                  pd.proof_of_homeowners_insurance_required != 305) as proof_of_homeowners_insurance,
                  (pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1::numeric
-                    and (pd.project_state_id = 28  and
-                         pd.first_cash_payment_amount >= 1000.00) or
-                  ((pd.first_cash_payment_amount) /
-                   greatest(pd.total_cash_down_payment,1) >= .49)) or
-                 (pd.total_cash_down_payment is null or pd.total_cash_down_payment < 1::numeric) as first_cash_payment
+                    and (
+                          (pd.project_state_id = 28 and pd.first_cash_payment_amount >= 1000.00 and pd.first_cash_payment_paid_date is not null) or
+                          (pd.first_cash_payment_amount / greatest(pd.total_cash_down_payment,1) >= .49 and pd.first_cash_payment_paid_date is not null)
+                      ) or
+                 (pd.total_cash_down_payment is null or pd.total_cash_down_payment < 1::numeric)) as first_cash_payment
           from brs.project_details pd
           inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
           left join flow.state s on s.id = pd.project_state_id
-          where pd.closer_user_id = p_closer_user_id
+          where pd.exclude_from_residuals is not true
+            and pd.closer_user_id = p_closer_user_id
             and pd.final_design_signed_date is not null
-            and pd.cancelled_date is null
-            and pd.on_hold_date is null) as foo
+           -- and pd.cancelled_date is null
+            --and pd.on_hold_date is null
+            ) as foo
     where (foo.proof_of_homeowners_insurance is false or foo.first_cash_payment is false or
            foo.financial_agreement_signed_date is null or foo.utility_bill_verified_date is null)
-      and foo.substantial_completion_date is null;
+      and foo.substantial_completion_date is null and foo.final_design_signed_date >=v_beginning_of_previous_month and
+          foo.final_design_signed_date <= v_end_of_previous_month;
 
 END
 $BODY$
