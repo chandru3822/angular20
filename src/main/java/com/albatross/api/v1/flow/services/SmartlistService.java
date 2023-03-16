@@ -642,7 +642,7 @@ public class SmartlistService {
     return getById(newSmartlistId);
   }
 
-  // @TODO: #smartlistsv2 - this was pull from v1, for sure revamp
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
   public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
     var smartlist = getById(smartlistId);
 
@@ -670,6 +670,17 @@ public class SmartlistService {
     }
 
     return requirements;
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public List<SmartlistFieldAssignment> getFields(@NotNull Long smartlistId) {
+    var smartlist = getById(smartlistId);
+
+    if (smartlist.isProjectDetails()) {
+      return smartlistServicev1.getAssignedProjectDetailsFields(smartlistId);
+    } else {
+      return smartlistServicev1.getAssignedFields(smartlistId);
+    }
   }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {
