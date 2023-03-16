@@ -682,7 +682,17 @@ public class EventQuery {
     order by cest.event_status_type
         """;
 
-  //language=PostgreSQL
+    //language=PostgreSQL
+    public final static String saveHidden = """
+    update flow.event
+        set hidden = :hidden,
+        modified_by_id = :userId,
+        date_modified = now()
+        where id = :eventId
+       """;
+
+
+    //language=PostgreSQL
   public final static String archiveWhiteListPositions = """
     update flow.white_listed_position
       set archived = true,

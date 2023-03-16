@@ -116,7 +116,7 @@
             </v-autocomplete>
             <br/>
             <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
-                   >
+                   @click="saveHiddenAndWhiteList">
               <v-icon class="mr-2">save</v-icon>
               Save
             </v-btn>
@@ -298,6 +298,24 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      }
+    },
+    async saveHiddenAndWhiteList () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${this.hiddenPositionsChanged ?? false}`, this.event)
+        this.hiddenPositionsChanged = false
+        if(!this.event.hidden) {
+          this.event.hiddenWhiteListedPositions = []
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Event Access Control')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
   }
