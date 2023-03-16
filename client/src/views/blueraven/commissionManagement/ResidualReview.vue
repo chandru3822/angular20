@@ -2,6 +2,7 @@
   <v-container class="pa-0">
     <v-dialog v-model="showModal" class="square-card">
       <ResidualDetailModal :data="modalData"
+                           :title="modalTitle"
                            :user-full-name="modalUserFullName"
                            @residualDetailModalClosed="showModal = false"
       ></ResidualDetailModal>
@@ -95,14 +96,14 @@
                 </a>
               </td>
               <td class="text-left">{{item.requiredFdcPerMonth}}</td>
-              <td class="text-left">{{item.residualEarned}}</td>
-              <td class="text-left">{{item.percentOfResidualEarned}}</td>
-              <td class="text-left">{{item.potentialResidual}}</td>
-              <td class="text-left">{{item.earnedResidual}}</td>
-              <td class="text-left">{{item.clawback}}</td>
-              <td class="text-left">{{item.adjustmentOverride}}</td>
-              <td class="text-left">{{item.residualTotal}}</td>
-              <td class="text-left">{{item.paidInPeriod}}</td>
+              <td class="text-left">{{item.residualEarned ? 'Yes' : 'No'}}</td>
+              <td class="text-left">{{item.percentOfResidualEarned}}%</td>
+              <td class="text-left">{{item.potentialResidual | currency('$', 0)}}</td>
+              <td class="text-left">{{item.earnedResidual | currency('$', 0)}}</td>
+              <td class="text-left">{{item.clawback | currency('$', 0)}}</td>
+              <td class="text-left">{{item.adjustmentOverride | currency('$', 0)}}</td>
+              <td class="text-left">{{item.residualTotal | currency('$', 0)}}</td>
+              <td class="text-left">{{item.paidInPeriod ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -131,6 +132,7 @@ export default {
       showModal: false,
       modalUserFullName: '',
       modalData: [],
+      modalTitle: '',
       dataLoading: false,
       residualSnapshot: [],
       footerProps: {
@@ -152,9 +154,9 @@ export default {
         {text: 'Hire Date', value: 'hireDate', show: true},
         {text: 'Usable Name', value: 'userFullName', show: true},
         {text: 'Residual Start Date', value: 'residualStartDate', show: true},
-        {text: 'LTD Qualified FDS', value: 'lifetimeFdc', show: true},
-        {text: 'Qualified FDS This Period', value: 'qualifiedThisPeriodFdc', show: true},
-        {text: 'FDS Not Qualified This Period', value: 'fdsNotQualified', show: true},
+        {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
+        {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
+        {text: 'FDA Not Qualified This Period', value: 'fdsNotQualified', show: true},
         {text: 'Required FDS for Month', value: 'requiredFdcPerMonth', show: true},
         {text: 'Residual Earned', value: 'residualEarned', show: true},
         {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
@@ -235,7 +237,7 @@ export default {
       try {
         let filename = 'Residual Review.csv'
 
-        let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDS,Qualified FDS This Period,FDS Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Clawback,Adjustment/Override,Total,Paid In Period';
+        let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Clawback,Adjustment/Override,Total,Paid In Period';
         csvData += '\n';
 
         this.residualSnapshot.forEach(p => {
@@ -284,6 +286,8 @@ export default {
       //typeId: 1 = lifetime qualified, 2 = qualified fds in period, 3 = fds not qualified this period
       this.showModal = false
       this.modalData = []
+      this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDC' :
+                        typeId === 2 ? 'Qualified FDC in Period' : 'FDA Not Qualified this Period'
       this.modalUserFullName = ''
       try {
         let params = {
