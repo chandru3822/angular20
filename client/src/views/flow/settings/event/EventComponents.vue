@@ -2,8 +2,8 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
-        <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Event Status Types</v-toolbar-title>
+        <v-toolbar flat class="header-bar">
+          <v-toolbar-title class="title-large">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]" v-if="userCanAdd">
@@ -66,6 +66,64 @@
         </div>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col cols="12" class="pt-0 px-0">
+        <v-toolbar flat class="header-bar">
+          <v-toolbar-title class="title-large">Event Access Control</v-toolbar-title>
+        </v-toolbar>
+        <v-card flat color="rowShadeCustom" class="square-card mt-2">
+          <v-card-title style="height: 40px" class="py-0">
+            Hidden
+            <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
+                        v-model="event.hidden"></v-checkbox>
+          </v-card-title>
+          <v-card-text>
+            <v-autocomplete
+                v-if="event.hidden"
+                v-model="event.hiddenWhiteListedPositions"
+                :items="positions"
+                :loading="positionsLoading"
+                multiple
+                clearable
+                label="White Listed Positions"
+                item-text="position"
+                item-value="positionId"
+                return-object
+                height="35px"
+                class="d-inline-block mr-3"
+                @change="hiddenPositionsChanged = true">
+              <template v-slot:selection="{item, index}">
+                <v-chip small
+                        v-if="index === 0 && event.hiddenWhiteListedPositions && event.hiddenWhiteListedPositions.length < 2">
+                  <span>{{ item.position }}</span>
+                </v-chip>
+                <span
+                    v-if="index === 1 && event.hiddenWhiteListedPositions && event.hiddenWhiteListedPositions.length >= 2"
+                    class="primary--text text-caption"
+                >{{ event.hiddenWhiteListedPositions.length }} selected</span>
+              </template>
+              <template v-slot:prepend-item>
+              <v-list-item @click="toggleSelectAllPositionsOwner()">
+                <v-list-item-action>
+                  <v-icon>{{ icon() }}</v-icon>
+                </v-list-item-action>
+                <v-list-item-title>Select All</v-list-item-title>
+              </v-list-item>
+              <v-divider
+                  class="mt-2"
+              ></v-divider>
+              </template>
+            </v-autocomplete>
+            <br/>
+            <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
+                   >
+              <v-icon class="mr-2">save</v-icon>
+              Save
+            </v-btn>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
@@ -73,10 +131,11 @@
 import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {getAvailableForEvent} from '@/services/eventStatusTypeService'
-import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
+import {deleteRequest, getRequest, getSnackbar, postRequest, putRequest, handleHidingGlobalLoader} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters"
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import cloneDeep from "lodash.clonedeep";
 
 export default {
   name: 'EventComponents',
@@ -107,7 +166,10 @@ export default {
         {text: '', value: 'icons', show: false, width: '100px'},
       ],
       eventStatusTypeToDelete: null,
-      attachmentTypeToDelete: null
+      attachmentTypeToDelete: null,
+      positions: [],
+      positionsLoading: false,
+      hiddenPositionsChanged: false,
     }
   },
   computed: {
@@ -116,11 +178,12 @@ export default {
     },
     attachmentTypeToDeleteType(){
       return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
-    }
+    },
   },
   watch: {},
   created () {
     this.getEvent()
+    this.getPositions()
   },
   methods: {
     async getEvent () {
@@ -193,11 +256,58 @@ export default {
       }
       this.eventStatusTypeToDelete = null
     },
+    selectAllHidden () {
+      return this.event.hiddenWhiteListedPositions?.length === this.positions?.length
+    },
+    selectSomeHidden (f) {
+      return this.event.hiddenWhiteListedPositions?.length > 0 && !this.selectAllHidden(f)
+    },
+    icon () {
+      if (this.selectAllHidden()) {
+        return 'check_box'
+      }
+      if (this.selectSomeHidden()) {
+        return 'indeterminate_check_box'
+      }
+      return 'check_box_outline_blank'
+    },
+
+    toggleSelectAllPositionsOwner () {
+      this.$nextTick(() => {
+        if (this.selectAllHidden()) {
+          this.event.hiddenWhiteListedPositions = []
+          this.hiddenPositionsChanged = true
+        } else {
+          this.event.hiddenWhiteListedPositions = cloneDeep(this.positions)
+          this.hiddenPositionsChanged = true
+        }
+      })
+    },
+    async getPositions() {
+      if(this.positions?.length === 0) {
+        try {
+          this.positionsLoading = true
+          const {data, status} = await getRequest(`/position/withParent`)
+          this.positions = data
+          this.positionsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          this.positionsLoading = false
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    },
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+.header-bar {
+  border-bottom: 1px solid #E6E6E6;
 
+}
 </style>

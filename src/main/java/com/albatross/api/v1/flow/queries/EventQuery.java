@@ -120,6 +120,20 @@ public class EventQuery {
                resource_read_only,
                resource_hidden,
                archived,
+               hidden,
+               coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 17
+                           AND wlp.archived is not true
+                           and wlp.event_id = e.id) wlp), '[]') AS "hiddenWhiteListedPositions",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
                           FROM (

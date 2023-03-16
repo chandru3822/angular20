@@ -343,6 +343,13 @@ public class EventService {
           "companyEventStatusTypes",
           new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
 
+      TypeReference<List<WhiteListedPosition>> hiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "hiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(hiddenWhiteListedPositionsRef, objectMapper));
+
       TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
