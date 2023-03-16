@@ -27,8 +27,8 @@ public class ProjectProcessStepEvent {
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions, eventBanners;
-  private Boolean archived, readonly, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned;
-  private List<WhiteListedPosition> readonlyWhiteListedPositions, startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions, endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions, resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
+  private Boolean archived, readonly, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned;
+  private List<WhiteListedPosition> readonlyWhiteListedPositions, eventHiddenWhiteListedPositions, startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions, endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions, resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
 
 
   @Data
