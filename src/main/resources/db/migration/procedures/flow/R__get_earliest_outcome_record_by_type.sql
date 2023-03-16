@@ -17,7 +17,7 @@ BEGIN
       select distinct on (ppse2.start_time ,ppsecfv2.int_value) ppsecfv2.int_value::bigint, ppse2.start_time, ppse2.id::bigint
       from flow.project_process_step_event ppse
              inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
+             inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id in (1,3390)
              inner join flow.project_process_step_event ppse2 on ppse2.project_process_step_id = pps1.id
              inner join flow.project_process_step_event_custom_field_value ppsecfv2
                         on ppse2.id = ppsecfv2.project_process_step_event_id
@@ -40,7 +40,7 @@ BEGIN
         select distinct on (ppse2.start_time ) null::bigint, ppse2.start_time, ppse2.id::bigint
         from flow.project_process_step_event ppse
                inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-               inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id = 1
+               inner join flow.project_process_step pps1 on pps1.project_id = pps.project_id and pps1.process_step_id  in (1,3390)
                inner join flow.project_process_step_event ppse2 on ppse2.project_process_step_id = pps1.id
         where ppse.id = p_project_process_step_event_id
         order by ppse2.start_time

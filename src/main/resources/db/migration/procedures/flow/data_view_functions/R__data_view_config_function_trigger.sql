@@ -759,7 +759,7 @@ BEGIN
 
       end loop;
 
-    if new.process_step_event_id = 14 then
+    if new.process_step_event_id in (14,125) then
       if new.start_time is not null then
         perform flow.company_event_specific_tasks(v_company_id,
                                                   new.resource_id,
