@@ -1,4 +1,4 @@
-package com.albatross.api.v1.flow.services;
+package com.albatross.api.v1.flow.services.report;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.NotFoundException;
@@ -14,6 +14,10 @@ import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
+import com.albatross.api.v1.flow.services.OrgService;
+import com.albatross.api.v1.flow.services.SmartlistServicev1;
+import com.albatross.api.v1.flow.services.UserPositionService;
+import com.albatross.api.v1.flow.services.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,6 +69,8 @@ public class SmartlistService {
 
   private final UserPositionService userPositionService;
 
+  private final ReportEngine reportEngine;
+
   private final SmartlistServicev1 smartlistServicev1;
 
   private boolean isSmartlistAdmin() {
@@ -92,29 +98,55 @@ public class SmartlistService {
    * @param smartlist
    * @return
    */
-  private boolean isSharedWithCurrentUser(@NotNull Smartlist smartlist) {
+  private boolean isSharedWithCurrentUser(@NotNull Smartlist smartlist, @NotNull boolean checkEditAccess) {
     if (smartlist.getAccessControl().isEmpty()) {
       return false;
     }
 
     User user = securityService.getCurrentUser();
 
+    //check access by user position first since it takes priority over org
     List<Long> userPositionIds = user.getUserPositions().stream().map(UserPosition::getId).toList();
-    List<Long> orgIds = user.getUserPositions().stream().map(UserPosition::getOrgId).toList();
-
-    return smartlist.getAccessControl().stream().anyMatch(a -> {
+    var hasAccess = smartlist.getAccessControl().stream().anyMatch(a -> {
       if (a.getUserPositionId() != null) {
-        return userPositionIds.contains(a.getUserPositionId());
-      } else if (a.getOrgId() != null) {
-        return orgIds.contains(a.getOrgId());
+        var isMatch = userPositionIds.contains(a.getUserPositionId());
+
+        if (checkEditAccess) {
+          return isMatch && a.getAccessControlId() == 2;
+        } else {
+          return isMatch;
+        }
       }
 
       return false;
     });
+
+    if (!hasAccess) {
+      List<Long> orgIds = user.getUserPositions().stream().map(UserPosition::getOrgId).toList();
+      hasAccess = smartlist.getAccessControl().stream().anyMatch(a -> {
+        if (a.getOrgId() != null) {
+          var isMatch = orgIds.contains(a.getOrgId());
+
+          if (checkEditAccess) {
+            return isMatch && a.getAccessControlId() == 2;
+          } else {
+            return isMatch;
+          }
+        }
+
+        return false;
+      });
+    }
+
+    return hasAccess;
   }
 
-  public boolean currentUserHasAccess(@NotNull Smartlist smartlist) {
-    return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist);
+  public boolean userHasReadAccess(@NotNull Smartlist smartlist) {
+    return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist, false);
+  }
+
+  public boolean userHasWriteAccess(@NotNull Smartlist smartlist) {
+    return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist, true);
   }
 
   public Smartlist getById(Long id) {
@@ -128,7 +160,7 @@ public class SmartlistService {
     }
 
     //grant access to smartlist if user is owner, admin, or smartlist is public (public covers workqueue smartlists)
-    if (!currentUserHasAccess(smartlist) && !smartlist.isPublic()) {
+    if (!userHasReadAccess(smartlist) && !smartlist.isPublic()) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
@@ -155,6 +187,40 @@ public class SmartlistService {
     } else {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
+  }
+
+  public Smartlist addSmartlist(Smartlist smartlist) {
+    if (!smartlistServicev1.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("ownerId", user.getId());
+    params.put("createdById", user.trueUserId());
+    Long smartlistId = sqlCache.updateBySqlReturningId(SmartlistQuery.add, params, "id").longValue();
+    return getById(smartlistId);
+  }
+
+  public void updateSmartlist(Smartlist smartlist) {
+
+    var existingSmartlist = getById(smartlist.getId());
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    final boolean updatingName = !existingSmartlist.getName().trim().equalsIgnoreCase(smartlist.getName().trim().toLowerCase());
+
+    if (updatingName && !smartlistServicev1.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(SmartlistQuery.update, params);
   }
 
   @Transactional
@@ -390,6 +456,7 @@ public class SmartlistService {
     Smartlist smartlist = this.getById(smartlistId);
 
     List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
@@ -404,18 +471,18 @@ public class SmartlistService {
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
     if (smartlist.isProjectDetails()) {
-      query = smartlistServicev1.buildProjectDetailsSql(smartlist.toOriginal());
+      query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements);
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
       if (smartlist.getObjectTypeId() == 4) {
-        query = smartlistServicev1.buildProcessStepSql(smartlist.toOriginal(), fields);
+        query = reportEngine.buildProcessStepSql(smartlist, fields, requirements);
       } else {
-        query = smartlistServicev1.buildEventSql(smartlist.toOriginal(), fields, null, null);
+        query = reportEngine.buildEventSql(smartlist, fields, requirements, null, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
-        query = smartlistServicev1.buildWorkQueueSql(smartlist.toOriginal(), fields, true, timezone);
+        query = reportEngine.buildWorkQueueSql(smartlist, fields, true, timezone);
       } else {
-        query = smartlistServicev1.buildSql(smartlist.toOriginal(), fields, timezone, null, false);
+        query = reportEngine.buildSql(smartlist, fields, requirements, timezone, null, false);
       }
     }
 
@@ -612,8 +679,8 @@ public class SmartlistService {
   @Transactional
   public Smartlist copy(Long smartlistId) {
 
-    User user = securityService.getCurrentUser();
     Smartlist smartlist = getById(smartlistId);
+    User user = securityService.getCurrentUser();
 
     long copyNumber = 0L;
     String newName;
@@ -670,6 +737,54 @@ public class SmartlistService {
     }
 
     return requirements;
+  }
+
+  public SmartlistRequirement addRequirement(Long smartlistId, SmartlistRequirement requirement) {
+
+    if (!Objects.equals(smartlistId, requirement.getSmartlistId())) {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Given smartlist ID must match requirement smartlist ID",
+        new RuntimeException("Given smartlist ID must match requirement smartlist ID")
+      );
+    }
+
+    var smartlist = getById(smartlistId);
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", user.trueUserId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
+    Long requirementId = sqlCache.updateBySqlReturningId(SmartlistQueryv1.addRequirement, params, "id").longValue();
+
+    if (smartlist.isProjectDetails()) {
+      return smartlistServicev1.getProjectDetailsRequirementById(requirementId);
+    } else {
+      return smartlistServicev1.getRequirementById(requirementId);
+    }
+  }
+
+  public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
+    var smartlist = getById(requirement.getSmartlistId());
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", securityService.getCurrentUser().trueUserId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
+    sqlCache.updateBySql(SmartlistQueryv1.updateRequirement, params);
+
+    if (smartlist.isProjectDetails()) {
+      return smartlistServicev1.getProjectDetailsRequirementById(requirement.getId());
+    } else {
+      return smartlistServicev1.getRequirementById(requirement.getId());
+    }
   }
 
   // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp

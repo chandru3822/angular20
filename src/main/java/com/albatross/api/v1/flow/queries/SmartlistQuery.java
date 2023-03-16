@@ -309,6 +309,29 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String add = """
+    insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
+    values (:name, :companyObjectTypeId, :public, :ownerId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
+    returning id;
+  """;
+
+  //language=PostgreSQL
+  public final static String update = """
+    update flow.smartlist
+    set
+      name = :name,
+      company_object_type_id = :companyObjectTypeId,
+      public = :public,
+      modified_by_id = :userId,
+      date_modified = now(),
+      project_details = :projectDetails,
+      main_process_steps = :mainProcessSteps,
+      primary_user_position = :primaryUserPosition
+    where
+      id = :id;
+    """;
+
+  //language=PostgreSQL
   public final static String getAvailableAccess = """
     select
       id as "access_control_id",
