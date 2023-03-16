@@ -263,7 +263,8 @@ import SmartlistRequirement from './SmartlistRequirement'
 import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import Smartlist from '@/views/flow/smartlist/Smartlist'
 
 export default {
   name: 'Smartlist',
@@ -322,7 +323,17 @@ export default {
       return false
     },
     canEdit () {
-      return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      if (!this.smartlist?.id) {
+        return false
+      }
+
+      if (this.$store.state.user.details.id === this?.smartlist?.ownerId ||
+          this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      ) {
+        return true
+      }
+
+      return Smartlist.userCanEdit(this.smartlist)
     },
     canDelete () {
       return ((!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) && this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
