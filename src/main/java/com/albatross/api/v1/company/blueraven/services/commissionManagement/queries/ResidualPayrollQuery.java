@@ -15,8 +15,7 @@ public class ResidualPayrollQuery {
   //language=PostgreSQL
   public final static String search = """
     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-    FROM (SELECT r.period_end as "periodEnd",
-                 r.id,
+    FROM (SELECT r.id,
                  r.description,
                  (SELECT sum(dcs1.residual_total)
                   FROM brs.user_residual_snapshot dcs1
@@ -24,13 +23,11 @@ public class ResidualPayrollQuery {
           FROM brs.residual r
                  INNER JOIN brs.user_residual_snapshot dcs ON r.id = dcs.residual_id
                  INNER JOIN flow.user prj ON dcs.user_id = prj.id
-          WHERE CASE WHEN :startDate:: DATE IS NOT NULL
-                       THEN r.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
             AND CASE WHEN :userId:: INTEGER IS NOT NULL
                        THEN prj.id = :userId:: INTEGER ELSE 1 = 1 END
 
-          GROUP BY r.id, r.period_end
-          ORDER BY r.period_end desc
+          GROUP BY r.id
+          ORDER BY r.paid_date desc
 
           ) AS sub_rows
     """;
@@ -46,8 +43,10 @@ public class ResidualPayrollQuery {
   public final static String getById = """
     SELECT row_to_json(residual) AS residual
     FROM (SELECT p.id,
-                 p.period_end                                              AS "periodEnd",
                  p.paid_date                                               AS "paidDate",
+                 p.period_start as "periodStart",
+                 p.period_end as "periodEnd",
+                 p.grace_period_end as "gracePeriodEnd",
                  p.description,
                  p.selected_user_ids                                       AS "selectedUserIds",
                  ps.payroll_status                                         AS "status",
@@ -60,10 +59,10 @@ public class ResidualPayrollQuery {
 
   //language=PostgreSQL
   public final static String getApprovedResiduals = """
-    SELECT DISTINCT p.id, p.period_end
+    SELECT DISTINCT p.id
     FROM brs.residual p
     WHERE  p.payroll_status_id = 3 -- 3 means APPROVED
-    ORDER BY p.period_end DESC, p.id DESC;
+    ORDER BY p.id DESC;
     """;
 
   //language=PostgreSQL
@@ -156,7 +155,7 @@ public class ResidualPayrollQuery {
   //language=PostgreSQL
   public final static String updateResidual = """
     UPDATE brs.residual
-    SET period_end        = :periodEndDate::date,
+    SET
       description       = :description,
       modified_by_id        = :currentUserId,
       selected_user_ids = coalesce(:userIds::BIGINT[], '{}'::bigint[]),

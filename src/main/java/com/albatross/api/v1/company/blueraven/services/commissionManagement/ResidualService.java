@@ -7,7 +7,6 @@ import com.albatross.api.v1.company.blueraven.enums.commissionManagement.Commiss
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.ResidualQuery;
 import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.project.Project;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -154,6 +153,7 @@ public class ResidualService {
   }
 
   public void insertUser(Long planId, PlanUser user) {
+    User currentUser = securityService.getCurrentUser();
     final Date newStartDate = user.getStartDate();
 
     Map<String, Object> params = new HashMap<>();
@@ -161,6 +161,7 @@ public class ResidualService {
     params.put("userId", user.getUserId());
     params.put("startDate", newStartDate);
     params.put("endDate", user.getEndDate());
+    params.put("currentUserId", currentUser.trueUserId());
 
     if (user.getId() != null) {
       params.put("id", user.getId());
@@ -168,6 +169,7 @@ public class ResidualService {
     } else {
       sqlCache.updateBySql(ResidualQuery.insertPlanEndDate, params);
       sqlCache.updateBySql(ResidualQuery.insertPlanUser, params);
+      sqlCache.updateBySql(ResidualQuery.updateUserResidualPlans, params);
     }
   }
 

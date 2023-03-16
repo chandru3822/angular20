@@ -87,21 +87,12 @@
         <v-row>
           <v-col cols="12" sm="6">
             <v-card flat color="transparent" class="pa-3">
-              <v-text-field text readonly label="Payroll ID #" v-model="currentResidual.id"></v-text-field>
-              <DatetimePickerInput
-                v-model="currentResidual.periodEnd"
-                :timezone="this.timezone"
-                :readonly="!userCanEdit"
-                :disabled="!userCanEdit"
-                :type="'date'"
-                :format="'MMMM DD, YYYY'"
-                label="Period Ending"
-              />
+              <v-text-field text readonly disabled label="Payroll ID #" v-model="currentResidual.id"></v-text-field>
               <v-text-field text
                             label="Description"
                             placeholder=" "
-                            :readonly="!userCanEdit"
-                            :disabled="!userCanEdit"
+                            readonly
+                            disabled
                             v-model="currentResidual.description"></v-text-field>
 
               <div class="text-left">
@@ -499,13 +490,7 @@
           this.masterSelectedUserIds = cloneDeep(this.currentResidual.userIds)
           this.getStatusColor()
           this.payrollLoading = false
-          this.additionalPayrollDataNeeded = null == this.currentResidual.periodEnd || null == this.currentResidual.description
-          // if(null != this.currentPayroll.periodEnd) {
-          //   await this.getAccountingData()
-          // } else {
-          //   this.dataLoading = false
-          //   this.accountingData = []
-          // }
+          this.additionalPayrollDataNeeded = null == this.currentResidual.description
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -582,7 +567,6 @@
       async saveChangesToResidual (keepLoading) {
         let params = {
           description: this.currentResidual.description,
-          periodEnd: this.currentResidual.periodEnd,
           userIds: this.currentResidual.selectedUserIds
         }
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -592,14 +576,10 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.currentResidual = data
           this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
-          this.additionalPayrollDataNeeded = null == this.currentResidual.periodEnd || null == this.currentResidual.description
+          this.additionalPayrollDataNeeded = null == this.currentResidual.description
           this.getStatusColor()
-          if(null != this.currentResidual.periodEnd) {
-            await this.getCurrentResidual()
-          } else {
-            this.dataLoading = false
-            this.accountingData = []
-          }
+          await this.getCurrentResidual()
+
           if(!keepLoading) {
             this.$store.commit(AppMutations.SET_LOADING, false)
           }

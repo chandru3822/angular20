@@ -44,10 +44,11 @@ public class CloserDashboardService {
         .get(0);
   }
 
-  public String getCloserResiduals() {
+  public String getCloserResiduals(String residualDate) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
+    params.put("residualDate", residualDate);
 
     return sqlCache
              .getBySql(CloserDashboardQuery.getCloserResiduals, params, new SingleColumnRowMapper<>(String.class))
