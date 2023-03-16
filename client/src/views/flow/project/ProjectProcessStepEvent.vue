@@ -230,7 +230,7 @@
               <v-toolbar-title>Lead Allocation</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="py-0">
-              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !userIsAdmin">
+              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !showRemoteSearch && !userIsAdmin">
                 You do not have access to schedule projects in this Postal Code
               </v-card-text>
               <v-row class="pb-3 px-0 one-hunned" v-else>
