@@ -130,7 +130,7 @@
                   />
                   <ConfirmationDialog :open-dialog="showToggleDialog"
                                       @confirm="[showToggleDialog = false, toggleProjectDetails()]"
-                                      @close-dialog="resetToggleProjectDetails"
+                                      @cancel="resetToggleProjectDetails"
                   >
                     <template v-slot:title>Confirm</template>
                     Toggling project details will reset your smartlist, are you sure you want to continue?
@@ -566,7 +566,7 @@ export default {
     async toggleProjectDetails () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}/toggleProjectDetails`)
+        const {status} = await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
         this.refreshData = true
         this.requirements = []
         handleHidingGlobalLoader(this, status)

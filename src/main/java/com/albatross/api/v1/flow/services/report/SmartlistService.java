@@ -189,6 +189,44 @@ public class SmartlistService {
     }
   }
 
+  @Transactional
+  public Smartlist updateObjectType(Smartlist smartlist) {
+    var existingSmartlist = getById(smartlist.getId());
+
+    if (!userHasWriteAccess(existingSmartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    smartlist.setProjectDetails(false);
+
+    if (!List.of(3, 5).contains(smartlist.getObjectTypeId().intValue())) {
+      smartlist.setPrimaryUserPosition(false);
+    }
+
+    if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+      smartlist.setPrimaryUserPosition(true);
+      smartlist.setMainProcessSteps(true);
+    }
+
+    updateSmartlist(smartlist);
+    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
+    return getById(smartlist.getId());
+  }
+
+  @Transactional
+  public void updateProjectDetails(Long smartlistId) {
+    var smartlist = getById(smartlistId);
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    smartlist.setProjectDetails(!smartlist.isProjectDetails());
+    this.updateSmartlist(smartlist);
+
+    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
   public Smartlist addSmartlist(Smartlist smartlist) {
     if (!smartlistServicev1.isNameUnique(smartlist.getName())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
@@ -206,7 +244,7 @@ public class SmartlistService {
 
     var existingSmartlist = getById(smartlist.getId());
 
-    if (!userHasWriteAccess(smartlist)) {
+    if (!userHasWriteAccess(existingSmartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 

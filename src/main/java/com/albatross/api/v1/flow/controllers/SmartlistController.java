@@ -158,4 +158,17 @@ public class SmartlistController {
     smartlistService.updateOwner(smartlistId, newOwner);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
+
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PutMapping(value = "/{smartlistId}/toggleProjectDetails")
+  public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
+    smartlistService.updateProjectDetails(smartlistId);
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PutMapping(value = "/{smartlistId}/toggleObjectType", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Smartlist> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
+    return new ResponseEntity<>(smartlistService.updateObjectType(smartlist), HttpStatus.OK);
+  }
 }
