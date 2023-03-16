@@ -373,7 +373,6 @@ export default {
       return this.processStep.hiteListedPositions?.length > 0 && !this.selectAllReadOnly(f)
     },
     iconOwner () {
-      debugger
       if (this.selectAllReadOnly()) {
         return 'check_box'
       }
@@ -384,7 +383,6 @@ export default {
     },
     toggleSelectAllPositionsOwner () {
       this.$nextTick(() => {
-        debugger
         if (this.selectAllReadOnly()) {
           this.processStep.whiteListedPositions = []
           this.readOnlyPositionsChanged = true
