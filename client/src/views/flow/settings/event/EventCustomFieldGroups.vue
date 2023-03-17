@@ -100,7 +100,7 @@
                     <template v-slot:prepend-item>
                     <v-list-item
                         ripple
-                        @click="toggleHiddenSelectAllPositions(event, 'startTimeHiddenWhiteListedPositions')"
+                        @click="event.startTimeHiddenPositionsChanged = true; toggleHiddenSelectAllPositions(event, 'startTimeHiddenWhiteListedPositions')"
                     >
                       <v-list-item-action>
                         <v-icon>{{ icon(event, 'startTimeHiddenWhiteListedPositions') }}</v-icon>
@@ -207,10 +207,11 @@
                         height="35px"
                         class="mr-3 mt-3"
                         @change="event.endTimeHiddenPositionsChanged = true">
+
                       <template v-slot:prepend-item>
                         <v-list-item
                             ripple
-                            @click="[event.endTimePositionsChanged = true, toggleSelectAllPositions(event, 'endTimeHiddenWhiteListedPositions')]"
+                            @click="[event.endTimeHiddenPositionsChanged = true, toggleSelectAllPositions(event, 'endTimeHiddenWhiteListedPositions')]"
                         >
                           <v-list-item-action>
                             <v-icon>{{ icon(event, 'endTimeHiddenWhiteListedPositions') }}</v-icon>
@@ -857,7 +858,6 @@ export default {
       try {
         const {data} = await getRequest(`/event/${this.eventId}`)
         this.event = data
-        console.log(data)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
