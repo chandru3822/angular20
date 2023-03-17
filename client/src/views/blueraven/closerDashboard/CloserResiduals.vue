@@ -11,7 +11,7 @@
               <input type="month" id="viewing-date" name="viewing-date"
                      :min="minDate"
                      :max="maxDate"
-                     required="required"
+                     :required="true"
                      @input="loadResidualData()"
                      v-model="viewingDataFor">
               <v-btn text class="ml-2" @click="setViewingDate(true)"
@@ -242,7 +242,8 @@
       SpinnerInline,
     },
     computed: {},
-    watch: {},
+    watch: {
+    },
     created () {
       this.loadResidualData()
     },
@@ -316,11 +317,10 @@
         this.$router.push(`/project/${projectId}`)
       },
       async loadResidualData () {
-        console.log('randaLogger', this.viewingDataFor)
-        console.log('formatted', moment(this.viewingDataFor).format('YYYY-MM-DD'))
         this.$store.commit(AppMutations.SET_LOADING, true)
         this.dataLoading = true
         try {
+          this.viewingDataFor = this.viewingDataFor === '' ? this.currentMonth : this.viewingDataFor
           let params = {
             residualDate: moment(this.viewingDataFor).format('YYYY-MM-DD')
           }
@@ -360,6 +360,10 @@
 
 .residual-total-count {
   font-size: 14px;
+}
+
+input::-webkit-clear-button {
+  display: none;
 }
 
 </style>
