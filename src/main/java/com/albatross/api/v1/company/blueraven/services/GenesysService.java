@@ -734,9 +734,6 @@ public class GenesysService {
 
     String phoneNumber = callGroupPhoneNumber.get().getPhoneNumber();
 
-    // Increment call count of the number used
-    params.put("currentlyUsedId", callGroupPhoneNumber.get().getId());
-
     // Add a row to the phone log table
     params.put("callGroupId", callGroupPhoneNumber.get().getCallGroupId());
     params.put("phoneNumber", phoneNumber);
