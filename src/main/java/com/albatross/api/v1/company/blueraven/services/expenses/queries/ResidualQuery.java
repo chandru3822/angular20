@@ -31,7 +31,7 @@ public class ResidualQuery {
   public final static String getAllPlans = """
     select rp.id,
            rp.name,
-           rp.residual_status_id,
+           rp.residual_plan_status_id,
            rps.status_type,
            rp.position_id,
            p.position,
@@ -39,7 +39,7 @@ public class ResidualQuery {
            rp.description,
            rp.notes
     from brs.residual_plan rp
-        inner join brs.residual_plan_status rps on rps.id = rp.residual_status_id
+        inner join brs.residual_plan_status rps on rps.id = rp.residual_plan_status_id
         inner join flow.position p on p.id = rp.position_id
     """;
 
@@ -50,7 +50,7 @@ public class ResidualQuery {
                  rps.status_type as "statusType",
                  rp.name,
                  rp.description,
-                 rp.residual_status_id as "residualStatusId",
+                 rp.residual_plan_status_id as "residualPlanStatusId",
                  concat(cu.first_name, ' ', cu.last_name) AS "createdName",
                  concat(au.first_name, ' ', au.last_name) AS "approvedName",
                  rp.created_by as "createdBy",
@@ -97,7 +97,7 @@ public class ResidualQuery {
                                  WHERE rpu.residual_plan_id = rp.id
                                  GROUP BY rpu.id, u.id) AS users), '[]')                    AS users
           FROM brs.residual_plan rp
-                   INNER JOIN brs.residual_plan_status rps ON rp.residual_status_id = rps.id
+                   INNER JOIN brs.residual_plan_status rps ON rp.residual_plan_status_id = rps.id
                    LEFT JOIN flow.user cu ON rp.created_by = cu.id
                    LEFT JOIN flow.user au ON rp.approved_by = au.id
           WHERE rp.id = :planId) sub_rows;
@@ -105,7 +105,7 @@ public class ResidualQuery {
 
   //language=PostgreSQL
   public final static String createPlan = """
-    insert into brs.residual_plan(name, residual_status_id, position_id, created, created_by, description)
+    insert into brs.residual_plan(name, residual_plan_status_id, position_id, created, created_by, description)
     values(:name, 1, 1, now(), :createdBy, :description)
     """;
 
@@ -126,11 +126,11 @@ public class ResidualQuery {
                  rpu.end_date    AS "endDate",
                  rp.name         ,
                  rps.status_type AS status,
-                 rp.residual_status_id    AS residualStatusId,
+                 rp.residual_plan_status_id    AS residualPlanStatusId,
                  rp.id
           FROM brs.residual_plan_user rpu
                    INNER JOIN brs.residual_plan rp ON rpu.residual_plan_id = rp.id
-                   INNER JOIN brs.residual_plan_status rps ON rp.residual_status_id = rps.id
+                   INNER JOIN brs.residual_plan_status rps ON rp.residual_plan_status_id = rps.id
           WHERE rpu.user_id = :userId
           ORDER BY rpu.end_date DESC) aup;
     """;
@@ -153,7 +153,7 @@ public class ResidualQuery {
                                             rpu.end_date
                                      FROM brs.residual_plan rp
                                             INNER JOIN brs.residual_plan_user rpu ON rp.id = rpu.residual_plan_id
-                                     WHERE rp.residual_status_id <> 3
+                                     WHERE rp.residual_plan_status_id <> 3
                                        AND rpu.end_date IS NULL
                                        AND rpu.start_date <= :startDate
                                        AND rpu.user_id = :userId)
@@ -220,7 +220,7 @@ public class ResidualQuery {
     UPDATE brs.residual_plan
     SET approved  = now(),
       approved_by = :approvedBy,
-      residual_status_id   = :statusId
+      residual_plan_status_id   = :statusId
     WHERE id = :planId
     """;
 

@@ -11,7 +11,6 @@ import lombok.Setter;
 @Setter
 public class ResidualPlanAllocation {
 
-    private Long id, residualPlanId, level, nbrFdcLower, nbrFdcUpper;
-    private String name;
-    private Double total;
+    private Long id, residualPlanId, min, max, allocation, fdcCount;
+    private Double partialAllocation;
 }

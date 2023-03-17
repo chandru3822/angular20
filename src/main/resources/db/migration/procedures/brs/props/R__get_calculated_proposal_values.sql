@@ -909,7 +909,31 @@ BEGIN
                                                                              inner join group_uuid_prop_misc g1
                                                                                         on g1.proposal_group_uuid = vv2.proposal_group_uuid
                                                                              inner join brs.custom_field cf on cf.id = vv2.field_id
-                                                                             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
+                                                                             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                                      where not exists(select id from version_values v where v.proposal_group_uuid = vv2.proposal_group_uuid and
+                                                                                                                             v.field_id = 329 and
+                                                                                                                             (v.value ->>'value')::boolean is true)),
+                                            group_uuid_default_adders as (select vv.proposal_group_uuid
+                                                                         from version_values vv
+                                                                         where vv.object_code = 'PROPOSAL_MISC_ADDERS'
+                                                                           and vv.field_id = 126
+                                                                           and vv.proposal_version_id <= v_version_id),
+                                            default_adder_results as (select vv2.proposal_group_uuid,
+                                                                            vv2.field_id,
+                                                                            vv2.field_name,
+                                                                            cdt.data_type_id,
+                                                                            (vv2.value ->> 'value')::text    as value,
+                                                                            vv2.object_code,
+                                                                            (vv2.value ->> 'intValue')::text as int_value
+                                                                     from version_values vv2
+                                                                            inner join group_uuid_default_adders g
+                                                                                       on g.proposal_group_uuid = vv2.proposal_group_uuid
+                                                                            inner join brs.custom_field cf on cf.id = vv2.field_id
+                                                                            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                                     where exists(select id from version_values v where v.proposal_group_uuid = vv2.proposal_group_uuid and
+                                                                         v.field_id = 329 and
+                                                                         (v.value ->>'value')::boolean is true)),
+
                                             source_adders as (select p.id as project_id,
                                                                      pps.id,
                                                                      pd.source,
@@ -1170,6 +1194,16 @@ BEGIN
                                               pmr.object_code,
                                               pmr.int_value
                                        from proposal_misc_results pmr
+                                       union
+                                       select dar.proposal_group_uuid,
+                                              dar.field_id,
+                                              dar.field_name,
+                                              dar.data_type_id,
+                                              dar.value,
+                                              null::bigint,
+                                              dar.object_code,
+                                              dar.int_value
+                                       from default_adder_results dar
                                        union
                                        select sar.proposal_group_uuid,
                                               sar.field_id,
@@ -2140,5 +2174,7 @@ $BODY$
   LANGUAGE plpgsql VOLATILE
                    COST 100;
 --ROWS 1000;
+
+
 
 

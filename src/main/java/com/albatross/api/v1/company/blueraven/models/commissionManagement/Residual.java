@@ -2,7 +2,6 @@ package com.albatross.api.v1.company.blueraven.models.commissionManagement;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.data.annotation.Id;
 
 /**
  * Created by randa on 4/13/17.
@@ -12,6 +11,12 @@ import org.springframework.data.annotation.Id;
 @Setter
 public class Residual {
 
-    @Id
-    private Long id;
+    private String firstName, lastName, employeeId, regionName, officeName, officeState, userPositionName,
+      userFullName, userStatusType, hireDate, residualStartDate;
+
+    private Long userId, lifetimeFdc, qualifiedThisPeriodFdc, fdsNotQualified, requiredFdcPerMonth;
+
+    private Boolean residualEarned;
+
+    private Double percentOfResidualEarned, potentialResidual, earnedResidual, clawback, adjustmentOverride, total;
 }
