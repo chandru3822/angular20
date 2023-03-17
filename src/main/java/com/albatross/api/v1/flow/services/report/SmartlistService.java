@@ -272,7 +272,7 @@ public class SmartlistService {
 
     //verify smartlist is currently shared with new owner
     var currentAccess = smartlist.getAccessControl().stream()
-                                                       .filter(i -> i.getUserPositionId().equals(newOwner.getUserPositionId()))
+                                                       .filter(i -> Objects.equals(i.getUserPositionId(), newOwner.getUserPositionId()))
                                                        .findFirst()
                                                        .orElse(null);
 
@@ -299,24 +299,23 @@ public class SmartlistService {
     Map<String, Object> deleteParams = Map.of("id", currentAccess.getId(), "userId", user.getId(), "smartlistId", smartlistId);
     sqlCache.updateBySql(SmartlistQuery.deleteAccess, deleteParams);
 
-    //give old owner edit access
+    //give old owner edit access if not system or smartlist admin
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
-    if (oldOwnerPosition == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original owner not found", new NotFoundException("Original owner not found"));
-    }
 
-    try {
-      Map<String, Object> params = new HashMap<>();
-      params.put("smartlistId", smartlistId);
-      params.put("orgId", null);
-      params.put("userPositionId", oldOwnerPosition.getId());
-      params.put("accessControlId", 2);
-      params.put("userId", user.getId());
-      sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
-              .longValue();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
+    if (oldOwnerPosition == null && !isSmartlistAdmin()) {
+      try {
+        Map<String, Object> params = new HashMap<>();
+        params.put("smartlistId", smartlistId);
+        params.put("orgId", null);
+        params.put("userPositionId", oldOwnerPosition.getId());
+        params.put("accessControlId", 2);
+        params.put("userId", user.getId());
+        sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
+                .longValue();
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
+      }
     }
   }
 
