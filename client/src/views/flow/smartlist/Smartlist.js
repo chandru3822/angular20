@@ -8,6 +8,7 @@ export default class Smartlist {
    * Current user can edit smartlist if smartlist is shared (with edit access) with user's primary position or an org containing user's primary position
    *
    * @param smartlist
+   * @param checkEditAccess
    * @returns boolean
    */
     static #isSharedWithCurrentUser (smartlist, checkEditAccess) {
