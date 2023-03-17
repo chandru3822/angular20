@@ -59,10 +59,30 @@
           </v-col>
         </v-row>
 
-        <v-list
-          v-if="currentAccess.length > 0"
-          class="bordered rounded-lg"
-        >
+        <v-list class="bordered rounded-lg">
+            <v-list-item>
+              <v-row>
+                <v-col
+                  cols="6"
+                  align-self="center"
+                  class="py-0"
+                >
+                  <span class="default-text-color">{{ smartlist.owner }}</span>
+                  <div class="position">
+                    {{ smartlist.ownerPosition }}
+                  </div>
+                </v-col>
+
+                <v-col
+                  cols="6"
+                  align-self="center"
+                  class="py-0"
+                >
+                  Owner
+                </v-col>
+              </v-row>
+            </v-list-item>
+
             <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)">
               <v-row>
                 <v-col
@@ -89,9 +109,7 @@
                     item-value="accessControlId"
                     @input="[accessLevel.updated = true, accessLevel.deleted = false]"
                   >
-                    <template
-                      #append-item
-                    >
+                    <template #append-item>
                       <v-divider/>
                       <v-list-item
                         v-if="accessLevel.isUser"

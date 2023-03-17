@@ -22,11 +22,16 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      p.position as owner_position
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    left join flow.user_position up on up.user_id = s.owner_id and
+                                      up.primary_flag is true and
+                                      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
+    left join flow.position p on p.id = up.position_id
     where
       cot.company_id = :companyId and
       s.owner_id = :userId and
@@ -171,11 +176,16 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      p.position as owner_position
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    left join flow.user_position up on up.user_id = u.id and
+                                       up.primary_flag is true and
+                                       (up.end_date is null or (up.end_date is not null and up.end_date > now()))
+    left join flow.position p on p.id = up.position_id
     where
       cot.company_id = :companyId and
       s.archived is not true and
@@ -204,6 +214,7 @@ public class SmartlistQuery {
       cot.object_type_id,
       cot.company_id,
       concat(u.first_name, ' ', u.last_name) as owner,
+      p.position as owner_position,
       coalesce((
        select array_to_json(array_agg(row_to_json(eventWorkQueueTypes)))
        from (
@@ -288,12 +299,12 @@ public class SmartlistQuery {
                sac.access_control_id as "accessControlId",
                ac.access_level as "accessLevel",
                case when sac.org_id is not null then o.org_name else u.first_name || ' ' || u.last_name end as "name",
-               p.position
+               p1.position
              from flow.smartlist_access_control sac
              inner join flow.access_control ac on sac.access_control_id = ac.id
-             left join flow.user_position up on sac.user_position_id = up.id
-             left join flow.user u on up.user_id = u.id
-             left join flow.position p on up.position_id = p.id
+             left join flow.user_position up1 on sac.user_position_id = up1.id
+             left join flow.user u on up1.user_id = u.id
+             left join flow.position p1 on up1.position_id = p1.id
              left join flow.org o on sac.org_id = o.id
              where
                sac.smartlist_id = s.id and
@@ -303,6 +314,10 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    left join flow.user_position up on up.user_id = u.id and
+                                      up.primary_flag is true and
+                                      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
+    left join flow.position p on p.id = up.position_id
     where s.id = :smartlistId and
           cot.company_id = :companyId and
           s.archived is not true
