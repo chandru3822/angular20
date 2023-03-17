@@ -372,6 +372,7 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import SpinnerInline from '@/components/SpinnerInline'
 import Vue2Filters from 'vue2-filters'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
+import {hideEvent} from "./eventHelpers";
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -415,6 +416,7 @@ export default {
       collapsedAttachments: false,
       processStepId: null,
       processStep: {},
+      existingEvents: [],
       customFieldGroups: [],
       isProcessStepLoading: true,
       dirtyCfvs: [],
@@ -567,7 +569,11 @@ export default {
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
+          debugger
           // this.contactId = this.processStep.contactId
+          this.existingEvents = this.processStep.projectProcessStepEvents.filter(ppse => {
+
+          })
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
           if (reloadAll) {
             //dont reload if only doing simple refresh
@@ -787,6 +793,7 @@ export default {
       try {
         const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
+        debugger
         if(!this.$store.getters.isFullAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
           this.processStepEvents = this.processStepEvents.filter(pse => {
                 if(pse.readonly) {
@@ -797,6 +804,10 @@ export default {
                     }
                   }
                   return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
+                }
+                else if(hideEvent(pse, this.$store)){
+                  return false
+                  //if the event itself is set to hidden for this user, the user should not see the event
                 }
                 return true //if the event is not readonly, the user should see the event
               })
