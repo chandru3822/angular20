@@ -3,12 +3,21 @@
     <v-row>
       <v-col cols="12">
           <v-toolbar color="white" class="elevation-1">
-            <v-toolbar-title class="app-title">
+            <v-toolbar-title class="app-title flex-display">
+              <v-btn text class="mr-2" @click="setViewingDate(false)"
+                  :disabled="viewingDataFor === minDate">
+                <v-icon>mdi-chevron-left</v-icon>
+              </v-btn>
               <input type="month" id="viewing-date" name="viewing-date"
                      :min="minDate"
                      :max="maxDate"
+                     required="required"
                      @input="loadResidualData()"
                      v-model="viewingDataFor">
+              <v-btn text class="ml-2" @click="setViewingDate(true)"
+                   :disabled="viewingDataFor === currentMonth">
+                <v-icon>mdi-chevron-right</v-icon>
+              </v-btn>
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -20,7 +29,7 @@
           </v-toolbar>
       </v-col>
     </v-row>
-    <div   v-if="!dataLoading && residualData">
+    <div   v-if="!dataLoading && residualData && residualData.user_id">
       <v-row>
         <v-col cols="12" md="4">
           <table class="residual-table">
@@ -214,6 +223,9 @@
       </v-card-text>
     </v-card>
     </div>
+    <v-card class="square-card pa-5" v-else-if="!dataLoading">
+      You are not assigned to a residual plan.  Please contact an administrator.
+    </v-card>
   </v-container>
 </template>
 
@@ -243,6 +255,7 @@
         totalQualifyingSearch: '',
         minDate: '2023-02',
         maxDate: moment().format('YYYY-MM'),
+        currentMonth: moment().startOf('month').format('YYYY-MM'),
         viewingDataFor: moment().startOf('month').format('YYYY-MM'),
         dataLoading: true,
         totalQualifyingFdcHeaders: [
@@ -294,10 +307,11 @@
       }
     },
     methods: {
-      // setViewingDate(isCurrent) {
-      //   this.viewingDataFor = isCurrent ? moment().startOf('month') : moment().startOf('month').subtract(1, 'month').format('YYYY-MM')
-      //   this.loadResidualData()
-      // },
+      setViewingDate(goForward) {
+        this.viewingDataFor = goForward ? moment(this.viewingDataFor).add(1, 'month').format('YYYY-MM')
+            : moment(this.viewingDataFor).subtract(1, 'month').format('YYYY-MM')
+        this.loadResidualData()
+      },
       goToProject(projectId) {
         this.$router.push(`/project/${projectId}`)
       },
