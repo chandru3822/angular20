@@ -106,7 +106,7 @@
               </td>
               <td class="text-left">{{item.requiredFdcPerMonth}}</td>
               <td class="text-left">{{item.residualEarned ? 'Yes' : 'No'}}</td>
-              <td class="text-left">{{item.percentOfResidualEarned}}%</td>
+              <td class="text-left">{{item.percentOfResidualEarned | percent(0)}}</td>
               <td class="text-left">{{item.potentialResidual | currency('$', 0)}}</td>
               <td class="text-left">{{item.earnedResidual | currency('$', 0)}}</td>
               <td class="text-left">{{item.clawback | currency('$', 0)}}</td>
