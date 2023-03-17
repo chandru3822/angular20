@@ -199,8 +199,8 @@ public class CallGroupQuery {
   //language=PostgreSQL
   public final static String getLowestCallsCallGroupNumber = """
     with activeNumbers as (select phone_number, cg.id from brs.call_group_phone_number cgpn
-                                                        inner join brs.call_group_postal_code cgpc on cgpn.call_group_id = cgpc.call_group_id
-                                                        inner join brs.call_group cg on cg.id = cgpn.call_group_id
+                                                      inner join brs.call_group_postal_code cgpc on cgpn.call_group_id = cgpc.call_group_id
+                                                      inner join brs.call_group cg on cg.id = cgpn.call_group_id
                            where cgpc.postal_code = :postalCode and cg.active is true and cgpn.active is true
                              and cg.archived is not true and cgpc.archived is not true),
     totals as (select cgpl.phone_number, cg.id, count(1) as call_count
