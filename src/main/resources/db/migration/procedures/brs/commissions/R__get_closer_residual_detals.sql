@@ -327,3 +327,7 @@ $BODY$
   VOLATILE
   COST 100;
 
+
+
+select *
+from flow.user;
