@@ -569,7 +569,6 @@ export default {
           this.processStep = {...data, newStatusToUse: {NEW_STATUS_TO_USE}}
           this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
-          debugger
           // this.contactId = this.processStep.contactId
           this.existingEvents = this.processStep.projectProcessStepEvents.filter(ppse => {
 
@@ -793,7 +792,6 @@ export default {
       try {
         const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
         this.processStepEvents = data
-        debugger
         if(!this.$store.getters.isFullAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
           this.processStepEvents = this.processStepEvents.filter(pse => {
                 if(pse.readonly) {

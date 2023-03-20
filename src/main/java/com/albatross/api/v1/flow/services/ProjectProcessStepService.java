@@ -80,6 +80,7 @@ public class ProjectProcessStepService {
   private final ListOfValueService listOfValueService;
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
+  private final UserPositionService userPositionService;
 
   private final PubSubService pubSubService;
 
@@ -250,9 +251,19 @@ public class ProjectProcessStepService {
 
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     User user = securityService.getCurrentUser();
+      Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+      List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
+      List<Long> userPositionIds = userPositions.stream()
+              .map(UserPosition::getPositionId)
+              .collect(Collectors.toList());
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("stepId", stepId);
+      params.put("companyId", user.getCompanyId());
+      params.put("systemAdmin", systemAdmin);
+      params.put("userPositions", userPositionIds);
 
     try {
-      String json = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getProjectProcessStep, Map.of("stepId", stepId, "companyId", user.getCompanyId()), String.class);
+      String json = sqlCache.queryForObjectBySql(ProjectProcessStepQuery.getProjectProcessStep, params, String.class);
       if (null != json) {
         return om.readValue(json, new TypeReference<>() {
         });
