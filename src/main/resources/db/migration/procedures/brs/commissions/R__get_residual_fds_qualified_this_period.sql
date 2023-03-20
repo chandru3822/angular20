@@ -86,12 +86,13 @@ begin
         inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
         left join flow.state s on s.id = pd.project_state_id
         left join brs.residual_project_override_qualified_date rpoqd on rpoqd.project_id = pd.project_id
-        where pd.closer_user_id = p_closer_user_id and
+        where pd.exclude_from_residuals is not true and
+              pd.closer_user_id = p_closer_user_id and
               case when p_include_cancel is false then
                 pd.cancelled_date is null
               when p_include_cancel is true then
                 pd.cancelled_date is not null end and
-              pd.on_hold_date is null and
+              ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null)) and
               ((pd.final_design_signed_date is not null and
                 pd.financial_agreement_signed_date is not null and
                 pd.utility_bill_verified_date is not null and

@@ -102,8 +102,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  //    every  day at midnight zone = "America/Denver")
-  @Scheduled(cron = "0 0 0 * * *", zone = "America/Denver")
+  //    every  day at midnight zone = "UTC")
+  @Scheduled(cron = "0 0 6 * * *", zone = "UTC")
   public void runViewMaintenance() {
     if (doViewMaintenance) {
       log.info("*** CRON: start data view maintenance ***");
@@ -114,8 +114,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
   }
 
   //    every  day at 1 am
-  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
-  // zone = "America/Denver")
+  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
+  // zone = "UTC")
   public void closeProjectConversations() {
     if (closeProjectConversations) {
       setCronUser();
@@ -133,8 +133,8 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  //    every  day at 1 am
-  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  //    every  day at 1 am - mtn
+  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
   public void cacheAvailability() {
     if (runCachedAvailability) {
       log.info("*** CRON: start cache availability ***");
@@ -145,7 +145,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
   // last day of every month
   //    @Scheduled(cron = "0 0 0 L * ?")
-  @Scheduled(cron = "0 0 2 27 * *", zone = "America/Denver")
+  @Scheduled(cron = "0 0 7 27 * *", zone = "UTC")
   public void processFutureRecurringEvents() {
     if (processFutureAppointments) {
       log.info("*** CRON: start populating recurring events ***");
@@ -154,7 +154,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  @Scheduled(cron = "0 0 2 * * *", zone = "America/Denver")
+  @Scheduled(cron = "0 0 8 * * *", zone = "UTC")
   public void autoTriggers() {
     if (autoTriggers) {
       log.info("*** CRON: start auto triggers ***");
@@ -164,12 +164,12 @@ public class ScheduledConfig implements SchedulingConfigurer {
   }
 
   // @TODO: This is temporary - randa. updating contact geo-location until all are finished
-  @Scheduled(cron = "0 0 4 * * *", zone = "America/Denver")
-  public void updateContactLatLong() throws Exception {
-    log.info("*** CRON: start CONTACT geo coords updates ***");
-    contactService.updateContactLatLong(50000);
-    log.info("*** CRON: end CONTACT geo coords updates ***");
-  }
+//  @Scheduled(cron = "0 0 6 * * *", zone = "UTC")
+//  public void updateContactLatLong() throws Exception {
+//    log.info("*** CRON: start CONTACT geo coords updates ***");
+//    contactService.updateContactLatLong(50000);
+//    log.info("*** CRON: end CONTACT geo coords updates ***");
+//  }
 
   @Bean(destroyMethod = "shutdown", name = "scheduledTheadPool")
   public Executor taskExecutor() {

@@ -2,6 +2,7 @@
   <v-container class="pa-0">
     <v-dialog v-model="showModal" class="square-card">
       <ResidualDetailModal :data="modalData"
+                           :title="modalTitle"
                            :user-full-name="modalUserFullName"
                            @residualDetailModalClosed="showModal = false"
       ></ResidualDetailModal>
@@ -29,8 +30,16 @@
             <td class="text-left">{{residual.id}}</td>
           </tr>
           <tr>
+            <td class="text-left pr-3"><strong>Residual Starting</strong></td>
+            <td class="text-left">{{residual.periodStart | formatDate('date')}}</td>
+          </tr>
+          <tr>
             <td class="text-left pr-3"><strong>Residual Ending</strong></td>
             <td class="text-left">{{residual.periodEnd | formatDate('date')}}</td>
+          </tr>
+          <tr>
+            <td class="text-left pr-3"><strong>Residual Grace Period</strong></td>
+            <td class="text-left">{{residual.gracePeriodEnd | formatDate('date')}}</td>
           </tr>
           <tr>
             <td class="text-left pr-3"><strong>Description</strong></td>
@@ -40,6 +49,7 @@
       </v-col>
       <v-col cols="6" class="text-right">
         <v-btn color="primary" @click="exportResidualReview" class="white--text">Export</v-btn>
+        <v-btn color="primary" @click="exportResidualReviewForNetSuite" class="ml-3 white--text">Export Netsuite</v-btn>
       </v-col>
     </v-row>
     <v-divider></v-divider>
@@ -95,14 +105,14 @@
                 </a>
               </td>
               <td class="text-left">{{item.requiredFdcPerMonth}}</td>
-              <td class="text-left">{{item.residualEarned}}</td>
-              <td class="text-left">{{item.percentOfResidualEarned}}</td>
-              <td class="text-left">{{item.potentialResidual}}</td>
-              <td class="text-left">{{item.earnedResidual}}</td>
-              <td class="text-left">{{item.clawback}}</td>
-              <td class="text-left">{{item.adjustmentOverride}}</td>
-              <td class="text-left">{{item.residualTotal}}</td>
-              <td class="text-left">{{item.paidInPeriod}}</td>
+              <td class="text-left">{{item.residualEarned ? 'Yes' : 'No'}}</td>
+              <td class="text-left">{{item.percentOfResidualEarned | percent(0)}}</td>
+              <td class="text-left">{{item.potentialResidual | currency('$', 0)}}</td>
+              <td class="text-left">{{item.earnedResidual | currency('$', 0)}}</td>
+              <td class="text-left">{{item.clawback | currency('$', 0)}}</td>
+              <td class="text-left">{{item.adjustmentOverride | currency('$', 0)}}</td>
+              <td class="text-left">{{item.residualTotal | currency('$', 0)}}</td>
+              <td class="text-left">{{item.paidInPeriod ? 'Yes' : 'No'}}</td>
             </tr>
           </template>
         </v-data-table>
@@ -116,6 +126,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import { saveAs } from 'file-saver'
 import constants from "@/helpers/constants";
+import moment from 'moment'
 import {handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
 import ResidualDetailModal from '@/views/blueraven/commissionManagement/ResidualDetailModal'
 
@@ -131,6 +142,7 @@ export default {
       showModal: false,
       modalUserFullName: '',
       modalData: [],
+      modalTitle: '',
       dataLoading: false,
       residualSnapshot: [],
       footerProps: {
@@ -152,9 +164,9 @@ export default {
         {text: 'Hire Date', value: 'hireDate', show: true},
         {text: 'Usable Name', value: 'userFullName', show: true},
         {text: 'Residual Start Date', value: 'residualStartDate', show: true},
-        {text: 'LTD Qualified FDS', value: 'lifetimeFdc', show: true},
-        {text: 'Qualified FDS This Period', value: 'qualifiedThisPeriodFdc', show: true},
-        {text: 'FDS Not Qualified This Period', value: 'fdsNotQualified', show: true},
+        {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
+        {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
+        {text: 'FDA Not Qualified This Period', value: 'fdsNotQualified', show: true},
         {text: 'Required FDS for Month', value: 'requiredFdcPerMonth', show: true},
         {text: 'Residual Earned', value: 'residualEarned', show: true},
         {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
@@ -164,6 +176,58 @@ export default {
         {text: 'Adjustment/Override', value: 'adjustmentOverride', show: true},
         {text: 'Total', value: 'total', show: true},
         {text: 'Paid In Period', value: 'paidInPeriod', show: true},
+      ],
+      NetsuiteStateEnum: [
+        {id: 1, abbreviation: 'AL' },
+        {id: 2, abbreviation: 'AK' },
+        {id: 3, abbreviation: 'AZ' },
+        {id: 4, abbreviation: 'AR' },
+        {id: 5, abbreviation: 'CA' },
+        {id: 6, abbreviation: 'CO' },
+        {id: 7, abbreviation: 'CT' },
+        {id: 8, abbreviation: 'DE' },
+        {id: 9, abbreviation: 'FL' },
+        {id: 10, abbreviation: 'GA' },
+        {id: 11, abbreviation: 'HI' },
+        {id: 12, abbreviation: 'ID' },
+        {id: 13, abbreviation: 'IL' },
+        {id: 14, abbreviation: 'IN' },
+        {id: 15, abbreviation: 'IA' },
+        {id: 16, abbreviation: 'KS' },
+        {id: 17, abbreviation: 'KY' },
+        {id: 18, abbreviation: 'LA' },
+        {id: 19, abbreviation: 'ME' },
+        {id: 20, abbreviation: 'MD' },
+        {id: 21, abbreviation: 'MA' },
+        {id: 22, abbreviation: 'MI' },
+        {id: 23, abbreviation: 'MN' },
+        {id: 24, abbreviation: 'MS' },
+        {id: 25, abbreviation: 'MO' },
+        {id: 26, abbreviation: 'MT' },
+        {id: 27, abbreviation: 'NE' },
+        {id: 28, abbreviation: 'NV' },
+        {id: 29, abbreviation: 'NH' },
+        {id: 30, abbreviation: 'NJ' },
+        {id: 31, abbreviation: 'NM' },
+        {id: 32, abbreviation: 'NY' },
+        {id: 33, abbreviation: 'NC' },
+        {id: 34, abbreviation: 'ND' },
+        {id: 35, abbreviation: 'OH' },
+        {id: 36, abbreviation: 'OK' },
+        {id: 37, abbreviation: 'OR' },
+        {id: 38, abbreviation: 'PA' },
+        {id: 39, abbreviation: 'RI' },
+        {id: 40, abbreviation: 'SC' },
+        {id: 41, abbreviation: 'SD' },
+        {id: 42, abbreviation: 'TN' },
+        {id: 43, abbreviation: 'TX' },
+        {id: 44, abbreviation: 'UT' },
+        {id: 45, abbreviation: 'VT' },
+        {id: 46, abbreviation: 'VA' },
+        {id: 47, abbreviation: 'WA' },
+        {id: 48, abbreviation: 'WV' },
+        {id: 49, abbreviation: 'WI' },
+        {id: 50, abbreviation: 'WY' }
       ],
     }
   },
@@ -235,7 +299,7 @@ export default {
       try {
         let filename = 'Residual Review.csv'
 
-        let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDS,Qualified FDS This Period,FDS Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Clawback,Adjustment/Override,Total,Paid In Period';
+        let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Clawback,Adjustment/Override,Total,Paid In Period';
         csvData += '\n';
 
         this.residualSnapshot.forEach(p => {
@@ -280,10 +344,72 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    lastThursdayForMonth(monthMoment) {
+      let month = monthMoment.month()
+      monthMoment.endOf("month").startOf("isoweek").add(3, "days")
+      if (monthMoment.month() !== month) {
+        monthMoment.subtract(7, "days")
+      }
+      return monthMoment.format('M/DD/YYYY')
+    },
+    async exportResidualReviewForNetSuite () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        let filename = `${this.residual.description} for Netsuite.csv`
+
+        let csvData = 'EE ID, Vendor Name, Vendor, Pay Period Dates, Bill Date, Due Date, Bill No, Expense Description, Expense Line Amount, State, Account, Department, Expense Account, Department (NS), Class (NS), Type, Description';
+        csvData += '\n';
+
+        let lastThursdayOfMonth = this.lastThursdayForMonth(moment(this.residual.gracePeriodEnd))
+        let payPeriodDateRange = moment(this.residual.periodStart).format('MM.DD') + ' - ' + moment(this.residual.periodEnd).format('MM.DD')
+        // let specialCaseUserId = 2353957 //mike false - for testing
+        let specialCaseUserId = 2426298 // real - steve downing
+
+        this.residualSnapshot.forEach((p, idx) => {
+          let userFullName = (p.userFirstName + ' ' + p.userLastName)
+          let type = (p.userId === specialCaseUserId ? 'BONUS' : 'Residual')
+          let paymentDescription = (p.userId === specialCaseUserId ? `${this.residual.description} BONUS Payment` : `${this.residual.description} Payment`)
+          csvData +=
+            p.employeeId + ',' +
+            userFullName + ',' +
+            ',' + //an empty column for the vendor for ryan to use
+            payPeriodDateRange + ',' +
+            lastThursdayOfMonth + ',' +
+            lastThursdayOfMonth + ',' +
+            `${ moment(this.residual.gracePeriodEnd).format("MMMM YYYY")} Residual-${idx+1}` + ',' +
+            (p.employeeId + ' | ' + userFullName + ' | ' + payPeriodDateRange + ' | ' + type + ' | ' + paymentDescription) + ',' +
+            p.residualTotal + ',' +
+            p.officeState + ',' +
+            '6037 Closer Residual' + ',' +
+            '220-CLOSER' + ',' +
+            439 + ',' +
+            7 + ',' +
+            this.NetsuiteStateEnum.find(st => st.abbreviation === p.officeState)?.id + ',' +
+            type + ',' +
+            paymentDescription
+          csvData += '\n';
+        })
+
+
+        let blob = new Blob([csvData], {
+          type: 'text/csv;charset=utf-8'
+        });
+
+        saveAs(blob, filename);
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Exporting Residual Review')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async loadModalData (residualItem, typeId) {
       //typeId: 1 = lifetime qualified, 2 = qualified fds in period, 3 = fds not qualified this period
       this.showModal = false
       this.modalData = []
+      this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDC' :
+                        typeId === 2 ? 'Qualified FDC in Period' : 'FDA Not Qualified this Period'
       this.modalUserFullName = ''
       try {
         let params = {

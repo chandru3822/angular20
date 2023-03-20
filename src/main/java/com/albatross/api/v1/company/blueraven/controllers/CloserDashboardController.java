@@ -23,8 +23,8 @@ public class CloserDashboardController {
   }
 
   @GetMapping(value = "/residuals")
-  public String getCloserResiduals() {
-    return closerDashboardService.getCloserResiduals();
+  public String getCloserResiduals(@RequestParam String residualDate) {
+    return closerDashboardService.getCloserResiduals(residualDate);
   }
 
   @GetMapping(value = "/finalDesignsCompletedDrilldown")

@@ -150,7 +150,6 @@ public class ResidualPayrollService {
     params.put("currentUserId", currentUserId);
     params.put("residualId", residualId);
     params.put("description", updateRequest.getDescription());
-    params.put("periodEndDate", updateRequest.getPeriodEnd());
     params.put(
       "userIds",
       sqlArrayService.createSqlArrayOfType("bigint", updateRequest.getUserIds()));
@@ -215,7 +214,7 @@ public class ResidualPayrollService {
 
   @Data
   public static class PayrollUpdateRequest {
-    private String description, periodEnd;
+    private String description;
     private List<Integer> projectIds, userIds;
   }
 
