@@ -44,7 +44,6 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 
-import constants from '@/helpers/constants'
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
 
@@ -55,7 +54,6 @@ export default {
   data () {
     return {
       snackbar: {},
-      constants,
       editName: false,
       oldName: null,
       event: {},

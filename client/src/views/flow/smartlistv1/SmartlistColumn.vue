@@ -263,7 +263,7 @@ export default {
     },
     async getAssignedFields () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/field`)
+        const {data} = await getRequest(`/smartlist/${this.smartlistId}/field`)
         this.assignedFields = data
       } catch (e) {
         logError(e)

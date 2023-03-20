@@ -392,6 +392,10 @@ public class ProcessStepEventService {
       TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "workQueueTypes", new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> eventHiddenWhiteListedPositionsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "eventHiddenWhiteListedPositions", new JsonCollectionDeserializer(eventHiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 

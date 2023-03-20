@@ -1,5 +1,5 @@
-drop function if exists flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint);
-  CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint)
+drop function if exists flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint, p_systemAdmin boolean, p_userPositions bigint[]);
+  CREATE OR REPLACE FUNCTION flow.get_pps_with_actions_and_requirements(p_project_process_step_id bigint, p_company_id bigint, p_systemAdmin boolean, p_userPositions bigint[])
     RETURNS json AS
 $$
 DECLARE
@@ -337,6 +337,14 @@ BEGIN
                                     left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
                                WHERE ppse.project_process_step_id = pps.id
                                  and ppse.archived is not true
+								and case when e.hidden and p_systemAdmin is false
+								then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+									where wlp2.event_id = pse.event_id
+									and wlp2.white_list_type_id = 17
+									and wlp2.archived is not true
+									and wlp2.position_id = any(p_userPositions) limit 1
+								)
+								else 1=1 end
                               order by ppse.start_time, ppse.end_time, resource, e.event_name
                              ) events), '[]') AS "projectProcessStepEvents"
          from reqs, flow.project_process_step pps

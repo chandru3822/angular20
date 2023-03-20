@@ -84,9 +84,9 @@ begin
                    when rppa.id is null then
                      case
                        when foo.qualified_this_period_fdc >= rpa.allocation then
-                         100
+                         1
                        else 0 end
-                   else coalesce(rppa.partial_allocation, 100) end                as percent_of_residual_earned,
+                   else coalesce(rppa.partial_allocation, 1) end                as percent_of_residual_earned,
                  case
                    when rppa.id is null then
                      foo.lifetime_fdc * foo.total
@@ -155,9 +155,9 @@ begin
                        inner join brs.residual_plan rp on rp.id = ur.residual_plan_id and rp.residual_plan_status_id = 2
                        inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
                        left join brs.residual r on r.current is true and r.period_end is not null
-                where u.id in (2438980,
-                               2433935,
-                               2353957) and exists(select id
+                where
+                 -- u.id in (2432305,2429495) and
+                      exists(select id
                              from flow.user_position up2
                              where up2.user_id = u.id
                                and up2.position_id in (1, 2, 3, 517)
