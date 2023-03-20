@@ -86,6 +86,7 @@
         </v-data-table>
       </v-col>
     </v-row>
+<!--todo: update to ConfirmationDialog-->
     <v-dialog v-model="hoaDialog" max-width="500px">
       <v-card>
         <v-card-title>
@@ -129,13 +130,18 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="close">Cancel</v-btn>
-          <v-btn color="primary" raised @click="saveHoa" class="white--text"
+          <v-btn color="primary" raised @click="newHoaDuplicateCheck" class="white--text"
                  :disabled="!editedItem.name || !editedItem.companyStateId">
             {{ btnTxt }}
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <ConfirmationDialog :open-dialog="duplicateDialog" @confirm="saveHoa" @close-dialog="[duplicateDialog = false, close()]">
+      <template v-slot:title>Duplicate HOA</template>
+      Are you sure you want to create a new HOA?
+      <!--todo: show duplicate info-->
+    </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
     Are you sure you want to delete {{ hoaToDeleteName }}?
     </ConfirmationDialog>
@@ -189,6 +195,7 @@ export default {
     addingManagementCompany: false,
     newManagementCompany: "",
     hoaToDelete: null,
+    duplicateDialog: false
   }),
   computed: {
     filteredHoas() {
@@ -313,6 +320,19 @@ export default {
       }
       this.hoaToDelete = null
     },
+
+    newHoaDuplicateCheck() {
+      const match = this.hoas.filter(hoa => {
+        return this.editedItem.name === hoa.name && this.editedItem.companyStateId === hoa.companyStateId && this.editedItem.managementCompanyId === hoa.managementCompanyId
+      })
+      if(match.length > 0){
+        this.hoaDialog = false
+        this.duplicateDialog = true
+      } else {
+        this.saveHoa()
+      }
+    },
+
     async saveHoa() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.addMode) {
