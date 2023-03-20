@@ -14,10 +14,15 @@
         <v-tabs>
           <v-tab :to="'/smartlist/mine'">My Smartlists</v-tab>
 <!--          @TODO: #smartlistsv2 Please leave while smartlists v2 is being developed-->
-<!--          <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>-->
-          <v-tab :to="'/smartlist/public'">Public Smartlists</v-tab>
+          <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>
           <v-tab
-            v-if="isSmartlistAdmin"
+            v-if="userCanViewAll || userIsSmartlistAdmin"
+            :to="'/smartlist/public'"
+          >
+            Public Smartlists
+          </v-tab>
+          <v-tab
+            v-if="userIsSmartlistAdmin"
             :to="'/smartlist/all'"
           >
             All Smartlists
@@ -39,7 +44,8 @@ import { getCurrentInstance } from 'vue'
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const userCanViewAll = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
+const userIsSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 </script>
 
 <style scoped lang="scss">

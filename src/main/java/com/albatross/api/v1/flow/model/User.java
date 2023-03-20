@@ -80,4 +80,9 @@ public class User {
   public boolean isParentCompany() {
     return Objects.equals(this.companyId, this.highestParentCompanyId);
   }
+
+  @JsonIgnore
+  public boolean isSystemAdmin() {
+    return Objects.equals(this.highestCompanyId, 1L);
+  }
 }

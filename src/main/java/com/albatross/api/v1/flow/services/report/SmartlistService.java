@@ -1,4 +1,4 @@
-package com.albatross.api.v1.flow.services;
+package com.albatross.api.v1.flow.services.report;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.NotFoundException;
@@ -11,8 +11,13 @@ import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
+import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
+import com.albatross.api.v1.flow.services.OrgService;
+import com.albatross.api.v1.flow.services.SmartlistServicev1;
+import com.albatross.api.v1.flow.services.UserPositionService;
+import com.albatross.api.v1.flow.services.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -64,6 +69,8 @@ public class SmartlistService {
 
   private final UserPositionService userPositionService;
 
+  private final ReportEngine reportEngine;
+
   private final SmartlistServicev1 smartlistServicev1;
 
   private boolean isSmartlistAdmin() {
@@ -71,11 +78,103 @@ public class SmartlistService {
     return securityService.userHasFeatureAccessLevel(user.getId(), user.getCompanyId(), user.getHighestCompanyId(), "SMARTLIST", List.of("ADMIN"));
   }
 
+  /**
+   * Determine if current user has access to given smartlist by either being it's owner, smartlist admin, or system admin
+   *
+   * @param smartlist
+   * @return boolean
+   */
   private boolean isOwnerOrAdmin(@NotNull Smartlist smartlist) {
     User user = securityService.getCurrentUser();
     final var sameCompany = Objects.equals(user.getCompanyId(), smartlist.getCompanyId());
     final var isOwnerOrAdmin = Objects.equals(smartlist.getOwnerId(), user.getId()) || isSmartlistAdmin();
-    return sameCompany && isOwnerOrAdmin;
+    return (sameCompany && isOwnerOrAdmin) || user.isSystemAdmin();
+  }
+
+  /**
+   * Determine if current user has access to given smartlist by the smartlist being shared with user's current primary user position or shared with an org
+   * in which the user's current primary position belongs
+   *
+   * @param smartlist
+   * @return
+   */
+  private boolean isSharedWithCurrentUser(@NotNull Smartlist smartlist, @NotNull boolean checkEditAccess) {
+    if (smartlist.getAccessControl().isEmpty()) {
+      return false;
+    }
+
+    User user = securityService.getCurrentUser();
+
+    //check access by user position first since it takes priority over org
+    List<Long> userPositionIds = user.getUserPositions().stream().map(UserPosition::getId).toList();
+    var hasAccess = smartlist.getAccessControl().stream().anyMatch(a -> {
+      if (a.getUserPositionId() != null) {
+        var isMatch = userPositionIds.contains(a.getUserPositionId());
+
+        if (checkEditAccess) {
+          return isMatch && a.getAccessControlId() == 2;
+        } else {
+          return isMatch;
+        }
+      }
+
+      return false;
+    });
+
+    if (!hasAccess) {
+      List<Long> orgIds = user.getUserPositions().stream().map(UserPosition::getOrgId).toList();
+      hasAccess = smartlist.getAccessControl().stream().anyMatch(a -> {
+        if (a.getOrgId() != null) {
+          var isMatch = orgIds.contains(a.getOrgId());
+
+          if (checkEditAccess) {
+            return isMatch && a.getAccessControlId() == 2;
+          } else {
+            return isMatch;
+          }
+        }
+
+        return false;
+      });
+    }
+
+    return hasAccess;
+  }
+
+  public boolean userHasReadAccess(@NotNull Smartlist smartlist) {
+    return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist, false);
+  }
+
+  public boolean userHasWriteAccess(@NotNull Smartlist smartlist) {
+    return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist, true);
+  }
+
+  public Smartlist getById(Long id) {
+    User user = securityService.getCurrentUser();
+    Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
+    Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
+                                  .orElse(null);
+
+    if (smartlist == null) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Smartlist not found", new NotFoundException("Smartlist not found"));
+    }
+
+    //grant access to smartlist if user is owner, admin, or smartlist is public (public covers workqueue smartlists)
+    if (!userHasReadAccess(smartlist) && !smartlist.isPublic()) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    return smartlist;
+  }
+
+  public Smartlist getById(Long id, boolean includeAccessControl) {
+    var smartlist = getById(id);
+
+    if (includeAccessControl) {
+      smartlist.setAccessControl(getAccessById(id));
+    }
+
+    return smartlist;
   }
 
   public void updatePublicStatus(Long smartlistId, boolean isPublic) {
@@ -91,6 +190,78 @@ public class SmartlistService {
   }
 
   @Transactional
+  public Smartlist updateObjectType(Smartlist smartlist) {
+    var existingSmartlist = getById(smartlist.getId());
+
+    if (!userHasWriteAccess(existingSmartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    smartlist.setProjectDetails(false);
+
+    if (!List.of(3, 5).contains(smartlist.getObjectTypeId().intValue())) {
+      smartlist.setPrimaryUserPosition(false);
+    }
+
+    if (!List.of(1, 2, 4).contains(smartlist.getObjectTypeId().intValue())) {
+      smartlist.setPrimaryUserPosition(true);
+      smartlist.setMainProcessSteps(true);
+    }
+
+    updateSmartlist(smartlist);
+    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
+    return getById(smartlist.getId());
+  }
+
+  @Transactional
+  public void updateProjectDetails(Long smartlistId) {
+    var smartlist = getById(smartlistId);
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    smartlist.setProjectDetails(!smartlist.isProjectDetails());
+    this.updateSmartlist(smartlist);
+
+    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
+  }
+
+  public Smartlist addSmartlist(Smartlist smartlist) {
+    if (!smartlistServicev1.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("ownerId", user.getId());
+    params.put("createdById", user.trueUserId());
+    Long smartlistId = sqlCache.updateBySqlReturningId(SmartlistQuery.add, params, "id").longValue();
+    return getById(smartlistId);
+  }
+
+  public void updateSmartlist(Smartlist smartlist) {
+
+    var existingSmartlist = getById(smartlist.getId());
+
+    if (!userHasWriteAccess(existingSmartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    final boolean updatingName = !existingSmartlist.getName().trim().equalsIgnoreCase(smartlist.getName().trim().toLowerCase());
+
+    if (updatingName && !smartlistServicev1.isNameUnique(smartlist.getName())) {
+      throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(SmartlistQuery.update, params);
+  }
+
+  @Transactional
   public void updateOwner(Long smartlistId, SmartlistAccessControl newOwner) {
 
     var smartlist = getById(smartlistId, true);
@@ -101,7 +272,7 @@ public class SmartlistService {
 
     //verify smartlist is currently shared with new owner
     var currentAccess = smartlist.getAccessControl().stream()
-                                                       .filter(i -> i.getUserPositionId().equals(newOwner.getUserPositionId()))
+                                                       .filter(i -> Objects.equals(i.getUserPositionId(), newOwner.getUserPositionId()))
                                                        .findFirst()
                                                        .orElse(null);
 
@@ -125,55 +296,27 @@ public class SmartlistService {
     ));
 
     //remove previous access of new owner
-    sqlCache.updateBySql(SmartlistQuery.deleteAccess, Map.of("id", currentAccess.getId(), "userId", user.getId()));
+    Map<String, Object> deleteParams = Map.of("id", currentAccess.getId(), "userId", user.getId(), "smartlistId", smartlistId);
+    sqlCache.updateBySql(SmartlistQuery.deleteAccess, deleteParams);
 
-    //give old owner edit access
+    //give old owner edit access if not system or smartlist admin
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
-    if (oldOwnerPosition == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Original owner not found", new NotFoundException("Original owner not found"));
+
+    if (oldOwnerPosition == null && !isSmartlistAdmin()) {
+      try {
+        Map<String, Object> params = new HashMap<>();
+        params.put("smartlistId", smartlistId);
+        params.put("orgId", null);
+        params.put("userPositionId", oldOwnerPosition.getId());
+        params.put("accessControlId", 2);
+        params.put("userId", user.getId());
+        sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
+                .longValue();
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
+      }
     }
-
-    try {
-      Map<String, Object> params = new HashMap<>();
-      params.put("smartlistId", smartlistId);
-      params.put("orgId", null);
-      params.put("userPositionId", oldOwnerPosition.getId());
-      params.put("accessControlId", 2);
-      params.put("userId", user.getId());
-      sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
-              .longValue();
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unexpected error occurred", new RuntimeException("Unexpected error occurred"));
-    }
-  }
-
-  public Smartlist getById(Long id) {
-    User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
-    Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
-                                  .orElse(null);
-
-    if (smartlist == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Smartlist not found", new NotFoundException("Smartlist not found"));
-    }
-
-    //grant access to smartlist if user is owner, admin, or smartlist is public
-    if (!isOwnerOrAdmin(smartlist) && !smartlist.isPublic()) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
-    }
-
-    return smartlist;
-  }
-
-  public Smartlist getById(Long id, boolean includeAccessControl) {
-    var smartlist = getById(id);
-
-    if (includeAccessControl) {
-      smartlist.setAccessControl(getAccessById(id));
-    }
-
-    return smartlist;
   }
 
   public List<SmartlistAccessControl> getAvailableAccess() {
@@ -226,13 +369,34 @@ public class SmartlistService {
     }
 
     var params = access.stream().map(i -> Map.of(
-                                            "smartlistId", smartlistId,
-                                            "id", i.getId(),
-                                            "accessControlId", i.getAccessControlId(),
-                                            "userId", user.getId()
-                                          )).toList();
+      "smartlistId", smartlistId,
+      "id", i.getId(),
+      "accessControlId", i.getAccessControlId(),
+      "userId", user.getId()
+    )).toList();
 
     sqlCache.updateBatchBySql(SmartlistQuery.updateAccess, params);
+  }
+
+  public void deleteAccess(Long smartlistId, List<SmartlistAccessControl> access) {
+    User user = securityService.getCurrentUser();
+    Smartlist smartlist = getById(smartlistId);
+
+    if (!isOwnerOrAdmin(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    var params = access.stream().map(i -> Map.of(
+      "id", i.getId(),
+      "smartlistId", smartlistId,
+      "userId", user.getId()
+    )).toList();
+
+    try {
+      sqlCache.updateBatchBySql(SmartlistQuery.deleteAccess, params);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), new RuntimeException("Error when removing access"));
+    }
   }
 
   public void delete(Long smartlistId) {
@@ -272,18 +436,18 @@ public class SmartlistService {
   }
 
   public List<SmartlistAccessControl> getSharableEntities() {
-    List<User> users = userService.getAllActiveUsers();
+    List<UserPosition> userPositions = userPositionService.getPrimaryUserPositions();
     List<Org> orgs = orgService.getAllActive();
 
     //combine lists
     List<SmartlistAccessControl> combinedList = new ArrayList<>();
-    users.forEach(u -> {
+    userPositions.forEach(up -> {
       var share = new SmartlistAccessControl();
-      share.setUserPositionId(u.getUserPositionId());
+      share.setUserPositionId(up.getId());
       share.setIsUser(true);
       share.setIsOrg(false);
-      share.setName(u.getFullName());
-      share.setPosition(u.getPosition());
+      share.setName(up.getFullName());
+      share.setPosition(up.getPosition());
       combinedList.add(share);
     });
 
@@ -329,6 +493,7 @@ public class SmartlistService {
     Smartlist smartlist = this.getById(smartlistId);
 
     List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
+    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
@@ -343,18 +508,18 @@ public class SmartlistService {
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
     if (smartlist.isProjectDetails()) {
-      query = smartlistServicev1.buildProjectDetailsSql(smartlist.toOriginal());
+      query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements);
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
       if (smartlist.getObjectTypeId() == 4) {
-        query = smartlistServicev1.buildProcessStepSql(smartlist.toOriginal(), fields);
+        query = reportEngine.buildProcessStepSql(smartlist, fields, requirements);
       } else {
-        query = smartlistServicev1.buildEventSql(smartlist.toOriginal(), fields, null, null);
+        query = reportEngine.buildEventSql(smartlist, fields, requirements, null, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
-        query = smartlistServicev1.buildWorkQueueSql(smartlist.toOriginal(), fields, true, timezone);
+        query = reportEngine.buildWorkQueueSql(smartlist, fields, true, timezone);
       } else {
-        query = smartlistServicev1.buildSql(smartlist.toOriginal(), fields, timezone, null, false);
+        query = reportEngine.buildSql(smartlist, fields, requirements, timezone, null, false);
       }
     }
 
@@ -551,8 +716,8 @@ public class SmartlistService {
   @Transactional
   public Smartlist copy(Long smartlistId) {
 
-    User user = securityService.getCurrentUser();
     Smartlist smartlist = getById(smartlistId);
+    User user = securityService.getCurrentUser();
 
     long copyNumber = 0L;
     String newName;
@@ -579,6 +744,95 @@ public class SmartlistService {
     sqlCache.updateBySql(SmartlistQuery.copyRequirements, Map.of("newId", newSmartlistId, "userId", user.trueUserId(), "oldId", smartlistId));
 
     return getById(newSmartlistId);
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public List<SmartlistRequirement> getRequirements(Long smartlistId, boolean includeListValues) {
+    var smartlist = getById(smartlistId);
+
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany, "parentCompanyId", user.getHighestParentCompanyId());
+
+    List<SmartlistRequirement> requirements;
+
+    if (smartlist.isProjectDetails()) {
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+    } else {
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+
+      if (includeListValues) {
+        for (SmartlistRequirement r : requirements) {
+          if (r.getCustomFieldSql() != null) {
+            final String sql = r.getCustomFieldSql();
+            if (sql != null) {
+              r.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+            }
+          }
+        }
+      }
+    }
+
+    return requirements;
+  }
+
+  public SmartlistRequirement addRequirement(Long smartlistId, SmartlistRequirement requirement) {
+
+    if (!Objects.equals(smartlistId, requirement.getSmartlistId())) {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Given smartlist ID must match requirement smartlist ID",
+        new RuntimeException("Given smartlist ID must match requirement smartlist ID")
+      );
+    }
+
+    var smartlist = getById(smartlistId);
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", user.trueUserId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
+    Long requirementId = sqlCache.updateBySqlReturningId(SmartlistQueryv1.addRequirement, params, "id").longValue();
+
+    if (smartlist.isProjectDetails()) {
+      return smartlistServicev1.getProjectDetailsRequirementById(requirementId);
+    } else {
+      return smartlistServicev1.getRequirementById(requirementId);
+    }
+  }
+
+  public SmartlistRequirement updateRequirement(SmartlistRequirement requirement) {
+    var smartlist = getById(requirement.getSmartlistId());
+
+    if (!userHasWriteAccess(smartlist)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
+    }
+
+    HashMap<String, Object> params = om.convertValue(requirement, HashMap.class);
+    params.put("userId", securityService.getCurrentUser().trueUserId());
+    params.put("listOfValueIds", (requirement.getListOfValueIds() == null) ? List.of() : requirement.getListOfValueIds());
+    sqlCache.updateBySql(SmartlistQueryv1.updateRequirement, params);
+
+    if (smartlist.isProjectDetails()) {
+      return smartlistServicev1.getProjectDetailsRequirementById(requirement.getId());
+    } else {
+      return smartlistServicev1.getRequirementById(requirement.getId());
+    }
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public List<SmartlistFieldAssignment> getFields(@NotNull Long smartlistId) {
+    var smartlist = getById(smartlistId);
+
+    if (smartlist.isProjectDetails()) {
+      return smartlistServicev1.getAssignedProjectDetailsFields(smartlistId);
+    } else {
+      return smartlistServicev1.getAssignedFields(smartlistId);
+    }
   }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {

@@ -2,71 +2,134 @@
 <fragment>
   <v-dialog
     v-model="openDialog"
-    :width="500"
+    :width="450"
     persistent
   >
     <v-card>
-      <v-card-title>
+      <v-card-title
+        class="title font-weight-bold pt-6">
         Share Smartlist
       </v-card-title>
 
       <v-card-text>
-        <v-autocomplete
-          class="body-large"
-          :items="sharables"
-          label="Add Users and Organizations"
-          :item-text="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
-          return-object
-          @input="updateNewAccess"
-        />
+        <v-row>
+          <v-col
+            cols="8"
+            class="py-0"
+          >
+            <v-autocomplete
+              :items="sharables"
+              label="Add Users and Organizations"
+              :item-text="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
+              return-object
+              @input="updateNewAccess"
+            />
+          </v-col>
 
-        <v-autocomplete
-          v-model="newAccess.accessControlId"
-          class="body-large"
-          :items="accessLevels"
-          :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
-          item-value="accessControlId"
-        />
+          <v-col
+            cols="4"
+            class="py-0"
+          >
+            <v-autocomplete
+              v-model="newAccess.accessControlId"
+              :items="accessLevels"
+              :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+              item-value="accessControlId"
+            />
+          </v-col>
+        </v-row>
 
-        <v-checkbox
-          v-model="isPublic"
-          label="Make Public"
-          :hide-details="true"
-          :ripple="false"
-        />
+        <v-row>
+          <v-col
+            cols="12"
+            class="px-2 pt-0"
+          >
+            <v-checkbox
+              v-model="isPublic"
+              label="Make Public"
+              :hide-details="true"
+              :ripple="false"
+            />
+          </v-col>
+        </v-row>
 
-        People with Access
+        <v-row>
+          <v-col cols="12">
+            <span class="font-weight-bold default-text-color">People with Access</span>
+          </v-col>
+        </v-row>
 
-        <v-list>
-          <template v-for="(accessLevel) in currentAccess">
+        <v-list class="bordered rounded-lg">
             <v-list-item>
               <v-row>
-                <v-col cols="7">
-                  {{ (accessLevel.isUser) ? `${accessLevel.name} - ${accessLevel.position}` : accessLevel.name }}
+                <v-col
+                  cols="6"
+                  align-self="center"
+                  class="py-0"
+                >
+                  <span class="default-text-color">{{ smartlist.owner }}</span>
+                  <div class="position">
+                    {{ smartlist.ownerPosition }}
+                  </div>
                 </v-col>
 
-                <v-col cols="5">
+                <v-col
+                  cols="6"
+                  align-self="center"
+                  class="py-0"
+                >
+                  Owner
+                </v-col>
+              </v-row>
+            </v-list-item>
+
+            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)">
+              <v-row>
+                <v-col
+                  cols="6"
+                  align-self="center"
+                  class="py-0"
+                >
+                  <span class="default-text-color">{{ accessLevel.name }}</span>
+                  <div
+                    v-if="accessLevel.isUser"
+                    class="position"
+                  >{{ accessLevel.position }}</div>
+                </v-col>
+
+                <v-col
+                  cols="5"
+                  align-self="center"
+                  class="py-0"
+                >
                   <v-select
                     v-model="accessLevel.accessControlId"
                     :items="accessLevels"
                     :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
                     item-value="accessControlId"
-                    @input="accessLevel.updated = true"
+                    @input="[accessLevel.updated = true, accessLevel.deleted = false]"
                   >
-                    <template
-                      #append-item
-                      v-if="accessLevel.isUser"
-                    >
+                    <template #append-item>
                       <v-divider/>
-                      <v-list-item @click="confirmOwnershipChange(accessLevel)">
+                      <v-list-item
+                        v-if="accessLevel.isUser"
+                        @click="confirmOwnershipChange(accessLevel)"
+                      >
                         Transfer Ownership
                       </v-list-item>
                     </template>
                   </v-select>
                 </v-col>
+
+                <v-col
+                  cols="1"
+                  align-self="center"
+                  class="pl-0"
+                >
+                  <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
+                </v-col>
               </v-row>
             </v-list-item>
-          </template>
         </v-list>
 
       </v-card-text>
@@ -133,7 +196,7 @@
 <script setup>
 
 import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest, putRequest } from '@/helpers/helpers'
-import { getCurrentInstance, ref } from 'vue'
+import { getCurrentInstance, ref, computed } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
 import { Fragment } from 'vue-frag'
 
@@ -197,7 +260,8 @@ const getSmartlistAccess = async () => {
 const updateAccess = async () => {
 
   let payload = {
-    updatedAccess: []
+    updatedAccess: [],
+    deletedAccess: []
   }
 
   if (newAccess.value.updated) {
@@ -216,6 +280,10 @@ const updateAccess = async () => {
         id: i.id,
         accessControlId: i.accessControlId
       })
+    }
+
+    if (i.deleted) {
+      payload.deletedAccess.push({id: i.id})
     }
   })
 
@@ -272,13 +340,34 @@ const updateOwner = async () => {
   }
 }
 
+const markDeleted = (accessLevel) => {
+  //find index in the non-filtered array
+  const index = currentAccess.value.findIndex(i => i.id === accessLevel.id)
+
+  currentAccess.value.splice(index, 1, {
+    ...currentAccess.value[index],
+    updated: false,
+    deleted: true
+  })
+}
+
 getSharables()
 getAccessLevels()
 getSmartlistAccess()
 </script>
 
 <style scoped lang="scss">
+
+.title {
+  color: var(--v-primary-base);
+}
+
 .new-owner-name {
   border-bottom: 1px solid black;
+}
+
+.position {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
 }
 </style>

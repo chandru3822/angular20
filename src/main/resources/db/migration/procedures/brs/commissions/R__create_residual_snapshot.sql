@@ -100,8 +100,8 @@ BEGIN
               p_updated_by_id,
               now(),
               p_updated_by_id,
-              brs.get_existing_residual_clawbacks(d.user_id),
-              brs.get_current_residual_clawbacks(d.user_id))
+              (select sum(erc.amount) from  brs.get_existing_residual_clawbacks(d.user_id) erc),
+              (select sum(crc.amount) from  brs.get_current_residual_clawbacks(d.user_id) crc))
       ON CONFLICT (user_id, residual_id) DO NOTHING
       RETURNING id INTO v_snapshot_id;
 
@@ -258,6 +258,7 @@ BEGIN
                                                      project_id,
                                                      user_residual_project_snapshot_type_id,
                                                      total,
+                                                     cancelled_date,
                                                      date_created,
                                                      created_by_id,
                                                      date_modified,
@@ -268,11 +269,13 @@ BEGIN
                  from brs.user_residual_project_snapshot_type as urpst
                  where urpst.user_residual_project_snapshot_code = 'CLAWBACKS'),
                 rqlf.amount,
+                pd.cancelled_date,
                 now(),
                 p_updated_by_id,
                 now(),
                 p_updated_by_id
-         from brs.get_current_residual_clawbacks(d.user_id) rqlf);
+         from brs.get_current_residual_clawbacks(d.user_id) rqlf
+         inner join brs.project_details as pd on pd.project_id = rqlf.project_id);
 
       insert into brs.residual_project_qualified_date(project_id, qualified_date, date_created, date_modified,
                                                       created_by_id, modified_by_id, residual_id, excluded_from_cancel)
