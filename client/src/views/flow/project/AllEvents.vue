@@ -90,6 +90,8 @@ import {getRequest, putRequest, postRequest, logError, getRequestWithParams, get
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import TableActiveEventSnippet from '@/views/flow/project/TableActiveEventSnippet'
+import {hideEvent} from "./eventHelpers";
+
 import moment from 'moment'
 
 export default {
@@ -145,6 +147,7 @@ export default {
         this.activeEventsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/events`)
         this.events = data
+        this.events = this.events.filter(e => !hideEvent(e, this.$store))
         window.document.title = `${this.project.projectName} - Events`
       } catch (e) {
         logError(e)

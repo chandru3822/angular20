@@ -4,6 +4,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.EventController;
+import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.event.Event;
 import com.albatross.api.v1.flow.model.event.EventCompanyEventStatusType;
@@ -24,6 +25,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
 @Slf4j
@@ -47,6 +49,49 @@ public class EventService {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
     return sqlCache.getBySql(EventQuery.get, params, new EventMapper<>(Event.class, om)).orElse(null);
+  }
+
+  public void saveHiddenAndWhiteList(Event event, Boolean positionsChanged){
+      User currentUser = securityService.getCurrentUser();
+
+      Map<String, Object> params = new HashMap<>();
+      params.put("userId", currentUser.trueUserId());
+      params.put("companyId", currentUser.getCompanyId());
+      params.put("eventId", event.getId());
+      params.put("hidden", event.getHidden());
+      params.put("whiteListTypeId", WhiteListType.EVENT_HIDDEN.id);
+
+      sqlCache.updateBySql(EventQuery.saveHidden, params);
+
+      if(!event.getHidden()){
+          // if event is not hidden, archive ALL white listed positions
+          sqlCache.updateBySql(EventQuery.archiveWhiteListPositions, params);
+      } else if(null != positionsChanged && positionsChanged){
+          //if event is hidden, archive any white listed positions no longer in the body sent in
+          List<WhiteListedPosition> updatedWLPositions = event.getHiddenWhiteListedPositions();
+          List<Long> updatedWLPositionIds = updatedWLPositions.stream()
+                  .map(WhiteListedPosition::getPositionId)
+                  .collect(Collectors.toList());
+          params.put("positionIdsUsed", updatedWLPositionIds);
+
+          // ARCHIVED ALL REMOVED POSITIONS
+          if(updatedWLPositionIds.size() > 0){
+              //arhive only the removed positions
+              sqlCache.updateBySql(EventQuery.archiveUnusedWhiteListPositions, params);
+          } else {
+              // if updated list is empty, they removed ALL white listed positions
+              sqlCache.updateBySql(EventQuery.archiveWhiteListPositions, params);
+          }
+          // ADD ALL NEW POSITIONS
+          for (Long wlpId : updatedWLPositionIds) {
+              params.put("positionId", wlpId);
+              // this insert checks if there is already a non-archived row with the same values
+              sqlCache.updateBySql(EventQuery.insertWhiteListPosition, params);
+          }
+      }
+
+
+
   }
 
   public void saveChangesToDefaultFields(Long id, Event event) {
@@ -342,6 +387,13 @@ public class EventService {
           List.class,
           "companyEventStatusTypes",
           new JsonCollectionDeserializer(companyEventStatusTypeRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> hiddenWhiteListedPositionsRef =
+          new TypeReference<>() {};
+      bw.registerCustomEditor(
+          List.class,
+          "hiddenWhiteListedPositions",
+          new JsonCollectionDeserializer(hiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef =
           new TypeReference<>() {};

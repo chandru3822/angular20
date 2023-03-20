@@ -559,7 +559,7 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
-    return sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, ProjectProcessStepEvent.class);
+    return sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
   }
 
   public CommunicationController.ProjectDetails getProjectDetailTemplateFields(Long projectId) {
@@ -766,6 +766,8 @@ public class ProjectService {
           List.class,
           "ownerReadOnlyWhiteListedPositions",
           new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
+
     }
   }
+
 }

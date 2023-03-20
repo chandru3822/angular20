@@ -505,10 +505,24 @@ select
         pse.unique_behavior_type_id,
         e.id as event_id,
         e.event_name,
+        e.hidden as eventHidden,
         ppse.resource_id,
         cest.event_status_type_id,
         cest.id as company_event_status_type_id,
-        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
+        coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 17
+                           AND wlp.archived is not true
+                           and wlp.event_id = e.id) wlp), '[]') AS "eventHiddenWhiteListedPositions"
       from flow.project p
              inner join flow.project_process_step pps on pps.project_id = p.id
              inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
