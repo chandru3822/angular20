@@ -43,7 +43,6 @@ import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
 import moment from 'moment'
-import {hideEvent} from "./eventHelpers";
 
 export default {
   name: 'ActiveEvents',
@@ -99,7 +98,6 @@ export default {
         this.activeEventsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/activeEvents`, null, [])
         this.events = data
-        this.events = this.events.filter(e => !hideEvent(e, this.$store))
       } catch (e) {
         logError(e)
       } finally {
