@@ -557,10 +557,10 @@ public class ProjectService {
         new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {
+  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId, Long companyId) {
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user.getId());
+    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user.getId(), companyId);
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);

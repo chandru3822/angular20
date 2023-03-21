@@ -558,7 +558,8 @@ export default {
       try {
         this.projectMismatch = false
         this.processStepLoading = true
-        const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
+        let params = {companyId: this.companyId}
+        const {data, status} = await getRequestWithParams(`/projectProcessStep/${this.projectProcessStepId}`, {params})
         if (data && data.projectId && data.projectId !== this.projectId) {
           this.projectMismatch = true
           this.processStepLoading = false
@@ -787,7 +788,8 @@ export default {
     getProcessStepEvents: async function () {
       //this gets the events assigned to the procez_ss step so we know which ADD buttons to show
       try {
-        const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
+        let params = {companyId: this.companyId}
+        const {data, status} = await getRequestWithParams(`/processStep/${this.processStepId}/event`, {params}, null, [])
         this.processStepEvents = data
         if(!this.$store.getters.isFullAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
           this.processStepEvents = this.processStepEvents.filter(pse => {

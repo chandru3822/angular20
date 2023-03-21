@@ -144,7 +144,8 @@ export default {
     getEvents: async function () {
       try {
         this.activeEventsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/events`)
+        let params = {companyId: this.companyId}
+        const {data} = await getRequestWithParams(`/project/${this.projectId}/events`, {params} )
         this.events = data
         window.document.title = `${this.project.projectName} - Events`
       } catch (e) {

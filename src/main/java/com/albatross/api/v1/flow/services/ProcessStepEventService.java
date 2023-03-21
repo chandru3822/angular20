@@ -38,10 +38,10 @@ public class ProcessStepEventService {
 
   private final UserPositionService userPositionService;
 
-  public List<ProcessStepEvent> getStepEvents(Long processStepId) {
+  public List<ProcessStepEvent> getStepEvents(Long processStepId, Long companyId) {
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user.getId());
+    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user.getId(), companyId);
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
     params.put("systemAdmin", systemAdmin);
