@@ -30,17 +30,7 @@ CREATE OR REPLACE FUNCTION brs.get_residual_account_details()
   LANGUAGE plpgsql
 AS
 $$
-declare
-  v_period_end                date;
-  v_period_start              date;
-  v_previous_grace_period_end date;
-  v_grace_period_end          date;
 begin
-
-  select period_start, period_end, previous_grace_period_end, grace_period_end
-  into v_period_start,v_period_end,v_previous_grace_period_end,v_grace_period_end
-  from brs.residual r2
-  where current is true;
 
   return query
     select foo1.first_name,
@@ -64,14 +54,16 @@ begin
            foo1.percent_of_residual_earned,
            foo1.potential_residual,
            case
-             when foo1.residual_earned is true then
+             when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
                foo1.potential_residual
              else 0.00 end as earned_residual,
            foo1.clawback,
            foo1.adjustment_override,
            case
              when foo1.residual_earned is true or foo1.clawback > 0 then
-               foo1.potential_residual - foo1.clawback + foo1.adjustment_override
+               case when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
+                 foo1.potential_residual
+                else 0.00::numeric end - foo1.clawback + foo1.adjustment_override
              else 0.00 end as total
     from (select *,
                  rpa.allocation                                                   as required_fdc_per_month,
@@ -131,18 +123,15 @@ begin
                        (select count(1)
                         from brs.get_residual_qualified_lifetime_fds(u.id))                  as lifetime_fdc,
                        (select count(1)
-                        from brs.get_residual_fds_qualified_this_period(u.id,
-                                                                        v_period_end,
-                                                                        v_period_start,
-                                                                        v_previous_grace_period_end,
-                                                                        v_grace_period_end)) as qualified_this_period_fdc,
+                        from brs.get_residual_fds_qualified_this_period(u.id,false)) as qualified_this_period_fdc,
                        (select count(1)
                         from brs.get_residual_fds_not_qualified_this_period(u.id))           as fds_not_qualified,
                        (select * from brs.get_total_residual_clawbacks(u.id))                as clawback,
                        rp.total,
                        coalesce((select sum(ra.amount)
                                  from brs.residual_adjustment ra
-                                 where ra.user_id = u.id and ra.residual_id = r.id), 0)      as adjustment_override
+                                 where ra.user_id = u.id and ra.residual_id = r.id), 0)      as adjustment_override,
+                      r.selected_user_ids as selected_user_ids
                 from flow."user" u
                        left join flow.user_custom_field_value ucfv
                                  on ucfv.user_id = u.id and ucfv.custom_field_group_assignment_id = 19176
@@ -154,9 +143,11 @@ begin
                        inner join brs.user_residual ur on ur.user_id = u.id
                        inner join brs.residual_plan rp on rp.id = ur.residual_plan_id and rp.residual_plan_status_id = 2
                        inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
-                       left join brs.residual r on r.current is true and r.period_end is not null
+                       inner join brs.residual r on r.current is true
                 where
-                 -- u.id in (2432305,2429495) and
+--                        u.id in (2438980,
+--                              2433935,
+--                              2353957,2432305,2429495) and
                       exists(select id
                              from flow.user_position up2
                              where up2.user_id = u.id

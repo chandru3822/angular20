@@ -26,11 +26,6 @@ public class ResidualQuery {
           from brs.residual_project_override_qualified_date rpoqd
           where p.project_id = rpoqd.project_id
         )
-        and not exists (
-          select project_id
-          from brs.residual_project_qualified_date rpqd
-          where p.project_id = rpqd.project_id
-        )
       order by p.project_name
       limit 20
     """;
@@ -40,6 +35,12 @@ public class ResidualQuery {
   public final static String addProjectOverride = """
     insert into brs.residual_project_override_qualified_date(project_id, override_qualified_date, date_created, created_by_id)
     values (:projectId, :overrideDate::date, now(), :userId)
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteProjectQualified = """
+    delete from brs.residual_project_qualified_date
+    where project_id = :projectId
     """;
 
   //language=PostgreSQL

@@ -20,7 +20,7 @@ BEGIN
            inner join brs.user_residual_project_snapshot_type urpst
                       on urpst.id = urps.user_residual_project_snapshot_type_id and
                          urpst.user_residual_project_snapshot_code = 'LIFETIME_QUALIFIED_FDS'
-    WHERE urs.residual_id = 2
+    WHERE urs.residual_id = p_residual_id
       and urs.paid_in_period is true
     LOOP
       insert into brs.residual_ledger(project_id,
@@ -63,7 +63,9 @@ BEGIN
       from brs.residual_clawback rc
       where rc.user_id = d.user_id;
 
-      if coalesce(d.clawback,0) > 0 and coalesce(d.earned_residual,0) < 1 then
+      if d.paid_in_period is not true then
+        v_amount = 0;
+      elsif coalesce(d.clawback,0) > 0 and coalesce(d.earned_residual,0) < 1 then
         v_amount = 0;
       elsif coalesce(d.clawback,0) > coalesce(d.earned_residual,0) and  coalesce(d.earned_residual,0) > 0 then
         v_amount = d.earned_residual;
