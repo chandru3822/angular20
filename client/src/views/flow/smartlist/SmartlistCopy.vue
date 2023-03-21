@@ -1,5 +1,12 @@
 <template>
-  <v-icon @click.stop="copySmartlist">mdi-content-copy</v-icon>
+  <v-btn
+    @click.stop="copySmartlist"
+    text
+    icon
+    class="pa-5"
+  >
+    <v-icon >mdi-content-copy</v-icon>
+  </v-btn>
 </template>
 
 <script setup>
