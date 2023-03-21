@@ -46,10 +46,10 @@ public class ProjectProcessStepController {
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(
-      @PathVariable Long projectProcessStepId) {
+      @PathVariable Long projectProcessStepId, @RequestParam(required = false) Long companyId) {
     try {
       ProjectProcessStep pps =
-          projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+          projectProcessStepService.getProjectProcessStep(projectProcessStepId, companyId);
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {

@@ -372,7 +372,6 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import SpinnerInline from '@/components/SpinnerInline'
 import Vue2Filters from 'vue2-filters'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
-import {hideEvent} from "./eventHelpers";
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -559,7 +558,8 @@ export default {
       try {
         this.projectMismatch = false
         this.processStepLoading = true
-        const {data, status} = await getRequest(`/projectProcessStep/${this.projectProcessStepId}`)
+        let params = {companyId: this.companyId}
+        const {data, status} = await getRequestWithParams(`/projectProcessStep/${this.projectProcessStepId}`, {params})
         if (data && data.projectId && data.projectId !== this.projectId) {
           this.projectMismatch = true
           this.processStepLoading = false
@@ -570,9 +570,7 @@ export default {
           this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
-          this.existingEvents = this.processStep.projectProcessStepEvents.filter(ppse => {
-
-          })
+          this.existingEvents = this.processStep.projectProcessStepEvents
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
           if (reloadAll) {
             //dont reload if only doing simple refresh
@@ -790,7 +788,8 @@ export default {
     getProcessStepEvents: async function () {
       //this gets the events assigned to the procez_ss step so we know which ADD buttons to show
       try {
-        const {data, status} = await getRequest(`/processStep/${this.processStepId}/event`, null, [])
+        let params = {companyId: this.companyId}
+        const {data, status} = await getRequestWithParams(`/processStep/${this.processStepId}/event`, {params}, null, [])
         this.processStepEvents = data
         if(!this.$store.getters.isFullAdmin){ //if the user is a 7 Oaks admin, they should see the event regardless of readonly status
           this.processStepEvents = this.processStepEvents.filter(pse => {
@@ -802,10 +801,6 @@ export default {
                     }
                   }
                   return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
-                }
-                else if(hideEvent(pse, this.$store)){
-                  return false
-                  //if the event itself is set to hidden for this user, the user should not see the event
                 }
                 return true //if the event is not readonly, the user should see the event
               })

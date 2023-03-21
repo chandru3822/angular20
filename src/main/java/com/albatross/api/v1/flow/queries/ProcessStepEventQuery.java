@@ -84,6 +84,14 @@ public class ProcessStepEventQuery {
     where pse.process_step_id = :processStepId
       and e.resource_custom_field_id is not null
       and pse.archived is not true
+      and case when e.hidden and :systemAdmin::boolean is false
+                       then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                               and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
+            )
+                   else 1=1 end
       order by pse.display_order
         """;
 
@@ -522,7 +530,7 @@ public class ProcessStepEventQuery {
     public final static String insertWhiteListPosition = """
         insert into flow.white_listed_position(position_id, process_step_event_id, event_id, process_step_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
             select :positionId, :processStepEventId, :eventId, :processStepId, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
-            where not exists ( select id 
+            where not exists ( select id
                                 from flow.white_listed_position
                                 where process_step_event_id = :processStepEventId
                                 and position_id = :positionId
