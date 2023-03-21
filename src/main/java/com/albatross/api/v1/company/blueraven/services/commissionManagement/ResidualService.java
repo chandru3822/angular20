@@ -60,6 +60,7 @@ public class ResidualService {
     params.put("overrideDate", projectOverride.getOverrideDate());
     params.put("userId", currentUser.trueUserId());
     sqlCache.updateBySql(ResidualQuery.addProjectOverride, params);
+    sqlCache.updateBySql(ResidualQuery.deleteProjectQualified, params);
     } catch (DuplicateKeyException e) {
       String msg = "An override date already exists for this project";
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
