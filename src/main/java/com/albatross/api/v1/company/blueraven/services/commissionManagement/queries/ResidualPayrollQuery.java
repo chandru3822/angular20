@@ -83,6 +83,7 @@ public class ResidualPayrollQuery {
             s.user_status as "userStatus",
             s.hire_date as "hireDate",
             s.user_full_name as "userFullName",
+            s.residual_plan_name as "residualPlanName",
             s.residual_start_date as "residualStartDate",
             s.residual_plan_name as "residualPlanName",
             s.lifetime_qualified_fds as "lifetimeQualifiedFds",

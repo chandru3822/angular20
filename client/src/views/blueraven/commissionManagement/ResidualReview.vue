@@ -88,6 +88,7 @@
               <td class="text-left">{{item.userStatus}}</td>
               <td class="text-left">{{item.hireDate}}</td>
               <td class="text-left">{{item.userFullName}}</td>
+              <td class="text-left">{{item.residualPlanName}}</td>
               <td class="text-left">{{item.residualStartDate}}</td>
               <td class="text-left clickable">
                 <a @click="loadModalData(item, 1)">
@@ -163,6 +164,7 @@ export default {
         {text: 'User Status', value: 'userStatusType', show: true},
         {text: 'Hire Date', value: 'hireDate', show: true},
         {text: 'Usable Name', value: 'userFullName', show: true},
+        {text: 'Residual Name', value: 'residualPlanName', show: true},
         {text: 'Residual Start Date', value: 'residualStartDate', show: true},
         {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
         {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
