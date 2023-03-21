@@ -141,6 +141,7 @@
       <template v-slot:title>Duplicate HOA</template>
       Are you sure you want to create a new HOA?
       <!--todo: show duplicate info-->
+      <template v-slot:yes>Create</template>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
     Are you sure you want to delete {{ hoaToDeleteName }}?
