@@ -29,9 +29,23 @@ public class GenesysWebhookController {
     }
   }
 
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  @PostMapping(value = "/contactCallStatus")
+  public ResponseEntity updateContactCallStatus(@RequestBody GenesysCallOutcome genesysCallOutcome)
+    throws Exception {
+
+    if (genesysService.updateContactCallStatus(genesysCallOutcome.getContactId(), genesysCallOutcome.getTotalCallAttempts(), genesysCallOutcome.getFirstCallTimestamp())) {
+      return ResponseEntity.ok("Contact successfully updated.");
+    }
+    else {
+      return ResponseEntity.badRequest().body("Invalid Contact ID");
+    }
+  }
+
   @Data
   public static class GenesysCallOutcome {
     private Long contactId;
-    private String callOutcome;
+    private String callOutcome, firstCallTimestamp;
+    private Long totalCallAttempts;
   }
 }

@@ -75,6 +75,8 @@ public class ProjectService {
 
   private final SqlArrayService sqlArrayService;
 
+  private final UserPositionService userPositionService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -555,10 +557,15 @@ public class ProjectService {
         new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
-  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {
+  public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId, Long companyId) {
+    User user = securityService.getCurrentUser();
+    Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user.getId(), companyId);
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
+    params.put("systemAdmin", systemAdmin);
+    params.put("userPositions", userPositionIds);
     return sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
   }
 

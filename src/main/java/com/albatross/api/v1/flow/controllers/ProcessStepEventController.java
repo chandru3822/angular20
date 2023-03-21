@@ -25,8 +25,8 @@ public class ProcessStepEventController {
   private final ProcessStepEventService processStepEventService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepEvent> getStepEvents (@PathVariable Long stepId) {
-    return processStepEventService.getStepEvents(stepId);
+  public List<ProcessStepEvent> getStepEvents (@PathVariable Long stepId, @RequestParam(required=false) Long companyId) {
+    return processStepEventService.getStepEvents(stepId, companyId);
   }
 
   @GetMapping(value = "/{psEventId}", produces = MediaType.APPLICATION_JSON_VALUE)

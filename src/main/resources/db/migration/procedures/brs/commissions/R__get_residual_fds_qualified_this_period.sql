@@ -65,7 +65,7 @@ begin
                pd.substantial_completion_date ,
                pd.cancelled_date ,
                pd.on_hold_date,
-               coalesce(rpoqd.override_qualified_date,greatest(pd.substantial_completion_date, pd.financial_agreement_signed_date, pd.utility_bill_verified_date, case
+               coalesce(rpoqd.override_qualified_date,greatest(pd.financial_agreement_signed_date, pd.utility_bill_verified_date, case
                                                                                                                     when pd.proof_of_homeowners_insurance_required = 305
                                                                                                                       then
                                                                                                                       pd.proof_of_homeowners_insurance_obtained_date

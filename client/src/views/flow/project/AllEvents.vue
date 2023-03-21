@@ -90,7 +90,6 @@ import {getRequest, putRequest, postRequest, logError, getRequestWithParams, get
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import TableActiveEventSnippet from '@/views/flow/project/TableActiveEventSnippet'
-import {hideEvent} from "./eventHelpers";
 
 import moment from 'moment'
 
@@ -145,9 +144,9 @@ export default {
     getEvents: async function () {
       try {
         this.activeEventsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/events`)
+        let params = {companyId: this.companyId}
+        const {data} = await getRequestWithParams(`/project/${this.projectId}/events`, {params} )
         this.events = data
-        this.events = this.events.filter(e => !hideEvent(e, this.$store))
         window.document.title = `${this.project.projectName} - Events`
       } catch (e) {
         logError(e)
