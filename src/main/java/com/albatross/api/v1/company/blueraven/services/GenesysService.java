@@ -219,6 +219,42 @@ public class GenesysService {
     return false;
   }
 
+  public Boolean updateContactCallStatus(Long contactId, Long totalCallAttempts, String firstCallTimestamp) {
+    if (contactId != null) {
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("textValue", totalCallAttempts.toString());
+      params.put("numericValue", null);
+      params.put("richTextValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("customFieldGroupAssignmentId", 24990L);
+      params.put("sourceId", contactId);
+      params.put("userId", SystemSettings.BR_SYSTEM_USER.getId());
+      sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
+
+      params.clear();
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("textValue", firstCallTimestamp);
+      params.put("numericValue", null);
+      params.put("richTextValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("customFieldGroupAssignmentId", 24992L);
+      params.put("sourceId", contactId);
+      params.put("userId", SystemSettings.BR_SYSTEM_USER.getId());
+      sqlCache.updateBySql(ContactCfvQuery.upsertCustomFieldValue, params);
+
+      return true;
+    }
+
+    return false;
+  }
+
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot)
       throws IOException, ApiException {
     // Only add contacts if we are in Prod
