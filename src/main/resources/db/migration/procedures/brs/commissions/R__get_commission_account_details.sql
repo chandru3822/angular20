@@ -339,7 +339,6 @@ BEGIN
                    AND CASE WHEN p_cancel_start_date IS NOT NULL
                                 THEN pd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
                             ELSE 1 = 1 END
-                 ORDER BY p.project_name
              ) AS foo
         WHERE CASE WHEN v_is_show_all IS TRUE
                        THEN not COALESCE(foo.commission_earned,0) + COALESCE(foo.override_earned,0) +
@@ -349,7 +348,8 @@ BEGIN
                        THEN foo.override_plan_id = p_override_plan_id ELSE 1 = 1 END
           AND CASE WHEN p_commission_plan_id IS NOT NULL
                        THEN foo.commission_plan_id = p_commission_plan_id
-                   ELSE 1 = 1 END;
+                   ELSE 1 = 1 END
+    order by 3;
     drop table milestone2;
     drop table milestone1;
 END
