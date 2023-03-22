@@ -138,9 +138,26 @@
       </v-card>
     </v-dialog>
     <ConfirmationDialog :open-dialog="duplicateDialog" @confirm="saveHoa" @close-dialog="[duplicateDialog = false, close()]">
-      <template v-slot:title>Duplicate HOA</template>
-      Are you sure you want to create a new HOA?
-      <!--todo: show duplicate info-->
+      <template v-slot:title><span class="error--text">WARNING: Duplicate HOA Data</span></template>
+      <div class="pb-3 body-large">Are you sure you want to create a new HOA?</div>
+      <v-row>
+        <v-col v-if="duplicateHoaMatch">
+          <div class="label-large">Existing HOA</div>
+          <div class="body-medium"><span class="label-medium">Name:</span> {{duplicateHoaMatch.name}}</div>
+          <div class="body-medium"><span class="label-medium">State:</span> {{duplicateHoaMatch.state}}</div>
+          <div class="body-medium"><span class="label-medium">Management Company:</span>
+            <div>{{duplicateHoaMatch.managementCompany}}</div>
+          </div>
+        </v-col>
+        <v-col v-if="editedItem">
+          <div class="label-large">New Data</div>
+          <div class="body-medium"><span class="label-medium">Name:</span> {{editedItem.name}}</div>
+          <div class="body-medium"><span class="label-medium">State:</span> {{editedItem.state}}</div>
+          <div class="body-medium"><span class="label-medium">Management Company:</span>
+            <div>{{editedItem.managementCompany}}</div>
+          </div>
+        </v-col>
+      </v-row>
       <template v-slot:yes>Create</template>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
@@ -196,7 +213,8 @@ export default {
     addingManagementCompany: false,
     newManagementCompany: "",
     hoaToDelete: null,
-    duplicateDialog: false
+    duplicateDialog: false,
+    duplicateHoaMatch: null
   }),
   computed: {
     filteredHoas() {
@@ -233,6 +251,9 @@ export default {
     },
     hoaToDeleteName(){
       return this.hoaToDelete ? this.hoaToDelete.name : ''
+    },
+    newHoaDataManagementCompany(){
+     return
     }
   },
   async created() {
@@ -323,11 +344,14 @@ export default {
     },
 
     newHoaDuplicateCheck() {
-      const match = this.hoas.filter(hoa => {
+      this.duplicateHoaMatch = this.hoas.find(hoa => {
         return this.editedItem.name === hoa.name && this.editedItem.companyStateId === hoa.companyStateId && this.editedItem.managementCompanyId === hoa.managementCompanyId
       })
-      if(match.length > 0){
+      if(this.duplicateHoaMatch){
         this.hoaDialog = false
+        //add managementCompany name and state name for display purposes
+        this.editedItem.managementCompany = this.managementCompanies.find(co => co.id === this.editedItem.managementCompanyId)?.managementCompany
+        this.editedItem.state = this.states.find(state => state.id === this.editedItem.companyStateId)?.state
         this.duplicateDialog = true
       } else {
         this.saveHoa()
