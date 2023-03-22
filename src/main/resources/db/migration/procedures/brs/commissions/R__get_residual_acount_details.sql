@@ -60,10 +60,10 @@ begin
            foo1.clawback,
            foo1.adjustment_override,
            case
-             when foo1.residual_earned is true or foo1.clawback > 0 then
-               case when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
-                 foo1.potential_residual
-                else 0.00::numeric end - foo1.clawback + foo1.adjustment_override
+             when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
+                 coalesce(foo1.potential_residual,0) - coalesce(foo1.clawback,0) + coalesce(foo1.adjustment_override,0)
+             when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and foo1.clawback > 0 then
+             0- coalesce(foo1.clawback,0) + coalesce(foo1.adjustment_override,0)
              else 0.00 end as total
     from (select *,
                  rpa.allocation                                                   as required_fdc_per_month,
@@ -145,9 +145,10 @@ begin
                        inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
                        inner join brs.residual r on r.current is true
                 where
---                        u.id in (2438980,
---                              2433935,
---                              2353957,2432305,2429495) and
+                       u.id in (2438980,
+                                2428625,
+                             2433935,
+                             2353957,2432305,2429495) and
                       exists(select id
                              from flow.user_position up2
                              where up2.user_id = u.id

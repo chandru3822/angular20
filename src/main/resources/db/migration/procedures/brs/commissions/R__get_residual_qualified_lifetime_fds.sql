@@ -1,5 +1,5 @@
-drop function if exists brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint);
-CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint)
+drop function if exists brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint,p_end_of_period_date date);
+CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user_id bigint,p_end_of_period_date date)
   RETURNS table (project_id bigint,
                  final_design_complete_date date,
                  final_design_signed_date date,
@@ -34,6 +34,7 @@ begin
   inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
   left join flow.state s on s.id = pd.project_state_id
   where pd.exclude_from_residuals is not true
+    and pd.final_design_signed_date <= p_end_of_period_date
     and pd.closer_user_id = p_closer_user_id
     and pd.cancelled_date is null
     and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
