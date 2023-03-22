@@ -28,18 +28,20 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
-    inner join flow.user_position up on up.user_id = s.owner_id
-    inner join flow.position p on up.position_id = p.id
+    left join flow.user_position up on up.user_id = s.owner_id
+    left join flow.position p on up.position_id = p.id
     where
       cot.company_id = :companyId and
       s.owner_id = :userId and
       s.archived is not true and
       s.work_queue_type_id is null and
-      up.user_id = :userId and
-      up.primary_flag is true and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
-      up.archived is false and
-      p.company_id = :companyId
+      (:isSystemAdmin or (
+        up.user_id = :userId and
+        up.primary_flag is true and
+        (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+        up.archived is false and
+        p.company_id = :companyId
+      ))
     order by s.name, s.date_modified desc
     """;
 
@@ -328,10 +330,12 @@ public class SmartlistQuery {
     where s.id = :smartlistId and
           cot.company_id = :companyId and
           s.archived is not true and
-          up.primary_flag is true and
-          (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
-          up.archived is false and
-          p.company_id = :companyId
+          (:isSystemAdmin or (
+            up.primary_flag is true and
+            (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+            up.archived is false and
+            p.company_id = :companyId
+          ))
   """;
 
   //language=PostgreSQL
