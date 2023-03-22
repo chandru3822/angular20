@@ -49,10 +49,10 @@ public class UserPositionService {
     return sqlCache.queryBySql(
       UserPositionQuery.getAllActive, params, new UserPositionMapper<>(UserPosition.class, om));
   }
-  public List<Long> getAllActiveUserPositionIds(Long userId, Long companyId) {
-    List<UserPosition> userPositions = getAllActiveUserPositions(userId);
+  public List<Long> getAllActiveUserPositionIds(User user) {
+    List<UserPosition> userPositions = getAllActiveUserPositions(user.getId());
     return userPositions.stream()
-      .filter(userPosition -> companyId == null || Objects.equals(userPosition.getCompanyId(), companyId))
+      .filter(userPosition -> user.getCompanyId() == null || Objects.equals(userPosition.getCompanyId(), user.getCompanyId()))
       .map(UserPosition::getPositionId)
       .collect(Collectors.toList());
   }

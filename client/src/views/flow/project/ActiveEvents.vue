@@ -96,8 +96,7 @@ export default {
     getEvents: async function () {
       try {
         this.activeEventsLoading = true
-        let params = {companyId: this.companyId}
-        const {data} = await getRequestWithParams(`/project/${this.projectId}/activeEvents`, {params}, null, [])
+        const {data} = await getRequest(`/project/${this.projectId}/activeEvents`, null, [])
         this.events = data
       } catch (e) {
         logError(e)

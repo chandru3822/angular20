@@ -114,15 +114,15 @@ public class ProjectController {
 
   @GetMapping(value = "/{projectId}/events")
   public ResponseEntity<List<ProjectProcessStepEvent>> getProjectEvents(
-    @PathVariable Long projectId, @RequestParam (required = false) Long companyId) {
+    @PathVariable Long projectId) {
     return new ResponseEntity<>(
-      projectService.getEventsByProjectId(projectId, null, companyId), HttpStatus.OK);
+      projectService.getEventsByProjectId(projectId, null), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/activeEvents")
   public ResponseEntity<List<ProjectProcessStepEvent>> getUpcomingProjectEvents(
-    @PathVariable Long projectId, @RequestParam(required = false) Long companyId) {
-    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, 1L, companyId), HttpStatus.OK);
+    @PathVariable Long projectId) {
+    return new ResponseEntity<>(projectService.getEventsByProjectId(projectId, 1L), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/attachments")
