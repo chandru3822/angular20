@@ -35,6 +35,8 @@ public class ResidualPayrollService {
     params.put("startDate", searchQuery.getStartDate());
     params.put("endDate", searchQuery.getEndDate());
     params.put("userId", searchQuery.getUserId());
+    params.put("userFirstName", searchQuery.getUserFirstName());
+    params.put("userLastName", searchQuery.getUserLastName());
 
     Optional<String> results = sqlCache.getBySql(ResidualPayrollQuery.search, params, new SingleColumnRowMapper<>(String.class));
 
