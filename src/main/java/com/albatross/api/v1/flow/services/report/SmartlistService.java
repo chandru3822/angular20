@@ -151,7 +151,12 @@ public class SmartlistService {
 
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
+    Map<String, Object> params = Map.of(
+      "smartlistId", id,
+      "companyId", user.getCompanyId(),
+      "userId", user.getId(),
+      "isSystemAdmin", user.isSystemAdmin()
+    );
     Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
                                   .orElse(null);
 
@@ -413,7 +418,7 @@ public class SmartlistService {
 
   public List<Smartlist> getMine() {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
+    Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId(), "isSystemAdmin", user.isSystemAdmin());
     return sqlCache.queryBySql(SmartlistQuery.getMine, params, Smartlist.class);
   }
 
