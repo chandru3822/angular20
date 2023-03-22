@@ -249,14 +249,10 @@ public class ProjectProcessStepService {
 
   }
 
-//  This is for all those times we use this function and don't really care about the (hidden) events, so we don't need to pass in the companyId
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
-    return getProjectProcessStep(stepId, null);
-  }
-  public ProjectProcessStep getProjectProcessStep(Long stepId, Long companyId) {
     User user = securityService.getCurrentUser();
       Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-      List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user.getId(), companyId);
+      List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
       HashMap<String, Object> params = new HashMap<>();
       params.put("stepId", stepId);
       params.put("companyId", user.getCompanyId());
