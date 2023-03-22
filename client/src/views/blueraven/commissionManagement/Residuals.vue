@@ -599,10 +599,10 @@
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.currentResidual = data
-          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.total : 0 })
           this.additionalPayrollDataNeeded = null == this.currentResidual.description
           this.getStatusColor()
-          await this.getCurrentResidual()
+          this.getCurrentResidual()
+          await this.getResiduals()
 
           if(!keepLoading) {
             this.$store.commit(AppMutations.SET_LOADING, false)
