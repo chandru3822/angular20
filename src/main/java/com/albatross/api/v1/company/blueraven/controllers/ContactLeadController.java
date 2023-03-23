@@ -281,8 +281,9 @@ public class ContactLeadController {
   }
 
   @PostMapping(value = "/colossus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactColossus(@RequestBody ContactLead contactLead) {
+  public ResponseEntity updateContactColossus(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
+    return ResponseEntity.ok("Contact successfully added.");
   }
 
   @PostMapping(value = "/airo", produces = MediaType.APPLICATION_JSON_VALUE)

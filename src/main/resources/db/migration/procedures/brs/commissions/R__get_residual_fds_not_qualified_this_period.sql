@@ -1,5 +1,5 @@
-drop function if exists brs.get_residual_fds_not_qualified_this_period(p_closer_user_id bigint);
-CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_closer_user_id bigint)
+drop function if exists brs.get_residual_fds_not_qualified_this_period(p_closer_user_id bigint,p_start_date date,p_end_date date);
+CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_closer_user_id bigint,p_start_date date,p_end_date date)
   RETURNS table
           (
             project_id                                  bigint,
@@ -18,22 +18,7 @@ CREATE or replace function brs.get_residual_fds_not_qualified_this_period(p_clos
           )
 AS
 $BODY$
-  declare
-    v_last_period_end_date        date;
-    v_end_of_previous_month       date;
-    v_beginning_of_previous_month date;
   begin
-
-    select r.period_end
-    into v_last_period_end_date
-    from brs.residual r
-    order by id desc limit 1;
-
-    SELECT (date_trunc('month', v_last_period_end_date ) - interval '1 day' )::date
-    into v_end_of_previous_month;
-
-    select cast(date_trunc('month', v_last_period_end_date - interval '1 month') as date)
-    into v_beginning_of_previous_month;
 
   return query
     select foo.project_id,
@@ -78,13 +63,15 @@ $BODY$
           where pd.exclude_from_residuals is not true
             and pd.closer_user_id = p_closer_user_id
             and pd.final_design_signed_date is not null
+            and pd.final_design_signed_date >= p_start_date and pd.final_design_signed_date <= p_end_date
            -- and pd.cancelled_date is null
             --and pd.on_hold_date is null
             ) as foo
     where (foo.proof_of_homeowners_insurance is false or foo.first_cash_payment is false or
-           foo.financial_agreement_signed_date is null or foo.utility_bill_verified_date is null)
-      and foo.substantial_completion_date is null and foo.final_design_signed_date >=v_beginning_of_previous_month and
-          foo.final_design_signed_date <= v_end_of_previous_month;
+           foo.financial_agreement_signed_date is null or foo.utility_bill_verified_date is null or
+           foo.cancelled_date is not null)
+      and foo.substantial_completion_date is null and foo.final_design_signed_date >=p_start_date and
+          foo.final_design_signed_date <= p_end_date;
 
 END
 $BODY$

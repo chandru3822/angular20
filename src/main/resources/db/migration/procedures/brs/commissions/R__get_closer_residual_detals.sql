@@ -69,7 +69,7 @@ begin
 
   select count(1)
   into v_lifetime_fds
-  from brs.get_residual_qualified_lifetime_fds(p_closer_user_id);
+  from brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end);
 
   case
     when v_has_current_snapshot_id is null then return query
@@ -142,7 +142,7 @@ begin
                                  fds_nq.on_hold_date,
                                  fds_nq.total_cash_down_payment,
                                  fds_nq.first_cash_payment_amount
-                          from brs.get_residual_fds_not_qualified_this_period(u.id) as fds_nq
+                          from brs.get_residual_fds_not_qualified_this_period(u.id,v_period_start,v_period_end) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as fda_not_qualifying)            as fda_in_month_not_qualifying,
                    (select array_to_json(array_agg(row_to_json(qualified_fdc1)))
                     from (select p.contact_name,
@@ -177,7 +177,7 @@ begin
                           group by p.contact_name, fds_nq.project_id, p.cancelled_date) as current_clawbacks1)                           as clawback_projects,
                    (select array_to_json(array_agg(row_to_json(total_qualifying_fdc_to_date1)))
                     from (select p.contact_name, fds_nq.project_id
-                          from brs.get_residual_qualified_lifetime_fds(u.id) as fds_nq
+                          from brs.get_residual_qualified_lifetime_fds(u.id,v_period_end,v_grace_period_end) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as total_qualifying_fdc_to_date1) as total_qualifying_fdc_to_date,
             (select count(1)
             from (
