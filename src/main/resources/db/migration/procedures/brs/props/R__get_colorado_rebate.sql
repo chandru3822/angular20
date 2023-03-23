@@ -11,10 +11,7 @@ declare
   v_annual numeric;
   v_col_springs_rebate numeric;
 BEGIN
-      insert into flow.company_function_log(function_name, parameters)
-      values ('Get Colorado Rebate', 'p_aurora_design_summary: ' || p_aurora_design_summary::text ||
-                                     ' p_rebate_amount: ' || p_rebate_amount ||
-                                     ' p_inverter_efficiency: ' || p_inverter_efficiency);
+
       raise notice 'p_rebate_amount %',p_rebate_amount;
       raise notice 'p_inverter_efficiency %',p_inverter_efficiency;
       v_col_springs_rebate = 0.00;

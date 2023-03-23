@@ -2167,11 +2167,6 @@ BEGIN
 
   drop table proposal_value;
 
---   insert into flow.company_function_log(function_name, parameters, run_by_id)
---   values ('Get Calculated Proposal Values', 'p_proposal_id: ' || p_proposal_id ||
---                                             ' p_insert_prop_log_history: ' || p_insert_prop_log_history ||
---                                             ' p_run_by_id: ' || p_run_by_id,
---           p_run_by_id);
 
 
 END

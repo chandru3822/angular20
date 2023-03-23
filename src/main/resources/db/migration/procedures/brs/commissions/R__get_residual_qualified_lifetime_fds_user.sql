@@ -12,14 +12,16 @@ CREATE or replace function brs.get_residual_qualified_lifetime_fds(p_closer_user
                  first_cash_payment_amount numeric,
                  substantial_completion_date date,
                  cancelled_date date,
-                 on_hold_date date) AS
+                 on_hold_date date,
+                 qualified_date date) AS
 $BODY$
 declare
 v_period_end date;
+v_grace_period_end date;
 begin
 
-  select period_end
-  into v_period_end
+  select grace_period_end ,period_end
+  into v_grace_period_end,v_period_end
   from brs.residual r2
   where current is true;
 
@@ -36,9 +38,10 @@ begin
          pd.first_cash_payment_amount ,
          pd.substantial_completion_date ,
          pd.cancelled_date ,
-         pd.on_hold_date
+         pd.on_hold_date,
+         pd.qualified_date
          from
-         brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end) pd;
+         brs.get_residual_qualified_lifetime_fds(p_closer_user_id,v_period_end,v_grace_period_end) pd;
 END
 $BODY$
   LANGUAGE plpgsql

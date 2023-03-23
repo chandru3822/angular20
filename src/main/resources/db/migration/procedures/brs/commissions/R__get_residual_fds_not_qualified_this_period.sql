@@ -68,7 +68,8 @@ $BODY$
             --and pd.on_hold_date is null
             ) as foo
     where (foo.proof_of_homeowners_insurance is false or foo.first_cash_payment is false or
-           foo.financial_agreement_signed_date is null or foo.utility_bill_verified_date is null)
+           foo.financial_agreement_signed_date is null or foo.utility_bill_verified_date is null or
+           foo.cancelled_date is not null)
       and foo.substantial_completion_date is null and foo.final_design_signed_date >=p_start_date and
           foo.final_design_signed_date <= p_end_date;
 

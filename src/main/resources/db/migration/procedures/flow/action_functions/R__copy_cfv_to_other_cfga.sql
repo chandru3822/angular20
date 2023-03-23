@@ -18,6 +18,17 @@ declare
   v_event_request_valid boolean default true;
 
 BEGIN
+
+  insert into flow.company_function_log(function_name, parameters, run_by_id)
+  values ('Create Payroll', 'p_current_user: ' || p_user_id ||
+                            ' p_project_id: '|| p_project_id ||
+                            ' p_pps_id: '|| p_pps_id ||
+                            ' p_ppse_id: '|| p_ppse_id ||
+                            ' p_cfga_copy_from: '|| p_cfga_copy_from ||
+                            ' p_cfga_copy_to: '|| p_cfga_copy_to ||
+                            ' p_override_existing: '|| p_override_existing ||,
+          p_user_id);
+
   --check that both cfga's share the same data type - using company_data_type_id also ensures they are from the same company
   --and get the object type for each cfga
   select cf.company_data_type_id, cot.object_type_id

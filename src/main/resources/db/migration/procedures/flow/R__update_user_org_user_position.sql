@@ -77,8 +77,6 @@ BEGIN
          where up.user_id = any (p_user_ids)
             and up.archived is false);
 
-    insert into flow.company_function_log(function_name, parameters)
-    values ('Update User Org User Position', 'p_user_ids: ' || p_user_ids::text);
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE

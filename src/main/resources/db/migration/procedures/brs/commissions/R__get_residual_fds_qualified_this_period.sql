@@ -93,7 +93,7 @@ begin
               when p_include_cancel is true then
                 pd.cancelled_date is not null end and
               ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null)) and
-              ((pd.final_design_signed_date is not null and
+              pd.final_design_signed_date is not null and
                 pd.financial_agreement_signed_date is not null and
                 pd.utility_bill_verified_date is not null and
                 pd.proof_of_homeowners_insurance_required is not null and
@@ -110,8 +110,7 @@ begin
                       when (pd.first_cash_payment_amount /
                             greatest(pd.total_cash_down_payment,1) >= .49) then
                         pd.first_cash_payment_paid_date is not null end
-                  else 1 = 1 end)
-           or (pd.substantial_completion_date is not null)) and
+                  else 1 = 1 end and
           not exists (select id from brs.residual_project_qualified_date rpqd
                       where rpqd.project_id = pd.project_id limit 1)) as foo
   where foo.final_design_signed_date <= p_end_of_previous_month
