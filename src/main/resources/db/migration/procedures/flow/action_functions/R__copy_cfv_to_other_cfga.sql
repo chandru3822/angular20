@@ -26,7 +26,7 @@ BEGIN
                             ' p_ppse_id: '|| p_ppse_id ||
                             ' p_cfga_copy_from: '|| p_cfga_copy_from ||
                             ' p_cfga_copy_to: '|| p_cfga_copy_to ||
-                            ' p_override_existing: '|| p_override_existing ||,
+                            ' p_override_existing: '|| p_override_existing,
           p_user_id);
 
   --check that both cfga's share the same data type - using company_data_type_id also ensures they are from the same company
