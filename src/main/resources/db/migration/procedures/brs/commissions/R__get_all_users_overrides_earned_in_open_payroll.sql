@@ -217,11 +217,6 @@ BEGIN
 
         end case;
 
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get All Users Overrides Earned in Open Payroll', 'p_payroll_id: ' || p_payroll_id ||
-                                                              ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
-
 END;
 $BODY$
     LANGUAGE plpgsql VOLATILE

@@ -10,12 +10,7 @@ DECLARE
     v_setter_performance_report json;
 
 BEGIN
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get Setter Manager Performance Report', 'p_office_id: ' || p_office_id ||
-                                                     ' p_start_date: ' || p_start_date ||
-                                                     ' p_end_date: ' || p_end_date ||
-                                                     ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
+
 
     SELECT * FROM brs.get_setters_by_setter_mgr_office(p_office_id) INTO v_setter_ids;
 

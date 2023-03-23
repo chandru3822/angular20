@@ -17,9 +17,6 @@ BEGIN
         v_on_hold = false;
     end if;
 
-    insert into flow.company_function_log(function_name, db_function_id, parameters)
-    values ('Project Status On Hold', 10, 'p_project_id: ' || p_project_id);
-
     return v_on_hold;
 
 END

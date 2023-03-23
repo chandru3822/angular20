@@ -26,9 +26,7 @@ BEGIN
                 group by cancelled_date),0)
     into v_total;
 
-    insert into flow.company_function_log(function_name, parameters)
-    values ('Get Commissions Earned for Setters', 'p_project_ids: ' || p_project_ids::text ||
-                                                  ' p_period_end: ' || p_period_end);
+
 
     return v_total;
 END;

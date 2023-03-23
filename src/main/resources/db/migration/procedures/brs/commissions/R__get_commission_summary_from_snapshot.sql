@@ -5,10 +5,7 @@ $BODY$
 declare
     v_json json;
 BEGIN
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get Commission Summary from Snapshot', 'p_payroll_id: ' || p_payroll_id ||
-                                                    ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
+
 
    SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                FROM (SELECT id,

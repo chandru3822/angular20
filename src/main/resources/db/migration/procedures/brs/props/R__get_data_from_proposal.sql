@@ -148,11 +148,6 @@ begin
                  inner join flow.company_state cs on c.company_state_id = cs.id
                where pl.project_id = p_project_id and pl.proposal_nbr = p_proposal_nbr;
 
-  insert into flow.company_function_log(function_name, parameters, run_by_id)
-  values ('Get Data from Proposal', 'p_project_id: ' || p_project_id ||
-                                    ' p_proposal_nbr: ' || p_proposal_nbr ||
-                                    ' p_run_by_id: ' || p_run_by_id,
-          p_run_by_id);
 
 END
 $BODY$

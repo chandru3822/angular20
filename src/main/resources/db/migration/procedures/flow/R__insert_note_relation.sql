@@ -32,12 +32,5 @@ BEGIN
       return true;
     end case;
 
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Insert Note Relation', 'p_primary_id: ' || p_primary_id ||
-                                    ' p_note_id: ' || p_note_id ||
-                                    ' p_object_type_id: ' || p_object_type_id ||
-                                    ' p_user_id: ' || p_user_id,
-            p_user_id);
-
 END;
 $function$
