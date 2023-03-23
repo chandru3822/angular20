@@ -52,7 +52,6 @@ public class UserPositionService {
   public List<Long> getAllActiveUserPositionIds(User user) {
     List<UserPosition> userPositions = user.getUserPositions();
     return userPositions.stream()
-      .filter(userPosition -> user.getCompanyId() == null || Objects.equals(userPosition.getCompanyId(), user.getCompanyId()))
       .map(UserPosition::getPositionId)
       .collect(Collectors.toList());
   }
