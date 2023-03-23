@@ -45,6 +45,8 @@ public class ScheduleService {
 
   private final SecurityService securityService;
 
+  private final UserPositionService userPositionService;
+
   private final ObjectMapper om;
 
   public List<ScheduleEvent> getEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
@@ -81,8 +83,13 @@ public class ScheduleService {
   }
 
   public Optional<ProjectWithEvents> getEventsByProject(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
+      User user = securityService.getCurrentUser();
+      Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+      List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectId);
+      params.put("systemAdmin", systemAdmin);
+      params.put("userPositions", userPositionIds);
 
     Optional<ProjectWithEvents> result = sqlCache.getBySql(ScheduleQuery.getEventsByProject, params, new ProjectWithEventsMapper<>(ProjectWithEvents.class, om));
     return result;

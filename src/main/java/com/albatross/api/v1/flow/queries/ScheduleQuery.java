@@ -54,6 +54,14 @@ public class ScheduleQuery {
                                    and pps.archived is not true
                                    and pps.main is true
                                    and ppse.archived is not true
+                                   and case when e.hidden and :systemAdmin::boolean is false
+                                        then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                               and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
+            )
+                                    else 1=1 end
                                  order by start_time, end_time
                                ) steps), '[]') AS "events"
         from flow.project p

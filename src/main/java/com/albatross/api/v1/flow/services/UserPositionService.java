@@ -50,7 +50,7 @@ public class UserPositionService {
       UserPositionQuery.getAllActive, params, new UserPositionMapper<>(UserPosition.class, om));
   }
   public List<Long> getAllActiveUserPositionIds(User user) {
-    List<UserPosition> userPositions = getAllActiveUserPositions(user.getId());
+    List<UserPosition> userPositions = user.getUserPositions();
     return userPositions.stream()
       .filter(userPosition -> user.getCompanyId() == null || Objects.equals(userPosition.getCompanyId(), user.getCompanyId()))
       .map(UserPosition::getPositionId)
