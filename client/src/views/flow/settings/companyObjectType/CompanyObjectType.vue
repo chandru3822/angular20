@@ -4,7 +4,7 @@
       <v-col cols="12" class="shrink">
         <router-link :to="`/settings/companyObjectTypes`">Back</router-link>
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
+          <v-toolbar-title v-if="!isMobile" class="title-large">
             {{ objectType.objectType }} - Custom Field Groups
           </v-toolbar-title>
           <v-spacer />
@@ -16,7 +16,8 @@
                         label="Custom Field Group" />
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
+              <v-icon v-if="isMobile && addNew">close</v-icon>
+              <v-icon v-if="isMobile">add</v-icon>
               <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
           </v-toolbar-items>
@@ -60,7 +61,9 @@ export default {
     }
   },
   computed:{
-
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   created () {
     this.getObjectType()
