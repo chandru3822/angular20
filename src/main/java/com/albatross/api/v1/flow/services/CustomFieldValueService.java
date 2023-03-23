@@ -80,13 +80,26 @@ public class CustomFieldValueService {
     }
   }
 
-  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, ObjectType objectType) {
-    return updateCustomFieldValues(values, sourceId, objectType, null, false);
+  public List<CustomFieldGroup> updateCustomFieldValuesTemp(Boolean cameFromWeb, List<CustomFieldValue> values, Long sourceId, ObjectType objectType) {
+    return updateCustomFieldValues(values, sourceId, objectType, null, false, cameFromWeb);
   }
-  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, ObjectType objectType, Long secondaryId, Boolean doCustomAttachmentLoad) {
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, ObjectType objectType) {
+    return updateCustomFieldValues(values, sourceId, objectType, null, false, false);
+  }
+  public List<CustomFieldGroup> updateCustomFieldValues(List<CustomFieldValue> values, Long sourceId, ObjectType objectType, Long secondaryId, Boolean doCustomAttachmentLoad, Boolean tempCameFromWeb) {
     User currentUser = securityService.getCurrentUser();
     try {
       for (CustomFieldValue cfv : values) {
+
+        if(null != cfv.getId() && cfv.getCustomFieldGroupAssignmentId() == 395) {
+          List<Long> userPositionIds = currentUser.getUserPositions().stream().map(UserPosition::getPositionId).collect(Collectors.toList());
+
+          if(userPositionIds.contains(1L) && !userPositionIds.contains(3L)) {
+            //if it is for Lead Source and there is already a value and the primary position is closer... then log this cuz we are trying to figure out what happened
+            log.info("CONTACT CFV: True User {} with userId {} made a change to contact: {} that came from web? {}", currentUser.trueUserId(), currentUser.getId(), sourceId, tempCameFromWeb);
+          }
+        }
+
         //if the field came here it was dirty and should always be saved
         HashMap<String, Object> params = new HashMap<>();
         params.put("dateValue", cfv.getDateValue());
