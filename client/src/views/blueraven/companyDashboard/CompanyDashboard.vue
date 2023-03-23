@@ -173,7 +173,7 @@
         endDate: moment().format('YYYY-MM-DD'),
         weekNum: 1,
         currentPeriod: Math.floor(moment().isoWeek() / 4),
-        dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Year', 'All Time'],
+        dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'],
         isLoading: true,
         drilldownIsLoading: true,
         dashValues: [],
@@ -288,7 +288,7 @@
         }
       },
 
-      setDateRange () {
+      setDateRange: function () {
         switch (this.selectedDateRange) {
           case 'Yesterday':
             this.startDate = moment().startOf('day').add(-1, 'days').format('YYYY-MM-DD')
@@ -330,6 +330,26 @@
           case 'This Year':
             this.startDate = moment().startOf('year').format('YYYY-MM-DD')
             this.endDate = moment().format('YYYY-MM-DD')
+            break
+          case 'This Quarter':
+            //This is January 1st
+            let tempDate = new Date(moment().startOf('year'));
+            let weeksPerQuarter = 13;
+
+            //This sets tempDate to the first Sunday of the year
+            while(tempDate.getDay() != 0){
+              tempDate.setDate(tempDate.getDate());
+            }
+
+            //This finds the last day of the current quarter
+            while(tempDate < new Date()){
+              tempDate.setDate(tempDate.getDate() + (7*weeksPerQuarter));
+            }
+            this.endDate = moment(tempDate).format('YYYY-MM-DD');
+
+            //This sets the start date of the current quarter
+            tempDate.setDate(tempDate.getDate() - (7*weeksPerQuarter) + 1);
+            this.startDate = moment(tempDate).format('YYYY-MM-DD');
             break;
           case 'All Time':
             this.startDate = moment('2000-01-01').format('YYYY-MM-DD')
