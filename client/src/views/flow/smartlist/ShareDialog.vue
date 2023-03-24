@@ -18,7 +18,7 @@
             class="py-0"
           >
             <v-autocomplete
-              :items="sharables"
+              :items="filteredSharables"
               label="Add Users and Organizations"
               :item-text="(i) => (i.isUser) ? `${i.name} - ${i.position}` : i.name"
               return-object
@@ -233,6 +233,24 @@ let isPublic = ref(props.smartlist.public)
 let openOwnershipDialog = ref(false)
 let newOwner = ref({})
 
+const filteredSharables = computed(() => {
+  if (sharables.value.length === 0 || currentAccess.value.length === 0) {
+    return []
+  }
+
+  let filtered = []
+
+  sharables.value.forEach(s => {
+    if (s.isUser && !currentAccess.value.find(a => a.userPositionId === s.userPositionId)) {
+      filtered.push(s)
+    } else if (s.isOrg && !currentAccess.value.find(a => a.orgId === s.orgId)) {
+      filtered.push(s)
+    }
+  })
+
+  return filtered
+})
+
 const updateNewAccess = (access) => {
   newAccess.value = {
     ...access,
@@ -265,6 +283,7 @@ const updateAccess = async () => {
   }
 
   if (newAccess.value.updated) {
+    //check new share doesn't already have it shared
     payload.newAccess = newAccess.value
   }
 

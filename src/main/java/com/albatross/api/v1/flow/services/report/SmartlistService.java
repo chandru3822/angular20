@@ -307,7 +307,7 @@ public class SmartlistService {
     //give old owner edit access if not system or smartlist admin
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
 
-    if (oldOwnerPosition == null && !isSmartlistAdmin()) {
+    if (oldOwnerPosition != null && !user.isSystemAdmin()) {
       try {
         Map<String, Object> params = new HashMap<>();
         params.put("smartlistId", smartlistId);
