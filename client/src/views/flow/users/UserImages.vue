@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-btn @click="generatePDF()" class="np-btn">Generate PDF</v-btn>
+<!--    <v-btn @click="generatePDF()" class="np-btn">Generate PDF</v-btn>-->
 
     <vue-html2pdf
       :show-layout="false"
