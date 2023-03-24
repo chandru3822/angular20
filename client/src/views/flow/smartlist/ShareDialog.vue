@@ -234,8 +234,12 @@ let openOwnershipDialog = ref(false)
 let newOwner = ref({})
 
 const filteredSharables = computed(() => {
-  if (sharables.value.length === 0 || currentAccess.value.length === 0) {
+  if (sharables.value.length === 0) {
     return []
+  }
+
+  if (currentAccess.value.length === 0) {
+    return sharables.value
   }
 
   let filtered = []
