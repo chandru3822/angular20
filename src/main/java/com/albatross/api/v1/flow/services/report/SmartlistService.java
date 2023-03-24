@@ -460,7 +460,7 @@ public class SmartlistService {
       var share = new SmartlistAccessControl();
       share.setOrgId(o.getId());
       share.setIsOrg(true);
-      share.setIsOrg(false);
+      share.setIsUser(false);
       share.setName(o.getOrgName());
       combinedList.add(share);
     });
