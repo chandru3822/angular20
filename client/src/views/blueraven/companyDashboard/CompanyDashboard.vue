@@ -201,7 +201,7 @@
         return 0;
       },
       additionalEndWeek () {
-        if (this.currentPeriod === 9 || this.currentPeriod === 12) {
+        if (this.currentPeriod % 3 === 0) {
           return 1;
         }
         return 0;
@@ -213,19 +213,19 @@
         return 0;
       },
       additionalEndWeekLastPeriod () {
-        if (this.currentPeriod === 10 || this.currentPeriod === 1) {
+        if ((this.currentPeriod -1) % 3 === 0) {
           return 1;
         }
         return 0;
       },
       momentStartOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek)
+        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3))
       },
       startOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek).format('YYYY-MM-DD')
+        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3)).format('YYYY-MM-DD')
       },
       endOfPeriod () {
-        return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+         return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
       },
       startOfWeek () {
         return moment().startOf('isoWeek').format('YYYY-MM-DD')
@@ -315,8 +315,8 @@
             this.endDate = moment().startOf('isoWeek').subtract(1, 'days').format('YYYY-MM-DD')
             break
           case 'Last Period':
-            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
-            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod).format('YYYY-MM-DD')
+            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3 + Math.floor((this.currentPeriod - 2) / 3))
+            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3  + Math.floor((this.currentPeriod - 2) / 3)).format('YYYY-MM-DD')
             this.endDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Custom':
