@@ -298,7 +298,6 @@ export default {
       }
     },
     handleDocumentRender() {
-      console.log('rendering')
       this.pdfIsLoading = false
       this.pdfPageCount = this.$refs.pdfRef.pageCount
     },

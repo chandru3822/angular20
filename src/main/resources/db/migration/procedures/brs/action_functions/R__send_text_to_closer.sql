@@ -177,14 +177,14 @@ BEGIN
           values(v_closer_user_id,
                  concat('Regen Complete: The regen for ' , v_project_name, ' (', p_project_id, ') is complete.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
+        elseif p_message_type_id = 22 then
+          -- do the message for id 22 = project cancelled - fix for commissions
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
+          values(v_closer_user_id,
+                 concat('The project for your customer, ', v_project_name, ' has been cancelled. You have 10 days from today to reactivate this account to receive commission on this project. Please call Retentions at (385) 200-3940 for help reactivating the project.'),
+                 (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;
-
-    insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
-    values ('Send Text to Closer', 17, 'p_project_id: ' || p_project_id ||
-                                       ' p_current_user_id: '|| p_current_user_id ||
-                                       ' p_message_type_id: ' || p_message_type_id,
-            p_current_user_id);
 
 END
 $function$
