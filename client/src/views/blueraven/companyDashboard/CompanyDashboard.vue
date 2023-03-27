@@ -201,7 +201,7 @@
         return 0;
       },
       additionalEndWeek () {
-        if (this.currentPeriod === 9 || this.currentPeriod === 12) {
+        if (this.currentPeriod % 3 === 0) {
           return 1;
         }
         return 0;
@@ -213,19 +213,25 @@
         return 0;
       },
       additionalEndWeekLastPeriod () {
-        if (this.currentPeriod === 10 || this.currentPeriod === 1) {
+        if ((this.currentPeriod -1) % 3 === 0) {
           return 1;
         }
         return 0;
       },
       momentStartOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek)
+        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3))
       },
       startOfPeriod () {
-        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 1 + this.additionalStartWeek).format('YYYY-MM-DD')
+        return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3)).format('YYYY-MM-DD')
       },
       endOfPeriod () {
-        return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+         return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
+      },
+      startOfQuarter(){
+        return moment().startOf('isoWeek').isoWeek(Math.floor((moment().isoWeek()-1) / 13)*13 + 1).format('YYYY-MM-DD')
+      },
+      endOfQuarter(){
+        return moment().endOf('isoWeek').isoWeek(Math.floor((moment().isoWeek()-1) / 13)*13 + 13).format('YYYY-MM-DD')
       },
       startOfWeek () {
         return moment().startOf('isoWeek').format('YYYY-MM-DD')
@@ -315,8 +321,8 @@
             this.endDate = moment().startOf('isoWeek').subtract(1, 'days').format('YYYY-MM-DD')
             break
           case 'Last Period':
-            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod)
-            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 1 + this.additionalStartWeekLastPeriod).format('YYYY-MM-DD')
+            this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3 + Math.floor((this.currentPeriod - 2) / 3))
+            this.startDate = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3  + Math.floor((this.currentPeriod - 2) / 3)).format('YYYY-MM-DD')
             this.endDate = moment(this.momentStartOfLastPeriod).clone().add(3 + this.additionalEndWeekLastPeriod, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
             break
           case 'Custom':
@@ -332,24 +338,8 @@
             this.endDate = moment().format('YYYY-MM-DD')
             break
           case 'This Quarter':
-            //This is January 1st
-            let tempDate = new Date(moment().startOf('year'));
-            let weeksPerQuarter = 13;
-
-            //This sets tempDate to the first Sunday of the year
-            while(tempDate.getDay() != 0){
-              tempDate.setDate(tempDate.getDate());
-            }
-
-            //This finds the last day of the current quarter
-            while(tempDate < new Date()){
-              tempDate.setDate(tempDate.getDate() + (7*weeksPerQuarter));
-            }
-            this.endDate = moment(tempDate).format('YYYY-MM-DD');
-
-            //This sets the start date of the current quarter
-            tempDate.setDate(tempDate.getDate() - (7*weeksPerQuarter) + 1);
-            this.startDate = moment(tempDate).format('YYYY-MM-DD');
+            this.startDate = this.startOfQuarter
+            this.endDate = this.endOfQuarter
             break;
           case 'All Time':
             this.startDate = moment('2000-01-01').format('YYYY-MM-DD')

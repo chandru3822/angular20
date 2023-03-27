@@ -1679,7 +1679,7 @@ BEGIN
   raise notice 'v_above_line_rebate = %',v_above_line_rebate;
 
   v_total_loan_amount =
-      (coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee);
+      ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee))+ coalesce(v_other_adder_and_discount_amount, 0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
 
 
