@@ -112,7 +112,7 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col cols="8" class="coversheet-right-pane pt-3 px-4 pb-2">
+          <v-col cols="8" class="coversheet-right-pane pt-3 px-4 pb-2" ref="rightPaneViewer">
             <v-toolbar flat dense class="app-toolbar coversheet-title">
               <v-toolbar-title class="app-title">{{ fileDetails.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -127,24 +127,25 @@
                 </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-<!--            <div class="d-flex align-center albatross-header-1 default-text-color" >{{ fileDetails.displayName }}-->
-<!--            <div class="text-right">-->
-<!--              <v-btn small text color="primary"-->
-<!--                     v-if="isExisting"-->
-<!--                     :href="existingAttachment.presignedUrl">-->
-<!--                <v-icon>mdi-tray-arrow-down</v-icon>-->
-<!--              </v-btn>-->
-<!--              <v-btn x-small text color="primary" @click="closeModal()">-->
-<!--                <v-icon>close</v-icon>-->
-<!--              </v-btn>-->
-<!--            </div>-->
-<!--            </div>-->
-<!--            <v-divider class="mt-1"></v-divider>-->
             <div class="mt-3 preview-main-container">
-              <div v-if="isImage" class="one-hunned height-one-hunned overflow-auto">
-                <v-img name="coversheetPreview"
-                       class="preview-image"
-                       :src="fileSrcUrl"></v-img>
+              <div v-if="isImage" class="one-hunned height-one-hunned">
+                <div class="preview-image-container">
+                  <v-img name="coversheetPreview"
+                         class="preview-image"
+                         :width="imageWidth+'px'"
+                         :src="fileSrcUrl"></v-img>
+
+                </div>
+                <v-toolbar dense class="page-selection-bar" flat color="transparent">
+                  <v-btn text @click="zoomImage(false)">
+                    <v-icon>mdi-magnify-minus-outline</v-icon>
+                  </v-btn>
+                  <v-spacer></v-spacer>
+
+                  <v-btn text @click="zoomImage(true)">
+                    <v-icon>mdi-magnify-plus-outline</v-icon>
+                  </v-btn>
+                </v-toolbar>
               </div>
               <div v-else-if="isPdf" class="one-hunned height-one-hunned overflow-auto">
                 <div v-if="pdfIsLoading" class="text-center">
@@ -154,6 +155,7 @@
                   ref="pdfRef"
                   :source="fileSrcUrl"
                   :page="pdfPage"
+                  :width="pdfWidth"
                   @rendered="handleDocumentRender"
                 />
               </div>
@@ -169,6 +171,9 @@
             </div>
             <div v-if="isPdf && !pdfIsLoading">
               <v-toolbar dense class="page-selection-bar" flat color="transparent">
+                <v-btn text @click="zoomPdf(false)">
+                  <v-icon>mdi-magnify-minus-outline</v-icon>
+                </v-btn>
                 <v-spacer></v-spacer>
                 <v-btn text :disabled="pdfPage <= 1" @click="pdfPage--" class="mr-3">
                   <v-icon>mdi-chevron-left</v-icon>
@@ -180,6 +185,9 @@
                   <v-icon>mdi-chevron-right</v-icon>
                 </v-btn>
                 <v-spacer></v-spacer>
+                <v-btn text @click="zoomPdf(true)">
+                  <v-icon>mdi-magnify-plus-outline</v-icon>
+                </v-btn>
               </v-toolbar>
             </div>
           </v-col>
@@ -257,8 +265,10 @@ export default {
       isExisting: false,
       customFieldsLoading: false,
       isImage: false,
+      imageWidth: null,
       isPdf: false,
       pdfPage: 1,
+      pdfWidth: null,
       pdfPageCount: 1,
       pdfIsLoading: true,
       fileSrcUrl: null,
@@ -270,7 +280,25 @@ export default {
   },
   computed: {},
   methods: {
+    zoomImage(zoomIn) {
+      this.imageWidth = null === this.imageWidth ? this.$refs.rightPaneViewer?.clientWidth : this.imageWidth
+      if(zoomIn) {
+        this.imageWidth *= 1.2
+      } else {
+        this.imageWidth /= 1.2
+      }
+    },
+    zoomPdf(zoomIn) {
+      this.pdfIsLoading = true
+      this.pdfWidth = null === this.pdfWidth ? this.$refs.rightPaneViewer?.clientWidth : this.pdfWidth
+      if(zoomIn) {
+        this.pdfWidth *= 1.2
+      } else {
+        this.pdfWidth /= 1.2
+      }
+    },
     handleDocumentRender() {
+      console.log('rendering')
       this.pdfIsLoading = false
       this.pdfPageCount = this.$refs.pdfRef.pageCount
     },
@@ -488,8 +516,14 @@ export default {
   position: relative;
 }
 
+.preview-image-container {
+  overflow: auto;
+  height: 100%;
+}
+
 .preview-image {
-  max-width: 100%;
+  overflow: auto;
+  max-width: unset !important;
 }
 
 //.page-selection-bar {
