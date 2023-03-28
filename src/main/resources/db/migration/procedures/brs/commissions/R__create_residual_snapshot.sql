@@ -134,10 +134,10 @@ BEGIN
                 rqlf.substantial_completion_date,
                 rqlf.cancelled_date,
                 rqlf.on_hold_date,
-                (select rp.total
+                ((select rp.total
                  from brs.user_residual as ur
                         inner join brs.residual_plan as rp on rp.id = ur.residual_plan_id
-                 where ur.user_id = d.user_id),
+                 where ur.user_id = d.user_id)*(percent_of_residual_earned)),
                 now(),
                 p_updated_by_id,
                 now(),
