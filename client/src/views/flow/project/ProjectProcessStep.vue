@@ -415,6 +415,7 @@ export default {
       collapsedAttachments: false,
       processStepId: null,
       processStep: {},
+      existingEvents: [],
       customFieldGroups: [],
       isProcessStepLoading: true,
       dirtyCfvs: [],
@@ -568,6 +569,7 @@ export default {
           this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
+          this.existingEvents = this.processStep.projectProcessStepEvents
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
           if (reloadAll) {
             //dont reload if only doing simple refresh

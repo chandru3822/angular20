@@ -1,139 +1,166 @@
-DROP FUNCTION IF EXISTS brs.get_residual_account_details(date);
-/*MILESTONE 1 9 MILESTONE 2 35*/
-CREATE OR REPLACE FUNCTION brs.get_residual_account_details(p_date date)
-    RETURNS TABLE(
-                     project_id                                  bigint,
-                     customer_id                                 bigint,
-                     customer_name                               VARCHAR,
-                     system_size                                 NUMERIC(10,2),
-                     locked                                      BOOLEAN,
-                     closer_user_id                              bigint,
-                     closer                                      TEXT,
-                     closer_is_terminated                        BOOLEAN,
-                     source_name                                 VARCHAR,
-                     stage_name                                  VARCHAR,
-                     cancelled_date                              DATE,
-                     installation_agreement_signed_date          DATE,
-                     final_design_signed_date                    DATE,
-                     fds_color                                   TEXT,
-                     asd_color                                   TEXT,
-                     scd_color                                   TEXT,
-                     pohi_color                                  TEXT,
-                     deposit_color                               TEXT,
-                     agreement_signed_date                       DATE,
-                     utility_bill_verified_date                  DATE,
-                     proof_of_howmeowners_insurance_required     BOOLEAN,
-                     proof_of_homeowners_insurance_obtained_date DATE,
-                     financier                                   TEXT,
-                     first_cash_payment_paid_date                DATE,
-                     first_cash_payment_amount                   NUMERIC(10,2),
-                     total_system_price                          NUMERIC(10,2),
-                     percent_of_cash_deposit                     numeric(10,2),
-                     substantial_completion_date                 DATE,
-                     overrides_per_user                          JSON,
-                     override_plan                               TEXT,
-                     override_plan_status                        character VARYING,
-                     override_plan_id                            bigint,
-                     commission_plan                             TEXT,
-                     commission_plan_status                      character VARYING,
-                     commission_plan_id                          bigint,
-                     total_commissions                           NUMERIC(10,2),
-                     total_overrides                             NUMERIC(10,2),
-                     commission_earned                           NUMERIC(10,2),
-                     override_earned                             NUMERIC(10,2),
-                     commission_adjustments                      NUMERIC(10,2),
-                     override_adjustments                        NUMERIC(10,2),
-                     commission_paid_to_date                     NUMERIC(10,2),
-                     overrides_paid_to_date                      NUMERIC(10,2),
-                     current_pay                                 NUMERIC(10,2),
-                     current_pay_commissions                     NUMERIC(10,2),
-                     current_pay_overrides                       NUMERIC(10,2),
-                     remaining_value                             NUMERIC(10,2),
-                     remaining_value_commissions                 NUMERIC(10,2),
-                     remaining_value_overrides                   NUMERIC(10,2),
-                     project_total_value                            NUMERIC(10,2)
-                 )
-    LANGUAGE plpgsql
-AS $$
-DECLARE
-v_month_start date;
-v_month_end   date;
-BEGIN
+DROP FUNCTION IF EXISTS brs.get_residual_account_details();
+CREATE OR REPLACE FUNCTION brs.get_residual_account_details()
+  RETURNS TABLE
+          (
+            first_name                 varchar,
+            last_name                  varchar,
+            user_id                    bigint,
+            employee_id                text,
+            region_name                varchar,
+            office_name                varchar,
+            office_state               varchar,
+            user_position_name         varchar,
+            user_full_name             text,
+            user_status_type           varchar,
+            hire_date                  date,
+            residual_start_date        date,
+            residual_plan_name         text,
+            lifetime_fdc               bigint,
+            qualified_this_period_fdc  bigint,
+            fds_not_qualified          bigint,
+            required_fdc_per_month     integer,
+            residual_earned            boolean,
+            percent_of_residual_earned numeric,
+            potential_residual         numeric,
+            earned_residual            numeric,
+            clawback                   numeric,
+            adjustment_override        numeric,
+            total                      numeric
+          )
+  LANGUAGE plpgsql
+AS
+$$
+begin
 
-    select date_trunc('month', p_date -1)::date as month_start,
-           (date_trunc('month',p_date -1)+'1month' - interval '1 day')::date as month_end
-    into v_month_start,v_month_end;
-
-    RETURN QUERY
-        with fdc as (
-        select flow.get_user_based_on_event_type(p.id) as user_id,
-               count(1) fdc
-        from flow.project p
-                 inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_id = 4 and pps.process_step_complete_date is not null
-            and pps.process_step_complete_date between v_month_start and v_month_end
-        group by user_id)
-            select *,
-                   case when cancelled_date is not null then 0 else coalesce(residual_earned,0) end as residual_earned,
-                   case when cancelled_date is null then 0 else coalesce(residual_paid ,0) end as residual_paid,
-                   case when cancelled_date is not null then 0 - coalesce(residual_paid,0) else coalesce(residual_earned,0) end as residual_owed
-        from (
-                 SELECT p.id as project_id,
-                        c.id as contact_id,
-                        p.project_name,
-                        system_size.system_size::numeric as system_size,
-                        up2.user_id as closer_user_id,
-                        u.first_name||' '||u.last_name                                  AS closer,
-                        --(u.user_status_type_id = 3)                                     AS closer_is_terminated,
-                        false AS closer_is_terminated,
-                        'source'::character varying as source_name,
-                        'stage'::character varying as stage_name,
-                        cancelled_date.cancelled_date::date as cancelled_date,
-                        installation_agreement_signed_date.installation_agreement_signed_date::date as installation_agreement_signed_date,
-                        null::date as final_design_signed_date,
-                        null::date as agreement_signed_date,
-                        null::date as utility_bill_verified_date,
-                        null::boolean as proof_of_howmeowners_insurance_required,
-                        null::date as proof_of_homeowners_insurance_obtained_date,
-                        null::text                                    AS financier,
-                        null::date as first_cash_payment_paid_date,
-                        null::numeric as first_cash_payment_amount,
-                        null::numeric as total_system_price,
-                        null::numeric as percent_of_cash_deposit,
-                        null::date as substantial_completion_date,
-                        rp.id  AS residual_plan,
-                        (select sum(paid)
-                            from brs.residual_ledger rl
-                            where rl.user_id = f.user_id) as residual_paid,
-                        rpa.total as residual_earned,
-                        rpa.id as allocation_id
-                 FROM flow.project p
-                          inner join flow.project_process_step pps on pps.project_id = p.id and pps.process_step_complete_date is not null and process_step_complete_date < p_date and  process_step_id in (4,9,35)
-                          inner join flow.contact c on c.id = p.contact_id
-                          inner join fdc f on f.user_id = up2.user_id
-                          INNER JOIN flow.user u ON u.id = up2.user_id
-                          inner join brs.project_residual pr on pr.project_id = p.id
-                          inner join brs.residual_plan rp on rp.id = pr.residual_plan_id
-                          left join brs.residual_plan_allocation rpa on rpa.residual_plan_id = rp.id and f.fdc between rpa.nbr_fdc_lower and rpa.nbr_fdc_upper
-                          left JOIN lateral (select * from flow.get_value_for_custom_field(1 ,
-                                                                                           5,
-                                                                                           p.id) as source_id1)  source_id1 on true
-                          INNER JOIN lateral (select * from flow.get_value_for_custom_field(4 ,
-                                                                                            333,
-                                                                                            p.id,
-                                                                                            4) as system_size) system_size on true
-                          left join lateral (select * from flow.get_value_for_custom_field(1 ,
-                                                                                           52,
-                                                                                           p.id) as cancelled_date) as cancelled_date on true
-                          left join lateral (select * from flow.get_value_for_custom_field(4 ,
-                                                                                           58,
-                                                                                           p.id,
-                                                                                           4)as installation_agreement_signed_date) as installation_agreement_signed_date on true
-                 WHERE p.id = 184253) as foo
-    where foo.allocation_id is not null or cancelled_date is not null;
-
-    insert into flow.company_function_log(function_name, parameters)
-    values ('Get Residual Account Details', 'p_date: ' || p_date);
-
+  return query
+    select foo1.first_name,
+           foo1.last_name,
+           foo1.user_id,
+           foo1.employee_id,
+           foo1.region_name,
+           foo1.office_name,
+           foo1.office_state,
+           foo1.user_position_name,
+           foo1.user_full_name,
+           foo1.user_status_type,
+           foo1.hire_date,
+           foo1.residual_start_date,
+           foo1.residual_plan_name,
+           foo1.lifetime_fdc,
+           foo1.qualified_this_period_fdc,
+           foo1.fds_not_qualified,
+           foo1.required_fdc_per_month,
+           foo1.residual_earned,
+           foo1.percent_of_residual_earned,
+           foo1.potential_residual,
+           case
+             when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
+               foo1.potential_residual
+             else 0.00 end as earned_residual,
+           foo1.clawback,
+           foo1.adjustment_override,
+           case
+             when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
+                 coalesce(foo1.potential_residual,0) - coalesce(foo1.clawback,0) + coalesce(foo1.adjustment_override,0)
+             when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and foo1.clawback > 0 then
+             0- coalesce(foo1.clawback,0) + coalesce(foo1.adjustment_override,0)
+             else 0.00 end as total
+    from (select *,
+                 rpa.allocation                                                   as required_fdc_per_month,
+                 case
+                   when rppa.id is null then
+                     foo.qualified_this_period_fdc >= rpa.allocation
+                   when rppa.id is not null and foo.qualified_this_period_fdc = rppa.fdc_count then
+                     true end                                                     as residual_earned,
+                 case
+                   when rppa.id is null then
+                     case
+                       when foo.qualified_this_period_fdc >= rpa.allocation then
+                         1
+                       else 0 end
+                   else coalesce(rppa.partial_allocation, 1) end                as percent_of_residual_earned,
+                 case
+                   when rppa.id is null then
+                     foo.lifetime_fdc * foo.total
+                   when rppa.id is not null and foo.qualified_this_period_fdc = rppa.fdc_count then
+                     foo.lifetime_fdc * (rppa.partial_allocation * foo.total) end as potential_residual
+          from (select u.first_name,
+                       u.last_name,
+                       u.id                                                                  as user_id,
+                       ucfv.text_value                                                       as employee_id,
+                       (select org_name
+                        from flow.user_positions_vw upv
+                        where upv.user_id = u.id
+                          and upv.primary_flag is true
+                          and upv.org_level_id = 10
+                        limit 1)                                                             as region_name,
+                       (select org_name
+                        from flow.user_positions_vw upv
+                        where upv.user_id = u.id
+                          and upv.primary_flag is true
+                          and upv.org_level_id = 11
+                        limit 1)                                                             as office_name,
+                       (select s.abbreviation
+                        from flow.user_positions_vw upv
+                               inner join flow.company_state cs on cs.id = upv.company_state_id
+                               inner join flow.state s on s.id = cs.state_id
+                        where upv.user_id = u.id
+                          and upv.primary_flag is true
+                          and upv.org_level_id = 11
+                        limit 1)                                                             as office_state,
+                       (select p.position
+                        from flow.user_position up
+                               inner join flow.position p on p.id = up.position_id
+                        where up.user_id = u.id
+                          and up.primary_flag is true
+                        limit 1)                                                             as user_position_name,
+                       concat(u.first_name, ' ', u.last_name)                                as user_full_name,
+                       ust.user_status_type,
+                       ucfv2.date_value                                                      as hire_date,
+                       rpu.start_date                                                        as residual_start_date,
+                       rp.name                                                               as residual_plan_name,
+                       rp.id                                                                 as residual_plan_id,
+                       (select count(1)
+                        from brs.get_residual_qualified_lifetime_fds(u.id))                  as lifetime_fdc,
+                       (select count(1)
+                        from brs.get_residual_fds_qualified_this_period(u.id,false)) as qualified_this_period_fdc,
+                       (select count(1)
+                        from brs.get_residual_fds_not_qualified_this_period(u.id))           as fds_not_qualified,
+                       (select * from brs.get_total_residual_clawbacks(u.id))                as clawback,
+                       rp.total,
+                       coalesce((select sum(ra.amount)
+                                 from brs.residual_adjustment ra
+                                 where ra.user_id = u.id and ra.residual_id = r.id), 0)      as adjustment_override,
+                      r.selected_user_ids as selected_user_ids
+                from flow."user" u
+                       left join flow.user_custom_field_value ucfv
+                                 on ucfv.user_id = u.id and ucfv.custom_field_group_assignment_id = 19176
+                       inner join flow.company_user_status cus on cus.user_id = u.id
+                       inner join flow.user_status_type ust
+                                  on ust.id = cus.user_status_type_id and ust.company_id = 3 and ust.id in (9, 14)
+                       left join flow.user_custom_field_value ucfv2
+                                 on u.id = ucfv2.user_id and ucfv2.custom_field_group_assignment_id = 331
+                       inner join brs.user_residual ur on ur.user_id = u.id
+                       inner join brs.residual_plan rp on rp.id = ur.residual_plan_id and rp.residual_plan_status_id = 2
+                       inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
+                       inner join brs.residual r on r.current is true
+                where
+--                        u.id in (2438980,
+--                                 2428625,
+--                              2433935,
+--                              2353957,2432305,2429495) and
+                      exists(select id
+                             from flow.user_position up2
+                             where up2.user_id = u.id
+                               and up2.position_id in (1, 2, 3, 517)
+                               and up2.primary_flag is true)) as foo
+                 inner join brs.residual_plan_allocation rpa on rpa.residual_plan_id = foo.residual_plan_id and
+                                                                foo.lifetime_fdc between rpa.min and coalesce(rpa.max, 1000000)
+                 left join brs.residual_plan_partial_allocation rppa on rppa.residual_plan_allocation_id = rpa.id and
+                                                                        rppa.fdc_count =
+                                                                        foo.qualified_this_period_fdc) as foo1
+    where foo1.lifetime_fdc > 0
+       or foo1.clawback != 0;
 
 END
 $$;

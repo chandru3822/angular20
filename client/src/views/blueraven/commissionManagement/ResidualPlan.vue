@@ -19,101 +19,73 @@
                  @click="approvePlan()">
             Approve
           </v-btn>
-          <ConfirmationDialog :open-dialog="deleteConfirm" @confirm="deletePlan" @close-dialog="deleteConfirm=false">
-            Are you sure you want to delete this plan?
-          </ConfirmationDialog>
-          <v-btn v-if="planId && !residualPlan.approved" color="error" class="mr-2" @click="deleteConfirm = true">delete</v-btn>
-          <v-btn v-else-if="planId"
-                 @click="inactivateConfirm = true"
-                 color="error"
-                 class="mr-2"
-          >
-            inactivate
-          </v-btn>
-          <ConfirmationDialog :open-dialog="inactivateConfirm" :hide-confirm="planHasActiveUsers()" @confirm="inactivatePlan" @close-dialog="inactivateConfirm = false">
-            <template v-if="planHasActiveUsers()" v-slot:title>Error</template>
-            <template v-else v-slot:title>Confirm</template>
-            <div v-if="planHasActiveUsers()">
-              You cannot set this plan to inactive with active users.
-              <table class="table mt-2">
-                <tr v-for="(u, idx) in activeUsers()" :key="idx">
-                  <td class="pr-3">{{u.name}}</td>
-                  <td>{{u.position}}</td>
-                </tr>
-              </table>
-            </div>
-            <div v-if="!planHasActiveUsers()">
-              Are you sure you want to inactivate this plan?
-            </div>
-            <template v-if="!planHasActiveUsers()" v-slot:yes>Inactivate</template>
-          </ConfirmationDialog>
 
-          <v-dialog v-if="planId && residualPlan && residualPlan.users && residualPlan.users.filter(u => {return u.endDate == null}).length > 0"
-            v-model="cloneDialog"
-            width="600"
-          >
-            <template v-slot:activator="{ on }">
-              <v-btn color="primary" dark v-on="on" class="mr-2">
-                Clone
-              </v-btn>
-            </template>
+<!--          <v-dialog v-if="planId && residualPlan && residualPlan.users && residualPlan.users.filter(u => {return u.endDate == null}).length > 0"-->
+<!--            v-model="cloneDialog"-->
+<!--            width="600"-->
+<!--          >-->
+<!--            <template v-slot:activator="{ on }">-->
+<!--              <v-btn color="primary" dark v-on="on" class="mr-2">-->
+<!--                Clone-->
+<!--              </v-btn>-->
+<!--            </template>-->
 
-            <v-card>
-              <v-card-title
-                class="text-h5 grey lighten-2"
-                primary-title
-              >
-                Clone {{residualPlan.name}}
-              </v-card-title>
+<!--            <v-card>-->
+<!--              <v-card-title-->
+<!--                class="text-h5 grey lighten-2"-->
+<!--                primary-title-->
+<!--              >-->
+<!--                Clone {{residualPlan.name}}-->
+<!--              </v-card-title>-->
 
-              <v-card-text class="pt-4">
-                <div class="mb-2">
-                  This option allows you to copy an entire plan over. <br/>
-                  By default, no users are copied over.
-                </div>
-                Users to Copy:
-                <div v-for="u in filterBy(residualPlan.users, (u) => { return u.endDate == null })">
-                  <input type="checkbox" class="mr-2" v-model="u.selected">
-                  {{ u.name }}: {{u.startDate | formatDate('date')}}
-                </div>
-                <div class="mt-3" v-if="residualPlan.users && residualPlan.users.filter(u => u.selected).length > 0">
-                  <DatetimePickerInput
-                    v-model="cloneStartDate"
-                    :timezone="timezone"
-                    :type="'date'"
-                    :format="'MMMM DD, YYYY'"
-                    label="Start Date"
-                  />
-                  <div v-if="cloneStartDate">
-                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.
-                  </div>
-                  <div v-if="cloneDateError" class="error--text">
-                    You cannot select a start date that is before or equal to any other user's plan start date.
-                  </div>
-                </div>
-              </v-card-text>
+<!--              <v-card-text class="pt-4">-->
+<!--                <div class="mb-2">-->
+<!--                  This option allows you to copy an entire plan over. <br/>-->
+<!--                  By default, no users are copied over.-->
+<!--                </div>-->
+<!--                Users to Copy:-->
+<!--                <div v-for="u in filterBy(residualPlan.users, (u) => { return u.endDate == null })">-->
+<!--                  <input type="checkbox" class="mr-2" v-model="u.selected">-->
+<!--                  {{ u.name }}: {{u.startDate | formatDate('date')}}-->
+<!--                </div>-->
+<!--                <div class="mt-3" v-if="residualPlan.users && residualPlan.users.filter(u => u.selected).length > 0">-->
+<!--                  <DatetimePickerInput-->
+<!--                    v-model="cloneStartDate"-->
+<!--                    :timezone="timezone"-->
+<!--                    :type="'date'"-->
+<!--                    :format="'MMMM DD, YYYY'"-->
+<!--                    label="Start Date"-->
+<!--                  />-->
+<!--                  <div v-if="cloneStartDate">-->
+<!--                    * This will update the end date for all selected users to {{moment(cloneStartDate, 'YYYY-MM-DD').subtract(1, 'd') | formatDate('date') }} on their current plan.-->
+<!--                  </div>-->
+<!--                  <div v-if="cloneDateError" class="error&#45;&#45;text">-->
+<!--                    You cannot select a start date that is before or equal to any other user's plan start date.-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </v-card-text>-->
 
-              <v-divider></v-divider>
+<!--              <v-divider></v-divider>-->
 
-              <v-card-actions>
-                <v-spacer></v-spacer>
-                <v-btn
-                  text
-                  @click="[cloneDialog = false, cloneStartDate = null]"
-                >
-                  Cancel
-                </v-btn>
-                <v-btn
-                  color="primary"
-                  :disabled="(residualPlan.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||
-                            (residualPlan.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"
-                  class="white--text"
-                  @click="validateStartDates()">
-                  Clone
-                </v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
+<!--              <v-card-actions>-->
+<!--                <v-spacer></v-spacer>-->
+<!--                <v-btn-->
+<!--                  text-->
+<!--                  @click="[cloneDialog = false, cloneStartDate = null]"-->
+<!--                >-->
+<!--                  Cancel-->
+<!--                </v-btn>-->
+<!--                <v-btn-->
+<!--                  color="primary"-->
+<!--                  :disabled="(residualPlan.users.filter(u => u.selected).length > 0 && !cloneStartDate) ||-->
+<!--                            (residualPlan.users.filter(u => u.selected).length === 0 && cloneStartDate != null)"-->
+<!--                  class="white&#45;&#45;text"-->
+<!--                  @click="validateStartDates()">-->
+<!--                  Clone-->
+<!--                </v-btn>-->
+<!--              </v-card-actions>-->
+<!--            </v-card>-->
+<!--          </v-dialog>-->
         </div>
       </v-toolbar-items>
     </v-toolbar>
@@ -141,14 +113,6 @@
               <v-text-field text
                             label="Description"
                             v-model="residualPlan.description"></v-text-field>
-              <v-select attach v-model="residualPlan.positionId"
-                        :items="positions"
-                        :disabled="true"
-                        no-data-text="No Users Available"
-                        label="Position"
-                        item-text="label"
-                        item-value="id"
-              ></v-select>
             </v-card>
           </v-col>
           <v-col cols="12" sm="6">
@@ -191,48 +155,15 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
-        <v-card v-if="addLevel" class="square-card text-left pa-5">
-          <v-text-field text
-                        type="text"
-                        label="Name"
-                        v-model="selectedLevel.name">
-          </v-text-field>
-          <v-text-field text
-                        type="number"
-                        label="Level"
-                        v-model="selectedLevel.level">
-          </v-text-field>
-          <v-text-field text
-                        type="number"
-                        label="# FDC Lower"
-                        v-model="selectedLevel.nbrFdcLower">
-          </v-text-field>
-          <v-text-field text
-                        type="number"
-                        label="# FDC Upper"
-                        v-model="selectedLevel.nbrFdcUpper">
-          </v-text-field>
-          <v-text-field text
-                        type="number"
-                        label="Total"
-                        v-model="selectedLevel.total">
-          </v-text-field>
-          <v-btn color="primary" class="mr-3 white--text" @click="addLevelToPlan()"
-                 :disabled="!selectedLevel.name || !selectedLevel.level || !selectedLevel.nbrFdcLower || !selectedLevel.nbrFdcUpper || !selectedLevel.total">
-            Add
-          </v-btn>
-        </v-card>
-        <v-divider v-if="addLevel"></v-divider>
         <v-data-table
           :headers="levelHeaders"
           :items="residualPlan.residualPlanAllocations"
           :fixed-header="true"
-          :items-per-page="-1"
+          hide-default-footer
           disable-sort
           :loading="dataLoading"
           single-expand
           :expanded.sync="levelExpanded"
-          hide-default-footer
           class="elevation-1"
         >
           <template #no-data>
@@ -243,55 +174,14 @@
             No available levels
           </template>
 
-          <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4 text-left">
-              <v-text-field text
-                            type="text"
-                            label="Name"
-                            v-model="item.name">
-              </v-text-field>
-              <v-text-field text
-                            type="number"
-                            label="Level"
-                            v-model="item.level">
-              </v-text-field>
-              <v-text-field text
-                            type="number"
-                            label="# FDC Lower"
-                            v-model="item.nbrFdcLower">
-              </v-text-field>
-              <v-text-field text
-                            type="number"
-                            label="# FDC Upper"
-                            v-model="item.nbrFdcUpper">
-              </v-text-field>
-              <v-text-field text
-                            type="number"
-                            label="Total"
-                            v-model="item.total">
-              </v-text-field>
-              <v-btn color="primary" :disabled="!item.name || !item.level || !item.nbrFdcLower || !item.nbrFdcUpper || !item.total"
-                     @click="[levelExpanded = [], updateLevel(item)]">Save</v-btn>
-            </td>
-          </template>
-
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{item.name}}</td>
-              <td class="text-left">{{item.level}}</td>
-              <td class="text-left">{{item.nbrFdcLower}}</td>
-              <td class="text-left">{{item.nbrFdcUpper}}</td>
-              <td class="text-left">{{item.total || 0 | currency('$', 2)}}</td>
-              <td>
-                <v-btn small text color="primary" @click="levelExpanded = [item]"
-                       v-if="residualPlan.statusType === 'PENDING' && !levelExpanded.includes(item)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="levelExpanded = []"
-                       v-if="levelExpanded.includes(item)">cancel
-                </v-btn>
-                <v-btn small text color="primary" @click="levelToDelete = item"
-                    v-if="residualPlan.statusType === 'PENDING'"><v-icon>delete</v-icon></v-btn>
+              <td class="text-left">{{item.min}}</td>
+              <td class="text-left">{{item.max}}</td>
+              <td class="text-left">{{item.allocation}}</td>
+              <td class="text-left">{{item.fdcCount}}</td>
+              <td class="text-left">
+                <span v-if="item.partialAllocation !== null">{{ item.partialAllocation | percent(0)}}</span>
               </td>
             </tr>
           </template>
@@ -326,12 +216,8 @@
                               item-text="name"
                               item-value="userId"
                               autocomplete="off"
-                              @input="getUserHistory(newUser.userId)"
                               attach
               >
-                <template slot='item' slot-scope='{ item }'>
-                  {{ item.name }} - {{ item.position }}
-                </template>
               </v-autocomplete>
               <DatetimePickerInput
                 v-model="newUser.startDate"
@@ -352,22 +238,6 @@
                 @input="checkDates(newUser.startDate, newUser.endDate, userHistory, newUser)"
               />
             </v-col>
-            <v-col cols="12" md="6">
-              <v-data-table
-                :headers="historyHeaders"
-                :items="userHistory"
-                :fixed-header="true"
-                :items-per-page="-1"
-                disable-sort
-                hide-default-footer
-                class="elevation-1"
-                v-if="userHistory.length > 0"
-              >
-              </v-data-table>
-              <div v-if="errorLoadingUserHistory" class="error--text">
-                We had a problem loading this user's plan history. Cannot add this user until their history can be checked.
-              </div>
-            </v-col>
           </v-row>
 
           <div v-if="newUser.dateError" class="error--text mb-2">
@@ -381,17 +251,28 @@
             Add
           </v-btn>
         </v-card>
-        <v-divider v-if="addUser"></v-divider>
+        <v-card color="white" class="square-card px-5 pt-1 pb-4">
+          <v-text-field
+            prepend-inner-icon="search"
+            text
+            hide-details
+            clearable
+            label="Search users..."
+            v-model="search"
+          ></v-text-field>
+        </v-card>
+        <v-divider></v-divider>
         <v-data-table
             :headers="headers"
             :items="filterResidualPlanUsers()"
             :fixed-header="true"
-            :items-per-page="-1"
+            :options.sync="options"
+            :search="search"
+            :footer-props="footerProps"
             disable-sort
             :loading="dataLoading"
             single-expand
             :expanded.sync="assignedUserExpanded"
-            hide-default-footer
             class="elevation-1"
         >
           <template #no-data>
@@ -448,7 +329,6 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.name}}</td>
-              <td class="text-left">{{item.position}}</td>
               <td class="text-left">{{item.employeeId}}</td>
               <td class="text-left">{{item.startDate}}</td>
               <td class="text-left">{{item.endDate}}</td>
@@ -488,6 +368,7 @@
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'ResidualPlan',
@@ -531,13 +412,19 @@
         userHistory: [],
         usersLoading: false,
         levelExpanded: [],
+        footerProps: {
+          'items-per-page-options': [10, 50, 100, 1000, 3000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
+        options: {
+          itemsPerPage: 100
+        },
         levelHeaders: [
-          {text: 'Name', value: 'name', show: true},
-          {text: 'Level', value: 'level', show: true},
-          {text: '# FDC Lower', value: 'nbrFdcLower', show: true},
-          {text: '# FDC Upper', value: 'nbrFdcUpper', show: true},
-          {text: 'Total', value: 'total', show: true},
-          {text: '', value: 'icons', show: true},
+          {text: 'Lifetime FDC Lower', value: 'min', show: true},
+          {text: 'Lifetime FDC Upper', value: 'max', show: true},
+          {text: 'Target FDC', value: 'allocation', show: true},
+          {text: 'Partial FDC', value: 'fdcCount', show: true},
+          {text: 'Partial FDC %', value: 'partial', show: true},
         ],
         addLevel: false,
         selectedLevel: {},
@@ -550,9 +437,9 @@
         planId: this.$route.params.id,
         errorLoadingUserHistory: false,
         assignedUserExpanded: [],
+        search: '',
         headers: [
           {text: 'Name', value: 'name', show: true},
-          {text: 'Position', value: 'Position', show: true},
           {text: 'Employee ID', value: 'employeeId', show: true},
           {text: 'Start Date', value: 'startDate', show: true},
           {text: 'End Date', value: 'endDate', show: true},
@@ -563,15 +450,10 @@
           {text: 'Start Date', value: 'startDate', show: true},
           {text: 'End Date', value: 'endDate', show: true},
         ],
-        positions: [
-          {id: 1, label: 'Closer'},
-          {id: 4, label: 'Setter'}
-        ],
         errorMessages: [],
         cloneDateError: false,
         residualPlan: {
           users: [],
-          positionId: 1
         },
         levelToDelete: null,
         userToDelete: null
@@ -592,11 +474,9 @@
         try {
           const {data, status} = await getRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
           this.residualPlan = data
-          if([2,3].includes(this.residualPlan.statusId)) {
+          if([2,3].includes(this.residualPlan.residualPlanStatusId)) {
             this.residualPlan.approved = true
           }
-          // temporarily only allowing closers
-          this.residualPlan.positionType = 'closers'
           this.checkErrorMessages()
           this.dataLoading = false
           handleHidingGlobalLoader(this, status)
@@ -682,8 +562,7 @@
           let params = {
             id: this.residualPlan.id,
             name: this.residualPlan.name,
-            description: this.residualPlan.description,
-            positionId: this.residualPlan.positionId
+            description: this.residualPlan.description
           }
           const {data, status} = await postRequest(`/commissionManagement/residuals/plan`, params, 'blueraven')
           if(!this.planId) {
@@ -713,52 +592,52 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async inactivatePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await postRequest(`/commissionManagement/residuals/${this.planId}/inactivate`, {}, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Inactivated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'residualPlans'})
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Inactivating Residual Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deletePlan () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$router.push({name: 'residualPlans'})
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async clonePlan (users, startDate) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            users: users ? users.filter(u => u.selected).map(u => u.userId) : [],
-            startDate: startDate ?? null,
-            backdateApprovalCreds: null
-          }
-          const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/clone`, params, 'blueraven')
-          this.$router.push({name: 'residualPlan', params: {id: data.id}})
-          // temporarily only allowing closers
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Cloning ResidualPlan')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+      // async inactivatePlan () {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     await postRequest(`/commissionManagement/residuals/${this.planId}/inactivate`, {}, 'blueraven')
+      //     this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Inactivated')
+      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //     this.$router.push({name: 'residualPlans'})
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Inactivating Residual Plan')
+      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
+      // async deletePlan () {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     await deleteRequest(`/commissionManagement/residuals/plan/${this.planId}`, 'blueraven')
+      //     this.snackbar = getSnackbar('SUCCESS', 'Residual Plan Deleted')
+      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //     this.$router.push({name: 'residualPlans'})
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Deleting Residual Plan')
+      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
+      // async clonePlan (users, startDate) {
+      //   this.$store.commit(AppMutations.SET_LOADING, true)
+      //   try {
+      //     let params = {
+      //       users: users ? users.filter(u => u.selected).map(u => u.userId) : [],
+      //       startDate: startDate ?? null,
+      //       backdateApprovalCreds: null
+      //     }
+      //     const {data} = await postRequest(`/commissionManagement/residuals/plan/${this.planId}/clone`, params, 'blueraven')
+      //     this.$router.push({name: 'residualPlan', params: {id: data.id}})
+      //     // temporarily only allowing closers
+      //   } catch (e) {
+      //     console.error('*** ERROR ***', e)
+      //     this.snackbar = getSnackbar('ERROR', 'Error Cloning ResidualPlan')
+      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //     this.$store.commit(AppMutations.SET_LOADING, false)
+      //   }
+      // },
       async updateAssignedUser(item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -786,11 +665,10 @@
           this.usersLoading = true
           try {
             let params = {
-              positions: 'closers',
               query,
               planId: this.planId
             }
-            const {data} = await getRequestWithParams(`/commissionManagement/_search`, {params}, 'blueraven')
+            const {data} = await getRequestWithParams(`/commissionManagement/residuals/_search`, {params}, 'blueraven')
             this.usersToAdd = data
             this.usersLoading = false
           } catch (e) {

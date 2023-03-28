@@ -87,6 +87,7 @@ export default {
       this.show=false
     },
     no() {
+      this.$emit('cancel')
       this.$emit('close-dialog', false)
       this.show=false
     }

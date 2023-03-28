@@ -90,6 +90,7 @@ import {getRequest, putRequest, postRequest, logError, getRequestWithParams, get
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import TableActiveEventSnippet from '@/views/flow/project/TableActiveEventSnippet'
+
 import moment from 'moment'
 
 export default {

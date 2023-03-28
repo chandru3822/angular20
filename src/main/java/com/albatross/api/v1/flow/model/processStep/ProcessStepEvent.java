@@ -17,10 +17,10 @@ public class ProcessStepEvent {
 
   private Long id, processStepId, eventId, initialCompanyEventStatusTypeId, uniqueBehaviorTypeId, displayOrder;
   private String eventName, initialEventStatusType, processStepName;
-  private Boolean archived, readonly;
+  private Boolean archived, readonly, eventHidden;
   private List<CompanyEventStatusType> companyEventStatusTypes;
   private List<ProcessStepEventAction> processStepEventActions;
   private List<ProcessStepEventWorkQueueType> workQueueTypes;
-  private List<WhiteListedPosition> readonlyWhiteListPositions;
+  private List<WhiteListedPosition> readonlyWhiteListPositions, eventHiddenWhiteListedPositions;
 }
 

@@ -897,13 +897,5 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
 
 drop table company_dash_results;
 
-insert into flow.company_function_log(function_name, parameters, run_by_id)
-values ('Company Dashboard Report', 'p_custom_start_date: ' || p_custom_start_date ||
-                                    ' p_custom_end_date: ' || p_custom_end_date ||
-                                    ' p_company_id: ' || p_company_id ||
-                                    ' p_target_type_id: ' || p_target_type_id ||
-                                    ' p_run_by_id: ' || p_run_by_id,
-        p_run_by_id);
-
 END
 $function$

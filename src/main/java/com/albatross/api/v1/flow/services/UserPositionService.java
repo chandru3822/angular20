@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -46,6 +49,12 @@ public class UserPositionService {
     return sqlCache.queryBySql(
       UserPositionQuery.getAllActive, params, new UserPositionMapper<>(UserPosition.class, om));
   }
+  public List<Long> getAllActiveUserPositionIds(User user) {
+    List<UserPosition> userPositions = user.getUserPositions();
+    return userPositions.stream()
+      .map(UserPosition::getPositionId)
+      .collect(Collectors.toList());
+  }
 
   public UserPosition getOne(Long id) {
     HashMap<String, Object> params = new HashMap<>();
@@ -67,6 +76,11 @@ public class UserPositionService {
             params,
             new UserPositionMapper<>(UserPosition.class, om))
         .orElse(null);
+  }
+
+  public List<UserPosition> getPrimaryUserPositions() {
+    Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId());
+    return sqlCache.queryBySql(UserPositionQuery.getPrimaryUserPositions, params, new UserPositionMapper<>(UserPosition.class, om));
   }
 
   public void deleteUserPosition(Long userPositionId) {

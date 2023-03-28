@@ -517,7 +517,7 @@ import {
   postRequest,
   formatPhoneNumber,
   getRequestWithParams,
-  getSnackbar, logError
+  getSnackbar, logError, postRequestWithRequestParams
 } from '@/helpers/helpers'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import {getCompanyStates} from '@/services/stateService'
@@ -802,7 +802,7 @@ export default {
     async saveCustomFieldValues() {
       try {
         // save dirty custom field values
-        const {data, status} = await postRequest(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs)
+        const {data, status} = await postRequestWithRequestParams(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs, { cameFromWeb: true }, null, [])
         this.dirtyCfvs = []
         this.addressChanged = false
         this.customFieldGroups = data

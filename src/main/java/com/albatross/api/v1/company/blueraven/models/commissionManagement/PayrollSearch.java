@@ -10,8 +10,8 @@ import java.util.Date;
 @Setter
 public class PayrollSearch {
 
-    private String customerName;
-    private Long salesRepId, projectId, positionId;
+    private String customerName, userFirstName, userLastName;
+    private Long salesRepId, projectId, positionId, userId;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
     private Date startDate, endDate;

@@ -65,10 +65,6 @@ BEGIN
                           where t.id = p_tournament_id
                             and t.archived is false) as brackets), '[]') as brackets;
 
-  insert into flow.company_function_log(function_name, parameters, run_by_id)
-  values ('Get Tournament Brackets', 'p_tournament_id: ' || p_tournament_id ||
-                                     ' p_run_by_id: '|| p_run_by_id,
-          p_run_by_id);
 
 END
 $BODY$

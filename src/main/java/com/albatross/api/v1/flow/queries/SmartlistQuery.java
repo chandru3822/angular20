@@ -22,21 +22,32 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      p.position as owner_position
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    left join flow.user_position up on up.user_id = s.owner_id
+    left join flow.position p on up.position_id = p.id
     where
       cot.company_id = :companyId and
       s.owner_id = :userId and
       s.archived is not true and
-      s.work_queue_type_id is null
+      s.work_queue_type_id is null and
+      (:isSystemAdmin or (
+        up.user_id = :userId and
+        up.primary_flag is true and
+        (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+        up.archived is false and
+        p.company_id = :companyId
+      ))
     order by s.name, s.date_modified desc
     """;
 
   //language=PostgreSQL
   public final static String getShared = """
+    -- shared to user
     select
       s.id,
       s.name,
@@ -61,18 +72,22 @@ public class SmartlistQuery {
     from flow.smartlist_access_control sac
     inner join flow.smartlist s on sac.smartlist_id = s.id
     inner join flow.user_position up on sac.user_position_id = up.id
+    inner join flow.position p on up.position_id = p.id
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
     inner join flow.access_control ac on sac.access_control_id = ac.id
     where
       up.user_id = :userId and
+      up.primary_flag is true and
+      up.archived is false and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
       cot.company_id = :companyId and
       sac.archived is false and
       s.archived is false and
-      up.archived is false and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
+      p.company_id = :companyId
     union distinct
+    -- shared to org
     select
       s.id,
       s.name,
@@ -97,6 +112,7 @@ public class SmartlistQuery {
     from flow.smartlist_access_control sac
     inner join flow.smartlist s on sac.smartlist_id = s.id
     inner join flow.user_position up on sac.org_id = up.org_id
+    inner join flow.position p on up.position_id = p.id
     inner join flow.org o on up.org_id = o.id
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
@@ -104,12 +120,14 @@ public class SmartlistQuery {
     inner join flow.access_control ac on sac.access_control_id = ac.id
     where
       up.user_id = :userId and
+      up.primary_flag is true and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+      up.archived is false and
       cot.company_id = :companyId and
       sac.archived is false and
       s.archived is false and
-      up.archived is false and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
-      o.archived is false
+      o.archived is false and
+      p.company_id = :companyId
     order by name
   """;
 
@@ -167,15 +185,22 @@ public class SmartlistQuery {
       ot.object_type,
       cot.object_type_id,
       cot.company_id,
-      concat(u.first_name, ' ', u.last_name) "owner"
+      concat(u.first_name, ' ', u.last_name) "owner",
+      p.position as owner_position
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    left join flow.user_position up on up.user_id = s.owner_id
+    left join flow.position p on up.position_id = p.id
     where
       cot.company_id = :companyId and
       s.archived is not true and
-      s.work_queue_type_id is null
+      s.work_queue_type_id is null and
+      up.primary_flag is true and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+      up.archived is false and
+      p.company_id = :companyId
     order by s.name, s.date_modified desc
     """;
 
@@ -200,6 +225,7 @@ public class SmartlistQuery {
       cot.object_type_id,
       cot.company_id,
       concat(u.first_name, ' ', u.last_name) as owner,
+      p.position as owner_position,
       coalesce((
        select array_to_json(array_agg(row_to_json(eventWorkQueueTypes)))
        from (
@@ -270,15 +296,70 @@ public class SmartlistQuery {
               where pswqt.work_queue_type_id = s.work_queue_type_id AND
                     pswqt.archived is not true
               order by wqt.work_queue_type
-      ) eventWorkQueueTypes), '[]') AS "eventWorkQueueTypes"
+      ) eventWorkQueueTypes), '[]') AS "eventWorkQueueTypes",
+      coalesce((
+       select array_to_json(array_agg(row_to_json(accessControl)))
+       from (
+         select
+               sac.id,
+               sac.smartlist_id as "smartlistId",
+               sac.org_id as "orgId",
+               sac.user_position_id as "userPositionId",
+               sac.user_position_id is not null as "isUser",
+               sac.org_id is not null as "isOrg",
+               sac.access_control_id as "accessControlId",
+               ac.access_level as "accessLevel",
+               case when sac.org_id is not null then o.org_name else u.first_name || ' ' || u.last_name end as "name",
+               p1.position
+             from flow.smartlist_access_control sac
+             inner join flow.access_control ac on sac.access_control_id = ac.id
+             left join flow.user_position up1 on sac.user_position_id = up1.id
+             left join flow.user u on up1.user_id = u.id
+             left join flow.position p1 on up1.position_id = p1.id
+             left join flow.org o on sac.org_id = o.id
+             where
+               sac.smartlist_id = s.id and
+               sac.archived is false
+      ) accessControl), '[]') AS "accessControl"
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
+    left join flow.user_position up on up.user_id = s.owner_id
+    left join flow.position p on up.position_id = p.id
     where s.id = :smartlistId and
           cot.company_id = :companyId and
-          s.archived is not true
+          s.archived is not true and
+          (:isSystemAdmin or (
+            up.primary_flag is true and
+            (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+            up.archived is false and
+            p.company_id = :companyId
+          ))
   """;
+
+  //language=PostgreSQL
+  public final static String add = """
+    insert into flow.smartlist (name, company_object_type_id, public, owner_id, main_process_steps, project_details, primary_user_position, created_by_id, date_created, modified_by_id, date_modified)
+    values (:name, :companyObjectTypeId, :public, :ownerId, :mainProcessSteps, :projectDetails, :primaryUserPosition, :createdById, now(), :createdById, now())
+    returning id;
+  """;
+
+  //language=PostgreSQL
+  public final static String update = """
+    update flow.smartlist
+    set
+      name = :name,
+      company_object_type_id = :companyObjectTypeId,
+      public = :public,
+      modified_by_id = :userId,
+      date_modified = now(),
+      project_details = :projectDetails,
+      main_process_steps = :mainProcessSteps,
+      primary_user_position = :primaryUserPosition
+    where
+      id = :id;
+    """;
 
   //language=PostgreSQL
   public final static String getAvailableAccess = """
@@ -325,24 +406,26 @@ public class SmartlistQuery {
   public final static String updateAccess = """
     --using smartlistId for security so users can't arbitrarily update access controls for other smartlists
     update flow.smartlist_access_control
-      set
-        access_control_id = :accessControlId,
-        modified_by_id = :userId,
-        date_modified = now()
-      where
-        id = :id and
-        smartlist_id = :smartlistId
+    set
+      access_control_id = :accessControlId,
+      modified_by_id = :userId,
+      date_modified = now()
+    where
+      id = :id and
+      smartlist_id = :smartlistId
   """;
 
   //language=PostgreSQL
   public final static String deleteAccess = """
+    --using smartlistId for security so users can't arbitrarily update access controls for other smartlists
     update flow.smartlist_access_control
     set
       archived = true,
       modified_by_id = :userId,
       date_modified = now()
     where
-      id = :id
+      id = :id and
+      smartlist_id = :smartlistId
   """;
 
   //language=PostgreSQL

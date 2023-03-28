@@ -505,10 +505,24 @@ select
         pse.unique_behavior_type_id,
         e.id as event_id,
         e.event_name,
+        e.hidden as eventHidden,
         ppse.resource_id,
         cest.event_status_type_id,
         cest.id as company_event_status_type_id,
-        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource
+        case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
+        coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 17
+                           AND wlp.archived is not true
+                           and wlp.event_id = e.id) wlp), '[]') AS "eventHiddenWhiteListedPositions"
       from flow.project p
              inner join flow.project_process_step pps on pps.project_id = p.id
              inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
@@ -528,6 +542,14 @@ select
         and ppse.archived is not true
         and p.archived is not true
         and case when :statusTypeId::bigint is not null then :statusTypeId::bigint = cest.event_status_type_id else 1=1 end
+         and case when e.hidden and :systemAdmin::boolean is false
+                       then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                               and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
+            )
+                   else 1=1 end
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
     """;
 

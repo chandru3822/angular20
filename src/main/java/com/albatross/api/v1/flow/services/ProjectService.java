@@ -75,6 +75,8 @@ public class ProjectService {
 
   private final SqlArrayService sqlArrayService;
 
+  private final UserPositionService userPositionService;
+
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -556,10 +558,15 @@ public class ProjectService {
   }
 
   public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {
+    User user = securityService.getCurrentUser();
+    Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     params.put("statusTypeId", statusTypeId);
-    return sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, ProjectProcessStepEvent.class);
+    params.put("systemAdmin", systemAdmin);
+    params.put("userPositions", userPositionIds);
+    return sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
   }
 
   public CommunicationController.ProjectDetails getProjectDetailTemplateFields(Long projectId) {
@@ -766,6 +773,8 @@ public class ProjectService {
           List.class,
           "ownerReadOnlyWhiteListedPositions",
           new JsonCollectionDeserializer(ownerReadOnlyWhiteListedPositionsRef, objectMapper));
+
     }
   }
+
 }

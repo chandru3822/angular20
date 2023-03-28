@@ -108,7 +108,7 @@
         <v-row>
           <v-col cols="12" class="text-left py-0 px-0 pb-4" v-if="!collapsedAttachments">
             <AttachmentsFolderList :object-type-id="6"
-                                   :allow-upload="!isEventReadonly"
+                                   :allow-upload="!isUploadReadonly"
                                    :small-title="true"
                                    is-card
                                    hide-empty
@@ -230,7 +230,7 @@
               <v-toolbar-title>Lead Allocation</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="py-0">
-              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !userIsAdmin">
+              <v-card-text class="pt-0" v-if="userIsScheduler && !schedulerCanEdit && !showRemoteSearch && !userIsAdmin">
                 You do not have access to schedule projects in this Postal Code
               </v-card-text>
               <v-row class="pb-3 px-0 one-hunned" v-else>
@@ -443,6 +443,7 @@ export default {
       showUnperformableActions: false,
       eventDetailsLoading: true,
       isEventReadonly: false,
+      isUploadReadonly: false,
       // windowWidth: window.innerWidth,
       // splitColumnMinWidth: 1700,
       getStatusClass,
@@ -761,11 +762,20 @@ export default {
       // if events admin/manager then they can edit any event fields regardless of event/process step status
       return this.userIsAdmin || this.userCanManage || (this.userCanEdit && this.selectedEvent.eventStatusTypeId === 1 && this.selectedEvent.processStepStatusTypeId === 1)
     },
+    isButtonEditableByThisUserIgnoringReadOnly(){
+      return this.userIsAdmin || this.userCanManage || this.userCanEdit
+    },
     getIsEventReadonly() {
       return !this.$store.getters.isFullAdmin && (
           (this.selectedEvent?.readonly && !this.userIsWhitelisted())
           || !this.isEventEditableByThisUserIgnoringReadOnly()
         )
+    },
+    getIsUploadReadonly() {
+      return !this.$store.getters.isFullAdmin && (
+        (this.selectedEvent?.readonly && !this.userIsWhitelisted())
+        || !this.isButtonEditableByThisUserIgnoringReadOnly()
+      )
     },
     getFieldReadOnly: function (field) {
       if (null != field) {
@@ -827,6 +837,7 @@ export default {
             : `${this.selectedEvent.eventName}`
           this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
           this.isEventReadonly = this.getIsEventReadonly()
+          this.isUploadReadonly = this.getIsUploadReadonly()
           if (data.uniqueBehaviorTypeId === 1) {
             this.uniqueAlreadyHasValue = null != this.selectedEvent.startTime || null != this.selectedEvent.endTime || null != this.selectedEvent.resourceId
             this.getRoundRobinNumDays()

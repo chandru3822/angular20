@@ -269,16 +269,6 @@ BEGIN
            ) as funnel_rows;
   END IF;
 
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Closer Funnel Standard and Cohort Drildown Report',
-                'p_start_date: ' || p_start_date ||
-                ' p_end_date: ' || p_end_date ||
-                ' p_funnel_id: ' || p_funnel_id ||
-                ' p_user_position_ids: ' || p_user_position_ids::text ||
-                ' p_org_ids: ' || p_org_ids::text ||
-                ' p_is_checked_in_column: ' || p_is_checked_in_column ||
-                ' p_is_cohort: ' || p_is_cohort,
-            p_run_by_id);
 
 END
 $function$

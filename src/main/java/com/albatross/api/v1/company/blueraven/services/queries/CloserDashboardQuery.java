@@ -141,6 +141,14 @@ public class CloserDashboardQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getCloserResiduals = """
+      select row_to_json(rows)
+      from (
+             select * from brs.get_closer_residual_details(:userId::bigint, :residualDate::date)
+             ) as rows
+    """;
+
+  //language=PostgreSQL
   public final static String getRoundRobinLeadAllocationRank = """
     SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint, :currentUserId::bigint)
     """;

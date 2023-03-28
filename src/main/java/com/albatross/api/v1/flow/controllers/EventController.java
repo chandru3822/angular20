@@ -42,6 +42,12 @@ public class EventController {
     return eventService.getEvent(id);
   }
 
+  @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean positionsChanged,
+                                     @RequestBody Event event) {
+      eventService.saveHiddenAndWhiteList(event, positionsChanged);
+  }
+
   @PostMapping(value = "/{id}/saveChangesToDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveChangesToDefaultFields(@PathVariable Long id,
                                          @RequestBody Event event) {

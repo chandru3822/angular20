@@ -6,7 +6,7 @@
         <v-form
           ref="smartlistForm"
           class="one-hunned"
-          :disabled="!canEdit"
+          :disabled="!userCanEdit"
         >
           <v-col cols="12">
             <v-toolbar flat class="app-toolbar">
@@ -43,7 +43,7 @@
                 </v-btn>
 
                 <v-btn
-                  v-if="canEdit"
+                  v-if="userCanEdit"
                   text
                   color="primary"
                   @click="validateForm"
@@ -107,7 +107,7 @@
               <v-row>
                 <v-col cols="4" md="2">
                   <v-checkbox
-                    v-model="smartlist.shared"
+                    v-model="smartlist.public"
                     label="Public"
                     :readonly="!userCanEdit"
                   />
@@ -130,7 +130,7 @@
                   />
                   <ConfirmationDialog :open-dialog="showToggleDialog"
                                       @confirm="[showToggleDialog = false, toggleProjectDetails()]"
-                                      @close-dialog="resetToggleProjectDetails"
+                                      @cancel="resetToggleProjectDetails"
                   >
                     <template v-slot:title>Confirm</template>
                     Toggling project details will reset your smartlist, are you sure you want to continue?
@@ -156,7 +156,7 @@
     <SmartlistColumn
       v-if="smartlist.id"
       :company-object-types="filteredCompanyObjectTypes"
-      :can-edit="canEdit"
+      :can-edit="userCanEdit"
       :is-project-details="smartlist.projectDetails"
       :project-details-columns="projectDetailsColumns"
       :smartlist-id="$route.params.smartlistId"
@@ -169,7 +169,7 @@
       :requirements="requirements"
       :company-object-types="filteredCompanyObjectTypes"
       :reset-form="resetRequirementForm"
-      :can-edit="canEdit"
+      :can-edit="userCanEdit"
       :is-project-details="smartlist.projectDetails"
       :project-details-requirements="projectDetailsColumns"
       @input="addNewRequirement"
@@ -263,7 +263,8 @@ import SmartlistRequirement from './SmartlistRequirement'
 import SmartlistColumn from '@/views/flow/smartlistv1/SmartlistColumn'
 import { saveAs } from 'file-saver'
 import {DateTime} from 'luxon'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from '@/components/ConfirmationDialog'
+import Smartlist from '@/views/flow/smartlist/Smartlist'
 
 export default {
   name: 'Smartlist',
@@ -295,7 +296,6 @@ export default {
       sql: '',
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT'),
       userId: this.$store.state.user.details.id,
       refreshData: false
     }
@@ -321,8 +321,22 @@ export default {
       }
       return false
     },
-    canEdit () {
-      return (!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+    userCanEdit () {
+      if (!this.smartlist?.id) {
+        return true
+      }
+
+      if (!this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')) {
+        return false
+      }
+
+      if (this.$store.state.user.details.id === this?.smartlist?.ownerId ||
+          this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+      ) {
+        return true
+      }
+
+      return Smartlist.userCanEdit(this.smartlist)
     },
     canDelete () {
       return ((!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) && this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
@@ -346,7 +360,7 @@ export default {
   methods: {
     async getSmartlist () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}`)
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}`)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
       } catch (e) {
@@ -367,7 +381,7 @@ export default {
     },
     async getRequirements () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}/requirement`)
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}/requirement`)
         this.requirements = data
       } catch (e) {
         logError(e)
@@ -414,7 +428,7 @@ export default {
           this.smartlist.mainProcessSteps = true
         }
 
-        const {data, status} = await postRequest(`/smartlistv1`, this.smartlist)
+        const {data, status} = await postRequest(`/smartlist`, this.smartlist)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
@@ -430,7 +444,7 @@ export default {
       try {
         const maxNumber = this.requirements.map(r => r.displayOrder).reduce((max, cur) => Math.max(max, cur), 0)
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlistv1/${this.smartlist.id}/requirement`, {
+        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/requirement`, {
           ...requirement,
           smartlistId: this.smartlist.id,
           secondaryRequirementValue: requirement.secondaryRequirementValue || null,
@@ -456,7 +470,7 @@ export default {
           this.smartlist.mainProcessSteps = true
         }
 
-        const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}`, this.smartlist)
+        const {status} = await putRequest(`/smartlist/${this.smartlist.id}`, this.smartlist)
 
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.originalObjectTypeId = companyObjectType.objectTypeId
@@ -485,7 +499,7 @@ export default {
     async updateRequirement (requirement) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await putRequest(`/smartlistv1/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
+        const {data, status} = await putRequest(`/smartlist/${this.smartlist.id}/requirement/${requirement.id}`, requirement)
         this.requirements.splice(this.requirements.findIndex(r => r.id === requirement.id), 1, data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -528,7 +542,7 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlistv1/${this.smartlist.id}/csv`)
+        const {data, status} = await getRequest(`/smartlist/${this.smartlist.id}/export`)
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         })
@@ -552,7 +566,7 @@ export default {
     async toggleProjectDetails () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}/toggleProjectDetails`)
+        const {status} = await putRequest(`/smartlist/${this.smartlist.id}/toggleProjectDetails`)
         this.refreshData = true
         this.requirements = []
         handleHidingGlobalLoader(this, status)
@@ -611,7 +625,7 @@ export default {
     async copy () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/smartlistv1/${this.smartlist.id}/copy`)
+        const {data, status} = await postRequest(`/smartlist/${this.smartlist.id}/copy`)
         this.$router.go(-1)
         this.snackbar = getSnackbar('SUCCESS', `Smartlist "${data.name}" was created`)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

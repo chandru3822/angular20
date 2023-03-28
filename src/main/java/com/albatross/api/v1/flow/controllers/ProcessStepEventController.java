@@ -62,6 +62,7 @@ public class ProcessStepEventController {
     processStepEventService.deleteEventFromStep(processStepEventId);
   }
 
+  // this is the whitelist for the event readonly field that only applies to events on this process step
   @PutMapping(value = "/{processStepEventId}/saveReadOnlyWhiteList")
   public void saveReadOnlyWhiteList(@RequestParam(required = false) Boolean savePositions,
                                     @RequestBody ProcessStepEvent processStepEvent) {

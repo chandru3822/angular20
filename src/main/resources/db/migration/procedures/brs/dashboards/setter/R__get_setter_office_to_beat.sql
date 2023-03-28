@@ -9,12 +9,7 @@ DECLARE
     v_rank_box_data json;
 
 BEGIN
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get Setter Office to Beat', 'p_office_id: ' || p_office_id ||
-                                         ' p_start_date: ' || p_start_date ||
-                                         ' p_end_date: ' || p_end_date ||
-                                         ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
+
 
     SELECT row_to_json(sub_rows)
     INTO v_rank_box_data

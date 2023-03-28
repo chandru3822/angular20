@@ -168,12 +168,6 @@ export default {
           feature: 'WORK_QUEUE',
           show: true
         }, {
-        //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
-        //   label: 'Smartlists v1',
-        //   path: '/smartlistv1',
-        //   feature: 'SMARTLIST',
-        //   show: true
-        // }, {
           label: 'Smartlists',
           path: '/smartlist',
           feature: 'SMARTLIST',
@@ -193,6 +187,16 @@ export default {
       this.getCompanies()
       this.getCompanyTools()
       this.getSmsNotification()
+    }
+
+    //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
+    if (this.$store.getters.isFullAdmin) {
+      this.tabs.splice(4, 0, {
+        label: 'Smartlists v1',
+        path: '/smartlistv1',
+        feature: 'SMARTLIST',
+        show: true
+      })
     }
   },
   computed: {

@@ -12,6 +12,7 @@ public class ProcessStepEventQuery {
            pse.readonly,
            pse.archived,
            e.event_name,
+           e.hidden as eventHidden,
            pse.display_order,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(psea)))
@@ -63,13 +64,34 @@ public class ProcessStepEventQuery {
                                 from flow.white_listed_position wlp
                                     left join flow.white_list_type wlt on wlt.id = wlp.white_list_type_id
                                     where wlp.process_step_event_id = pse.id and wlp.archived is false)
-                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions"
+                        readonlyWhiteListPositions), '[]') AS "readonlyWhiteListPositions",
+            coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.event_id as "eventId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 17
+                           AND wlp.archived is not true
+                           and wlp.event_id = e.id) wlp), '[]') AS "eventHiddenWhiteListedPositions"
     from flow.process_step_event pse
            inner join flow.event e on pse.event_id = e.id
            left join flow.company_event_status_type cest on cest.id = pse.initial_company_event_status_type_id
     where pse.process_step_id = :processStepId
       and e.resource_custom_field_id is not null
       and pse.archived is not true
+      and case when e.hidden and :systemAdmin::boolean is false
+                       then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                               and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
+            )
+                   else 1=1 end
       order by pse.display_order
         """;
 
@@ -508,7 +530,7 @@ public class ProcessStepEventQuery {
     public final static String insertWhiteListPosition = """
         insert into flow.white_listed_position(position_id, process_step_event_id, event_id, process_step_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
             select :positionId, :processStepEventId, :eventId, :processStepId, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
-            where not exists ( select id 
+            where not exists ( select id
                                 from flow.white_listed_position
                                 where process_step_event_id = :processStepEventId
                                 and position_id = :positionId

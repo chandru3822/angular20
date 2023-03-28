@@ -104,6 +104,7 @@ export default {
         this.activeEventsLoading = false
       }
     },
+
   }
 }
 </script>

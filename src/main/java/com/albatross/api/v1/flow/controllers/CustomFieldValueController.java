@@ -100,9 +100,10 @@ public class CustomFieldValueController {
   // updates for all object types
   @PostMapping(value = "/contact/{id}")
   public List<CustomFieldGroup> updateContactCustomFieldValues(
-      @RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
+      @RequestBody List<CustomFieldValue> values, @PathVariable Long id,
+      @RequestParam(required = false) Boolean cameFromWeb) {
     List<CustomFieldGroup> groups =
-        customFieldValueService.updateCustomFieldValues(values, id, ObjectType.CONTACT);
+        customFieldValueService.updateCustomFieldValuesTemp(cameFromWeb, values, id, ObjectType.CONTACT);
 
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {
@@ -138,7 +139,7 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateAttachmentCustomFieldValues(@RequestBody List<CustomFieldValue> values,
                                                                   @PathVariable Long attachmentTypeId,
                                                                   @PathVariable Long attachmentId) {
-    return customFieldValueService.updateCustomFieldValues(values, attachmentTypeId, ObjectType.ATTACHMENT_TYPE, attachmentId, true);
+    return customFieldValueService.updateCustomFieldValues(values, attachmentTypeId, ObjectType.ATTACHMENT_TYPE, attachmentId, true, false);
   }
 
   @PostMapping(value = "/user/{id}")

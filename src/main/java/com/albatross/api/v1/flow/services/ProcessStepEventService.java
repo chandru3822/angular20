@@ -36,9 +36,16 @@ public class ProcessStepEventService {
   private final ObjectMapper om;
   private final ProcessStepActionService processStepActionService;
 
+  private final UserPositionService userPositionService;
+
   public List<ProcessStepEvent> getStepEvents(Long processStepId) {
+    User user = securityService.getCurrentUser();
+    Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
+    params.put("systemAdmin", systemAdmin);
+    params.put("userPositions", userPositionIds);
     return sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
   }
 
@@ -392,6 +399,10 @@ public class ProcessStepEventService {
       TypeReference<List<ProcessStepEventWorkQueueType>> processStepEventWqtRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "workQueueTypes", new JsonCollectionDeserializer(processStepEventWqtRef, objectMapper));
+
+      TypeReference<List<WhiteListedPosition>> eventHiddenWhiteListedPositionsRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "eventHiddenWhiteListedPositions", new JsonCollectionDeserializer(eventHiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 

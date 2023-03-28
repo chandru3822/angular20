@@ -154,9 +154,9 @@ BEGIN
 
       update flow.project_process_step_event
         set project_process_step_id = p_project_process_step_id,
-            process_step_event_id = (select pse.id
-                                     from flow.process_step_event pse
-                                     where pse.unique_behavior_type_id = 1),
+            process_step_event_id = (select ppse.process_step_event_id
+                                     from flow.project_process_step_event ppse
+                                     where ppse.id = p_project_process_step_event_id),
             resource_id = v_user_position_id,
             start_time = p_appointment_start_time,
             end_time = (p_appointment_start_time +
