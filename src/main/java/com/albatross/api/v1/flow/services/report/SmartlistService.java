@@ -154,8 +154,7 @@ public class SmartlistService {
     Map<String, Object> params = Map.of(
       "smartlistId", id,
       "companyId", user.getCompanyId(),
-      "userId", user.getId(),
-      "isSystemAdmin", user.isSystemAdmin()
+      "userId", user.getId()
     );
     Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
                                   .orElse(null);

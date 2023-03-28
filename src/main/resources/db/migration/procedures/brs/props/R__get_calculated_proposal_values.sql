@@ -395,7 +395,7 @@ BEGIN
          c.mobile,
          c.email,
          pcfv7.numeric_value,
-         pcfv6.text_value,
+         lov6.name,
          pcfv8.int_value,
          lov2.name,
          pcfv10.numeric_value,
@@ -435,6 +435,7 @@ BEGIN
                                                             pcfv5.custom_field_group_assignment_id = 147
          left join brs.proposal_custom_field_value pcfv6 on prop.id = pcfv6.proposal_id and
                                                             pcfv6.custom_field_group_assignment_id = 165
+         left join flow.list_of_value lov6 on lov6.id = pcfv6.int_value
          left join brs.proposal_custom_field_value pcfv7 on prop.id = pcfv7.proposal_id and
                                                             pcfv7.custom_field_group_assignment_id = 167
 
@@ -1553,7 +1554,7 @@ BEGIN
           coalesce(v_ac_unit_relocation_cost, 0)::numeric) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
-    v_check_from_br = v_promotion_cost /18;
+
   elsif v_product_id = 19424 then
     v_promotion_cost =
         ((coalesce(v_initial_system_cost, 0) + coalesce(v_equipment_storage_adder, 0) +
@@ -1567,11 +1568,11 @@ BEGIN
          (v_reamortization_factor - v_initial_payment_factor) * 42) /
         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
                             42);
-    v_check_from_br = v_promotion_cost /42;
+
   end if;
   raise notice 'v_promotion_cost = %',v_promotion_cost;
 
-  raise notice 'v_check_from_br = %',v_check_from_br;
+
 
 
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
@@ -1682,6 +1683,13 @@ BEGIN
       ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee))+ coalesce(v_other_adder_and_discount_amount, 0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
 
+  v_check_from_br = 0.00::numeric;
+  if v_product_id in (293,19424) then
+    v_check_from_br = round((v_total_loan_amount * v_initial_payment_factor)::numeric,2);
+  end if;
+
+  raise notice 'v_check_from_br = %',v_check_from_br;
+
 
   with referral_promotion as (select proposal_group_uuid
                               from proposal_value pv
@@ -1699,7 +1707,7 @@ BEGIN
 
   v_total_system_cost =
     (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) + coalesce(v_above_line_rebate, 0) +
-     coalesce(v_referral_promotion, 0));
+     coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount*-1), 0));
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   if v_unit_type_state_rebate = 460 then

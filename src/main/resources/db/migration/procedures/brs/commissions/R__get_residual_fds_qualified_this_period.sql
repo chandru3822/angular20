@@ -25,9 +25,15 @@ CREATE or replace function brs.get_residual_fds_qualified_this_period(p_closer_u
                  on_hold_date date,
                  qualified_date date) AS
 $BODY$
+declare
+  v_min_start_date timestamp;
 begin
 
-
+  select min(start_date)
+  into v_min_start_date
+  from flow.user_position up
+  where user_id = p_closer_user_id
+  and position_id in (1, 2, 3, 517);
 
 
 --   raise notice 'p_current_month %',p_current_month;
@@ -76,8 +82,8 @@ begin
                               when (pd.project_state_id = 28 and
                                     pd.first_cash_payment_amount >= 1000.00) then
                                 pd.first_cash_payment_paid_date
-                              when ((pd.first_cash_payment_amount) /
-                                    greatest(pd.total_cash_down_payment,1) >= .49) then
+                              when (round((pd.first_cash_payment_amount /
+                                    greatest(pd.total_cash_down_payment,1))::numeric,2) >= .49) then
                                 pd.first_cash_payment_paid_date
                               else null end
                           else null end)) as final_design_complete_date1
@@ -86,7 +92,8 @@ begin
         inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
         left join flow.state s on s.id = pd.project_state_id
         left join brs.residual_project_override_qualified_date rpoqd on rpoqd.project_id = pd.project_id
-        where pd.exclude_from_residuals is not true and
+        where pd.final_design_signed_date >= v_min_start_date and
+              pd.exclude_from_residuals is not true and
               pd.closer_user_id = p_closer_user_id and
               case when p_include_cancel is false then
                 pd.cancelled_date is null
@@ -94,7 +101,7 @@ begin
                 pd.cancelled_date is not null end and
               ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null)) and
               pd.final_design_signed_date is not null and
-                pd.financial_agreement_signed_date is not null and
+                ((pd.financial_agreement_signed_date is not null and
                 pd.utility_bill_verified_date is not null and
                 pd.proof_of_homeowners_insurance_required is not null and
                case
@@ -107,10 +114,10 @@ begin
                       when (pd.project_state_id = 28 and
                             pd.first_cash_payment_amount >= 1000.00) then
                         pd.first_cash_payment_paid_date is not null
-                      when (pd.first_cash_payment_amount /
-                            greatest(pd.total_cash_down_payment,1) >= .49) then
+                      when (round((pd.first_cash_payment_amount /
+                            greatest(pd.total_cash_down_payment,1))::numeric,2) >= .49) then
                         pd.first_cash_payment_paid_date is not null end
-                  else 1 = 1 end and
+                  else 1 = 1 end) or (rpoqd.override_qualified_date is not null)) and
           not exists (select id from brs.residual_project_qualified_date rpqd
                       where rpqd.project_id = pd.project_id limit 1)) as foo
   where foo.final_design_signed_date <= p_end_of_previous_month

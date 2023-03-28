@@ -60,10 +60,11 @@ begin
            foo1.clawback,
            foo1.adjustment_override,
            case
-             when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
-                 coalesce(foo1.potential_residual,0) - coalesce(foo1.clawback,0) + coalesce(foo1.adjustment_override,0)
-             when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and foo1.clawback > 0 then
-             0- coalesce(foo1.clawback,0) + coalesce(foo1.adjustment_override,0)
+             when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) and
+                  coalesce(foo1.potential_residual,0) + coalesce(foo1.adjustment_override,0) - coalesce(foo1.clawback,0) > 0 then
+                 coalesce(foo1.potential_residual,0) + coalesce(foo1.adjustment_override,0) - coalesce(foo1.clawback,0)
+             when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and coalesce(foo1.adjustment_override,0) > coalesce(foo1.clawback,0)  then
+                 coalesce(foo1.adjustment_override,0) - coalesce(foo1.clawback,0)
              else 0.00 end as total
     from (select *,
                  rpa.allocation                                                   as required_fdc_per_month,
