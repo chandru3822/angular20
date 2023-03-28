@@ -324,17 +324,14 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
-    left join flow.user_position up on up.user_id = s.owner_id
-    left join flow.position p on up.position_id = p.id
+    left join flow.user_position up on up.user_id = s.owner_id and
+              up.primary_flag is true and
+              (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+              up.archived is false
+    left join flow.position p on up.position_id = p.id and p.company_id = :companyId
     where s.id = :smartlistId and
           cot.company_id = :companyId and
-          s.archived is not true and
-          (:isSystemAdmin or (
-            up.primary_flag is true and
-            (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
-            up.archived is false and
-            p.company_id = :companyId
-          ))
+          s.archived is not true
   """;
 
   //language=PostgreSQL
