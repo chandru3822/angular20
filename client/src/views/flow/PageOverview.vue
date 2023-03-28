@@ -121,10 +121,10 @@
 </template>
 
 <script>
-import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "../../helpers/helpers";
-import constants from "../../helpers/constants"
-import {getStatusColorClass} from "../../services/projectStatusTypeService";
-import {AppMutations} from "../../stores/AppStore";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "@/helpers/helpers";
+import constants from '@/helpers/constants'
+import {getStatusColorClass} from "@/services/projectStatusTypeService";
+import {AppMutations} from "@/stores/AppStore";
 
 export default {
   name: "PageOverview",

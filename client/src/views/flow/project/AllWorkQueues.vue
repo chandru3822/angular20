@@ -135,7 +135,7 @@ export default {
 
 <style lang="scss">
 #project-details-wq-container .v-data-table__wrapper {
-  max-height: calc(100vh - 190px);
+  max-height: calc(100vh - 270px);
   min-height: 300px;
 }
 </style>
