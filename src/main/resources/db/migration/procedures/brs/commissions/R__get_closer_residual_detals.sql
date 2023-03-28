@@ -19,7 +19,7 @@ CREATE or replace function brs.get_closer_residual_details(p_closer_user_id bigi
             qualified_fdc                      json,
             clawback_projects                  json,
             total_qualifying_fdc_to_date       json,
-            cancelled_fdc_during_period        integer,
+            cancelled_fdc_during_period        bigint,
             reactivated_fdc                    bigint,
             residual_qualified_fdc             bigint,
             no_previous_month_message          text
