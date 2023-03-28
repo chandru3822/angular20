@@ -142,7 +142,7 @@ begin
                                  fds_nq.on_hold_date,
                                  fds_nq.total_cash_down_payment,
                                  fds_nq.first_cash_payment_amount
-                          from brs.get_residual_fds_not_qualified_this_period(u.id,v_period_start,v_period_end) as fds_nq
+                          from brs.get_residual_fds_not_qualified_this_period(u.id,v_period_start,v_period_end,v_grace_period_end) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as fda_not_qualifying)            as fda_in_month_not_qualifying,
                    (select array_to_json(array_agg(row_to_json(qualified_fdc1)))
                     from (select p.contact_name,
