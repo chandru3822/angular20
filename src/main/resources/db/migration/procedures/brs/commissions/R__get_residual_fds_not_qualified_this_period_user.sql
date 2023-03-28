@@ -21,12 +21,14 @@ $BODY$
 declare
   v_period_start date;
   v_period_end   date;
+  v_grace_period_end date;
 begin
 
-  select r.period_end, r.period_start
-  into v_period_end,v_period_start
+  select r.period_end, r.period_start,r.grace_period_end
+  into v_period_end,v_period_start,v_grace_period_end
   from brs.residual r
   where current is true;
+
 
   return query
     select foo.project_id,
@@ -42,7 +44,7 @@ begin
            foo.substantial_completion_date,
            foo.cancelled_date,
            foo.on_hold_date
-    from brs.get_residual_fds_not_qualified_this_period(p_closer_user_id, v_period_start, v_period_end) as foo;
+    from brs.get_residual_fds_not_qualified_this_period(p_closer_user_id, v_period_start, v_period_end,v_grace_period_end) as foo;
 
 END
 $BODY$

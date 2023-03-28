@@ -198,7 +198,6 @@ public class SmartlistQuery {
       s.archived is not true and
       s.work_queue_type_id is null and
       up.primary_flag is true and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
       up.archived is false and
       p.company_id = :companyId
     order by s.name, s.date_modified desc
