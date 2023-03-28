@@ -146,10 +146,7 @@ begin
                        inner join brs.residual_plan_user rpu on rpu.residual_plan_id = rp.id and rpu.user_id = u.id
                        inner join brs.residual r on r.current is true
                 where
---                        u.id in (2438980,
---                                 2428625,
---                              2433935,
---                              2353957,2432305,2429495) and
+                      -- u.id in (2417355,2424379,2421592,2429495) and
                       exists(select id
                              from flow.user_position up2
                              where up2.user_id = u.id

@@ -1310,6 +1310,15 @@ const router = new Router({
               }
             }
           }, {
+            path: 'workQueues',
+            component: () => {
+              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/AllWorkQueues.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          }, {
             path: 'processSteps',
             component: () => {
               if (store.getters.userHasFeature('PROCESS_STEPS')) {

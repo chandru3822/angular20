@@ -9,10 +9,7 @@ import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
-import com.albatross.api.v1.flow.model.project.Project;
-import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
-import com.albatross.api.v1.flow.model.project.ProjectStatusCount;
-import com.albatross.api.v1.flow.model.project.ProjectStatusType;
+import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
@@ -555,6 +552,18 @@ public class ProjectService {
       ProjectQuery.getProcessStepsByProjectId,
         params,
         new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
+  }
+
+  public List<ProjectWorkQueueHistory> getWorkQueueHistoryByProjectId(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+
+    return sqlCache.queryBySql(
+      ProjectQuery.getWorkQueueHistoryByProjectId,
+      params,
+      ProjectWorkQueueHistory.class);
   }
 
   public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {

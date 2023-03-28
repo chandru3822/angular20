@@ -5,10 +5,7 @@ import com.albatross.api.v1.flow.model.DensitySearch;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
-import com.albatross.api.v1.flow.model.project.Project;
-import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
-import com.albatross.api.v1.flow.model.project.ProjectStatusCount;
-import com.albatross.api.v1.flow.model.project.ProjectStatusType;
+import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
@@ -103,6 +100,13 @@ public class ProjectController {
     @PathVariable Long projectId) {
     return new ResponseEntity<>(
       projectService.getProcessStepsByProjectId(projectId, null), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{projectId}/workQueueHistory")
+  public ResponseEntity<List<ProjectWorkQueueHistory>> getProjectWorkQueuHistory(
+    @PathVariable Long projectId) {
+    return new ResponseEntity<>(
+      projectService.getWorkQueueHistoryByProjectId(projectId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{projectId}/upcomingProcessSteps")
