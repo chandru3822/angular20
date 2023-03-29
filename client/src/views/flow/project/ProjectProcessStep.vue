@@ -663,11 +663,13 @@ export default {
     populateDirtyCfvs(field) {
       //i think we could mostly remove this code now that round robin moved to events
       //some fields are for unique behavior and they dont need to be saved. this check should filter them out
+      this.fieldsSaving = true //disable the save button until the dirtyCfvs has been updated
       if (field.customFieldId) {
         let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
         if (!match) {
           this.dirtyCfvs.push(field)
         }
+        this.fieldsSaving = false //re-enable the save button
       }
     },
     async removeOwner() {
