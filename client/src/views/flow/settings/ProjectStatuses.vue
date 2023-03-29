@@ -9,34 +9,19 @@
         </v-card-title>
 
         <v-card-text>
-          You cannot delete a project status that are currently in use.  Please remove from the following locations before deleting.
-          <v-list v-for="(item, index) in fieldsInUse.projectsWithStatus" :key="index">
-            <v-list-item-content>
-              Project
-              <div v-if="item.projectName">{{ item.projectName }}</div>
+          You cannot delete a project status that is currently in use.
+          <v-list>
+            <v-list-item-content v-if="fieldsInUse.statusInUseByProjects">
+              Status is in use by various Projects
             </v-list-item-content>
-          </v-list>
-
-          <v-list v-for="(item, index) in fieldsInUse.processStepActions" :key="index">
-            <v-list-item-content>
-              Process Step Actions
-              <div v-if="item.processStepName">Process Step: {{ item.processStepName }}</div>
-              <div v-if="item.actionName">Action: {{ item.actionName }}</div>
+            <v-list-item-content v-if="fieldsInUse.statusInUseByActions">
+              Status is in use by various Process Step Actions
             </v-list-item-content>
-          </v-list>
-
-          <v-list v-for="(item, index) in fieldsInUse.processStepRequirements" :key="index">
-            <v-list-item-content>
-              Process Step Requirement
-              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
+            <v-list-item-content v-if="fieldsInUse.statusInUseByProcessStepRequirements">
+              Status is in use by various Process Step Requirements
             </v-list-item-content>
-          </v-list>
-
-          <v-list v-for="(item, index) in fieldsInUse.processStepEventRequirements" :key="index">
-            <v-list-item-content>
-              Process Step Event Requirement
-              <div v-if="item.eventName">Event: {{ item.eventName }}</div>
-              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
+            <v-list-item-content v-if="fieldsInUse.statusInUseByEventRequirements">
+              Status is in use by various Process Step Event Requirements
             </v-list-item-content>
           </v-list>
 
