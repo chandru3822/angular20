@@ -130,7 +130,8 @@ public class CommunicationService {
       List<User> users,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId)
+      Long sentByUserId,
+      List<Long> attachmentIds)
       throws Exception {
 
     try {
@@ -164,7 +165,8 @@ public class CommunicationService {
                           message,
                           sentByUserId,
                           true,
-                          null);
+                          null,
+                          attachmentIds);
                     } catch (Exception e) {
                       log.error(
                           "EMAIL: ERROR: Generating template. template={}, address={}",

@@ -15,6 +15,18 @@
             </div>
           </v-col>
         </v-row>
+        <v-row>
+          <v-col cols="12" sm="6">
+            <v-text-field text
+                          label="User First Name"
+                          v-model="payrollSearch.userFirstName"></v-text-field>
+          </v-col>
+          <v-col cols="12" sm="6">
+            <v-text-field text
+                          label="User Last Name"
+                          v-model="payrollSearch.userLastName"></v-text-field>
+          </v-col>
+        </v-row>
       </v-container>
     </v-form>
     <v-row>

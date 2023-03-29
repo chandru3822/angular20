@@ -12,7 +12,7 @@ import lombok.Setter;
 public class Residual {
 
     private String firstName, lastName, employeeId, regionName, officeName, officeState, userPositionName,
-      userFullName, userStatusType, hireDate, residualStartDate;
+      userFullName, userStatusType, hireDate, residualStartDate , residualPlanName;
 
     private Long userId, lifetimeFdc, qualifiedThisPeriodFdc, fdsNotQualified, requiredFdcPerMonth;
 

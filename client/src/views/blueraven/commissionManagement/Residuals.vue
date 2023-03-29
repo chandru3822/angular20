@@ -160,11 +160,12 @@
             :headers="headers"
             :items="residuals"
             :fixed-header="true"
-            :items-per-page="-1"
             :search="search"
+            :footer-props="footerProps"
+            :mobile-breakpoint="0"
             :show-select="payrollStatus.showSelect"
             :loading="dataLoading"
-            hide-default-footer
+            :items-per-page="25"
             class="elevation-1"
           >
             <template #no-data>
@@ -194,6 +195,7 @@
                 <td class="text-left">{{item.userStatusType}}</td>
                 <td class="text-left">{{item.hireDate}}</td>
                 <td class="text-left">{{item.userFullName}}</td>
+                <td class="text-left">{{item.residualPlanName}}</td>
                 <td class="text-left">{{item.residualStartDate}}</td>
                 <td class="text-left clickable">
                   <a @click="loadModalData(item, 1)">
@@ -265,6 +267,21 @@
                 <td class="text-left">{{item.total | currency('$', 0)}}</td>
               </tr>
             </template>
+
+            <template v-slot:body.append="{headers}">
+              <tr>
+                <td v-for="(header,i) in headers" :key="i" class="font-weight-bold">
+
+                  <div v-if="header.value === 'adjustmentOverride'">
+                    Total Pay:
+                  </div>
+                  <div v-if="header.value === 'total'">
+                    {{ totalPay | currency('$', 2) }}
+                  </div>
+
+                </td>
+              </tr>
+            </template>
           </v-data-table>
         </v-card>
       </v-col>
@@ -280,6 +297,7 @@
   import { saveAs } from 'file-saver'
   import sumBy from "lodash.sumby";
   import cloneDeep from 'lodash.clonedeep'
+  import constants from "@/helpers/constants";
 
   export default {
     name: 'Residuals',
@@ -310,6 +328,10 @@
         search: '',
         currentResidual: {},
         payrollStatus: {},
+        footerProps: {
+          'items-per-page-options': [25, 50, 100, 500, 1000],
+          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+        },
         projects: [],
         projectId: null,
         projectOverrideDate: null,
@@ -328,6 +350,7 @@
         modalUserFullName: '',
         modalData: [],
         modalTitle: '',
+        totalPay: null,
         headers: [
           {text: 'User First Name', value: 'firstName', show: true},
           {text: 'User Last Name', value: 'lastName', show: true},
@@ -339,6 +362,7 @@
           {text: 'User Status', value: 'userStatusType', show: true},
           {text: 'Hire Date', value: 'hireDate', show: true},
           {text: 'Usable Name', value: 'userFullName', show: true},
+          {text: 'Residual Plan', value: 'residualPlanName', show: true},
           {text: 'Residual Start Date', value: 'residualStartDate', show: true},
           {text: 'LTD Qualified FDC', value: 'lifetimeFdc', show: true},
           {text: 'Qualified FDC This Period', value: 'qualifiedThisPeriodFdc', show: true},
@@ -391,7 +415,7 @@
             this.selectAll = true
           }
 
-          this.totalPay = sumBy(this.residuals,  function(o) { return o.selected ? o.current_pay : 0 })
+          this.totalPay = sumBy(this.residuals,  function(o) { return o.selected ? o.total : 0 })
 
           this.residuals = data
           this.dataLoading = false
@@ -504,7 +528,7 @@
         const val = await this.saveChangesToResidual(true)
         //dont submit for approval if the save changes request failed
         if(val) {
-          this.totalPay = sumBy(this.residuals,  function(o) { return o.selected ? o.current_pay : 0 })
+          this.totalPay = sumBy(this.residuals,  function(o) { return o.selected ? o.total : 0 })
           let selectedIds = this.residuals.filter(ad => ad.selected).map(ad => ad.userId)
           let params = {
             payDate: this.payDate
@@ -575,10 +599,10 @@
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.currentResidual = data
-          this.totalPay = sumBy(this.accountingData,  function(o) { return o.selected ? o.current_pay : 0 })
           this.additionalPayrollDataNeeded = null == this.currentResidual.description
           this.getStatusColor()
-          await this.getCurrentResidual()
+          this.getCurrentResidual()
+          await this.getResiduals()
 
           if(!keepLoading) {
             this.$store.commit(AppMutations.SET_LOADING, false)

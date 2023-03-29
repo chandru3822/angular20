@@ -5,10 +5,6 @@ $BODY$
 declare
     v_json json;
 begin
-    insert into flow.company_function_log(function_name, parameters, run_by_id)
-    values ('Get Commission Summary', 'p_position_id: ' || p_position_id ||
-                                      ' p_run_by_id: ' || p_run_by_id,
-            p_run_by_id);
 
     case when p_position_id = 1 then
         with all_project_ids as (

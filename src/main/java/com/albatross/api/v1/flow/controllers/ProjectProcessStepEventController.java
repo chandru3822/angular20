@@ -3,9 +3,11 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.CompanyEventStatusType;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.Data;
@@ -33,6 +35,7 @@ public class ProjectProcessStepEventController {
 
   private final ProjectProcessStepEventService projectProcessStepEventService;
   private final PubSubService pubSubService;
+  private final SecurityService securityService;
 
   @PostMapping(value = "/{eventId}")
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
@@ -125,10 +128,11 @@ public class ProjectProcessStepEventController {
 
       return ResponseEntity.ok(getPpsEvent(ppsId, ppseActionResult.getPpsEventId()));
     } catch (Exception e) {
+      User currentUser = securityService.getCurrentUser();
       final String errMessage =
         String.format(
-          "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s *** %s",
-          actionId, eventId, e.getMessage());
+          "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s, BY USER: %s *** %s",
+          actionId, eventId, currentUser.trueUserId(), e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }

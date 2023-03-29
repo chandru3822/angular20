@@ -357,6 +357,15 @@ public class AttachmentService {
     return attachment;
   }
 
+  public Optional<Attachment> findSimpleById(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    Optional<Attachment> attachment = sqlCache.getBySql(AttachmentQuery.findSimpleById, params, Attachment.class);
+
+    return attachment;
+  }
+
   @Cacheable(value = CachingConfig.ATTACHMENT)
   public Optional<Attachment> findAttachmentByUUID(@NonNull UUID uuid) {
     return sqlCache.getBySql(AttachmentQuery.getAttachmentByUUID, Map.of("uuid", uuid), Attachment.class);
@@ -393,6 +402,11 @@ public class AttachmentService {
     params.put("modifiedById", currentUser.trueUserId());
 
     sqlCache.updateBySql(AttachmentQuery.deleteBySourceAndType, params);
+  }
+
+  public S3Object getS3ObjectByAttachment(Attachment attachment) {
+    S3Object s3Object = s3.getObject(storageBucket, attachment.getS3Key());
+    return s3Object;
   }
 
   public AttachmentType getAttachmentType(Long id) {

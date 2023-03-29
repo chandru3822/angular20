@@ -17,19 +17,23 @@ public class ResidualPayrollQuery {
     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
     FROM (SELECT r.id,
                  r.description,
+                 r.period_end as "periodEnd",
                  (SELECT sum(dcs1.residual_total)
                   FROM brs.user_residual_snapshot dcs1
                   WHERE dcs1.residual_id = r.id) AS "currentPay"
           FROM brs.residual r
                  INNER JOIN brs.user_residual_snapshot dcs ON r.id = dcs.residual_id
-                 INNER JOIN flow.user prj ON dcs.user_id = prj.id
+                 INNER JOIN flow.user u ON dcs.user_id = u.id
             AND CASE WHEN :userId:: INTEGER IS NOT NULL
-                       THEN prj.id = :userId:: INTEGER ELSE 1 = 1 END
-
+                       THEN u.id = :userId:: INTEGER ELSE true END
+            AND CASE WHEN :userFirstName::text is not null
+                THEN lower(u.first_name) like '%' || lower(:userFirstName::text) || '%' else true end
+            AND CASE WHEN :userLastName::text is not null
+                       THEN lower(u.last_name) like '%' || lower(:userLastName::text) || '%' else true end
           GROUP BY r.id
           ORDER BY r.paid_date desc
 
-          ) AS sub_rows
+         ) AS sub_rows
     """;
 
   //language=PostgreSQL
@@ -83,6 +87,7 @@ public class ResidualPayrollQuery {
             s.user_status as "userStatus",
             s.hire_date as "hireDate",
             s.user_full_name as "userFullName",
+            s.residual_plan_name as "residualPlanName",
             s.residual_start_date as "residualStartDate",
             s.residual_plan_name as "residualPlanName",
             s.lifetime_qualified_fds as "lifetimeQualifiedFds",

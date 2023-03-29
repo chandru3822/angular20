@@ -40,7 +40,13 @@ public class MapboxApiService {
     String tokenLimitedString = "";
     int count = 0;
     int maxTokens = 20;
-    StringTokenizer tokens = new StringTokenizer(address);
+
+    // todo: if a long address (word count) is used, our code will currently search for the first 20 words
+    // todo: should refactor to search for (limit (street address) word count) + city + state + postal code
+    // todo: currently does (limit (street address + city + state + postal code) word count)
+
+    //these delimiters appear to be used by mapbox but are not default delims for stringtokenizer
+    StringTokenizer tokens = new StringTokenizer(address, " ,()-.");
 
     while(count < maxTokens && tokens.hasMoreTokens()) {
       tokenLimitedString += tokens.nextToken().toString() + " ";

@@ -63,10 +63,7 @@ BEGIN
                   group by pd.cancelled_date, pd.system_size) as foo)
     into v_total;
 
-    insert into flow.company_function_log(function_name, parameters)
-    values ('Get Overrides Earned', 'p_project_ids: ' || p_project_ids::text ||
-                                    ' p_period_end: ' || p_period_end ||
-                                    ' p_user_id: ' || p_user_id);
+
 
     return v_total;
 END;

@@ -151,7 +151,11 @@ public class SmartlistService {
 
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("smartlistId", id, "companyId", user.getCompanyId(), "userId", user.getId());
+    Map<String, Object> params = Map.of(
+      "smartlistId", id,
+      "companyId", user.getCompanyId(),
+      "userId", user.getId()
+    );
     Smartlist smartlist = sqlCache.getBySql(SmartlistQuery.getById, params, new SmartlistService.SmartlistMapper<>(Smartlist.class, om))
                                   .orElse(null);
 
@@ -302,7 +306,7 @@ public class SmartlistService {
     //give old owner edit access if not system or smartlist admin
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
 
-    if (oldOwnerPosition == null && !isSmartlistAdmin()) {
+    if (oldOwnerPosition != null && !user.isSystemAdmin()) {
       try {
         Map<String, Object> params = new HashMap<>();
         params.put("smartlistId", smartlistId);
@@ -413,7 +417,7 @@ public class SmartlistService {
 
   public List<Smartlist> getMine() {
     User user = securityService.getCurrentUser();
-    Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId());
+    Map<String, Object> params = Map.of("companyId", user.getCompanyId(), "userId", user.getId(), "isSystemAdmin", user.isSystemAdmin());
     return sqlCache.queryBySql(SmartlistQuery.getMine, params, Smartlist.class);
   }
 
@@ -455,7 +459,7 @@ public class SmartlistService {
       var share = new SmartlistAccessControl();
       share.setOrgId(o.getId());
       share.setIsOrg(true);
-      share.setIsOrg(false);
+      share.setIsUser(false);
       share.setName(o.getOrgName());
       combinedList.add(share);
     });

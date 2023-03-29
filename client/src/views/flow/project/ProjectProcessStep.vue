@@ -372,7 +372,6 @@ import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepSta
 import SpinnerInline from '@/components/SpinnerInline'
 import Vue2Filters from 'vue2-filters'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
-import {hideEvent} from "./eventHelpers";
 
 const NEW_STATUS_TO_USE = {id: null}
 
@@ -570,9 +569,7 @@ export default {
           this.processStepReadOnly = this.processStep.readonly && !this.$store.getters.userHasAnyPosition(this.processStep.whiteListedPositions?.map(wlp => wlp.positionId))
           this.processStepId = this.processStep.processStepId
           // this.contactId = this.processStep.contactId
-          this.existingEvents = this.processStep.projectProcessStepEvents.filter(ppse => {
-
-          })
+          this.existingEvents = this.processStep.projectProcessStepEvents
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
           if (reloadAll) {
             //dont reload if only doing simple refresh
@@ -666,11 +663,13 @@ export default {
     populateDirtyCfvs(field) {
       //i think we could mostly remove this code now that round robin moved to events
       //some fields are for unique behavior and they dont need to be saved. this check should filter them out
+      this.fieldsSaving = true //disable the save button until the dirtyCfvs has been updated
       if (field.customFieldId) {
         let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
         if (!match) {
           this.dirtyCfvs.push(field)
         }
+        this.fieldsSaving = false //re-enable the save button
       }
     },
     async removeOwner() {
@@ -802,10 +801,6 @@ export default {
                     }
                   }
                   return false //if we go through all the whiteList positions and haven't found a match, the user should not see the event
-                }
-                else if(hideEvent(pse, this.$store)){
-                  return false
-                  //if the event itself is set to hidden for this user, the user should not see the event
                 }
                 return true //if the event is not readonly, the user should see the event
               })

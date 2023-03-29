@@ -1,6 +1,13 @@
 <template>
   <fragment>
-    <v-icon @click.stop="showDialog = true">mdi-delete</v-icon>
+    <v-btn
+      @click.stop="showDialog = true"
+      text
+      icon
+      class="pa-5"
+    >
+      <v-icon>mdi-delete</v-icon>
+    </v-btn>
 
     <ConfirmationDialog
       v-if="showDialog"

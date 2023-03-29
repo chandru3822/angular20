@@ -1,5 +1,12 @@
 <template>
-  <v-icon @click.stop="exportSmartlist">mdi-tray-arrow-down</v-icon>
+  <v-btn
+    @click.stop="exportSmartlist"
+    text
+    icon
+    class="pa-5"
+  >
+    <v-icon>mdi-tray-arrow-down</v-icon>
+  </v-btn>
 </template>
 
 <script setup>

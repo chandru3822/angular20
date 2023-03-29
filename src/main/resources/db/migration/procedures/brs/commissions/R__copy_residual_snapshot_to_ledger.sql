@@ -11,7 +11,6 @@ DECLARE
   d                RECORD;
   v_clawback_id bigint;
 v_amount numeric;
-  v_current_clawback numeric;
 BEGIN
   FOR d IN
     SELECT urs.user_id, urps.total, urps.project_id, urs.residual_id
@@ -20,7 +19,7 @@ BEGIN
            inner join brs.user_residual_project_snapshot_type urpst
                       on urpst.id = urps.user_residual_project_snapshot_type_id and
                          urpst.user_residual_project_snapshot_code = 'LIFETIME_QUALIFIED_FDS'
-    WHERE urs.residual_id = 2
+    WHERE urs.residual_id = p_residual_id
       and urs.paid_in_period is true
     LOOP
       insert into brs.residual_ledger(project_id,
@@ -48,13 +47,8 @@ BEGIN
 
   for d in SELECT urs.*
            FROM brs.user_residual_snapshot urs
-           where exists(select urps.id
-                        from brs.user_residual_project_snapshot urps
-                               inner join brs.user_residual_project_snapshot_type urpst
-                                          on urpst.id = urps.user_residual_project_snapshot_type_id and
-                                             urpst.user_residual_project_snapshot_code = 'CLAWBACKS'
-                        where urps.user_residual_snapshot_id = urs.id)
-             and urs.residual_id = p_residual_id
+           where urs.current_clawbacks_in_period > 0
+
 
     loop
 
@@ -63,34 +57,58 @@ BEGIN
       from brs.residual_clawback rc
       where rc.user_id = d.user_id;
 
-      if coalesce(d.clawback,0) > 0 and coalesce(d.earned_residual,0) < 1 then
-        v_amount = 0;
-      elsif coalesce(d.clawback,0) > coalesce(d.earned_residual,0) and  coalesce(d.earned_residual,0) > 0 then
-        v_amount = d.earned_residual;
-      elsif coalesce(d.earned_residual,0) > coalesce(d.clawback,0) then
-        v_amount = coalesce(d.clawback,0);
-      end if;
-
-      select sum(urps2.total)
-      into v_current_clawback
-        from brs.user_residual_snapshot urs1
-        inner join brs.user_residual_project_snapshot urps2 on urps2.user_residual_snapshot_id = urs1.id
-        inner join brs.user_residual_project_snapshot_type urpst
-                   on urpst.id = urps2.user_residual_project_snapshot_type_id and
-                      urpst.user_residual_project_snapshot_code = 'CLAWBACKS'
-      where urs1.user_id = d.user_id and urs1.residual_id = urs1.residual_id
-      and urs1.residual_id = d.residual_id;
 
       if v_clawback_id is not null then
         update brs.residual_clawback c
-        set clawback_due     = coalesce(c.clawback_due,0) + v_current_clawback,
-            applied_clawback = coalesce(applied_clawback,0) + v_amount
+        set clawback_due     = coalesce(c.clawback_due,0) + coalesce(d.current_clawbacks_in_period,0)
         where user_id = d.user_id;
       else
         insert into brs.residual_clawback(user_id, clawback_due, applied_clawback, date_created, created_by_id,
                                           date_modified, modified_by_id)
-        values (d.user_id, coalesce(v_current_clawback,0),coalesce(v_amount,0), now(),
+        values (d.user_id, coalesce(d.current_clawbacks_in_period,0),0, now(),
                 2350555, now(), 2350555);
+      end if;
+
+    end loop;
+
+
+  for d in SELECT urs.*
+           FROM brs.user_residual_snapshot urs
+           where  clawback > 0
+
+
+    loop
+
+      select rc.id
+      into v_clawback_id
+      from brs.residual_clawback rc
+      where rc.user_id = d.user_id;
+
+      if d.paid_in_period is not true then
+        v_amount = 0;
+      elsif d.paid_in_period is true and coalesce(d.residual_total,0) = 0 and
+            coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
+            d.adjustment_override > d.clawback then
+        v_amount = d.adjustment_override - d.clawback;
+      elsif d.paid_in_period is true and coalesce(d.residual_total,0) = 0 and
+            coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
+            d.adjustment_override < d.clawback then
+        v_amount = d.adjustment_override;
+      elsif d.paid_in_period is true and coalesce(d.clawback,0) > coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0) and
+            coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0) > 0 then
+        v_amount = d.earned_residual + coalesce(d.adjustment_override,0);
+      elsif d.paid_in_period is true and coalesce(d.earned_residual,0)  + coalesce(d.adjustment_override,0) >= coalesce(d.clawback,0) then
+        v_amount = coalesce(d.clawback,0);
+      elsif d.paid_in_period is true and coalesce(d.clawback,0) > 0 and coalesce(d.earned_residual,0) < 1 then
+        v_amount = 0;
+      end if;
+
+
+
+      if v_clawback_id is not null then
+        update brs.residual_clawback c
+        set applied_clawback = coalesce(applied_clawback,0) + v_amount
+        where user_id = d.user_id;
       end if;
 
     end loop;

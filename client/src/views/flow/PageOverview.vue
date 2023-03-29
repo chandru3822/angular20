@@ -110,15 +110,21 @@
         <span v-else class="d-inline-block detail-item body-medium pl-2">N/A</span>
       </div>
     </div>
+<!--    this will be turned on soon but ux has to happen-->
+<!--    <div v-if="pageName === 'Project'">-->
+<!--      <div class="mt-3">-->
+<!--        <router-link class="albatross-body-3" :to="`/project/${ getValue(constants.OVERVIEW_FIELD_TYPES.ID) }/workQueues`">View Work Queues</router-link>-->
+<!--      </div>-->
+<!--    </div>-->
   </div>
 </v-container>
 </template>
 
 <script>
-import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "../../helpers/helpers";
-import constants from "../../helpers/constants"
-import {getStatusColorClass} from "../../services/projectStatusTypeService";
-import {AppMutations} from "../../stores/AppStore";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "@/helpers/helpers";
+import constants from '@/helpers/constants'
+import {getStatusColorClass} from "@/services/projectStatusTypeService";
+import {AppMutations} from "@/stores/AppStore";
 
 export default {
   name: "PageOverview",
@@ -143,6 +149,9 @@ export default {
   methods: {
     formatDate(value){
       return this.$filters.formatDate(value, 'date')
+    },
+    getValue(type) {
+      return this.details.find(d => d.type === type)?.value || null
     },
     copyToClipBoard(textValue, label){
       if(textValue) {

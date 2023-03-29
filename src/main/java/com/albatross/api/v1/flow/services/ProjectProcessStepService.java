@@ -252,10 +252,7 @@ public class ProjectProcessStepService {
   public ProjectProcessStep getProjectProcessStep(Long stepId) {
     User user = securityService.getCurrentUser();
       Boolean systemAdmin = user.getHighestCompanyId() == 1L;
-      List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
-      List<Long> userPositionIds = userPositions.stream()
-              .map(UserPosition::getPositionId)
-              .collect(Collectors.toList());
+      List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
       HashMap<String, Object> params = new HashMap<>();
       params.put("stepId", stepId);
       params.put("companyId", user.getCompanyId());

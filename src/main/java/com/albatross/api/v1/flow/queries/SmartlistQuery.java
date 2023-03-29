@@ -28,15 +28,20 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
-    left join flow.user_position up on up.user_id = s.owner_id and
-                                      up.primary_flag is true and
-                                      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
-    left join flow.position p on p.id = up.position_id
+    left join flow.user_position up on up.user_id = s.owner_id
+    left join flow.position p on up.position_id = p.id
     where
       cot.company_id = :companyId and
       s.owner_id = :userId and
       s.archived is not true and
-      s.work_queue_type_id is null
+      s.work_queue_type_id is null and
+      (:isSystemAdmin or (
+        up.user_id = :userId and
+        up.primary_flag is true and
+        (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+        up.archived is false and
+        p.company_id = :companyId
+      ))
     order by s.name, s.date_modified desc
     """;
 
@@ -67,6 +72,7 @@ public class SmartlistQuery {
     from flow.smartlist_access_control sac
     inner join flow.smartlist s on sac.smartlist_id = s.id
     inner join flow.user_position up on sac.user_position_id = up.id
+    inner join flow.position p on up.position_id = p.id
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
@@ -74,11 +80,12 @@ public class SmartlistQuery {
     where
       up.user_id = :userId and
       up.primary_flag is true and
+      up.archived is false and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
       cot.company_id = :companyId and
       sac.archived is false and
       s.archived is false and
-      up.archived is false and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
+      p.company_id = :companyId
     union distinct
     -- shared to org
     select
@@ -105,6 +112,7 @@ public class SmartlistQuery {
     from flow.smartlist_access_control sac
     inner join flow.smartlist s on sac.smartlist_id = s.id
     inner join flow.user_position up on sac.org_id = up.org_id
+    inner join flow.position p on up.position_id = p.id
     inner join flow.org o on up.org_id = o.id
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
@@ -113,12 +121,13 @@ public class SmartlistQuery {
     where
       up.user_id = :userId and
       up.primary_flag is true and
+      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+      up.archived is false and
       cot.company_id = :companyId and
       sac.archived is false and
       s.archived is false and
-      up.archived is false and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
-      o.archived is false
+      o.archived is false and
+      p.company_id = :companyId
     order by name
   """;
 
@@ -182,14 +191,15 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
-    left join flow.user_position up on up.user_id = u.id and
-                                       up.primary_flag is true and
-                                       (up.end_date is null or (up.end_date is not null and up.end_date > now()))
-    left join flow.position p on p.id = up.position_id
+    left join flow.user_position up on up.user_id = s.owner_id
+    left join flow.position p on up.position_id = p.id
     where
       cot.company_id = :companyId and
       s.archived is not true and
-      s.work_queue_type_id is null
+      s.work_queue_type_id is null and
+      up.primary_flag is true and
+      up.archived is false and
+      p.company_id = :companyId
     order by s.name, s.date_modified desc
     """;
 
@@ -314,10 +324,11 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
-    left join flow.user_position up on up.user_id = u.id and
-                                      up.primary_flag is true and
-                                      (up.end_date is null or (up.end_date is not null and up.end_date > now()))
-    left join flow.position p on p.id = up.position_id
+    left join flow.user_position up on up.user_id = s.owner_id and
+              up.primary_flag is true and
+              (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+              up.archived is false
+    left join flow.position p on up.position_id = p.id and p.company_id = :companyId
     where s.id = :smartlistId and
           cot.company_id = :companyId and
           s.archived is not true

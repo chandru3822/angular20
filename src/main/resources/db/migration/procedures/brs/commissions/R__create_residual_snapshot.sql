@@ -11,20 +11,12 @@ DECLARE
   d                           RECORD;
   x                           RECORD;
   v_snapshot_id               bigint;
-  v_period_end                date;
-  v_period_start              date;
-  v_previous_grace_period_end date;
-  v_grace_period_end          date;
+
 BEGIN
 
   DELETE
   FROM brs.user_residual_snapshot urs
   WHERE urs.residual_id = p_residual_id;
-
-  select period_start, period_end, previous_grace_period_end, grace_period_end
-  into v_period_start,v_period_end,v_previous_grace_period_end,v_grace_period_end
-  from brs.residual r2
-  where r2.id = p_residual_id;
 
 
   FOR d IN
@@ -142,15 +134,18 @@ BEGIN
                 rqlf.substantial_completion_date,
                 rqlf.cancelled_date,
                 rqlf.on_hold_date,
-                (select rp.total
+                ((select rp.total
                  from brs.user_residual as ur
                         inner join brs.residual_plan as rp on rp.id = ur.residual_plan_id
-                 where ur.user_id = d.user_id),
+                 where ur.user_id = d.user_id)*(percent_of_residual_earned)),
                 now(),
                 p_updated_by_id,
                 now(),
                 p_updated_by_id
-         from brs.get_residual_qualified_lifetime_fds(d.user_id) rqlf);
+         from brs.get_residual_qualified_lifetime_fds(d.user_id) rqlf
+         inner join brs.user_residual_snapshot as u on u.user_id = d.user_id and
+                                                       u.paid_in_period is true and
+                                                       u.residual_earned is true);
 
       insert into brs.user_residual_project_snapshot(user_residual_snapshot_id,
                                                      project_id,
@@ -195,11 +190,7 @@ BEGIN
          from brs.get_residual_fds_not_qualified_this_period(d.user_id) rqlf);
 
       for x in select *
-               from brs.get_residual_fds_qualified_this_period(d.user_id,
-                                                               v_period_end,
-                                                               v_period_start,
-                                                               v_previous_grace_period_end,
-                                                               v_grace_period_end)
+               from brs.get_residual_fds_qualified_this_period(d.user_id,false)
         loop
           insert into brs.user_residual_project_snapshot(user_residual_snapshot_id,
                                                          project_id,
@@ -288,10 +279,6 @@ BEGIN
                 p_residual_id,
                 true
          from brs.get_residual_fds_qualified_this_period(d.user_id,
-                                                         v_period_end,
-                                                         v_period_start,
-                                                         v_previous_grace_period_end,
-                                                         v_grace_period_end,
                                                          true) a);
 
     END LOOP;
