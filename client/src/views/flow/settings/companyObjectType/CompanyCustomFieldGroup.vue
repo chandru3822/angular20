@@ -16,7 +16,8 @@
             :expanded.sync="expanded[n]"
             hide-default-footer
             hide-default-header
-            class="elevation-1 fix-column-width-bug mb-5 draggable-table table-striped"
+            :class="{'fix-column-width-bug': !isMobile}"
+            class="elevation-1 mb-5 draggable-table table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available field groups</span>
@@ -98,6 +99,7 @@
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>
+                  <!--div below reorders the buttons to make more sense when columns wrap-->
                   <div class="item-icons" v-else>
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
@@ -107,7 +109,7 @@
                       <span>Custom Field Group Id: {{item.id}}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
-                    <v-btn small text color="primary"
+                    <v-btn small icon color="primary"
                            @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]">
                       <v-icon v-if="expanded[n].includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
