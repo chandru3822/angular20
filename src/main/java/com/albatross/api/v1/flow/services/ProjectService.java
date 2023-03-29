@@ -592,13 +592,12 @@ public class ProjectService {
     return sqlCache.queryBySql(ProjectQuery.getStatusesForWqt, params, WorkQueueTypeProjectStatus.class);
   }
 
-  public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
+  public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId, Boolean excludeAttachments) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
     if (null != projectId) {
-      // had to change this so that a parent looking at a child project could still see project
-      // statuses
+      // had to change this so that a parent looking at a child project could still see project statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
@@ -611,10 +610,13 @@ public class ProjectService {
             ImmutableMap.of("companyId", companyId),
             ProjectStatusType.class);
 
-    for (ProjectStatusType c : results) {
-      // set the icon for the status
-      Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
-      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    //this is slow, and we usually don't need it.  only load if necessary. note: mobile uses these so had to be handle with optional param so they wouldnt have to do new build
+    if(null == excludeAttachments || !excludeAttachments) {
+      for (ProjectStatusType c : results) {
+        //set the icon for the status
+        Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
+        c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+      }
     }
 
     return results;
