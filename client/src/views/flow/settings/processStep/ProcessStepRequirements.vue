@@ -856,7 +856,7 @@ export default {
     async getCompanyProjectStatuses() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getCompanyProjectStatusTypes()
+        const {data} = await getCompanyProjectStatusTypes(null, true)
         this.projectStatuses = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

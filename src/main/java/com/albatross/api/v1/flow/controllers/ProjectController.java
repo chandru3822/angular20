@@ -167,8 +167,9 @@ public class ProjectController {
   // status stuff
   @GetMapping(value = "/companyStatus")
   public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(
-    @RequestParam(required = false) Long projectId) {
-    return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
+    @RequestParam(required = false) Long projectId,
+    @RequestParam(required = false) Boolean excludeAttachments) {
+    return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId, excludeAttachments), HttpStatus.OK);
   }
 
   @GetMapping(value = "/statusesForWqt")

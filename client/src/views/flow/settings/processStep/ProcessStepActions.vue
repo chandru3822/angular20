@@ -1426,7 +1426,7 @@ export default {
     async getCompanyProjectStatusTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getCompanyProjectStatusTypes()
+        const {data, status} = await getCompanyProjectStatusTypes(null, true)
         this.companyProjectStatusTypes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
