@@ -37,4 +37,12 @@ public class EmailAddressController {
     mailService.deleteFromEmailAddress(
         emailSenderAddress.getId(), emailSenderAddress.getModifiedById());
   }
+
+
+  @PostMapping(value = "/processEmailQueue")
+  public void processEmailQueue() throws InterruptedException {
+    //note: this is only here for testing purposes. this auto runs every minute in prod, do not use for production features
+    mailService.sendUnprocessedEmails();
+  }
+
 }
