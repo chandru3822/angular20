@@ -936,38 +936,42 @@ select
     """;
 
   //language=PostgreSQL
-  public final static String getProjectsWithStatusInUse = """
-select project_name
-    from flow.project
+  public final static String getStatusInUseByProjects = """
+    select count(1) > 0
+    from flow.project p
     where company_project_status_type_id = :companyProjectStatusTypeId
-      and archived is false
+    and p.archived is false
+    limit 1
     """;
 
   //language=PostgreSQL
-  public final static String psaWithStatusInUse = """
-select psa.action_name, ps.process_step_name
-      from flow.process_step_action psa
-         inner join flow.process_step ps on ps.id = psa.process_step_id
-      where psa.archived is not true and ps.archived is not true
-        and psa.company_project_status_type_id = :companyProjectStatusTypeId
+  public final static String getStatusInUseByActions = """
+    select count(1) > 0
+    from flow.process_step_action psa
+           inner join flow.process_step ps on ps.id = psa.process_step_id
+    where psa.archived is not true and ps.archived is not true
+      and psa.company_project_status_type_id = :companyProjectStatusTypeId
+    limit 1
     """;
 
   //language=PostgreSQL
-  public final static String getPserWithStatusInUse = """
-select e.event_name, ps.process_step_name
-      from flow.process_step_event_requirement pser
-        inner join flow.process_step_event pse on pser.process_step_event_id = pse.id
-        inner join flow.process_step ps on pse.process_step_id = ps.id
-        inner join flow.event e on pse.event_id = e.id
-      where pser.archived is false and pse.archived is false and pser.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (pser.list_of_value_ids)
+  public final static String getStatusInUseByPseRequirements = """
+    select count(1) > 0
+    from flow.process_step_event_requirement pser
+           inner join flow.process_step_event pse on pser.process_step_event_id = pse.id
+           inner join flow.process_step ps on pse.process_step_id = ps.id
+           inner join flow.event e on pse.event_id = e.id
+    where pser.archived is false and pse.archived is false and pser.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (pser.list_of_value_ids)
+    limit 1
     """;
 
   //language=PostgreSQL
-  public final static String getPsrWithStatusInUse = """
-select ps.process_step_name
-      from flow.process_step_requirement psr
-        inner join flow.process_step ps on psr.process_step_id = ps.id
-      where psr.archived is false and psr.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (psr.list_of_value_ids)
+  public final static String getStatusInUseByPsRequirements = """
+    select count(1) > 0
+    from flow.process_step_requirement psr
+           inner join flow.process_step ps on psr.process_step_id = ps.id
+    where psr.archived is false and psr.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (psr.list_of_value_ids)
+    limit 1
     """;
 
   //language=PostgreSQL

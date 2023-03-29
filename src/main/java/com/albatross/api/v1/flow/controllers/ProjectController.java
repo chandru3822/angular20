@@ -4,7 +4,6 @@ import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.DensitySearch;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
@@ -225,10 +224,8 @@ public class ProjectController {
 
   @Data
   public static class CannotDeleteProjectStatus {
-    private List<Project> projectsWithStatus;
-    private List<ProcessStepAction> processStepActions;
-    private List<ProcessStepEventData> processStepEventRequirements;
-    private List<ProcessStepEventData> processStepRequirements;
+    private Boolean statusInUseByProjects, statusInUseByActions,
+      statusInUseByEventRequirements, statusInUseByProcessStepRequirements;
   }
 
   @Data

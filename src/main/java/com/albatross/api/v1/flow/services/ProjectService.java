@@ -8,7 +8,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
@@ -681,22 +680,23 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
+    params.put("companyProjectStatusTypeId", id);
 
-    List<Project> projectsWithStatus = sqlCache.queryBySql(ProjectQuery.getProjectsWithStatusInUse, Map.of("companyProjectStatusTypeId", id), Project.class);
-    List<ProcessStepAction> processStepActions = sqlCache.queryBySql(ProjectQuery.psaWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProcessStepAction.class);
-    List<ProjectController.ProcessStepEventData> processStepEventRequirements = sqlCache.queryBySql(ProjectQuery.getPserWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
-    List<ProjectController.ProcessStepEventData> processStepRequirements = sqlCache.queryBySql(ProjectQuery.getPsrWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
+    Boolean statusInUseByProjects = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByProjects, params, Boolean.class);
+    Boolean statusInUseByActions = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByActions, params, Boolean.class);
+    Boolean statusInUseByEventRequirements = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByPseRequirements, params, Boolean.class);
+    Boolean statusInUseByProcessStepRequirements = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByPsRequirements, params, Boolean.class);
 
-    if (projectsWithStatus.isEmpty() && processStepActions.isEmpty() && processStepRequirements.isEmpty()) {
+    if (!statusInUseByProjects && !statusInUseByActions && !statusInUseByEventRequirements && !statusInUseByProcessStepRequirements) {
       sqlCache.updateBySql(ProjectQuery.deleteCompanyStatus, params);
       return ResponseEntity.ok().build();
     }
     else {
       ProjectController.CannotDeleteProjectStatus cannotDelete = new ProjectController.CannotDeleteProjectStatus();
-      cannotDelete.setProjectsWithStatus(projectsWithStatus);
-      cannotDelete.setProcessStepActions(processStepActions);
-      cannotDelete.setProcessStepEventRequirements(processStepEventRequirements);
-      cannotDelete.setProcessStepRequirements(processStepRequirements);
+      cannotDelete.setStatusInUseByProjects(statusInUseByProjects);
+      cannotDelete.setStatusInUseByActions(statusInUseByActions);
+      cannotDelete.setStatusInUseByEventRequirements(statusInUseByEventRequirements);
+      cannotDelete.setStatusInUseByProcessStepRequirements(statusInUseByProcessStepRequirements);
       return ResponseEntity.badRequest().body(cannotDelete);
     }
   }
