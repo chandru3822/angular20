@@ -41,7 +41,10 @@ begin
   into v_has_current_snapshot_id
   from brs.user_residual_snapshot s
          inner join brs.residual r2 on r2.id = s.residual_id
-  where r2.period_start = p_date;
+  where r2.period_start = p_date
+    --todo: @scott i am pretty sure this needs to be here. check with me -randa
+    and s.user_id = p_closer_user_id
+  ;
 
   select s.id
   into v_has_previous_snapshot_id
@@ -199,7 +202,7 @@ begin
       select foo.user_id,
              foo.closer_name,
              foo.required_fdc_residual_this_period,
-             foo.qualified_fdc_residual_this_period,
+             foo.qualified_fdc_residual_this_period::bigint,
              foo.residual_qualified,
              foo.has_current_snapshot,
              foo.potential_residual,
@@ -214,7 +217,7 @@ begin
              foo.clawback_projects,
              foo.total_qualifying_fdc_to_date,
              foo.cancelled_fdc_during_period,
-             v_lifetime_fds - prior_period_qualified_fdc - foo.qualified_fdc_residual_this_period +
+             v_lifetime_fds - foo.prior_period_qualified_fdc - foo.qualified_fdc_residual_this_period +
              foo.cancelled_fdc_during_period as reactivated_fdc,
              foo.residual_qualified_fdc,
              foo.v_no_previous_month_message
@@ -326,8 +329,3 @@ $BODY$
   LANGUAGE plpgsql
   VOLATILE
   COST 100;
-
-
-
-select *
-from flow.user;
