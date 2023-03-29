@@ -116,7 +116,8 @@ public class CommunicationController {
         users,
         from,
         "Blue Raven Sales Operation",
-        currentUser.trueUserId());
+        currentUser.trueUserId(),
+        null);
 
     final Predicate<User> userStatusTypePredicate = u -> u.getUserStatusType() == null;
     final Map<Boolean, List<User>> collect =

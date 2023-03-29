@@ -101,6 +101,12 @@
     <ConfirmationDialog :open-dialog="!!emailToDelete" @confirm="deleteEmailAddress" @close-dialog="emailToDelete=null">
       Are you sure you want to delete this email address: <strong>{{emailToDeleteAddress}}</strong>?
     </ConfirmationDialog>
+
+    <v-btn v-if="is7oaksAdmin" class="mt-5"
+           :loading="emailQueueProcessing"
+           color="primary" @click="processEmailQueue()">
+      Force email queue processing
+    </v-btn>
   </v-container>
 </template>
 
@@ -108,6 +114,7 @@
 import {
   getRequest,
   putRequest,
+  postRequest,
   putRequestWithRequestParams,
   postRequestWithRequestParams,
   getSnackbar,
@@ -123,6 +130,8 @@ export default {
   data() {
     return {
       addFormValid: false,
+      emailQueueProcessing: false,
+      is7oaksAdmin: this.$store.getters.isFullAdmin,
       headers: [
         {text: 'Sender Name', value: 'name', show: true},
         {text: 'Email Address', value: 'value', show: true},
@@ -248,7 +257,19 @@ export default {
     },
     cancelDelete(item){
       item.deleteConfirm = false
-    }
+    },
+    async processEmailQueue() {
+      this.emailQueueProcessing = true
+      try {
+        await postRequest(`/emailAddress/processEmailQueue`, null, null)
+        this.emailQueueProcessing = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Processing Email Queue')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.emailQueueProcessing = false
+      }
+    },
   }
 }
 </script>
