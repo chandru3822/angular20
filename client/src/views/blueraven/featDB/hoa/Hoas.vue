@@ -348,7 +348,10 @@ export default {
       this.editedItem.managementCompany = !!this.editedItem.managementCompanyId ? this.managementCompanies.find(co => co.id === this.editedItem.managementCompanyId)?.managementCompany : this.newManagementCompany
       this.duplicateHoaMatch = this.hoas.find(hoa => {
 
-        return this.doNamesMatch(this.editedItem.name, hoa.name) && this.editedItem.companyStateId === hoa.companyStateId && (this.doNamesMatch(this.editedItem.managementCompany, hoa.managementCompany) || !hoa.managementCompany)
+        return this.doNamesMatch(this.editedItem.name, hoa.name) &&
+            this.editedItem.companyStateId === hoa.companyStateId &&
+            (this.doNamesMatch(this.editedItem.managementCompany, hoa.managementCompany)
+                || !hoa.managementCompany || !this.editedItem.managementCompany)
       })
       if(this.duplicateHoaMatch){
         this.hoaDialog = false
