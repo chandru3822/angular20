@@ -477,4 +477,16 @@ public class SmartlistQuery {
       modified_by_id = :userId
     where id = :smartlistId
   """;
+
+  //language=PostgreSQL
+  public final static String addError = """
+    insert into flow.smartlist_error (smartlist_id, smartlist, smartlist_fields, smartlist_requirements, stacktrace, created_by, query)
+    values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :stacktrace, :createdById, :query)
+  """;
+
+  //language=PostgreSQL
+  public final static String addExportMetric = """
+    insert into flow.smartlist_metrics (smartlist_id, smartlist, smartlist_fields, smartlist_requirements, query, execution_duration, created_by_id)
+    values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :query, :duration, :createdById)
+  """;
 }
