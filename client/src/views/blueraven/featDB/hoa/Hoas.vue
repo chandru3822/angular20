@@ -86,6 +86,7 @@
         </v-data-table>
       </v-col>
     </v-row>
+<!--todo: update to ConfirmationDialog-->
     <v-dialog v-model="hoaDialog" max-width="500px">
       <v-card>
         <v-card-title>
@@ -129,13 +130,37 @@
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="primary" text @click="close">Cancel</v-btn>
-          <v-btn color="primary" raised @click="saveHoa" class="white--text"
-                 :disabled="!editedItem.name || !editedItem.companyStateId">
+          <v-btn color="primary" raised @click="newHoaDuplicateCheck" class="white--text"
+                 :disabled="!editedItem.name?.trim() || !editedItem.companyStateId">
             {{ btnTxt }}
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <ConfirmationDialog :open-dialog="duplicateDialog" @confirm="saveHoa" @close-dialog="[duplicateDialog = false, close()]">
+      <template v-slot:title><span class="error--text">WARNING: Duplicate HOA Data</span></template>
+      <div class="pb-3 body-large">Are you sure you want to create a new HOA?</div>
+      <v-row>
+        <v-col v-if="duplicateHoaMatch">
+          <div class="label-large">Existing HOA</div>
+          <div class="body-medium"><span class="label-medium">Name:</span> {{duplicateHoaMatch.name}}</div>
+          <div class="body-medium"><span class="label-medium">State:</span> {{duplicateHoaMatch.state}}</div>
+          <div class="body-medium"><span class="label-medium">Management Company:</span>
+            <div>{{duplicateHoaMatch.managementCompany}}</div>
+          </div>
+          <div class="body-medium"><span class="label-medium">Date Created:</span> {{duplicateHoaMatch.dateCreated | formatDate('date')}}</div>
+        </v-col>
+        <v-col v-if="editedItem">
+          <div class="label-large">New Data</div>
+          <div class="body-medium"><span class="label-medium">Name:</span> {{editedItem.name}}</div>
+          <div class="body-medium"><span class="label-medium">State:</span> {{editedItem.state}}</div>
+          <div class="body-medium"><span class="label-medium">Management Company:</span>
+            <div>{{editedItem.managementCompany}}</div>
+          </div>
+        </v-col>
+      </v-row>
+      <template v-slot:yes>Create</template>
+    </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!hoaToDelete" @confirm="confirmDeleteHoa" @close-dialog="hoaToDelete=null">
     Are you sure you want to delete {{ hoaToDeleteName }}?
     </ConfirmationDialog>
@@ -189,6 +214,8 @@ export default {
     addingManagementCompany: false,
     newManagementCompany: "",
     hoaToDelete: null,
+    duplicateDialog: false,
+    duplicateHoaMatch: null
   }),
   computed: {
     filteredHoas() {
@@ -225,6 +252,9 @@ export default {
     },
     hoaToDeleteName(){
       return this.hoaToDelete ? this.hoaToDelete.name : ''
+    },
+    newHoaDataManagementCompany(){
+     return
     }
   },
   async created() {
@@ -313,6 +343,37 @@ export default {
       }
       this.hoaToDelete = null
     },
+
+    newHoaDuplicateCheck() {
+      this.editedItem.managementCompany = !!this.editedItem.managementCompanyId ? this.managementCompanies.find(co => co.id === this.editedItem.managementCompanyId)?.managementCompany : this.newManagementCompany
+      this.duplicateHoaMatch = this.hoas.find(hoa => {
+
+        return this.doNamesMatch(this.editedItem.name, hoa.name) && this.editedItem.companyStateId === hoa.companyStateId && (this.doNamesMatch(this.editedItem.managementCompany, hoa.managementCompany) || !hoa.managementCompany)
+      })
+      if(this.duplicateHoaMatch){
+        this.hoaDialog = false
+        //add managementCompany name and state name for display purposes
+        this.editedItem.state = this.states.find(state => state.id === this.editedItem.companyStateId)?.state
+        this.duplicateDialog = true
+      } else {
+        this.saveHoa()
+      }
+    },
+
+    doNamesMatch(name1, name2){
+      //step 1: remove all punctuation and whitespaces (we don't care if those match)
+      const name1Clean = this.cleanName(name1)
+      const name2Clean = this.cleanName(name2)
+      //step 2: check if name1 contains name2 or vice versa, if so they match
+      return name2Clean && name1Clean &&
+          ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
+          || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))
+    },
+
+    cleanName(name){
+      return name && name.length > 0 ? name.replace(/[^\w]/g, '').toLowerCase() : name
+    },
+
     async saveHoa() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.addMode) {
