@@ -46,6 +46,8 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -469,7 +471,7 @@ public class SmartlistService {
     return combinedList;
   }
 
-  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, Exception e) {
+  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Exception e) {
     Map<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlist.getId());
     params.put("createdById", securityService.getCurrentUser().getId());
@@ -483,21 +485,45 @@ public class SmartlistService {
     try {
       params.put("smartlist", om.writeValueAsString(smartlist));
       params.put("fields", om.writeValueAsString(fields));
-      params.put("requirements", om.writeValueAsString(smartlistServicev1.getRequirements(smartlist.getId(), false)));
+      params.put("requirements", om.writeValueAsString(requirements));
     } catch (Exception err) {
       //noop
     }
 
-    sqlCache.update("smartlist.addError", params);
+    sqlCache.updateBySql(SmartlistQuery.addError, params);
 
     log.error(String.format("SMARTLIST: Error while running smartlist ID: %s, message: %s", smartlist.getId(), e.getMessage()));
+  }
+
+  private void saveExportMetrics(
+    Smartlist smartlist,
+    String query,
+    List<SmartlistFieldAssignment> fields,
+    List<SmartlistRequirement> requirements,
+    long duration
+  ) {
+    try {
+      Map<String, Object> params = new HashMap<>();
+      params.put("smartlistId", smartlist.getId());
+      params.put("createdById", securityService.getCurrentUser().getId());
+      params.put("query", query);
+      params.put("smartlist", om.writeValueAsString(smartlist));
+      params.put("fields", om.writeValueAsString(fields));
+      params.put("requirements", om.writeValueAsString(requirements));
+      params.put("duration", duration);
+
+      sqlCache.updateBySql(SmartlistQuery.addExportMetric, params);
+    } catch (Exception e) {
+      //noop
+      log.debug("SMARTLIST: Error saving export metrics: {}", e.getMessage());
+    }
   }
 
   public String export(Long smartlistId, String timezone) throws JsonProcessingException {
     Smartlist smartlist = this.getById(smartlistId);
 
     List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
-    List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
+    List<SmartlistRequirement> requirements = getRequirements(smartlist.getId(), false);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
@@ -530,9 +556,13 @@ public class SmartlistService {
     List<Map<String, Object>> results;
 
     try {
+      Instant start = Instant.now();
       results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+      Instant finish = Instant.now();
+      long duration = Duration.between(start, finish).toMillis();
+      saveExportMetrics(smartlist, query, fields, requirements, duration);
     } catch (Exception e) {
-      saveError(smartlist, query, fields, e);
+      saveError(smartlist, query, fields, requirements, e);
       throw e;
     }
 
