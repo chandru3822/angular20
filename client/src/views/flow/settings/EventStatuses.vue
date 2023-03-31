@@ -370,7 +370,9 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
-        this.itemToDelete.archived = true
+        item.archived = true
+        //it makes no sense why this didn't work and why the code isn't yelling that i am editing a const variable... ? oh well
+        // this.itemToDelete.archived = true
       } catch (e) {
         if (e.status === 400) {
           this.showInfoDialog = true
@@ -387,8 +389,9 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      } finally {
+        this.closeDeleteDialog()
       }
-      this.closeDeleteDialog()
     },
     async saveType(type, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
