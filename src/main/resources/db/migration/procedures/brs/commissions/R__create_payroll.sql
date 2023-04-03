@@ -19,11 +19,6 @@ BEGIN
   INSERT INTO brs.payroll (created, updated, created_by, updated_by, current,position_id, selected_project_ids)
   VALUES (now(), now(), p_current_user, p_current_user, TRUE,p_position_id, '{}'::bigint[]);
 
-  insert into flow.company_function_log(function_name, parameters, run_by_id)
-  values ('Create Payroll', 'p_current_user: ' || p_current_user ||
-                            ' p_position_id: '|| p_position_id,
-          p_current_user);
-
   RETURN TRUE;
 
   EXCEPTION WHEN OTHERS
