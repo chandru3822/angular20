@@ -140,7 +140,11 @@ create type brs.calculated_proposal_value as
   unapproved_zip_code_adder                        numeric,
   csu_rebate_unit_type_id                          integer,
   financial_option                                 varchar,
-  check_from_br numeric
+  check_from_br numeric,
+  site_survey_time_estimate   integer,
+  site_survey_resource_type_yn text,
+  site_survey_resource_type text,
+  site_survey_items text
 );
 
 drop type brs.excluded_proposal_value;
@@ -214,7 +218,11 @@ create type brs.excluded_proposal_value as
   loan_type                                      varchar,
   unapproved_zip_code_adder                      numeric,
   csu_rebate_unit_type_id                        integer,
-  financial_option                                 varchar
+  financial_option                                 varchar,
+  site_survey_time_estimate   integer,
+  site_survey_resource_type_yn text,
+  site_survey_resource_type text,
+  site_survey_items text
 );
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
@@ -372,6 +380,12 @@ declare
   v_csu_rebate_unit_type_id                          integer;
   v_financial_option                                 varchar;
   v_check_from_br      numeric;
+  v_site_survey_time_adders bigint[];
+  v_site_survey_time_estimate integer;
+v_site_survey_resource_type_yn text;
+v_site_survey_resource_type text;
+v_site_survey_items text;
+
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -482,7 +496,8 @@ BEGIN
          ppscfv10.int_value,
          lov1.name,
          ppscfv11.text_value,
-         pd.unapproved_zip_code_adder
+         pd.unapproved_zip_code_adder,
+         ppscfv12.int_array_value
   into
     v_estimated_annual_energy_consumption_kwh,
     v_first_year_production_estimate,
@@ -500,7 +515,8 @@ BEGIN
     v_inverter_brand_id,
     v_inverter_brand,
     v_aurora_design_id,
-    v_unapproved_zip_code_adder
+    v_unapproved_zip_code_adder,
+    v_site_survey_time_adders
   from flow.project_process_step pps
          inner join flow.project p on pps.project_id = p.id
          inner join flow.company_state cs on p.company_state_id = cs.id
@@ -542,11 +558,12 @@ BEGIN
                    on ppscfv11.project_process_step_id = pps.id and
                       ppscfv11.custom_field_group_assignment_id =
                       22560
+         left join flow.project_process_step_custom_field_value ppscfv12
+                   on ppscfv12.project_process_step_id = pps.id and
+                      ppscfv12.custom_field_group_assignment_id =
+                      25023
   where pps.id = v_project_process_step_id;
 
-  raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
-  --   raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
---   raise notice 'v_system_size = %',v_system_size;
   create temp table proposal_value as (with version_values
                                               as (select distinct on ( vw.proposal_group_uuid, vw.custom_field_group_assignment_id ) vw.id,
                                                                                                                                      vw.custom_field_group_assignment_id,
@@ -568,6 +585,71 @@ BEGIN
                                                                                       and proposal_version_id <= v_version_id)
                                                   order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id,
                                                            vw.id desc),
+                                            default_states as (select foo.id, array_agg(foo.my_value)::bigint[] as my_value
+                                                               from (select vv.id,
+                                                                            vv.proposal_group_uuid,
+                                                                            jsonb_array_elements((vv.value ->> 'intArrayValue')::jsonb) as my_value
+                                                                     from version_values vv
+                                                                     where vv.object_code = 'PROPOSAL_SITE_SURVEY'
+                                                                       and vv.field_id = 341) as foo
+                                                               group by foo.id),
+                                            group_uuid_site_survey_states_default as (select vv.proposal_group_uuid
+                                                                       from version_values vv
+                                                                       inner join default_states ds on ds.id = vv.id and v_state_id::bigint = any (ds.my_value::bigint[])
+                                                                       where vv.object_code = 'PROPOSAL_SITE_SURVEY'
+                                                                         and vv.proposal_version_id <= v_version_id),
+                                            site_survey_defualt_state_results as (select vv2.proposal_group_uuid,
+                                                                           vv2.field_id,
+                                                                           vv2.field_name,
+                                                                           cdt.data_type_id,
+                                                                           (vv2.value ->> 'value')::text    as value,
+                                                                           (vv2.value ->> 'intValue')::text as int_value,
+                                                                           vv2.object_code
+                                                                    from version_values vv2
+                                                                           inner join group_uuid_site_survey_states_default g
+                                                                                      on g.proposal_group_uuid = vv2.proposal_group_uuid
+                                                                           inner join brs.custom_field cf on cf.id = vv2.field_id
+                                                                           inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
+                                            group_uuid_site_survey_default as (select vv.proposal_group_uuid
+                                                                               from version_values vv
+                                                                               where vv.object_code = 'PROPOSAL_SITE_SURVEY'
+                                                                                 and vv.field_id = 329
+                                                                                 and vv.proposal_version_id <= v_version_id
+                                                                                 and (vv.value ->> 'value')::boolean is true
+                                                                               and not exists(select id from version_values vv1
+                                                                                                        where vv1.proposal_group_uuid = vv.proposal_group_uuid and
+                                                                                                              vv1.field_id = 341)),
+                                            site_survey_defualt_results as (select vv2.proposal_group_uuid,
+                                                                                   vv2.field_id,
+                                                                                   vv2.field_name,
+                                                                                   cdt.data_type_id,
+                                                                                   (vv2.value ->> 'value')::text    as value,
+                                                                                   (vv2.value ->> 'intValue')::text as int_value,
+                                                                                   vv2.object_code
+                                                                            from version_values vv2
+                                                                                   inner join group_uuid_site_survey_default g
+                                                                                              on g.proposal_group_uuid = vv2.proposal_group_uuid
+                                                                                   inner join brs.custom_field cf on cf.id = vv2.field_id
+                                                                                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
+
+                                            group_uuid_site_survey as (select vv.proposal_group_uuid
+                                                                       from version_values vv
+                                                                       where vv.object_code = 'PROPOSAL_SITE_SURVEY'
+                                                                         and vv.field_id = 340
+                                                                         and vv.proposal_version_id <= v_version_id
+                                                                         and (vv.value ->> 'intValue')::integer = any(v_site_survey_time_adders)),
+                                            site_survey_results as (select vv2.proposal_group_uuid,
+                                                                           vv2.field_id,
+                                                                           vv2.field_name,
+                                                                           cdt.data_type_id,
+                                                                           (vv2.value ->> 'value')::text    as value,
+                                                                           (vv2.value ->> 'intValue')::text as int_value,
+                                                                           vv2.object_code
+                                                                    from version_values vv2
+                                                                           inner join group_uuid_site_survey g
+                                                                                      on g.proposal_group_uuid = vv2.proposal_group_uuid
+                                                                           inner join brs.custom_field cf on cf.id = vv2.field_id
+                                                                           inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
                                             proposal_finance_product as (select pcfv.int_value
                                                                          from brs.proposal prop
                                                                                 inner join brs.proposal_custom_field_value pcfv
@@ -914,28 +996,28 @@ BEGIN
                                                                              inner join brs.custom_field cf on cf.id = vv2.field_id
                                                                              inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                                                                       where not exists(select id from version_values v where v.proposal_group_uuid = vv2.proposal_group_uuid and
-                                                                                                                             v.field_id = 329 and
-                                                                                                                             (v.value ->>'value')::boolean is true)),
+                                                                          v.field_id = 329 and
+                                                                        (v.value ->>'value')::boolean is true)),
                                             group_uuid_default_adders as (select vv.proposal_group_uuid
-                                                                         from version_values vv
-                                                                         where vv.object_code = 'PROPOSAL_MISC_ADDERS'
-                                                                           and vv.field_id = 126
-                                                                           and vv.proposal_version_id <= v_version_id),
+                                                                          from version_values vv
+                                                                          where vv.object_code = 'PROPOSAL_MISC_ADDERS'
+                                                                            and vv.field_id = 126
+                                                                            and vv.proposal_version_id <= v_version_id),
                                             default_adder_results as (select vv2.proposal_group_uuid,
-                                                                            vv2.field_id,
-                                                                            vv2.field_name,
-                                                                            cdt.data_type_id,
-                                                                            (vv2.value ->> 'value')::text    as value,
-                                                                            vv2.object_code,
-                                                                            (vv2.value ->> 'intValue')::text as int_value
-                                                                     from version_values vv2
-                                                                            inner join group_uuid_default_adders g
-                                                                                       on g.proposal_group_uuid = vv2.proposal_group_uuid
-                                                                            inner join brs.custom_field cf on cf.id = vv2.field_id
-                                                                            inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                                                                     where exists(select id from version_values v where v.proposal_group_uuid = vv2.proposal_group_uuid and
-                                                                         v.field_id = 329 and
-                                                                         (v.value ->>'value')::boolean is true)),
+                                                                             vv2.field_id,
+                                                                             vv2.field_name,
+                                                                             cdt.data_type_id,
+                                                                             (vv2.value ->> 'value')::text    as value,
+                                                                             vv2.object_code,
+                                                                             (vv2.value ->> 'intValue')::text as int_value
+                                                                      from version_values vv2
+                                                                             inner join group_uuid_default_adders g
+                                                                                        on g.proposal_group_uuid = vv2.proposal_group_uuid
+                                                                             inner join brs.custom_field cf on cf.id = vv2.field_id
+                                                                             inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                                      where exists(select id from version_values v where v.proposal_group_uuid = vv2.proposal_group_uuid and
+                                                                          v.field_id = 329 and
+                                                                        (v.value ->>'value')::boolean is true)),
 
                                             source_adders as (select p.id as project_id,
                                                                      pps.id,
@@ -1067,6 +1149,36 @@ BEGIN
                                               ucr.object_code,
                                               ucr.int_value
                                        from utility_company_results ucr
+                                       union
+                                       select ssr.proposal_group_uuid,
+                                              ssr.field_id,
+                                              ssr.field_name,
+                                              ssr.data_type_id,
+                                              ssr.value,
+                                              null::bigint,
+                                              ssr.object_code,
+                                              ssr.int_value
+                                       from site_survey_results ssr
+                                       union
+                                       select ssdr.proposal_group_uuid,
+                                              ssdr.field_id,
+                                              ssdr.field_name,
+                                              ssdr.data_type_id,
+                                              ssdr.value,
+                                              null::bigint,
+                                              ssdr.object_code,
+                                              ssdr.int_value
+                                       from site_survey_defualt_results ssdr
+                                       union
+                                       select ssdsr.proposal_group_uuid,
+                                              ssdsr.field_id,
+                                              ssdsr.field_name,
+                                              ssdsr.data_type_id,
+                                              ssdsr.value,
+                                              null::bigint,
+                                              ssdsr.object_code,
+                                              ssdsr.int_value
+                                       from site_survey_defualt_state_results ssdsr
                                        union
                                        select fcr.proposal_group_uuid,
                                               fcr.field_id,
@@ -1258,6 +1370,9 @@ BEGIN
                                               null::text
                                        from other_adders oa
                                        order by 7, 1);
+  --   raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
+--   raise notice 'v_system_size = %',v_system_size;
+  raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
 
   create index pv_proposal_group_uuid on proposal_value (proposal_group_uuid);
   create index pv_field_id on proposal_value (field_id);
@@ -1283,6 +1398,49 @@ BEGIN
 --   raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
 
 
+  select string_agg(value::text,',')
+  into v_site_survey_items
+  from proposal_value pv
+  where field_id = 337
+    and object_code = 'PROPOSAL_SITE_SURVEY';
+  raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
+
+
+  select sum(value::integer)
+  into v_site_survey_time_estimate
+  from proposal_value pv
+  where field_id = 339
+    and object_code = 'PROPOSAL_SITE_SURVEY';
+  raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
+
+  select value
+  into v_site_survey_resource_type_yn
+  from proposal_value pv
+  where field_id = 338
+    and object_code = 'PROPOSAL_SITE_SURVEY'
+    and value = 'No' limit 1;
+
+  if v_site_survey_resource_type_yn is null then
+    select value
+    into v_site_survey_resource_type_yn
+    from proposal_value pv
+    where field_id = 338
+      and object_code = 'PROPOSAL_SITE_SURVEY'
+      and value = 'Yes' limit 1;
+  end if;
+
+
+  raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
+  if v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'No' then
+    v_site_survey_resource_type = 'Service Tech or Higher';
+  elsif v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'Yes' then
+    v_site_survey_resource_type = 'Site Surveyor';
+  end if;
+
+  raise notice 'v_site_survey_resource_type = %',v_site_survey_resource_type;
+
+
+
   select value::numeric
   into v_apr
   from proposal_value pv
@@ -1290,7 +1448,7 @@ BEGIN
     and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
   raise notice 'v_apr = %',v_apr;
 
-  select value::numeric
+  select value
   into v_financial_option
   from proposal_value pv
   where field_id = 320
@@ -1995,7 +2153,8 @@ BEGIN
                                          nineteen_plus_payments_all_incentives, date_created,
                                          promotion_eighteen_months_free,
                                          proposal_date, proposal_nbr, proposal_log_id,
-                                         bp_plus_amount, aurora_design_id, loan_type, filename,financial_option)
+                                         bp_plus_amount, aurora_design_id, loan_type, filename,financial_option,site_survey_time_estimate,
+                                         site_survey_resource_type,site_survey_items)
     values (v_project_id, v_project_name, v_project_street1, v_city, v_project_state_abbrev,
             v_postal_code, v_contact_phone, v_contact_email, v_loan_term, v_apr, v_down_payment_amount,
             v_led_light_bulbs, v_smart_thermostat, v_current_estimated_cost_per_kwh, v_promotion_cost,
@@ -2030,7 +2189,7 @@ BEGIN
             v_initial_monthly_payment_all_credits_to_loan, v_reamortized_monthly_payment_all_credits_to_loan, now(),
             v_promotion_cost,
             now(), v_proposal_nbr, v_proposal_id, v_promotion_cost,
-            v_aurora_design_id, v_loan_type, v_display_name,v_financial_option);
+            v_aurora_design_id, v_loan_type, v_display_name,v_financial_option,v_site_survey_time_estimate,v_site_survey_resource_type,v_site_survey_items);
   end if;
 
   return query
@@ -2171,7 +2330,11 @@ BEGIN
            round(v_unapproved_zip_code_adder, 2),
            v_csu_rebate_unit_type_id,
            v_financial_option,
-           v_check_from_br;
+           v_check_from_br,
+           v_site_survey_time_estimate,
+           v_site_survey_resource_type_yn,
+           v_site_survey_resource_type,
+           v_site_survey_items;
 
   drop table proposal_value;
 
