@@ -256,4 +256,21 @@ public class ProposalToolQuery {
     from grouped_rows
     where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
     """;
+
+  public static final String findFilterableValuesByFieldId = """
+    with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
+                                                                                                         proposal_group_uuid,
+                                                                                                         value,
+                                                                                                         field_id
+                            from brs.proposal_version_custom_field_value_vw
+                            where proposal_version_id <= :versionId
+                              and field_id = :fieldId
+                              and proposal_group_uuid not in (select distinct proposal_group_uuid
+                                                              from brs.proposal_version_custom_field_group
+                                                              where archived is not null
+                                                                and proposal_version_id <= :versionId)
+                            order by proposal_group_uuid, custom_field_group_assignment_id)
+    select (value -> 'intValue')::int
+    from version_values;
+    """;
 }
