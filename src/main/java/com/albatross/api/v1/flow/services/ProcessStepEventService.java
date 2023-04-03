@@ -190,6 +190,7 @@ public class ProcessStepEventService {
     params.put("multipleUses", null != processStepEventAction.getMultipleUses() ? processStepEventAction.getMultipleUses() : false);
     params.put("hideFromWeb", null != processStepEventAction.getHideFromWeb() ? processStepEventAction.getHideFromWeb() : false);
     params.put("hideFromMobile", null != processStepEventAction.getHideFromMobile() ? processStepEventAction.getHideFromMobile() : false);
+    params.put("showOnCancelledCompletedEvents", null != processStepEventAction.getShowOnCancelledCompletedEvents() ? processStepEventAction.getShowOnCancelledCompletedEvents() : false);
     params.put("userId", currentUser.trueUserId());
     params.put("processStepEventId", eventId);
 

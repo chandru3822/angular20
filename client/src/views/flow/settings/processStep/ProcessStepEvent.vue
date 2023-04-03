@@ -224,8 +224,9 @@
                 </v-autocomplete>
 
                 <v-card flat class="pb-5" v-if="[1,2].includes(action.actionTypeId)">
+                  <div class="title-medium">Options</div>
                   <v-row class="pb-4">
-                    <v-col cols="12" md="3" class="py-0">
+                    <v-col cols="12" md="3">
                   <v-checkbox
                     v-model="action.requireStartTime"
                     dense
@@ -245,7 +246,7 @@
                     label="Require Resource"
                   />
                     </v-col>
-                    <v-col>
+                    <v-col cols="12" md="3">
                   <v-checkbox
                     v-model="action.multipleUses"
                     dense
@@ -267,7 +268,7 @@
                     </v-col>
                     <v-col>
                   <v-checkbox
-                      v-model="item.showOnCancelledCompletedEvents"
+                      v-model="action.showOnCancelledCompletedEvents"
                       dense
                       hide-details
                       :readonly="!userCanEdit"
@@ -285,32 +286,6 @@
                   <!--                        />-->
                     </v-col>
                   </v-row>
-                  <table>
-                    <tr>
-                      <td>Require Start Time</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.requireStartTime"></td>
-                    </tr>
-                    <tr>
-                      <td>Require End Time</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.requireEndTime"></td>
-                    </tr>
-                    <tr>
-                      <td>Require Resource</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.requireResource"></td>
-                    </tr>
-                    <tr>
-                      <td class="pt-3">Allow Multiple Uses</td>
-                      <td class="pt-3"><input type="checkbox" class="ml-2" v-model="action.multipleUses"></td>
-                    </tr>
-                    <tr>
-                      <td>Hide From Web</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.hideFromWeb"></td>
-                    </tr>
-                    <tr>
-                      <td>Hide From Mobile</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.hideFromMobile"></td>
-                    </tr>
-                  </table>
                 </v-card>
 
                 <!--              <v-btn class="white&#45;&#45;text"-->

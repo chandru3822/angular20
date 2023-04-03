@@ -572,6 +572,7 @@ public class ProcessStepEventQuery {
               multiple_uses = :multipleUses,
               hide_from_web = :hideFromWeb,
               hide_from_mobile = :hideFromMobile,
+              show_on_cancelled_completed_events = :showOnCancelledCompletedEvents,
               company_process_step_status_type_id = :companyProcessStepStatusTypeId,
               modified_by_id = :userId,
               date_modified = now()
