@@ -40,7 +40,6 @@
                 @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
               />
             </td>
-<!--            @TODO: #smartlistsv2 Please leave while smartlists v2 is being developed-->
             <td class="td-action">
               <smartlist-share
                 :smartlist="smartlist"
@@ -83,7 +82,6 @@ const headers = ref([
   {text: 'Owner', value: 'owner'},
   {text: 'Last Modified', value: 'dateModified'},
   {text: 'Duplicate'},
-  //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
   {text: 'Share'},
   {text: 'Export'},
   {text: 'Delete'}

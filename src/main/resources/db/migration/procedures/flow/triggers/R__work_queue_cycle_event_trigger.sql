@@ -1,3 +1,4 @@
+drop trigger if exists create_events_work_queue_cycle_trg on flow.project_process_step_event;
 drop function if exists flow.create_event_work_queue_cycle();
 CREATE OR REPLACE FUNCTION flow.create_event_work_queue_cycle()
   RETURNS TRIGGER AS
@@ -58,7 +59,8 @@ BEGIN
     /*looping through all work_queue_cycle records where the old status matches and the project_process_step_id matches.
       Inside the loop we are querying to see if any of the old record work_queue_type_id's match what we would be
       inserting based on what the new status work_queue_type_id.  */
-    for v_old in select psewqtest.process_step_event_work_queue_type_id, wqc.id
+    for v_old in select psewqtest.process_step_event_work_queue_type_id, wqc.id,
+                        psewqtest.id as process_step_event_work_queue_type_event_status_type_id
                  from flow.process_step_event_work_queue_type_event_status_type psewqtest
                         inner join flow.process_step_event_work_queue_type psewqt
                                    on psewqtest.process_step_event_work_queue_type_id = psewqt.id
@@ -88,7 +90,17 @@ BEGIN
         where (psewqtest.company_event_status_type_id = new.company_event_status_type_id or
                v_event_status_type_id = psewqtest.event_status_type_id)
           and psewqtest.archived is false
-          and psewqt.id = v_old.process_step_event_work_queue_type_id;
+          and psewqt.id = v_old.process_step_event_work_queue_type_id
+          --todo: @keller - there was an issue when 2 rows were returned in the for loop like:
+          --  psewqt.id = 214, wqc.id = 12345
+          --  psewqt.id = 214, wqc.id = 54321
+          -- BUT the process_step_event_work_queue_type_event_status_type_id wasn't being checked so those "duped" rows weren't actually duped, they were:
+          --  psewqt.id = 214, wqc.id = 12345, psewqtest.id = 295
+          --  psewqt.id = 214, wqc.id = 54321, psewqtest.id = 297
+          -- this was causing a duplicate to be processed by this code and throw an error.
+          -- adding this line fixed the error but i have no idea if it is right
+          and psewqtest.id = v_old.process_step_event_work_queue_type_event_status_type_id
+        ;
 
         if v_new_work_queue_type_id is not null then
           /*if we found a match between old and new then we fill up the v_work_type_ids array
@@ -96,6 +108,7 @@ BEGIN
             what the insert would have done.*/
           v_work_type_ids = array_append(v_work_type_ids, v_old.process_step_event_work_queue_type_id);
           --raise notice 'this is my array %',v_work_type_ids;
+
           update flow.work_queue_cycle
           set company_event_status_type_id                      = new.company_event_status_type_id,
               process_step_event_work_queue_type_event_status_type_id = v_psewqtest_id,
@@ -147,7 +160,7 @@ END
 $$
   LANGUAGE plpgsql;
 
-drop trigger if exists create_events_work_queue_cycle_trg on flow.project_process_step_event;
+
 create trigger create_events_work_queue_cycle_trg
   after insert or update
   on flow.project_process_step_event

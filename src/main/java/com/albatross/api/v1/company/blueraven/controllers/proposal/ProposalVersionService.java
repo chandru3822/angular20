@@ -267,6 +267,13 @@ public class ProposalVersionService {
     return query.stream().map(getMapper(objectMapper)).filter(Objects::nonNull).toList();
   }
 
+//  TODO: cacheable
+  public List<Long> getProposalValuesByFieldId(@NonNull Long versionId, @NonNull Long fieldId) {
+    return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldId,
+      Map.of("versionId", versionId, "fieldId", fieldId), new SingleColumnRowMapper<>(Long.class));
+  }
+
+  //  TODO: cacheable
   public List<Long> getProposalValuesFilterIds(
     @NonNull Long versionId, ProposalValueFilter filter) {
     try {

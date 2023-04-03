@@ -33,12 +33,13 @@ BEGIN
   if(v_value_to_save is not null) then
     --only save if we found a value
     perform flow.set_project_cfv(p_project_id, p_user_id, 23220, v_value_to_save, true);
+
+    insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+    values ('Populate Setter Office', 69, 'p_project_id: ' || p_project_id ||
+                                          ' p_user_id: '|| p_user_id,
+            p_user_id);
   end if;
 
-  insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
-  values ('Populate Setter Office', 69, 'p_project_id: ' || p_project_id ||
-                                        ' p_user_id: '|| p_user_id,
-          p_user_id);
 
 END
 $function$
