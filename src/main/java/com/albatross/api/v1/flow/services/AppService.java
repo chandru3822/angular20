@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.AppAttachmentEnvironment;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.AppAttachment;
 import com.albatross.api.v1.flow.model.User;
@@ -90,9 +91,11 @@ public class AppService {
    */
   public AppAttachment getLatestAppByAppTypeIdAndType(Long appTypeId, Long attachmentTypeId) {
     // this is an endpoint for mobile to determine if a user is using the most current app
+    Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     HashMap<String, Object> params = new HashMap<>();
     params.put("appTypeId", appTypeId);
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("appAttachmentEnvironmentId", appAttachmentEnvironmentId);
 
     Optional<AppAttachment> result =
       sqlCache.getBySql(AppQuery.getLatestAppByAppTypeIdAndType, params, AppAttachment.class);
@@ -125,8 +128,10 @@ public class AppService {
    * @return
    */
   public List<AppAttachment> getAttachmentsByAttachmentType(Long attachmentTypeId) {
+    Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     HashMap<String, Object> params = new HashMap<>();
     params.put("attachmentTypeId", attachmentTypeId);
+    params.put("appAttachmentEnvironmentId", appAttachmentEnvironmentId);
 
     List<AppAttachment> attachments =
       sqlCache.queryBySql(AppQuery.getAttachmentsByAttachmentType, params, AppAttachment.class);
@@ -141,9 +146,11 @@ public class AppService {
 
   public List<AppAttachment> getAttachmentsByAppAndAttachmentType(
     Long appTypeId, Long attachmentTypeId) {
+    Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     HashMap<String, Object> params = new HashMap<>();
     params.put("attachmentTypeId", attachmentTypeId);
     params.put("appTypeId", appTypeId);
+    params.put("appAttachmentEnvironmentId", appAttachmentEnvironmentId);
 
     List<AppAttachment> attachments =
       sqlCache.queryBySql(AppQuery.getAttachmentsByAppAndAttachmentType, params, AppAttachment.class);
@@ -164,8 +171,10 @@ public class AppService {
   }
 
   public List<Long> getBuildNumbersForType(Long appTypeId) {
+    Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     HashMap<String, Object> params = new HashMap<>();
     params.put("appTypeId", appTypeId);
+    params.put("appAttachmentEnvironmentId", appAttachmentEnvironmentId);
 
     return sqlCache.queryBySql(
       AppQuery.getBuildNumbersForType, params, new SingleColumnRowMapper<>(Long.class));
@@ -223,14 +232,13 @@ public class AppService {
     params.put("displayName", attachment.getDisplayName());
     params.put("versionNumber", attachment.getVersionNumber());
     params.put("buildNumber", attachment.getBuildNumber());
+    params.put("appAttachmentEnvironmentId", attachment.getAppAttachmentEnvironmentId());
+    params.put("mobileBranch", attachment.getMobileBranch());
+    params.put("mobileCommitHash", attachment.getMobileCommitHash());
     params.put(
       "createdById",
       null != currentUser ? currentUser.getId() : SystemSettings.SYSTEM_USER.getId());
     params.put("key", key);
-
-    // call this so that if table is missing in stage/flux after a data dump then it will put the
-    // table back before failing mobile's build process
-    fixMissingAppTable();
 
     // then add the record in
     Long id = sqlCache.updateBySqlReturningId(AppQuery.insertAttachmentRecord, params, "id").longValue();
@@ -274,14 +282,6 @@ public class AppService {
     insertAttachmentRecord(newApp, currentUser);
   }
 
-  public void fixMissingAppTable() {
-    if (null != environment && (environment.equals("stage") || environment.equals("flux"))) {
-      // this will create the flow.app_attachment table if it is not already present
-      sqlCache.updateBySql(AppQuery.createMissingTable, Collections.emptyMap());
-    }
-    // else do nothing
-  }
-
   public void fixMissingAppData(Integer limit) {
     // this will grab the most recent builds from s3 and populate the app_attachment table.  used
     // when the s3 upload succeeded but the request to add to app_attachment failed.
@@ -318,6 +318,7 @@ public class AppService {
     String fileSuffix,
     String appPrefix,
     int limit) {
+    Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     ListObjectsV2Request req =
       new ListObjectsV2Request().withBucketName(storageBucket).withPrefix(pathPrefix);
 
@@ -346,6 +347,7 @@ public class AppService {
       params.put("size", objectSummary.getSize());
       params.put("versionNumber", versionNumber);
       params.put("buildNumber", Integer.valueOf(buildNumber));
+      params.put("appAttachmentEnvironmentId", appAttachmentEnvironmentId);
 
       sqlCache.updateBySql(AppQuery.insertMissingAppRecord, params);
     }
@@ -373,8 +375,10 @@ public class AppService {
    * @return
    */
   public AppAttachment findById(Long id) {
+    Long appAttachmentEnvironmentId = AppAttachmentEnvironment.get(environment).id;
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("appAttachmentEnvironmentId", appAttachmentEnvironmentId);
 
     List<AppAttachment> attachments = sqlCache.queryBySql(AppQuery.findById, params, AppAttachment.class);
     if (attachments.isEmpty()) {
@@ -386,14 +390,4 @@ public class AppService {
     return attachment;
   }
 
-  public void deleteBySourceAndType(Long appTypeId, Long attachmentTypeId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("appTypeId", appTypeId);
-    params.put("attachmentTypeId", attachmentTypeId);
-    params.put("modifiedById", currentUser.trueUserId());
-
-    sqlCache.updateBySql(AppQuery.deleteBySourceAndType, params);
-  }
 }

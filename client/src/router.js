@@ -531,6 +531,17 @@ const router = new Router({
           children: [
             ProposalVersionSettingsRoutes,
             {
+              path: 'statusCheck',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "settings" */ './views/flow/settings/StatusCheck.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
+            {
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},
               component: () => {

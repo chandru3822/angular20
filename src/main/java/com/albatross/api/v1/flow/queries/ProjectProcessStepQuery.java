@@ -322,7 +322,6 @@ public class ProjectProcessStepQuery {
                  inner join flow.process_step_requirement psr on psr.reference_process_step_id = pps_src.process_step_id and psr.archived is not true
                  inner join flow.process_step_action_logic psl on psr.id = psl.process_step_requirement_id and psl.archived is not true
                  inner join flow.process_step_action psa on psl.process_step_action_id = psa.id
-                 left join flow.project_process_step_action ppsa on ppsa.project_process_step_id = pps_src.id and ppsa.process_step_action_id = psa.id
                  inner join flow.project_process_step pps_usage on pps_usage.process_step_id = psa.process_step_id and pps_usage.project_id = pps_src.project_id and pps_usage.archived is not true
                  inner join flow.company_process_step_status_type cpsst on pps_usage.company_process_step_status_type_id = cpsst.id
         where pps_src.id = any(array[ :projectProcessStepIds ]::bigint[])

@@ -35,7 +35,6 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final MailService mailService;
   private final AvailabilityService availabilityService;
   private final ProjectProcessStepService projectProcessStepService;
-  private final ContactService contactService;
   private final MessagingService messagingService;
   private final DataViewService dataViewService;
   private final SecurityService securityService;

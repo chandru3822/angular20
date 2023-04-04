@@ -69,14 +69,14 @@ public class BirdeyeQuery {
 
   //language=PostgreSQL
   public final static String getLastSync = """
-    select bss.last_sync_timestamp from brs.birdeye_survey_sync bss where bss.business_id = :businessId and bss.survey_id = :surveyId
+    select bss.last_sync_timestamp from brs.birdeye_sync bss where bss.business_id = :businessId and bss.sync_key = :syncKey
     """;
 
   //language=PostgreSQL
   public final static String setLastSync = """
-    insert into brs.birdeye_survey_sync (business_id, survey_id, last_sync_timestamp)
-    values (:businessId, :surveyId, :lastSync)
-    on conflict (business_id, survey_id)
+    insert into brs.birdeye_sync (business_id, sync_key, sync_type, last_sync_timestamp)
+    values (:businessId, :syncKey, :syncType, :lastSync)
+    on conflict (business_id, sync_key, sync_type)
         do update set last_sync_timestamp = excluded.last_sync_timestamp
     """;
 
