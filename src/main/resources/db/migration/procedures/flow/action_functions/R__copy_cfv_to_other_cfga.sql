@@ -19,8 +19,8 @@ declare
 
 BEGIN
 
-  insert into flow.company_function_log(function_name, parameters, run_by_id)
-  values ('Copy CFV to Other CFV', 'p_current_user: ' || p_user_id ||
+  insert into flow.company_function_log(function_name, db_function_id, parameters, run_by_id)
+  values ('Copy CFV to Other CFV', 70, 'p_current_user: ' || p_user_id ||
                             ' p_project_id: '|| p_project_id ||
                             ' p_pps_id: '|| p_pps_id ||
                             ' p_ppse_id: '|| p_ppse_id ||
