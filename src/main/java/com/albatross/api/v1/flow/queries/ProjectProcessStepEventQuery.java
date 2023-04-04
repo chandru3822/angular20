@@ -130,6 +130,7 @@ public class ProjectProcessStepEventQuery {
                                     psea.hide_from_web as "hideFromWeb",
                                     psea.hide_from_mobile as "hideFromMobile",
                                     psea.show_on_cancelled_completed_events as "showOnCancelledCompletedEvents",
+                                    psea.show_on_cancelled_completed_process_step as "showOnCancelledCompletedProcessStep",
                                     coalesce((
                                                SELECT array_to_json(array_agg(row_to_json(links)))
                                                FROM (
