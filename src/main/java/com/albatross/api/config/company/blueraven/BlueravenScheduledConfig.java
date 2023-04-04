@@ -100,7 +100,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   }
 
 
-  @Scheduled(cron = "0 0 22 * * *", zone = "UTC") //11pm UTC
+  @Scheduled(cron = "0 0 12 * * *", zone = "UTC") //12pm UTC / 6am-ish Mountain
   public void syncBirdeyeReviews(){
     log.debug("*** CRON: start sync reviews from BirdEye ***");
     Instant startTime = Instant.now();
