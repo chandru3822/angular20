@@ -118,7 +118,12 @@ public class ProposalTemplateService {
         if (visibility == null || visibility.trim().equals("")) {
           return false;
         }
-        return !eval(visibility, context);
+        try {
+          return !eval(visibility, context);
+        } catch (Exception e) {
+          log.error("Error evaluating visibility for blockId={}, msg={}", block.getId(), e.getMessage());
+          return false;
+        }
       }).toList();
 
     List<Integer> hidden = hiddenBlocks.stream()
