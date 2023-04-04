@@ -215,6 +215,7 @@
                   item-text="processStepStatusType"
                   item-value="id"
                   clearable
+                  :disabled="action.showOnCancelledCompletedProcessStep"
                   v-if="action.actionTypeId === 2"
                 >
                   <template slot="item" slot-scope="data">
@@ -279,8 +280,8 @@
                           v-model="action.showOnCancelledCompletedProcessStep"
                           dense
                           hide-details
-                          :readonly="!userCanEdit"
-                          :disabled="!userCanEdit"
+                          :readonly="!userCanEdit || action.companyProcessStepStatusTypeId"
+                          :disabled="!userCanEdit || action.companyProcessStepStatusTypeId"
                           label="Show on Cancelled/Completed Process Steps for Active Events"
                       />
                     </v-col>
