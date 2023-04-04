@@ -108,10 +108,13 @@
             </v-btn>
           </td>
           <td class="text-left">
-            {{item.filename}}
+            {{item.buildNumber}}
           </td>
           <td class="text-left">
-            {{getVersion(item.filename)}}
+            {{ item.versionNumber }}
+          </td>
+          <td class="text-left" v-if="userCanEdit">
+            {{ item.mobileBranch }}
           </td>
           <td class="text-left">
             {{item.dateCreated | formatDate('timestamp')}}
@@ -185,8 +188,9 @@ export default {
       isMobile: false,
       headers: [
         {text: '', value: 'dlIcon', show: true, width: 40},
-        {text: 'Filename', value: 'filename', show: true},
+        {text: 'Build', value: 'buildNumber', show: true},
         {text: 'Version', value: 'version', show: true},
+        {text: 'Branch', value: 'mobileBranch', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
         {text: 'Created', value: 'dateCreated', show: true},
         {text: '', value: 'icons', width: 175, show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')},
         {text: 'Beta', value: 'beta', show: this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'VIEW_CUSTOM') || this.$store.getters.userHasFeatureAccessLevel('APP_DOWNLOADS', 'EDIT')}
@@ -358,16 +362,6 @@ export default {
           //otherwise they should only have view acces and only show them shown non-beta apps
           a.show && !a.archived && !a.beta
       })
-    },
-    getVersion (filename) {
-      let match = filename.match(/\b-(\d*.\d*.\d*)-(\d*)/)
-      let version = null
-      if(match && this.userCanEdit) {
-        version = match[1] + ' (' + match[2] + ')'
-      } else if (match) {
-        version = match[1]
-      }
-      return match ? version : 'N/A'
     }
   }
 }
