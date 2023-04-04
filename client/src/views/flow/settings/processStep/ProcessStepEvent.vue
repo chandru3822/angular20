@@ -215,6 +215,7 @@
                   item-text="processStepStatusType"
                   item-value="id"
                   clearable
+                  :disabled="action.showOnCancelledCompletedProcessStep"
                   v-if="action.actionTypeId === 2"
                 >
                   <template slot="item" slot-scope="data">
@@ -227,63 +228,62 @@
                   <div class="title-medium">Options</div>
                   <v-row class="pb-4">
                     <v-col cols="12" md="3">
-                  <v-checkbox
-                    v-model="action.requireStartTime"
-                    dense
-                    hide-details
-                    label="Require Start Time"
-                  />
-                  <v-checkbox
-                    v-model="action.requireEndTime"
-                    dense
-                    hide-details
-                    label="Require End Time"
-                  />
-                  <v-checkbox
-                    v-model="action.requireResource"
-                    dense
-                    hide-details
-                    label="Require Resource"
-                  />
+                      <v-checkbox
+                          v-model="action.requireStartTime"
+                          dense
+                          hide-details
+                          label="Require Start Time"
+                      />
+                      <v-checkbox
+                          v-model="action.requireEndTime"
+                          dense
+                          hide-details
+                          label="Require End Time"
+                      />
+                      <v-checkbox
+                          v-model="action.requireResource"
+                          dense
+                          hide-details
+                          label="Require Resource"
+                      />
                     </v-col>
                     <v-col cols="12" md="3">
-                  <v-checkbox
-                    v-model="action.multipleUses"
-                    dense
-                    hide-details
-                    label="Allow Multiple Uses"
-                  />
-                  <v-checkbox
-                    v-model="action.hideFromWeb"
-                    dense
-                    hide-details
-                    label="Hide From Web"
-                  />
-                  <v-checkbox
-                    v-model="action.hideFromMobile"
-                    dense
-                    hide-details
-                    label="Hide From Mobile"
-                  />
+                      <v-checkbox
+                          v-model="action.multipleUses"
+                          dense
+                          hide-details
+                          label="Allow Multiple Uses"
+                      />
+                      <v-checkbox
+                          v-model="action.hideFromWeb"
+                          dense
+                          hide-details
+                          label="Hide From Web"
+                      />
+                      <v-checkbox
+                          v-model="action.hideFromMobile"
+                          dense
+                          hide-details
+                          label="Hide From Mobile"
+                      />
                     </v-col>
                     <v-col>
-                  <v-checkbox
-                      v-model="action.showOnCancelledCompletedEvents"
-                      dense
-                      hide-details
-                      :readonly="!userCanEdit"
-                      :disabled="!userCanEdit"
-                      label="Show on Cancelled/Completed Events for Active Process Steps"
-                  />
-                  <!--                        todo: this is a separate ticket, just put it here to see placement-->
-                  <!--                        <v-checkbox-->
-                  <!--                            class = "pb-3"-->
-                  <!--                            dense-->
-                  <!--                            hide-details-->
-                  <!--                            :readonly="!userCanEdit"-->
-                  <!--                            :disabled="!userCanEdit || item.companyProjectStatusTypeId"-->
-                  <!--                            label="Show on Cancelled/Completed Process Steps for Active Events"-->
-                  <!--                        />-->
+                      <v-checkbox
+                          v-model="action.showOnCancelledCompletedEvents"
+                          dense
+                          hide-details
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          label="Show on Cancelled/Completed Events for Active Process Steps"
+                      />
+                      <v-checkbox
+                          v-model="action.showOnCancelledCompletedProcessStep"
+                          dense
+                          hide-details
+                          :readonly="!userCanEdit || action.companyProcessStepStatusTypeId"
+                          :disabled="!userCanEdit || action.companyProcessStepStatusTypeId"
+                          label="Show on Cancelled/Completed Process Steps for Active Events"
+                      />
                     </v-col>
                   </v-row>
                 </v-card>
