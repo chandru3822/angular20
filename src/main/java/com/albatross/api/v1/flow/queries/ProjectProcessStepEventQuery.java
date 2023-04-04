@@ -537,6 +537,8 @@ public class ProjectProcessStepEventQuery {
                psea.archived,
                psea.always_enabled as "alwaysEnabled",
                psea.multiple_uses as "multipleUses",
+               psea.show_on_cancelled_completed_events as "showOnCancelledCompletedEvents",
+               psea.show_on_cancelled_completed_process_step as "showOnCancelledCompletedProcessStep",
                case when
                       (select id
                        from flow.project_process_step_event_action ppsea

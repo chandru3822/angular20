@@ -203,7 +203,12 @@ public class ProjectProcessStepEventService {
     }
 
     // Only perform event actions on active project process steps
-    if (!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
+      //if action has getShowOnCancelledCompletedProcessStep, the action may be performed on active events belonging to cancelled or completed process steps
+    if (!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) &&
+            !(action.getShowOnCancelledCompletedProcessStep() != null && action.getShowOnCancelledCompletedProcessStep() &&
+                    (event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.CANCELLED.id) || event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.COMPLETE.id)) &&
+                    event.getEventStatusTypeId().equals(EventStatusType.ACTIVE.id))
+    ) {
       return false;
     }
 
