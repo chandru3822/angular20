@@ -212,7 +212,7 @@ public class ProjectProcessStepEventService {
     if (!event
         .getEventStatusTypeId()
         .equals(com.albatross.api.v1.flow.enums.EventStatusType.ACTIVE.id) &&
-            !(action.getShowOnCancelledCompletedEvents() &&
+            !(action.getShowOnCancelledCompletedEvents() != null && action.getShowOnCancelledCompletedEvents() &&
                     (event.getEventStatusTypeId().equals(com.albatross.api.v1.flow.enums.EventStatusType.CANCELLED.id) || event.getEventStatusTypeId().equals(EventStatusType.COMPLETE.id)) &&
                     event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id))
     ) {
