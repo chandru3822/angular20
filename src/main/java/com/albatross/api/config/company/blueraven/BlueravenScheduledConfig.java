@@ -18,6 +18,8 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -88,13 +90,25 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       }
   }
 
-  @Scheduled(fixedDelay = 3, timeUnit = TimeUnit.MINUTES)
+  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
   public void syncBirdeyeResponses(){
     log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
 
     birdeyeService.syncSurveyResponses();
     log.debug("*** CRON: end sync surveys from BirdEye ***");
+  }
+
+
+  @Scheduled(cron = "0 0 22 * * *", zone = "UTC") //11pm UTC
+  public void syncBirdeyeReviews(){
+    log.debug("*** CRON: start sync reviews from BirdEye ***");
+    Instant startTime = Instant.now();
+    setBlueravenSystemUser();
+
+    birdeyeService.syncReviews();
+    Duration duration = Duration.between(startTime, Instant.now());
+    log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
   }
 
   @Bean(destroyMethod = "shutdown")

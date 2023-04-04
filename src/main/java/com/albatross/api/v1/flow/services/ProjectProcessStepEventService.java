@@ -10,6 +10,7 @@ import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunct
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
+import com.albatross.api.v1.flow.enums.EventStatusType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
 import com.albatross.api.v1.flow.model.*;
@@ -207,9 +208,14 @@ public class ProjectProcessStepEventService {
     }
 
     // Only perform event actions on active project process steps events
+      //if action has getShowOnCancelledCompletedEvents, then action may be performed on cancelled or completed events where the process step is active
     if (!event
         .getEventStatusTypeId()
-        .equals(com.albatross.api.v1.flow.enums.EventStatusType.ACTIVE.id)) {
+        .equals(com.albatross.api.v1.flow.enums.EventStatusType.ACTIVE.id) &&
+            !(action.getShowOnCancelledCompletedEvents() &&
+                    (event.getEventStatusTypeId().equals(com.albatross.api.v1.flow.enums.EventStatusType.CANCELLED.id) || event.getEventStatusTypeId().equals(EventStatusType.COMPLETE.id)) &&
+                    event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id))
+    ) {
       return false;
     }
 

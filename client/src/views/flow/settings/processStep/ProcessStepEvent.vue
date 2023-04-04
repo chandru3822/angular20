@@ -224,32 +224,68 @@
                 </v-autocomplete>
 
                 <v-card flat class="pb-5" v-if="[1,2].includes(action.actionTypeId)">
-                  <table>
-                    <tr>
-                      <td>Require Start Time</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.requireStartTime"></td>
-                    </tr>
-                    <tr>
-                      <td>Require End Time</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.requireEndTime"></td>
-                    </tr>
-                    <tr>
-                      <td>Require Resource</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.requireResource"></td>
-                    </tr>
-                    <tr>
-                      <td class="pt-3">Allow Multiple Uses</td>
-                      <td class="pt-3"><input type="checkbox" class="ml-2" v-model="action.multipleUses"></td>
-                    </tr>
-                    <tr>
-                      <td>Hide From Web</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.hideFromWeb"></td>
-                    </tr>
-                    <tr>
-                      <td>Hide From Mobile</td>
-                      <td><input type="checkbox" class="ml-2" v-model="action.hideFromMobile"></td>
-                    </tr>
-                  </table>
+                  <div class="title-medium">Options</div>
+                  <v-row class="pb-4">
+                    <v-col cols="12" md="3">
+                  <v-checkbox
+                    v-model="action.requireStartTime"
+                    dense
+                    hide-details
+                    label="Require Start Time"
+                  />
+                  <v-checkbox
+                    v-model="action.requireEndTime"
+                    dense
+                    hide-details
+                    label="Require End Time"
+                  />
+                  <v-checkbox
+                    v-model="action.requireResource"
+                    dense
+                    hide-details
+                    label="Require Resource"
+                  />
+                    </v-col>
+                    <v-col cols="12" md="3">
+                  <v-checkbox
+                    v-model="action.multipleUses"
+                    dense
+                    hide-details
+                    label="Allow Multiple Uses"
+                  />
+                  <v-checkbox
+                    v-model="action.hideFromWeb"
+                    dense
+                    hide-details
+                    label="Hide From Web"
+                  />
+                  <v-checkbox
+                    v-model="action.hideFromMobile"
+                    dense
+                    hide-details
+                    label="Hide From Mobile"
+                  />
+                    </v-col>
+                    <v-col>
+                  <v-checkbox
+                      v-model="action.showOnCancelledCompletedEvents"
+                      dense
+                      hide-details
+                      :readonly="!userCanEdit"
+                      :disabled="!userCanEdit"
+                      label="Show on Cancelled/Completed Events for Active Process Steps"
+                  />
+                  <!--                        todo: this is a separate ticket, just put it here to see placement-->
+                  <!--                        <v-checkbox-->
+                  <!--                            class = "pb-3"-->
+                  <!--                            dense-->
+                  <!--                            hide-details-->
+                  <!--                            :readonly="!userCanEdit"-->
+                  <!--                            :disabled="!userCanEdit || item.companyProjectStatusTypeId"-->
+                  <!--                            label="Show on Cancelled/Completed Process Steps for Active Events"-->
+                  <!--                        />-->
+                    </v-col>
+                  </v-row>
                 </v-card>
 
                 <!--              <v-btn class="white&#45;&#45;text"-->
