@@ -99,7 +99,8 @@ public class BirdeyeService {
       .filter(cf -> REVIEW_CF_IDS.contains(cf.getCustomFieldId()))
       .toList();
 
-    List<BirdEyeReview> reviews = getReviews(toplevelBusinessId, lastSyncDate != null ? lastSyncDate.toLocalDate() : LocalDate.now());
+    LocalDate reviewedStart = lastSyncDate != null ? lastSyncDate.toLocalDate() : LocalDate.now();
+    List<BirdEyeReview> reviews = getReviews(toplevelBusinessId, reviewedStart.minusDays(1));
     if (reviews == null || reviews.isEmpty()) {
       return;
     }
