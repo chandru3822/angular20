@@ -168,13 +168,14 @@ public class SmartlistQuery {
   //language=PostgreSQL
   public final static String getAll = """
     select
-      s.id,
+      distinct on (s.name, s.id) s.id,
       s.name,
       s.company_object_type_id,
       s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
+      sm.date_created as date_last_exported,
       s.created_by_id,
       s.modified_by_id,
       s.archived,
@@ -193,6 +194,7 @@ public class SmartlistQuery {
     inner join flow.user u on u.id = s.owner_id
     left join flow.user_position up on up.user_id = s.owner_id
     left join flow.position p on up.position_id = p.id
+    left join flow.smartlist_metrics sm on s.id = sm.smartlist_id
     where
       cot.company_id = :companyId and
       s.archived is not true and
@@ -200,19 +202,20 @@ public class SmartlistQuery {
       up.primary_flag is true and
       up.archived is false and
       p.company_id = :companyId
-    order by s.name, s.date_modified desc
+    order by s.name, s.id, s.date_modified desc, sm.date_created desc
     """;
 
   //language=PostgreSQL
   public final static String getById = """
     select
-      s.id,
+      distinct on (s.id) s.id,
       s.name,
       s.company_object_type_id,
       s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
+      sm.date_created as date_last_exported,
       s.created_by_id,
       s.modified_by_id,
       s.archived,
@@ -329,9 +332,11 @@ public class SmartlistQuery {
               (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
               up.archived is false
     left join flow.position p on up.position_id = p.id and p.company_id = :companyId
+    left join flow.smartlist_metrics sm on s.id = sm.smartlist_id
     where s.id = :smartlistId and
           cot.company_id = :companyId and
           s.archived is not true
+    order by s.id, sm.date_created desc
   """;
 
   //language=PostgreSQL

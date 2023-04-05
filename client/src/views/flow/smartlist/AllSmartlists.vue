@@ -35,6 +35,7 @@
             <td class="text-left td-name">{{ smartlist.name }}</td>
             <td class="text-left">{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
+            <td>{{ smartlist.dateLastExported | formatDate('timestamp') }}</td>
             <td class="td-action">
               <smartlist-copy
                 :smartlist="smartlist"  v-if="userCanAdd"
@@ -82,6 +83,7 @@ const headers = ref([
   {text: 'Name', value: 'name'},
   {text: 'Owner', value: 'owner'},
   {text: 'Last Modified', value: 'dateModified'},
+  {text: 'Last Export', value: 'dateLastExported'},
   {text: 'Duplicate'},
   {text: 'Share'},
   {text: 'Export'},
