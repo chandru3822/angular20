@@ -42,13 +42,13 @@
         <v-row no-gutters>
           <!-- FIRST COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
-            <FeatDbLinks title="Submission Links"
-                     :linkTypeId="4"
+            <FeatDbLinks title="Links"
+                     :linkTypeId="this.linksTypeId"
                      :user-can-edit="userCanEdit"
                      :itemId="ahjPermit.id"
                      :itemType="itemType"
                      :ahjId="ahjId"
-                     :links="ahjPermit.submissionLinks"
+                     :links="ahjPermit.links"
                      show-expanded
                      :expanded-all="expandedAll"
                      @toggle-collapse-expand="toggleCollapseExpand($event)"
@@ -69,17 +69,6 @@
 
           <!-- SECOND COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
-            <FeatDbLinks title="Follow-up and Delivery Links"
-                     :linkTypeId="5"
-                     :user-can-edit="userCanEdit"
-                     :itemId="ahjPermit.id"
-                     :itemType="itemType"
-                     :ahjId="ahjId"
-                     :links="ahjPermit.followUpLinks"
-                     show-expanded
-                     :expanded-all="expandedAll"
-                     @toggle-collapse-expand="toggleCollapseExpand($event)"
-            ></FeatDbLinks>
             <FeatDbContact title="Follow-up and Delivery Contacts"
                         :contactTypeId="6"
                         :user-can-edit="userCanEdit"
@@ -177,6 +166,8 @@ import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCu
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 
+const { VITE_ENV } =  import.meta.env
+
 export default {
   name: 'ahjPermit',
   components: {
@@ -201,7 +192,7 @@ export default {
       docsMap.set(4, {
         title: "Approval Documents",
         documents: this.approvalDocuments,
-        attachmentTypeId: 980, //todo get prod id: 981
+        attachmentTypeId: this.approvalDocTypeId,
         attachmentType: "All Documents"
       })
       return docsMap
@@ -248,14 +239,21 @@ export default {
       revisionChecklist: [],
       asBuiltChecklist: [],
       nonStandardChecklist: [],
-      submissionLinks: [],
-      followUpLinks: [],
+      links:[],
       submissionContacts: [],
       printLocations: [],
       followUpContacts: []
     },
     submissionDocuments: [],
     approvalDocuments: [],
+    //  todo: get UAT value
+    // 981 is the prod value
+    approvalDocTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 980 :
+        VITE_ENV === 'uat' ? 980 : 981,
+    //  todo: get UAT and prod values
+    // ?? is the prod value
+    linksTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 12 :
+        VITE_ENV === 'uat' ? 12 : 12,
   }),
   methods: {
     updateDirtyValue(item) {
@@ -349,7 +347,7 @@ export default {
     async getApprovalDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 980} //todo: get prod id for this attachment type: 981
+        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: this.approvalDocTypeId}
         const {data, status} = await getRequestWithParams('/attachment', {params})
         this.approvalDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)

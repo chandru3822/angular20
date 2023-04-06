@@ -146,11 +146,8 @@ public class AhjPermitService {
       TypeReference<List<FeatDbLink>> linkRef = new TypeReference<>() {};
       TypeReference<List<FeatDbContact>> contactTypeRef = new TypeReference<>() {};
 
-      bw.registerCustomEditor(
-          List.class, "submissionLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
-
-      bw.registerCustomEditor(
-          List.class, "followUpLinks", new JsonCollectionDeserializer(linkRef, objectMapper));
+     bw.registerCustomEditor(
+          List.class, "links", new JsonCollectionDeserializer(linkRef, objectMapper));
 
       bw.registerCustomEditor(
           List.class,
