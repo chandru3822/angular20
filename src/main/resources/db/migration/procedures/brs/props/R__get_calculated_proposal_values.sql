@@ -148,7 +148,8 @@ create type brs.calculated_proposal_value as
   number_of_batteries                              numeric,
   estimated_backup_days                            numeric,
   solar_rebate_for_hic                             numeric,
-  total_square_footage                             numeric
+  total_square_footage                             numeric,
+  net_payment_from_customer                        numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -393,6 +394,7 @@ declare
   v_estimated_backup_days                            numeric(10,1);
   v_solar_rebate_for_hic                             numeric;
   v_total_square_footage                             numeric;
+  v_net_payment_from_customer                        numeric;
 BEGIN
 
 select prop.id        as proposal_id,
@@ -2116,6 +2118,8 @@ end if;
   v_initial_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
   raise notice 'v_initial_monthly_payment_no_credits_to_loan = %',v_initial_monthly_payment_no_credits_to_loan;
 
+  v_net_payment_from_customer = v_initial_monthly_payment_all_credits_to_loan - v_check_from_br;
+raise notice 'v_net_payment_from_customer = %',v_net_payment_from_customer;
   if v_product_id = 19424 then
 select *
 into v_reamortized_monthly_payment_no_credits_to_loan
@@ -2451,7 +2455,8 @@ select v_proposal_id,
        v_number_of_batteries,
        v_estimated_backup_days,
        v_solar_rebate_for_hic,
-       v_total_square_footage;
+       v_total_square_footage,
+       v_net_payment_from_customer;
 
 drop table proposal_value;
 
