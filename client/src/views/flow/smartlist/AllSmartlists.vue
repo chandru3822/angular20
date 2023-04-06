@@ -201,6 +201,6 @@ const getMetrics = async (smartlistId) => {
 
 <style scoped lang="scss">
 .btn-metrics {
-  color: var(--v-success-lighten2) !important;
+  color: var(--v-primary-base) !important;
 }
 </style>
