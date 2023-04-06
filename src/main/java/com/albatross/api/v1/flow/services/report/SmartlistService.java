@@ -9,6 +9,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
@@ -495,7 +496,7 @@ public class SmartlistService {
     log.error(String.format("SMARTLIST: Error while running smartlist ID: %s, message: %s", smartlist.getId(), e.getMessage()));
   }
 
-  private void saveExportMetrics(
+  private void saveMetric(
     Smartlist smartlist,
     String query,
     List<SmartlistFieldAssignment> fields,
@@ -512,10 +513,20 @@ public class SmartlistService {
       params.put("requirements", om.writeValueAsString(requirements));
       params.put("duration", duration);
 
-      sqlCache.updateBySql(SmartlistQuery.addExportMetric, params);
+      sqlCache.updateBySql(SmartlistQuery.addMetric, params);
     } catch (Exception e) {
       //noop
       log.debug("SMARTLIST: Error saving export metrics: {}", e.getMessage());
+    }
+  }
+
+  public List<SmartlistMetric> getMetrics(@NotNull Long smartlistId) {
+    try {
+      var user = securityService.getCurrentUser();
+      Map<String, Object> params = Map.of("smartlistId", smartlistId, "companyId", user.getCompanyId());
+      return sqlCache.queryBySql(SmartlistQuery.getMetrics, params, SmartlistMetric.class);
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while fetching smartlist metrics", new RuntimeException());
     }
   }
 
@@ -560,7 +571,7 @@ public class SmartlistService {
       results = sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
       Instant finish = Instant.now();
       long duration = Duration.between(start, finish).toMillis();
-      saveExportMetrics(smartlist, query, fields, requirements, duration);
+      saveMetric(smartlist, query, fields, requirements, duration);
     } catch (Exception e) {
       saveError(smartlist, query, fields, requirements, e);
       throw e;

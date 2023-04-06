@@ -1,0 +1,1 @@
+create index if not exists sm_smartlist_id_date_created_idx on flow.smartlist_metrics (smartlist_id, date_created);

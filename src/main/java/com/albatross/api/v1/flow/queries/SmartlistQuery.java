@@ -490,8 +490,26 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
-  public final static String addExportMetric = """
+  public final static String addMetric = """
     insert into flow.smartlist_metrics (smartlist_id, smartlist, smartlist_fields, smartlist_requirements, query, execution_duration, created_by_id)
     values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :query, :duration, :createdById)
+  """;
+
+  //language=PostgreSQL
+  public final static String getMetrics = """
+    select
+      sm.id,
+      sm.smartlist_id,
+      sm.created_by_id,
+      concat(u.first_name, ' ', u.last_name) as created_by,
+      sm.date_created
+    from flow.smartlist_metrics sm
+    inner join flow.smartlist s on sm.smartlist_id = s.id
+    inner join flow.company_object_type cot on s.company_object_type_id = cot.id
+    inner join flow.user u on sm.created_by_id = u.id
+    where
+      sm.smartlist_id = :smartlistId and
+      cot.company_id = :companyId
+    order by sm.date_created desc
   """;
 }

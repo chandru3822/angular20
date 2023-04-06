@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessDTO;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
 import com.albatross.api.v1.flow.services.report.SmartlistService;
@@ -170,5 +171,11 @@ public class SmartlistController {
   @PutMapping(value = "/{smartlistId}/toggleObjectType", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
     return new ResponseEntity<>(smartlistService.updateObjectType(smartlist), HttpStatus.OK);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADMIN')")
+  @GetMapping(value = "/{smartlistId}/metrics", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistMetric>> getSmartlistMetrics(@PathVariable Long smartlistId) {
+    return new ResponseEntity<>(smartlistService.getMetrics(smartlistId), HttpStatus.OK);
   }
 }
