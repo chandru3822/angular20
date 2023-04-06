@@ -394,7 +394,7 @@ declare
   v_estimated_backup_days                            numeric(10,1);
   v_solar_rebate_for_hic                             numeric;
   v_total_square_footage                             numeric;
-  v_net_payment_from_customer                        numeric;
+  v_net_payment_from_customer                        numeric(10,2);
 BEGIN
 
 select prop.id        as proposal_id,
