@@ -140,7 +140,7 @@ create type brs.calculated_proposal_value as
   unapproved_zip_code_adder                        numeric,
   csu_rebate_unit_type_id                          integer,
   financial_option                                 varchar,
-  check_from_br                                    numeric,
+  check_from_br                                    varchar,
   site_survey_time_estimate                        integer,
   site_survey_resource_type_yn                     text,
   site_survey_resource_type                        text,
@@ -149,7 +149,7 @@ create type brs.calculated_proposal_value as
   estimated_backup_days                            numeric,
   solar_rebate_for_hic                             numeric,
   total_square_footage                             numeric,
-  net_payment_from_customer                        numeric
+  net_payment_from_customer                        varchar
 );
 
 drop type brs.excluded_proposal_value;
@@ -394,7 +394,7 @@ declare
   v_estimated_backup_days                            numeric(10,1);
   v_solar_rebate_for_hic                             numeric;
   v_total_square_footage                             numeric;
-  v_net_payment_from_customer                        numeric;
+  v_net_payment_from_customer                        numeric(10,2);
 BEGIN
 
 select prop.id        as proposal_id,
@@ -2447,7 +2447,7 @@ select v_proposal_id,
        round(v_unapproved_zip_code_adder, 2),
        v_csu_rebate_unit_type_id,
        v_financial_option,
-       v_check_from_br,
+       cast(v_check_from_br as money)::varchar,
        v_site_survey_time_estimate,
        v_site_survey_resource_type_yn,
        v_site_survey_resource_type,
@@ -2456,7 +2456,7 @@ select v_proposal_id,
        v_estimated_backup_days,
        v_solar_rebate_for_hic,
        v_total_square_footage,
-       v_net_payment_from_customer;
+       cast(round(v_net_payment_from_customer, 2) as money)::varchar;
 
 drop table proposal_value;
 
