@@ -9,6 +9,9 @@
         </v-card-title>
 
         <v-card-text class="pt-5">
+          <div v-if="fieldsInUse && fieldsInUse.inUseByPps" class="mb-5">
+            Status is in use by one or more project process steps.
+          </div>
           <div v-if="fieldsInUse && fieldsInUse.steps && fieldsInUse.steps.length > 0" class="mb-5">
             <div class="mb-3">* This process step type is being used by the following Process Steps.</div>
             <div v-for="a in fieldsInUse.steps" :key="a.id" class="ml-5">
