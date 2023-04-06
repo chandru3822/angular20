@@ -23,6 +23,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['exported'])
+
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 
@@ -34,7 +36,8 @@ let exportSmartlist = async () => {
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'
     })
-    saveAs(blob, `${props.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`);
+    saveAs(blob, `${props.smartlist.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`)
+    emit('exported')
   } catch (e) {
     logError(e)
     store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data.message))

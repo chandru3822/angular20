@@ -62,7 +62,10 @@
             />
           </td>
           <td class="td-action">
-            <smartlist-export :smartlist="smartlist"/>
+            <smartlist-export
+              :smartlist="smartlist"
+              @exported="updateExportHistory(smartlist)"
+            />
           </td>
           <td class="td-action">
             <smartlist-delete
@@ -196,6 +199,11 @@ const getMetrics = async (smartlistId) => {
     logError(e)
     vueInstance.$snackbar('ERROR', 'Unable to fetch smartlist metrics')
   }
+}
+
+const updateExportHistory = (smartlist) => {
+  const index = smartlists.value.findIndex(i => i.id === smartlist.id)
+  smartlists.value[index].dateLastExported = new Date().toISOString()
 }
 </script>
 
