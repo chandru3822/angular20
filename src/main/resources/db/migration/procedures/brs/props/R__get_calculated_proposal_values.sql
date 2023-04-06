@@ -140,11 +140,16 @@ create type brs.calculated_proposal_value as
   unapproved_zip_code_adder                        numeric,
   csu_rebate_unit_type_id                          integer,
   financial_option                                 varchar,
-  check_from_br numeric,
-  site_survey_time_estimate   integer,
-  site_survey_resource_type_yn text,
-  site_survey_resource_type text,
-  site_survey_items text
+  check_from_br                                    numeric,
+  site_survey_time_estimate                        integer,
+  site_survey_resource_type_yn                     text,
+  site_survey_resource_type                        text,
+  site_survey_items                                text,
+  number_of_batteries                              numeric,
+  estimated_backup_days                            numeric,
+  solar_rebate_for_hic                             numeric,
+  total_square_footage                             numeric,
+  net_payment_from_customer                        numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -218,11 +223,11 @@ create type brs.excluded_proposal_value as
   loan_type                                      varchar,
   unapproved_zip_code_adder                      numeric,
   csu_rebate_unit_type_id                        integer,
-  financial_option                                 varchar,
-  site_survey_time_estimate   integer,
-  site_survey_resource_type_yn text,
-  site_survey_resource_type text,
-  site_survey_items text
+  financial_option                               varchar,
+  site_survey_time_estimate                      integer,
+  site_survey_resource_type_yn                   text,
+  site_survey_resource_type                      text,
+  site_survey_items                              text
 );
 
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
@@ -379,192 +384,220 @@ declare
   v_unapproved_zip_code_adder                        numeric;
   v_csu_rebate_unit_type_id                          integer;
   v_financial_option                                 varchar;
-  v_check_from_br      numeric;
-  v_site_survey_time_adders bigint[];
-  v_site_survey_time_estimate integer;
-v_site_survey_resource_type_yn text;
-v_site_survey_resource_type text;
-v_site_survey_items text;
-
+  v_check_from_br                                    numeric;
+  v_site_survey_time_adders                          bigint[];
+  v_site_survey_time_estimate                        integer;
+  v_site_survey_resource_type_yn                     text;
+  v_site_survey_resource_type                        text;
+  v_site_survey_items                                text;
+  v_number_of_batteries                              numeric;
+  v_estimated_backup_days                            numeric(10,1);
+  v_solar_rebate_for_hic                             numeric;
+  v_total_square_footage                             numeric;
+  v_net_payment_from_customer                        numeric;
 BEGIN
 
-  select prop.id                                   as proposal_id,
-         proposal_version_id,
-         prop.project_process_step_id,
-         coalesce(pcfv3.boolean_value, false),
-         coalesce(pcfv4.numeric_value, 0),
-         pcfv5.int_value,
-         lov.name,
-         p.id                                      as project_id,
-         prop.archived,
-         c.first_name,
-         c.last_name,
-         p.project_name,
-         p.street1,
-         p.street2,
-         p.city,
-         p.postal_code,
-         s.state,
-         s.abbreviation                            as state_abbreviation,
-         c.mobile,
-         c.email,
-         pcfv7.numeric_value,
-         lov6.name,
-         pcfv8.int_value,
-         lov2.name,
-         pcfv10.numeric_value,
-         pcfv11.numeric_value,
-         pcfv12.numeric_value,
-         pcfv13.numeric_value,
-         pcfv14.numeric_value,
-         pcfv15.numeric_value,
-         prop.proposal_nbr,
-         coalesce(prop.name, 'New Proposal') ||
-         case
-           when prop.revision_number = 0 then ''
-           else ' (' || prop.revision_number::varchar || ')' end
+select prop.id        as proposal_id,
+       proposal_version_id,
+       prop.project_process_step_id,
+       coalesce(pcfv3.boolean_value, false),
+       coalesce(pcfv4.numeric_value, 0),
+       pcfv5.int_value,
+       lov.name,
+       p.id           as project_id,
+       prop.archived,
+       c.first_name,
+       c.last_name,
+       p.project_name,
+       p.street1,
+       p.street2,
+       p.city,
+       p.postal_code,
+       s.state,
+       s.abbreviation as state_abbreviation,
+       c.mobile,
+       c.email,
+       pcfv7.numeric_value,
+       lov6.name,
+       pcfv8.int_value,
+       lov2.name,
+       pcfv10.numeric_value,
+       pcfv11.numeric_value,
+       pcfv12.numeric_value,
+       pcfv13.numeric_value,
+       pcfv14.numeric_value,
+       pcfv15.numeric_value,
+       pcfv16.numeric_value,
+       prop.proposal_nbr,
+       coalesce(prop.name, 'New Proposal') ||
+       case
+         when prop.revision_number = 0 then ''
+         else ' (' || prop.revision_number::varchar || ')' end
            || ' - ' || prop.proposal_nbr || '.pdf' as display_name
-  into v_proposal_id,v_version_id,v_project_process_step_id,v_friends_and_family,v_down_payment_amount,v_product_id,v_product_name,
-    v_project_id,v_proposal_archived,v_contact_first_name,v_contact_last_name,v_project_name,v_project_street1,
-    v_project_street2,v_city,v_postal_code,v_project_state,v_project_state_abbrev,v_contact_phone,v_contact_email,
-    v_other_adder_and_discount_amount,v_other_adder_and_discount,v_storage_type_id,v_storage_type,v_main_panel_upgrade_cost,
-    v_structural_upgrade_cost,
-    v_reroof_cost,
-    v_tree_trimming_cost,
-    v_trenching_cost,
-    v_ac_unit_relocation_cost,
-    v_proposal_nbr,
-    v_display_name
-  from brs.proposal prop
-         inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
-         inner join flow.project p on pps.project_id = p.id
-         inner join flow.contact c on p.contact_id = c.id
-         inner join flow.company_state cs on p.company_state_id = cs.id
-         inner join flow.state s on cs.state_id = s.id
-         left join brs.proposal_custom_field_value pcfv3 on prop.id = pcfv3.proposal_id and
-                                                            pcfv3.custom_field_group_assignment_id = 169
-         left join brs.proposal_custom_field_value pcfv4 on prop.id = pcfv4.proposal_id and
-                                                            pcfv4.custom_field_group_assignment_id = 134
-         left join brs.proposal_custom_field_value pcfv5 on prop.id = pcfv5.proposal_id and
-                                                            pcfv5.custom_field_group_assignment_id = 147
-         left join brs.proposal_custom_field_value pcfv6 on prop.id = pcfv6.proposal_id and
-                                                            pcfv6.custom_field_group_assignment_id = 165
-         left join flow.list_of_value lov6 on lov6.id = pcfv6.int_value
-         left join brs.proposal_custom_field_value pcfv7 on prop.id = pcfv7.proposal_id and
-                                                            pcfv7.custom_field_group_assignment_id = 167
+into v_proposal_id,
+  v_version_id,
+  v_project_process_step_id,
+  v_friends_and_family,
+  v_down_payment_amount,
+  v_product_id,
+  v_product_name,
+  v_project_id,
+  v_proposal_archived,
+  v_contact_first_name,
+  v_contact_last_name,
+  v_project_name,
+  v_project_street1,
+  v_project_street2,
+  v_city,
+  v_postal_code,
+  v_project_state,
+  v_project_state_abbrev,
+  v_contact_phone,
+  v_contact_email,
+  v_other_adder_and_discount_amount,
+  v_other_adder_and_discount,
+  v_storage_type_id,
+  v_storage_type,
+  v_main_panel_upgrade_cost,
+  v_structural_upgrade_cost,
+  v_reroof_cost,
+  v_tree_trimming_cost,
+  v_trenching_cost,
+  v_ac_unit_relocation_cost,
+  v_total_square_footage,
+  v_proposal_nbr,
+  v_display_name
+from brs.proposal prop
+  inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
+  inner join flow.project p on pps.project_id = p.id
+  inner join flow.contact c on p.contact_id = c.id
+  inner join flow.company_state cs on p.company_state_id = cs.id
+  inner join flow.state s on cs.state_id = s.id
+  left join brs.proposal_custom_field_value pcfv3 on prop.id = pcfv3.proposal_id and
+  pcfv3.custom_field_group_assignment_id = 169
+  left join brs.proposal_custom_field_value pcfv4 on prop.id = pcfv4.proposal_id and
+  pcfv4.custom_field_group_assignment_id = 134
+  left join brs.proposal_custom_field_value pcfv5 on prop.id = pcfv5.proposal_id and
+  pcfv5.custom_field_group_assignment_id = 147
+  left join brs.proposal_custom_field_value pcfv6 on prop.id = pcfv6.proposal_id and
+  pcfv6.custom_field_group_assignment_id = 165
+  left join flow.list_of_value lov6 on lov6.id = pcfv6.int_value
+  left join brs.proposal_custom_field_value pcfv7 on prop.id = pcfv7.proposal_id and
+  pcfv7.custom_field_group_assignment_id = 167
+  left join flow.list_of_value lov on lov.id = pcfv5.int_value
+  left join brs.proposal_custom_field_value pcfv8 on prop.id = pcfv8.proposal_id and
+  pcfv8.custom_field_group_assignment_id = 200
+  left join brs.list_of_value lov2 on lov2.id = pcfv8.int_value
+  left join brs.proposal_custom_field_value pcfv10 on prop.id = pcfv10.proposal_id and
+  pcfv10.custom_field_group_assignment_id = 201
+  left join brs.proposal_custom_field_value pcfv11 on prop.id = pcfv11.proposal_id and
+  pcfv11.custom_field_group_assignment_id = 202
+  left join brs.proposal_custom_field_value pcfv12 on prop.id = pcfv12.proposal_id and
+  pcfv12.custom_field_group_assignment_id = 203
+  left join brs.proposal_custom_field_value pcfv13 on prop.id = pcfv13.proposal_id and
+  pcfv13.custom_field_group_assignment_id = 204
+  left join brs.proposal_custom_field_value pcfv14 on prop.id = pcfv14.proposal_id and
+  pcfv14.custom_field_group_assignment_id = 205
+  left join brs.proposal_custom_field_value pcfv15 on prop.id = pcfv15.proposal_id and
+    pcfv15.custom_field_group_assignment_id = 206
+  left join brs.proposal_custom_field_value pcfv16 on prop.id = pcfv16.proposal_id and
+    pcfv16.custom_field_group_assignment_id = 389
+where prop.id = p_proposal_id;
 
-         left join flow.list_of_value lov on lov.id = pcfv5.int_value
-         left join brs.proposal_custom_field_value pcfv8 on prop.id = pcfv8.proposal_id and
-                                                            pcfv8.custom_field_group_assignment_id = 200
-         left join brs.list_of_value lov2 on lov2.id = pcfv8.int_value
-         left join brs.proposal_custom_field_value pcfv10 on prop.id = pcfv10.proposal_id and
-                                                             pcfv10.custom_field_group_assignment_id = 201
-         left join brs.proposal_custom_field_value pcfv11 on prop.id = pcfv11.proposal_id and
-                                                             pcfv11.custom_field_group_assignment_id = 202
-         left join brs.proposal_custom_field_value pcfv12 on prop.id = pcfv12.proposal_id and
-                                                             pcfv12.custom_field_group_assignment_id = 203
-         left join brs.proposal_custom_field_value pcfv13 on prop.id = pcfv13.proposal_id and
-                                                             pcfv13.custom_field_group_assignment_id = 204
-         left join brs.proposal_custom_field_value pcfv14 on prop.id = pcfv14.proposal_id and
-                                                             pcfv14.custom_field_group_assignment_id = 205
-         left join brs.proposal_custom_field_value pcfv15 on prop.id = pcfv15.proposal_id and
-                                                             pcfv15.custom_field_group_assignment_id = 206
-  where prop.id = p_proposal_id;
-
-  select string_agg(lov.name, ',')
-  into v_adder
-  from brs.proposal prop
-         inner join brs.proposal_custom_field_value pcfv on prop.id = pcfv.proposal_id and
-                                                            pcfv.custom_field_group_assignment_id = 146
-         inner join brs.list_of_value lov on lov.id = any (pcfv.int_array_value)
-  where prop.id = p_proposal_id;
+select string_agg(lov.name, ',')
+into v_adder
+from brs.proposal prop
+       inner join brs.proposal_custom_field_value pcfv on prop.id = pcfv.proposal_id and
+                                                          pcfv.custom_field_group_assignment_id = 146
+       inner join brs.list_of_value lov on lov.id = any (pcfv.int_array_value)
+where prop.id = p_proposal_id;
 
 
-  select ppscfv.int_value,
-         ppscfv2.int_value,
-         ppscfv3.numeric_value,
-         ppscfv4.int_value,
-         ppscfv5.int_value,
-         lov.name,
-         cs.state_id,
-         pd.utility_company,
-         pd.utility_company_name,
-         ppscfv6.json_value,
-         ppscfv7.int_value,
-         ppscfv8.int_value,
-         ppscfv9.int_value,
-         ppscfv10.int_value,
-         lov1.name,
-         ppscfv11.text_value,
-         pd.unapproved_zip_code_adder,
-         ppscfv12.int_array_value
-  into
-    v_estimated_annual_energy_consumption_kwh,
-    v_first_year_production_estimate,
-    v_system_size,
-    v_panel_watts,
-    v_panel_brand_id,
-    v_panel_brand,
-    v_state_id,
-    v_utility_company_id,
-    v_utility_company,
-    v_aurora_design_summary,
-    v_led_light_bulbs,
-    v_smart_thermostat,
-    v_panel_quantity,
-    v_inverter_brand_id,
-    v_inverter_brand,
-    v_aurora_design_id,
-    v_unapproved_zip_code_adder,
-    v_site_survey_time_adders
-  from flow.project_process_step pps
-         inner join flow.project p on pps.project_id = p.id
-         inner join flow.company_state cs on p.company_state_id = cs.id
-         inner join brs.project_details pd on pd.project_id = p.id
-         left join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and
-                                                                          ppscfv.custom_field_group_assignment_id =
-                                                                          22573
-         left join flow.project_process_step_custom_field_value ppscfv2 on ppscfv2.project_process_step_id = pps.id and
-                                                                           ppscfv2.custom_field_group_assignment_id =
-                                                                           22563
-         left join flow.project_process_step_custom_field_value ppscfv3 on ppscfv3.project_process_step_id = pps.id and
-                                                                           ppscfv3.custom_field_group_assignment_id =
-                                                                           22561
-         left join flow.project_process_step_custom_field_value ppscfv4 on ppscfv4.project_process_step_id = pps.id and
-                                                                           ppscfv4.custom_field_group_assignment_id =
-                                                                           22675
-         left join flow.project_process_step_custom_field_value ppscfv5 on ppscfv5.project_process_step_id = pps.id and
-                                                                           ppscfv5.custom_field_group_assignment_id =
-                                                                           22564
-         left join flow.list_of_value lov on lov.id = ppscfv5.int_value
-         left join flow.project_process_step_custom_field_value ppscfv6 on ppscfv6.project_process_step_id = pps.id and
-                                                                           ppscfv6.custom_field_group_assignment_id =
-                                                                           22682
-         left join flow.project_process_step_custom_field_value ppscfv7 on ppscfv7.project_process_step_id = pps.id and
-                                                                           ppscfv7.custom_field_group_assignment_id =
-                                                                           22566
-         left join flow.project_process_step_custom_field_value ppscfv8 on ppscfv8.project_process_step_id = pps.id and
-                                                                           ppscfv8.custom_field_group_assignment_id =
-                                                                           22567
-         left join flow.project_process_step_custom_field_value ppscfv9 on ppscfv9.project_process_step_id = pps.id and
-                                                                           ppscfv9.custom_field_group_assignment_id =
-                                                                           22562
-         left join flow.project_process_step_custom_field_value ppscfv10
-                   on ppscfv10.project_process_step_id = pps.id and
-                      ppscfv10.custom_field_group_assignment_id =
-                      22565
-         left join flow.list_of_value lov1 on lov1.id = ppscfv10.int_value
-         left join flow.project_process_step_custom_field_value ppscfv11
-                   on ppscfv11.project_process_step_id = pps.id and
-                      ppscfv11.custom_field_group_assignment_id =
-                      22560
-         left join flow.project_process_step_custom_field_value ppscfv12
-                   on ppscfv12.project_process_step_id = pps.id and
-                      ppscfv12.custom_field_group_assignment_id =
-                      25023
-  where pps.id = v_project_process_step_id;
+select ppscfv.int_value,
+       ppscfv2.int_value,
+       ppscfv3.numeric_value,
+       ppscfv4.int_value,
+       ppscfv5.int_value,
+       lov.name,
+       cs.state_id,
+       pd.utility_company,
+       pd.utility_company_name,
+       ppscfv6.json_value,
+       ppscfv7.int_value,
+       ppscfv8.int_value,
+       ppscfv9.int_value,
+       ppscfv10.int_value,
+       lov1.name,
+       ppscfv11.text_value,
+       pd.unapproved_zip_code_adder,
+       ppscfv12.int_array_value
+into
+  v_estimated_annual_energy_consumption_kwh,
+  v_first_year_production_estimate,
+  v_system_size,
+  v_panel_watts,
+  v_panel_brand_id,
+  v_panel_brand,
+  v_state_id,
+  v_utility_company_id,
+  v_utility_company,
+  v_aurora_design_summary,
+  v_led_light_bulbs,
+  v_smart_thermostat,
+  v_panel_quantity,
+  v_inverter_brand_id,
+  v_inverter_brand,
+  v_aurora_design_id,
+  v_unapproved_zip_code_adder,
+  v_site_survey_time_adders
+from flow.project_process_step pps
+       inner join flow.project p on pps.project_id = p.id
+       inner join flow.company_state cs on p.company_state_id = cs.id
+       inner join brs.project_details pd on pd.project_id = p.id
+       left join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and
+                                                                        ppscfv.custom_field_group_assignment_id =
+                                                                        22573
+       left join flow.project_process_step_custom_field_value ppscfv2 on ppscfv2.project_process_step_id = pps.id and
+                                                                         ppscfv2.custom_field_group_assignment_id =
+                                                                         22563
+       left join flow.project_process_step_custom_field_value ppscfv3 on ppscfv3.project_process_step_id = pps.id and
+                                                                         ppscfv3.custom_field_group_assignment_id =
+                                                                         22561
+       left join flow.project_process_step_custom_field_value ppscfv4 on ppscfv4.project_process_step_id = pps.id and
+                                                                         ppscfv4.custom_field_group_assignment_id =
+                                                                         22675
+       left join flow.project_process_step_custom_field_value ppscfv5 on ppscfv5.project_process_step_id = pps.id and
+                                                                         ppscfv5.custom_field_group_assignment_id =
+                                                                         22564
+       left join flow.list_of_value lov on lov.id = ppscfv5.int_value
+       left join flow.project_process_step_custom_field_value ppscfv6 on ppscfv6.project_process_step_id = pps.id and
+                                                                         ppscfv6.custom_field_group_assignment_id =
+                                                                         22682
+       left join flow.project_process_step_custom_field_value ppscfv7 on ppscfv7.project_process_step_id = pps.id and
+                                                                         ppscfv7.custom_field_group_assignment_id =
+                                                                         22566
+       left join flow.project_process_step_custom_field_value ppscfv8 on ppscfv8.project_process_step_id = pps.id and
+                                                                         ppscfv8.custom_field_group_assignment_id =
+                                                                         22567
+       left join flow.project_process_step_custom_field_value ppscfv9 on ppscfv9.project_process_step_id = pps.id and
+                                                                         ppscfv9.custom_field_group_assignment_id =
+                                                                         22562
+       left join flow.project_process_step_custom_field_value ppscfv10
+                 on ppscfv10.project_process_step_id = pps.id and
+                    ppscfv10.custom_field_group_assignment_id =
+                    22565
+       left join flow.list_of_value lov1 on lov1.id = ppscfv10.int_value
+       left join flow.project_process_step_custom_field_value ppscfv11
+                 on ppscfv11.project_process_step_id = pps.id and
+                    ppscfv11.custom_field_group_assignment_id =
+                    22560
+       left join flow.project_process_step_custom_field_value ppscfv12
+                 on ppscfv12.project_process_step_id = pps.id and
+                    ppscfv12.custom_field_group_assignment_id =
+                    25023
+where pps.id = v_project_process_step_id;
 
-  create temp table proposal_value as (with version_values
+create temp table proposal_value as (with version_values
                                               as (select distinct on ( vw.proposal_group_uuid, vw.custom_field_group_assignment_id ) vw.id,
                                                                                                                                      vw.custom_field_group_assignment_id,
                                                                                                                                      vw.proposal_group_uuid,
@@ -925,6 +958,24 @@ BEGIN
                                                                                                  on g.proposal_group_uuid = vv2.proposal_group_uuid
                                                                                       inner join brs.custom_field cf on cf.id = vv2.field_id
                                                                                       inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id),
+                                            storage_number_of_batteries as (select vv2.proposal_group_uuid,
+                                                                                   vv2.field_id,
+                                                                                   vv2.field_name,
+                                                                                   cdt.data_type_id,
+                                                                                   (vv2.value ->> 'value')::text    as value,
+                                                                                   (vv2.value ->> 'intValue')::text as intValue,
+                                                                                   vv2.object_code
+                                                                            from version_values vv2
+                                                                                   inner join brs.custom_field cf on cf.id = vv2.field_id
+                                                                                   inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                                                            where proposal_group_uuid in
+                                                                                  (select proposal_group_uuid
+                                                                                   from version_values vv
+                                                                                   where vv.object_code = 'PROPOSAL_STORAGE_DETAILS'
+                                                                                     and vv.field_id = 160
+                                                                                     and (vv.value ->> 'intValue')::bigint = 557)
+                                                                              and vv2.field_id = 155 --number of batteries
+                                            ),
                                             group_uuid_equipment_type_smart_thermostat as (select vv.proposal_group_uuid
                                                                                            from version_values vv
                                                                                            where vv.object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
@@ -1369,18 +1420,28 @@ BEGIN
                                               'OTHER_ADDERS',
                                               null::text
                                        from other_adders oa
+                                       union
+                                       select snob.proposal_group_uuid::uuid,
+                                              snob.field_id,
+                                              snob.field_name,
+                                              snob.data_type_id,
+                                              snob.value,
+                                              snob.intValue::bigint,
+                                              snob.object_code,
+                                              null::text
+                                       from storage_number_of_batteries snob
                                        order by 7, 1);
   --   raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
 --   raise notice 'v_system_size = %',v_system_size;
   raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
 
-  create index pv_proposal_group_uuid on proposal_value (proposal_group_uuid);
-  create index pv_field_id on proposal_value (field_id);
-  create index pv_field_name on proposal_value (field_name);
-  create index pv_data_type_id on proposal_value (data_type_id);
-  create index pv_value on proposal_value (value);
-  create index pv_int_value on proposal_value (int_value);
-  create index pv_object_code on proposal_value (object_code);
+create index pv_proposal_group_uuid on proposal_value (proposal_group_uuid);
+create index pv_field_id on proposal_value (field_id);
+create index pv_field_name on proposal_value (field_name);
+create index pv_data_type_id on proposal_value (data_type_id);
+create index pv_value on proposal_value (value);
+create index pv_int_value on proposal_value (int_value);
+create index pv_object_code on proposal_value (object_code);
 
 --   raise notice 'v_product_id = % ',v_product_id;
 --   raise notice 'v_version_id = % ',v_version_id;
@@ -1398,88 +1459,93 @@ BEGIN
 --   raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
 
 
-  select string_agg(value::text,',')
-  into v_site_survey_items
-  from proposal_value pv
-  where field_id = 337
-    and object_code = 'PROPOSAL_SITE_SURVEY';
-  raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
+select string_agg(value::text, ',')
+into v_site_survey_items
+from proposal_value pv
+where field_id = 337
+  and object_code = 'PROPOSAL_SITE_SURVEY';
+raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
 
 
-  select sum(value::integer)
-  into v_site_survey_time_estimate
-  from proposal_value pv
-  where field_id = 339
-    and object_code = 'PROPOSAL_SITE_SURVEY';
-  raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
+select sum(value::integer)
+into v_site_survey_time_estimate
+from proposal_value pv
+where field_id = 339
+  and object_code = 'PROPOSAL_SITE_SURVEY';
+raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
 
-  select value
-  into v_site_survey_resource_type_yn
-  from proposal_value pv
-  where field_id = 338
-    and object_code = 'PROPOSAL_SITE_SURVEY'
-    and value = 'No' limit 1;
+select value
+into v_site_survey_resource_type_yn
+from proposal_value pv
+where field_id = 338
+  and object_code = 'PROPOSAL_SITE_SURVEY'
+  and value = 'No' limit 1;
 
-  if v_site_survey_resource_type_yn is null then
-    select value
-    into v_site_survey_resource_type_yn
-    from proposal_value pv
-    where field_id = 338
-      and object_code = 'PROPOSAL_SITE_SURVEY'
-      and value = 'Yes' limit 1;
-  end if;
+if v_site_survey_resource_type_yn is null then
+select value
+into v_site_survey_resource_type_yn
+from proposal_value pv
+where field_id = 338
+  and object_code = 'PROPOSAL_SITE_SURVEY'
+  and value = 'Yes' limit 1;
+end if;
 
 
-  raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
+raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
   if v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'No' then
     v_site_survey_resource_type = 'Service Tech or Higher';
   elsif v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'Yes' then
     v_site_survey_resource_type = 'Site Surveyor';
-  end if;
+end if;
 
   raise notice 'v_site_survey_resource_type = %',v_site_survey_resource_type;
 
 
 
-  select value::numeric
-  into v_apr
-  from proposal_value pv
-  where field_id = 111
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
-  raise notice 'v_apr = %',v_apr;
+select value::numeric
+into v_apr
+from proposal_value pv
+where field_id = 111
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+raise notice 'v_apr = %',v_apr;
 
-  select value
-  into v_financial_option
-  from proposal_value pv
-  where field_id = 320
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
-  raise notice 'v_financial_option = %',v_financial_option;
-
-
-  select value::numeric
-  into v_instant_use_assumption
-  from proposal_value pv1
-  where pv1.field_id = 147
-    and object_code = 'PROPOSAL_PRICING';
-
-  select value::numeric
-  into v_reamortized_payment_factor_without_itc_paydown
-  from proposal_value pv1
-  where pv1.field_id = 148
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
-  raise notice 'v_reamortized_payment_factor_without_itc_paydown = % ',v_reamortized_payment_factor_without_itc_paydown;
+select value
+into v_financial_option
+from proposal_value pv
+where field_id = 320
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+raise notice 'v_financial_option = %',v_financial_option;
 
 
-  select value::numeric
-  into v_net_metring_rate
-  from proposal_value pv1
-  where pv1.field_id = 92
-    and object_code = 'PROPOSAL_PRICING';
+select value::numeric
+into v_instant_use_assumption
+from proposal_value pv1
+where pv1.field_id = 147
+  and object_code = 'PROPOSAL_PRICING';
 
-  v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption; --TODO
-  v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used, 0);
-  v_after_net_metering = v_sent_to_grid * v_net_metring_rate;
-  v_adjusted_annual_production = coalesce(v_instantly_used, 0) + coalesce(v_after_net_metering, 0);
+select value::numeric
+into v_reamortized_payment_factor_without_itc_paydown
+from proposal_value pv1
+where pv1.field_id = 148
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+raise notice 'v_reamortized_payment_factor_without_itc_paydown = % ',v_reamortized_payment_factor_without_itc_paydown;
+
+select value::numeric
+into v_number_of_batteries
+from proposal_value pv1
+where pv1.field_id = 155
+  and pv1.object_code = 'PROPOSAL_STORAGE_DETAILS';
+
+select value::numeric
+into v_net_metring_rate
+from proposal_value pv1
+where pv1.field_id = 92
+  and object_code = 'PROPOSAL_PRICING';
+
+v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption; --TODO
+v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used, 0);
+v_after_net_metering = v_sent_to_grid * v_net_metring_rate;
+v_adjusted_annual_production = coalesce(v_instantly_used, 0) + coalesce(v_after_net_metering, 0);
 
 --   raise notice 'v_instant_use_assumption = % ',v_instant_use_assumption;
 --   raise notice 'v_net_metring_rate = % ',v_net_metring_rate;
@@ -1489,158 +1555,158 @@ BEGIN
 --   raise notice 'v_adjusted_annual_production = % ',v_adjusted_annual_production;
 
 
-  with smart_thermostat as (select proposal_group_uuid
-                            from proposal_value
-                            where field_id = 117
-                              and int_value::bigint = 536
-                              and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
-  select value::numeric
-  into v_smart_thermostat_value
-  from proposal_value pv1
-         inner join smart_thermostat st on st.proposal_group_uuid = pv1.proposal_group_uuid
-  where pv1.field_id = 119;
-  raise notice 'v_smart_thermostat_value = % ',v_smart_thermostat_value;
+with smart_thermostat as (select proposal_group_uuid
+                          from proposal_value
+                          where field_id = 117
+                            and int_value::bigint = 536
+  and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
+select value::numeric
+into v_smart_thermostat_value
+from proposal_value pv1
+       inner join smart_thermostat st on st.proposal_group_uuid = pv1.proposal_group_uuid
+where pv1.field_id = 119;
+raise notice 'v_smart_thermostat_value = % ',v_smart_thermostat_value;
 
-  with smart_thermostat as (select proposal_group_uuid
-                            from proposal_value
-                            where field_id = 117
-                              and int_value::bigint = 536
-                              and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
-  select value::numeric
-  into v_energy_efficiency_reduction_thermostat
-  from proposal_value pv1
-         inner join smart_thermostat st on st.proposal_group_uuid = pv1.proposal_group_uuid
-  where pv1.field_id = 145;
-  raise notice 'v_energy_efficiency_reduction_thermostat = % ',v_energy_efficiency_reduction_thermostat;
+with smart_thermostat as (select proposal_group_uuid
+                          from proposal_value
+                          where field_id = 117
+                            and int_value::bigint = 536
+  and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
+select value::numeric
+into v_energy_efficiency_reduction_thermostat
+from proposal_value pv1
+       inner join smart_thermostat st on st.proposal_group_uuid = pv1.proposal_group_uuid
+where pv1.field_id = 145;
+raise notice 'v_energy_efficiency_reduction_thermostat = % ',v_energy_efficiency_reduction_thermostat;
 
-  with light_bulbs as (select proposal_group_uuid
+with light_bulbs as (select proposal_group_uuid
+                     from proposal_value
+                     where field_id = 117
+                       and int_value::bigint = 537
+  and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
+select value::numeric
+into v_led_light_bulbs_value
+from proposal_value pv1
+       inner join light_bulbs st on st.proposal_group_uuid = pv1.proposal_group_uuid
+where pv1.field_id = 119;
+-- raise notice 'v_led_light_bulbs_value = % ',v_led_light_bulbs_value;
+
+with light_bulbs as (select proposal_group_uuid
+                     from proposal_value
+                     where field_id = 117
+                       and int_value::bigint = 537
+  and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
+select value::numeric
+into v_energy_efficiency_reduction_light_bulbs
+from proposal_value pv1
+       inner join light_bulbs st on st.proposal_group_uuid = pv1.proposal_group_uuid
+where pv1.field_id = 145;
+raise notice 'v_energy_efficiency_reduction_light_bulbs = % ',v_energy_efficiency_reduction_light_bulbs;
+
+select value::numeric
+into v_loan_term
+from proposal_value
+where field_id = 110
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+raise notice 'v_loan_term = % ',v_loan_term;
+
+select value::bigint
+into v_panel_warranty
+from proposal_value
+where field_id = 143
+  and object_code = 'PROPOSAL_PANEL_DETAIL';
+raise notice 'v_panel_warranty = % ',v_panel_warranty;
+
+select value::bigint
+into v_inverter_warranty
+from proposal_value
+where field_id = 143
+  and object_code = 'PROPOSAL_INVERTER_DETAILS';
+raise notice 'v_inverter_warranty = % ',v_inverter_warranty;
+
+v_state_rebate_amount = 0.00::numeric;
+with state_rebates as (select proposal_group_uuid
                        from proposal_value
-                       where field_id = 117
-                         and int_value::bigint = 537
-                         and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
-  select value::numeric
-  into v_led_light_bulbs_value
-  from proposal_value pv1
-         inner join light_bulbs st on st.proposal_group_uuid = pv1.proposal_group_uuid
-  where pv1.field_id = 119;
- -- raise notice 'v_led_light_bulbs_value = % ',v_led_light_bulbs_value;
-
-  with light_bulbs as (select proposal_group_uuid
+                       where field_id = 86
+                         and object_code = 'PROPOSAL_REBATE')
+select value::numeric
+into v_state_rebate_amount
+from proposal_value pv1
+       inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
+where pv1.field_id = 98;
+v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
+raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
+with state_rebates as (select proposal_group_uuid
                        from proposal_value
-                       where field_id = 117
-                         and int_value::bigint = 537
-                         and object_code = 'PROPOSAL_EQUIPMENT_ADDERS')
-  select value::numeric
-  into v_energy_efficiency_reduction_light_bulbs
-  from proposal_value pv1
-         inner join light_bulbs st on st.proposal_group_uuid = pv1.proposal_group_uuid
-  where pv1.field_id = 145;
-  raise notice 'v_energy_efficiency_reduction_light_bulbs = % ',v_energy_efficiency_reduction_light_bulbs;
-
-  select value::numeric
-  into v_loan_term
-  from proposal_value
-  where field_id = 110
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
-  raise notice 'v_loan_term = % ',v_loan_term;
-
-  select value::bigint
-  into v_panel_warranty
-  from proposal_value
-  where field_id = 143
-    and object_code = 'PROPOSAL_PANEL_DETAIL';
-  raise notice 'v_panel_warranty = % ',v_panel_warranty;
-
-  select value::bigint
-  into v_inverter_warranty
-  from proposal_value
-  where field_id = 143
-    and object_code = 'PROPOSAL_INVERTER_DETAILS';
-  raise notice 'v_inverter_warranty = % ',v_inverter_warranty;
-
-  v_state_rebate_amount = 0.00::numeric;
-  with state_rebates as (select proposal_group_uuid
-                         from proposal_value
-                         where field_id = 86
-                           and object_code = 'PROPOSAL_REBATE')
-  select value::numeric
-  into v_state_rebate_amount
-  from proposal_value pv1
-         inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
-  where pv1.field_id = 98;
-  v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
-  raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
-  with state_rebates as (select proposal_group_uuid
-                         from proposal_value
-                         where field_id = 86
-                           and object_code = 'PROPOSAL_REBATE')
-  select int_value::bigint
-  into v_unit_type_state_rebate
-  from proposal_value pv1
-         inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
-  where pv1.field_id = 97;
+                       where field_id = 86
+                         and object_code = 'PROPOSAL_REBATE')
+select int_value::bigint
+into v_unit_type_state_rebate
+from proposal_value pv1
+       inner join state_rebates sr2 on sr2.proposal_group_uuid = pv1.proposal_group_uuid
+where pv1.field_id = 97;
 
 
-  raise notice 'v_utility_company_id = % ',v_utility_company_id;
+raise notice 'v_utility_company_id = % ',v_utility_company_id;
 --call first formula
-  select value::numeric
-  into v_panel_degradation_factor
-  from proposal_value
-  where field_id = 136
-    and object_code = 'PROPOSAL_PANEL_DETAIL';
-  raise notice 'v_panel_degradation_factor = %',v_panel_degradation_factor;
+select value::numeric
+into v_panel_degradation_factor
+from proposal_value
+where field_id = 136
+  and object_code = 'PROPOSAL_PANEL_DETAIL';
+raise notice 'v_panel_degradation_factor = %',v_panel_degradation_factor;
 
-  select coalesce(value::numeric, 0::numeric)
-  into v_dealer_fee
-  from proposal_value
-  where field_id = 114
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+select coalesce(value::numeric, 0::numeric)
+into v_dealer_fee
+from proposal_value
+where field_id = 114
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
 
-  raise notice 'v_dealer_fee = %',v_dealer_fee;
+raise notice 'v_dealer_fee = %',v_dealer_fee;
 
-  select value::numeric
-  into v_reamortization_factor
-  from proposal_value
-  where field_id = 116
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+select value::numeric
+into v_reamortization_factor
+from proposal_value
+where field_id = 116
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
 
-  raise notice 'v_reamortization_factor = %',v_reamortization_factor;
+raise notice 'v_reamortization_factor = %',v_reamortization_factor;
+raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
+raise notice 'v_system_size = %',v_system_size;
 
-  raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
-  raise notice 'v_system_size = %',v_system_size;
+v_production_factor = v_first_year_production_estimate / (v_system_size * 1000);
+raise notice 'v_production_factor = %',v_production_factor;
 
-  v_production_factor = v_first_year_production_estimate / (v_system_size * 1000);
-  raise notice 'v_production_factor = %',v_production_factor;
-
-  v_funding_range =
-      (select value::numeric from proposal_value where field_id = 90 and object_code = 'PROPOSAL_PRICING') -
-      (select value::numeric from proposal_value where field_id = 91 and object_code = 'PROPOSAL_PRICING');
+v_funding_range =
+    (select value::numeric from proposal_value where field_id = 90 and object_code = 'PROPOSAL_PRICING') -
+    (select value::numeric from proposal_value where field_id = 91 and object_code = 'PROPOSAL_PRICING');
 
   raise notice 'v_funding_range = %',v_funding_range;
   v_production_factor_range =
       (select value::numeric from proposal_value where field_id = 89 and object_code = 'PROPOSAL_PRICING') -
       (select value::numeric from proposal_value where field_id = 88 and object_code = 'PROPOSAL_PRICING');
 
-  raise notice 'v_production_factor_range = %',v_production_factor_range;
-  v_points_off_south_production_factor = v_production_factor - (select value::numeric
+raise notice 'v_production_factor_range = %',v_production_factor_range;
+v_points_off_south_production_factor = v_production_factor - (select value::numeric
                                                                 from proposal_value
                                                                 where field_id = 89
                                                                   and object_code = 'PROPOSAL_PRICING');
 
-  raise notice 'v_points_off_south_production_factor = %',v_points_off_south_production_factor;
-  v_price_change_per_production_point = coalesce(v_funding_range, 0) / v_production_factor_range; --TODO
-  raise notice 'v_price_change_per_production_point = %',v_price_change_per_production_point;
+raise notice 'v_points_off_south_production_factor = %',v_points_off_south_production_factor;
+v_price_change_per_production_point = coalesce(v_funding_range, 0) / v_production_factor_range; --TODO
+raise notice 'v_price_change_per_production_point = %',v_price_change_per_production_point;
 
-  v_calculated_price_adjustment = v_price_change_per_production_point * v_points_off_south_production_factor;
-  raise notice 'v_calculated_price_adjustment = %',v_calculated_price_adjustment;
+v_calculated_price_adjustment = v_price_change_per_production_point * v_points_off_south_production_factor;
+raise notice 'v_calculated_price_adjustment = %',v_calculated_price_adjustment;
 
-  v_max_price_adjustment = (select least(greatest((v_funding_range * -1), v_calculated_price_adjustment), 0))::numeric +
-                           case when v_friends_and_family is true then .5::numeric else 0::numeric end;
+v_max_price_adjustment = (select least(greatest((v_funding_range * -1), v_calculated_price_adjustment), 0))::numeric +
+                           case when v_friends_and_family is true then .5::numeric else 0::numeric
+end;
   raise notice 'v_max_price_adjustment = %',v_max_price_adjustment;
 
 
   v_adjusted_price_per_wat =
-      (select value::numeric from proposal_value where field_id = 90 and object_code = 'PROPOSAL_PRICING') +
+    (select value::numeric from proposal_value where field_id = 90 and object_code = 'PROPOSAL_PRICING') +
       v_max_price_adjustment;
   raise notice 'v_adjusted_price_per_wat = %',v_adjusted_price_per_wat;
 
@@ -1648,24 +1714,24 @@ BEGIN
   v_initial_system_cost = v_system_size::numeric * 1000::numeric * v_adjusted_price_per_wat::numeric;
   raise notice 'v_initial_system_cost = %',v_initial_system_cost;
 
-  select int_value, value
-  into v_financier_id,v_financier
-  from proposal_value
-  where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
-    and field_id = 102;
-  raise notice 'v_financier_id = %',v_financier_id;
-  raise notice 'v_financier = %',v_financier;
+select int_value, value
+into v_financier_id,v_financier
+from proposal_value
+where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
+  and field_id = 102;
+raise notice 'v_financier_id = %',v_financier_id;
+raise notice 'v_financier = %',v_financier;
 
 
   v_equipment_storage_adder = 0;
-  select value
-  into v_cash_price_storage
-  from proposal_value
-  where object_code = 'PROPOSAL_STORAGE_DETAILS'
-    and field_id = 157;
-  v_cash_price_storage = coalesce(v_cash_price_storage, 0) * (1 + v_dealer_fee);
-  v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
-  v_loan_price_storage = v_cash_price_storage;
+select value
+into v_cash_price_storage
+from proposal_value
+where object_code = 'PROPOSAL_STORAGE_DETAILS'
+  and field_id = 157;
+v_cash_price_storage = coalesce(v_cash_price_storage, 0) * (1 + v_dealer_fee);
+v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
+v_loan_price_storage = v_cash_price_storage;
 
   raise notice 'v_cash_price_storage = %',v_cash_price_storage;
   raise notice 'v_loan_price_storage = %',v_loan_price_storage;
@@ -1681,22 +1747,22 @@ BEGIN
   v_misc_adders = brs.get_misc_adder_amount(v_system_size);
   raise notice 'v_misc_adders = %',v_misc_adders;
 
-  select value::numeric
-  into v_initial_payment_factor
-  from proposal_value
-  where field_id = 115
-    and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
-  raise notice 'v_initial_payment_factor = %',v_initial_payment_factor;
+select value::numeric
+into v_initial_payment_factor
+from proposal_value
+where field_id = 115
+  and object_code = 'PROPOSAL_FINANCE_PRODUCTS';
+raise notice 'v_initial_payment_factor = %',v_initial_payment_factor;
 
   v_smart_thermostat_adder = 0.00::numeric;
   if v_smart_thermostat is not null and v_smart_thermostat_value is not null then
     v_smart_thermostat_adder = v_smart_thermostat * v_smart_thermostat_value;
-  end if;
+end if;
   raise notice 'v_smart_thermostat_adder = %',v_smart_thermostat_adder;
   v_led_light_bulbs_adder = 0.00::numeric;
   if v_led_light_bulbs is not null and v_led_light_bulbs_value is not null then
     v_led_light_bulbs_adder = v_led_light_bulbs * v_led_light_bulbs_value;
-  end if;
+end if;
   raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
   v_promotion_cost = 0.00;
@@ -1712,7 +1778,6 @@ BEGIN
           coalesce(v_ac_unit_relocation_cost, 0)::numeric) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
-
   elsif v_product_id = 19424 then
     v_promotion_cost =
         ((coalesce(v_initial_system_cost, 0) + coalesce(v_equipment_storage_adder, 0) +
@@ -1726,21 +1791,16 @@ BEGIN
          (v_reamortization_factor - v_initial_payment_factor) * 42) /
         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
                             42);
-
-  end if;
+end if;
   raise notice 'v_promotion_cost = %',v_promotion_cost;
-
-
-
-
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
 
-  select value::numeric
-  into v_zone_adder
-  from proposal_value
-  where field_id = 119
-    and object_code = 'PROPOSAL_ZONE_ADDERS';
-  raise notice 'v_zone_adder = %',v_zone_adder;
+select value::numeric
+into v_zone_adder
+from proposal_value
+where field_id = 119
+  and object_code = 'PROPOSAL_ZONE_ADDERS';
+raise notice 'v_zone_adder = %',v_zone_adder;
   v_total_loan_amount_before_rebate = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
                                        coalesce(v_equipment_inverter_adder, 0) +
                                        coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_storage_adder, 0) +
@@ -1767,23 +1827,23 @@ BEGIN
                                        where pv.proposal_group_uuid = pv1.proposal_group_uuid
                                          and pv1.field_id = 85
                                          and int_value::bigint = v_utility_company_id))
-    select value::numeric,
-           (select int_value as unit_type_id
-            from proposal_value pv1
-                   inner join group_record gr on gr.proposal_group_uuid = pv1.proposal_group_uuid and
-                                                 field_id = 97) as unit_type_id
-    into v_eto_rebate,v_eto_rebate_unit_type_id
-    from proposal_value pv2
-           inner join group_record gp on gp.proposal_group_uuid = pv2.proposal_group_uuid
-    where pv2.field_id::bigint = 98;
+select value::numeric,
+(select int_value as unit_type_id
+                        from proposal_value pv1
+                               inner join group_record gr on gr.proposal_group_uuid = pv1.proposal_group_uuid and
+                                                             field_id = 97) as unit_type_id
+into v_eto_rebate,v_eto_rebate_unit_type_id
+from proposal_value pv2
+       inner join group_record gp on gp.proposal_group_uuid = pv2.proposal_group_uuid
+where pv2.field_id::bigint = 98;
 
-    if v_eto_rebate_unit_type_id = 460 then
+if v_eto_rebate_unit_type_id = 460 then
       v_eto_rebate = v_eto_rebate * v_system_size * 1000;
     elsif v_eto_rebate_unit_type_id = 458 then
       v_eto_rebate = (coalesce(v_total_loan_amount_before_rebate, 0) +
                       coalesce(v_down_payment_amount, 0)) * coalesce(v_eto_rebate, 0);
-    end if;
-  end if;
+end if;
+end if;
   raise notice 'v_eto_rebate = %',v_eto_rebate;
 
   v_csu_rebate = 0;
@@ -1793,74 +1853,73 @@ BEGIN
                                  where field_id = 85
                                    and object_code = 'PROPOSAL_REBATE'
                                    and int_value::bigint = v_utility_company_id)
-    select value::numeric
-    into v_csu_rebate
-    from proposal_value pv
-           inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
-    where field_id = 98
-      and object_code = 'PROPOSAL_REBATE';
+select value::numeric
+into v_csu_rebate
+from proposal_value pv
+       inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
+where field_id = 98
+  and object_code = 'PROPOSAL_REBATE';
 
-    with proposal_group_uuid as (select proposal_group_uuid
-                                 from proposal_value
-                                 where field_id = 85
-                                   and object_code = 'PROPOSAL_REBATE'
-                                   and int_value::bigint = v_utility_company_id)
-    select int_value
-    into v_csu_rebate_unit_type_id
-    from proposal_value pv
-           inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
-    where field_id = 97
-      and object_code = 'PROPOSAL_REBATE';
+with proposal_group_uuid as (select proposal_group_uuid
+                             from proposal_value
+                             where field_id = 85
+                               and object_code = 'PROPOSAL_REBATE'
+                               and int_value::bigint = v_utility_company_id)
+select int_value
+into v_csu_rebate_unit_type_id
+from proposal_value pv
+       inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
+where field_id = 97
+  and object_code = 'PROPOSAL_REBATE';
 
-    if v_csu_rebate_unit_type_id = 460 then
+if v_csu_rebate_unit_type_id = 460 then
       v_csu_rebate = v_csu_rebate * v_system_size * 1000;
-
-    end if;
+end if;
 
     raise notice 'v_csu_rebate = %',v_csu_rebate;
     raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
 
-    select value::numeric
-    into v_inverter_efficiency
-    from proposal_value
-    where field_id = 142
-      and object_code = 'PROPOSAL_INVERTER_DETAILS';
-    raise notice 'v_inverter_efficiency = %',v_inverter_efficiency;
+select value::numeric
+into v_inverter_efficiency
+from proposal_value
+where field_id = 142
+  and object_code = 'PROPOSAL_INVERTER_DETAILS';
+raise notice 'v_inverter_efficiency = %',v_inverter_efficiency;
 
-    select *
-    into v_col_springs_rebate
-    from brs.get_colorado_rebate(v_aurora_design_summary, v_csu_rebate,
-                                 v_inverter_efficiency);
+select *
+into v_col_springs_rebate
+from brs.get_colorado_rebate(v_aurora_design_summary, v_csu_rebate,
+                             v_inverter_efficiency);
 
-  end if;
+end if;
   raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
   v_above_line_rebate = coalesce(v_eto_rebate, 0) + coalesce(v_csu_rebate, 0);
   raise notice 'v_above_line_rebate = %',v_above_line_rebate;
 
   v_total_loan_amount =
-      ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee))+ coalesce(v_other_adder_and_discount_amount, 0);
+    ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee))+ coalesce(v_other_adder_and_discount_amount, 0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
 
   v_check_from_br = 0.00::numeric;
   if v_product_id in (293,19424) then
     v_check_from_br = round((v_total_loan_amount * v_initial_payment_factor)::numeric,2);
-  end if;
+end if;
 
   raise notice 'v_check_from_br = %',v_check_from_br;
 
 
-  with referral_promotion as (select proposal_group_uuid
-                              from proposal_value pv
-                              where object_code = 'PROPOSAL_REBATE'
-                                and pv.field_id::bigint = 93
-                                and pv.int_value::bigint = 535)
-  select value::numeric
-  into v_referral_promotion
-  from proposal_value pv1
-         inner join referral_promotion rp on rp.proposal_group_uuid = pv1.proposal_group_uuid
-    and pv1.field_id = 98;
+with referral_promotion as (select proposal_group_uuid
+                            from proposal_value pv
+                            where object_code = 'PROPOSAL_REBATE'
+                              and pv.field_id::bigint = 93
+  and pv.int_value::bigint = 535)
+select value::numeric
+into v_referral_promotion
+from proposal_value pv1
+       inner join referral_promotion rp on rp.proposal_group_uuid = pv1.proposal_group_uuid
+  and pv1.field_id = 98;
 
-  v_referral_promotion = coalesce(v_referral_promotion, 0);
+v_referral_promotion = coalesce(v_referral_promotion, 0);
   raise notice 'v_referral_promotion = %',v_referral_promotion;
 
   v_total_system_cost =
@@ -1876,32 +1935,32 @@ BEGIN
     v_state_rebate_amount = v_state_rebate_amount;
   elsif v_unit_type_state_rebate = 539 then
     v_state_rebate_amount = coalesce(v_state_rebate_amount, 0) * v_first_year_production_estimate;
-  end if;
+end if;
 
   raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
   raise notice 'v_unit_type_state_rebate = % ',v_unit_type_state_rebate;
 
-  with federal as (select proposal_group_uuid
-                   from proposal_value pv
-                   where object_code = 'PROPOSAL_REBATE'
-                     and pv.field_id::bigint = 93
-                     and pv.int_value::bigint = 449)
-  select value::numeric,
-         (select int_value as unit_type_id
-          from proposal_value pv1
-                 inner join federal gr on gr.proposal_group_uuid = pv1.proposal_group_uuid and
-                                          field_id = 97) as unit_type_id
-  into v_federal_tax_incentive_rate,v_federal_unit_type_id
-  from proposal_value pv1
-         inner join federal f on f.proposal_group_uuid = pv1.proposal_group_uuid
-    and pv1.field_id = 98;
+with federal as (select proposal_group_uuid
+                 from proposal_value pv
+                 where object_code = 'PROPOSAL_REBATE'
+                   and pv.field_id::bigint = 93
+  and pv.int_value::bigint = 449)
+select value::numeric,
+ (select int_value as unit_type_id
+                        from proposal_value pv1
+                               inner join federal gr on gr.proposal_group_uuid = pv1.proposal_group_uuid and
+                                                        field_id = 97) as unit_type_id
+into v_federal_tax_incentive_rate,v_federal_unit_type_id
+from proposal_value pv1
+       inner join federal f on f.proposal_group_uuid = pv1.proposal_group_uuid
+  and pv1.field_id = 98;
 
-  select value::numeric
-  into v_non_solar_cap
-  from proposal_value
-  where field_id = 106
-    and object_code = 'PROPOSAL_FINANCIERS';
-  raise notice 'v_non_solar_cap = %',v_non_solar_cap;
+select value::numeric
+into v_non_solar_cap
+from proposal_value
+where field_id = 106
+  and object_code = 'PROPOSAL_FINANCIERS';
+raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
   v_required_down_payment =
     greatest((coalesce(v_misc_adders, 0) + coalesce(v_other_adder_and_discount_amount, 0) +
@@ -1918,27 +1977,27 @@ BEGIN
         (v_total_loan_amount + v_down_payment_amount + v_required_down_payment) * v_federal_tax_incentive_rate;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 459 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate;
-  end if;
+end if;
   raise notice 'v_federal_tax_incentive_rate = %',v_federal_tax_incentive_rate;
   raise notice 'v_federal_tax_incentive_amount = %',v_federal_tax_incentive_amount;
 
   v_monthly_solar_payment = coalesce(v_total_loan_amount, 0) * v_initial_payment_factor;
   raise notice 'v_monthly_solar_payment = %',v_monthly_solar_payment;
 
-  select value::numeric
-  into v_current_estimated_cost_per_kwh
-  from proposal_value
-  where field_id = 87
-    and object_code = 'PROPOSAL_PRICING';
-  raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
+select value::numeric
+into v_current_estimated_cost_per_kwh
+from proposal_value
+where field_id = 87
+  and object_code = 'PROPOSAL_PRICING';
+raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
 
-  select value::numeric
-  into v_utility_cost_escalator
-  from proposal_value
-  where field_id = 94
-    and object_code = 'PROPOSAL_PRICING';
+select value::numeric
+into v_utility_cost_escalator
+from proposal_value
+where field_id = 94
+  and object_code = 'PROPOSAL_PRICING';
 
-  raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
+raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
 
   v_total_ee_reduction =
     least(((v_estimated_annual_energy_consumption_kwh *
@@ -1986,18 +2045,18 @@ BEGIN
   raise notice 'v_monthly_cost_30_year_average_without_solar = %',v_monthly_cost_30_year_average_without_solar;
 
   if v_product_id = 19424 then
-    select *
-    into v_reamortized_monthly_payment_all_credits_to_loan
-    from flow.get_reamortized_monthly_payment((v_apr / 12)::numeric, ((v_loan_term * 12) - 18)::smallint,
-                                              (coalesce(v_total_loan_amount, 0) -
-                                               coalesce(v_federal_tax_incentive_amount, 0) -
-                                               coalesce(v_state_rebate_amount, 0) -
-                                               coalesce(v_above_line_rebate, 0))::numeric);
-  else
+select *
+into v_reamortized_monthly_payment_all_credits_to_loan
+from flow.get_reamortized_monthly_payment((v_apr / 12):: numeric, ((v_loan_term * 12) - 18):: smallint,
+                                          (coalesce(v_total_loan_amount, 0) -
+                                           coalesce(v_federal_tax_incentive_amount, 0) -
+                                           coalesce(v_state_rebate_amount, 0) -
+                                           coalesce(v_above_line_rebate, 0)):: numeric);
+else
     v_reamortized_monthly_payment_all_credits_to_loan =
         (coalesce(v_total_loan_amount, 0) - coalesce(v_federal_tax_incentive_amount, 0) -
          coalesce(v_state_rebate_amount, 0)) * v_reamortization_factor;
-  end if;
+end if;
 
 
   raise notice 'v_reamortized_monthly_payment_all_credits_to_loan = %',v_reamortized_monthly_payment_all_credits_to_loan;
@@ -2054,20 +2113,21 @@ BEGIN
 
 
   v_initial_monthly_payment_all_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
-
   raise notice 'v_initial_monthly_payment_all_credits_to_loan = %',v_initial_monthly_payment_all_credits_to_loan;
 
   v_initial_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
   raise notice 'v_initial_monthly_payment_no_credits_to_loan = %',v_initial_monthly_payment_no_credits_to_loan;
 
+  v_net_payment_from_customer = v_initial_monthly_payment_all_credits_to_loan - v_check_from_br;
+raise notice 'v_net_payment_from_customer = %',v_net_payment_from_customer;
   if v_product_id = 19424 then
-    select *
-    into v_reamortized_monthly_payment_no_credits_to_loan
-    from flow.get_reamortized_monthly_payment((v_apr / 12)::numeric, ((v_loan_term * 12) - 18)::smallint,
-                                              v_total_loan_amount::numeric);
-  else
+select *
+into v_reamortized_monthly_payment_no_credits_to_loan
+from flow.get_reamortized_monthly_payment((v_apr / 12):: numeric, ((v_loan_term * 12) - 18):: smallint,
+                                          v_total_loan_amount::numeric);
+else
     v_reamortized_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_reamortization_factor;
-  end if;
+end if;
 
 
   raise notice 'v_reamortized_monthly_payment_no_credits_to_loan = %',v_reamortized_monthly_payment_no_credits_to_loan;
@@ -2085,12 +2145,13 @@ BEGIN
                                                     v_adjusted_annual_production)) / 12);
   elsif v_product_id = 19424 then
     v_monthly_cost_today_with_solar = 0::numeric;
-  else
+else
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
                                                    (v_adjusted_annual_consumption -
                                                     v_adjusted_annual_production)) / 12) +
-                                      case when v_product_id = 293 then 0 else v_initial_monthly_payment_all_credits_to_loan end;
-  end if;
+                                      case when v_product_id = 293 then 0 else v_initial_monthly_payment_all_credits_to_loan
+end;
+end if;
   raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
 
   v_net_system_cost =
@@ -2108,7 +2169,6 @@ BEGIN
     25);
   raise notice 'v_system_production_25_year = %',v_system_production_25_year;
 
-
   raise notice 'v_led_light_bulbs = %',v_led_light_bulbs;
 
   raise notice 'v_smart_thermostat = %',v_smart_thermostat;
@@ -2125,6 +2185,15 @@ BEGIN
   v_loan_type = concat(v_financier || ' ' || v_loan_term);
   raise notice 'v_loan_type = %',v_loan_type;
 
+--   (24 * square root of system size in kWh DC)-(0.0016+(sqrt of system size in kWh DC * 0.00012)) * square footage of house * number of batteries
+  v_estimated_backup_days = case
+                              when v_system_size is not null then
+                                    24 * sqrt(v_system_size) -
+                                    (0.0016 + sqrt(v_system_size * 0.00012)) * v_total_square_footage *
+                                    v_number_of_batteries end;
+  v_solar_rebate_for_hic =
+      v_total_system_cost - coalesce(v_referral_promotion, 0) - coalesce(v_down_payment_amount, 0) -
+      coalesce(v_total_loan_amount, 0);
 
   if p_insert_prop_log_history is true then
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
@@ -2154,198 +2223,243 @@ BEGIN
                                          promotion_eighteen_months_free,
                                          proposal_date, proposal_nbr, proposal_log_id,
                                          bp_plus_amount, aurora_design_id, loan_type, filename,financial_option,site_survey_time_estimate,
-                                         site_survey_resource_type,site_survey_items)
-    values (v_project_id, v_project_name, v_project_street1, v_city, v_project_state_abbrev,
-            v_postal_code, v_contact_phone, v_contact_email, v_loan_term, v_apr, v_down_payment_amount,
-            v_led_light_bulbs, v_smart_thermostat, v_current_estimated_cost_per_kwh, v_promotion_cost,
+                                         site_survey_resource_type,site_survey_items, number_of_batteries,
+                                         estimated_backup_days,
+                                         solar_rebate_for_hic)
+    values (v_project_id,
+            v_project_name,
+            v_project_street1,
+            v_city,
+            v_project_state_abbrev,
+            v_postal_code,
+            v_contact_phone,
+            v_contact_email,
+            v_loan_term,
+            v_apr,
+            v_down_payment_amount,
+            v_led_light_bulbs,
+            v_smart_thermostat,
+            v_current_estimated_cost_per_kwh,
+            v_promotion_cost,
             v_first_year_production_estimate,
             v_panel_quantity,
-            v_panel_watts, v_system_size, v_panel_brand, v_panel_quantity, v_inverter_brand, v_inverter_brand,
+            v_panel_watts,
+            v_system_size,
+            v_panel_brand,
+            v_panel_quantity,
+            v_inverter_brand,
+            v_inverter_brand,
             v_utility_company,
-            v_estimated_annual_energy_consumption_kwh, v_equipment_panel_adder,
+            v_estimated_annual_energy_consumption_kwh,
+            v_equipment_panel_adder,
             v_equipment_panel_adder * (v_system_size * 1000),
             (coalesce(v_equipment_storage_adder, 0) + coalesce(v_unapproved_zip_code_adder, 0) +
-             coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-             coalesce(v_misc_adders, 0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
-             coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-             coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
-             coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
-             coalesce(v_ac_unit_relocation_cost, 0)::numeric), v_adjusted_price_per_wat,
+            coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
+            coalesce(v_misc_adders, 0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+            coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+            coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
+            coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
+            coalesce(v_ac_unit_relocation_cost, 0)::numeric),
+            v_adjusted_price_per_wat,
             v_total_loan_amount,
-            v_total_system_cost, v_estimated_offset, v_dealer_fee, v_utility_cost_escalator, v_panel_degradation_factor,
+            v_total_system_cost,
+            v_estimated_offset,
+            v_dealer_fee,
+            v_utility_cost_escalator,
+            v_panel_degradation_factor,
             v_production_factor,
-            v_total_system_cost, (v_down_payment_amount + v_above_line_rebate), v_referral_promotion,
-            v_initial_system_cost, v_total_loan_amount,
-            v_federal_tax_incentive_amount, v_state_rebate_amount, v_monthly_cost_today_without_solar,
+            v_total_system_cost,
+            (v_down_payment_amount + v_above_line_rebate) ,
+            v_referral_promotion,
+            v_initial_system_cost,
+            v_total_loan_amount,
+            v_federal_tax_incentive_amount,
+            v_state_rebate_amount,
+            v_monthly_cost_today_without_solar,
             v_monthly_solar_payment,
-            v_monthly_cost_today_avg_remaining_electrical_bill, v_monthly_cost_today_with_solar,
+            v_monthly_cost_today_avg_remaining_electrical_bill,
+            v_monthly_cost_today_with_solar,
             (v_estimated_annual_energy_consumption_kwh / 12),
-            (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction), v_total_ee_reduction,
+            (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),
+            v_total_ee_reduction,
             v_estimated_annual_energy_consumption_kwh,
             (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),
             v_monthly_cost_25_year_average_without_solar,
-            v_total_cost_25_years, v_total_savings_25_years, v_remaining_monthly_electric_bill_25_year_average,
+            v_total_cost_25_years,
+            v_total_savings_25_years,
+            v_remaining_monthly_electric_bill_25_year_average,
             v_reamortized_monthly_payment_all_credits_to_loan,
-            v_initial_monthly_payment_all_credits_to_loan, v_reamortized_monthly_payment_all_credits_to_loan, now(),
+            v_initial_monthly_payment_all_credits_to_loan,
+            v_reamortized_monthly_payment_all_credits_to_loan,
+            now(),
             v_promotion_cost,
-            now(), v_proposal_nbr, v_proposal_id, v_promotion_cost,
-            v_aurora_design_id, v_loan_type, v_display_name,v_financial_option,v_site_survey_time_estimate,v_site_survey_resource_type,v_site_survey_items);
-  end if;
+            now(),
+            v_proposal_nbr,
+            v_proposal_id,
+            v_promotion_cost,
+            v_aurora_design_id,
+            v_loan_type,
+            v_display_name,
+            v_financial_option,
+            v_site_survey_time_estimate,
+            v_site_survey_resource_type,
+            v_site_survey_items,
+            v_number_of_batteries,
+            v_estimated_backup_days,
+            v_solar_rebate_for_hic);
+end if;
 
-  return query
-    select v_proposal_id,
-           v_project_id,
-           v_proposal_archived,
-           v_contact_first_name,
-           v_contact_last_name,
-           v_contact_phone,
-           v_contact_email,
-           v_project_name,
-           v_project_street1,
-           v_project_street2,
-           v_city,
-           v_postal_code,
-           v_project_state,
-           v_project_state_abbrev,
-           cast(round(v_monthly_cost_25_year_average_without_solar, 2) as money)::varchar,
-           cast(round(v_monthly_cost_30_year_average_without_solar, 2) as money)::varchar,
-           cast(round(v_monthly_cost_25_year_average_with_solar, 2) as money)::varchar,
-           cast(round(v_remaining_monthly_electric_bill_25_year_average, 2) as money)::varchar,
-           cast(round(v_remaining_monthly_electric_bill_30_year_average, 2) as money)::varchar,
-           cast(round(v_total_cost_25_years, 2) as money)::varchar,
-           cast(round(v_total_cost_30_years, 2) as money)::varchar,
-           cast(round(v_total_savings_25_years, 2) as money)::varchar,
-           cast(round(v_total_savings_30_years, 2) as money)::varchar,
-           cast(round(v_monthly_solar_payment, 2) as money)::varchar,
-           cast(round(v_monthly_cost_today_without_solar, 2) as money)::varchar,
-           cast(round(v_monthly_cost_today_with_solar, 2) as money)::varchar,
-           cast(round(v_monthly_cost_today_avg_remaining_electrical_bill, 2) as money)::varchar,
-           cast(round(v_initial_monthly_payment_all_credits_to_loan, 2) as money)::varchar,
-           cast(round(v_initial_monthly_payment_no_credits_to_loan, 2) as money)::varchar,
-           cast(round(v_reamortized_monthly_payment_all_credits_to_loan, 2) as money)::varchar,
-           cast(round(v_reamortized_monthly_payment_no_credits_to_loan, 2) as money)::varchar,
-           cast(round(v_monthly_payment_all_credits_to_loan_after_term, 2) as money)::varchar,
-           cast(round(v_monthly_payment_no_credits_to_loan_after_term, 2) as money)::varchar,
-           v_system_size,
-           v_first_year_production_estimate,
-           cast(round(v_total_system_cost, 2) as money)::varchar,
-           cast(round(v_referral_promotion, 2) as money)::varchar,
-           cast(round(v_total_loan_amount, 2) as money)::varchar,
-           cast(round(v_federal_tax_incentive_amount, 2) as money)::varchar,
-           round(v_federal_tax_incentive_rate, 2) * 100,
-           cast(round(v_net_system_cost, 2) as money)::varchar,
-           v_utility_company,
-           v_estimated_annual_energy_consumption_kwh,
-           cast(round(v_current_estimated_annual_utility_bill, 2) as money)::varchar,
-           cast(round(v_current_estimated_cost_per_kwh, 4) as money)::varchar,
-           round(v_utility_cost_escalator * 100, 2),
-           cast(round(v_state_rebate_amount, 2) as money)::varchar,
-           cast(round(v_eto_rebate, 2) as money)::varchar,
-           cast(round(v_csu_rebate, 2) as money)::varchar,
-           round(v_apr * 100, 2),
-           v_loan_term,
-           cast(round(v_assumed_payment_by_month_18, 2) as money)::varchar,
-           round(v_panel_degradation_factor*100, 2),
-           TO_CHAR(round(v_system_production_25_year, 0), 'FM9,999,999'),--comma not money
-           round(round(v_estimated_offset, 2) * 100, 0),
-           v_led_light_bulbs,
-           v_smart_thermostat,
-           round(v_total_ee_reduction, 0),
-           v_panel_warranty,
-           v_inverter_warranty,
-           cast(round(v_down_payment_amount, 2) as money)::varchar,
-           v_version_id,
-           v_project_process_step_id,
-           v_friends_and_family,
-           round(v_production_factor, 2),
-           round(v_funding_range, 2),
-           round(v_production_factor_range, 2),
-           round(v_points_off_south_production_factor, 2),
-           round(v_price_change_per_production_point, 2),
-           round(v_calculated_price_adjustment, 2),
-           round(v_max_price_adjustment, 2),
-           round(v_adjusted_price_per_wat, 2),
-           round(v_initial_system_cost, 2),
-           round(v_promotion_cost, 2),
-           round(v_equipment_inverter_adder, 2),
-           round(v_equipment_panel_adder, 2),
-           round(v_equipment_storage_adder, 2),
-           round(v_misc_adders, 2),
-           v_panel_brand_id,
-           v_panel_watts,
-           round(v_above_line_rebate, 2),
-           v_state_id,
-           v_utility_company_id,
-           v_dealer_fee,
-           v_eto_rebate_unit_type_id,
-           v_federal_unit_type_id,
-           round(v_inverter_efficiency, 2),
-           v_initial_payment_factor,
-           v_reamortization_factor,
-           v_product_id,
-           v_smart_thermostat_value,
-           round(v_smart_thermostat_adder, 2),
-           v_led_light_bulbs_value,
-           round(v_led_light_bulbs_adder, 2),
-           round(v_energy_efficiency_reduction_light_bulbs, 2),
-           round(v_energy_efficiency_reduction_thermostat, 2),
-           v_adjusted_annual_consumption,
-           v_instantly_used,
-           v_sent_to_grid,
-           v_after_net_metering,
-           v_adjusted_annual_production,
-           round(v_instant_use_assumption, 2),
-           round(v_net_metring_rate, 2),
-           round(v_cost_of_solar, 2),
-           cast(round(v_monthly_cost_30_year_average_with_solar, 2) as money)::varchar,
-           v_reamortized_payment_factor_without_itc_paydown,
-           cast(round(v_secondary_monthly_payment_no_credits_to_loan, 2) as money)::varchar,
-           v_panel_brand,
-           v_panel_quantity,
-           v_inverter_brand_id,
-           v_inverter_brand,
-           v_aurora_design_id,
-           v_product_name,
-           v_proposal_nbr,
-           v_other_adder_and_discount,
-           cast(round(v_other_adder_and_discount_amount, 2) as money)::varchar,
-           v_adder,
-           round(v_non_solar_cap, 2),
-           cast(round(v_required_down_payment, 2) as money)::varchar,
-           v_storage_type_id,
-           v_storage_type,
-           v_financier,
-           v_financier_id,
-           cast(round(v_loan_price_storage, 2) as money)::varchar,
-           cast(round(v_cash_price_storage, 2) as money)::varchar,
-           round(v_main_panel_upgrade_cost, 2),
-           round(v_structural_upgrade_cost, 2),
-           round(v_reroof_cost, 2),
-           round(v_tree_trimming_cost, 2),
-           round(v_trenching_cost, 2),
-           round(v_ac_unit_relocation_cost, 2),
-           round(v_total_loan_amount_before_rebate, 2),
-           round(v_zone_adder, 2),
-           v_loan_type,
-           round(v_unapproved_zip_code_adder, 2),
-           v_csu_rebate_unit_type_id,
-           v_financial_option,
-           v_check_from_br,
-           v_site_survey_time_estimate,
-           v_site_survey_resource_type_yn,
-           v_site_survey_resource_type,
-           v_site_survey_items;
+return query
+select v_proposal_id,
+       v_project_id,
+       v_proposal_archived,
+       v_contact_first_name,
+       v_contact_last_name,
+       v_contact_phone,
+       v_contact_email,
+       v_project_name,
+       v_project_street1,
+       v_project_street2,
+       v_city,
+       v_postal_code,
+       v_project_state,
+       v_project_state_abbrev,
+        cast(round(v_monthly_cost_25_year_average_without_solar, 2) as money)::varchar,
+        cast(round(v_monthly_cost_30_year_average_without_solar, 2) as money)::varchar,
+        cast(round(v_monthly_cost_25_year_average_with_solar, 2) as money)::varchar,
+        cast(round(v_remaining_monthly_electric_bill_25_year_average, 2) as money)::varchar,
+        cast(round(v_remaining_monthly_electric_bill_30_year_average, 2) as money)::varchar,
+        cast(round(v_total_cost_25_years, 2) as money)::varchar,
+        cast(round(v_total_cost_30_years, 2) as money)::varchar,
+        cast(round(v_total_savings_25_years, 2) as money)::varchar,
+        cast(round(v_total_savings_30_years, 2) as money)::varchar,
+        cast(round(v_monthly_solar_payment, 2) as money)::varchar,
+        cast(round(v_monthly_cost_today_without_solar, 2) as money)::varchar,
+        cast(round(v_monthly_cost_today_with_solar, 2) as money)::varchar,
+        cast(round(v_monthly_cost_today_avg_remaining_electrical_bill, 2) as money)::varchar,
+        cast(round(v_initial_monthly_payment_all_credits_to_loan, 2) as money)::varchar,
+        cast(round(v_initial_monthly_payment_no_credits_to_loan, 2) as money)::varchar,
+        cast(round(v_reamortized_monthly_payment_all_credits_to_loan, 2) as money)::varchar,
+        cast(round(v_reamortized_monthly_payment_no_credits_to_loan, 2) as money)::varchar,
+        cast(round(v_monthly_payment_all_credits_to_loan_after_term, 2) as money)::varchar,
+        cast(round(v_monthly_payment_no_credits_to_loan_after_term, 2) as money)::varchar,
+        v_system_size,
+       v_first_year_production_estimate,
+       cast(round(v_total_system_cost, 2) as money)::varchar,
+       cast(round(v_referral_promotion, 2) as money)::varchar,
+       cast(round(v_total_loan_amount, 2) as money)::varchar,
+       cast(round(v_federal_tax_incentive_amount, 2) as money)::varchar,
+       round(v_federal_tax_incentive_rate, 2) * 100,
+       cast(round(v_net_system_cost, 2) as money)::varchar,
+       v_utility_company,
+       v_estimated_annual_energy_consumption_kwh,
+       cast(round(v_current_estimated_annual_utility_bill, 2) as money)::varchar,
+       cast(round(v_current_estimated_cost_per_kwh, 4) as money)::varchar,
+       round(v_utility_cost_escalator * 100, 2),
+       cast(round(v_state_rebate_amount, 2) as money)::varchar,
+       cast(round(v_eto_rebate, 2) as money)::varchar,
+       cast(round(v_csu_rebate, 2) as money)::varchar,
+       round(v_apr * 100, 2),
+       v_loan_term,
+       cast(round(v_assumed_payment_by_month_18, 2) as money)::varchar,
+       round(v_panel_degradation_factor * 100, 2),
+       TO_CHAR(round(v_system_production_25_year, 0), 'FM9,999,999'),--comma not money
+       round(round(v_estimated_offset, 2) * 100, 0),
+       v_led_light_bulbs,
+       v_smart_thermostat,
+       round(v_total_ee_reduction, 0),
+       v_panel_warranty,
+       v_inverter_warranty,
+       cast(round(v_down_payment_amount, 2) as money)::varchar,
+       v_version_id,
+       v_project_process_step_id,
+       v_friends_and_family,
+       round(v_production_factor, 2),
+       round(v_funding_range, 2),
+       round(v_production_factor_range, 2),
+       round(v_points_off_south_production_factor, 2),
+       round(v_price_change_per_production_point, 2),
+       round(v_calculated_price_adjustment, 2),
+       round(v_max_price_adjustment, 2),
+       round(v_adjusted_price_per_wat, 2),
+       round(v_initial_system_cost, 2),
+       round(v_promotion_cost, 2),
+       round(v_equipment_inverter_adder, 2),
+       round(v_equipment_panel_adder, 2),
+       round(v_equipment_storage_adder, 2),
+       round(v_misc_adders, 2),
+       v_panel_brand_id,
+       v_panel_watts,
+       round(v_above_line_rebate, 2),
+       v_state_id,
+       v_utility_company_id,
+       v_dealer_fee,
+       v_eto_rebate_unit_type_id,
+       v_federal_unit_type_id,
+       round(v_inverter_efficiency, 2),
+       v_initial_payment_factor,
+       v_reamortization_factor,
+       v_product_id,
+       v_smart_thermostat_value,
+       round(v_smart_thermostat_adder, 2),
+       v_led_light_bulbs_value,
+       round(v_led_light_bulbs_adder, 2),
+       round(v_energy_efficiency_reduction_light_bulbs, 2),
+       round(v_energy_efficiency_reduction_thermostat, 2),
+       v_adjusted_annual_consumption,
+       v_instantly_used,
+       v_sent_to_grid,
+       v_after_net_metering,
+       v_adjusted_annual_production,
+       round(v_instant_use_assumption, 2),
+       round(v_net_metring_rate, 2),
+       round(v_cost_of_solar, 2),
+       cast(round(v_monthly_cost_30_year_average_with_solar, 2) as money)::varchar,
+       v_reamortized_payment_factor_without_itc_paydown,
+       cast(round(v_secondary_monthly_payment_no_credits_to_loan, 2) as money)::varchar,
+       v_panel_brand,
+       v_panel_quantity,
+       v_inverter_brand_id,
+       v_inverter_brand,
+       v_aurora_design_id,
+       v_product_name,
+       v_proposal_nbr,
+       v_other_adder_and_discount,
+       cast(round(v_other_adder_and_discount_amount, 2) as money)::varchar,
+       v_adder,
+       round(v_non_solar_cap, 2),
+       cast(round(v_required_down_payment, 2) as money)::varchar,
+       v_storage_type_id,
+       v_storage_type,
+       v_financier,
+       v_financier_id,
+       cast(round(v_loan_price_storage, 2) as money)::varchar,
+       cast(round(v_cash_price_storage, 2) as money)::varchar,
+       round(v_main_panel_upgrade_cost, 2),
+       round(v_structural_upgrade_cost, 2),
+       round(v_reroof_cost, 2),
+       round(v_tree_trimming_cost, 2),
+       round(v_trenching_cost, 2),
+       round(v_ac_unit_relocation_cost, 2),
+       round(v_total_loan_amount_before_rebate, 2),
+       round(v_zone_adder, 2),
+       v_loan_type,
+       round(v_unapproved_zip_code_adder, 2),
+       v_csu_rebate_unit_type_id,
+       v_financial_option,
+       v_check_from_br,
+       v_site_survey_time_estimate,
+       v_site_survey_resource_type_yn,
+       v_site_survey_resource_type,
+       v_site_survey_items,
+       v_number_of_batteries,
+       v_estimated_backup_days,
+       v_solar_rebate_for_hic,
+       v_total_square_footage,
+       v_net_payment_from_customer;
 
-  drop table proposal_value;
-
-
+drop table proposal_value;
 
 END
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-                   COST 100;
---ROWS 1000;
-
-
-
-
+LANGUAGE plpgsql VOLATILE COST 100;

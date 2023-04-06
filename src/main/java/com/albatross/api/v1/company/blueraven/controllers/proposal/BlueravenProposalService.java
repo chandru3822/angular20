@@ -180,8 +180,11 @@ public class BlueravenProposalService {
         .forEach(cfv -> {
           if (cfv.getHasListValues()) {
             List<Long> filteredIds = proposalVersionService.getProposalValuesByFieldId(proposal.getProposalVersionId(), cfv.getCustomFieldId());
-            List<ListOfValue> listOfValues = cfv.getListOfValues().stream().filter(v -> filteredIds.contains(v.getId())).toList();
-            cfv.setListOfValues(listOfValues);
+            // only filter if we get some results back... otherwise, we are assuming not filtering is required
+            if (!filteredIds.isEmpty()){
+              List<ListOfValue> listOfValues = cfv.getListOfValues().stream().filter(v -> filteredIds.contains(v.getId())).toList();
+              cfv.setListOfValues(listOfValues);
+            }
           }
         })));
 

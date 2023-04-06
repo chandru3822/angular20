@@ -154,6 +154,7 @@ public class ProcessStepEventQuery {
                                         psea.hide_from_web as "hideFromWeb",
                                         psea.hide_from_mobile as "hideFromMobile",
                                         psea.show_on_cancelled_completed_events as "showOnCancelledCompletedEvents",
+                                        psea.show_on_cancelled_completed_process_step as "showOnCancelledCompletedProcessStep",
                                         psea.process_step_event_id as "processStepEventId",
                                         psea.company_process_step_status_type_id as "companyProcessStepStatusTypeId",
                                         psea.company_event_status_type_id as "companyEventStatusTypeId",
@@ -573,6 +574,7 @@ public class ProcessStepEventQuery {
               hide_from_web = :hideFromWeb,
               hide_from_mobile = :hideFromMobile,
               show_on_cancelled_completed_events = :showOnCancelledCompletedEvents,
+              show_on_cancelled_completed_process_step = :showOnCancelledCompletedProcessStep,
               company_process_step_status_type_id = :companyProcessStepStatusTypeId,
               modified_by_id = :userId,
               date_modified = now()
