@@ -192,16 +192,16 @@ export default {
     },
     hardCodedDocsMap() {
       const docsMap = new Map()
-      docsMap.set(5, {
-        title: "Documents Required for Inspection",
-        documents: this.inspectionDocuments,
+      docsMap.set(1, {
+        title: "Submission Documents",
+        documents: this.submissionDocuments,
         attachmentTypeId: 1,
         attachmentType: "All Documents"
       })
-      docsMap.set(24, {
-        title: "Documents Required for Refund/Cancellation",
-        documents: this.cancellationDocuments,
-        attachmentTypeId: 462,
+      docsMap.set(4, {
+        title: "Approval Documents",
+        documents: this.approvalDocuments,
+        attachmentTypeId: 980, //todo get prod id: 981
         attachmentType: "All Documents"
       })
       return docsMap
@@ -254,8 +254,8 @@ export default {
       printLocations: [],
       followUpContacts: []
     },
-    inspectionDocuments: [],
-    cancellationDocuments: [],
+    submissionDocuments: [],
+    approvalDocuments: [],
   }),
   methods: {
     updateDirtyValue(item) {
@@ -333,12 +333,12 @@ export default {
         this.getCustomFieldGroupAssignmentsForScreen()
       })
     },
-    async getCancellationDocuments() {
+    async getSubmissionDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 462}
+        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.cancellationDocuments = cloneDeep(data)
+        this.submissionDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -346,12 +346,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getInspectionDocuments() {
+    async getApprovalDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
+        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 980} //todo: get prod id for this attachment type: 981
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.inspectionDocuments = cloneDeep(data)
+        this.approvalDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -417,8 +417,8 @@ export default {
     this.ahjId = parseInt(this.$route.params.ahjId)
     this.getAhjPermit().then(() => {
       this.getCustomFieldGroupAssignmentsForScreen()
-      this.getInspectionDocuments()
-      this.getCancellationDocuments()
+      this.getSubmissionDocuments()
+      this.getApprovalDocuments()
     })
   }
 }
