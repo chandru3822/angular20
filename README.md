@@ -1,6 +1,11 @@
-# blueraven-albatros
+# Blueraven - Albatross
 
-## Set up environment
+## Frontend (Vue2.x/Vite)
+
+### System Requirements
+* Node 18+
+
+#### Prerequisites
 1. Create a PAT on GitHub
 2. Run the following or manually create an entry in `~/.npmrc` see [GitHub Docs](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-npm-registry) for more information
 ```
@@ -11,35 +16,32 @@ $ npm login --scope=@7oaksgroup --registry=https://npm.pkg.github.com
 > Email: PUBLIC-EMAIL-ADDRESS
 ```
 
-## Project setup
+#### Project setup
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+#### Compiles and hot-reloads for development
 ```
 npm run dev
 ```
 
-### Compiles and minifies for production
+#### Compiles and minifies for production
 ```
 npm run build
 ```
 
-### Run your tests
+#### Run your tests
 ```
 npm run test
 ```
 
-### Lints and fixes files
+#### Lints and fixes files
 ```
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
-### Dev Notes
+#### Dev Notes
 Use vuetify theme values and not hard coded colors where appropriate. <br/>
 Example in /plugin/vuetify/index.js
 ```
@@ -58,3 +60,30 @@ Usage in component:
 ```
 color="primaryCustom"
 ```
+
+
+## Backend (Spring/Java)
+
+### System Requirements
+* Java 16
+* Maven
+
+#### Start postgres and redis
+```
+docker-compose up
+```
+
+#### Download Maven dependencies
+```
+mvn install
+```
+
+#### Run Application (from CLI)
+```
+mvn spring-boot:run -Dspring-boot.run.profiles=local
+```
+
+#### Notes
+* [Flyway](https://flywaydb.org/) - Database migrations - src/main/resources/db/migration/
+* [GitHub Actions](https://docs.github.com/en/actions) - Continuous Delivery - .github/workflows
+* [AWS](https://aws.amazon.com/console/) - (ECS/RDS/S3) - ECS Service Definitions - .aws/
