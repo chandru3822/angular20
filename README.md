@@ -78,6 +78,13 @@ docker-compose up
 mvn install
 ```
 
+#### Download the latest production dump file and restore to your local docker setup
+(You will need to have your public key added to the bastion host)
+```
+cd bin && ./local-pump.sh
+```
+This will take several minutes to download the file (~7gb) and restore it to your docker container
+
 #### Run Application (from CLI)
 ```
 mvn spring-boot:run -Dspring-boot.run.profiles=local
@@ -87,3 +94,4 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 * [Flyway](https://flywaydb.org/) - Database migrations - src/main/resources/db/migration/
 * [GitHub Actions](https://docs.github.com/en/actions) - Continuous Delivery - .github/workflows
 * [AWS](https://aws.amazon.com/console/) - (ECS/RDS/S3) - ECS Service Definitions - .aws/
+* [Netlify](https://www.netlify.com/) - CDN - Front end deployment
