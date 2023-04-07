@@ -1,6 +1,7 @@
 update flow.attachment a
 set attachment_type_id = 1
 where a.attachment_type_id = 462 and a.archived is not true;
+update flow.attachment_type set archived = true where id = 462;
 
 insert into brs.feat_db_link_type (name, object_type_id)
 select 'Permit - All', 4 WHERE not exists (select id from brs.feat_db_link_type where feat_db_link_type.name = 'Permit - All');
