@@ -27,25 +27,7 @@ public class AhjPermitQuery {
                 WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 1
                 order by c.name
               ) contacts), '[]'
-            ) AS submissionContacts,
-            coalesce((
-              SELECT array_to_json(array_agg(row_to_json(contacts)))
-              FROM (
-                SELECT
-                  c.id,
-                  c.name,
-                  c.title,
-                  c.email,
-                  c.phone_number AS "phoneNumber",
-                  c.address,
-                  c.notes,
-                  c.hours
-                FROM brs.feat_db_contact c
-                  INNER JOIN brs.feat_db_ahj_permit_contact apc ON c.id = apc.ahj_contact_id
-                WHERE apc.ahj_permit_id = p.id AND c.archived IS FALSE AND c.contact_type_id = 6
-                order by c.name
-              ) contacts), '[]'
-            ) AS followUpContacts,
+            ) AS contacts,
             coalesce((
               SELECT array_to_json(array_agg(row_to_json(links)))
               FROM (
@@ -61,7 +43,7 @@ public class AhjPermitQuery {
                 WHERE apl.archived IS FALSE
                   AND apl.link_type_id = 12
                   AND apl.ahj_permit_id = p.id
-                order by apl.name
+                order by apl.date_created
                   ) links
                 ), '[]'
               ) AS links

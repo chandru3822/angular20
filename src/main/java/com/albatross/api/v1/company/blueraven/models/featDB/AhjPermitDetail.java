@@ -12,5 +12,5 @@ import java.util.List;
 @Setter
 public class AhjPermitDetail extends AhjPermit {
     private List<FeatDbLink> links;
-    private List<FeatDbContact> submissionContacts, followUpContacts;
+    private List<FeatDbContact> contacts;
 }

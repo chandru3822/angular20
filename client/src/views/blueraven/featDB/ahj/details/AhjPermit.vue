@@ -53,32 +53,20 @@
                      :expanded-all="expandedAll"
                      @toggle-collapse-expand="toggleCollapseExpand($event)"
             ></FeatDbLinks>
-
-            <FeatDbContact title="Submission Contacts"
-                        :contactTypeId="1"
-                        :user-can-edit="userCanEdit"
-                        :itemId="ahjPermit.id"
-                        :itemType="itemType"
-                        :ahjId="ahjId"
-                        :contacts="ahjPermit.submissionContacts"
-                        show-expanded
-                        :expanded-all="expandedAll"
-                        @toggle-collapse-expand="toggleCollapseExpand($event)"
-            ></FeatDbContact>
           </v-col>
 
           <!-- SECOND COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
-            <FeatDbContact title="Follow-up and Delivery Contacts"
-                        :contactTypeId="6"
-                        :user-can-edit="userCanEdit"
-                        :itemId="ahjPermit.id"
-                        :itemType="itemType"
-                        :ahjId="ahjId"
-                        :contacts="ahjPermit.followUpContacts"
-                        show-expanded
-                        :expanded-all="expandedAll"
-                        @toggle-collapse-expand="toggleCollapseExpand($event)"
+            <FeatDbContact title="Contacts"
+                           :contactTypeId="1"
+                           :user-can-edit="userCanEdit"
+                           :itemId="ahjPermit.id"
+                           :itemType="itemType"
+                           :ahjId="ahjId"
+                           :contacts="ahjPermit.contacts"
+                           show-expanded
+                           :expanded-all="expandedAll"
+                           @toggle-collapse-expand="toggleCollapseExpand($event)"
             ></FeatDbContact>
           </v-col>
 
@@ -240,9 +228,8 @@ export default {
       asBuiltChecklist: [],
       nonStandardChecklist: [],
       links:[],
-      submissionContacts: [],
+      contacts: [],
       printLocations: [],
-      followUpContacts: []
     },
     submissionDocuments: [],
     approvalDocuments: [],

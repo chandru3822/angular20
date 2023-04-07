@@ -151,13 +151,9 @@ public class AhjPermitService {
 
       bw.registerCustomEditor(
           List.class,
-          "submissionContacts",
+          "contacts",
           new JsonCollectionDeserializer(contactTypeRef, objectMapper));
 
-      bw.registerCustomEditor(
-          List.class,
-          "followUpContacts",
-          new JsonCollectionDeserializer(contactTypeRef, objectMapper));
     }
   }
 }

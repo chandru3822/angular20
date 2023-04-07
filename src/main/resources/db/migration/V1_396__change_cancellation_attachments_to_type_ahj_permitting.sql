@@ -10,3 +10,7 @@ set link_type_id = (select fdlt.id from brs.feat_db_link_type fdlt where fdlt.na
 where apl.link_type_id = 4 or apl.link_type_id = 5;
 update brs.feat_db_link_type set archived = true where id = 4;
 update brs.feat_db_link_type set archived = true where id = 5;
+
+update brs.feat_db_contact c
+set contact_type_id = 1 where c.contact_type_id = 6;
+update brs.feat_db_contact_type set archived = true where id = 6;
