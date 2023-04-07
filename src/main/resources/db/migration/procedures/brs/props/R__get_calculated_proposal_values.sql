@@ -481,7 +481,7 @@ from brs.proposal prop
   pcfv5.custom_field_group_assignment_id = 147
   left join brs.proposal_custom_field_value pcfv6 on prop.id = pcfv6.proposal_id and
   pcfv6.custom_field_group_assignment_id = 165
-  left join flow.list_of_value lov6 on lov6.id = pcfv6.int_value
+  left join brs.list_of_value lov6 on lov6.id = pcfv6.int_value
   left join brs.proposal_custom_field_value pcfv7 on prop.id = pcfv7.proposal_id and
   pcfv7.custom_field_group_assignment_id = 167
   left join flow.list_of_value lov on lov.id = pcfv5.int_value

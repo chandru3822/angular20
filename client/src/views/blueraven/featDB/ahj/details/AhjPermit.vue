@@ -42,54 +42,31 @@
         <v-row no-gutters>
           <!-- FIRST COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
-            <FeatDbLinks title="Submission Links"
-                     :linkTypeId="4"
+            <FeatDbLinks title="Links"
+                     :linkTypeId="this.linksTypeId"
                      :user-can-edit="userCanEdit"
                      :itemId="ahjPermit.id"
                      :itemType="itemType"
                      :ahjId="ahjId"
-                     :links="ahjPermit.submissionLinks"
+                     :links="ahjPermit.links"
                      show-expanded
                      :expanded-all="expandedAll"
                      @toggle-collapse-expand="toggleCollapseExpand($event)"
             ></FeatDbLinks>
-
-            <FeatDbContact title="Submission Contacts"
-                        :contactTypeId="1"
-                        :user-can-edit="userCanEdit"
-                        :itemId="ahjPermit.id"
-                        :itemType="itemType"
-                        :ahjId="ahjId"
-                        :contacts="ahjPermit.submissionContacts"
-                        show-expanded
-                        :expanded-all="expandedAll"
-                        @toggle-collapse-expand="toggleCollapseExpand($event)"
-            ></FeatDbContact>
           </v-col>
 
           <!-- SECOND COLUMN -->
           <v-col cols="12" md="6" class="px-1 mb-3">
-            <FeatDbLinks title="Follow-up and Delivery Links"
-                     :linkTypeId="5"
-                     :user-can-edit="userCanEdit"
-                     :itemId="ahjPermit.id"
-                     :itemType="itemType"
-                     :ahjId="ahjId"
-                     :links="ahjPermit.followUpLinks"
-                     show-expanded
-                     :expanded-all="expandedAll"
-                     @toggle-collapse-expand="toggleCollapseExpand($event)"
-            ></FeatDbLinks>
-            <FeatDbContact title="Follow-up and Delivery Contacts"
-                        :contactTypeId="6"
-                        :user-can-edit="userCanEdit"
-                        :itemId="ahjPermit.id"
-                        :itemType="itemType"
-                        :ahjId="ahjId"
-                        :contacts="ahjPermit.followUpContacts"
-                        show-expanded
-                        :expanded-all="expandedAll"
-                        @toggle-collapse-expand="toggleCollapseExpand($event)"
+            <FeatDbContact title="Contacts"
+                           :contactTypeId="1"
+                           :user-can-edit="userCanEdit"
+                           :itemId="ahjPermit.id"
+                           :itemType="itemType"
+                           :ahjId="ahjId"
+                           :contacts="ahjPermit.contacts"
+                           show-expanded
+                           :expanded-all="expandedAll"
+                           @toggle-collapse-expand="toggleCollapseExpand($event)"
             ></FeatDbContact>
           </v-col>
 
@@ -177,6 +154,8 @@ import FeatDbCustomFieldGroup from "@/views/blueraven/featDB/components/FeatDbCu
 import FeatDbContact from "@/views/blueraven/featDB/components/FeatDbContacts.vue";
 import FeatDbLinks from "@/views/blueraven/featDB/components/FeatDbLinks.vue";
 
+const { VITE_ENV } =  import.meta.env
+
 export default {
   name: 'ahjPermit',
   components: {
@@ -192,16 +171,16 @@ export default {
     },
     hardCodedDocsMap() {
       const docsMap = new Map()
-      docsMap.set(5, {
-        title: "Documents Required for Inspection",
-        documents: this.inspectionDocuments,
+      docsMap.set(1, {
+        title: "Submission Documents",
+        documents: this.submissionDocuments,
         attachmentTypeId: 1,
         attachmentType: "All Documents"
       })
-      docsMap.set(24, {
-        title: "Documents Required for Refund/Cancellation",
-        documents: this.cancellationDocuments,
-        attachmentTypeId: 462,
+      docsMap.set(4, {
+        title: "Approval Documents",
+        documents: this.approvalDocuments,
+        attachmentTypeId: this.approvalDocTypeId,
         attachmentType: "All Documents"
       })
       return docsMap
@@ -248,14 +227,20 @@ export default {
       revisionChecklist: [],
       asBuiltChecklist: [],
       nonStandardChecklist: [],
-      submissionLinks: [],
-      followUpLinks: [],
-      submissionContacts: [],
+      links:[],
+      contacts: [],
       printLocations: [],
-      followUpContacts: []
     },
-    inspectionDocuments: [],
-    cancellationDocuments: [],
+    submissionDocuments: [],
+    approvalDocuments: [],
+    //  todo: get UAT value
+    // 981 is the prod value
+    approvalDocTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 980 :
+        VITE_ENV === 'uat' ? 980 : 981,
+    //  todo: get UAT and prod values
+    // 12 is the prod value
+    linksTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 12 :
+        VITE_ENV === 'uat' ? 12 : 12,
   }),
   methods: {
     updateDirtyValue(item) {
@@ -333,12 +318,12 @@ export default {
         this.getCustomFieldGroupAssignmentsForScreen()
       })
     },
-    async getCancellationDocuments() {
+    async getSubmissionDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 462}
+        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.cancellationDocuments = cloneDeep(data)
+        this.submissionDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -346,12 +331,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getInspectionDocuments() {
+    async getApprovalDocuments() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: 1}
+        const params = {sourceId: this.ahjPermit.id, attachmentTypeId: this.approvalDocTypeId}
         const {data, status} = await getRequestWithParams('/attachment', {params})
-        this.inspectionDocuments = cloneDeep(data)
+        this.approvalDocuments = cloneDeep(data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -417,8 +402,8 @@ export default {
     this.ahjId = parseInt(this.$route.params.ahjId)
     this.getAhjPermit().then(() => {
       this.getCustomFieldGroupAssignmentsForScreen()
-      this.getInspectionDocuments()
-      this.getCancellationDocuments()
+      this.getSubmissionDocuments()
+      this.getApprovalDocuments()
     })
   }
 }

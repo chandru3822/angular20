@@ -230,7 +230,8 @@ BEGIN
                                         number_of_batteries,
                                         estimated_backup_days,
                                         solar_rebate_for_hic,
-                                        include_soft_start_device)
+                                        include_soft_start_device,
+                                        solar_below_the_line_rebates)
   VALUES (new.proposal ->> '_filename',
           new.project_id,
           new.proposal ->> 'Full Name',
@@ -457,7 +458,8 @@ BEGIN
           new.proposal ->> 'Number of Batteries',
           new.proposal ->> 'Estimated Backup Days',
           new.proposal ->> 'Solar Rebate for HIC',
-          new.proposal ->> 'Soft Start Included');
+          new.proposal ->> 'Soft Start Included',
+          new.proposal ->> 'Solar Below the Line Rebates');
   RETURN NEW;
 END;
 $$;
