@@ -238,7 +238,7 @@ export default {
     approvalDocTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 980 :
         VITE_ENV === 'uat' ? 980 : 981,
     //  todo: get UAT and prod values
-    // ?? is the prod value
+    // 12 is the prod value
     linksTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 12 :
         VITE_ENV === 'uat' ? 12 : 12,
   }),
