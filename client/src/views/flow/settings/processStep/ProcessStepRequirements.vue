@@ -92,6 +92,30 @@
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-autocomplete>
+            <v-select attach
+                      v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12"
+                      v-model="selectedDataView"
+                      :items="dataViews"
+                      label="Select Data View"
+                      item-value="id"
+                      return-object
+                      item-text="displayName"
+                      @input="[getDataViewFields()]"
+            ></v-select>
+            <v-autocomplete
+              v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12 && availableDataViewFields.length > 0"
+              v-model="selectedDataViewField"
+              :items="availableDataViewFields"
+              label="Data View Field"
+              return-object
+              attach
+              item-text="fieldName"
+              @input="[loadOperatorTypes(selectedDataViewField.dataTypeId), loadDataTypeRequirements(selectedDataViewField.dataTypeId),
+                              selectedDataTypeRequirement = {},
+                              validateRequirementForm(),
+                              selectedFunction = {}, newRequirement.operatorTypeId = null,
+                              newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
+            ></v-autocomplete>
             <!-- if it is a function -->
             <v-select
               v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 2"
@@ -157,6 +181,7 @@
             <v-select
               v-if="(newRequirement.processStepRequirementTypeId !== 2 && newRequirement.processStepRequirementTypeId !== 7 && selectedCustomField.customFieldGroupAssignmentId)
                       || (newRequirement.processStepRequirementTypeId === 2 && selectedFunction.id)
+                      || (newRequirement.processStepRequirementTypeId === 12 && selectedDataViewField.id)
                       || ((newRequirement.processStepRequirementTypeId === 7 || newRequirement.processStepRequirementTypeId === 8) && parent.id)
                       || [9,10,11].includes(newRequirement.processStepRequirementTypeId)"
               v-model="newRequirement.operatorTypeId"
@@ -524,6 +549,9 @@
                       v-else-if="item.processStepRequirementTypeId === 7 || item.processStepRequirementTypeId === 8">
                       <a :href="`/settings/processStep/${item.referenceProcessStepId}/components`">{{ item.referenceProcessStepName }}</a>
                     </span>
+                    <span v-if="item.processStepRequirementTypeId === 12">
+                      {{ item.dataViewChildFieldName || item.dataViewFieldName }}
+                    </span>
                     <span v-else>
                       {{ item.fieldName }}
                     </span>
@@ -657,16 +685,20 @@ export default {
       dataTypeRequirements: [],
       selectedDataTypeRequirement: {},
       selectedCustomField: {},
+      selectedDataViewField: {},
       listOfValues: [],
       selectedListOfValues: [],
       selectedListValue: {},
       selectedFunction: {},
+      selectedDataView: {},
       selectedRequirementIndex: null,
       availableRequirementTypes: [],
       processStepId: this.$route.params.id,
       processStepEventId: this.$route.params.eventId,
       companyId: this.$store.state.user.details.companyId,
       parentObjects: [],
+      dataViews: [],
+      availableDataViewFields: [],
       parent: {},
       customFields: [],
       operatorTypes: [],
@@ -692,7 +724,7 @@ export default {
   methods: {
     //requirements
     changeBooleanValue(e, fp) {
-      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
+      this.$set(fp, 'dynamicValue', e == null ? 'fa$lse' : e.toString())
     },
     async getRequirements() {
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -757,6 +789,8 @@ export default {
           this.newRequirement.customValue = true
           this.loadOperatorTypes(7, 11)
           this.getEventStatuses()
+        } else if (this.newRequirement.processStepRequirementTypeId === 12) {
+          this.loadDataViews()
         } else {
           let objectTypeId = this.eventRequirements ? 6 : 4;
           const {data} = await getRequest(`/function/requirement/${objectTypeId}`)
@@ -775,6 +809,32 @@ export default {
       try {
         const {data} = await getRequestWithParams(`/processStep/getParentObjects`, {params: {id: this.processStepId}})
         this.parentObjects = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async loadDataViews() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/dataView`, null, [])
+        this.dataViews = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getDataViewFields() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/customField/getByDataView/${this.selectedDataView.id}`)
+        this.availableDataViewFields = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -997,6 +1057,8 @@ export default {
         this.newRequirement.customFieldGroupAssignmentId = this.selectedCustomField.customFieldGroupAssignmentId
         this.newRequirement.companyFunctionId = this.selectedFunction.id
         this.newRequirement.processStepId = this.processStepId
+        this.newRequirement.dataViewFieldConfigId = this.selectedDataViewField.dataViewFieldConfigId
+        this.newRequirement.dataViewChildFieldConfigId = this.selectedDataViewField.dataViewChildFieldConfigId
 
         //todo: holy crap figure out how to fix the object being sent up so i dont have to do all this validation
         //adjust value of requirementValue as needed:

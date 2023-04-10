@@ -5,210 +5,227 @@ public class ProcessStepRequirementQuery {
   //language=PostgreSQL
   public final static String getRequirementsForStep = """
     select psr.id,
-                 psr.process_step_requirement_type_id,
-                 psr.process_step_id,
-                 psr.operator_type_id,
-                 psr.requirement_value,
-                 psr.custom_field_group_assignment_id,
-                 psr.company_function_id,
-                 psr.requirement_nbr,
-                 psr.date_created,
-                 psr.date_modified,
-                 psr.immutable,
-                 psr.created_by_id,
-                 psr.modified_by_id,
-                 psr.archived,
-                 psr.secondary_requirement_value,
-                 psr.data_type_requirement_id,
-                 psr.list_of_value_id,
-                 array_to_json(psr.list_of_value_ids) as list_of_value_ids,
-                 ot.operator_type,
-                 psrt.process_step_requirement_type,
-                 case when psr.data_type_requirement_id is null or psr.process_step_requirement_type_id = 7 or psr.process_step_requirement_type_id = 8 or psr.process_step_requirement_type_id = 9 or psr.process_step_requirement_type_id = 10 then true else false end as custom_value,
-                 ps.id as parent_id,
-                 ps.process_step_name as parent_name,
-                 rps.id as reference_process_step_id,
-                 rps.process_step_name as reference_process_step_name,
-                 psr.fail_if_no_reference_step_found,
-                 cf.field_name,
-                 cf.custom_field_sql_key,
-                 cf.custom_field_sql,
-                            cf.custom_field_sql_smartlist,
-                 cf.company_system_list_id,
-                 psr.system_list_option_id,
-                 psr.custom_sql_option_id,
-                 array_to_json(cf.system_list_option_ids) as system_list_option_ids,
-                 (select json_build_object(
-                             'id', cf.id,
-                             'listOfValueId', cf.list_of_value_id,
-                             'customFieldSql', cf.custom_field_sql,
-                             'companySystemListId', cf.company_system_list_id,
-                             'allowMultiple', cdt.allow_multiple
-                           ))                                     as custom_field,
-                 (select json_build_object(
-                             'id', dtr.id,
-                             'dataTypeValue', dtr.data_type_value,
-                             'secondaryRequirement', dtr.secondary_requirement
-                           ))                                     as data_type_requirement,
-                 (select json_build_object(
-                             'id', lov.id,
-                             'name', lov.name
-                           ))                                     as list_of_value,
-                 case when psr.process_step_requirement_type_id = 7 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select pscpsst.company_process_step_status_type_id as id,
-                                                 concat(cpsst.process_step_status_type, ' (', psst.process_step_status_type, ')')  as name
-                                          from flow.process_step_company_process_step_status_type pscpsst
-                                                 inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
-                                                 inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-                                          where pscpsst.process_step_id = psr.reference_process_step_id
-                                            and pscpsst.archived is not true
-                                            and cpsst.id = any(psr.list_of_value_ids)
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 8 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select distinct psst.id,
-                                                          psst.process_step_status_type  as name
-                                          from flow.process_step_company_process_step_status_type pscpsst
-                                                 inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
-                                                 inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-                                          where pscpsst.process_step_id = psr.reference_process_step_id
-                                            and pscpsst.archived is not true
-                                            and psst.id = any(psr.list_of_value_ids)
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 9 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select cpst.id,
-                                                 concat(cpst.project_status_type, ' (', pst.project_status_type, ')')  as name
-                                          from flow.company_project_status_type cpst
-                                                 inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-                                          where cpst.archived is not true
-                                            and cpst.id = any(psr.list_of_value_ids)
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 10 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select pst.id,
-                                                 pst.project_status_type as name
-                                          from flow.project_status_type pst
-                                          where pst.archived is not true
-                                            and pst.id = any(psr.list_of_value_ids)
-                                        ) lov), '[]')
-                      else coalesce((
-                                      SELECT array_to_json(array_agg(row_to_json(lov)))
-                                      FROM (
-                                             select lv.id,
-                                                    lv.name
-                                             from flow.list_of_value lv
-                                             where lv.id = any(psr.list_of_value_ids)
-                                           ) lov), '[]') end AS "listOfValues",
-                 case when psr.process_step_requirement_type_id = 7 or psr.process_step_requirement_type_id = 8 or
-                           psr.process_step_requirement_type_id = 9 or psr.process_step_requirement_type_id = 10 then 7
-                      else coalesce(cdt.data_type_id, df.return_data_type_id) end as data_type_id,
-                 cfn.company_function_name,
-                 coalesce((
-                            SELECT array_to_json(array_agg(row_to_json(params)))
-                            FROM (
-                                   select rpdv.id,
-                                          rpdv.archived,
-                                          dfp.db_function_id as "dbFunctionId",
-                                          dfp.parameter_name as "parameterName",
-                                          dfp.data_type_id as "dataTypeId",
-                                          dfp.description,
-                                          dfp.id as "dbFunctionParamId",
-                                          rpdv.process_step_requirement_id as "processStepRequirementId",
-                                          rpdv.dynamic_value as "dynamicValue"
-                                   from flow.db_function_param dfp
-                                          left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
-                                   where dfp.db_function_id = cfn.db_function_id
-                                     and dfp.parameter_type_id = 2
-                                     and rpdv.archived is not true
-                                 ) params), '[]') AS "requirementParamDynamicValues",
-                 case when cf.list_of_value_id is not null then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select lv.id,
-                                                 lv.name
-                                          from flow.list_of_value lv
-                                          where lv.parent_id = cf.list_of_value_id
-                                        ) lov), '[]')
-                      when cf.company_system_list_id is not null then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select * from flow.get_system_list_options(cf.company_id, cf.company_system_list_id, true, cf.system_list_option_ids)
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 7 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select pscpsst.company_process_step_status_type_id as id,
-                                                 concat(cpsst.process_step_status_type, ' (', psst.process_step_status_type, ')')  as name
-                                          from flow.process_step_company_process_step_status_type pscpsst
-                                                 inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
-                                                 inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-                                          where pscpsst.process_step_id = psr.reference_process_step_id
-                                            and pscpsst.archived is not true
-                                            and case when psr.reference_process_step_id = :processStepId then cpsst.process_step_status_type_id = 1 else 1=1 end
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 8 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select distinct psst.id,
-                                                          psst.process_step_status_type  as name
-                                          from flow.process_step_company_process_step_status_type pscpsst
-                                                 inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
-                                                 inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
-                                          where pscpsst.process_step_id = psr.reference_process_step_id
-                                            and pscpsst.archived is not true
-                                            and case when psr.reference_process_step_id = :processStepId then psst.id = 1 else 1=1 end
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 9 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select cpst.id,
-                                                 concat(cpst.project_status_type, ' (', pst.project_status_type, ')')  as name
-                                          from flow.company_project_status_type cpst
-                                                 inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-                                          where cpst.archived is not true
-                                        ) lov), '[]')
-                      when psr.process_step_requirement_type_id = 10 then
-                        coalesce((
-                                   SELECT array_to_json(array_agg(row_to_json(lov)))
-                                   FROM (
-                                          select pst.id,
-                                                 pst.project_status_type  as name
-                                          from flow.project_status_type pst
-                                          where pst.archived is not true
-                                        ) lov), '[]')
-                      else '[]' end AS "availableListOfValues"
-          from flow.process_step_requirement psr
-                 left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
-                 left join flow.custom_field cf on cf.id = cfga.custom_field_id
-                 left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
-                 left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-                 left join flow.process_step ps on ps.id = cfg.process_step_id
-                 left join flow.process_step rps on rps.id = psr.reference_process_step_id
-                 left join flow.company_function cfn on cfn.id = psr.company_function_id
-                 left join flow.db_function df on df.id = cfn.db_function_id
-                 left join flow.data_type_requirement dtr on dtr.id = psr.data_type_requirement_id
-                 left join flow.list_of_value lov on lov.id = psr.list_of_value_id
-                 inner join flow.operator_type ot on ot.id = psr.operator_type_id
-                 inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
-          where psr.archived is not true
-            and cfg.archived is not true
-            and psr.process_step_id = :processStepId
-          order by psr.requirement_nbr
+                                             psr.process_step_requirement_type_id,
+                                             psr.process_step_id,
+                                             psr.operator_type_id,
+                                             psr.requirement_value,
+                                             psr.custom_field_group_assignment_id,
+                                             psr.company_function_id,
+                                             psr.requirement_nbr,
+                                             psr.date_created,
+                                             psr.data_view_child_field_config_id,
+                                             psr.data_view_field_config_id,
+                                             dvfc.display_name as data_view_field_name,
+                                             dvcfc.display_name as data_view_child_field_name,
+                                             psr.date_modified,
+                                             psr.immutable,
+                                             psr.created_by_id,
+                                             psr.modified_by_id,
+                                             psr.archived,
+                                             psr.secondary_requirement_value,
+                                             psr.data_type_requirement_id,
+                                             psr.list_of_value_id,
+                                             array_to_json(psr.list_of_value_ids) as list_of_value_ids,
+                                             ot.operator_type,
+                                             psrt.process_step_requirement_type,
+                                             case when psr.data_type_requirement_id is null or psr.process_step_requirement_type_id = 7 or psr.process_step_requirement_type_id = 8 or psr.process_step_requirement_type_id = 9 or psr.process_step_requirement_type_id = 10 then true else false end as custom_value,
+                                             ps.id as parent_id,
+                                             ps.process_step_name as parent_name,
+                                             rps.id as reference_process_step_id,
+                                             rps.process_step_name as reference_process_step_name,
+                                             psr.fail_if_no_reference_step_found,
+                                             cf.field_name,
+                                             cf.custom_field_sql_key,
+                                             cf.custom_field_sql,
+                                             cf.custom_field_sql_smartlist,
+                                             cf.company_system_list_id,
+                                             psr.system_list_option_id,
+                                             psr.custom_sql_option_id,
+                                             array_to_json(cf.system_list_option_ids) as system_list_option_ids,
+                                             (select json_build_object(
+                                                         'id', cf.id,
+                                                         'listOfValueId', cf.list_of_value_id,
+                                                         'customFieldSql', cf.custom_field_sql,
+                                                         'companySystemListId', cf.company_system_list_id,
+                                                         'allowMultiple', cdt.allow_multiple
+                                                       ))                                     as custom_field,
+                                             (select json_build_object(
+                                                         'id', dtr.id,
+                                                         'dataTypeValue', dtr.data_type_value,
+                                                         'secondaryRequirement', dtr.secondary_requirement
+                                                       ))                                     as data_type_requirement,
+                                             (select json_build_object(
+                                                         'id', lov.id,
+                                                         'name', lov.name
+                                                       ))                                     as list_of_value,
+                                             case when psr.process_step_requirement_type_id = 7 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select pscpsst.company_process_step_status_type_id as id,
+                                                                             concat(cpsst.process_step_status_type, ' (', psst.process_step_status_type, ')')  as name
+                                                                      from flow.process_step_company_process_step_status_type pscpsst
+                                                                             inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                             inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+                                                                      where pscpsst.process_step_id = psr.reference_process_step_id
+                                                                        and pscpsst.archived is not true
+                                                                        and cpsst.id = any(psr.list_of_value_ids)
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 8 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select distinct psst.id,
+                                                                                      psst.process_step_status_type  as name
+                                                                      from flow.process_step_company_process_step_status_type pscpsst
+                                                                             inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                             inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+                                                                      where pscpsst.process_step_id = psr.reference_process_step_id
+                                                                        and pscpsst.archived is not true
+                                                                        and psst.id = any(psr.list_of_value_ids)
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 9 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select cpst.id,
+                                                                             concat(cpst.project_status_type, ' (', pst.project_status_type, ')')  as name
+                                                                      from flow.company_project_status_type cpst
+                                                                             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                                                                      where cpst.archived is not true
+                                                                        and cpst.id = any(psr.list_of_value_ids)
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 10 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select pst.id,
+                                                                             pst.project_status_type as name
+                                                                      from flow.project_status_type pst
+                                                                      where pst.archived is not true
+                                                                        and pst.id = any(psr.list_of_value_ids)
+                                                                    ) lov), '[]')
+                                                  else coalesce((
+                                                                  SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                                  FROM (
+                                                                         select lv.id,
+                                                                                lv.name
+                                                                         from flow.list_of_value lv
+                                                                         where lv.id = any(psr.list_of_value_ids)
+                                                                       ) lov), '[]') end AS "listOfValues",
+                                             case when psr.process_step_requirement_type_id = 7 or psr.process_step_requirement_type_id = 8 or
+                                                       psr.process_step_requirement_type_id = 9 or psr.process_step_requirement_type_id = 10 then 7
+                                               when psr.process_step_requirement_type_id = 12 and dvcfc.id is not null
+                                                      and def.object_type_id = 6 and def.column_name = 'resource_id' then 6
+                                               when psr.process_step_requirement_type_id = 12 and dvcfc.id is not null then ubt.return_data_type_id
+                                                when psr.process_step_requirement_type_id = 12 and dvfc.id is not null and def.data_type_id is not null then def.data_type_id
+                                                when psr.process_step_requirement_type_id = 12 and dvfc.id is not null and def.data_type_id is null
+                                                      then (select f.company_data_type_id from flow.custom_field_group_assignment c
+                                                                              inner join flow.custom_field f on f.id = c.custom_field_id
+                                                                              inner join flow.company_data_type t on t.id = f.company_data_type_id
+                                                                              where c.id = dvfc.custom_field_group_assignment_id)
+                                                  else coalesce(cdt.data_type_id, df.return_data_type_id) end as data_type_id,
+                                             cfn.company_function_name,
+                                             coalesce((
+                                                        SELECT array_to_json(array_agg(row_to_json(params)))
+                                                        FROM (
+                                                               select rpdv.id,
+                                                                      rpdv.archived,
+                                                                      dfp.db_function_id as "dbFunctionId",
+                                                                      dfp.parameter_name as "parameterName",
+                                                                      dfp.data_type_id as "dataTypeId",
+                                                                      dfp.description,
+                                                                      dfp.id as "dbFunctionParamId",
+                                                                      rpdv.process_step_requirement_id as "processStepRequirementId",
+                                                                      rpdv.dynamic_value as "dynamicValue"
+                                                               from flow.db_function_param dfp
+                                                                      left join flow.requirement_param_dynamic_value rpdv on rpdv.db_function_param_id = dfp.id and rpdv.process_step_requirement_id = psr.id
+                                                               where dfp.db_function_id = cfn.db_function_id
+                                                                 and dfp.parameter_type_id = 2
+                                                                 and rpdv.archived is not true
+                                                             ) params), '[]') AS "requirementParamDynamicValues",
+                                             case when cf.list_of_value_id is not null then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select lv.id,
+                                                                             lv.name
+                                                                      from flow.list_of_value lv
+                                                                      where lv.parent_id = cf.list_of_value_id
+                                                                    ) lov), '[]')
+                                                  when cf.company_system_list_id is not null then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select * from flow.get_system_list_options(cf.company_id, cf.company_system_list_id, true, cf.system_list_option_ids)
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 7 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select pscpsst.company_process_step_status_type_id as id,
+                                                                             concat(cpsst.process_step_status_type, ' (', psst.process_step_status_type, ')')  as name
+                                                                      from flow.process_step_company_process_step_status_type pscpsst
+                                                                             inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                             inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+                                                                      where pscpsst.process_step_id = psr.reference_process_step_id
+                                                                        and pscpsst.archived is not true
+                                                                        and case when psr.reference_process_step_id = :processStepId then cpsst.process_step_status_type_id = 1 else 1=1 end
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 8 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select distinct psst.id,
+                                                                                      psst.process_step_status_type  as name
+                                                                      from flow.process_step_company_process_step_status_type pscpsst
+                                                                             inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+                                                                             inner join flow.process_step_status_type psst on psst.id = cpsst.process_step_status_type_id
+                                                                      where pscpsst.process_step_id = psr.reference_process_step_id
+                                                                        and pscpsst.archived is not true
+                                                                        and case when psr.reference_process_step_id = :processStepId then psst.id = 1 else 1=1 end
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 9 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select cpst.id,
+                                                                             concat(cpst.project_status_type, ' (', pst.project_status_type, ')')  as name
+                                                                      from flow.company_project_status_type cpst
+                                                                             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
+                                                                      where cpst.archived is not true
+                                                                    ) lov), '[]')
+                                                  when psr.process_step_requirement_type_id = 10 then
+                                                    coalesce((
+                                                               SELECT array_to_json(array_agg(row_to_json(lov)))
+                                                               FROM (
+                                                                      select pst.id,
+                                                                             pst.project_status_type  as name
+                                                                      from flow.project_status_type pst
+                                                                      where pst.archived is not true
+                                                                    ) lov), '[]')
+                                                  else '[]' end AS "availableListOfValues"
+                                      from flow.process_step_requirement psr
+                                             left join flow.custom_field_group_assignment cfga on cfga.id = psr.custom_field_group_assignment_id
+                                             left join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                             left join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+                                             left join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                             left join flow.process_step ps on ps.id = cfg.process_step_id
+                                             left join flow.process_step rps on rps.id = psr.reference_process_step_id
+                                             left join flow.company_function cfn on cfn.id = psr.company_function_id
+                                             left join flow.db_function df on df.id = cfn.db_function_id
+                                             left join flow.data_type_requirement dtr on dtr.id = psr.data_type_requirement_id
+                                             left join flow.list_of_value lov on lov.id = psr.list_of_value_id
+                                             inner join flow.operator_type ot on ot.id = psr.operator_type_id
+                                             inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+                                             left join flow.data_view_field_config dvfc on dvfc.id = psr.data_view_field_config_id
+                                             left join flow.default_field def on def.id = dvfc.default_field_id
+                                             left join flow.data_view_child_field_config dvcfc on dvcfc.id = psr.data_view_child_field_config_id
+                                             left join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
+                                      where psr.archived is not true
+                                        and cfg.archived is not true
+                                        and psr.process_step_id = :processStepId
+                                      order by psr.requirement_nbr
         """;
 
   //language=PostgreSQL
@@ -228,6 +245,10 @@ public class ProcessStepRequirementQuery {
                  psr.system_list_option_id,
                  psr.modified_by_id,
                  psr.archived,
+                 psr.data_view_child_field_config_id,
+                 psr.data_view_field_config_id,
+                 dvfc.display_name as data_view_field_name,
+                 dvcfc.display_name as data_view_child_field_name,
                  psr.secondary_requirement_value,
                  psr.data_type_requirement_id,
                  psr.list_of_value_id,
@@ -408,6 +429,8 @@ public class ProcessStepRequirementQuery {
                  left join flow.list_of_value lov on lov.id = psr.list_of_value_id
                  inner join flow.operator_type ot on ot.id = psr.operator_type_id
                  inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+                 left join flow.data_view_field_config dvfc on dvfc.id = psr.data_view_field_config_id
+                 left join flow.data_view_child_field_config dvcfc on dvcfc.id = psr.data_view_child_field_config_id
           where psr.id = :id
         """;
 
@@ -493,7 +516,8 @@ public class ProcessStepRequirementQuery {
                                               process_step_id, secondary_requirement_value, data_type_requirement_id,
                                               list_of_value_id, list_of_value_ids, system_list_option_id,
                                               custom_sql_option_id, reference_process_step_id,
-                                              fail_if_no_reference_step_found, date_created, created_by_id, date_modified, modified_by_id)
+                                              fail_if_no_reference_step_found, date_created, created_by_id, date_modified, modified_by_id,
+                                              data_view_field_config_id, data_view_child_field_config_id)
     values (:requirementTypeId, :operatorTypeId, :requirementValue, :customFieldGroupAssignmentId, :companyFunctionId,
             (select coalesce(max(requirement_nbr), 0) + 1
              from flow.process_step_requirement
@@ -503,7 +527,8 @@ public class ProcessStepRequirementQuery {
             :secondaryRequirementValue,
             :dataTypeRequirementId,
             :listOfValueId, array [ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId,
-            :referenceProcessStepId, :failIfNoReferenceStepFound, now(), :createdById, now(), :createdById)
+            :referenceProcessStepId, :failIfNoReferenceStepFound, now(), :createdById, now(), :createdById,
+            :dataViewFieldConfigId, :dataViewChildFieldConfigId)
         """;
 
   //language=PostgreSQL

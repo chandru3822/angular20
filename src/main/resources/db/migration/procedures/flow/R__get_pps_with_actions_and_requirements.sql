@@ -108,7 +108,6 @@ BEGIN
                     system_list_option_id as "systemListOptionId",
                     custom_sql_option_id as "customSqlOptionId",
                     time_zone as "timeZone",
-                    project_custom_field_value_id as "projectCustomFieldValueId",
                     project_process_step_id as "projectProcessStepId",
                     text_value as "textValue",
                     date_value as "dateValue",

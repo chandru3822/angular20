@@ -19,10 +19,10 @@ public class ProcessStepEventRequirement {
 
   private Long id, processStepEventId, eventId, processStepRequirementTypeId, operatorTypeId, customFieldGroupAssignmentId, companyFunctionId,
     requirementNbr, processStepId, parentId, dataTypeId, dataTypeRequirementId, listOfValueId, returnDataTypeId,
-    companySystemListId, systemListOptionId, customSqlOptionId, referenceProcessStepId;
+    companySystemListId, systemListOptionId, customSqlOptionId, referenceProcessStepId, dataViewFieldConfigId, dataViewChildFieldConfigId;
 
   private String processStepRequirementType, requirementValue, operatorType, parentName, fieldName, companyFunctionName, functionName, processStepName,
-    secondaryRequirementValue, customFieldSql, referenceProcessStepName;
+    secondaryRequirementValue, customFieldSql, referenceProcessStepName, dataViewFieldName, dataViewChildFieldName;
 
   // not sure what type to make this yet
   private List<Integer> listOfValueIds;
