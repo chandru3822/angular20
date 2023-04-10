@@ -43,6 +43,12 @@ BEGIN
       and ps.company_id = p_company_id
       and psel.archived is false);
 
+  --duplicate required/optional fields
+  insert into flow.process_step_event_action_field(process_step_event_action_id, custom_field_group_assignment_id, required, archived, date_created, date_modified, created_by_id, modified_by_id)
+  (select v_new_event_action_id, pseaf.custom_field_group_assignment_id, pseaf.required, false, now(), now(), p_current_user_id, p_current_user_id
+   from flow.process_step_event_action_field pseaf
+   where pseaf.process_step_event_action_id = p_process_step_event_action_id
+   and pseaf.archived is false);
 
 --duplicate any child functions
   for r in select *
