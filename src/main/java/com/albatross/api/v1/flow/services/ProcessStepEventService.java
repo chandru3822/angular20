@@ -424,6 +424,9 @@ public class ProcessStepEventService {
       TypeReference<List<ProcessStepEventActionLink>> childLinksRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "childLinks", new JsonCollectionDeserializer(childLinksRef, objectMapper));
 
+      TypeReference<List<ProcessStepEventActionChildFunction>> childFunctionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "childFunctions", new JsonCollectionDeserializer(childFunctionsRef, objectMapper));
+
       TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "customFields", new JsonCollectionDeserializer(customFieldsRef, objectMapper));
     }
