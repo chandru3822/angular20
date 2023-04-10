@@ -108,6 +108,8 @@
           {text: 'Commission Plan', value: 'commissionPlan', show: true},
           {text: 'Commissions Earned', value: 'commissionsEarned', show: true},
           {text: 'Commissions Paid To Date', value: 'commissionPaidToDate', show: true},
+          {text: 'Commission Forfeited Paid to Date', value: 'commissionForfeitedPaidToDate', show: true},
+          {text: 'Commission Forfeited by Closer', value: 'commissionForfeitedByCloser', show: true},
           {text: 'Adjustment', value: 'commissionAdjustment', show: true},
           {text: 'Commission Pay', value: 'currentPayCommissions', show: true},
           {text: 'Remaining Value Commissions', value: 'remainingValueCommissions', show: true},
