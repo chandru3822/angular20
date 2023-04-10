@@ -264,6 +264,8 @@ public class PayrollQuery {
                   s.remaining_value as "remainingValue",
                   s.remaining_value_commissions as "remainingValueCommissions",
                   s.remaining_value_overrides as "remainingValueOverrides",
+                  s.commission_forfeited_paid_to_date as "commissionForfeitedPaidToDate",
+                  s.commission_forfeited_by_closer as "commissionForfeitedByCloser",
                   s.sales_rep as "salesRep",
                   s.sales_rep_id as "salesRepId",
                   s.sc,
