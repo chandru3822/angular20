@@ -64,16 +64,4 @@ public interface BirdEyeApi {
 
   @RequestLine("POST /resources/v2/customer/list?bid={businessId}")
   BirdEyeCustomerResponseWrapper getAllCustomers(@Param String businessId, BirdEyeCustomerListRequest request, @QueryMap BirdEyeListPageable pageable);
-
-  public static void main(String[] args) {
-    BirdEyeApi birdEyeApi = connect("***REMOVED***");
-    BirdEyeReviewRequest reviewRequest = BirdEyeReviewRequest.builder()
-      .fromDate(LocalDate.of(2022, 1, 1))
-      .fetchExtraParams(true)
-      .needCustomerInfo(true)
-      .build();
-    List<BirdEyeReview> reviewsByBusinessId = birdEyeApi.getReviewsByBusinessId("154032766433438", reviewRequest);
-
-    System.out.println(reviewsByBusinessId);
-  }
 }
