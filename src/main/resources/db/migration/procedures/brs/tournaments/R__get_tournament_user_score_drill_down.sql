@@ -9,7 +9,6 @@ declare
     v_timezone              varchar;
     v_tournament_formula_id bigint;
     v_tournament_start_date date;
-    v_booking_point_value int;
 BEGIN
 
     select tf.id,t.start_date
@@ -17,9 +16,6 @@ BEGIN
     from brs.tournament t
              inner join brs.tournament_formula tf on t.tournament_formula_id = tf.id
     where t.id = p_tournament_id;
-
-    select case when v_tournament_formula_id = 3 then 1 else 2 end
-    into v_booking_point_value;
 
     select t.timezone
     into v_timezone
@@ -32,14 +28,19 @@ BEGIN
 
     if v_timezone is not null then
 
-        case when v_tournament_formula_id = 1 or v_tournament_formula_id = 3 then
+        case when v_tournament_formula_id = 1 then
             RETURN QUERY select (select array_to_json(array_agg(row_to_json(drilldown)))
                                  from (
                                           select project_id,
                                                  p.project_name,
                                                  ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
-                                                 count(1) * v_booking_point_value as score
+                                                 count(1) * (select field_value
+                                                             from brs.tournament_formula_field_value tffv
+                                                                    inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                                             where tff.tournament_formula_id = v_tournament_formula_id
+                                                               and tffv.tournament_id = p_tournament_id
+                                                               and tff.field_code = 'BOOKING_SCORE_VALUE')::int as score
                                           from brs.project_details pd
                                                    inner join flow.project p on pd.project_id = p.id
                                           where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date

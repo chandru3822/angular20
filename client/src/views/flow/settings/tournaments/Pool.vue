@@ -95,13 +95,13 @@
             </v-btn>
           </v-toolbar>
           <v-card flat v-if="addPosition">
-            <v-select
+            <v-autocomplete
               v-model="positionId"
               :items="positions"
               label="Positions"
               item-text="position"
               item-value="id"
-            ></v-select>
+            ></v-autocomplete>
 
             <v-btn color="primary" :disabled="!positionId"
                    @click="addPositionToPool">
