@@ -59,7 +59,7 @@
                       item-value="id"
                       item-text="processStepRequirementType"
                       @input="[selectRequirementType(), parent = {}, selectedCustomField = {}, selectedDataTypeRequirement = {},
-                              validateRequirementForm(),
+                              validateRequirementForm(), selectedDataView = {}, selectedDataViewField = {},
                               selectedFunction = {}, newRequirement.operatorTypeId = null,
                               newRequirement.requirementValue = null, selectedListValue = {}, selectedDataTypeRequirement = {}, newRequirement.secondaryRequirementValue = null]"
             ></v-select>
@@ -103,7 +103,8 @@
                       @input="[getDataViewFields()]"
             ></v-select>
             <v-autocomplete
-              v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12 && availableDataViewFields.length > 0"
+              v-if="newRequirement.processStepRequirementTypeId && newRequirement.processStepRequirementTypeId === 12 &&
+                      selectedDataView.id != null && availableDataViewFields.length > 0"
               v-model="selectedDataViewField"
               :items="availableDataViewFields"
               label="Data View Field"
