@@ -1,5 +1,5 @@
-drop function if exists flow.set_pps_event_cfv(p_ppse_id bigint, p_user_id bigint, p_cfga bigint, p_value_to_save text, p_override_existing boolean);
-CREATE OR REPLACE FUNCTION flow.set_pps_event_cfv(p_ppse_id bigint, p_user_id bigint, p_cfga bigint, p_value_to_save text, p_override_existing boolean default false)
+drop function if exists flow.set_pps_event_cfv(p_ppse_id bigint, p_user_id bigint, p_cfga bigint, p_value_to_save text, p_override_existing boolean, text);
+CREATE OR REPLACE FUNCTION flow.set_pps_event_cfv(p_ppse_id bigint, p_user_id bigint, p_cfga bigint, p_value_to_save text, p_override_existing boolean default false, p_secondary_value_to_save text default null)
   returns boolean AS
 $BODY$
 declare
@@ -107,7 +107,7 @@ BEGIN
                                                                        created_by_id, date_created, modified_by_id,
                                                                        date_modified, rich_text_value)
         values (p_ppse_id, p_cfga, null, null, null, p_value_to_save::text, null, null, null, p_user_id, now(),
-                p_user_id, now(), case when v_data_type_id = 13 then p_value_to_save::text end);
+                p_user_id, now(), case when v_data_type_id = 13 then coalesce(p_secondary_value_to_save,p_value_to_save)::text end);
       elsif v_data_type_id in (6,9)
             or v_data_type_id = 8 -- note: data type id 8 = system. for now these are always single select lists.  this will break if that changes
         then
@@ -161,7 +161,7 @@ BEGIN
           set text_value     = p_value_to_save::text,
               modified_by_id = p_user_id,
               date_modified  = now(),
-              rich_text_value = case when v_data_type_id = 13 then p_value_to_save::text end
+              rich_text_value = case when v_data_type_id = 13 then coalesce(p_secondary_value_to_save,p_value_to_save)::text end
           where id = v_existing_id;
         elsif v_data_type_id in (6,9)
               or v_data_type_id = 8 -- note: data type id 8 = system. for now these are always single select lists.  this will break if that changes

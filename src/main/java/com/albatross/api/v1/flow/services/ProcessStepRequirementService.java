@@ -171,6 +171,8 @@ public class ProcessStepRequirementService {
     params.put("processStepId", requirement.getProcessStepId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
+    params.put("dataViewFieldConfigId", requirement.getDataViewFieldConfigId());
+    params.put("dataViewChildFieldConfigId", requirement.getDataViewChildFieldConfigId());
 
     Long id =
         sqlCache

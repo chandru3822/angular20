@@ -2,43 +2,76 @@
   <v-row no-gutters id="project-details-wq-container" class="py-0 relative height-one-hunned overflow-y-auto">
     <v-col cols="12" lg="12" class="pa-5">
       <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title class="albatross-header-3">Project Work Queue History</v-toolbar-title>
+        <v-toolbar-title class="albatross-header-3">Current Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
+          <v-btn color="primary" text @click="expandCurrent = !expandCurrent">
+            <v-icon v-if="!expandCurrent">mdi-chevron-down</v-icon>
+            <v-icon v-else>mdi-chevron-up</v-icon>
+          </v-btn>
         </v-toolbar-items>
       </v-toolbar>
 
-      <v-card class="square-card">
+      <v-card class="square-card" v-if="expandCurrent">
         <v-data-table
           :headers="headers"
-          :items="workQueueHistory"
+          :items="currentWorkQueues"
           :fixed-header="true"
-          :options.sync="options"
           disable-sort
-          :footer-props="footerProps"
-          group-by="status"
-          :items-per-page="50"
-          :server-items-length="workQueueHistory.length"
+          hide-default-footer
           :loading="dataLoading"
           dense
           class="elevation-1"
         >
 
           <template #no-data>
-            No work queue history found
+            No current work queues
           </template>
 
           <template #no-results>
-            No work queue history found
+            No current work queues
           </template>
 
-          <template v-slot:group.header="{items, isOpen, toggle}">
-            <th :colspan="headers.length">
-              <v-icon @click="toggle">
-                {{ isOpen ? 'mdi-minus' : 'mdi-plus' }}
-              </v-icon>
-              {{ items[0].status }}
-            </th>
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{ item.workQueueCategory }}</td>
+              <td class="text-left">{{ item.workQueueType }}</td>
+              <td class="text-left">{{ item.daysInQueue }}</td>
+              <td class="text-left">{{ item.processStepName }}</td>
+              <td class="text-left">{{ item.eventName }}</td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-card>
+
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title class="albatross-header-3">Historic Work Queues</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn color="primary" text @click="expandHistoric = !expandHistoric">
+            <v-icon v-if="!expandHistoric">mdi-chevron-down</v-icon>
+            <v-icon v-else>mdi-chevron-up</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card class="square-card" v-if="expandHistoric">
+        <v-data-table
+          :headers="headers"
+          :items="historicWorkQueues"
+          :fixed-header="true"
+          disable-sort
+          hide-default-footer
+          :loading="dataLoading"
+          dense
+          class="elevation-1"
+        >
+
+          <template #no-data>
+            No current work queues
+          </template>
+
+          <template #no-results>
+            No current work queues
           </template>
 
           <template #item="{ item, index }">
@@ -81,6 +114,8 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       workQueueHistory: [],
+      expandHistoric: true,
+      expandCurrent: true,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       userHasWorkQueueFeature: this.$store.getters.userHasFeature('WORK_QUEUE'),
       dataLoading: false,
@@ -105,7 +140,14 @@ export default {
   created() {
     this.getWorkQueueHistory()
   },
-  computed: {},
+  computed: {
+    currentWorkQueues() {
+      return this.workQueueHistory.filter(wqh => wqh.status === 'Currently in Queue')
+    },
+    historicWorkQueues() {
+      return this.workQueueHistory.filter(wqh => wqh.status === 'Work Queue History')
+    },
+  },
   methods: {
     getWorkQueueHistory: async function () {
       try {
