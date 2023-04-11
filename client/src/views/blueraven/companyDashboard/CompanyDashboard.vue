@@ -172,8 +172,8 @@
         startDate: moment().format('YYYY-MM-DD'),
         endDate: moment().format('YYYY-MM-DD'),
         weekNum: 1,
-        currentPeriod: Math.floor(moment().isoWeek() / 4),
-        dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'],
+        currentPeriod: Math.ceil((moment().isoWeek() - (moment().isoWeek()%13 == 0)) / 4),
+        dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last 30 Days', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'],
         isLoading: true,
         drilldownIsLoading: true,
         dashValues: [],
@@ -319,6 +319,10 @@
           case 'Last Week':
             this.startDate = moment().startOf('isoWeek').subtract(7, 'days').format('YYYY-MM-DD')
             this.endDate = moment().startOf('isoWeek').subtract(1, 'days').format('YYYY-MM-DD')
+            break
+          case 'Last 30 Days':
+            this.startDate = moment().subtract(30, 'days').format('YYYY-MM-DD')
+            this.endDate = moment().format('YYYY-MM-DD')
             break
           case 'Last Period':
             this.momentStartOfLastPeriod = moment().clone().startOf('isoWeek').isoWeek((this.currentPeriod - 1) * 4 - 3 + Math.floor((this.currentPeriod - 2) / 3))

@@ -11,8 +11,11 @@ declare
   v_score                 bigint;
   v_timezone              varchar;
   v_tournament_start_date date;
+  v_booking_point_value int;
 BEGIN
 
+  select case when p_tournament_formula_id = 3 then 1 else 2 end
+  into v_booking_point_value;
 
   select start_date
   into v_tournament_start_date
@@ -31,11 +34,11 @@ BEGIN
 
   if v_timezone is not null then
 
-    case when p_tournament_formula_id = 1 then
+    case when p_tournament_formula_id = 1 or p_tournament_formula_id = 3 then
       select *
       into v_score
       from (
-             (select (select count(1) * 2
+             (select (select count(1) * v_booking_point_value
                       from brs.project_details pd
                       where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                         and pd.closer_user_id = p_user_id

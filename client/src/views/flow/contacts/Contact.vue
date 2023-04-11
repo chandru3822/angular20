@@ -761,8 +761,6 @@ export default {
         this.fieldsSaving = true
         await this.saveContact()
         this.fieldsSaving = false
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -807,6 +805,8 @@ export default {
         this.addressChanged = false
         this.customFieldGroups = data
         this.fieldsSaving = false
+        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

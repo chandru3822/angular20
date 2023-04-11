@@ -6,6 +6,11 @@
           <v-toolbar-title class="app-title">Organizations</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-switch
+              v-model="includeInactive"
+              class="fix-switch-color mt-5 mr-3"
+              label="Include Inactive"
+            />
             <v-btn text color="primary" @click="exportCsv">
               <v-icon>mdi-cloud-download</v-icon>
               <span class="ml-2" v-if="!constants.IS_MOBILE">Export</span>
@@ -18,7 +23,7 @@
         </v-toolbar>
         <v-data-table
             :headers="headers"
-            :items="orgs"
+            :items="filteredOrgs"
             :fixed-header="true"
             :options.sync="options"
             disable-sort
@@ -100,6 +105,7 @@
         snackbar: {},
         constants,
         delay: 500,
+        includeInactive: false,
         dialog: false,
         orgs: [],
         orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
@@ -165,7 +171,11 @@
         }
       }
     },
-    computed: {},
+    computed: {
+      filteredOrgs () {
+        return this.orgs.filter(o => { return this.includeInactive ? true : o.activeFlag})
+      },
+    },
     watch: {
       options: {
         handler () {
@@ -220,7 +230,7 @@
         this.headers.forEach(h => csv += `${h.text},`)
         csv = `${csv.slice(0, -1)}\n`
 
-        this.orgs.forEach(o => {
+        this.filteredOrgs.forEach(o => {
 
           let addRow = true
           this.headers.forEach(h => {
@@ -230,15 +240,16 @@
           })
 
           if (addRow) {
-            this.headers.forEach(h => csv += `${o[h.value]},`)
+            this.headers.forEach(h => csv += '"'+`${o[h.value] === null ? '' : o[h.value]}`+'",')
             csv = `${csv.slice(0, -1)}\n`
           }
         })
 
         const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
         saveAs(blob, 'Orgs.csv')
-      }
+      },
     },
+
     async created () {
       if (this.orgFilter) {
         this.search = this.orgFilter

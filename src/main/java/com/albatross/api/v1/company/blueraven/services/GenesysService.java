@@ -307,8 +307,10 @@ public class GenesysService {
     String genesysContactListName = (String) contactMap.remove("genesys_contact_list_name");
     // Genesys contact list names that require additional parameters
     Set<String> genesysAppointmentContactLists = new HashSet<>(Arrays.asList("Sales Dev Retargeted Leads", "Inside Sales Pitched Not Booked"));
+    boolean isCronContact = false;
     if (!genesysContactListName.isEmpty()) {
       if (genesysAppointmentContactLists.contains(genesysContactListName)) {
+        isCronContact = true;
         getAppointmentValues(contactId, contactMap);
       }
 
@@ -325,7 +327,10 @@ public class GenesysService {
 
     // Genesys contacts will have a lead level
     if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
-      return;
+      // Non Cron Contacts require a Lead Level
+      if (!isCronContact) {
+        return;
+      }
     } else if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
       verseWebhookService.postContact(contactMap, false);
@@ -502,6 +507,9 @@ public class GenesysService {
 
     contactMap.remove("referral");
     contactMap.remove("retargeted");
+
+    contactMap.put("callerid", contactMap.remove("callerId"));
+    contactMap.put("contactcallable", "1");
   }
 
   private void getRetargetedValues(HashMap<String, Object> contactMap) {
@@ -518,6 +526,9 @@ public class GenesysService {
 
     contactMap.remove("lead_status");
     contactMap.put("lead_status", "Re-Target");
+
+    contactMap.put("callerid", contactMap.remove("callerId"));
+    contactMap.put("contactcallable", "1");
   }
 
   public void updateContact(Long contactId) throws IOException, ApiException {

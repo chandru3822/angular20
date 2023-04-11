@@ -1,15 +1,23 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.PropertiesConfiguration;
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SMTPAuthenticator;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.EmailSender;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.EmailQuery;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.util.IOUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.RateLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -22,6 +30,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +44,8 @@ public class MailService {
   private final ThreadPoolTaskExecutor taskExecutor;
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final AttachmentService attachmentService;
+  private final ObjectMapper om;
 
   public void sendMessage(
       String to,
@@ -109,13 +120,13 @@ public class MailService {
   public void sendUnprocessedEmails() throws InterruptedException {
     // get all unprocessed emails
     List<EmailMessage> unprocessedEmails =
-        sqlCache.queryBySql(EmailQuery.getAllUnprocessed, Collections.emptyMap(), EmailMessage.class);
+        sqlCache.queryBySql(EmailQuery.getAllUnprocessed, Collections.emptyMap(), new EmailMessageMapper<>(EmailMessage.class, om));
 
     // TODO: it would be cool if this could send "templated" emails, and pass in an array of params
     // so we could make .ftl files for these and format them more easily
+    // yeah it would kaleb. you should do that
 
-    // currently this fn is not able to send attachments.
-    // would need to refactor a bit in order to handle that
+    // refactored 3/28/23 to be able to send attachments :fingers_crossed:
     sendBulkMessages(unprocessedEmails, null, true);
   }
 
@@ -182,7 +193,23 @@ public class MailService {
                   multiPart.addBodyPart(attachmentPart);
                   attachmentNames.add(attachmentName);
                 }
+              } else if(null != message.getAttachmentIds() && message.getAttachmentIds().size() > 0) {
+                for(Long attachmentId : message.getAttachmentIds()) {
+                  Optional<Attachment> a = attachmentService.findSimpleById(attachmentId);
+
+                  if(a.isPresent() && a.get().getS3Key() != null) {
+                    MimeBodyPart attachmentPart = new MimeBodyPart();
+                    attachmentPart.setFileName(a.get().getDisplayName());
+                    S3Object s3Object = attachmentService.getS3ObjectByAttachment(a.get());
+                    byte[] byteArray = IOUtils.toByteArray(s3Object.getObjectContent());
+                    DataSource source = new ByteArrayDataSource(byteArray,a.get().getContentType());
+                    attachmentPart.setDataHandler(new DataHandler(source));
+                    multiPart.addBodyPart(attachmentPart);
+                  }
+                }
               }
+
+
               mimeMessage.setContent(multiPart);
               mimeMessage.saveChanges();
               log.debug("EMAIL: Sending email to {}", message.getTo());
@@ -346,5 +373,23 @@ public class MailService {
         : user
             .getCompanyId(); // todo: sitewide admin doesn't necessarily have user for current
                              // company, so we need to figure out how to get the right id
+  }
+
+
+
+  public static class EmailMessageMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public EmailMessageMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Long>> attachmentIdsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "attachmentIds",
+        new JsonCollectionDeserializer(attachmentIdsRef, objectMapper));
+    }
   }
 }

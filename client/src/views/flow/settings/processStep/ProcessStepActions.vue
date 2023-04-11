@@ -38,6 +38,7 @@
             <v-select attach v-model="newAction.companyProcessStepStatusTypeId"
                       :items="statusTypes"
                       :clearable="true"
+
                       label="Action changes status of parent process step to"
                       item-text="processStepStatusType"
                       item-value="id"
@@ -1182,7 +1183,6 @@ export default {
       }
     },
     getLogicButtonText(item) {
-
       if (item.logicString) {
         //this part make it work when clicking a requirement and adding to the current logic section, otherwise unused
         return item.logicString
@@ -1218,6 +1218,11 @@ export default {
           } else if (item.processStepRequirementTypeId === 2) {
             //function
             let logicString = item.processStepRequirementType + ' - ' + item.companyFunctionName + ' ' + item.operatorType + ' ' + value
+            item.logicString = logicString
+            return logicString
+          } else if (item.processStepRequirementTypeId === 12) {
+            //function
+            let logicString = item.processStepRequirementType + ' - ' + item.dataViewFieldName + ' ' + item.operatorType + ' ' + value
             item.logicString = logicString
             return logicString
           } else if ([7, 8, 9, 10].includes(item.processStepRequirementTypeId)) {
@@ -1369,6 +1374,7 @@ export default {
         action.actionType = data.actionType
         action.logicListChanged = false
         action.processStepStatusType = data.processStepStatusType
+        action.projectStatusType = data.projectStatusType
         action.processStepActionChildProcesses = data.processStepActionChildProcesses
         action.processStepActionLinks = data.processStepActionLinks
         action.processStepLogicList = data.processStepLogicList
@@ -1426,7 +1432,7 @@ export default {
     async getCompanyProjectStatusTypes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getCompanyProjectStatusTypes()
+        const {data, status} = await getCompanyProjectStatusTypes(null, true)
         this.companyProjectStatusTypes = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

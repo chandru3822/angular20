@@ -28,7 +28,8 @@ public class EmailQuery {
            subject,
            message as content,
            processed,
-           user_id as "sentByUserId"
+           user_id as "sentByUserId",
+           array_to_json(attachment_ids) as attachment_ids
     from flow.email_queue
     where processed is not true
     """;

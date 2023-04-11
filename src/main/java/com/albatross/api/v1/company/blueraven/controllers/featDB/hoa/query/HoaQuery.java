@@ -13,6 +13,7 @@ public class HoaQuery {
                  s.abbreviation as state_abbreviation,
                  lov.id as management_company_id,
                  lov.name as management_company,
+                 h.date_created as "dateCreated",
                  h.archived
           FROM brs.feat_db_hoa h
                    left join brs.list_of_value lov on lov.id = h.management_company_id and lov.parent_id = 759

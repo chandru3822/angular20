@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-dialog persistent :width="1000" v-model="showCoversheetModal"
+    <v-dialog persistent  v-model="showCoversheetModal"
               content-class="coversheet-modal-content">
       <AttachmentCoversheetModal :existing-attachment="selectedFile"
                                  :show-modal="showCoversheetModal"
@@ -67,17 +67,16 @@
           <v-btn icon text color="primary" class="button-position" :href="item.presignedUrl" @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
             <v-icon size="25" >mdi-tray-arrow-down</v-icon>
           </v-btn>
-          <ConfirmationDialog
-            :open-dialog="attachmentDeleteConfirm"
-            :retain-focus="false"
-            @confirm="deleteAttachment"
-            @close-dialog="closeDeleteDialog"
-
-          >Are you sure you want to delete {{ attachmentToDeleteName }}?
-          </ConfirmationDialog>
         </v-col>
       </v-row>
     </v-container>
+    <ConfirmationDialog
+        :open-dialog="attachmentDeleteConfirm"
+        :retain-focus="false"
+        @confirm="deleteAttachment"
+        @close-dialog="closeDeleteDialog">
+      Are you sure you want to delete <b>{{ attachmentToDeleteName }}</b>?
+    </ConfirmationDialog>
   </div>
 </template>
 
@@ -183,7 +182,7 @@ export default {
       const id = this.attachmentToDelete.id
       try {
         await deleteAttachment(id)
-        this.deleteCallback(id)
+        if(this.deleteCallback) {this.deleteCallback(id)}
         //this value tells the right pane to update when a file is deleted
         this.$store.commit(ProjectMutations.INCREMENT_RELOAD_KEY)
 

@@ -19,6 +19,10 @@ public class ProcessStepEventRequirementQuery {
                  psr.created_by_id,
                  psr.modified_by_id,
                  psr.archived,
+                 psr.data_view_child_field_config_id,
+                 psr.data_view_field_config_id,
+                 dvfc.display_name as data_view_field_name,
+                 dvcfc.display_name as data_view_child_field_name,
                  psr.secondary_requirement_value,
                  psr.data_type_requirement_id,
                  psr.list_of_value_id,
@@ -224,6 +228,8 @@ public class ProcessStepEventRequirementQuery {
                  left join flow.list_of_value lov on lov.id = psr.list_of_value_id
                  inner join flow.operator_type ot on ot.id = psr.operator_type_id
                  inner join flow.process_step_requirement_type psrt on psrt.id = psr.process_step_requirement_type_id
+                 left join flow.data_view_field_config dvfc on dvfc.id = psr.data_view_field_config_id
+                 left join flow.data_view_child_field_config dvcfc on dvcfc.id = psr.data_view_child_field_config_id
           where psr.archived is not true
             and cfg.archived is not true
             and psr.process_step_event_id = :processStepEventId
@@ -490,13 +496,15 @@ public class ProcessStepEventRequirementQuery {
   public final static String insertRequirement = """
     insert into flow.process_step_event_requirement(process_step_requirement_type_id, operator_type_id, requirement_value, custom_field_group_assignment_id,
                                                     company_function_id, requirement_nbr, date_created, created_by_id, process_step_event_id, secondary_requirement_value, data_type_requirement_id,
-                                                    list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, reference_process_step_id, fail_if_no_reference_step_found) values
+                                                    list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, reference_process_step_id, fail_if_no_reference_step_found,
+                                                    data_view_field_config_id, data_view_child_field_config_id) values
         (:requirementTypeId, :operatorTypeId, :requirementValue, :customFieldGroupAssignmentId, :companyFunctionId,
          (select coalesce(max(requirement_nbr),0) + 1
           from flow.process_step_event_requirement
           where process_step_event_id = :processStepEventId
             and archived is not true), now(), :createdById, :processStepEventId, :secondaryRequirementValue, :dataTypeRequirementId,
-         :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :referenceProcessStepId, :failIfNoReferenceStepFound)
+         :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :referenceProcessStepId, :failIfNoReferenceStepFound,
+         :dataViewFieldConfigId, :dataViewChildFieldConfigId)
         """;
 
   //language=PostgreSQL

@@ -187,6 +187,8 @@
                 <td class="text-left">{{item.commission_plan }}</td>
                 <td class="text-left">{{item.commission_earned || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.commission_forfeited_paid_to_date || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.commission_forfeited_by_closer || 0 | currency('$', 2) }}</td>
                 <td class="text-left">
                   {{ item.commission_adjustments || 0 | currency('$', 2) }}
 
@@ -483,6 +485,8 @@
           {text: 'Commission Plan', value: 'commission_plan', show: true},
           {text: 'Commissions Earned', value: 'commission_earned', show: true},
           {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
+          {text: 'Commission Forfeited Paid to Date', value: 'commission_forfeited_paid_to_date', show: true},
+          {text: 'Commission Forfeited by Closer', value: 'commission_forfeited_by_closer', show: true},
           {text: 'Adjustment', value: 'commission_adjustments', width: 150, show: true},
           {text: 'Commission Pay', value: 'current_pay_commissions', show: true},
           {text: 'Remaining Value Commissions', value: 'remaining_value_commissions', show: true},

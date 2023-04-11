@@ -1,57 +1,5 @@
 <template>
   <v-container class="custom-field-group-container">
-    <v-dialog
-      v-model="deleteError"
-    >
-      <v-card>
-        <v-card-title class="text-h5 error--text">
-          Error Event Status
-        </v-card-title>
-
-        <v-card-text>
-          You cannot delete an Event Status that is currently in use.  Please remove from the following locations before deleting.
-          <v-list v-for="(item, index) in fieldsInUse.events" :key="item.eventName">
-            <v-list-item-content>
-              Event
-              <div v-if="item.eventName">{{ item.eventName }}</div>
-            </v-list-item-content>
-          </v-list>
-
-          <v-list v-for="(item, index) in fieldsInUse.processStepEventActions" :key="index">
-            <v-list-item-content>
-              Process Step Event Action
-              <div v-if="item.eventName">Event: {{ item.eventName }}</div>
-              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
-              <div><span v-if="item.actionName"> Action: {{ item.actionName }}</span></div>
-            </v-list-item-content>
-          </v-list>
-
-          <v-list v-for="(item, index) in fieldsInUse.processStepEventRequirements" :key="index">
-            <v-list-item-content>
-              Process Step Event Requirement
-              <div v-if="item.eventName">Event: {{ item.eventName }}</div>
-              <div><span v-if="item.processStepName"> Process Step: {{ item.processStepName }}</span></div>
-            </v-list-item-content>
-          </v-list>
-
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn
-            color="primary"
-            text
-            dark
-            class="white--text"
-            @click="deleteError = false"
-          >
-            OK
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -179,20 +127,22 @@
                         :width="700"
     >
       <template v-slot:title>Event Status Usages: {{!!objectsUsingStatus ? objectsUsingStatus.fieldName : ''}}</template>
-      <span v-if="!objectsUsingStatus || (objectsUsingStatus.events.length === 0 && objectsUsingStatus.processStepEventActions.length === 0 && objectsUsingStatus.processStepEventRequirements.length === 0)">
-        Nothing using this event status.
-      </span>
+        <span v-if="deleteError" class="error-text">* Error deleting status</span>
+        <span v-if="!objectsUsingStatus || (objectsUsingStatus.events && objectsUsingStatus.events.length === 0 && objectsUsingStatus.processStepEventActions && objectsUsingStatus.processStepEventActions.length === 0 && objectsUsingStatus.processStepEventRequirements && objectsUsingStatus.processStepEventRequirements.length === 0)">
+          Nothing using this event status.
+        </span>
+
       <div v-else id="event-status-uses-table">
-        <div v-if="objectsUsingStatus.events.length > 0" class="label-large mt-6">Events</div>
-      <v-simple-table v-if="objectsUsingStatus.events.length > 0">
+        <div v-if="objectsUsingStatus.events && objectsUsingStatus.events.length > 0" class="label-large mt-6">Events</div>
+      <v-simple-table v-if="objectsUsingStatus.events && objectsUsingStatus.events.length > 0">
         <tbody>
         <tr v-for="(item, index) in objectsUsingStatus.events" :key="index" :class="{'shaded-row': !(index % 2)}">
           <td>{{item.eventName}}</td>
         </tr>
         </tbody>
       </v-simple-table>
-      <div v-if="objectsUsingStatus.processStepEventRequirements.length > 0" class="label-large mt-6">Process Step Event Requirements</div>
-      <v-simple-table v-if="objectsUsingStatus.processStepEventRequirements.length > 0">
+      <div v-if="objectsUsingStatus.processStepEventRequirements && objectsUsingStatus.processStepEventRequirements.length > 0" class="label-large mt-6">Process Step Event Requirements</div>
+      <v-simple-table v-if="objectsUsingStatus.processStepEventRequirements && objectsUsingStatus.processStepEventRequirements.length > 0">
         <thead>
         <tr>
           <th>Event</th>
@@ -206,8 +156,8 @@
         </tr>
         </tbody>
       </v-simple-table>
-        <div v-if="objectsUsingStatus.processStepEventActions.length > 0" class="label-large mt-6">Process Step Event Actions</div>
-      <v-simple-table v-if="objectsUsingStatus.processStepEventActions.length > 0">
+        <div v-if="objectsUsingStatus.processStepEventActions && objectsUsingStatus.processStepEventActions.length > 0" class="label-large mt-6">Process Step Event Actions</div>
+      <v-simple-table v-if="objectsUsingStatus.processStepEventActions && objectsUsingStatus.processStepEventActions.length > 0">
         <thead>
         <tr>
           <th>Event</th>
@@ -274,11 +224,11 @@ export default {
       companyId: this.$store.state.user.details.companyId,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       fieldsInUse: [],
-      deleteError: false,
       showDeleteDialog: false,
       itemToDelete: null,
       showInfoDialog: false,
-      objectsUsingStatus: null
+      objectsUsingStatus: [],
+      deleteError: false
     }
   },
   mounted() {
@@ -395,6 +345,7 @@ export default {
       }
     },
     async getUsesForStatus(eventStatusId, eventStatusName) {
+      this.deleteError = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`, this.apiPath, null, []);
@@ -410,6 +361,7 @@ export default {
       }
     },
     async deleteType() {
+      this.deleteError = false
       const item = this.itemToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -418,11 +370,15 @@ export default {
         this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
-        this.itemToDelete.archived = true
+        item.archived = true
+        //it makes no sense why this didn't work and why the code isn't yelling that i am editing a const variable... ? oh well
+        // this.itemToDelete.archived = true
       } catch (e) {
         if (e.status === 400) {
-          this.deleteError = true;
-          this.fieldsInUse = e.data;
+          this.showInfoDialog = true
+          this.deleteError = true
+          this.objectsUsingStatus = e.data;
+          this.objectsUsingStatus.fieldName = item.eventStatusType
           this.snackbar = getSnackbar("ERROR", "Error Deleting Status");
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
@@ -433,8 +389,9 @@ export default {
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      } finally {
+        this.closeDeleteDialog()
       }
-      this.closeDeleteDialog()
     },
     async saveType(type, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)

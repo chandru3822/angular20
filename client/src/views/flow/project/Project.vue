@@ -417,7 +417,7 @@ export default {
     getStatuses: async function () {
       try {
         this.statusesLoading = true
-        const {data} = await getCompanyProjectStatusTypes(this.projectId)
+        const {data} = await getCompanyProjectStatusTypes(this.projectId, true)
         this.statuses = data
         this.statusesLoading = false
       } catch (e) {

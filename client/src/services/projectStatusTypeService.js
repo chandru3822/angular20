@@ -1,7 +1,7 @@
 import { getRequest, getRequestWithParams } from '@/helpers/helpers'
 
-export async function getCompanyProjectStatusTypes(projectId) {
-  let params = { projectId }
+export async function getCompanyProjectStatusTypes(projectId, excludeAttachments) {
+  let params = { projectId, excludeAttachments }
   return await getRequestWithParams(`/project/companyStatus`, {
     skipCancel: true,
     params }, null, [])

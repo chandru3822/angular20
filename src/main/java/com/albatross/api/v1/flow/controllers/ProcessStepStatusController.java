@@ -1,14 +1,12 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CompanyProcessStepStatusType;
 import com.albatross.api.v1.flow.model.processStep.*;
-import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.services.ProcessStepStatusService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -119,10 +117,10 @@ public class ProcessStepStatusController {
 
   @Data
   public static class CannotDeleteProcessStepStatus {
-    private Boolean inUseByWqt, inUseByInitialStep;
+    private Boolean inUseByWqt, inUseByInitialStep, inUseByPps;
     private List<ProcessStepAction> actions;
     private List<ProcessStepActionChildProcess> childProcesses;
-    private List<ProjectProcessStep> projectSteps;
+//    private List<ProjectProcessStep> projectSteps;
     private List<ProcessStep> steps;
   }
 }

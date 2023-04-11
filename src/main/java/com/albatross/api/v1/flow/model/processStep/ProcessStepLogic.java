@@ -21,7 +21,7 @@ public class ProcessStepLogic {
 
   //these are only used for displaying the logic string value of these items
   private String requirementValue, secondaryRequirementValue, operatorType, fieldName, companyFunctionName, parentName,
-    referenceProcessStepName, processStepRequirementType;
+    referenceProcessStepName, processStepRequirementType, dataViewFieldName, dataViewChildFieldName;
   private Long processStepRequirementTypeId;
   private DataTypeRequirement dataTypeRequirement;
 

@@ -1,6 +1,6 @@
 <template>
   <div id="project-details-container" class="py-0">
-    <v-dialog persistent :width="1000" v-model="showCoversheetModal"
+    <v-dialog persistent v-model="showCoversheetModal"
               content-class="coversheet-modal-content">
       <AttachmentCoversheetModal :existing-attachment="tempFile"
                                  :file="fileToUpload"

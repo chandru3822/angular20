@@ -531,6 +531,17 @@ const router = new Router({
           children: [
             ProposalVersionSettingsRoutes,
             {
+              path: 'statusCheck',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "settings" */ './views/flow/settings/StatusCheck.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },
+            {
               path: 'attachments',
               meta: {title: 'Albatross - Settings'},
               component: () => {
@@ -1305,6 +1316,15 @@ const router = new Router({
             component: () => {
               if (store.getters.userHasFeature('PROCESS_STEPS')) {
                 return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectProcessStepEvent.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          }, {
+            path: 'workQueues',
+            component: () => {
+              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/AllWorkQueues.vue')
               } else {
                 return accessDenied()
               }

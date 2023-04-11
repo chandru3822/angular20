@@ -5,13 +5,16 @@
     >
       <v-card>
         <v-card-title class="text-h5 grey lighten-2 error--text">
-          Error Deleting Work Queue Type
+          Error Deleting Process Step Status
         </v-card-title>
 
         <v-card-text class="pt-5">
-          <div v-if="fieldsInUse && fieldsInUse.length > 0" class="mb-5">
-            <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
-            <div v-for="a in fieldsInUse" :key="a.id" class="ml-5">
+          <div v-if="fieldsInUse && fieldsInUse.inUseByPps" class="mb-5">
+            Status is in use by one or more project process steps.
+          </div>
+          <div v-if="fieldsInUse && fieldsInUse.steps && fieldsInUse.steps.length > 0" class="mb-5">
+            <div class="mb-3">* This process step type is being used by the following Process Steps.</div>
+            <div v-for="a in fieldsInUse.steps" :key="a.id" class="ml-5">
               <strong>{{ a.processStepName }}</strong>
             </div>
           </div>

@@ -32,6 +32,20 @@ public class AttachmentQuery {
     """;
 
   //language=PostgreSQL
+  public final static String findSimpleById = """
+ SELECT a.id,
+           a.attachment_type_id,
+           a.company_id,
+           a.content_type,
+           a.filename,
+           a.s3_key,
+           a.display_name
+    FROM flow.attachment a
+    WHERE a.id = :id
+      and a.archived is not true
+    """;
+
+  //language=PostgreSQL
   public final static String getAttachmentForUuidCheck = """
  SELECT
       a.id,

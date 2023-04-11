@@ -209,6 +209,40 @@ public class AvailabilityQuery {
         WHERE ra.id = :id
         """;
 
+
+  //language=PostgreSQL
+  public final static String getAppointmentsForResourceInRange = """
+    SELECT
+            ra.id,
+            ra.org_id,
+            ra.start_time,
+           case when ra.recurrence is not null then true else false end as repeat,
+            ra.end_time,
+            ra.archived,
+            ra.description,
+            ra.company_id,
+            ra.title,
+            ra.location,
+            ra.latitude,
+            ra.longitude,
+            ra.all_day,
+            ra.recurrence,
+            ra.recurring_event_id,
+            ra.recurring_event_end_type,
+            ra.recurring_start_time as "recurringStartTime",
+            ra.recurring_end_time as "recurringEndTime"
+        FROM flow.resource_appointment ra
+                 LEFT JOIN flow.org o ON o.id = ra.org_id
+                 LEFT JOIN flow.user u ON u.id = ra.user_id
+        WHERE case when :orgId::bigint is not null then ra.org_id = :orgId
+                   else ra.user_id = :userId end
+          and ra.company_id = :companyId
+          and ra.archived is not true
+          and ((ra.start_time between :startTime::timestamp AND :endTime::timestamp)
+              OR (ra.end_time between :startTime::timestamp AND :endTime::timestamp))
+          order by ra.start_time, ra.end_time, ra.all_day
+        """;
+
   //language=PostgreSQL
   public final static String getAppointmentsForResource = """
     SELECT

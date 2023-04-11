@@ -21,6 +21,7 @@ import com.albatross.api.v1.company.blueraven.models.ProposalProject;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
@@ -69,6 +70,7 @@ public class BlueravenProposalService {
   private final AttachmentService attachmentService;
   private final AppProperties appProperties;
   private final SecurityService securityService;
+  private final ProposalVersionService proposalVersionService;
 
   public Page<ProposalProject> getProposalProjects(String query, Pageable pageable) {
     Map<String, Object> params = new HashMap<>();
@@ -170,6 +172,21 @@ public class BlueravenProposalService {
       proposal ->
         blueravenCustomFieldGroupService.handleCustomListOfValue(
           proposal.getCustomFieldGroups(), 3L, proposal.getProjectId()));
+
+    // a little post-processing to filter out records that are not part of the current proposal version
+    result.ifPresent(proposal -> proposal.getCustomFieldGroups()
+      .forEach(cfg -> cfg.getCustomFieldValues().stream()
+        .filter(cfv -> cfv.getCustomFieldId() != null)
+        .forEach(cfv -> {
+          if (cfv.getHasListValues()) {
+            List<Long> filteredIds = proposalVersionService.getProposalValuesByFieldId(proposal.getProposalVersionId(), cfv.getCustomFieldId());
+            // only filter if we get some results back... otherwise, we are assuming not filtering is required
+            if (!filteredIds.isEmpty()){
+              List<ListOfValue> listOfValues = cfv.getListOfValues().stream().filter(v -> filteredIds.contains(v.getId())).toList();
+              cfv.setListOfValues(listOfValues);
+            }
+          }
+        })));
 
     return result;
   }

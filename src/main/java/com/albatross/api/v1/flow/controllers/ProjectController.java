@@ -4,11 +4,7 @@ import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.DensitySearch;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
-import com.albatross.api.v1.flow.model.project.Project;
-import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
-import com.albatross.api.v1.flow.model.project.ProjectStatusCount;
-import com.albatross.api.v1.flow.model.project.ProjectStatusType;
+import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
@@ -105,6 +101,13 @@ public class ProjectController {
       projectService.getProcessStepsByProjectId(projectId, null), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/{projectId}/workQueueHistory")
+  public ResponseEntity<List<ProjectWorkQueueHistory>> getProjectWorkQueuHistory(
+    @PathVariable Long projectId) {
+    return new ResponseEntity<>(
+      projectService.getWorkQueueHistoryByProjectId(projectId), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/{projectId}/upcomingProcessSteps")
   public ResponseEntity<List<ProjectProcessStep>> getUpcomingProjectProcessSteps(
     @PathVariable Long projectId) {
@@ -163,8 +166,9 @@ public class ProjectController {
   // status stuff
   @GetMapping(value = "/companyStatus")
   public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(
-    @RequestParam(required = false) Long projectId) {
-    return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId), HttpStatus.OK);
+    @RequestParam(required = false) Long projectId,
+    @RequestParam(required = false) Boolean excludeAttachments) {
+    return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId, excludeAttachments), HttpStatus.OK);
   }
 
   @GetMapping(value = "/statusesForWqt")
@@ -220,10 +224,8 @@ public class ProjectController {
 
   @Data
   public static class CannotDeleteProjectStatus {
-    private List<Project> projectsWithStatus;
-    private List<ProcessStepAction> processStepActions;
-    private List<ProcessStepEventData> processStepEventRequirements;
-    private List<ProcessStepEventData> processStepRequirements;
+    private Boolean statusInUseByProjects, statusInUseByActions,
+      statusInUseByEventRequirements, statusInUseByProcessStepRequirements;
   }
 
   @Data

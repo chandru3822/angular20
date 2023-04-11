@@ -559,6 +559,7 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 //coversheet modal needs to scroll independently so need to turn of the default modal scroller
 .coversheet-modal-content {
   overflow: hidden !important;
+  width: 100%;
 }
 
 .headline-large{

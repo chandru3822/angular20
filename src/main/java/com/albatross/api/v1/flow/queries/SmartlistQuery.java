@@ -168,13 +168,14 @@ public class SmartlistQuery {
   //language=PostgreSQL
   public final static String getAll = """
     select
-      s.id,
+      distinct on (s.name, s.id) s.id,
       s.name,
       s.company_object_type_id,
       s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
+      sm.date_created as date_last_exported,
       s.created_by_id,
       s.modified_by_id,
       s.archived,
@@ -193,27 +194,28 @@ public class SmartlistQuery {
     inner join flow.user u on u.id = s.owner_id
     left join flow.user_position up on up.user_id = s.owner_id
     left join flow.position p on up.position_id = p.id
+    left join flow.smartlist_metrics sm on s.id = sm.smartlist_id
     where
       cot.company_id = :companyId and
       s.archived is not true and
       s.work_queue_type_id is null and
       up.primary_flag is true and
-      (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
       up.archived is false and
       p.company_id = :companyId
-    order by s.name, s.date_modified desc
+    order by s.name, s.id, s.date_modified desc, sm.date_created desc
     """;
 
   //language=PostgreSQL
   public final static String getById = """
     select
-      s.id,
+      distinct on (s.id) s.id,
       s.name,
       s.company_object_type_id,
       s.public,
       s.owner_id,
       s.date_created,
       s.date_modified,
+      sm.date_created as date_last_exported,
       s.created_by_id,
       s.modified_by_id,
       s.archived,
@@ -325,17 +327,16 @@ public class SmartlistQuery {
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
     inner join flow.object_type ot on ot.id = cot.object_type_id
     inner join flow.user u on u.id = s.owner_id
-    left join flow.user_position up on up.user_id = s.owner_id
-    left join flow.position p on up.position_id = p.id
+    left join flow.user_position up on up.user_id = s.owner_id and
+              up.primary_flag is true and
+              (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
+              up.archived is false
+    left join flow.position p on up.position_id = p.id and p.company_id = :companyId
+    left join flow.smartlist_metrics sm on s.id = sm.smartlist_id
     where s.id = :smartlistId and
           cot.company_id = :companyId and
-          s.archived is not true and
-          (:isSystemAdmin or (
-            up.primary_flag is true and
-            (up.end_date is null or (up.end_date is not null and up.end_date > now())) and
-            up.archived is false and
-            p.company_id = :companyId
-          ))
+          s.archived is not true
+    order by s.id, sm.date_created desc
   """;
 
   //language=PostgreSQL
@@ -480,5 +481,35 @@ public class SmartlistQuery {
       date_modified = now(),
       modified_by_id = :userId
     where id = :smartlistId
+  """;
+
+  //language=PostgreSQL
+  public final static String addError = """
+    insert into flow.smartlist_error (smartlist_id, smartlist, smartlist_fields, smartlist_requirements, stacktrace, created_by, query)
+    values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :stacktrace, :createdById, :query)
+  """;
+
+  //language=PostgreSQL
+  public final static String addMetric = """
+    insert into flow.smartlist_metrics (smartlist_id, smartlist, smartlist_fields, smartlist_requirements, query, execution_duration, created_by_id)
+    values (:smartlistId, :smartlist::jsonb, :fields::jsonb, :requirements::jsonb, :query, :duration, :createdById)
+  """;
+
+  //language=PostgreSQL
+  public final static String getMetrics = """
+    select
+      sm.id,
+      sm.smartlist_id,
+      sm.created_by_id,
+      concat(u.first_name, ' ', u.last_name) as created_by,
+      sm.date_created
+    from flow.smartlist_metrics sm
+    inner join flow.smartlist s on sm.smartlist_id = s.id
+    inner join flow.company_object_type cot on s.company_object_type_id = cot.id
+    inner join flow.user u on sm.created_by_id = u.id
+    where
+      sm.smartlist_id = :smartlistId and
+      cot.company_id = :companyId
+    order by sm.date_created desc
   """;
 }

@@ -268,7 +268,7 @@
     <v-row>
       <SmartlistColumn
         v-if="this.workQueueType.smartlistId"
-        :can-edit="this.userCanEdit"
+        :can-edit="this.userIsAdmin"
         :smartlist-id="this.workQueueType.smartlistId"
         :company-object-types="filteredCompanyObjectTypes"
       />

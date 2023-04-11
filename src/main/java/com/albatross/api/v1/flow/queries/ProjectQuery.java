@@ -487,6 +487,50 @@ select
     order by ps.process_step_name
     """;
 
+
+  //language=PostgreSQL
+  public final static String getWorkQueueHistoryByProjectId = """
+      select wqc.date_entered_queue,
+             wqc.date_exited_queue,
+             pswqt.work_queue_type_id,
+             null as event_name,
+             ps.process_step_name,
+             case when wqc.date_exited_queue is null then 'Currently in Queue' else 'Work Queue History' end as status,
+             wqt.work_queue_type,
+             wq_cat.work_queue_category,
+             (coalesce(wqc.date_exited_queue::date, now()::date) - wqc.date_entered_queue::date) as days_in_queue
+          from flow.work_queue_cycle wqc
+          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
+          inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
+          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst  on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+          inner join flow.process_step_work_queue_type pswqt on pswqt.id = pswqtpsst.process_step_work_queue_type_id
+          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+          inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
+          where pps.project_id = :projectId
+          union all
+          select wqc.date_entered_queue,
+             wqc.date_exited_queue,
+             psewqt.work_queue_type_id,
+             e.event_name,
+             ps.process_step_name,
+             case when wqc.date_exited_queue is null then 'Currently in Queue' else 'Work Queue History' end as status,
+             wqt.work_queue_type,
+             wq_cat.work_queue_category,
+             (coalesce(wqc.date_exited_queue::date, now()::date) - wqc.date_entered_queue::date) as days_in_queue
+          from flow.work_queue_cycle wqc
+             inner join flow.project_process_step_event ppse on ppse.id = wqc.project_process_step_event_id
+             inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
+             inner join flow.event e on e.id = pse.event_id
+             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
+             inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
+             inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
+             inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+             inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
+             inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
+          where pps.project_id = :projectId
+          order by date_exited_queue desc nulls first, date_entered_queue desc
+    """;
+
   //language=PostgreSQL
   public final static String getEventsByProjectId = """
 select
@@ -892,38 +936,42 @@ select
     """;
 
   //language=PostgreSQL
-  public final static String getProjectsWithStatusInUse = """
-select project_name
-    from flow.project
+  public final static String getStatusInUseByProjects = """
+    select count(1) > 0
+    from flow.project p
     where company_project_status_type_id = :companyProjectStatusTypeId
-      and archived is false
+    and p.archived is false
+    limit 1
     """;
 
   //language=PostgreSQL
-  public final static String psaWithStatusInUse = """
-select psa.action_name, ps.process_step_name
-      from flow.process_step_action psa
-         inner join flow.process_step ps on ps.id = psa.process_step_id
-      where psa.archived is not true and ps.archived is not true
-        and psa.company_project_status_type_id = :companyProjectStatusTypeId
+  public final static String getStatusInUseByActions = """
+    select count(1) > 0
+    from flow.process_step_action psa
+           inner join flow.process_step ps on ps.id = psa.process_step_id
+    where psa.archived is not true and ps.archived is not true
+      and psa.company_project_status_type_id = :companyProjectStatusTypeId
+    limit 1
     """;
 
   //language=PostgreSQL
-  public final static String getPserWithStatusInUse = """
-select e.event_name, ps.process_step_name
-      from flow.process_step_event_requirement pser
-        inner join flow.process_step_event pse on pser.process_step_event_id = pse.id
-        inner join flow.process_step ps on pse.process_step_id = ps.id
-        inner join flow.event e on pse.event_id = e.id
-      where pser.archived is false and pse.archived is false and pser.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (pser.list_of_value_ids)
+  public final static String getStatusInUseByPseRequirements = """
+    select count(1) > 0
+    from flow.process_step_event_requirement pser
+           inner join flow.process_step_event pse on pser.process_step_event_id = pse.id
+           inner join flow.process_step ps on pse.process_step_id = ps.id
+           inner join flow.event e on pse.event_id = e.id
+    where pser.archived is false and pse.archived is false and pser.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (pser.list_of_value_ids)
+    limit 1
     """;
 
   //language=PostgreSQL
-  public final static String getPsrWithStatusInUse = """
-select ps.process_step_name
-      from flow.process_step_requirement psr
-        inner join flow.process_step ps on psr.process_step_id = ps.id
-      where psr.archived is false and psr.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (psr.list_of_value_ids)
+  public final static String getStatusInUseByPsRequirements = """
+    select count(1) > 0
+    from flow.process_step_requirement psr
+           inner join flow.process_step ps on psr.process_step_id = ps.id
+    where psr.archived is false and psr.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (psr.list_of_value_ids)
+    limit 1
     """;
 
   //language=PostgreSQL

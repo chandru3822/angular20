@@ -1,0 +1,183 @@
+<template>
+  <v-row no-gutters id="project-details-wq-container" class="py-0 relative height-one-hunned overflow-y-auto">
+    <v-col cols="12" lg="12" class="pa-5">
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title class="albatross-header-3">Current Work Queues</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn color="primary" text @click="expandCurrent = !expandCurrent">
+            <v-icon v-if="!expandCurrent">mdi-chevron-down</v-icon>
+            <v-icon v-else>mdi-chevron-up</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+
+      <v-card class="square-card" v-if="expandCurrent">
+        <v-data-table
+          :headers="headers"
+          :items="currentWorkQueues"
+          :fixed-header="true"
+          disable-sort
+          hide-default-footer
+          :loading="dataLoading"
+          dense
+          class="elevation-1"
+        >
+
+          <template #no-data>
+            No current work queues
+          </template>
+
+          <template #no-results>
+            No current work queues
+          </template>
+
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{ item.workQueueCategory }}</td>
+              <td class="text-left">{{ item.workQueueType }}</td>
+              <td class="text-left">{{ item.daysInQueue }}</td>
+              <td class="text-left">{{ item.processStepName }}</td>
+              <td class="text-left">{{ item.eventName }}</td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-card>
+
+      <v-toolbar color="transparent" class="elevation-0">
+        <v-toolbar-title class="albatross-header-3">Historic Work Queues</v-toolbar-title>
+        <v-spacer></v-spacer>
+        <v-toolbar-items>
+          <v-btn color="primary" text @click="expandHistoric = !expandHistoric">
+            <v-icon v-if="!expandHistoric">mdi-chevron-down</v-icon>
+            <v-icon v-else>mdi-chevron-up</v-icon>
+          </v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card class="square-card" v-if="expandHistoric">
+        <v-data-table
+          :headers="headers"
+          :items="historicWorkQueues"
+          :fixed-header="true"
+          disable-sort
+          hide-default-footer
+          :loading="dataLoading"
+          dense
+          class="elevation-1"
+        >
+
+          <template #no-data>
+            No current work queues
+          </template>
+
+          <template #no-results>
+            No current work queues
+          </template>
+
+          <template #item="{ item, index }">
+            <tr class="clickable" :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{ item.workQueueCategory }}</td>
+              <td class="text-left">{{ item.workQueueType }}</td>
+              <td class="text-left">{{ item.daysInQueue }}</td>
+              <td class="text-left">{{ item.processStepName }}</td>
+              <td class="text-left">{{ item.eventName }}</td>
+            </tr>
+          </template>
+        </v-data-table>
+      </v-card>
+    </v-col>
+  </v-row>
+</template>
+
+<script>
+
+import {getRequest, logError} from '@/helpers/helpers'
+import TableActiveProjectProcessStepSnippet from '@/views/flow/project/TableActiveProjectProcessStepSnippet'
+import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
+import SpinnerInline from '@/components/SpinnerInline'
+
+import AddProcessStep from '@/views/flow/components/AddProcessStep'
+import constants from "@/helpers/constants";
+
+export default {
+  name: 'ActiveProcessSteps',
+  components: {
+    SpinnerInline,
+    TableActiveProjectProcessStepSnippet,
+    ProjectProcessStepSnippet,
+    AddProcessStep,
+  },
+  props: {
+    project: Object
+  },
+  data() {
+    return {
+      projectId: parseInt(this.$route.params.projectId),
+      workQueueHistory: [],
+      expandHistoric: true,
+      expandCurrent: true,
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
+      userHasWorkQueueFeature: this.$store.getters.userHasFeature('WORK_QUEUE'),
+      dataLoading: false,
+      snackbar: {},
+      companyId: this.$store.state.user.details.companyId,
+      headers: [
+        {text: 'WQ Category', value: 'workQueueCategory', show: true},
+        {text: 'WQ Type', value: 'workQueueType', show: true},
+        {text: 'Days in Queue', value: 'daysInQueue', show: true},
+        {text: 'Process Step Name', value: 'processStepName', show: true},
+        {text: 'Event Name', value: 'eventName', show: true}
+      ],
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 500],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+      },
+      options: {
+        itemsPerPage: 100
+      },
+    }
+  },
+  created() {
+    this.getWorkQueueHistory()
+  },
+  computed: {
+    currentWorkQueues() {
+      return this.workQueueHistory.filter(wqh => wqh.status === 'Currently in Queue')
+    },
+    historicWorkQueues() {
+      return this.workQueueHistory.filter(wqh => wqh.status === 'Work Queue History')
+    },
+  },
+  methods: {
+    getWorkQueueHistory: async function () {
+      try {
+        this.dataLoading = true
+        const {data} = await getRequest(`/project/${this.projectId}/workQueueHistory`)
+        this.workQueueHistory = data
+        window.document.title = `${this.project.projectName} - Work Queues`
+      } catch (e) {
+        logError(e)
+      } finally {
+        this.dataLoading = false
+      }
+    },
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+#project-details-wq-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+
+</style>
+
+<style lang="scss">
+#project-details-wq-container .v-data-table__wrapper {
+  max-height: calc(100vh - 270px);
+  min-height: 300px;
+}
+</style>

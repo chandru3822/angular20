@@ -121,8 +121,8 @@ BEGIN
     where user_id = v_user_id;
 
     if v_found_user_residual < 1 then
-      insert into brs.user_residual(user_id, residual_plan_id, date_created, created_by_id)
-      values (v_user_id, v_residual_plan_id, now(), 99999999);
+      insert into brs.user_residual(user_id, residual_plan_id, date_created, created_by_id, modified_by_id)
+      values (v_user_id, v_residual_plan_id, now(), 99999999, 99999999);
     end if;
 
     select count(1)
@@ -151,9 +151,6 @@ BEGIN
             now(),
             99999999);
   end if;
-
-  insert into flow.company_function_log(function_name, db_function_id, parameters)
-  values ('Insert Commissions on Project', 18, 'p_project_id: ' || p_project_id);
 
 
 END;

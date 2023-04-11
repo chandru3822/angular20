@@ -129,6 +129,8 @@ public class ProcessStepEventRequirementService {
     params.put("processStepId", requirement.getProcessStepId());
     params.put("systemListOptionId", requirement.getSystemListOptionId());
     params.put("customSqlOptionId", requirement.getCustomSqlOptionId());
+    params.put("dataViewFieldConfigId", requirement.getDataViewFieldConfigId());
+    params.put("dataViewChildFieldConfigId", requirement.getDataViewChildFieldConfigId());
 
     Long id = sqlCache.updateBySqlReturningId(ProcessStepEventRequirementQuery.insertRequirement, params, "id").longValue();
 

@@ -8,11 +8,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
-import com.albatross.api.v1.flow.model.processStep.ProcessStepAction;
-import com.albatross.api.v1.flow.model.project.Project;
-import com.albatross.api.v1.flow.model.project.ProjectDensityResult;
-import com.albatross.api.v1.flow.model.project.ProjectStatusCount;
-import com.albatross.api.v1.flow.model.project.ProjectStatusType;
+import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
@@ -557,6 +553,18 @@ public class ProjectService {
         new ProjectProcessStepService.ProjectProcessStepMapper<>(ProjectProcessStep.class, om));
   }
 
+  public List<ProjectWorkQueueHistory> getWorkQueueHistoryByProjectId(Long projectId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("companyId", user.getCompanyId());
+
+    return sqlCache.queryBySql(
+      ProjectQuery.getWorkQueueHistoryByProjectId,
+      params,
+      ProjectWorkQueueHistory.class);
+  }
+
   public List<ProjectProcessStepEvent> getEventsByProjectId(Long projectId, Long statusTypeId) {
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
@@ -583,13 +591,12 @@ public class ProjectService {
     return sqlCache.queryBySql(ProjectQuery.getStatusesForWqt, params, WorkQueueTypeProjectStatus.class);
   }
 
-  public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId) {
+  public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId, Boolean excludeAttachments) {
     User currentUser = securityService.getCurrentUser();
     Long companyId = currentUser.getCompanyId();
 
     if (null != projectId) {
-      // had to change this so that a parent looking at a child project could still see project
-      // statuses
+      // had to change this so that a parent looking at a child project could still see project statuses
       HashMap<String, Object> params = new HashMap<>();
       params.put("projectId", projectId);
       companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
@@ -602,10 +609,13 @@ public class ProjectService {
             ImmutableMap.of("companyId", companyId),
             ProjectStatusType.class);
 
-    for (ProjectStatusType c : results) {
-      // set the icon for the status
-      Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
-      c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    //this is slow, and we usually don't need it.  only load if necessary. note: mobile uses these so had to be handle with optional param so they wouldnt have to do new build
+    if(null == excludeAttachments || !excludeAttachments) {
+      for (ProjectStatusType c : results) {
+        //set the icon for the status
+        Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
+        c.setIcon(null != a && null != a.getId() ? a : new Attachment());
+      }
     }
 
     return results;
@@ -670,22 +680,23 @@ public class ProjectService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
     params.put("id", id);
+    params.put("companyProjectStatusTypeId", id);
 
-    List<Project> projectsWithStatus = sqlCache.queryBySql(ProjectQuery.getProjectsWithStatusInUse, Map.of("companyProjectStatusTypeId", id), Project.class);
-    List<ProcessStepAction> processStepActions = sqlCache.queryBySql(ProjectQuery.psaWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProcessStepAction.class);
-    List<ProjectController.ProcessStepEventData> processStepEventRequirements = sqlCache.queryBySql(ProjectQuery.getPserWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
-    List<ProjectController.ProcessStepEventData> processStepRequirements = sqlCache.queryBySql(ProjectQuery.getPsrWithStatusInUse, Map.of("companyProjectStatusTypeId", id), ProjectController.ProcessStepEventData.class);
+    Boolean statusInUseByProjects = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByProjects, params, Boolean.class);
+    Boolean statusInUseByActions = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByActions, params, Boolean.class);
+    Boolean statusInUseByEventRequirements = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByPseRequirements, params, Boolean.class);
+    Boolean statusInUseByProcessStepRequirements = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByPsRequirements, params, Boolean.class);
 
-    if (projectsWithStatus.isEmpty() && processStepActions.isEmpty() && processStepRequirements.isEmpty()) {
+    if (!statusInUseByProjects && !statusInUseByActions && !statusInUseByEventRequirements && !statusInUseByProcessStepRequirements) {
       sqlCache.updateBySql(ProjectQuery.deleteCompanyStatus, params);
       return ResponseEntity.ok().build();
     }
     else {
       ProjectController.CannotDeleteProjectStatus cannotDelete = new ProjectController.CannotDeleteProjectStatus();
-      cannotDelete.setProjectsWithStatus(projectsWithStatus);
-      cannotDelete.setProcessStepActions(processStepActions);
-      cannotDelete.setProcessStepEventRequirements(processStepEventRequirements);
-      cannotDelete.setProcessStepRequirements(processStepRequirements);
+      cannotDelete.setStatusInUseByProjects(statusInUseByProjects);
+      cannotDelete.setStatusInUseByActions(statusInUseByActions);
+      cannotDelete.setStatusInUseByEventRequirements(statusInUseByEventRequirements);
+      cannotDelete.setStatusInUseByProcessStepRequirements(statusInUseByProcessStepRequirements);
       return ResponseEntity.badRequest().body(cannotDelete);
     }
   }

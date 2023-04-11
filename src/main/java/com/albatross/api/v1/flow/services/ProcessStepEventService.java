@@ -190,6 +190,8 @@ public class ProcessStepEventService {
     params.put("multipleUses", null != processStepEventAction.getMultipleUses() ? processStepEventAction.getMultipleUses() : false);
     params.put("hideFromWeb", null != processStepEventAction.getHideFromWeb() ? processStepEventAction.getHideFromWeb() : false);
     params.put("hideFromMobile", null != processStepEventAction.getHideFromMobile() ? processStepEventAction.getHideFromMobile() : false);
+    params.put("showOnCancelledCompletedEvents", null != processStepEventAction.getShowOnCancelledCompletedEvents() ? processStepEventAction.getShowOnCancelledCompletedEvents() : false);
+    params.put("showOnCancelledCompletedProcessStep", null != processStepEventAction.getShowOnCancelledCompletedProcessStep() ? processStepEventAction.getShowOnCancelledCompletedProcessStep() : false);
     params.put("userId", currentUser.trueUserId());
     params.put("processStepEventId", eventId);
 
@@ -421,6 +423,9 @@ public class ProcessStepEventService {
 
       TypeReference<List<ProcessStepEventActionLink>> childLinksRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "childLinks", new JsonCollectionDeserializer(childLinksRef, objectMapper));
+
+      TypeReference<List<ProcessStepEventActionChildFunction>> childFunctionsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(List.class, "childFunctions", new JsonCollectionDeserializer(childFunctionsRef, objectMapper));
 
       TypeReference<List<ProcessStepEventActionField>> customFieldsRef = new TypeReference<>() {};
       bw.registerCustomEditor(List.class, "customFields", new JsonCollectionDeserializer(customFieldsRef, objectMapper));

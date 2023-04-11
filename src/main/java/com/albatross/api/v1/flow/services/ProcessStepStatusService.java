@@ -127,6 +127,7 @@ public class ProcessStepStatusService {
   public ResponseEntity<ProcessStepStatusController.CannotDeleteProcessStepStatus> deleteType(Long typeId) {
     User currentUser = securityService.getCurrentUser();
 
+    //i am only returning one here cuz we just need to know if it is in use at all.
     List<ProjectProcessStep> pps = sqlCache.queryBySql(ProcessStepStatusQuery.typeInUseByProject, Map.of("companyProcessStepStatusTypeId", typeId), ProjectProcessStep.class);
     List<ProcessStep> ps = sqlCache.queryBySql(ProcessStepStatusQuery.typeInUse, Map.of("companyProcessStepStatusTypeId", typeId), ProcessStep.class);
     if (pps.isEmpty() && ps.isEmpty()) {
@@ -139,6 +140,7 @@ public class ProcessStepStatusService {
     else {
       ProcessStepStatusController.CannotDeleteProcessStepStatus cannotDelete = new ProcessStepStatusController.CannotDeleteProcessStepStatus();
       cannotDelete.setSteps(ps);
+      cannotDelete.setInUseByPps(pps.size() > 0);
       return ResponseEntity.badRequest().body(cannotDelete);
     }
   }
