@@ -73,6 +73,22 @@
           autocomplete="off"
         />
 
+        <v-text-field
+          v-if="field.dataTypeId === 6"
+          text
+          :required="required"
+          :readonly="readonly"
+          :disabled="readonly"
+          :class="{'error--text': readonly}"
+          placeholder=" "
+          :rules="requiredRules"
+          :label="field.fieldName"
+          type="number"
+          v-model.number="field.fieldValue"
+          @change="callback(field)"
+          autocomplete="off"
+        />
+
 
       </v-col>
     </v-row>
