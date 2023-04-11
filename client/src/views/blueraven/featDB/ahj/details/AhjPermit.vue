@@ -233,14 +233,10 @@ export default {
     },
     submissionDocuments: [],
     approvalDocuments: [],
-    //  todo: get UAT value
     // 981 is the prod value
-    approvalDocTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 980 :
-        VITE_ENV === 'uat' ? 980 : 981,
-    //  todo: get UAT and prod values
-    // 12 is the prod value
-    linksTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ? 12 :
-        VITE_ENV === 'uat' ? 12 : 12,
+    approvalDocTypeId: VITE_ENV === 'local' || VITE_ENV === 'dev' || VITE_ENV === 'stage' ||  VITE_ENV === 'uat' ? 980 : 981,
+    // 12 is the prod value (and the value for all other lanes)
+    linksTypeId: 12,
   }),
   methods: {
     updateDirtyValue(item) {
