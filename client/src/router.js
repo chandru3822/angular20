@@ -1691,7 +1691,7 @@ const router = new Router({
           redirect: '/smartlist/mine',
           component: () => {
             if (store.getters.userHasFeature('SMARTLIST')) {
-              return import (/* webpackChunkName: "smartlists" */ './views/flow/smartlist/Smartlists.vue')
+              return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/Smartlists.vue')
             } else {
               return accessDenied()
             }
@@ -1702,7 +1702,7 @@ const router = new Router({
             name: 'mySmartlists',
             component: () => {
               if (store.getters.userHasFeature('SMARTLIST')) {
-                return import (/* webpackChunkName: "smartlists" */ './views/flow/smartlist/MySmartlists.vue')
+                return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/MySmartlists.vue')
               } else {
                 return accessDenied()
               }
@@ -1713,7 +1713,7 @@ const router = new Router({
             name: 'sharedSmartlists',
             component: () => {
               if (store.getters.userHasFeature('SMARTLIST')) {
-                return import (/* webpackChunkName: "smartlists" */ './views/flow/smartlist/SharedSmartlists.vue')
+                return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/SharedSmartlists.vue')
               } else {
                 return accessDenied()
               }
@@ -1724,7 +1724,7 @@ const router = new Router({
             name: 'publicSmartlists',
             component: () => {
               if (store.getters.userHasFeature('SMARTLIST')) {
-                return import (/* webpackChunkName: "smartlists" */ './views/flow/smartlist/PublicSmartlists.vue')
+                return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/PublicSmartlists.vue')
               } else {
                 return accessDenied()
               }
@@ -1735,12 +1735,23 @@ const router = new Router({
             name: 'allSmartlists',
             component: () => {
               if (store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')){
-                return import (/* webpackChunkName: "smartlists" */ './views/flow/smartlist/AllSmartlists.vue')
+                return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/AllSmartlists.vue')
               } else {
                 return accessDenied()
               }
             },
           }]
+        }, {
+          path: '/smartlist/:reportId',
+          meta: {title: 'Albatross - Smartlist Editor'},
+          name: 'reportEditor',
+          component: () => {
+            if (store.getters.userHasFeature('SMARTLIST')) {
+              return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/ReportEditor.vue')
+            } else {
+              return accessDenied()
+            }
+          },
         }, {
           path: '/proposals',
           name: 'proposals',

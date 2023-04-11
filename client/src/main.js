@@ -13,6 +13,7 @@ import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
 import constants from '@/helpers/constants'
+import { createPinia, PiniaVuePlugin } from 'pinia'
 
 import '@/styles/main.scss'
 
@@ -165,9 +166,13 @@ Vue.use(
 
 Vue.use(Chat)
 
+Vue.use(PiniaVuePlugin)
+const pinia = createPinia()
+
 new Vue({
   router,
   store,
   vuetify: Vuetify,
+  pinia,
   render: (h) => h(App)
 }).$mount('#app')

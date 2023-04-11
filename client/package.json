@@ -45,6 +45,7 @@
     "mapbox-gl": "2.10.0",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.40",
+    "pinia": "^2.0.34",
     "register-service-worker": "^1.7.1",
     "rrule": "^2.6.6",
     "sortablejs": "^1.10.2",
