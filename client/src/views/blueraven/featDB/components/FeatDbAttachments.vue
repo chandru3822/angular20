@@ -44,6 +44,8 @@
             :attachments="attachments"
             :show-non-primary-docs="true"
             :allow-edit="false"
+            :allow-upload="userCanEdit"
+            :delete-callback="deleteCallback"
           ></AttachmentsTable>
         </v-expansion-panel-content>
       </v-expansion-panel>
@@ -168,6 +170,10 @@ export default {
         this.attachments = [...this.attachments, newAttachment]
       }
       this.$store.commit(AppMutations.SET_LOADING, false)
+    },
+
+    deleteCallback(id) {
+      this.attachments = this.attachments.filter(a => a.id !== id)
     }
   }
 }
