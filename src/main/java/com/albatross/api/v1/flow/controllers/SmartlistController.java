@@ -28,8 +28,8 @@ public class SmartlistController {
 
   @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADMIN')")
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Smartlist> getSmartlistById(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getById(smartlistId), HttpStatus.OK);
+  public ResponseEntity<Smartlist> getSmartlistById(@PathVariable Long smartlistId, @RequestParam(required = false) boolean includeAccessControl) {
+    return new ResponseEntity<>(smartlistService.getById(smartlistId, includeAccessControl), HttpStatus.OK);
   }
 
   @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_ADMIN')")
