@@ -323,6 +323,25 @@ public class AvailabilityService {
     sqlCache.updateBySql(AvailabilityQuery.saveOverrideInfoToAudit, params);
   }
 
+  //dont touch this or mobile will hurt you
+  public List<ResourceAppointment> getResourceAppointmentsInRange(
+    Long userId, Long orgId, String startTime, String endTime) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgId", orgId);
+    params.put("startTime", startTime);
+    params.put("endTime", endTime);
+    params.put("companyId", user.getCompanyId());
+
+    List<ResourceAppointment> results =
+      sqlCache.queryBySql(
+        AvailabilityQuery.getAppointmentsForResourceInRange, params, ResourceAppointment.class);
+
+    return results;
+  }
+
   //  appointments
   public Page<ResourceAppointment> getResourceAppointments(
     Long userId, Long orgId, Pageable pageable) {

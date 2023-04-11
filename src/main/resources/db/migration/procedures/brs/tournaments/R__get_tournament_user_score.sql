@@ -34,7 +34,7 @@ BEGIN
 
   if v_timezone is not null then
 
-    case when p_tournament_formula_id = 1 then
+    case when p_tournament_formula_id = 1 or p_tournament_formula_id = 3 then
       select *
       into v_score
       from (

@@ -829,7 +829,7 @@ FROM (SELECT cp.id,
   //language=PostgreSQL
   public final static String assignProject = """
     insert into brs.project_commission(project_id, commission_plan_id, date_created)
-    values (:projectId, :planId, now()
+    values (:projectId, :planId, now())
     """;
 
   //language=PostgreSQL

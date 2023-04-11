@@ -61,6 +61,16 @@ public class AvailabilityController {
     availabilityService.saveOverrideInfoToAudit(audit);
   }
 
+  @GetMapping(value = "/appointmentsInRange")
+  public ResponseEntity<List<ResourceAppointment>> getResourceAppointmentsInRange(
+    @RequestParam(required = false) Long userId,
+    @RequestParam(required = false) Long orgId,
+    @RequestParam String startTime,
+    @RequestParam String endTime) {
+    return new ResponseEntity<>(
+      availabilityService.getResourceAppointmentsInRange(userId, orgId, startTime, endTime), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/appointments")
   public ResponseEntity<Page<ResourceAppointment>> getResourceAppointments(
       @RequestParam(required = false) Long userId,
