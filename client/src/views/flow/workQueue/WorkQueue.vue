@@ -5,6 +5,8 @@
         <v-card color="white" class="square-card work-queue-container-top">
           <v-row>
             <v-col cols="6" class="">
+              <div v-if="!selectedWorkQueueCategoryId && !categoriesLoading" class="body-medium error--text mb-2">
+              Please select a Work Queue Category</div>
               <v-autocomplete v-model="selectedWorkQueueCategoryId"
                               :items="workQueueCategories"
                               label="Work Queue Category"
@@ -13,13 +15,13 @@
                               solo
                               hide-details
                               :loading="categoriesLoading"
-                              dark
                               background-color="primary"
-                              class="white--text work-queue-selector d-inline-block clickable"
+                              dark
+                              class="work-queue-selector d-inline-block clickable"
                               @input="getWorkQueues()"
               ></v-autocomplete>
               <div class="radio-group-container mt-0">
-                <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column>
+                <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column :disabled="!selectedWorkQueueCategoryId">
                   <v-radio class="d-inline-block mx-4 wq-radio-label primary--text"
                            label="% Completed On Time"
                            small
@@ -44,9 +46,8 @@
                 <label class="wq-follow-up-switch-label">Hide work with a next follow-up date in the future</label>
                 <v-switch
                   dense
-                  :disabled="cardsLoading || metricsLoading"
+                  :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
                   hide-details
-                  color="primary"
                   v-model="hideFutureFollowUps"
                   class="wq-follow-up-switch d-inline-block fix-switch-color"
                   @change="getWorkQueues(true)"
@@ -56,7 +57,7 @@
                 <label class="wq-follow-up-switch-label">Hide work with an event start date in the future</label>
                 <v-switch
                   dense
-                  :disabled="cardsLoading || metricsLoading"
+                  :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
                   hide-details
                   color="primary"
                   v-model="hideFutureEvents"
@@ -67,12 +68,12 @@
             </v-col>
           </v-row>
         </v-card>
-        <v-card color="white" class="square-card work-queue-container-bottom mt-3">
+        <v-card v-if="selectedWorkQueueCategoryId" color="white" class="square-card work-queue-container-bottom mt-3">
           <v-row class="cards my-0">
-            <v-card flat color="transparent" class="ml-8"
-                    v-if="!selectedWorkQueueCategoryId && !categoriesLoading">
-              Please select a Work Queue Category
-            </v-card>
+<!--            <v-card flat color="transparent" class="ml-8"-->
+<!--                    v-if="!selectedWorkQueueCategoryId && !categoriesLoading">-->
+<!--              Please select a Work Queue Category-->
+<!--            </v-card>-->
             <div v-if="cardsLoading" class="one-hunned text-center">
               <SpinnerInline :size="60" color="primary"/>
             </div>
@@ -462,7 +463,7 @@ export default {
 }
 
 .work-queue-selector {
-  width: 100%;
+  width: 60%;
   border-top-left-radius: 4px !important;
   border-top-right-radius: 4px !important;
 }
