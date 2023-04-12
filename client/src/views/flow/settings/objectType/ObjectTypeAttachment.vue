@@ -181,7 +181,6 @@ import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {
   handleHidingGlobalLoader,
-  deleteRequest,
   getRequest,
   getSnackbar,
   postRequest,

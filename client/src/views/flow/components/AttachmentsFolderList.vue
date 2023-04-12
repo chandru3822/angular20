@@ -154,7 +154,6 @@
 <script>
 import {
   getAttachmentSourceId,
-  getRequest,
   getRequestWithParams,
   getSnackbar,
   logError

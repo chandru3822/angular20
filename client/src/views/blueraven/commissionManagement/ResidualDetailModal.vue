@@ -54,7 +54,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
+  import {getSnackbar} from '@/helpers/helpers'
 
   export default {
     name: 'ResidualDetailModal',

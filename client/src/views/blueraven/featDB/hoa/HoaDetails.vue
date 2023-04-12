@@ -91,7 +91,6 @@
 
 <script>
 import cloneDeep from "lodash.clonedeep"
-import orderBy from "lodash.orderby"
 import {AppMutations} from "@/stores/AppStore"
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers"
 import CustomValueInput from "@/views/flow/components/CustomValueInput.vue"
