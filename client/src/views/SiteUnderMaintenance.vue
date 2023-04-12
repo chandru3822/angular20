@@ -47,7 +47,7 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {handleHidingGlobalLoader, postRequest, getSnackbar, getRequest} from '@/helpers/helpers'
+  import {getSnackbar} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
   import axios from 'axios'
 

@@ -110,7 +110,6 @@ import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
-  putRequest,
   postRequest,
   getSnackbar
 } from '@/helpers/helpers'

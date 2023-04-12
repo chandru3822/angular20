@@ -194,8 +194,6 @@ import {getWorkQueueCategories} from '@/services/workQueueService'
 import SpinnerInline from '@/components/SpinnerInline'
 import axios from 'axios'
 import {
-  handleHidingGlobalLoader,
-  getRequest,
   isLightColor,
   getRequestWithParams,
   getSnackbar

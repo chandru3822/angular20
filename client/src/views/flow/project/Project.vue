@@ -226,7 +226,6 @@ import {getCountries} from "@/services/countryService";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
-import debounce from 'lodash.debounce'
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 
 export default {
