@@ -51,8 +51,8 @@
                   <v-text-field class="one-hunned" v-if="selectedTabId === item.id" v-model="item.tabName"></v-text-field>
                   <span v-else>{{item.tabName}}</span>
                 </td>
-                <td class="text-right">
-                  <div class="item-icons">
+                <td class="text-right" :class="{'one-hunned':$vuetify.breakpoint.mdAndDown && selectedTabId !== item.id}">
+                  <div class="item-icons" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
                     <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
                       <v-icon v-if="selectedTabId === item.id" @click="saveTab(item)">save</v-icon>
                       <v-icon v-else @click="selectedTabId = item.id">edit</v-icon>
@@ -134,7 +134,7 @@
         headers: [
           { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
           { text: 'Tab Label', value: 'tabName', show: true },
-          { text: null, value: 'icons', show: true }
+          { text: null, value: 'icons', show: true, sortable: false }
         ],
         tabToDelete: null
       }
@@ -178,8 +178,9 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await postRequest(`/objectTypeTab/project`, tab)
-          this.snackbar = getSnackbar('SUCCESS', 'Tab Added')
+          this.snackbar = getSnackbar('SUCCESS', 'Tab Saved')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.selectedTabId = null
           if(!tab.id) {
             // add it to the records already on the screen
             this.tabs.push(data)
