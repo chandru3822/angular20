@@ -21,14 +21,9 @@ jobs:
             -   name: Set up JDK 16
                 uses: actions/setup-java@v3
                 with:
-                    java-version: 16
-
-            -   name: Cache Maven packages
-                uses: actions/cache@v2
-                with:
-                    path: ~/.m2
-                    key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-                    restore-keys: ${{ runner.os }}-m2
+                  java-version: 16
+                  distribution: 'zulu'
+                  cache: 'maven'
 
             -   name: Maven Package
                 run: mvn -B package -DskipTests
