@@ -77,7 +77,7 @@
               {{item.fullName}}
             </td>
             <td class="text-center">
-              <span v-if="item.score == null">--</span>
+              <span v-if="item.score == null">Org Requires Timezone</span>
               <span v-else>{{item.score}}</span>
             </td>
             <td class="text-right">
@@ -135,7 +135,7 @@
         headers: [
           {text: '', value: 'checkbox', show: true, width: '50px'},
           {text: 'User', value: 'fullName', show: true},
-          {text: 'Score', value: 'score', show: true, width: '75px'},
+          {text: 'Score', value: 'score', show: true, width: '185px'},
           {text: '', value: 'details', show: true},
         ],
       }

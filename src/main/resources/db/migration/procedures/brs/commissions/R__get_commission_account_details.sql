@@ -50,14 +50,16 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id      
                      commission_adjustments                      NUMERIC(10,2),
                      override_adjustments                        NUMERIC(10,2),
                      commission_paid_to_date                     NUMERIC(10,2),
+                     commission_forfeited_paid_to_date           NUMERIC(10,2),
+                     commission_forfeited_by_closer              NUMERIC(10,2),
                      overrides_paid_to_date                      NUMERIC(10,2),
-                     current_pay                                 NUMERIC(10,2),
                      current_pay_commissions                     NUMERIC(10,2),
                      current_pay_overrides                       NUMERIC(10,2),
                      remaining_value                             NUMERIC(10,2),
                      remaining_value_commissions                 NUMERIC(10,2),
                      remaining_value_overrides                   NUMERIC(10,2),
-                     project_total_value                            NUMERIC(10,2)
+                     project_total_value                            NUMERIC(10,2),
+                     current_pay                                 NUMERIC(10,2)
                  )
     LANGUAGE plpgsql
 AS $$
@@ -101,11 +103,22 @@ BEGIN
     create index milestone2_milestone_two_complete_date on milestone2(milestone_two_complete_date);
 
     RETURN QUERY
-        SELECT *,coalesce(foo.commission_earned,0) + coalesce(foo.override_earned,0) +
-                 coalesce(foo.commission_adjustments,0) - (coalesce(foo.commission_paid_to_date,0) +
-                                                           coalesce(foo.overrides_paid_to_date,0))                            AS current_pay,
+      select *,coalesce(foo1.current_pay_commissions,0) + coalesce(foo1.current_pay_overrides,0) as current_pay
+        from (
+        SELECT *,
+              case when coalesce(foo.commission_forfeited_by_closer,0) > 0 and
+                        coalesce(foo.commission_paid_to_date,0) < 1 and
+                        foo.cancelled_date is null and
+                        coalesce(foo.commission_forfeited_by_closer,0) > coalesce(foo.total_commissions,0) - coalesce(foo.commission_earned,0)  then
+                        (coalesce(foo.commission_earned,0) - (coalesce(foo.commission_forfeited_by_closer,0) - (coalesce(foo.total_commissions,0) - coalesce(foo.commission_earned,0))))
+                   when coalesce(foo.commission_forfeited_by_closer,0) > 0 and
+                        foo.cancelled_date is null and
+                        coalesce(foo.commission_paid_to_date,0) > 0  then
+                       (coalesce(foo.commission_earned,0)
+                       - coalesce(foo.commission_paid_to_date,0)) - coalesce(foo.commission_forfeited_by_closer,0)
+              else
                coalesce(foo.commission_earned,0)
-                   - coalesce(foo.commission_paid_to_date,0)                          AS current_pay_commissions,
+                   - coalesce(foo.commission_paid_to_date,0)   end                       AS current_pay_commissions,
                coalesce(foo.override_earned,0)
                    - coalesce(foo.overrides_paid_to_date,0)                           AS current_pay_overrides,
                case when foo.cancelled_date is not null then
@@ -116,7 +129,7 @@ BEGIN
                 coalesce(foo.overrides_paid_to_date,0))                            AS remaining_value,
                case when foo.cancelled_date is not null
                         then 0::numeric
-                    else coalesce(foo.total_commissions,0) - coalesce(foo.commission_paid_to_date,0)
+                    else coalesce(foo.total_commissions,0) - coalesce(foo.commission_paid_to_date,0) - coalesce(foo.commission_forfeited_paid_to_date,0)
                    end                                                            AS remaining_value_commissions,
                case when foo.cancelled_date is not null
                         then 0::numeric
@@ -305,21 +318,22 @@ BEGIN
                            AND dcl.ledger_type_id = 1
                            and dcl.position_id = 1)
                             AS commission_paid_to_date,
+                        (SELECT coalesce(sum(amount), 0)
+                         FROM brs.project_commission_ledger dcl
+                         WHERE dcl.project_id = p.id::bigint
+                           AND dcl.ledger_type_id = 7
+                           and dcl.position_id = 1)
+                          AS commission_forfeited_paid_to_date,
+                        pd.commission_forfeited_by_closer,
                         (
                             SELECT coalesce(sum(dcl.paid_to_date), 0)
                             FROM brs.project_commission_ledger dcl
                             WHERE dcl.project_id = p.id  and
                                     dcl.ledger_type_id = 3
                               and dcl.position_id = 1
-                        ) /*+
-          (
-            select coalesce(sum(amount),0)
-            from blueraven.payroll_adjustment  pca
-            where pca.deal_id = d1.id and
-                  pca.payroll_id < p_payroll_id AND
-                  pca.payroll_adjustment_type_id = 2
-          )*/
-                            AS overrides_paid_to_date
+
+                        ) AS overrides_paid_to_date
+
                  FROM flow.project p
                   --        inner join milestone1 mop on mop.project_id = p.id
                           inner join brs.project_details pd on pd.project_id = p.id
@@ -328,7 +342,7 @@ BEGIN
                           inner join flow.company_user_status cus  on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                           left join brs.exclude_commission ec on ec.project_id = p.id
-                 WHERE   (ec.project_id is null) and
+                 WHERE   p.id in ( 730887,710694)  and (ec.project_id is null) and
                      CASE WHEN p_project_ids IS NOT NULL
                               THEN p.id = ANY(p_project_ids) ELSE
                          p.id in (select m1.project_id from milestone1 m1) END
@@ -340,16 +354,22 @@ BEGIN
                                 THEN pd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
                             ELSE 1 = 1 END
              ) AS foo
-        WHERE CASE WHEN v_is_show_all IS TRUE
-                       THEN not COALESCE(foo.commission_earned,0) + COALESCE(foo.override_earned,0) +
+        WHERE CASE WHEN v_is_show_all IS TRUE and COALESCE(foo.commission_forfeited_by_closer,0) < 1
+                       THEN not (COALESCE(foo.commission_earned,0) + COALESCE(foo.override_earned,0) +
                             (COALESCE(foo.commission_adjustments,0) - COALESCE(foo.commission_paid_to_date,0) -
-                             COALESCE(foo.overrides_paid_to_date,0)) =  any(v_amounts) ELSE 1 = 1 END
+                             COALESCE(foo.overrides_paid_to_date,0)) =  any(v_amounts))
+                  when v_is_show_all IS TRUE and COALESCE(foo.commission_forfeited_by_closer,0) > 0 then
+                     not
+                     (COALESCE(foo.commission_earned,0) + COALESCE(foo.override_earned,0) +
+                      (COALESCE(foo.commission_adjustments,0) - COALESCE(foo.commission_paid_to_date,0) - COALESCE(foo.commission_forfeited_paid_to_date,0) -
+                       COALESCE(foo.overrides_paid_to_date,0)) =  any(v_amounts))
+                ELSE 1 = 1 END
           AND CASE WHEN p_override_plan_id IS NOT NULL
                        THEN foo.override_plan_id = p_override_plan_id ELSE 1 = 1 END
           AND CASE WHEN p_commission_plan_id IS NOT NULL
                        THEN foo.commission_plan_id = p_commission_plan_id
                    ELSE 1 = 1 END
-    order by 3;
+    order by 3) as foo1;
     drop table milestone2;
     drop table milestone1;
 END

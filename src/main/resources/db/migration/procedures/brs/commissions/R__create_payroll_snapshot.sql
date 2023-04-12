@@ -65,7 +65,9 @@ BEGIN
                                                              remaining_value,
                                                              current_pay,
                                                              project_total_value,
-                                                             updated)
+                                                             updated,
+                                                             commission_forfeited_by_closer,
+                                                             commission_forfeited_paid_to_date)
 
                 VALUES (p_payroll_id,
                         d.project_id,
@@ -101,7 +103,9 @@ BEGIN
                         coalesce(d.remaining_value, 0),
                         coalesce(d.current_pay, 0),
                         coalesce(d.project_total_value, 0),
-                        now())
+                        now(),
+                        d.commission_forfeited_by_closer,
+                        d.commission_forfeited_paid_to_date)
                 ON CONFLICT (payroll_id,project_id) DO NOTHING
                 RETURNING id INTO v_snapshot_id;
 
