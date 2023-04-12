@@ -19,6 +19,7 @@
           :fixed-header="true"
           disable-sort
           hide-default-footer
+          :items-per-page="-1"
           :loading="dataLoading"
           dense
           class="elevation-1"
@@ -60,6 +61,7 @@
           :items="historicWorkQueues"
           :fixed-header="true"
           disable-sort
+          :items-per-page="-1"
           hide-default-footer
           :loading="dataLoading"
           dense

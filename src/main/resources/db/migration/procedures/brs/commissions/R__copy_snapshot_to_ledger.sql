@@ -34,18 +34,55 @@ BEGIN
                    s.override_adjustment,
                    s.commission_paid_to_date,
                    s.override_earned,
-                   s.overrides_paid_to_date
+                   s.current_pay_commissions,
+                   s.current_pay_overrides,
+                   s.overrides_paid_to_date,
+                   s.commission_forfeited_paid_to_date,
+                   s.commission_forfeited_by_closer,
+                   s.cancelled
             FROM brs.project_commission_snapshot s
             WHERE payroll_id = p_payroll_id
             LOOP
 
-                v_total_commissions := (coalesce(d.commissions_earned, 0) +
-                                        coalesce(d.commission_adjustment, 0) - coalesce(d.commission_paid_to_date, 0));
+              if coalesce(d.commission_forfeited_by_closer,0) > 0 and d.cancelled is not null then
+                update brs.project_commission_ledger
+                set amount = 0
+                where ledger_type_id = 7 and
+                      project_id = d.project_id;
+              end if;
+              if coalesce(d.commissions_earned,0) > 0 and coalesce(d.commission_paid_to_date,0) < 1 and
+                 coalesce(d.commission_forfeited_by_closer,0) > 0 and coalesce(d.commissions_earned,0) > coalesce(d.current_pay_commissions,0) then
+                INSERT INTO brs.project_commission_ledger (payroll_id,
+                                                           project_id,
+                                                           user_id,
+                                                           ledger_type_id,
+                                                           amount,
+                                                           created_by,
+                                                           created,
+                                                           position_id)
+                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7, coalesce(d.commissions_earned,0) - coalesce(d.current_pay_commissions,0), p_updated_by_id, now(),
+                        1);
+              elsif coalesce(d.commissions_earned,0) > 0 and coalesce(d.commission_paid_to_date,0) > 0 and
+                    coalesce(d.commission_forfeited_by_closer,0) > 0  then
+                INSERT INTO brs.project_commission_ledger (payroll_id,
+                                                           project_id,
+                                                           user_id,
+                                                           ledger_type_id,
+                                                           amount,
+                                                           created_by,
+                                                           created,
+                                                           position_id)
+                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7, coalesce(d.commission_forfeited_by_closer,0) - coalesce(d.commission_forfeited_paid_to_date,0), p_updated_by_id, now(),
+                        1);
+              end if;
 
-                v_total_overrides := (coalesce(d.override_earned, 0) - coalesce(d.overrides_paid_to_date, 0));
+--                 v_total_commissions := (coalesce(d.commissions_earned, 0) +
+--                                         coalesce(d.commission_adjustment, 0) - coalesce(d.commission_paid_to_date, 0));
+
+--                 v_total_overrides := (coalesce(d.override_earned, 0) - coalesce(d.overrides_paid_to_date, 0));
 
                 --     create ledger records
-                IF v_total_commissions IS NOT NULL
+                IF d.current_pay_commissions IS NOT NULL
                 THEN
                     INSERT INTO brs.project_commission_ledger (payroll_id,
                                                                project_id,
@@ -55,7 +92,7 @@ BEGIN
                                                                created_by,
                                                                created,
                                                                position_id)
-                    VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 1, v_total_commissions, p_updated_by_id, now(),
+                    VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 1, d.current_pay_commissions, p_updated_by_id, now(),
                             1);
                 END IF;
 
@@ -89,11 +126,11 @@ BEGIN
                 END IF;
 
 
-                if v_total_overrides < 0
+                if d.current_pay_overrides < 0
                 then
 
                     with t as (select opru.user_id,
-                                      round(((opru.m1_allocation + opru.m2_allocation) / op.total) * v_total_overrides,
+                                      round(((opru.m1_allocation + opru.m2_allocation) / op.total) * d.current_pay_overrides,
                                             2)                                 as total,
                                       round(((opru.m1_allocation + opru.m2_allocation) / op.total) *
                                             coalesce(d.override_earned, 0), 2) as overrides_earned
