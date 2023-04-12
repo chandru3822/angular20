@@ -785,7 +785,17 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "orgTypes" */ './views/flow/settings/MessageTemplate.vue')
+                  return import (/* webpackChunkName: "messageTemplates" */ './views/flow/settings/MessageTemplate.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'hashtags',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "hashtags" */ './views/flow/settings/Hashtags.vue')
                 } else {
                   return accessDenied()
                 }
