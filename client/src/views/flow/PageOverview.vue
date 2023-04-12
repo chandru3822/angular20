@@ -110,12 +110,6 @@
         <span v-else class="d-inline-block detail-item body-medium pl-2">N/A</span>
       </div>
     </div>
-<!--    this will be turned on soon but ux has to happen-->
-<!--    <div v-if="pageName === 'Project'">-->
-<!--      <div class="mt-3">-->
-<!--        <router-link class="albatross-body-3" :to="`/project/${ getValue(constants.OVERVIEW_FIELD_TYPES.ID) }/workQueues`">View Work Queues</router-link>-->
-<!--      </div>-->
-<!--    </div>-->
   </div>
 </v-container>
 </template>
@@ -183,10 +177,6 @@ export default {
   //margin-left: 5px;
   //overflow-wrap: break-word;
   overflow-wrap: anywhere;
-}
-
-.text-transform-unset {
-  text-transform: unset;
 }
 
 .vertical-top {
