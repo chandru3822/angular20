@@ -173,6 +173,10 @@
                           :update-key="updateEventKey"
                           :projectId="projectId"
                           class="mx-2"/>
+          <v-btn outlined small color="primary" class="label-medium text-transform-unset px-3 py-1 mb-5 ml-5"
+                 :to="`/project/${ projectId }/workQueues`">
+            Current Work Queues
+          </v-btn>
         </div>
       </div>
       <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
