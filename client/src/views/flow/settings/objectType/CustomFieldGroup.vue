@@ -261,7 +261,7 @@
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                     <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
-                      <v-list-item class="grab pr-1">
+                      <v-list-item class="grab pr-1" :class="{'mobile-tr': $vuetify.breakpoint.xsOnly}">
                         <v-list-item-action v-if="userCanEdit">
                           <v-icon color="primary">drag_handle</v-icon>
                         </v-list-item-action>
@@ -272,7 +272,7 @@
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
-                                <v-col cols="6">
+                                <v-col cols="10" lg="6">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                     <v-card-title style="height: 40px" class="py-0">
                                       Read Only
@@ -330,15 +330,18 @@
                                         </template>
                                       </v-autocomplete>
                                       <br/>
+                                      <div class="d-flex">
+                                      <v-spacer v-if="isMobile"/>
                                       <v-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveReadOnlyAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Read Only
+                                        <v-icon :class="{'mr-2': $vuetify.breakpoint.lgAndUp}">save</v-icon>
+                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Read Only</span>
                                       </v-btn>
+                                      </div>
                                     </v-card-text>
                                   </v-card>
                                 </v-col>
-                                <v-col cols="6">
+                                <v-col cols="10" lg="6">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                     <v-card-title style="height: 40px" class="py-0">
                                       Hidden
@@ -390,11 +393,14 @@
                                         </template>
                                       </v-autocomplete>
                                       <br/>
+                                      <div class="d-flex">
+                                        <v-spacer v-if="isMobile"/>
                                       <v-btn color="primary" dark class="white--text d-inline-block"
                                              @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Hidden
+                                        <v-icon :class="{'mr-2':!isMobile}">save</v-icon>
+                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Hidden</span>
                                       </v-btn>
+                                      </div>
                                     </v-card-text>
                                   </v-card>
                                 </v-col>
@@ -422,6 +428,7 @@
                             </div>
                           </div>
                         </v-list-item-content>
+                        <div>
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
                             <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
@@ -447,9 +454,11 @@
                         </v-menu>
                         <v-btn text small color="primary" v-else></v-btn>
                         <v-btn text color="primary" small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null && cf.dataViewFieldConfigId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions()]">
-                          <v-icon>edit</v-icon>
+                          <v-icon v-if="cf.edit">close</v-icon>
+                          <v-icon v-else>edit</v-icon>
                         </v-btn>
                         <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
+                        </div>
                       </v-list-item>
                     </v-list>
                   </draggable>
@@ -1036,6 +1045,13 @@ export default {
 
   .hideId {
     visibility: hidden;
+  }
+
+  .mobile-tr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: thin solid rgba(0, 0, 0, 0.12);
   }
 
 </style>
