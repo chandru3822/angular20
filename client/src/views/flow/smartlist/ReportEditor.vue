@@ -3,9 +3,24 @@
   <v-row class="align-content-start">
     <v-col cols="12">
       <v-toolbar color="white" class="elevation-0">
-        <v-toolbar-title class="app-title">{{ report.name }}</v-toolbar-title>
+        <v-toolbar-title>
+          <v-text-field
+            outlined
+            label="Name"
+            hide-details="true"
+            ref="name"
+          />
+        </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
+          <v-btn
+            text
+            color="primary"
+            @click.stop="save"
+          >
+            <v-icon>save</v-icon>
+            <span v-if="!constants.IS_MOBILE">Save</span>
+          </v-btn>
           <v-btn
             text
             color="primary"
@@ -16,6 +31,7 @@
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
+
     </v-col>
     <v-col cols="12">
 
@@ -26,10 +42,11 @@
 
 <script setup>
 import useReportStore from '@/views/flow/smartlist/reportStore'
-import { getCurrentInstance, ref } from 'vue'
+import { getCurrentInstance, onMounted, ref } from 'vue'
 import { getRequest, getSnackbar, logError } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import { DateTime } from 'luxon'
+import constants from '@/helpers/constants'
 
 const vueInstance = getCurrentInstance().proxy
 const route = vueInstance.$route
@@ -46,6 +63,7 @@ const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELE
 const reportId = route.params.reportId
 
 const report = ref({})
+const name = ref(null)
 
 const getReport = async () => {
   try {
@@ -75,9 +93,26 @@ const exportReport = async () => {
   }
 }
 
-getReport()
+const save = async () => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+  } catch (e) {
+    logError(e)
+  } finally {
+    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('SUCCESS', 'Save Successful')
+  }
+}
+
+onMounted(() => {
+  if (reportId) {
+    getReport()
+  } else {
+    name.value.focus()
+  }
+})
 </script>
 
-<style scoped>
-
+<style scoped lang="scss">
+@import "@/styles/main.scss";
 </style>

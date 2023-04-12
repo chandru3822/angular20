@@ -1742,7 +1742,7 @@ const router = new Router({
             },
           }]
         }, {
-          path: '/smartlist/:reportId',
+          path: '/smartlist/editor/:reportId?',
           meta: {title: 'Albatross - Smartlist Editor'},
           name: 'reportEditor',
           component: () => {
