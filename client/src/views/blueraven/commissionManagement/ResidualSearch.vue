@@ -76,8 +76,7 @@
   import {
     handleHidingGlobalLoader,
     postRequest,
-    getSnackbar,
-    getRequestWithParams
+    getSnackbar
   } from '@/helpers/helpers'
 
   export default {

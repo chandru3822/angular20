@@ -83,11 +83,7 @@
 <script>
 import {
   getFileIcon,
-  getRequestWithParams,
-  postRequest,
   getSnackbar,
-  handleHidingGlobalLoader,
-  putRequest,
   postRequestWithRequestParams
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";

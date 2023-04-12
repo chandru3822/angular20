@@ -1,6 +1,6 @@
 <template>
   <v-container>
-<!--    <v-btn @click="generatePDF()" class="np-btn">Generate PDF</v-btn>-->
+    <!--    <v-btn @click="generatePDF()" class="np-btn">Generate PDF</v-btn>-->
 
     <vue-html2pdf
       :show-layout="false"
@@ -20,35 +20,35 @@
     >
       <section slot="pdf-content">
         <div>
-        <v-row>
-          <v-col cols="6" xl = "4" lg = "4" md="3" v-for="(user,index) of users">
-            <v-card style="background-color: #f6f7f8; border: 1px solid grey;">
-              <v-list-item>
-                <v-list-item-avatar
-                  tile
-                  width="100"
-                  height="100"
-                >
-                  <img               width="10"
-                                     height="10" name="userImg" alt="user-image" v-if="user.imageUrl"  :src="user.imageUrl"></img>
-                  <img name="userImg" v-else :src="require('../../../assets/flow/user_img_placeholder.png')"></img>
+          <v-row>
+            <v-col cols="6" xl="4" lg="4" md="3" v-for="(user,index) of users">
+              <v-card style="background-color: #f6f7f8; border: 1px solid grey;">
+                <v-list-item>
+                  <v-list-item-avatar
+                    tile
+                    width="100"
+                    height="100"
+                  >
+                    <img width="10"
+                         height="10" alt="user-image" v-if="user.imageUrl" :src="user.imageUrl"/>
+                    <img v-else :src="require('../../../assets/flow/user_img_placeholder.png')"/>
 
-                </v-list-item-avatar>
-                <v-list-item-content>
-                  {{user.firstName}} {{user.lastName}}<br/>
-                  {{user.position}}
-                </v-list-item-content>
-              </v-list-item>
-            </v-card>
-          </v-col>
-        </v-row>
+                  </v-list-item-avatar>
+                  <v-list-item-content>
+                    {{ user.firstName }} {{ user.lastName }}<br/>
+                    {{ user.position }}
+                  </v-list-item-content>
+                </v-list-item>
+              </v-card>
+            </v-col>
+          </v-row>
 
 
         </div>
       </section>
     </vue-html2pdf>
     <v-row>
-      <v-col cols="6" xl = "4" lg = "4" md="3" v-for="(user,index) of users">
+      <v-col cols="6" xl="4" lg="4" md="3" v-for="(user,index) of users">
         <v-card>
           <v-list-item>
             <v-list-item-avatar
@@ -56,13 +56,13 @@
               width="100"
               height="100"
             >
-              <v-img name="userImg" alt="user-image" v-if="user.imageUrl"  :src="user.imageUrl"></v-img>
+              <v-img name="userImg" alt="user-image" v-if="user.imageUrl" :src="user.imageUrl"></v-img>
               <v-img name="userImg" v-else :src="require('../../../assets/flow/user_img_placeholder.png')"></v-img>
 
             </v-list-item-avatar>
             <v-list-item-content>
-              {{user.firstName}} {{user.lastName}}<br/>
-              {{user.position}}
+              {{ user.firstName }} {{ user.lastName }}<br/>
+              {{ user.position }}
             </v-list-item-content>
           </v-list-item>
         </v-card>
@@ -72,13 +72,8 @@
 </template>
 
 <script>
-import axios from "axios";
-import cloneDeep from "lodash.clonedeep";
-import max from "lodash.max";
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, logError, getRequestWithParams} from '@/helpers/helpers'
-import {getOrgFilters} from '@/services/orgService'
+import {getRequestWithParams} from '@/helpers/helpers'
 import VueHtml2pdf from "vue-html2pdf";
-
 
 export default {
   name: "UserImages",
@@ -115,13 +110,13 @@ export default {
     startingUser: Number,
     endingUser: Number
   },
-  created () {
+  created() {
 
   },
   methods: {
-    async getUserImages () {
+    async getUserImages() {
       let userIds = [];
-      for(let user of this.userDetails){
+      for (let user of this.userDetails) {
         userIds.push(user.id);
       }
       userIds = encodeURI(userIds);

@@ -235,9 +235,9 @@ export default {
       // get the company tools then filter the ones the user has access to
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        var parentId = -1;
-        var childNames;
-        var childPaths;
+        let parentId = -1;
+        let childNames;
+        let childPaths;
         const { data } = await getRequest(`/feature/companyTools`, null, [])
 
         this.companyTools = data.filter(d => {

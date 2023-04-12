@@ -190,7 +190,7 @@ import Sortable from 'sortablejs'
 
 import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 

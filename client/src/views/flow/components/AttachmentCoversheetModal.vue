@@ -199,16 +199,14 @@
 
 <script>
 import {
-  getRequest,
   getRequestWithParams,
   getSnackbar,
   getAttachmentSourceId,
-  handleHidingGlobalLoader, logError, postRequest,
+  logError, postRequest,
   putRequest
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import {Actions} from "@/store";
-import {ProjectMutations} from '@/stores/ProjectStore'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'

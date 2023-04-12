@@ -55,13 +55,9 @@
 
 <script>
 import {
-  getRequest,
-  getRequestWithParams,
-  getSnackbar,
-  logError
+  getSnackbar
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
-import orderBy from "lodash.orderby";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import constants from "@/helpers/constants";

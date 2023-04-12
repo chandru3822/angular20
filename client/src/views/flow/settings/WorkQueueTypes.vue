@@ -146,7 +146,7 @@
   import cloneDeep from 'lodash.clonedeep'
   import {getWorkQueueTypes, getWorkQueueCategories} from '@/services/workQueueService'
 
-  import { handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import Sortable from "sortablejs";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
