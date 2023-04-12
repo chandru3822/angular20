@@ -47,10 +47,11 @@ begin
                      when p_cfga_data_type_id = 2 then cfv.timestamp_value::text
                      when p_cfga_data_type_id = 3 then cfv.boolean_value::text
                      when p_cfga_data_type_id = 4 then cfv.numeric_value::text
-                     when p_cfga_data_type_id = 5 or p_cfga_data_type_id = 13 then cfv.text_value::text
-                     when p_cfga_data_type_id = 6 or p_cfga_data_type_id = 12 or p_cfga_data_type_id = 8 or p_cfga_data_type_id = 9 then
-                       case when p_use_list_of_values then (select lov.name from brs.list_of_value lov where lov.id = cfv.int_value)
-                            else cfv.int_value::text end
+                     when p_cfga_data_type_id = 5 or p_cfga_data_type_id = 13 then cfv.text_value
+                     when p_cfga_data_type_id = 6 and p_use_list_of_values is true then
+                       (select lov.name from brs.list_of_value lov where lov.id = cfv.int_value)
+                     when p_cfga_data_type_id = 6 and p_use_list_of_values is false then
+                       cfv.int_value::text
                      when p_cfga_data_type_id = 7 then
                        (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
                   end,
@@ -65,10 +66,11 @@ begin
                      when p_cfga_data_type_id = 2 then cfv.timestamp_value::text
                      when p_cfga_data_type_id = 3 then cfv.boolean_value::text
                      when p_cfga_data_type_id = 4 then cfv.numeric_value::text
-                     when p_cfga_data_type_id = 5 or p_cfga_data_type_id = 13 then cfv.text_value::text
-                     when p_cfga_data_type_id = 6 or p_cfga_data_type_id = 12 or p_cfga_data_type_id = 8 or p_cfga_data_type_id = 9 then
-                       case when p_use_list_of_values then (select lov.name from brs.list_of_value lov where lov.id = cfv.int_value)
-                            else cfv.int_value::text end
+                     when p_cfga_data_type_id = 5 or p_cfga_data_type_id = 13 then cfv.text_value
+                     when p_cfga_data_type_id = 6 and p_use_list_of_values is true then
+                       (select lov.name from brs.list_of_value lov where lov.id = cfv.int_value)
+                     when p_cfga_data_type_id = 6 and p_use_list_of_values is false then
+                       cfv.int_value::text
                      when p_cfga_data_type_id = 7 then
                        (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
                   end,
@@ -83,10 +85,11 @@ begin
                          when p_cfga_data_type_id = 2 then cfv.timestamp_value::text
                          when p_cfga_data_type_id = 3 then cfv.boolean_value::text
                          when p_cfga_data_type_id = 4 then cfv.numeric_value::text
-                         when p_cfga_data_type_id = 5 or p_cfga_data_type_id = 13 then cfv.text_value::text
-                         when p_cfga_data_type_id = 6 or p_cfga_data_type_id = 12 or p_cfga_data_type_id = 8 or p_cfga_data_type_id = 9 then
-                           case when p_use_list_of_values then (select lov.name from brs.list_of_value lov where lov.id = cfv.int_value)
-                                else cfv.int_value::text end
+                         when p_cfga_data_type_id = 5 or p_cfga_data_type_id = 13 then cfv.text_value
+                         when p_cfga_data_type_id = 6 and p_use_list_of_values is true then
+                           (select lov.name from brs.list_of_value lov where lov.id = cfv.int_value)
+                         when p_cfga_data_type_id = 6 and p_use_list_of_values is false then
+                           cfv.int_value::text
                          when p_cfga_data_type_id = 7 then
                            (select array_agg(l.name)::text from brs.list_of_value l where l.id = any(cfv.int_array_value))
                       end,
