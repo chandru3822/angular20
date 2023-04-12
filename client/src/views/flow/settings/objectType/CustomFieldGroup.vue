@@ -114,6 +114,7 @@
           </v-text-field>
 
           <v-data-table
+              id="cfg-table"
               :headers="headers"
               :items="filterCustomFieldGroups()"
               :items-per-page="-1"
@@ -133,21 +134,25 @@
               <span class="default-text-color">No available field groups</span>
             </template>
 
-            <template #item="{ item, index }">
-              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
+            <template #item="{ header, item, index }">
+              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2, 'mobile-tr': $vuetify.breakpoint.xsOnly}">
                 <td style="width: 50px">
                   <v-btn text icon small color="primary" class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
-                <td class="text-left">
+                <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
                   <v-text-field text
+                                :label="$vuetify.breakpoint.xsOnly ? 'Name': ''"
                                 v-if="item.edit"
                                 v-model="item.groupName">
                   </v-text-field>
-                  <span v-else>{{item.groupName}}</span>
+                  <span v-else>
+                    <span v-if="isMobile" class="label-medium">Name: </span>
+                    {{item.groupName}}
+                  </span>
                 </td>
-                <td class="text-left">
+                <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit && isProject}">
                   <v-select attach v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
@@ -157,6 +162,7 @@
                             autocomplete="off">
                   </v-select>
                   <span v-if="!item.edit && isProject">
+                     <span v-if="isMobile" class="label-medium">Tab: </span>
                     {{item.tabName || 'n/a'}}
                   </span>
                 </td>
@@ -526,10 +532,10 @@ export default {
       //if you set this to a value it doesn't update when the route param changes
       // objectTypeId: this.$route.params.id
       headers: [
-        { text: null, value: 'draggable', width: '50px', show: true },
+        { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
         { text: 'Name', value: 'groupName', show: true },
         { text: 'Tab', value: 'tabName', show: true },
-        { text: null, value: 'icons', show: true }
+        { text: null, value: 'icons', show: true, sortable: false }
       ],
       expanded: [],
       parent: {},
@@ -547,7 +553,10 @@ export default {
     },
     cFieldToDeleteName(){
       return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   mounted() {
     let table = document.querySelector('tbody')
@@ -1028,4 +1037,20 @@ export default {
   .hideId {
     visibility: hidden;
   }
+
+</style>
+<style lang="scss">
+#cfg-table > div > table > thead > tr > th {
+  width: 100%;
+}
+//I don't know why this was necessary, but the first row of the table does not change if we keep it scoped
+#cfg-table > div > table > tbody > tr.mobile-tr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  td {
+    border-bottom: none !important;
+  }
+}
 </style>
