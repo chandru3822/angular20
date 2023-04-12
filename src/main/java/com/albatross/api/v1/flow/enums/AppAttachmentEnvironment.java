@@ -5,7 +5,8 @@ public enum AppAttachmentEnvironment {
     UAT(2L),
     STAGE(3L),
     DEV(4L),
-    FLUX(5L);
+    FLUX(5L),
+    LOCAL(3L); //NOTE you have to change this value to match the apps you want to see in local
 
     public final Long id;
 
