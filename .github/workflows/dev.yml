@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Set up JDK 16
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: 16
           distribution: 'zulu'
@@ -31,7 +31,7 @@ jobs:
         run: mvn -B package -DskipTests
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -44,7 +44,7 @@ jobs:
       - name: set env
         id: vars
         run: |
-          echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
+          echo github_short_sha=$(echo ${GITHUB_SHA:0:7}) >> $GITHUB_OUTPUT
 
       - name: Build & Push Image
         id: build-image
@@ -57,7 +57,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID for App Fargate task definition
         id: app-task-def
@@ -96,7 +96,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -109,8 +109,8 @@ jobs:
       - name: set env
         id: vars
         run: |
-          echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
-          echo ::set-output name=github_branch::$(echo ${GITHUB_REF##*/})
+          echo github_short_sha=$(echo ${GITHUB_SHA:0:7}) >> $GITHUB_OUTPUT
+          echo github_branch=$(echo ${GITHUB_REF##*/}) >> $GITHUB_OUTPUT
 
       - name: Build & Push Image
         id: build-image
@@ -125,7 +125,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GH_BRANCH
-          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID for html2pdf definition
         id: html2pdf-task-def
@@ -160,7 +160,7 @@ jobs:
       - name: set env
         id: vars
         run: |
-          echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
+          echo github_short_sha=$(echo ${GITHUB_SHA:0:7}) >> $GITHUB_OUTPUT
 
       - run: netlify deploy --dir=client/dist --build --prod --message "Deployed from GitHub Action sha $GITHUB_SHA"
         name: Deploy Site

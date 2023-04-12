@@ -22,28 +22,30 @@
               ></v-autocomplete>
               <div class="radio-group-container mt-0">
                 <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column :disabled="!selectedWorkQueueCategoryId">
-                  <v-radio class="d-inline-block mx-4 wq-radio-label primary--text"
+                  <v-radio class="d-inline-block mx-4 wq-radio-label"
                            label="% Completed On Time"
                            small
                            :value="0"
-                           :class="{'active-radio': selectedViewType === 0}"
+                           :class="{'active-radio': selectedViewType === 0 && !!selectedWorkQueueCategoryId}"
                   ></v-radio>
-                  <v-radio class="d-inline-block mx-4 wq-radio-label primary--text"
+                  <v-radio class="d-inline-block mx-4 wq-radio-label"
                            label="Projects Completed"
                            :value="1"
                            :color="selectedViewType === 1 ? 'primary' : '#808588'"
-                           :class="{'active-radio': selectedViewType === 1}"></v-radio>
+                           :class="{'active-radio': selectedViewType === 1 && !!selectedWorkQueueCategoryId}"></v-radio>
                   <v-radio class="d-inline-block mx-4 wq-radio-label"
                            label="Change in WIP"
                            :value="2"
-                           :class="{'active-radio': selectedViewType === 2}"></v-radio>
+                           :class="{'active-radio': selectedViewType === 2 && !!selectedWorkQueueCategoryId}"></v-radio>
                 </v-radio-group>
               </div>
             </v-col>
             <v-col cols="6" class="future-switches">
 
               <div class="future-switch">
-                <label class="wq-follow-up-switch-label">Hide work with a next follow-up date in the future</label>
+                <label class="wq-follow-up-switch-label" :class="{'grey--text': cardsLoading || metricsLoading || !selectedWorkQueueCategoryId}">
+                  Hide work with a next follow-up date in the future
+                </label>
                 <v-switch
                   dense
                   :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
@@ -54,7 +56,9 @@
                 />
               </div>
               <div class="future-switch">
-                <label class="wq-follow-up-switch-label">Hide work with an event start date in the future</label>
+                <label class="wq-follow-up-switch-label" :class="{'grey--text': cardsLoading || metricsLoading || !selectedWorkQueueCategoryId}">
+                  Hide work with an event start date in the future
+                </label>
                 <v-switch
                   dense
                   :disabled="cardsLoading || metricsLoading || !selectedWorkQueueCategoryId"
@@ -395,9 +399,9 @@ export default {
   display: block !important;
 }
 
-.inactive-radio .v-icon {
-  color: #808588 !important;
-}
+//.inactive-radio .v-icon {
+//  color: #808588 !important;
+//}
 
 .inactive-radio > label {
   color: #808588 !important;
