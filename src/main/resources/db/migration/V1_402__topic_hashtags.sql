@@ -1,4 +1,3 @@
-drop table if exists flow.hashtag_type;
 CREATE TABLE if not exists flow.hashtag_type
 (
   id             bigserial NOT NULL,
