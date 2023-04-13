@@ -6,15 +6,13 @@ import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistSuperField;
-import com.albatross.api.v1.flow.model.smartlistv1.Smartlistv1;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistSuperField;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.CustomFieldQuery;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -35,8 +33,6 @@ public class ReportEngine {
   private final SecurityService securityService;
 
   private final SqlCacheRO sqlCacheRO;
-
-  private final ObjectMapper om;
 
   private boolean isUUID(String str) {
     try {

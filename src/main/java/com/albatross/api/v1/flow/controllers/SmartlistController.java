@@ -4,8 +4,8 @@ import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessDTO;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistRequirement;
 import com.albatross.api.v1.flow.services.report.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -144,7 +144,7 @@ public class SmartlistController {
   }
 
   @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFieldSmartlistFields(@PathVariable Long smartlistId) {
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFields(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getFields(smartlistId), HttpStatus.OK);
   }
 

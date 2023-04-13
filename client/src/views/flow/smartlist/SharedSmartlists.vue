@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col cols="12" class="py-0">
-      <v-card flat class="square-card pb-3 px-3" color="white">
+      <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
         <v-text-field
           v-model="search"
           prepend-inner-icon="mdi-magnify"

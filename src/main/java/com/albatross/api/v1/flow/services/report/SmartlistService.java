@@ -10,9 +10,9 @@ import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
 import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistRequirement;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.albatross.api.v1.flow.services.OrgService;
@@ -533,7 +533,7 @@ public class SmartlistService {
   public String export(Long smartlistId, String timezone) throws JsonProcessingException {
     Smartlist smartlist = this.getById(smartlistId);
 
-    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? getAssignedProjectDetailsFields(smartlistId) : getAssignedFields(smartlistId);
     List<SmartlistRequirement> requirements = getRequirements(smartlist.getId(), false);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
@@ -541,7 +541,7 @@ public class SmartlistService {
     }
 
     if (!smartlist.isProjectDetails()) {
-      fields = smartlistServicev1.prettifyFieldNames(fields);
+      fields = prettifyFieldNames(fields);
     }
 
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
@@ -844,9 +844,9 @@ public class SmartlistService {
     Long requirementId = sqlCache.updateBySqlReturningId(SmartlistQueryv1.addRequirement, params, "id").longValue();
 
     if (smartlist.isProjectDetails()) {
-      return smartlistServicev1.getProjectDetailsRequirementById(requirementId);
+      return getProjectDetailsRequirementById(requirementId);
     } else {
-      return smartlistServicev1.getRequirementById(requirementId);
+      return getRequirementById(requirementId);
     }
   }
 
@@ -863,10 +863,18 @@ public class SmartlistService {
     sqlCache.updateBySql(SmartlistQueryv1.updateRequirement, params);
 
     if (smartlist.isProjectDetails()) {
-      return smartlistServicev1.getProjectDetailsRequirementById(requirement.getId());
+      return getProjectDetailsRequirementById(requirement.getId());
     } else {
-      return smartlistServicev1.getRequirementById(requirement.getId());
+      return getRequirementById(requirement.getId());
     }
+  }
+
+  public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
+    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedFields, Map.of("smartlistId", smartlistId), new SmartlistService.SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  }
+
+  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
+    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedProjectDetailsFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
   // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
@@ -874,10 +882,53 @@ public class SmartlistService {
     var smartlist = getById(smartlistId);
 
     if (smartlist.isProjectDetails()) {
-      return smartlistServicev1.getAssignedProjectDetailsFields(smartlistId);
+      return getAssignedProjectDetailsFields(smartlistId);
     } else {
-      return smartlistServicev1.getAssignedFields(smartlistId);
+      return getAssignedFields(smartlistId);
     }
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public SmartlistRequirement getRequirementById(Long requirementId) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    SmartlistRequirement requirement = sqlCache.getBySql(SmartlistQueryv1.getRequirementById, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om))
+                                               .orElse(null);
+
+    if (requirement != null && requirement.getCustomFieldSql() != null) {
+      final String sql = requirement.getCustomFieldSql();
+      if (sql != null) {
+        requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+      }
+    }
+
+    return requirement;
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public SmartlistRequirement getProjectDetailsRequirementById(Long requirementId) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("id", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    return sqlCache.getBySql(SmartlistQueryv1.getProjectRequirementById, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om))
+                   .orElse(null);
+  }
+
+  /**
+   * Changes event/PS field names into `fieldName (event/PSName)` and truncates to 63 chars
+   */
+  public List<SmartlistFieldAssignment> prettifyFieldNames(List<SmartlistFieldAssignment> fields) {
+    for (SmartlistFieldAssignment f : fields) {
+      if (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6) {
+        f.setName(String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName()));
+
+        if (f.getName().length() > 63) {
+          f.setName(f.getName().substring(0, 60) + "...");
+        }
+      }
+    }
+    return fields;
   }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {

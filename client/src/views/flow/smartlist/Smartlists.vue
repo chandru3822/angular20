@@ -2,16 +2,16 @@
 <v-container id="smartlists-container" class="fill-height align-start">
   <v-row class="align-content-start">
     <v-col cols="12">
-      <v-toolbar color="white" class="elevation-0">
+      <v-toolbar color="white" class="elevation-1">
         <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text to="/smartlistv1/null" color="primary" v-if="userCanAdd">
+          <v-btn text to="/smartlist/editor" color="primary" v-if="userCanAdd">
             <span>Add Smartlist</span>
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <v-tabs>
+      <v-tabs class="elevation-1">
         <v-tab :to="'/smartlist/mine'">My Smartlists</v-tab>
         <v-tab :to="'/smartlist/shared'">Shared with Me</v-tab>
         <v-tab
