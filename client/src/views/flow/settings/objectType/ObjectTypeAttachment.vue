@@ -3,19 +3,19 @@
       <v-row>
         <v-col cols="12" class="pt-0 px-0">
           <v-toolbar flat>
-            <v-toolbar-title class="app-title">{{ selectedAttachment.attachmentType }}</v-toolbar-title>
+            <v-toolbar-title class="title-large">{{ selectedAttachment.attachmentType }}</v-toolbar-title>
           </v-toolbar>
         </v-col>
       </v-row>
       <v-row>
         <v-col cols="12" class="pt-0 px-0">
           <v-toolbar flat class="cfg-header-bar">
-            <v-toolbar-title class="app-title">Ancillary Custom Field Groups</v-toolbar-title>
+            <v-toolbar-title class="title-large">Ancillary Custom Field Groups</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">
+              <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
                 <v-icon>add</v-icon>
-                <span v-if="!constants.IS_MOBILE">Create Group</span>
+                <span v-if="!isMobile">Create Group</span>
               </v-btn>
             </v-toolbar-items>
           </v-toolbar>
@@ -35,7 +35,7 @@
               @click="saveFieldGroup()">
               Save
             </v-btn>
-            <v-btn
+            <v-btn text color="primary"
               @click="[newGroup = {}, createNew = false]">
               Cancel
             </v-btn>
@@ -43,6 +43,7 @@
           <v-row>
             <v-col cols="12">
               <v-data-table
+                  id="attachment-cfg-table"
                 :key="componentKey"
                 :headers="headers"
                 :items="filterCustomFieldGroups()"
@@ -64,13 +65,13 @@
                 </template>
 
                 <template #item="{ item, index }">
-                  <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
+                  <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2, 'mobile-tr': $vuetify.breakpoint.xsOnly}">
                     <td style="width: 50px">
-                      <v-btn text icon small class="handle" v-if="userCanEdit">
+                      <v-btn text icon small color="primary" class="handle" v-if="userCanEdit">
                         <v-icon>drag_handle</v-icon>
                       </v-btn>
                     </td>
-                    <td class="text-left">
+                    <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
                       <div v-if="userCanEdit">
                         <v-text-field text
                                       v-if="item.edit"
@@ -88,12 +89,12 @@
                     </td>
                     <td class="text-right">
                       <div class="item-icons">
-                        <v-btn v-if="userCanAdd" small text
+                        <v-btn v-if="userCanAdd" small text color="primary"
                                @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]">
                           <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                           <v-icon v-else>add</v-icon>
                         </v-btn>
-                        <v-btn small text
+                        <v-btn small text color="primary"
                                @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                           <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                           <v-icon v-else>expand_more</v-icon>
@@ -105,7 +106,7 @@
                 </template>
 
                 <template #expanded-item="{ headers, item }">
-                  <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
+                  <tr class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2,'mobile-tr': $vuetify.breakpoint.xsOnly}">
                     <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                       <h3 class="text-left">Add Ancillary Field</h3>
                       <v-autocomplete v-model="selectedAncillaryField"
@@ -120,7 +121,7 @@
                           {{ item.fieldName }}
                         </template>
                       </v-autocomplete>
-                      <v-btn @click="addField = false">Cancel</v-btn>
+                      <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
                     </v-col>
                     <v-col cols="12" class="px-3 py-0 pt-2 justify"
                            v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -154,7 +155,7 @@
                         </v-list>
                       </draggable>
                     </v-col>
-                  </td>
+                  </tr>
                 </template>
               </v-data-table>
             </v-col>
@@ -267,6 +268,9 @@ export default {
           case 5: return 'organization'
         }
       }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     },
   },
   async created () {
@@ -523,5 +527,8 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+
+</style>
+<style lang="scss">
 
 </style>
