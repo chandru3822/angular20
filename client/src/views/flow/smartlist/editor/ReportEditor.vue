@@ -5,13 +5,22 @@
       <v-card class="elevation-1 square-card px-4">
         <v-toolbar flat color="white" class="report-toolbar">
           <v-toolbar-title>
-            <v-text-field
-              v-model="report.name"
-              outlined
-              label="Name"
-              hide-details="true"
-              ref="name"
-            />
+            <div class="d-flex justify-start align-center">
+              <v-btn
+                icon
+                @click="vueInstance.$router.go(-1)"
+              >
+                <v-icon>mdi-chevron-left</v-icon>
+              </v-btn>
+
+              <v-text-field
+                v-model="report.name"
+                outlined
+                label="Name"
+                hide-details="true"
+                ref="name"
+              />
+            </div>
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -50,10 +59,24 @@
     <v-col cols="12">
       <v-row>
         <v-col cols="3">
-          <v-tabs>
+          <v-tabs v-model="tab">
             <v-tab>Columns</v-tab>
             <v-tab>Filters</v-tab>
           </v-tabs>
+          <v-tabs-items v-model="tab">
+            <v-tab-item>
+              <ReportFields
+                :fields="fields"
+                :available-fields="availableFields"
+              />
+            </v-tab-item>
+            <v-tab-item>
+              <ReportRequirements
+                :requirements="requirements"
+              />
+            </v-tab-item>
+          </v-tabs-items>
+
         </v-col>
         <v-col cols="9">
           <v-data-table>
@@ -73,6 +96,8 @@ import { getRequest, getSnackbar, logError, postRequest } from '@/helpers/helper
 import { AppMutations } from '@/stores/AppStore'
 import { DateTime } from 'luxon'
 import constants from '@/helpers/constants'
+import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
+import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -88,8 +113,14 @@ const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELE
 const reportId = vueInstance.$route.params.reportId
 
 const report = ref({mainProcessSteps: true})
+const fields = ref([])
+const requirements = ref([])
+
 const name = ref(null)
 const reportTypes = ref([])
+const availableFields = ref([])
+
+const tab = ref(null)
 
 /**
  * If editing a report, show only types available to that group
@@ -118,6 +149,26 @@ const getReport = async () => {
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch smartlist')
+  }
+}
+
+const getFields = async () => {
+  try {
+    const {data} = await getRequest(`/smartlist/${reportId}/field`)
+    fields.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Unable to fetch columns')
+  }
+}
+
+const getRequirements = async() => {
+  try {
+    const {data} = await getRequest(`/smartlist/${reportId}/requirement`)
+    requirements.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Unable to fetch filters')
   }
 }
 
@@ -159,16 +210,39 @@ const getReportTypes = async () => {
     reportTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
-    this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
-    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    snackbar('ERROR', 'Error fetching data types')
   }
 }
 
-onMounted(() => {
+const getAvailableFields = async () => {
+
+  try {
+    const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
+    const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}`)
+    availableFields.value = data
+    // if (this.newField.objectTypeId === 4) {
+    //   this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
+    //   this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
+    // } else if (this.newField.objectTypeId === 6) {
+    //   this.availableEvents = data.reduce((fields, field) => (field.eventId ===  null || fields.find(f => f.eventName === field.eventName)) ? [...fields] : [...fields, field], [])
+    //   this.availableEvents = this.availableEvents.sort((a, b) => a.eventName.localeCompare(b.eventName))
+    // } else {
+    //   this.calculateAvailableFields()
+    // }
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching available columns')
+  }
+}
+
+onMounted(async () => {
   getReportTypes()
 
   if (reportId) {
-    getReport()
+    await getReport()
+    getFields()
+    getRequirements()
+    getAvailableFields()
   } else {
     name.value.focus()
   }
@@ -176,7 +250,7 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/main.scss";
+@import "@/styles/main";
 
 .report-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;

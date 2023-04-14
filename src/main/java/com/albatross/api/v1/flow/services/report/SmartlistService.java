@@ -802,9 +802,9 @@ public class SmartlistService {
     List<SmartlistRequirement> requirements;
 
     if (smartlist.isProjectDetails()) {
-      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
     } else {
-      requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
       if (includeListValues) {
         for (SmartlistRequirement r : requirements) {
