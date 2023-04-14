@@ -1757,7 +1757,7 @@ const router = new Router({
           name: 'reportEditor',
           component: () => {
             if (store.getters.userHasFeature('SMARTLIST')) {
-              return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/ReportEditor.vue')
+              return import (/* webpackChunkName: "reports" */ './views/flow/smartlist/editor/ReportEditor.vue')
             } else {
               return accessDenied()
             }
