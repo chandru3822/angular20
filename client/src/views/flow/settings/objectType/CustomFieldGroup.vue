@@ -64,11 +64,11 @@
     <v-row>
       <v-col cols="12" class="shrink pt-0">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="title-large">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp" class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
+              <v-icon v-if="$vuetify.breakpoint.smAndDown">{{ addNew ? 'close' : 'add' }}</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -174,7 +174,7 @@
               </tr>
             </template>
             <template #expanded-item="{ headers, item, index }">
-              <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
+              <td :colspan="headers.length" class="pb-2" :class="{'shaded-row': selectedIndex % 2, 'mobile-width': $vuetify.breakpoint.smAndDown}">
                 <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
                   <v-radio-group v-if="isProject" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
@@ -1100,11 +1100,16 @@ export default {
     visibility: hidden;
   }
 
+  .mobile-width {
+    width: calc(100vw - 100px);
+  }
+
   .mobile-tr {
     display: flex;
     flex-direction: column;
     align-items: center;
     border-bottom: thin solid rgba(0, 0, 0, 0.12);
+    width: calc(100vw - 100px);
   }
 
 </style>
@@ -1118,6 +1123,7 @@ export default {
   flex-direction: column;
   align-items: center;
   border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  width: calc(100vw - 100px);
   td {
     border-bottom: none !important;
   }
