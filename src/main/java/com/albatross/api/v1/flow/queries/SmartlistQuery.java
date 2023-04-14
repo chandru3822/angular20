@@ -512,4 +512,91 @@ public class SmartlistQuery {
       cot.company_id = :companyId
     order by sm.date_created desc
   """;
+
+  //language=PostgreSQL
+  public final static String getAvailableFields = """
+    -- system fields
+    select sf.id as "smartlistFieldId",
+           sf.smartlist_system_list_id as "smartlistSystemListId",
+           cot.object_type_id,
+           null as "customFieldGroupAssignmentId",
+           sf.name as "name",
+           null as "customFieldSqlKey",
+           null as "customFieldSql",
+           null as "customFieldSqlSmartlist",
+           null as "CompanySystemListId",
+           '[]' as "systemListOptionIds",
+           null as "processStepId",
+           null as "processStepName",
+           null as "eventId",
+           null as "eventName",
+           cdt.data_type_id as "dataTypeId",
+           case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
+           cdt.allow_multiple as "allowMultiple",
+           case when sf.smartlist_system_list_id is null then '[]' else
+             (select to_jsonb(array_agg(row_to_json(rows))) from (
+               select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
+             ) rows)
+           end as "listOfValues"
+    from flow.smartlist_field sf
+    inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+    inner join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
+    where cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
+          cot.company_id = :companyId and
+          cot.archived is not true
+    union
+    -- custom fields
+    select null as "smartlistFieldId",
+           null as "smartlistSystemListId",
+           cot.object_type_id,
+           cfga.id as "customFieldGroupAssignmentId",
+           cf.field_name as "name",
+           cf.custom_field_sql_key as "customFieldSqlKey",
+           cf.custom_field_sql as "customFieldSql",
+           cf.custom_field_sql_smartlist as "customFieldSqlSmartlist",
+           cf.company_system_list_id as "companySystemListId",
+           to_jsonb(cf.system_list_option_ids) as "systemListOptionIds",
+           ps.id as "processStepId",
+           ps.process_step_name as "processStepName",
+           e.id as "eventId",
+           e.event_name as "eventName",
+           cdt.data_type_id as "dataTypeId",
+           cdt.has_list_values as "hasListValues",
+           cdt.allow_multiple as "allowMultiple",
+           coalesce((
+             select to_jsonb(array_agg(row_to_json(rows))) from (
+               select
+                 lv.id,
+                 lv.name,
+                 lv.parent_id as "parentId",
+                 lv.date_created as "dateCreated",
+                 lv.date_modified as "dateModified",
+                 lv.created_by_id as "createdById",
+                 lv.modified_by_id as "modifiedById",
+                 lv.display_order as "displayOrder",
+                 lv.archived
+               from flow.list_of_value lv
+               where
+                   lv.parent_id = cf.list_of_value_id and
+                   lv.archived is not true
+               order by
+                 case when cf.sort_list_values_alphabetically is true  then lv.name end,
+                 case when cf.sort_list_values_alphabetically is false then lv.display_order end
+             ) rows), '[]'
+           ) as "listOfValues"
+    from flow.custom_field_group_assignment cfga
+    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    left join flow.process_step ps on ps.id = cfg.process_step_id
+    left join flow.event e on e.id = cfg.event_id
+    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    where cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
+          cot.company_id = :companyId and
+          cdt.data_type_id != 12 and
+          cfga.ancillary_custom_field_group_assignment_id is null and
+          cfga.archived is not true and
+          cfg.archived is not true
+    order by name
+  """;
 }

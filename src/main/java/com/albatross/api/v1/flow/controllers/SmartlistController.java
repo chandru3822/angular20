@@ -178,4 +178,10 @@ public class SmartlistController {
   public ResponseEntity<List<SmartlistMetric>> getSmartlistMetrics(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getMetrics(smartlistId), HttpStatus.OK);
   }
+
+
+  @GetMapping(value = "/fields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableFields(@RequestParam List<Long> objectTypeIds) {
+    return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeIds), HttpStatus.OK);
+  }
 }

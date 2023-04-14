@@ -888,6 +888,11 @@ public class SmartlistService {
     }
   }
 
+  public List<SmartlistFieldAssignment> getAvailableFields(@NotNull List<Long> objectTypeIds) {
+    Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeIds", objectTypeIds);
+    return sqlCache.queryBySql(SmartlistQuery.getAvailableFields, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  }
+
   // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
   public SmartlistRequirement getRequirementById(Long requirementId) {
     User user = securityService.getCurrentUser();
