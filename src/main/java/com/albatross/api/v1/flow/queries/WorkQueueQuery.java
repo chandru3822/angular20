@@ -119,21 +119,12 @@ public class WorkQueueQuery {
 
   //language=PostgreSQL
   public final static String getWorkQueueMetrics = """
-    select metrics.*
+        select metrics.*
         from flow.work_queue_type wqt
-          left join lateral (select * from flow.get_work_queue_metrics(wqt.id)as metrics) as metrics on true
+          left join lateral (select * from flow.get_combined_work_queue_metrics(wqt.id, wqt.use_event_data)as metrics) as metrics on true
          where wqt.work_queue_category_id = :workQueueCategoryId
          and wqt.company_id = :companyId
           and wqt.archived is not true
-          and wqt.use_event_data is false
-        union all
-        select metrics.*
-        from flow.work_queue_type wqt
-           left join lateral (select * from flow.get_work_queue_metrics_for_events(wqt.id)as metrics) as metrics on true
-         where wqt.work_queue_category_id = :workQueueCategoryId
-        and wqt.company_id = :companyId
-          and wqt.archived is not true
-          and wqt.use_event_data is true
         """;
 
   //language=PostgreSQL

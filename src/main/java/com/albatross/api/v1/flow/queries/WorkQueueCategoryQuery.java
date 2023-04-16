@@ -11,19 +11,21 @@ public class WorkQueueCategoryQuery {
           color,
           display_order,
           hidden,
-          coalesce((
-                                  SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                  FROM (
-                                           SELECT wlp.id,
-                                                  wlp.position_id as "positionId",
-                                                  wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
-                                                  wlp.created_by_id as "createdById",
-                                                  wlp.modified_by_id as "modifiedById",
-                                                  wlp.archived
-                                           FROM flow.white_listed_position wlp
-                                           WHERE wlp.white_list_type_id = 11
-                                             AND wlp.archived is not true
-                                             AND wlp.work_queue_category_id = wqc.id) wlp), '[]') AS "hiddenWhiteListedPositions"
+          case when :filtered is false then
+            coalesce((
+                                    SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                    FROM (
+                                             SELECT wlp.id,
+                                                    wlp.position_id as "positionId",
+                                                    wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                    wlp.created_by_id as "createdById",
+                                                    wlp.modified_by_id as "modifiedById",
+                                                    wlp.archived
+                                             FROM flow.white_listed_position wlp
+                                             WHERE wlp.white_list_type_id = 11
+                                               AND wlp.archived is not true
+                                               AND wlp.work_queue_category_id = wqc.id) wlp), '[]')
+                                                else '[]' end AS "hiddenWhiteListedPositions"
         from flow.work_queue_category wqc
         where company_id = :companyId
           and archived is not true
