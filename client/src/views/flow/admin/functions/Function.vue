@@ -48,13 +48,6 @@
                           hint="* This should be a UI friendly name"
                           persistent-hint></v-text-field>
             <v-select
-              v-model="newParam.dataTypeId"
-              :items="dataTypes"
-              label="Data Type"
-              item-text="dataType"
-              item-value="id"
-            ></v-select>
-            <v-select
               v-model="newParam.parameterTypeId"
               :items="parameterTypes"
               label="Parameter Type"
@@ -69,11 +62,20 @@
               item-text="systemValue"
               item-value="id"
             ></v-select>
+            <v-select
+              v-else-if="newParam.parameterTypeId != null"
+              v-model="newParam.dataTypeId"
+              :items="dataTypes"
+              label="Data Type"
+              item-text="dataType"
+              item-value="id"
+            ></v-select>
           </div>
-          <v-btn :disabled="!newParam || !newParam.parameterName || !newParam.dataTypeId
+          <v-btn :disabled="!newParam || !newParam.parameterName || ( newParam.parameterTypeId !== 1 && !newParam.dataTypeId)
                     || !newParam.parameterTypeId || (newParam.parameterTypeId === 1 && !newParam.systemValueId)"
                  color="primary" class="mr-2"
-                 @click="[addNew = false, addParam()]">
+                 @click="[addParam()]">
+<!--                 @click="[addNew = false, addParam()]">-->
             Save
           </v-btn>
           <v-btn text color="primary" @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
@@ -269,6 +271,8 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newParam.dbFunctionId = this.functionId
+          this.newParam.dataTypeId = this.newParam.dataTypeId != null ? this.newParam.dataTypeId :
+              this.systemValues.find(sv => sv.id === this.newParam.systemValueId)?.dataTypeId
           const {data, status} = await postRequest(`/dbFunction/param`, this.newParam)
           this.dbFunction = data
           this.newParam = {}

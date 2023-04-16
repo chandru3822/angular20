@@ -11,7 +11,7 @@ import lombok.Setter;
 @Setter
 public class SystemValue {
 
-  private Long id;
+  private Long id, dataTypeId;
   private String systemValue;
   private Boolean archived;
 }
