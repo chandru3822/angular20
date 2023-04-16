@@ -494,7 +494,7 @@ BEGIN
                                                                from flow.get_value_for_data_view_field(dvfc.id, new_data.project_id))::numeric
                                                        else null::numeric end,
         int_value                                  = case
-                                                       when coalesce(df.data_type_id, cdt.data_type_id) = 6
+                                                       when coalesce(df.data_type_id, cdt.data_type_id) = 6 OR coalesce(df.data_type_id, cdt.data_type_id) = 8 --i am pretty sure that all 8's have to return ints for now
                                                          then (select *
                                                                from flow.get_value_for_data_view_field(dvfc.id, new_data.project_id))::int
                                                        else null::int end,
@@ -632,7 +632,8 @@ BEGIN
                  cfvs.company_system_list_id                     as "companySystemListId",
                  cfvs.system_list_option_ids                     as "systemListOptionIds",
                  cfvs.company_data_type_id                       as "companyDataTypeId",
-                 cfvs.data_type_id                               as "dataTypeId",
+                 case when cfvs.data_view_field_config_id is not null and cfvs.data_type_id = 8 then 6 else cfvs.data_type_id end                               as "dataTypeId",
+                 --in project details, if the cfga field being used is of type "System" that field is treated in a special way for cfv's....but NOT in the data view. need to set back to an int (6) to be treated correctly in the view
                  cfvs.has_list_values                            as "hasListValues",
                  cfvs.detail_view                                as "detailView",
                  case
@@ -734,7 +735,8 @@ BEGIN
                                         cfvs.company_system_list_id                     as "companySystemListId",
                                         cfvs.system_list_option_ids                     as "systemListOptionIds",
                                         cfvs.company_data_type_id                       as "companyDataTypeId",
-                                        cfvs.data_type_id                               as "dataTypeId",
+                                        case when cfvs.data_view_field_config_id is not null and cfvs.data_type_id = 8 then 6 else cfvs.data_type_id end                               as "dataTypeId",
+                                        --in project details, if the cfga field being used is of type "System" that field is treated in a special way for cfv's....but NOT in the data view. need to set back to an int (6) to be treated correctly in the view
                                         cfvs.has_list_values                            as "hasListValues",
                                         cfvs.detail_view                                as "detailView",
                                         case
