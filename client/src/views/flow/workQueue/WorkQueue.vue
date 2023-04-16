@@ -18,7 +18,7 @@
                               background-color="primary"
                               dark
                               class="work-queue-selector d-inline-block clickable"
-                              @input="getWorkQueues()"
+                              @input="loadBoth()"
               ></v-autocomplete>
               <div class="radio-group-container mt-0">
                 <v-radio-group id="wqt-view-type-selector" hide-details v-model="selectedViewType" column :disabled="!selectedWorkQueueCategoryId">
@@ -231,18 +231,9 @@ export default {
   },
   computed: {},
   async created() {
-    await this.getWorkQueueCategories()
-    this.selectedWorkQueueCategoryId = parseInt(localStorage.getItem('wqCategoryId'))
-    let matchingCategory = this.workQueueCategories.find(wqc => wqc.id === this.selectedWorkQueueCategoryId)
-    if(matchingCategory) {
-      this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-      this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
-      if (this.selectedWorkQueueCategoryId) {
-        this.getWorkQueues()
-      }
-    } else {
-      this.selectedWorkQueueCategoryId = null
-    }
+    this.selectedWorkQueueCategoryId = parseInt(localStorage.getItem('wqCategoryId')) || null
+    let requests = [this.getWorkQueueCategories(), this.loadBoth()]
+    await Promise.all(requests)
   },
   methods: {
     goToRoute(changeRoute, routeName, params, query) {
@@ -265,6 +256,18 @@ export default {
       try {
         const {data} = await getWorkQueueCategories()
         this.workQueueCategories = orderBy(data, [wqc => wqc.displayOrder])
+
+        //trying to make the page load all requests simultaneously to speed things up.  dealing with those ramifications
+        let matchingCategory = this.workQueueCategories.find(wqc => wqc.id === this.selectedWorkQueueCategoryId)
+        if(matchingCategory) {
+          this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+          this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
+        } else {
+          //unset the selection, should only mean the user no longer has access to a category they used to have access to
+          this.selectedWorkQueueCategoryId = null
+          localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategoryId))
+        }
+
         this.categoriesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -286,10 +289,23 @@ export default {
     //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
     //   }
     // },
+    async loadBoth(isFilteredReload) {
+      let requests = [this.getWorkQueues(isFilteredReload), this.loadMetrics()]
+      const [wqResults, metricResults] = await Promise.all(requests)
+      //assign each metric to the appropriate card
+      metricResults?.forEach(d => {
+        let match = this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
+        //if a wqt is hidden from a user then no match will be found
+        if(match) {
+          match.metrics = d
+        }
+      })
+    },
     async getWorkQueues(isFilteredReload) {
       localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategoryId))
       localStorage.setItem('hideFutureWqFollowUps', JSON.stringify(this.hideFutureFollowUps))
       localStorage.setItem('hideFutureWqEvents', JSON.stringify(this.hideFutureEvents))
+
       if (this.selectedWorkQueueCategoryId || this.showAll) {
         if (this.source) {
           this.source.cancel()
@@ -322,9 +338,9 @@ export default {
           }
           //after cards are loaded then load metrics
           //do not reload metrics if re-filtering for future follow up dates.
-          if (!isFilteredReload) {
-            this.loadMetrics(this.selectedWorkQueueCategoryId)
-          }
+          // if (!isFilteredReload) {
+          //   this.loadMetrics(this.selectedWorkQueueCategoryId)
+          // }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queues')
@@ -338,25 +354,20 @@ export default {
     async loadMetrics() {
       this.metricsLoading = true
       try {
+        let url = `/workQueue/metrics`
+        // let url = `/workQueue/randaTestCrap`
         //use the same cancel token as loading cards so that this all works
-        const {data, status} = await getRequestWithParams(`/workQueue/metrics`, {
+        const {data, status} = await getRequestWithParams(url, {
           source: this.source,
-          cancelToken: this.source.token,
+          cancelToken: this.source?.token,
           params: {
             workQueueCategoryId: this.selectedWorkQueueCategoryId
           }
         })
         //if you try to load a different wq before the first one is done, the spinner disappears because the first one cancels and hides it. only hide it if successful
         if (status === 200) {
-          //assign each metric to the appropriate card
-          data.forEach(d => {
-            let match = this.workQueues.find(wq => wq.workQueueTypeId === d.workQueueTypeId)
-            //if a wqt is hidden from a user then no match will be found
-            if(match) {
-              match.metrics = d
-            }
-          })
           this.metricsLoading = false
+          return data
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
