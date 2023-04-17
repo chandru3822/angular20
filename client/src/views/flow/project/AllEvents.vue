@@ -86,12 +86,10 @@
 
 <script>
 
-import {getRequest, putRequest, postRequest, logError, getRequestWithParams, getSnackbar} from '@/helpers/helpers'
+import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import TableActiveEventSnippet from '@/views/flow/project/TableActiveEventSnippet'
-
-import moment from 'moment'
 
 export default {
   name: 'AllEvents',

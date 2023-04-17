@@ -170,11 +170,10 @@
 <script>
 import constants from "@/helpers/constants";
 import cloneDeep from "lodash.clonedeep";
-import {FILTER_DEFAULTS, FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
+import {FEAT_DB_TABS} from "@/views/blueraven/featDB/FeatDbConstants";
 import {AppMutations} from "@/stores/AppStore";
-import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
+import {deleteRequest, getRequest, getSnackbar, handleHidingGlobalLoader, postRequest, putRequest} from "@/helpers/helpers";
 import {getActiveStates} from "@/services/stateService";
-import {deleteRequest} from "../../../../helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {

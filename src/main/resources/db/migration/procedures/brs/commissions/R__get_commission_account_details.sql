@@ -342,7 +342,8 @@ BEGIN
                           inner join flow.company_user_status cus  on cus.user_id = u.id
                           inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
                           left join brs.exclude_commission ec on ec.project_id = p.id
-                 WHERE   p.id in ( 730887,710694)  and (ec.project_id is null) and
+                 WHERE  ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null)) and
+                        (ec.project_id is null) and
                      CASE WHEN p_project_ids IS NOT NULL
                               THEN p.id = ANY(p_project_ids) ELSE
                          p.id in (select m1.project_id from milestone1 m1) END

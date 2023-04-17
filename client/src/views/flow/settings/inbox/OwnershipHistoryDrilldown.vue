@@ -42,9 +42,6 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
-  import {AppMutations} from "@/stores/AppStore";
-
   export default {
     name: 'OwnershipHistoryDrilldown',
     components: {

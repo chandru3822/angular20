@@ -1,12 +1,12 @@
 package com.albatross.api.v1.company.blueraven.integration.birdeye.models;
 
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeApi;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -43,6 +43,8 @@ class BirdEyeReview {
   private Boolean enableReply;
 
   private String customerId;
+
+  private Map<String, String> extraParams;
 
   @Data
   @JsonIgnoreProperties(ignoreUnknown = true)

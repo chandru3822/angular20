@@ -67,9 +67,7 @@ import {
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {AppMutations} from '@/stores/AppStore'
-import debounce from "lodash.debounce";
 import RequestTable from "@/components/RequestTable";
-
 export default {
   name: 'DocumentRequests',
   components: {

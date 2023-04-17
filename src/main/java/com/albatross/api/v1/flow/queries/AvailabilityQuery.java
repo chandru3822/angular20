@@ -230,7 +230,13 @@ public class AvailabilityQuery {
             ra.recurring_event_id,
             ra.recurring_event_end_type,
             ra.recurring_start_time as "recurringStartTime",
-            ra.recurring_end_time as "recurringEndTime"
+            ra.recurring_end_time as "recurringEndTime",
+            ra.recurring_event_end_type as "recurringEventEndType",
+            ra.location,
+            ra.recurrence,
+            ra.origin_timezone as "originTimezone",
+            ra.origin_timezone_offset as "originTimezoneOffset",
+            ra.description
         FROM flow.resource_appointment ra
                  LEFT JOIN flow.org o ON o.id = ra.org_id
                  LEFT JOIN flow.user u ON u.id = ra.user_id

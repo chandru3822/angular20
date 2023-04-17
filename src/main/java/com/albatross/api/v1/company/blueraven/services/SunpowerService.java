@@ -98,14 +98,12 @@ public class SunpowerService {
 
     Contact contact = contactService.getContactByProjectId(projectId);
 
-    if (propLogDetail.getSalesRepresentativeEmail() != null
-        && propLogDetail.getSalesRepresentativeEmail().contains("@")) {
-      projectDetails.put("salesRepresentativeEmail", propLogDetail.getSalesRepresentativeEmail());
-    }
+
+    projectDetails.put("salesRepresentativeEmail", "support@blueravensolar.com");
     projectDetails.put(
-        "salesRepresentativeFirstName", propLogDetail.getSalesRepresentativeFirstName());
+        "salesRepresentativeFirstName", "BRS");
     projectDetails.put(
-        "salesRepresentativeLastName", propLogDetail.getSalesRepresentativeLastName());
+        "salesRepresentativeLastName", "Support");
     projectDetails.put("term", Integer.parseInt(propLogDetail.getLoanTerm()) * 12);
     projectDetails.put("productType", "Solar");
     projectDetails.put("installStreet", contact.getStreet1());

@@ -24,6 +24,7 @@
                        @dragenter="dragTypeId=type.attachmentTypeId"
                        @dragleave="dragTypeId=null"
                        @dragend="dragTypeId=null"
+                       v-if="userCanEdit"
                        :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
                        @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
                        @dragover.prevent="dragTypeId=type.attachmentTypeId"
@@ -55,13 +56,9 @@
 
 <script>
 import {
-  getRequest,
-  getRequestWithParams,
-  getSnackbar,
-  logError
+  getSnackbar
 } from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
-import orderBy from "lodash.orderby";
 import {Actions} from "@/store";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import constants from "@/helpers/constants";

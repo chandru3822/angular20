@@ -231,7 +231,7 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
   import moment from 'moment'

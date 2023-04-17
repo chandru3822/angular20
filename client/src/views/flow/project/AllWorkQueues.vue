@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters id="project-details-wq-container" class="py-0 relative height-one-hunned overflow-y-auto">
-    <v-col cols="12" lg="12" class="pa-5">
-      <v-toolbar color="transparent" class="elevation-0">
+    <v-col cols="12" lg="12" class="pa-3">
+      <v-toolbar color="transparent" class="elevation-0 project-wq-toolbar">
         <v-toolbar-title class="albatross-header-3">Current Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -19,6 +19,7 @@
           :fixed-header="true"
           disable-sort
           hide-default-footer
+          :items-per-page="-1"
           :loading="dataLoading"
           dense
           class="elevation-1"
@@ -44,7 +45,7 @@
         </v-data-table>
       </v-card>
 
-      <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar color="transparent" class="elevation-0 mt-6 project-wq-toolbar">
         <v-toolbar-title class="albatross-header-3">Historic Work Queues</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
@@ -60,6 +61,7 @@
           :items="historicWorkQueues"
           :fixed-header="true"
           disable-sort
+          :items-per-page="-1"
           hide-default-footer
           :loading="dataLoading"
           dense
@@ -172,12 +174,15 @@ export default {
   padding-right: 0;
   padding-top: 0;
 }
-
 </style>
 
 <style lang="scss">
-#project-details-wq-container .v-data-table__wrapper {
-  max-height: calc(100vh - 270px);
-  min-height: 300px;
+//#project-details-wq-container .v-data-table__wrapper {
+//  max-height: calc(100vh - 270px);
+//  min-height: 300px;
+//}
+
+.project-wq-toolbar .v-toolbar__content {
+  padding: 4px 0 !important;
 }
 </style>

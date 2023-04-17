@@ -153,8 +153,8 @@
 
       async filterForParents() {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        var filteredTools = this.companyTools.slice().reverse();
-        var lastName = " ";
+        let filteredTools = this.companyTools.slice().reverse();
+        let lastName = " ";
         this.companyTools.slice().reverse().forEach(
           x => {
             if (x.featureName == lastName) {

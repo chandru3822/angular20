@@ -14,16 +14,14 @@ jobs:
         name: Package & Deploy
         runs-on: ubuntu-latest
         timeout-minutes: 15
+        concurrency:
+          group: stage_env
+          cancel-in-progress: true
         steps:
-            -   name: Cancel Previous Runs
-                uses: styfle/cancel-workflow-action@0.6.0
-                with:
-                    access_token: ${{ secrets.GH_ACCESS_TOKEN }}
-
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
 
             -   name: Configure AWS credentials
-                uses: aws-actions/configure-aws-credentials@v1
+                uses: aws-actions/configure-aws-credentials@v2
                 with:
                     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -36,8 +34,7 @@ jobs:
             -   name: set env
                 id: vars
                 run: |
-                    echo ::set-output name=github_short_sha::$(echo ${GITHUB_SHA:0:7})
-
+                    echo github_short_sha=$(echo ${GITHUB_SHA:0:7}) >> $GITHUB_OUTPUT
 
             -   name: Fill in the new image ID for App Fargate task definition
                 id: app-task-def
@@ -77,7 +74,7 @@ jobs:
       - uses: actions/setup-node@v2
         name: Setup Node
         with:
-          node-version: '16'
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: client/package-lock.json
           always-auth: true

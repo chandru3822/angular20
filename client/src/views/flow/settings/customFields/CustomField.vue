@@ -277,7 +277,6 @@
 
 <script>
 import {AppMutations} from "@/stores/AppStore";
-import cloneDeep from "lodash.clonedeep";
 import orderBy from "lodash.orderby";
 import draggable from "vuedraggable";
 import debounce from "lodash.debounce";
@@ -287,8 +286,7 @@ import {
   getRequestWithParams,
   getSnackbar,
   handleHidingGlobalLoader,
-  postRequest,
-  putRequest
+  postRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -524,7 +522,7 @@ export default {
     async getUsesForField(){
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/customField/getUses/${this.customFieldId}`, this.apiPath, null, []);
+        const {data} = await getRequest(`/customField/getUses/${this.customFieldId}`, this.apiPath, null, []);
         this.usesForField = data;
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

@@ -115,10 +115,8 @@ import draggable from "vuedraggable";
 
 import {
   getRequest,
-  getRequestWithParams,
   getSnackbar,
   handleHidingGlobalLoader,
-  postRequest,
   putRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";

@@ -119,16 +119,17 @@ BEGIN
       --do normal copy using the matching values if that works
       if v_to_object_type_id = 1 then -- PROJECT
         perform flow.set_project_cfv(p_project_id, p_user_id, p_cfga_copy_to, coalesce(v_to_matching_int_value_as_text,v_to_matching_int_array_value_as_text,v_text_value_to_save)::text,
-                                     p_override_existing);
+                                     p_override_existing, v_rich_text_value_to_save);
       elseif v_to_object_type_id = 2 then -- CONTACT
         perform flow.set_contact_cfv((select contact_id from flow.project p where p.id = p_project_id), p_user_id,
                                      p_cfga_copy_to, coalesce(v_to_matching_int_value_as_text,v_to_matching_int_array_value_as_text,v_text_value_to_save)::text,
                                      p_override_existing, v_rich_text_value_to_save);
       elseif v_to_object_type_id = 4 then -- PPS
-        perform flow.set_pps_cfv(p_project_id, p_user_id, p_cfga_copy_to, coalesce(v_to_matching_int_value_as_text,v_to_matching_int_array_value_as_text,v_text_value_to_save)::text, p_override_existing);
+        perform flow.set_pps_cfv(p_project_id, p_user_id, p_cfga_copy_to, coalesce(v_to_matching_int_value_as_text,v_to_matching_int_array_value_as_text,v_text_value_to_save)::text,
+          p_override_existing, v_rich_text_value_to_save);
       elseif v_to_object_type_id = 6 then -- PPS EVENT
         perform flow.set_pps_event_cfv(p_ppse_id, p_user_id, p_cfga_copy_to, coalesce(v_to_matching_int_value_as_text,v_to_matching_int_array_value_as_text,v_text_value_to_save)::text,
-                                       p_override_existing);
+                                       p_override_existing, v_rich_text_value_to_save);
       end if;
     end if;
   end if;

@@ -138,7 +138,7 @@ export function handleHidingGlobalLoader(instance, status) {
 
 // functions
 // pass in [] as returnType if you need an empty result to return you an empty list instead of an object
-export async function getRequest(path, companyAbbreviation, returnType = {}) {
+export async function getRequest(path, companyAbbreviation = null, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`) ?? {
     data: returnType,
@@ -146,12 +146,12 @@ export async function getRequest(path, companyAbbreviation, returnType = {}) {
   }
 }
 
-export async function getRequestWithParams(path, params, companyAbbreviation, returnType = {}) {
+export async function getRequestWithParams(path, params, companyAbbreviation = null, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.get(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, params) ?? {data: returnType, status: null}
 }
 
-export async function postRequest(path, body, companyAbbreviation, returnType = {}, extraParams = {}) {
+export async function postRequest(path, body, companyAbbreviation = null, returnType = {}, extraParams = {}) {
   //"extraParams" can be used to cancel post requests and send in the token and/or the source
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, extraParams) ?? {
@@ -160,7 +160,7 @@ export async function postRequest(path, body, companyAbbreviation, returnType = 
   }
 }
 
-export async function postRequestWithRequestParams(path, body, params, companyAbbreviation, returnType = {}) {
+export async function postRequestWithRequestParams(path, body, params, companyAbbreviation = null, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.post(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, { params }) ?? {
     data: returnType,
@@ -168,7 +168,7 @@ export async function postRequestWithRequestParams(path, body, params, companyAb
   }
 }
 
-export async function putRequest(path, body, companyAbbreviation, returnType = {}) {
+export async function putRequest(path, body, companyAbbreviation = null, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body) ?? {
     data: returnType,
@@ -176,7 +176,7 @@ export async function putRequest(path, body, companyAbbreviation, returnType = {
   }
 }
 
-export async function putRequestWithRequestParams(path, body, params, companyAbbreviation, returnType = {}) {
+export async function putRequestWithRequestParams(path, body, params, companyAbbreviation = null, returnType = {}) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.put(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`, body, { params }) ?? {
     data: returnType,
@@ -184,13 +184,13 @@ export async function putRequestWithRequestParams(path, body, params, companyAbb
   }
 }
 
-export async function deleteRequest(path, companyAbbreviation) {
+export async function deleteRequest(path, companyAbbreviation = null) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   // not returning data as part of a delete
   return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
 }
 
-export async function deleteRequestWithPayload(path, companyAbbreviation) {
+export async function deleteRequestWithPayload(path, companyAbbreviation = null) {
   const apiPath = companyAbbreviation ? 'company/' + companyAbbreviation : 'flow'
   return await axios.delete(`${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/${apiPath}${path}`)
 }

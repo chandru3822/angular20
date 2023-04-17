@@ -22,11 +22,7 @@
 </template>
 
 <script>
-
-import {handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
 import {getStatusClass} from '@/services/eventStatusTypeService'
-
 export default {
   name: 'EventButton',
   props: {

@@ -265,8 +265,7 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getSnackbar,
-  getRequestWithParams
+  getSnackbar
 } from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 

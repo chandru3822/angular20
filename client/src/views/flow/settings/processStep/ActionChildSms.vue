@@ -120,17 +120,13 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
-import cloneDeep from 'lodash.clonedeep'
 import {
   handleHidingGlobalLoader,
   getRequest,
   deleteRequest,
-  putRequest,
   postRequest,
   getSnackbar
 } from '@/helpers/helpers'
-import orderBy from 'lodash.orderby'
-import Sortable from "sortablejs"
 import ProcessStepRequirements from './ProcessStepRequirements'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 

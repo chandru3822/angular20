@@ -103,8 +103,6 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
-import Sortable from "sortablejs"
-import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import {
   getRequest,

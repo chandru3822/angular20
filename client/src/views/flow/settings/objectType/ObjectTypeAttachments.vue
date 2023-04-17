@@ -87,8 +87,6 @@ import {AppMutations} from "@/stores/AppStore";
 import draggable from 'vuedraggable'
 import {handleHidingGlobalLoader, deleteRequest, getRequest, getSnackbar, postRequest, putRequest} from "@/helpers/helpers";
 import Vue2Filters from "vue2-filters"
-import Sortable from "sortablejs"
-import cloneDeep from 'lodash.clonedeep'
 import orderBy from 'lodash.orderby'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -292,7 +290,3 @@ export default {
   }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="scss">
-</style>
