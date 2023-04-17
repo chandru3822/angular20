@@ -53,6 +53,7 @@ declare
   v_long_window_exited                bigint;
   v_now_date date;
   v_now_timestamp timestamp;
+  v_timezone varchar = 'US/Mountain';
 BEGIN
 
   select wqt.long_window,
@@ -85,8 +86,8 @@ BEGIN
          inner join flow.work_queue_category wqc on wqt.work_queue_category_id = wqc.id
   where wqt.id = p_work_queue_type_id;
 
-  select (now() at time zone 'US/Mountain')::date,
-         (now() at time zone 'US/Mountain')::timestamp
+  select (now() at time zone v_timezone)::date,
+         (now() at time zone v_timezone)::timestamp
          into v_now_date, v_now_timestamp;
 
   select v_now_date::date,
@@ -102,10 +103,10 @@ BEGIN
   if(p_use_event_data) then
     create temp table randa_wqc_values as (
       select wqc2.id,
-             (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date as date_entered_queue_date,
-             (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date as date_exited_queue_date,
-             (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_entered_queue_timestamp,
-             (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_exited_queue_timestamp
+             (date_entered_queue at time zone 'UTC' at time zone v_timezone)::date as date_entered_queue_date,
+             (date_exited_queue at time zone 'UTC' at time zone v_timezone)::date as date_exited_queue_date,
+             (date_entered_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_entered_queue_timestamp,
+             (date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_exited_queue_timestamp
       from flow.work_queue_cycle wqc2
              inner join flow.process_step_event_work_queue_type_event_status_type pswqtpsst2
                         on wqc2.process_step_event_work_queue_type_event_status_type_id = pswqtpsst2.id
@@ -116,23 +117,23 @@ BEGIN
         and pswqt2.archived is false
         and (
         --todo: i actually think the v_long_start_date would cover both scenarios here
---         ((date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date)
+--         ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
 --         OR
---         ((date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date)
+--         ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
 --         OR
-          ((date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date)
+          ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
           OR
-          ((date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date)
+          ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
         )
     );
   else
     create temp table randa_wqc_values as (
 
       select wqc2.id,
-             (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date as date_entered_queue_date,
-             (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date as date_exited_queue_date,
-             (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_entered_queue_timestamp,
-             (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_exited_queue_timestamp
+             (date_entered_queue at time zone 'UTC' at time zone v_timezone)::date as date_entered_queue_date,
+             (date_exited_queue at time zone 'UTC' at time zone v_timezone)::date as date_exited_queue_date,
+             (date_entered_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_entered_queue_timestamp,
+             (date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_exited_queue_timestamp
       from flow.work_queue_cycle wqc2
              inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst2
                         on wqc2.process_step_work_queue_type_process_step_status_type_id = pswqtpsst2.id
@@ -142,13 +143,13 @@ BEGIN
         and pswqt2.archived is false
       and (
         --todo: i actually think the v_long_start_date would cover both scenarios here
-  --         ((date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date)
+  --         ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
   --         OR
-  --         ((date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_short_start_date and v_end_date)
+  --         ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
   --         OR
-          ((date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date)
+          ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
           OR
-          ((date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::date between v_long_start_date and v_end_date)
+          ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
         )
     );
   end if;
@@ -185,8 +186,8 @@ BEGIN
       select wqc.id,
              wqt.short_window,
              wqt.long_window,
-             (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_entered_queue_timestamp,
-             (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_exited_queue_timestamp
+             (date_entered_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_entered_queue_timestamp,
+             (date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_exited_queue_timestamp
       from flow.work_queue_cycle wqc
              inner join flow.company_event_status_type cest
                         on wqc.company_event_status_type_id = cest.id and cest.archived is false
@@ -202,10 +203,10 @@ BEGIN
         and (
           date_exited_queue is null
           OR
-          ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
+          ((wqc.date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp >=
            (v_now_timestamp - (wqt.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp)
           OR
-          ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
+          ((wqc.date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp >=
            (v_now_timestamp -
             (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp)
         )
@@ -215,8 +216,8 @@ BEGIN
       select wqc.id,
              wqt.short_window,
              wqt.long_window,
-             (date_entered_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_entered_queue_timestamp,
-             (date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp as date_exited_queue_timestamp
+             (date_entered_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_entered_queue_timestamp,
+             (date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_exited_queue_timestamp
       from flow.work_queue_cycle wqc
       inner join flow.company_process_step_status_type cpsst
       on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
@@ -233,10 +234,10 @@ BEGIN
         and (
           date_exited_queue is null
           OR
-          ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
+          ((wqc.date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp >=
           (v_now_timestamp - (wqt.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp)
           OR
-          ((wqc.date_exited_queue at time zone 'UTC' at time zone 'US/Mountain')::timestamp >=
+          ((wqc.date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp >=
           (v_now_timestamp -
            (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp)
         )
