@@ -7,7 +7,8 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-switch
-              v-model="includeInactive"
+              v-model="search.inactive"
+              @change="setLocalStorage"
               class="fix-switch-color mt-5 mr-3"
               label="Include Inactive"
             />
@@ -105,7 +106,7 @@
         snackbar: {},
         constants,
         delay: 500,
-        includeInactive: false,
+        // includeInactive: false,
         dialog: false,
         orgs: [],
         orgFilter: this.$route.params.orgFilter ? this.$route.params.orgFilter : '',
@@ -167,13 +168,15 @@
           org: '',
           type: '',
           parent: '',
-          active: ''
+          active: '',
+          inactive: false
         }
       }
     },
     computed: {
       filteredOrgs () {
-        return this.orgs.filter(o => { return this.includeInactive ? true : o.activeFlag})
+        console.log('randaLogger',this.search.inactive)
+        return this.orgs.filter(o => { return this.search?.inactive ? true : o.activeFlag})
       },
     },
     watch: {
