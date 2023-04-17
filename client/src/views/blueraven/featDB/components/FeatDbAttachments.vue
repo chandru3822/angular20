@@ -24,6 +24,7 @@
                        @dragenter="dragTypeId=type.attachmentTypeId"
                        @dragleave="dragTypeId=null"
                        @dragend="dragTypeId=null"
+                       v-if="userCanEdit"
                        :class="{'file-hover': dragTypeId === type.attachmentTypeId}"
                        @drop.prevent="addDragDocument($event, type.attachmentTypeId)"
                        @dragover.prevent="dragTypeId=type.attachmentTypeId"

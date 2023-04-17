@@ -210,7 +210,8 @@ BEGIN
            r.system_list_option_ids,
            r.list_of_value,
            r.list_of_values,
-           r.data_type_id,
+           case when r.data_view_field_config_id is not null and r.data_type_id = 8::bigint then 6::bigint
+             else r.data_type_id end as data_type_id, --in project details, if the cfga field being used is of type "System" that field is treated in a special way for cfv's....but NOT in the data view. need to set back to an int (6) to be treated correctly in the view
            r.has_list_values,
            r.company_function_name,
            r.function_name,
