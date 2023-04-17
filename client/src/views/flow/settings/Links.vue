@@ -24,10 +24,10 @@
                           label="URL">
             </v-text-field>
             <div>
-              These parameters can be used to add some system values to a url. <br/>
-              Validation is not yet in place so be careful which screens you assign a url to. <br/>
-              If you want to use the value from a cfga, prefix the id with CFGA_ID_. <br/>
-              For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
+              <p>These parameters can be used to add some system values to a url. </p>
+              <p>Validation is not yet in place so be careful which screens you assign a url to.</p>
+              <p>If you want to use the value from a cfga, prefix the id with CFGA_ID_. </p>
+              <p>For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
               <v-btn text outlined color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
                 {{p.name}}
               </v-btn>
@@ -41,19 +41,21 @@
                 <v-list-item-content class="text-left">
                   <div v-if="selectedLinkId === a.id">
                     <v-text-field class="one-hunned"
+                                  :class="{'px-4': $vuetify.breakpoint.smAndDown}"
                                   label="Link"
                                   v-model="a.link">
                     </v-text-field>
                     <v-text-field class="one-hunned"
+                                  :class="{'px-4': $vuetify.breakpoint.smAndDown}"
                                   label="URL"
                                   clearable
                                   v-model="a.url">
                     </v-text-field>
                     <div>
-                      These parameters can be used to add some system values to a url. <br/>
-                      Validation is not yet in place so be careful which screens you assign a url to. <br/>
-                      If you want to use the value from a cfga, prefix the id with CFGA_ID_ <br/>
-                      For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}">These parameters can be used to add some system values to a url. </p>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}">Validation is not yet in place so be careful which screens you assign a url to. </p>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}"> If you want to use the value from a cfga, prefix the id with CFGA_ID_ </p>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}">For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
                       <v-btn text outlined color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
                         <span>{{p.name}}</span>
                       </v-btn>
@@ -66,6 +68,9 @@
                     <v-icon>save</v-icon>
                   </v-btn>
                   <v-icon v-else-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" color="primary" @click="selectedLinkId = a.id">edit</v-icon>
+                  <v-btn small text color="primary" v-if="selectedLinkId === a.id" @click="selectedLinkId = null">
+                    <v-icon>close</v-icon>
+                  </v-btn>
                 <v-btn small text color="primary"
                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                        @click="linkToDelete=a">
