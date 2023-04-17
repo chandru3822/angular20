@@ -2156,7 +2156,7 @@ end if;
 
   v_net_system_cost =
       v_total_system_cost - coalesce(v_referral_promotion, 0) - coalesce(v_federal_tax_incentive_amount, 0) -
-      coalesce(v_above_line_rebate, 0);
+      coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0);
   raise notice 'v_net_system_cost = %',v_net_system_cost;
 
   v_current_estimated_annual_utility_bill =
