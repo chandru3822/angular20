@@ -17,15 +17,18 @@
         <v-container>
           <v-card v-if="addNew" flat color="transparent">
             <v-form ref="hashtagForm">
-              <v-text-field v-model="newTag.hashtag"
-                            counter
-                            required
-                            :rules="hashtagRules"
-                            :maxlength="tagMaxChars"
-                            placeholder="Hashtag"
-                            @input="validateNew"
-                            label="Add Topic Hashtag">
-              </v-text-field>
+              <div class="flex-display">
+                <v-icon size="14" class="mr-2">mdi-pound</v-icon>
+                <v-text-field v-model="newTag.hashtag"
+                              counter
+                              required
+                              :rules="hashtagRules"
+                              :maxlength="tagMaxChars"
+                              placeholder="Hashtag"
+                              @input="validateNew"
+                              label="Add Topic Hashtag">
+                </v-text-field>
+              </div>
               <v-btn color="primary" class="mt-4" :disabled="!newTag.hashtag || !formValid"
                      @click="saveTag(newTag, true)">Save
               </v-btn>
