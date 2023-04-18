@@ -83,7 +83,7 @@
               </v-row>
             </v-list-item>
 
-            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)" :key="crypto.randomUUID()">
+            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)" :key="UUID()">
               <v-row>
                 <v-col
                   cols="6"
@@ -195,7 +195,7 @@
 
 <script setup>
 
-import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest, putRequest } from '@/helpers/helpers'
+import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
 import { Fragment } from 'vue-frag'

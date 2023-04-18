@@ -599,4 +599,50 @@ public class SmartlistQuery {
           cfg.archived is not true
     order by name
   """;
+
+  //language=PostgreSQL
+  public final static String addField = """
+    insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
+    returning id
+  """;
+
+  //language=PostgreSQL
+  public final static String deleteField = """
+    update flow.smartlist_field_assignment
+    set
+      archived = true,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :id
+  """;
+  //language=PostgreSQL
+  public final static String upsertRequirement = """
+    insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
+    on conflict (custom_field_group_assignment_id)
+    do update set
+      operator_type_id = :operatorTypeId,
+      requirement_value = :requirementValue,
+      secondary_requirement_value = :secondaryRequirementValue,
+      data_type_requirement_id = :dataTypeRequirementId,
+      list_of_value_id = :listOfValueId,
+      list_of_value_ids = array[ :listOfValueIds ]::bigint[],
+      system_list_option_id = :systemListOptionId,
+      custom_sql_option_id = :customSqlOptionId,
+      modified_by_id = :modifiedById,
+      date_modified = now(),
+      project_details_column = :projectDetailsColumn
+    returning id
+  """;
+
+  //language=PostgreSQL
+  public final static String deleteRequirement = """
+    update flow.smartlist_requirement
+    set
+      archived = true,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :id
+  """;
 }

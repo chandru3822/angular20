@@ -69,12 +69,15 @@
               <ReportFields
                 :fields="fields"
                 :available-fields="availableFields"
+                :loading="loadingAvailableFields"
                 @added="addField"
               />
             </v-tab-item>
             <v-tab-item>
               <ReportRequirements
                 :requirements="requirements"
+                :available-fields="availableFields"
+                @added="addRequirement"
               />
             </v-tab-item>
           </v-tabs-items>
@@ -93,13 +96,20 @@
 
 <script setup>
 import useReportStore from '@/views/flow/smartlist/reportStore'
-import { computed, getCurrentInstance, onMounted, ref } from 'vue'
-import { getRequest, getSnackbar, logError, postRequest } from '@/helpers/helpers'
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
+import { getRequest, getSnackbar, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import { DateTime } from 'luxon'
 import constants from '@/helpers/constants'
 import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
 import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
+
+//This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
+const UPDATE_TYPE = Object.freeze({
+  ADD: 'ADD',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE'
+})
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -112,9 +122,11 @@ const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 const userCanEdit = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
 const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
 
-const reportId = vueInstance.$route.params.reportId
+const tab = ref(null)
+const loadingAvailableFields = ref(false)
 
-const report = ref({mainProcessSteps: true})
+const reportId = vueInstance.$route.params.reportId
+const report = ref({mainProcessSteps: true, name: ''})
 const fields = ref([])
 const requirements = ref([])
 
@@ -128,7 +140,12 @@ const name = ref(null)
 const reportTypes = ref([])
 const availableFields = ref([])
 
-const tab = ref(null)
+
+
+// @TODO: enable/disable save button when new name differs from source
+watch(report.value, (newVal) => {
+
+})
 
 /**
  * If editing a report, show only types available to that group
@@ -212,9 +229,30 @@ const exportReport = async () => {
 const save = async () => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const {data} = await postRequest(`/smartlist`, report.value)
-    report.value = data
-    vueInstance.$router.replace({name: 'reportEditor', params: {reportId: data.id}})
+
+    if (report.value?.id) {
+      //send all fields for re-ordering, but send only requirements which have changed
+      const hasFieldsUpdated = fields.value.filter(f => f.updateType)
+      const updatedRequirements = requirements.value.filter(r => r.updateType)
+
+      await putRequest(`/smartlist/${report.value.id}`, {
+        smartlist: report.value,
+        fields: fields.value,
+        requirements: updatedRequirements
+      })
+
+      if (hasFieldsUpdated) {
+        getFields()
+      }
+
+      if (updatedRequirements.length > 0) {
+        getRequirements()
+      }
+    } else {
+      const {data} = await postRequest(`/smartlist`, report.value)
+      report.value = data
+      vueInstance.$router.replace({name: 'reportEditor', params: {reportId: data.id}})
+    }
     snackbar('SUCCESS', 'Save Successful')
   } catch (e) {
     logError(e)
@@ -225,17 +263,20 @@ const save = async () => {
 
 const getReportTypes = async () => {
   try {
+    loadingAvailableFields.value = true
     const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
     reportTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Error fetching data types')
+  } finally {
+    loadingAvailableFields.value = false
   }
 }
 
 const getAvailableFields = async () => {
-
   try {
+    loadingAvailableFields.value = true
     const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
     const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}`)
     availableFields.value = data
@@ -251,16 +292,25 @@ const getAvailableFields = async () => {
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Error fetching available columns')
+  } finally {
+    loadingAvailableFields.value = false
   }
 }
 
 const addField = (field) => {
+  field.updateType = UPDATE_TYPE.ADD
   fields.value.push(field)
   hasUnsavedChanges.value = true
 }
 
+const addRequirement = (requirement) => {
+  requirement.updateType = UPDATE_TYPE.ADD
+  requirements.value.push(requirement)
+  hasUnsavedChanges.value = true
+}
+
 onMounted(async () => {
-  getReportTypes()
+  await getReportTypes()
 
   if (reportId) {
     await getReport()

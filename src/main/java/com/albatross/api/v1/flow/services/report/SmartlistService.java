@@ -8,11 +8,7 @@ import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.*;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.albatross.api.v1.flow.services.OrgService;
@@ -250,13 +246,15 @@ public class SmartlistService {
   @Transactional
   public void updateSmartlist(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
 
-    var existingSmartlist = getById(smartlist.getId());
+    var existingSmartlist = getById(smartlist.getId(), true);
+
+    // @TODO: #smartlistsv2 - verify user has edit access to smartlist
 
     if (!userHasWriteAccess(existingSmartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
-    final boolean updatingName = !existingSmartlist.getName().trim().equalsIgnoreCase(smartlist.getName().trim().toLowerCase());
+    final boolean updatingName = !existingSmartlist.getName().trim().equals(smartlist.getName().trim());
 
     if (updatingName && !smartlistServicev1.isNameUnique(smartlist.getName())) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
@@ -267,6 +265,42 @@ public class SmartlistService {
     params.put("userId", user.trueUserId());
 
     sqlCache.updateBySql(SmartlistQuery.update, params);
+
+    //update fields
+    var deletedFields = fields.stream()
+                              .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.DELETE))
+                              .map(f -> Map.of("id", f.getId(), "userId", user.trueUserId()))
+                              .toList();
+    sqlCache.updateBatchBySql(SmartlistQuery.deleteField, deletedFields);
+
+    var addedFields = fields.stream()
+                            .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.ADD))
+                            .toList();
+
+    addedFields.forEach(f -> {
+      f.setCreatedById(user.getId());
+      f.setSmartlistId(smartlist.getId());
+    });
+    sqlCache.updateBatchBySql(SmartlistQuery.addField, addedFields);
+
+    // @TODO: #smartlistsv2 - handle reordering fields
+
+    //update reqs
+    var upsertedRequirements = requirements.stream()
+                                           .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.ADD) || Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
+                                           .toList();
+    upsertedRequirements.forEach(r -> {
+      r.setCreatedById(user.trueUserId());
+      r.setModifiedById(user.trueUserId());
+      r.setSmartlistId(smartlist.getId());
+    });
+    sqlCache.updateBatchBySql(SmartlistQuery.upsertRequirement, upsertedRequirements);
+
+    var deletedRequirements = requirements.stream()
+                                          .filter(r -> Objects.equals(r.getUpdateType(), FieldUpdateType.DELETE))
+                                          .map(r -> Map.of("id", r.getId(), "userId", user.trueUserId()))
+                                          .toList();
+    sqlCache.updateBatchBySql(SmartlistQuery.deleteRequirement, deletedRequirements);
   }
 
   @Transactional

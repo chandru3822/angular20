@@ -24,6 +24,8 @@ public class SmartlistSuperField {
 
   private List<ListOfValue> listOfValues;
 
+  private FieldUpdateType updateType;
+
   //These fields are used for smartlist generation
   @JsonIgnore
   private String referenceTable, referenceColumn, joinTable, joinColumn, valueReferenceTable, ppsTable, ppsEventTable, userPositionTable;

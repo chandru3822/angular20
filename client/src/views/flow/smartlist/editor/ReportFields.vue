@@ -4,16 +4,33 @@
   :items="availableFields"
   item-text="name"
   return-object
+  :loading="loading"
   @change="add"
 />
-<div v-for="f in fields">
-  {{ calculatedName(f) }}
-</div>
+<draggable
+  v-model="fields"
+  @change="reorder"
+>
+  <v-list-item
+    v-for="field in fields"
+    :key="UUID()"
+  >
+    <v-list-item-action>
+      <v-icon>drag_handle</v-icon>
+    </v-list-item-action>
+
+    <v-list-item-content>
+      {{ calculatedName(field) }}
+    </v-list-item-content>
+  </v-list-item>
+</draggable>
 </fragment>
 </template>
 
 <script setup>
 import { Fragment } from 'vue-frag'
+import draggable from 'vuedraggable'
+import { UUID } from '@/helpers/helpers'
 
 const emit = defineEmits(['added'])
 
@@ -25,16 +42,20 @@ const props = defineProps({
   availableFields: {
     type: Array,
     required: true
+  },
+  loading: {
+    type: Boolean,
+    required: true
   }
 })
 
-const calculatedName = (f) => {
-  let name = f.name
+const calculatedName = (field) => {
+  let name = field.name
 
-  if (f.objectTypeId === 4) {
-    name += ` - (PS) ${f.processStepName}`
-  } else if (f.objectTypeId === 6) {
-    name += ` - (E) ${f.eventName}`
+  if (field.objectTypeId === 4) {
+    name += ` - (PS) ${field.processStepName}`
+  } else if (field.objectTypeId === 6) {
+    name += ` - (E) ${field.eventName}`
   }
 
   return name
@@ -42,6 +63,10 @@ const calculatedName = (f) => {
 
 const add = (field) => {
   emit('added', field)
+}
+
+const reorder = () => {
+  console.log('reorder')
 }
 </script>
 

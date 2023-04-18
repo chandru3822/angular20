@@ -36,7 +36,6 @@ public class SmartlistController {
   @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateSmartlist(@RequestBody ReportDTO report) {
-
     smartlistService.updateSmartlist(report.getSmartlist(), report.getFields(), report.getRequirements());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
