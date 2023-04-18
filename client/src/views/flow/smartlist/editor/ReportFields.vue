@@ -12,7 +12,7 @@
   @change="reorder"
 >
   <v-list-item
-    v-for="field in fields"
+    v-for="(field, index) in fields"
     :key="UUID()"
   >
     <v-list-item-action>
@@ -22,6 +22,15 @@
     <v-list-item-content>
       {{ calculatedName(field) }}
     </v-list-item-content>
+
+    <v-list-item-action>
+      <v-btn
+        icon
+        @click.stop="remove(index)"
+      >
+        <v-icon>mdi-close</v-icon>
+      </v-btn>
+    </v-list-item-action>
   </v-list-item>
 </draggable>
 </fragment>
@@ -32,7 +41,7 @@ import { Fragment } from 'vue-frag'
 import draggable from 'vuedraggable'
 import { UUID } from '@/helpers/helpers'
 
-const emit = defineEmits(['added', 'reordered'])
+const emit = defineEmits(['added', 'reordered', 'deleted'])
 
 const props = defineProps({
   fields: {
@@ -63,6 +72,10 @@ const calculatedName = (field) => {
 
 const add = (field) => {
   emit('added', field)
+}
+
+const remove = (index) => {
+  emit('deleted', index)
 }
 
 const reorder = () => {

@@ -71,6 +71,7 @@
                 :available-fields="availableFields"
                 :loading="loadingAvailableFields"
                 @added="addField"
+                @deleted="deleteField"
                 @reordered="reorderFields"
               />
             </v-tab-item>
@@ -302,12 +303,20 @@ const addField = (field) => {
   field.updateType = UPDATE_TYPE.ADD
   fields.value.push(field)
   hasUnsavedChanges.value = true
+  updateDisplayOrder()
 }
 
 const addRequirement = (requirement) => {
   requirement.updateType = UPDATE_TYPE.ADD
   requirements.value.push(requirement)
   hasUnsavedChanges.value = true
+  updateDisplayOrder()
+}
+
+const deleteField = (index) => {
+  fields.value.splice(index, 1)
+  hasUnsavedChanges.value = true
+  updateDisplayOrder()
 }
 
 const updateDisplayOrder = () => {
@@ -317,6 +326,7 @@ const updateDisplayOrder = () => {
 
 const reorderFields = (updatedFields) => {
   fields.value = updatedFields
+  hasUnsavedChanges.value = true
   updateDisplayOrder()
 }
 

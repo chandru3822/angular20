@@ -2,7 +2,6 @@
   <fragment>
     <v-btn
       @click.stop="showDialog = true"
-      text
       icon
       class="pa-5"
     >
