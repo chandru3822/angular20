@@ -8,7 +8,7 @@
   @change="add"
 />
 <draggable
-  v-model="fields"
+  :list="fields"
   @change="reorder"
 >
   <v-list-item
@@ -32,7 +32,7 @@ import { Fragment } from 'vue-frag'
 import draggable from 'vuedraggable'
 import { UUID } from '@/helpers/helpers'
 
-const emit = defineEmits(['added'])
+const emit = defineEmits(['added', 'reordered'])
 
 const props = defineProps({
   fields: {
@@ -66,7 +66,7 @@ const add = (field) => {
 }
 
 const reorder = () => {
-  console.log('reorder')
+  emit('reordered', props.fields)
 }
 </script>
 
