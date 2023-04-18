@@ -83,7 +83,7 @@
               </v-row>
             </v-list-item>
 
-            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)">
+            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)" :key="crypto.randomUUID()">
               <v-row>
                 <v-col
                   cols="6"

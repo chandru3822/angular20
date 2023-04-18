@@ -215,7 +215,7 @@ public class SmartlistService {
       smartlist.setMainProcessSteps(true);
     }
 
-    updateSmartlist(smartlist);
+    updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
     sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
     return getById(smartlist.getId());
   }
@@ -229,7 +229,7 @@ public class SmartlistService {
     }
 
     smartlist.setProjectDetails(!smartlist.isProjectDetails());
-    this.updateSmartlist(smartlist);
+    this.updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
 
     sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
@@ -247,7 +247,8 @@ public class SmartlistService {
     return getById(smartlistId);
   }
 
-  public void updateSmartlist(Smartlist smartlist) {
+  @Transactional
+  public void updateSmartlist(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
 
     var existingSmartlist = getById(smartlist.getId());
 

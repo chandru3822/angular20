@@ -27,6 +27,7 @@
             <v-btn
               text
               color="primary"
+              :disabled="!hasUnsavedChanges"
               @click.stop="save"
             >
               <v-icon>save</v-icon>
@@ -68,6 +69,7 @@
               <ReportFields
                 :fields="fields"
                 :available-fields="availableFields"
+                @added="addField"
               />
             </v-tab-item>
             <v-tab-item>
@@ -116,6 +118,12 @@ const report = ref({mainProcessSteps: true})
 const fields = ref([])
 const requirements = ref([])
 
+//keep track of original data
+const sourceReport = ref({})
+const sourceFields = ref([])
+const sourceRequirements = ref([])
+const hasUnsavedChanges = ref(false)
+
 const name = ref(null)
 const reportTypes = ref([])
 const availableFields = ref([])
@@ -142,10 +150,19 @@ const filteredReportTypes = computed(() => {
   }
 })
 
+const filteredAvailableFields = computed(() => {
+  let fields = []
+
+  if (!sourceFields.value.length) {
+    return fields
+  }
+})
+
 const getReport = async () => {
   try {
     const {data} = await getRequest(`/smartlist/${reportId}?accessControl=true`)
     report.value = data
+    sourceReport.value = data
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch smartlist')
@@ -156,6 +173,7 @@ const getFields = async () => {
   try {
     const {data} = await getRequest(`/smartlist/${reportId}/field`)
     fields.value = data
+    sourceFields.value = data
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch columns')
@@ -166,6 +184,7 @@ const getRequirements = async() => {
   try {
     const {data} = await getRequest(`/smartlist/${reportId}/requirement`)
     requirements.value = data
+    sourceRequirements.value = data
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch filters')
@@ -233,6 +252,11 @@ const getAvailableFields = async () => {
     logError(e)
     snackbar('ERROR', 'Error fetching available columns')
   }
+}
+
+const addField = (field) => {
+  fields.value.push(field)
+  hasUnsavedChanges.value = true
 }
 
 onMounted(async () => {

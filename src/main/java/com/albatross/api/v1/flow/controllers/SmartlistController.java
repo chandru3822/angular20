@@ -1,11 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessDTO;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.*;
 import com.albatross.api.v1.flow.services.report.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -40,9 +35,9 @@ public class SmartlistController {
 
   @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateSmartlist(@RequestBody Smartlist smartlist) {
+  public ResponseEntity<Void> updateSmartlist(@RequestBody ReportDTO report) {
 
-    smartlistService.updateSmartlist(smartlist);
+    smartlistService.updateSmartlist(report.getSmartlist(), report.getFields(), report.getRequirements());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 

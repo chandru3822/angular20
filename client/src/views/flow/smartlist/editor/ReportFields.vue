@@ -1,12 +1,21 @@
 <template>
 <fragment>
-<div>add field here</div>
-<div v-for="f in fields">{{ f.name }}</div>
+<v-autocomplete
+  :items="availableFields"
+  item-text="name"
+  return-object
+  @change="add"
+/>
+<div v-for="f in fields">
+  {{ calculatedName(f) }}
+</div>
 </fragment>
 </template>
 
 <script setup>
 import { Fragment } from 'vue-frag'
+
+const emit = defineEmits(['added'])
 
 const props = defineProps({
   fields: {
@@ -18,6 +27,22 @@ const props = defineProps({
     required: true
   }
 })
+
+const calculatedName = (f) => {
+  let name = f.name
+
+  if (f.objectTypeId === 4) {
+    name += ` - (PS) ${f.processStepName}`
+  } else if (f.objectTypeId === 6) {
+    name += ` - (E) ${f.eventName}`
+  }
+
+  return name
+}
+
+const add = (field) => {
+  emit('added', field)
+}
 </script>
 
 <style scoped lang="scss">
