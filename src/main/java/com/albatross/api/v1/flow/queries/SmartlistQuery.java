@@ -604,6 +604,7 @@ public class SmartlistQuery {
   public final static String addField = """
     insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
+    
     returning id
   """;
 
@@ -616,6 +617,17 @@ public class SmartlistQuery {
       date_modified = now()
     where id = :id
   """;
+
+  //language=PostgreSQL
+  public final static String updateDisplayOrder = """
+    update flow.smartlist_field_assignment
+    set
+      display_order = :displayOrder,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :id
+  """;
+
   //language=PostgreSQL
   public final static String upsertRequirement = """
     insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)

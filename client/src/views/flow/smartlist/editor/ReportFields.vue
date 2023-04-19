@@ -11,27 +11,26 @@
   :list="fields"
   @change="reorder"
 >
-  <v-list-item
-    v-for="(field, index) in fields"
-    :key="UUID()"
-  >
-    <v-list-item-action>
-      <v-icon>drag_handle</v-icon>
-    </v-list-item-action>
+  <template v-for="(field, index) in fields">
+    <v-list-item v-if="field.updateType !== updateTypes.DELETE" :key="UUID()">
+      <v-list-item-action>
+        <v-icon>drag_handle</v-icon>
+      </v-list-item-action>
 
-    <v-list-item-content>
-      {{ calculatedName(field) }}
-    </v-list-item-content>
+      <v-list-item-content>
+        {{ calculatedName(field) }}
+      </v-list-item-content>
 
-    <v-list-item-action>
-      <v-btn
-        icon
-        @click.stop="remove(index)"
-      >
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </v-list-item-action>
-  </v-list-item>
+      <v-list-item-action>
+        <v-btn
+          icon
+          @click.stop="remove(index)"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </v-list-item-action>
+    </v-list-item>
+  </template>
 </draggable>
 </fragment>
 </template>
@@ -54,6 +53,10 @@ const props = defineProps({
   },
   loading: {
     type: Boolean,
+    required: true
+  },
+  updateTypes: {
+    type: Object,
     required: true
   }
 })

@@ -70,6 +70,7 @@
                 :fields="fields"
                 :available-fields="availableFields"
                 :loading="loadingAvailableFields"
+                :update-types="UPDATE_TYPE"
                 @added="addField"
                 @deleted="deleteField"
                 @reordered="reorderFields"
@@ -105,6 +106,8 @@ import { DateTime } from 'luxon'
 import constants from '@/helpers/constants'
 import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
 import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
+import isEqual from 'lodash.isequal'
+import cloneDeep from 'lodash.clonedeep'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -136,7 +139,6 @@ const requirements = ref([])
 const sourceReport = ref({})
 const sourceFields = ref([])
 const sourceRequirements = ref([])
-const hasUnsavedChanges = ref(false)
 
 const name = ref(null)
 const reportTypes = ref([])
@@ -169,19 +171,17 @@ const filteredReportTypes = computed(() => {
   }
 })
 
-const filteredAvailableFields = computed(() => {
-  let fields = []
-
-  if (!sourceFields.value.length) {
-    return fields
-  }
+const hasUnsavedChanges = computed(() => {
+  return !isEqual(report.value, sourceReport.value) ||
+         !isEqual(fields.value, sourceFields.value) ||
+         !isEqual(requirements.value, sourceRequirements.value)
 })
 
 const getReport = async () => {
   try {
     const {data} = await getRequest(`/smartlist/${reportId}?accessControl=true`)
-    report.value = data
-    sourceReport.value = data
+    report.value = cloneDeep(data)
+    sourceReport.value = cloneDeep(data)
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch smartlist')
@@ -191,8 +191,8 @@ const getReport = async () => {
 const getFields = async () => {
   try {
     const {data} = await getRequest(`/smartlist/${reportId}/field`)
-    fields.value = data
-    sourceFields.value = data
+    fields.value = cloneDeep(data)
+    sourceFields.value = cloneDeep(data)
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch columns')
@@ -202,8 +202,8 @@ const getFields = async () => {
 const getRequirements = async() => {
   try {
     const {data} = await getRequest(`/smartlist/${reportId}/requirement`)
-    requirements.value = data
-    sourceRequirements.value = data
+    requirements.value = cloneDeep(data)
+    sourceRequirements.value = cloneDeep(data)
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Unable to fetch filters')
@@ -234,12 +234,12 @@ const save = async () => {
 
     if (report.value?.id) {
       //send all fields for re-ordering, but send only requirements which have changed
-      const hasFieldsUpdated = fields.value.filter(f => f.updateType)
+      const hasFieldsUpdated = !isEqual(fields.value, sourceFields.value)
       const updatedRequirements = requirements.value.filter(r => r.updateType)
 
       await putRequest(`/smartlist/${report.value.id}`, {
         smartlist: report.value,
-        fields: fields.value,
+        fields: (hasFieldsUpdated) ? fields.value : [],
         requirements: updatedRequirements
       })
 
@@ -300,22 +300,21 @@ const getAvailableFields = async () => {
 }
 
 const addField = (field) => {
-  field.updateType = UPDATE_TYPE.ADD
-  fields.value.push(field)
-  hasUnsavedChanges.value = true
-  updateDisplayOrder()
+  if (field) {
+    field.updateType = UPDATE_TYPE.ADD
+    fields.value.push(field)
+    updateDisplayOrder()
+  }
 }
 
 const addRequirement = (requirement) => {
   requirement.updateType = UPDATE_TYPE.ADD
   requirements.value.push(requirement)
-  hasUnsavedChanges.value = true
   updateDisplayOrder()
 }
 
 const deleteField = (index) => {
-  fields.value.splice(index, 1)
-  hasUnsavedChanges.value = true
+  fields.value[index].updateType = UPDATE_TYPE.DELETE
   updateDisplayOrder()
 }
 
@@ -326,7 +325,6 @@ const updateDisplayOrder = () => {
 
 const reorderFields = (updatedFields) => {
   fields.value = updatedFields
-  hasUnsavedChanges.value = true
   updateDisplayOrder()
 }
 

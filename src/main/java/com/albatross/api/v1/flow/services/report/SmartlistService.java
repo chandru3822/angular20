@@ -267,40 +267,59 @@ public class SmartlistService {
     sqlCache.updateBySql(SmartlistQuery.update, params);
 
     //update fields
-    var deletedFields = fields.stream()
-                              .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.DELETE))
-                              .map(f -> Map.of("id", f.getId(), "userId", user.trueUserId()))
+    if (!fields.isEmpty()) {
+      var deletedFields = fields.stream()
+                                .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.DELETE))
+                                .map(f -> Map.of("id", f.getId(), "userId", user.trueUserId()))
+                                .toList();
+
+      if (!deletedFields.isEmpty()) {
+        sqlCache.updateBatchBySql(SmartlistQuery.deleteField, deletedFields);
+      }
+
+      var addedFields = fields.stream()
+                              .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.ADD))
                               .toList();
-    sqlCache.updateBatchBySql(SmartlistQuery.deleteField, deletedFields);
 
-    var addedFields = fields.stream()
-                            .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.ADD))
-                            .toList();
+      addedFields.forEach(f -> {
+        f.setCreatedById(user.getId());
+        f.setSmartlistId(smartlist.getId());
+      });
 
-    addedFields.forEach(f -> {
-      f.setCreatedById(user.getId());
-      f.setSmartlistId(smartlist.getId());
-    });
-    sqlCache.updateBatchBySql(SmartlistQuery.addField, addedFields);
+      if (!addedFields.isEmpty()) {
+        sqlCache.updateBatchBySql(SmartlistQuery.addField, addedFields);
+      }
 
-    // @TODO: #smartlistsv2 - handle reordering fields
+      var displayReorderFields = fields.stream()
+                                       .filter(f -> f.getUpdateType() == null)
+                                       .map(f -> Map.of(
+                                         "id", f.getId(),
+                                         "displayOrder", f.getDisplayOrder(),
+                                         "userId", user.trueUserId()
+                                       ))
+                                       .toList();
+
+      if (!displayReorderFields.isEmpty()) {
+        sqlCache.updateBatchBySql(SmartlistQuery.updateDisplayOrder, displayReorderFields);
+      }
+    }
 
     //update reqs
-    var upsertedRequirements = requirements.stream()
-                                           .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.ADD) || Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
-                                           .toList();
-    upsertedRequirements.forEach(r -> {
-      r.setCreatedById(user.trueUserId());
-      r.setModifiedById(user.trueUserId());
-      r.setSmartlistId(smartlist.getId());
-    });
-    sqlCache.updateBatchBySql(SmartlistQuery.upsertRequirement, upsertedRequirements);
-
-    var deletedRequirements = requirements.stream()
-                                          .filter(r -> Objects.equals(r.getUpdateType(), FieldUpdateType.DELETE))
-                                          .map(r -> Map.of("id", r.getId(), "userId", user.trueUserId()))
-                                          .toList();
-    sqlCache.updateBatchBySql(SmartlistQuery.deleteRequirement, deletedRequirements);
+//    var upsertedRequirements = requirements.stream()
+//                                           .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.ADD) || Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
+//                                           .toList();
+//    upsertedRequirements.forEach(r -> {
+//      r.setCreatedById(user.trueUserId());
+//      r.setModifiedById(user.trueUserId());
+//      r.setSmartlistId(smartlist.getId());
+//    });
+//    sqlCache.updateBatchBySql(SmartlistQuery.upsertRequirement, upsertedRequirements);
+//
+//    var deletedRequirements = requirements.stream()
+//                                          .filter(r -> Objects.equals(r.getUpdateType(), FieldUpdateType.DELETE))
+//                                          .map(r -> Map.of("id", r.getId(), "userId", user.trueUserId()))
+//                                          .toList();
+//    sqlCache.updateBatchBySql(SmartlistQuery.deleteRequirement, deletedRequirements);
   }
 
   @Transactional
