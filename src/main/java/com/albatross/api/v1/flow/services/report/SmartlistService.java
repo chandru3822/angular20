@@ -305,21 +305,31 @@ public class SmartlistService {
     }
 
     //update reqs
-//    var upsertedRequirements = requirements.stream()
-//                                           .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.ADD) || Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
-//                                           .toList();
-//    upsertedRequirements.forEach(r -> {
-//      r.setCreatedById(user.trueUserId());
-//      r.setModifiedById(user.trueUserId());
-//      r.setSmartlistId(smartlist.getId());
-//    });
-//    sqlCache.updateBatchBySql(SmartlistQuery.upsertRequirement, upsertedRequirements);
-//
-//    var deletedRequirements = requirements.stream()
-//                                          .filter(r -> Objects.equals(r.getUpdateType(), FieldUpdateType.DELETE))
-//                                          .map(r -> Map.of("id", r.getId(), "userId", user.trueUserId()))
-//                                          .toList();
-//    sqlCache.updateBatchBySql(SmartlistQuery.deleteRequirement, deletedRequirements);
+    if (!requirements.isEmpty()) {
+      var addedRequirements = requirements.stream()
+                                             .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.ADD)))
+                                             .toList();
+      addedRequirements.forEach(r -> {
+        r.setCreatedById(user.trueUserId());
+        r.setSmartlistId(smartlist.getId());
+      });
+      sqlCache.updateBatchBySql(SmartlistQuery.addRequirement, addedRequirements);
+
+      var updatedRequirements = requirements.stream()
+                                          .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
+                                          .toList();
+      addedRequirements.forEach(r -> {
+        r.setModifiedById(user.trueUserId());
+        r.setSmartlistId(smartlist.getId());
+      });
+      sqlCache.updateBatchBySql(SmartlistQuery.updateRequirement, updatedRequirements);
+
+      var deletedRequirements = requirements.stream()
+                                            .filter(r -> Objects.equals(r.getUpdateType(), FieldUpdateType.DELETE))
+                                            .map(r -> Map.of("id", r.getId(), "userId", user.trueUserId()))
+                                            .toList();
+      sqlCache.updateBatchBySql(SmartlistQuery.deleteRequirement, deletedRequirements);
+    }
   }
 
   @Transactional

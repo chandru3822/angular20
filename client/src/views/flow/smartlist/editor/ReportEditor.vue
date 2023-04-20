@@ -80,7 +80,11 @@
               <ReportRequirements
                 :requirements="requirements"
                 :available-fields="availableFields"
+                :loading="loadingAvailableFields"
+                :update-types="UPDATE_TYPE"
                 @added="addRequirement"
+                @deleted="deleteRequirement"
+                @updated="updateRequirement"
               />
             </v-tab-item>
           </v-tabs-items>
@@ -143,13 +147,6 @@ const sourceRequirements = ref([])
 const name = ref(null)
 const reportTypes = ref([])
 const availableFields = ref([])
-
-
-
-// @TODO: enable/disable save button when new name differs from source
-watch(report.value, (newVal) => {
-
-})
 
 /**
  * If editing a report, show only types available to that group
@@ -307,12 +304,6 @@ const addField = (field) => {
   }
 }
 
-const addRequirement = (requirement) => {
-  requirement.updateType = UPDATE_TYPE.ADD
-  requirements.value.push(requirement)
-  updateDisplayOrder()
-}
-
 const deleteField = (index) => {
   fields.value[index].updateType = UPDATE_TYPE.DELETE
   updateDisplayOrder()
@@ -327,6 +318,16 @@ const reorderFields = (updatedFields) => {
   fields.value = updatedFields
   updateDisplayOrder()
 }
+
+const addRequirement = (requirement) => {
+  requirement.updateType = UPDATE_TYPE.ADD
+  requirements.value.push(requirement)
+  updateDisplayOrder()
+}
+
+const deleteRequirement = (index) => requirements.value[index].updateType = UPDATE_TYPE.DELETE
+
+const updateRequirement = (requirement, index) => requirements.value[index] = requirement
 
 onMounted(async () => {
   await getReportTypes()
