@@ -5,7 +5,17 @@
     class="action-button"
     @click="completeAction"
   >
-  {{ actionResult.actionName }}
+    <div>
+      <div class="action-button-name">
+        {{ actionResult.actionName }}
+      </div>
+      <div class="action-button-subtitle">
+                <span class="action-button-subtitle-date">{{
+                    actionResult.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a')
+                  }}</span>
+        {{ actionResult.actionRunBy }}
+      </div>
+    </div>
     <v-icon :color="getColor()" v-if="actionResult.alreadyTriggered" class="ml-1" size="20">check</v-icon>
     <v-icon v-if="actionResult.triggerAutomatically">mdi-alpha-a</v-icon>
 </v-btn>

@@ -456,6 +456,7 @@ export default {
   },
   computed: {
     filteredActions() {
+      debugger
       if (!this?.processStep?.actions) {
         return []
       }
