@@ -64,32 +64,12 @@
           </div>
         </div>
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
-          <v-btn class="action-button white--text text-capitalize"
-                 color="primary"
-                 v-if="!action.hideFromWeb && action.actionTypeId === 2"
-                 :disabled="!action.canPerform"
-                 @click="[attemptedAction = action, validateActionRequirements(action)]">
-            <div>
-              <div class="action-button-name">
-                {{ action.actionName }}
-              </div>
-              <div class="action-button-subtitle">
-                <span class="action-button-subtitle-date">{{
-                    action.actionRunDate | formatDate('timestamp', 'M/D/YY h:mm a')
-                  }}</span>
-                {{ action.actionRunBy }}
-              </div>
-            </div>
-            <v-icon :color="action.canPerform ? 'white' : null" v-if="action.alreadyTriggered" class="ml-1" size="20">
-              check
-            </v-icon>
-          </v-btn>
-          <v-btn
-            v-else-if="action.actionTypeId === 1 && !action.hideFromWeb"
-            @click="followMultipleLinks(action)"
-          >
-            {{ action.actionName }}
-          </v-btn>
+          <ActionButton
+              :action-result="action"
+              :can-perform-action="action.canPerform"
+              :complete-action="validateActionRequirements"
+              :follow-multiple-links="followMultipleLinks"
+          />
         </div>
       </div>
       <div v-if="selectedEvent.hasAttachmentTypesAssigned">
@@ -374,10 +354,12 @@ import {getStatusClass} from '@/services/eventStatusTypeService'
 import Vue2Filters from 'vue2-filters'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
+import ActionButton from "./ActionButton";
 
 export default {
   name: 'ProjectProcessStepEvent',
   components: {
+    ActionButton,
     ConfirmationDialog,
     CustomValueInput,
     DatetimePickerInput,
@@ -579,6 +561,7 @@ export default {
       })
     },
     validateActionRequirements: async function (action) {
+      this.attemptedAction = action
       this.eventActionMissingRequirements = false
       this.eventSaveOverrideRequired = false
       this.actionRequiresStart = action?.requireStartTime //this is no longer required to be true
