@@ -1,9 +1,10 @@
 <template>
   <v-btn
-    :disabled="!proceed"
+      v-if="actionResult.actionTypeId === 2 && !actionResult.hideFromWeb"
+    :disabled="!canPerformAction"
     color="primary"
     class="action-button"
-    @click="completeAction"
+    @click="completeAction(actionResult)"
   >
     <div>
       <div class="action-button-name">
@@ -19,46 +20,28 @@
     <v-icon :color="getColor()" v-if="actionResult.alreadyTriggered" class="ml-1" size="20">check</v-icon>
     <v-icon v-if="actionResult.triggerAutomatically">mdi-alpha-a</v-icon>
 </v-btn>
+  <v-btn class="multi-link-button"
+      v-else-if="actionResult.actionTypeId === 1 && !actionResult.hideFromWeb"
+      @click="followMultipleLinks(actionResult)"
+  >
+    {{ actionResult.actionName }}
+  </v-btn>
 </template>
 
 <script>
-
-import {handleHidingGlobalLoader, postRequest} from '@/helpers/helpers'
-import {AppMutations} from '@/stores/AppStore'
 
 export default {
   name: 'ActionButton',
   props: {
     actionResult: Object,
-    blockPerform: Boolean, //this value can stop an otherwise performable action. used when an entire process step is marked as readonly for a user
-    projectProcessStepId: Number,
-    handleOnComplete: Function,
-    handleOnCompleteError: Function
-  },
-  data () {
-    return {
-      proceed: !this.actionResult.triggerAutomatically && (this.actionResult.canPerform && !this.blockPerform) && this.$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'EDIT')
-    }
+    canPerformAction: Boolean,
+    completeAction: Function,
+    followMultipleLinks: Function
   },
   methods: {
     getColor () {
-      return this.proceed ? 'white' : null
+      return this.canPerformAction ? 'white' : null
     },
-    completeAction: async function () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/action/${this.actionResult.id}`)
-        if (status === 204 || status === 200) {
-          this.handleOnComplete(data)
-        } else {
-          this.handleOnCompleteError(this.actionResult.id)
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        this.handleOnCompleteError(this.actionResult.id, e.data.message)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
   }
 }
 </script>
@@ -67,5 +50,8 @@ export default {
 .action-button > .v-btn__content {
   color: white !important;
   text-transform: none;
+}
+.multi-link-button > .v-btn__content {
+  color: var(--v-primary-base) !important;
 }
 </style>
