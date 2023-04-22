@@ -6,6 +6,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.FeatureQuery;
 import com.albatross.api.v1.flow.queries.UserQuery;
 import com.albatross.api.v1.flow.services.CompanyService;
+import com.albatross.api.v1.flow.services.UserPositionService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,8 @@ import java.util.UUID;
 public class SecurityService implements UserDetailsService {
 
   @Autowired private UserService userService;
+
+  @Autowired private UserPositionService userPositionService;
 
   @Autowired private CompanyService companyService;
 
@@ -115,6 +118,11 @@ public class SecurityService implements UserDetailsService {
           List<FeatureAccessControl> results =
               getUserFeatureAccess(details.getId(), user.getCompanyId());
           user.setFeatureAccess(results);
+          UserPosition userPosition = userPositionService.getUserPrimaryPosition(user.getId(), user.getCompanyId());
+          if(userPosition != null) {
+            user.setUserPositionId(userPosition.getPositionId());
+            user.setPrimaryPosition(userPosition.getPosition());
+          } 
         }
 
       } else {

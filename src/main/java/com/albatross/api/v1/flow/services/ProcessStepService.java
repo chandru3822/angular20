@@ -68,6 +68,7 @@ public class ProcessStepService {
     params.put("readOnly", processStep.getReadonly());
     params.put("psId", processStep.getId());
     params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_READ_ONLY.id);
+    params.put("readOnlyAllow", processStep.getReadonlyAllow());
 
     sqlCache.updateBySql(ProcessStepQuery.saveReadOnly, params);
 

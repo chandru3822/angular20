@@ -83,6 +83,9 @@ public class ObjectTypeService {
     params.put("ownerReadOnly", companyObjectType.getOwnerReadOnly());
     params.put("cfgaId", null);
     params.put("whiteListTypeId", whiteListTypeId);
+    params.put("ownerReadOnlyAllow", companyObjectType.getOwnerReadOnlyAllow());
+    params.put("statusReadOnlyAllow", companyObjectType.getStatusReadOnlyAllow());
+
 
     if (savingStatusReadOnly) {
       // these all say "customFieldGroupAssignment" but really they are just generic whitelist

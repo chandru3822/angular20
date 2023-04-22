@@ -1,55 +1,22 @@
 <template>
   <v-container class="custom-field-group-container">
     <v-card flat color="primary lighten-9" class="square-card">
-      <v-card-title style="height: 40px" class="py-0">
-        Status Read Only
-        <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                    v-model="projectObjectType.statusReadOnly"></v-checkbox>
-      </v-card-title>
       <v-card-text>
-        <v-autocomplete
-          v-if="projectObjectType.statusReadOnly"
-          v-model="projectObjectType.statusReadOnlyWhiteListedPositions"
-          :items="positions"
-          :loading="positionsLoading"
-          :disabled="!userCanEdit"
-          multiple
-          clearable
-          label="White Listed Positions"
-          item-text="position"
-          item-value="positionId"
-          return-object
-          height="35px"
-          class="d-inline-block mr-3"
-          @change="statusReadOnlyPositionsChanged = true">
-          <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllPositions()"
-          >
-            <v-list-item-action>
-              <v-icon>{{ icon(projectObjectType) }}</v-icon>
-            </v-list-item-action>
-            <v-list-item-title>Select All</v-list-item-title>
-          </v-list-item>
-          <v-divider
-            slot="prepend-item"
-            class="mt-2"
-          ></v-divider>
-          <template
-            slot="selection"
-            slot-scope="{ item, index }"
-          >
-            <v-chip small
-                    v-if="index === 0 && projectObjectType.statusReadOnlyWhiteListedPositions && projectObjectType.statusReadOnlyWhiteListedPositions.length < 2">
-              <span>{{ item.position }}</span>
-            </v-chip>
-            <span
-              v-if="index === 1 && projectObjectType.statusReadOnlyWhiteListedPositions && projectObjectType.statusReadOnlyWhiteListedPositions.length >= 2"
-              class="primary--text text-caption"
-            >{{ projectObjectType.statusReadOnlyWhiteListedPositions.length }} selected</span>
-          </template>
-        </v-autocomplete>
+        <multi-select-group
+        v-if="!objectTypeDetailsLoading"
+        background-color="primary lighten-9"
+        :userCanEdit="userCanEdit"
+        :returnObject="projectObjectType"
+        :content="positions"
+        :dropdownEnabled="projectObjectType.statusReadOnly"
+        :selectedContent="projectObjectType.statusReadOnlyWhiteListedPositions"
+        :title="'Status Read Only'"
+        :label="'White Listed Positions'"
+        :allow="projectObjectType.statusReadOnlyAllow"
+        :contentLoading="objectTypeDetailsLoading"
+        @selected-changed="statusReadOnlySelectedEventListener"
+        @allow-changed="statusReadOnlyAllowEventListener"
+        @checkbox-changed="statusReadOnlyCheckboxEventListener"></multi-select-group>
         <br/>
         <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveReadOnlyAndWhiteList()">
@@ -59,54 +26,22 @@
       </v-card-text>
     </v-card>
     <v-card flat color="primary lighten-9" class="square-card mt-5">
-      <v-card-title style="height: 40px" class="py-0">
-        Owner Read Only
-        <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                    v-model="projectObjectType.ownerReadOnly"></v-checkbox>
-      </v-card-title>
       <v-card-text>
-        <v-autocomplete
-          v-if="projectObjectType.ownerReadOnly"
-          v-model="projectObjectType.ownerReadOnlyWhiteListedPositions"
-          :items="positions"
-          :loading="positionsLoading"
-          multiple
-          clearable
-          label="White Listed Positions"
-          item-text="position"
-          item-value="positionId"
-          return-object
-          height="35px"
-          class="d-inline-block mr-3"
-          @change="ownerReadOnlyPositionsChanged = true">
-          <v-list-item
-            slot="prepend-item"
-            ripple
-            @click="toggleSelectAllPositionsOwner()"
-          >
-            <v-list-item-action>
-              <v-icon>{{ icon(projectObjectType) }}</v-icon>
-            </v-list-item-action>
-            <v-list-item-title>Select All</v-list-item-title>
-          </v-list-item>
-          <v-divider
-            slot="prepend-item"
-            class="mt-2"
-          ></v-divider>
-          <template
-            slot="selection"
-            slot-scope="{ item, index }"
-          >
-            <v-chip small
-                    v-if="index === 0 && projectObjectType.ownerReadOnlyWhiteListedPositions && projectObjectType.ownerReadOnlyWhiteListedPositions.length < 2">
-              <span>{{ item.position }}</span>
-            </v-chip>
-            <span
-              v-if="index === 1 && projectObjectType.ownerReadOnlyWhiteListedPositions && projectObjectType.ownerReadOnlyWhiteListedPositions.length >= 2"
-              class="primary--text text-caption"
-            >{{ projectObjectType.ownerReadOnlyWhiteListedPositions.length }} selected</span>
-          </template>
-        </v-autocomplete>
+        <multi-select-group
+          v-if="!objectTypeDetailsLoading"
+          background-color="primary lighten-9"
+          :userCanEdit="userCanEdit"
+          :returnObject="projectObjectType"
+          :content="positions"
+          :dropdownEnabled="projectObjectType.ownerReadOnly"
+          :selectedContent="projectObjectType.ownerReadOnlyWhiteListedPositions"
+          :title="'Owner Read Only'"
+          :label="'White Listed Positions'"
+          :allow="projectObjectType.ownerReadOnlyAllow"
+          :contentLoading="objectTypeDetailsLoading"
+          @selected-changed="ownerReadOnlySelectedEventListener"
+          @allow-changed="ownerReadOnlyAllowEventListener"
+          @checkbox-changed="ownerReadOnlyCheckboxEventListener"></multi-select-group>
         <br/>
         <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
                @click="saveOwnerReadOnlyAndWhiteList()">
@@ -141,6 +76,7 @@
         companyId: this.$store.state.user.details.companyId,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+        objectTypeDetailsLoading: false
 
       }
     },
@@ -238,15 +174,37 @@
       async getObjectTypeDetails () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          this.objectTypeDetailsLoading = true;
           const {data, status} = await getRequest(`/objectType/getByType/1`)
           this.projectObjectType = data
           handleHidingGlobalLoader(this, status)
+          this.objectTypeDetailsLoading = false;
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Details')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
+      },
+      statusReadOnlySelectedEventListener(e){
+        this.projectObjectType.statusReadOnlyWhiteListedPositions = e;
+        this.statusReadOnlyPositionsChanged = true;
+      },
+      statusReadOnlyAllowEventListener(e){
+        this.projectObjectType.statusReadOnlyAllow = (e === 0);
+      },
+      statusReadOnlyCheckboxEventListener(e){
+        this.projectObjectType.statusReadOnly = e;
+      },
+      ownerReadOnlySelectedEventListener(e){
+        this.projectObjectType.ownerReadOnlyWhiteListedPositions = e;
+        this.ownerReadOnlyPositionsChanged = true;
+      },
+      ownerReadOnlyAllowEventListener(e){
+        this.projectObjectType.ownerReadOnlyAllow = (e === 0);
+      },
+      ownerReadOnlyCheckboxEventListener(e){
+        this.projectObjectType.ownerReadOnly = e;
       },
     },
   }

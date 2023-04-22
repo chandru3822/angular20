@@ -11,6 +11,7 @@ public class WorkQueueCategoryQuery {
           color,
           display_order,
           hidden,
+          hidden_allow,
           case when :filtered is false then
             coalesce((
                                     SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -63,6 +64,7 @@ public class WorkQueueCategoryQuery {
   public final static String saveHidden = """
       update flow.work_queue_category
       set hidden = :hidden,
+          hidden_allow = :hiddenAllow,
           modified_by_id = :userId,
           date_modified = now()
       where id = :wqcId

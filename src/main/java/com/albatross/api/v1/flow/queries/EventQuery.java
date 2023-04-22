@@ -119,6 +119,13 @@ public class EventQuery {
                end_time_hidden,
                resource_read_only,
                resource_hidden,
+               start_time_read_only_allow,
+               start_time_hidden_allow,
+               end_time_read_only_allow,
+               end_time_hidden_allow,
+               resource_read_only_allow,
+               resource_hidden_allow,
+               hidden_allow,
                archived,
                hidden,
                coalesce((
@@ -361,7 +368,14 @@ public class EventQuery {
           end_time_read_only = :endTimeReadOnly,
           end_time_hidden = :endTimeHidden,
           resource_read_only = :resourceReadOnly,
-          resource_hidden = :resourceHidden
+          resource_hidden = :resourceHidden,
+          start_time_read_only_allow = :startTimeReadOnlyAllow,
+          start_time_hidden_allow = :startTimeHiddenAllow,
+          end_time_read_only_allow = :endTimeReadOnlyAllow,
+          end_time_hidden_allow = :endTimeHiddenAllow,
+          resource_read_only_allow = :resourceReadOnlyAllow,
+          resource_hidden_allow = :resourceHiddenAllow,
+          hidden_allow = :hiddenAllow
       where id = :id
     """;
 
@@ -686,6 +700,7 @@ public class EventQuery {
     public final static String saveHidden = """
     update flow.event
         set hidden = :hidden,
+        hidden_allow = :hiddenAllow,
         modified_by_id = :userId,
         date_modified = now()
         where id = :eventId

@@ -48,6 +48,8 @@ select cot.id,
            cot.archived,
            cot.status_read_only,
            cot.owner_read_only,
+           cot.owner_read_only_allow,
+           cot.status_read_only_allow,
             coalesce((
               SELECT array_to_json(array_agg(row_to_json(wlp)))
               FROM (
@@ -83,6 +85,7 @@ select cot.id,
   public final static String saveStatusReadOnly = """
     update flow.company_object_type
       set status_read_only = :statusReadOnly,
+          status_read_only_allow = :statusReadOnlyAllow,
           date_modified = now(),
           modified_by_id = :userId
     where id = :companyObjectTypeId
@@ -92,6 +95,7 @@ select cot.id,
   public final static String saveOwnerReadOnly = """
     update flow.company_object_type
       set owner_read_only = :ownerReadOnly,
+          owner_read_only_allow = :ownerReadOnlyAllow,
           date_modified = now(),
           modified_by_id = :userId
     where id = :companyObjectTypeId

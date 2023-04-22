@@ -164,7 +164,9 @@ public class CustomFieldGroupService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
+    params.put("cfgaReadOnlyAllow", customField.getCustomFieldGroupAssignmentReadOnlyAllow());
     params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());
+    params.put("cfgaHiddenAllow", customField.getCustomFieldGroupAssignmentHiddenAllow());
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
     params.put("whiteListTypeId", whiteListTypeId);
 

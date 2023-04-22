@@ -28,46 +28,62 @@
           </v-btn>
         </v-card>
         <v-card class="pa-4 mt-4">
-          <v-card-title class="title-medium pa-0 mb-4" style="height: 40px">Readonly
-          <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                                                               v-model="selectedEvent.readonly"></v-checkbox>
-          </v-card-title>
+<!--          <v-card-title class="title-medium pa-0 mb-4" style="height: 40px">Readonly-->
+<!--          <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"-->
+<!--                                                               v-model="selectedEvent.readonly"></v-checkbox>-->
+<!--          </v-card-title>-->
           <v-card-text>
-          <v-autocomplete
-              v-if="selectedEvent.readonly"
-            v-model="selectedEvent.readonlyWhiteListPositions"
-            :items="positions"
-            label="Whitelisted Positions"
-            item-text="position"
-            item-value="positionId"
-              :disabled="!userCanEdit"
-            return-object
-            multiple
-            clearable
-          >
-            <template v-slot:selection="{item, index}">
-              <v-chip small
-                      v-if="selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length < 6">
-                <span>{{ item.position }}</span>
-              </v-chip>
-              <span
-                  v-if="index === 1 && selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length >= 6"
-                  class="primary--text text-caption"
-              >{{ selectedEvent.readonlyWhiteListPositions.length }} selected</span>
-            </template>
-            <template v-slot:prepend-item>
-              <v-list-item
-                  @click="toggleSelectAllPositions()">
-                <v-list-item-action>
-                  <v-icon>{{ icon }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                  class="mt-2"
-              ></v-divider>
-            </template>
-          </v-autocomplete>
+            <multi-select-group
+              v-if="!eventLoading"
+              background-color="transparent"
+              :userCanEdit="userCanEdit"
+              :returnObject="selectedEvent"
+              :content="positions"
+              :dropdownEnabled="selectedEvent.readonly"
+              :selectedContent="selectedEvent.readonlyWhiteListPositions"
+              :title="'Read Only'"
+              :label="'White Listed Positions'"
+              :allow="selectedEvent.readonlyAllow"
+              :contentLoading="positionsLoading"
+              :fullSize="true"
+              @selected-changed="startTimeReadOnlySelectedEventListener"
+              @allow-changed="startTimeReadOnlyAllowEventListener"
+              @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
+<!--          <v-autocomplete-->
+<!--              v-if="selectedEvent.readonly"-->
+<!--            v-model="selectedEvent.readonlyWhiteListPositions"-->
+<!--            :items="positions"-->
+<!--            label="Whitelisted Positions"-->
+<!--            item-text="position"-->
+<!--            item-value="positionId"-->
+<!--              :disabled="!userCanEdit"-->
+<!--            return-object-->
+<!--            multiple-->
+<!--            clearable-->
+<!--          >-->
+<!--            <template v-slot:selection="{item, index}">-->
+<!--              <v-chip small-->
+<!--                      v-if="selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length < 6">-->
+<!--                <span>{{ item.position }}</span>-->
+<!--              </v-chip>-->
+<!--              <span-->
+<!--                  v-if="index === 1 && selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length >= 6"-->
+<!--                  class="primary&#45;&#45;text text-caption"-->
+<!--              >{{ selectedEvent.readonlyWhiteListPositions.length }} selected</span>-->
+<!--            </template>-->
+<!--            <template v-slot:prepend-item>-->
+<!--              <v-list-item-->
+<!--                  @click="toggleSelectAllPositions()">-->
+<!--                <v-list-item-action>-->
+<!--                  <v-icon>{{ icon }}</v-icon>-->
+<!--                </v-list-item-action>-->
+<!--                <v-list-item-title>Select All</v-list-item-title>-->
+<!--              </v-list-item>-->
+<!--              <v-divider-->
+<!--                  class="mt-2"-->
+<!--              ></v-divider>-->
+<!--            </template>-->
+<!--          </v-autocomplete>-->
           </v-card-text>
           <v-btn color="primary" v-if="userCanEdit"
                  @click="saveReadOnlyWhiteList(selectedEvent)"
@@ -1554,6 +1570,16 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    startTimeReadOnlySelectedEventListener(e){
+      this.selectedEvent.readonlyWhiteListPositions = e;
+      this.selectedEvent.positionsChanged = true;
+    },
+    startTimeReadOnlyAllowEventListener(e){
+      this.selectedEvent.readonlyAllow = (e === 0);
+    },
+    startTimeReadOnlyCheckboxEventListener(e){
+      this.selectedEvent.readonly = e;
     },
   }
 

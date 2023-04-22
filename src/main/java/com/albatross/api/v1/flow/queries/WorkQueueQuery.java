@@ -12,6 +12,7 @@ public class WorkQueueQuery {
                wqt.short_window,
                wqt.long_window,
                wqt.hidden,
+               wqt.hidden_allow,
                wqt.expected_cycle,
                wqt.inverse_expectation,
                wqt.use_event_data,
@@ -65,6 +66,7 @@ public class WorkQueueQuery {
                wqt.short_window,
                wqt.long_window,
                wqt.hidden,
+               wqt.hidden_allow,
                wqt.expected_cycle,
                wqt.inverse_expectation,
                wqt.use_event_data,
@@ -129,7 +131,7 @@ public class WorkQueueQuery {
 
   //language=PostgreSQL
   public final static String userCanAccessData = """
-    select case when wqt.hidden and not :hiddenWqtOverride then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
+    select case when ((wqt.hidden and wqt.hidden_allow) or not (wqt.hidden or wqt.hidden_allow)) and not :hiddenWqtOverride then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                               FROM flow.white_listed_position wlp
                                                               WHERE wlp.white_list_type_id = 10
                                                                 AND wlp.archived is not true

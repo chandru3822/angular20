@@ -13,6 +13,6 @@ import java.util.List;
 public class WorkQueueCategory {
     private Long id, companyId, displayOrder;
     private String workQueueCategory, color;
-    private Boolean archived, hidden;
+    private Boolean archived, hidden, hiddenAllow;
     private List<WhiteListedPosition> hiddenWhiteListedPositions;
 }

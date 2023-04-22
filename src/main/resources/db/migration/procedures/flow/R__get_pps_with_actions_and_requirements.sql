@@ -255,7 +255,18 @@ BEGIN
                                           WHERE psal.process_step_action_id = psa.id
                                             and psal.archived is not true
                                           order by l.link
-                                      ) links), '[]') AS "processStepActionLinks"
+                                      ) links), '[]') AS "processStepActionLinks",
+							(select ppsa.date_created
+                                     from flow.project_process_step_action ppsa
+                                     where ppsa.project_process_step_id = pps.id
+										and ppsa.process_step_action_id = psa.id
+                                     order by ppsa.date_created desc limit 1) as "actionRunDate",
+							(select concat(u.first_name, ' ', left(u.last_name, 1))
+							from flow.project_process_step_action ppsa
+								     inner join flow."user" u on ppsa.created_by_id = u.id
+							where ppsa.project_process_step_id = pps.id
+							  and ppsa.process_step_action_id = psa.id
+							order by ppsa.date_created desc limit 1) as "actionRunBy"
                 from flow.process_step_action psa
                          left join flow.company_process_step_status_type cpsst on cpsst.id = psa.company_process_step_status_type_id
                          left join flow.company_project_status_type cpst on cpst.id = psa.company_project_status_type_id
