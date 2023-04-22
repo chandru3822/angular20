@@ -182,54 +182,22 @@
               <v-toolbar-title class="app-title">Process Step Access Control</v-toolbar-title>
             </v-toolbar>
             <v-card flat color="rowShadeCustom" class="square-card mt-2">
-              <v-card-title style="height: 40px" class="py-0">
-                Read Only
-                <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                            v-model="processStep.readonly"></v-checkbox>
-              </v-card-title>
               <v-card-text>
-                <v-autocomplete
-                  v-if="processStep.readonly"
-                  v-model="processStep.whiteListedPositions"
-                  :items="positions"
-                  :loading="positionsLoading"
-                  multiple
-                  clearable
-                  label="White Listed Positions"
-                  item-text="position"
-                  item-value="positionId"
-                  return-object
-                  height="35px"
-                  class="d-inline-block mr-3"
-                  @change="readOnlyPositionsChanged = true">
-                  <v-list-item
-                    slot="prepend-item"
-                    ripple
-                    @click="toggleSelectAllPositionsOwner()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ iconOwner() }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                    slot="prepend-item"
-                    class="mt-2"
-                  ></v-divider>
-                  <template
-                    slot="selection"
-                    slot-scope="{ item, index }"
-                  >
-                    <v-chip small
-                            v-if="index === 0 && processStep.whiteListedPositions && processStep.whiteListedPositions.length < 2">
-                      <span>{{ item.position }}</span>
-                    </v-chip>
-                    <span
-                      v-if="index === 1 && processStep.whiteListedPositions && processStep.whiteListedPositions.length >= 2"
-                      class="primary--text text-caption"
-                    >{{ processStep.whiteListedPositions.length }} selected</span>
-                  </template>
-                </v-autocomplete>
+                <multi-select-group
+                  v-if="!positionsLoading"
+                  background-color="transparent"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="processStep"
+                  :content="positions"
+                  :dropdownEnabled="processStep.readonly"
+                  :selectedContent="processStep.whiteListedPositions"
+                  :title="'Read Only'"
+                  :label="'White Listed Positions'"
+                  :allow="processStep.readonlyAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="startTimeReadOnlySelectedEventListener"
+                  @allow-changed="startTimeReadOnlyAllowEventListener"
+                  @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
                 <br/>
                 <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
                        @click="saveReadOnlyAndWhiteList()">
@@ -609,7 +577,17 @@ export default {
         this.deleteTypeFromStep(this.deleteAttachment.id)
         this.deleteAttachment = null
       }
-    }
+    },
+    startTimeReadOnlySelectedEventListener(e){
+      this.processStep.whiteListedPositions = e;
+      this.readOnlyPositionsChanged = true;
+    },
+    startTimeReadOnlyAllowEventListener(e){
+      this.processStep.readonlyAllow = (e === 0);
+    },
+    startTimeReadOnlyCheckboxEventListener(e){
+      this.processStep.readonly = e;
+    },
   }
 
 }

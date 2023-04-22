@@ -272,7 +272,71 @@ public class ProjectService {
     Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
       Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
       if (result.isPresent()) {
-          return result;
+
+          boolean statusWhiteListed = false;
+          boolean statusAllowFlag = result.get().getStatusReadOnlyAllow();
+
+          //Checks if the user's position is in the whitelist
+          for(int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++){
+            if(result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+              statusWhiteListed = true;
+            }
+          }
+
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if(!statusAllowFlag){
+            statusWhiteListed = !statusWhiteListed;
+          }
+
+          //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+          if(statusWhiteListed && !statusAllowFlag){
+            WhiteListedPosition position = new WhiteListedPosition();
+            position.setPositionId(user.getUserPositionId());
+            result.get().getStatusReadOnlyWhiteListedPositions().add(position);
+          }
+          //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+          else if(!statusWhiteListed && !statusAllowFlag){
+            for(int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++){
+              if(result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+                result.get().getStatusReadOnlyWhiteListedPositions().remove(x);
+                x--;
+              }
+            }
+          }
+          result.get().setStatusReadOnly(!statusWhiteListed);
+
+        boolean ownerWhiteListed = false;
+        boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
+
+        //Checks if the user's position is in the whitelist
+        for(int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
+          if(result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+            ownerWhiteListed = true;
+          }
+        }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if(!ownerAllowFlag){
+          ownerWhiteListed = !ownerWhiteListed;
+        }
+
+        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+        if(ownerWhiteListed && !ownerAllowFlag){
+          WhiteListedPosition position = new WhiteListedPosition();
+          position.setPositionId(user.getUserPositionId());
+          result.get().getOwnerReadOnlyWhiteListedPositions().add(position);
+        }
+        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+        else if(!ownerWhiteListed && !ownerAllowFlag){
+          for(int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
+            if(result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+              result.get().getOwnerReadOnlyWhiteListedPositions().remove(x);
+              x--;
+            }
+          }
+        }
+        result.get().setOwnerReadOnly(!ownerWhiteListed);
+        return result;
       } else {
           throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
       }

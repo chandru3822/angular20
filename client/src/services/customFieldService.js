@@ -37,17 +37,21 @@ export function getEventCustomFieldReadOnly(store, field) {
   return readonly
 }
 
-export function getEventDefaultFieldReadOnly(store, whiteListedPositions, fieldReadOnlyValue) {
+export function getEventDefaultFieldReadOnly(store, whiteListedPositions, fieldReadOnlyValue, allowFlag) {
   let readonly = false
   if (whiteListedPositions?.length > 0) {
     //do any of the user's active positions match the white listed positions
-    readonly = !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId))
+    readonly = allowFlag ? !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId)) : store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId));
   } else if (fieldReadOnlyValue) {
     //the field is marked as readonly but there are no whitelisted positions.  always readonly
     readonly = true
   }
 
   return readonly
+}
+
+export function getUserPositionIds(store) {
+  return store.getters.getUserPositionIds;
 }
 //
 // export function getEventCustomFieldHidden(store, field) {
@@ -68,11 +72,11 @@ export function getEventDefaultFieldReadOnly(store, whiteListedPositions, fieldR
 //     return hidden
 // }
 
-export function getEventDefaultFieldHidden(store, whiteListedPositions, fieldHiddenValue) {
+export function getEventDefaultFieldHidden(store, whiteListedPositions, fieldHiddenValue, hiddenFlag) {
   let hidden = false
   if (whiteListedPositions?.length > 0) {
     //do any of the user's active positions match the white listed positions
-    hidden = !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId))
+    hidden = hiddenFlag ? !store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId)) : store.getters.userHasAnyPosition(whiteListedPositions?.map(wlp => wlp.positionId))
   } else if (fieldHiddenValue) {
     //the field is marked as hidden but there are no whitelisted positions.  always hidden
     hidden = true

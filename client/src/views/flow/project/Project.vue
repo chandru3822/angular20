@@ -432,8 +432,6 @@ export default {
     projectStatusIsReadOnly() {
       if(this.is7oaksAdmin) {
         return false
-      } else if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.statusReadOnly
       }

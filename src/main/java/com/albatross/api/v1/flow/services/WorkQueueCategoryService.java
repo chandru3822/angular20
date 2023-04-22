@@ -77,7 +77,7 @@ public class WorkQueueCategoryService {
     params.put("hidden", workQueueCategory.getHidden());
     params.put("wqcId", workQueueCategory.getId());
     params.put("whiteListTypeId", WhiteListType.WORK_QUEUE_CATEGORY_HIDDEN.id);
-
+    params.put("hiddenAllow", workQueueCategory.getHiddenAllow());
     sqlCache.updateBySql(WorkQueueCategoryQuery.saveHidden, params);
 
     if (!workQueueCategory.getHidden()) {

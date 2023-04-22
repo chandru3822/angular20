@@ -79,6 +79,7 @@ public class WorkQueueTypeQuery {
                wqc.display_order as work_queue_category_display_order,
                wqt.short_window,
                wqt.hidden,
+               wqt.hidden_allow,
               coalesce((
                                   SELECT array_to_json(array_agg(row_to_json(wlp)))
                                   FROM (
@@ -130,6 +131,7 @@ public class WorkQueueTypeQuery {
   public final static String saveHidden = """
     update flow.work_queue_type
        set hidden = :hidden,
+           hidden_allow = :hiddenAllow,
            modified_by_id = :userId,
            date_modified = now()
        where id = :wqtId

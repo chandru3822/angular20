@@ -151,64 +151,28 @@
         <v-toolbar flat class="wqt-header-bar">
           <v-toolbar-title class="app-title">Work Queue Access Control</v-toolbar-title>
         </v-toolbar>
-        <v-card flat color="rowShadeCustom" class="square-card my-2">
-          <v-card-title style="height: 40px" class="py-0 grey--text text--darken-1">
-            Hidden
-            <v-checkbox :disabled="!this.userCanEdit" type="checkbox" class="ml-3"
-                        v-model="workQueueType.hidden"></v-checkbox>
-          </v-card-title>
-          <v-card-text>
-            <v-autocomplete
-              v-if="workQueueType.hidden"
-              v-model="workQueueType.hiddenWhiteListedPositions"
-              :items="positions"
-              :loading="positionsLoading"
-              :disabled="!this.userCanEdit"
-              multiple
-              clearable
-              label="White Listed Positions"
-              item-text="position"
-              item-value="positionId"
-              return-object
-              height="35px"
-              class="d-inline-block mr-3"
-              @change="hiddenPositionsChanged = true">
-              <v-list-item
-                slot="prepend-item"
-                ripple
-                @click="toggleSelectAllPositions()"
-              >
-                <v-list-item-action>
-                  <v-icon>{{ iconOwner() }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                slot="prepend-item"
-                class="mt-2"
-              ></v-divider>
-              <template
-                slot="selection"
-                slot-scope="{ item, index }"
-              >
-                <v-chip small
-                        v-if="index === 0 && workQueueType.hiddenWhiteListedPositions && workQueueType.hiddenWhiteListedPositions.length < 2">
-                  <span>{{ item.position }}</span>
-                </v-chip>
-                <span
-                  v-if="index === 1 && workQueueType.hiddenWhiteListedPositions && workQueueType.hiddenWhiteListedPositions.length >= 2"
-                  class="primary--text text-caption"
-                >{{ workQueueType.hiddenWhiteListedPositions.length }} selected</span>
-              </template>
-            </v-autocomplete>
+        <multi-select-group
+          v-if="!workQueueLoading"
+          :userCanEdit="userCanEdit"
+          :returnObject="workQueueType"
+          :content="positions"
+          :dropdownEnabled="workQueueType.hidden"
+          :selectedContent="workQueueType.hiddenWhiteListedPositions"
+          :title="'Hidden'"
+          :label="'White Listed Positions'"
+          :allow="workQueueType.hiddenAllow"
+          :contentLoading="positionsLoading"
+          backgroundColor="transparent"
+          @selected-changed="workQueueTypeHiddenSelectedEventListener"
+          @allow-changed="workQueueTypeHiddenAllowEventListener"
+          @checkbox-changed="workQueueTypeHiddenCheckboxEventListener"></multi-select-group>
             <br/>
             <v-btn v-if="this.userCanEdit" color="primary" dark class="d-inline-block white--text"
                    @click="saveHiddenAndWhiteList()">
               <v-icon class="mr-2">save</v-icon>
               Save
             </v-btn>
-          </v-card-text>
-        </v-card>
+
       </v-col>
     </v-row>
     <v-row v-if="workQueueType && workQueueType.id && !workQueueType.useEventData">
@@ -327,6 +291,7 @@ export default {
       expectedTargetRule: getMinMaxRule(0, 1),
       workQueueTypeId: this.$route.params.id,
       workQueueType: {},
+      workQueueLoading: false,
       positions: [],
       itemsUsingType: [],
       positionsLoading: false,
@@ -444,7 +409,7 @@ export default {
     async saveHiddenAndWhiteList () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${this.hiddenPositionsChanged ?? false}`, this.workQueueType)
+        const {status} = await putRequest(`/workQueueType/saveHiddenAndWhiteList?savePositions=${this.workQueueType.hiddenWhiteListedPositionsChanged ?? false}`, this.workQueueType)
         this.hiddenPositionsChanged = false
         if(!this.workQueueType.hidden) {
           this.workQueueType.hiddenWhiteListedPositions = []
@@ -505,11 +470,13 @@ export default {
     },
     async getWorkQueueType() {
       try {
+        this.workQueueLoading = true;
         const {data, status} = await getRequest(`/workQueueType/${this.workQueueTypeId}`)
         this.workQueueType = data
         if (this.workQueueType.schedule.length < 1) {
           this.workQueueType.schedule = this.noScheduleDefault;
         }
+        this.workQueueLoading = false;
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Types')
@@ -602,7 +569,18 @@ export default {
     },
     savePrevSchedule() {
       this.prevSchedule = JSON.parse(JSON.stringify(this.workQueueType.schedule));
-    }
+    },
+    workQueueTypeHiddenSelectedEventListener(e){
+      this.workQueueType.hiddenWhiteListedPositions = e;
+      this.workQueueType.hiddenWhiteListedPositionsChanged = true;
+    },
+    workQueueTypeHiddenAllowEventListener(e){
+      this.workQueueType.hiddenAllow = (e === 0);
+    },
+    workQueueTypeHiddenCheckboxEventListener(e){
+      this.workQueueType.hidden = e;
+    },
+
   },
 
 

@@ -84,6 +84,7 @@ public class WorkQueueTypeService {
     params.put("hidden", workQueueType.getHidden());
     params.put("wqtId", workQueueType.getId());
     params.put("whiteListTypeId", WhiteListType.WORK_QUEUE_TYPE_HIDDEN.id);
+    params.put("hiddenAllow", workQueueType.getHiddenAllow());
 
     sqlCache.updateBySql(WorkQueueTypeQuery.saveHidden, params);
 

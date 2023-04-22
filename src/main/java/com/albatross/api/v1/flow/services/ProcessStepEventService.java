@@ -109,6 +109,7 @@ public class ProcessStepEventService {
       params.put("companyId", currentUser.getCompanyId());
       params.put("processStepEventId", processStepEvent.getId());
       params.put("readOnly", processStepEvent.getReadonly());
+      params.put("readOnlyAllow", processStepEvent.getReadonlyAllow());
       params.put("eventId", processStepEvent.getEventId());
       params.put("processStepId", processStepEvent.getProcessStepId());
       params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY.id);
