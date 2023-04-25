@@ -96,7 +96,7 @@ BEGIN
         if v_sql is not null then
           v_insert_sql = $$insert into flow.data_view_update(generated_update)
           ($$||v_sql||$$);$$;
-          raise notice 'v_insert_sql: %', v_sql;
+          --raise notice 'v_insert_sql: %', v_sql;
           --raise notice 'v_sql: %', v_sql;
          execute  v_insert_sql;
         end if;
@@ -126,12 +126,12 @@ BEGIN
       v_sql = 'update ' || v_schema_name || '.' || v_view_name || ' set ' || v_field_to_update || ' = ''' ||
               x.lov_new_name || ''' where ' || v_field_to_update || ' = ''' || x.lov_old_name || ''';';
 
---       if v_sql is not  null then
--- --        raise notice 'v_sql_line: %', v_sql;
---         execute v_sql;
---       end if;
+      if v_sql is not  null then
+--        raise notice 'v_sql_line: %', v_sql;
+        execute v_sql;
+      end if;
     end loop;
-  -- call flow.process_data_view_updates();
+   call flow.process_data_view_updates();
 END
 $BODY$
   LANGUAGE plpgsql;
