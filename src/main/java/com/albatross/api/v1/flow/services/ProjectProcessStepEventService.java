@@ -135,6 +135,7 @@ public class ProjectProcessStepEventService {
   }
 
   public Optional<ProjectProcessStepEvent> getPpsEvent(Long ppsId, Long ppsEventId) throws Exception {
+    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", ppsEventId);
     params.put("ppsId", ppsId);
@@ -186,6 +187,38 @@ public class ProjectProcessStepEventService {
           action.setCanPerform(canPerformEventAction(event, action, requirements));
         }
       }
+
+      boolean whiteListed = false;
+      boolean allowFlag = result.get().getReadonlyAllow();
+
+      //Checks if the user's position is in the whitelist
+      for(int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++){
+        if(result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+          whiteListed = true;
+        }
+      }
+
+      //If the flag is set to deny, flip the whitelist to be a deny list
+      if(!allowFlag){
+        whiteListed = !whiteListed;
+      }
+
+      //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+      if(whiteListed && !allowFlag){
+        WhiteListedPosition position = new WhiteListedPosition();
+        position.setPositionId(user.getUserPositionId());
+        result.get().getReadonlyWhiteListedPositions().add(position);
+      }
+      //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+      else if(!whiteListed && !allowFlag){
+        for(int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++){
+          if(result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+            result.get().getReadonlyWhiteListedPositions().remove(x);
+            x--;
+          }
+        }
+      }
+      result.get().setReadonly(!whiteListed);
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }

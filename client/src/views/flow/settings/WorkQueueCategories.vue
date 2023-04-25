@@ -232,9 +232,12 @@
       },
       workQueueCategoriesHiddenAllowEventListener(e){
         this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenAllow = (e === 0);
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
       },
       workQueueCategoriesHiddenCheckboxEventListener(e){
         this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hidden = e;
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
+
       },
       selectAllHidden (wqc) {
         return wqc.hiddenWhiteListedPositions?.length === this.positions?.length
@@ -282,10 +285,10 @@
       async saveHiddenAndWhiteList (item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${item.hiddenPositionsChanged ?? false}`, item)
+          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged ?? false}`, this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder])
           this.hiddenPositionsChanged = false
-          if(!item.hidden) {
-            item.hiddenWhiteListedPositions = []
+          if(!this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hidden) {
+            this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenWhiteListedPositions = []
           }
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
