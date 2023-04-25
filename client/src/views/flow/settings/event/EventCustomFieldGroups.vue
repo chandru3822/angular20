@@ -27,105 +27,39 @@
                 hide-details
               ></v-text-field>
               <v-row class="flex-display">
-              <v-card flat color="primary lighten-9" class="square-card flex-grow-1" style="width: 50%">
-                <v-card-title style="height: 40px" class="py-0 title-medium flex-display align-center">
-                  Read Only
-                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                              v-model="event.startTimeReadOnly"></v-checkbox>
-                </v-card-title>
-                <v-card-text>
-                  <v-autocomplete
-                    v-if="event.startTimeReadOnly"
-                    v-model="event.startTimeWhiteListedPositions"
-                    :items="positions"
-                    :loading="positionsLoading"
-                    multiple
-                    clearable
-                    label="White Listed Positions"
-                    item-text="position"
-                    item-value="positionId"
-                    return-object
-                    height="35px"
-                    class="mr-3 mt-3"
-                    @change="event.startTimePositionsChanged = true">
-                    <template v-slot:prepend-item>
-                    <v-list-item
-                      ripple
-                      @click="[event.startTimePositionsChanged = true, toggleSelectAllPositions(event, 'startTimeWhiteListedPositions')]"
-                    >
-                      <v-list-item-action>
-                        <v-icon>{{ icon(event, 'startTimeWhiteListedPositions') }}</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item>
-                    <v-divider
-                      class="mt-2"
-                    ></v-divider>
-                    </template>
-                    <template v-slot:selection="{ item, index }">
-                      <v-chip small
-                              v-if="index === 0 && event.startTimeWhiteListedPositions && event.startTimeWhiteListedPositions.length < 2">
-                        <span>{{ item.position }}</span>
-                      </v-chip>
-                      <span
-                        v-if="index === 1 && event.startTimeWhiteListedPositions && event.startTimeWhiteListedPositions.length >= 2"
-                        class="primary--text text-caption"
-                      >{{ event.startTimeWhiteListedPositions.length }} selected</span>
-                    </template>
-                  </v-autocomplete>
-                </v-card-text>
-              </v-card>
-              <v-card flat color="primary lighten-9" class="square-card flex-grow-1" style="width: 50%">
-                <v-card-title style="height: 40px" class="py-0 title-medium">
-                  Hidden
-                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-2"
-                              v-model="event.startTimeHidden"></v-checkbox>
-                </v-card-title>
-                <v-card-text>
-                  <v-autocomplete
-                      v-if="event.startTimeHidden"
-                      v-model="event.startTimeHiddenWhiteListedPositions"
-                      :items="positions"
-                      :loading="positionsLoading"
-                      multiple
-                      clearable
-                      label="White Listed Positions"
-                      item-text="position"
-                      item-value="positionId"
-                      return-object
-                      height="35px"
-                      class="mr-3 mt-3"
-                      @change="event.startTimeHiddenPositionsChanged = true"
-                  >
-                    <template v-slot:prepend-item>
-                    <v-list-item
-                        ripple
-                        @click="event.startTimeHiddenPositionsChanged = true; toggleHiddenSelectAllPositions(event, 'startTimeHiddenWhiteListedPositions')"
-                    >
-                      <v-list-item-action>
-                        <v-icon>{{ icon(event, 'startTimeHiddenWhiteListedPositions') }}</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item>
-                    <v-divider
-                        class="mt-2"
-                    ></v-divider>
-                    </template>
-                    <template
-                        v-slot:selection="{ item, index }"
-                    >
-                      <v-chip small
-                              v-if="index === 0 && event.startTimeHiddenWhiteListedPositions && event.startTimeHiddenWhiteListedPositions.length < 2">
-                        <span>{{ item.position }}</span>
-                      </v-chip>
-                      <span
-                          v-if="index === 1 && event.startTimeHiddenWhiteListedPositions && event.startTimeHiddenWhiteListedPositions.length >= 2"
-                          class="primary--text text-caption"
-                      >{{ event.startTimeHiddenWhiteListedPositions.length }} selected</span>
-                    </template>
-                  </v-autocomplete>
-                </v-card-text>
-              </v-card>
+                <multi-select-group
+                  v-if="!eventLoading"
+                  background-color="primary lighten-9"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="event"
+                  :content="positions"
+                  :dropdownEnabled="event.startTimeReadOnly"
+                  :selectedContent="event.startTimeWhiteListedPositions"
+                  :title="'Read Only'"
+                  :label="'White Listed Positions'"
+                  :allow="event.startTimeReadOnlyAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="startTimeReadOnlySelectedEventListener"
+                  @allow-changed="startTimeReadOnlyAllowEventListener"
+                  @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
+
+
+                <multi-select-group
+                  v-if="!eventLoading"
+                  background-color="primary lighten-9"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="event"
+                  :content="positions"
+                  :dropdownEnabled="event.startTimeHidden"
+                  :selectedContent="event.startTimeHiddenWhiteListedPositions"
+                  :title="'Hidden'"
+                  :label="'White Listed Positions'"
+                  :allow="event.startTimeHiddenAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="startTimeHiddenSelectedEventListener"
+                  @allow-changed="startTimeHiddenAllowEventListener"
+                  @checkbox-changed="startTimeHiddenCheckboxEventListener"></multi-select-group>
+
               </v-row>
             </v-col>
             <v-col style="height: 0" cols="0" md="1"></v-col>
@@ -138,105 +72,38 @@
                 hide-details
               ></v-text-field>
               <v-row class="flex-display">
-              <v-card flat color="primary lighten-9" class="square-card" style="width: 50%">
-                <v-card-title style="height: 40px" class="py-0 title-medium">
-                  Read Only
-                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                              v-model="event.endTimeReadOnly"></v-checkbox>
-                </v-card-title>
-                <v-card-text>
-                  <v-autocomplete
-                    v-if="event.endTimeReadOnly"
-                    v-model="event.endTimeWhiteListedPositions"
-                    :items="positions"
-                    :loading="positionsLoading"
-                    multiple
-                    clearable
-                    label="White Listed Positions"
-                    item-text="position"
-                    item-value="positionId"
-                    return-object
-                    height="35px"
-                    class="mr-3 mt-3"
-                    @change="event.endTimePositionsChanged = true">
-                    <template v-slot:prepend-item>
-                    <v-list-item
-                      ripple
-                      @click="[event.endTimePositionsChanged = true, toggleSelectAllPositions(event, 'endTimeWhiteListedPositions')]"
-                    >
-                      <v-list-item-action>
-                        <v-icon>{{ icon(event, 'endTimeWhiteListedPositions') }}</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item>
-                    <v-divider class="mt-2"></v-divider>
-                    </template>
-                    <template
-                      v-slot:selection="{ item, index }"
-                    >
-                      <v-chip small
-                              v-if="index === 0 && event.endTimeWhiteListedPositions && event.endTimeWhiteListedPositions.length < 2">
-                        <span>{{ item.position }}</span>
-                      </v-chip>
-                      <span
-                        v-if="index === 1 && event.endTimeWhiteListedPositions && event.endTimeWhiteListedPositions.length >= 2"
-                        class="primary--text text-caption"
-                      >{{ event.endTimeWhiteListedPositions.length }} selected</span>
-                    </template>
-                  </v-autocomplete>
-                </v-card-text>
-              </v-card>
-                <v-card flat color="primary lighten-9" class="square-card" style="width: 50%">
-                  <v-card-title style="height: 40px" class="py-0 title-medium">
-                    Hidden
-                    <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                                v-model="event.endTimeHidden"></v-checkbox>
-                  </v-card-title>
-                  <v-card-text>
-                    <v-autocomplete
-                        v-if="event.endTimeHidden"
-                        v-model="event.endTimeHiddenWhiteListedPositions"
-                        :items="positions"
-                        :loading="positionsLoading"
-                        multiple
-                        clearable
-                        label="White Listed Positions"
-                        item-text="position"
-                        item-value="positionId"
-                        return-object
-                        height="35px"
-                        class="mr-3 mt-3"
-                        @change="event.endTimeHiddenPositionsChanged = true">
+                <multi-select-group
+                  v-if="!eventLoading"
+                  background-color="primary lighten-9"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="event"
+                  :content="positions"
+                  :dropdownEnabled="event.endTimeReadOnly"
+                  :selectedContent="event.endTimeWhiteListedPositions"
+                  :title="'Read Only'"
+                  :label="'White Listed Positions'"
+                  :allow="event.endTimeReadOnlyAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="endTimeReadOnlySelectedEventListener"
+                  @allow-changed="endTimeReadOnlyAllowEventListener"
+                  @checkbox-changed="endTimeReadOnlyCheckboxEventListener"></multi-select-group>
 
-                      <template v-slot:prepend-item>
-                        <v-list-item
-                            ripple
-                            @click="[event.endTimeHiddenPositionsChanged = true, toggleSelectAllPositions(event, 'endTimeHiddenWhiteListedPositions')]"
-                        >
-                          <v-list-item-action>
-                            <v-icon>{{ icon(event, 'endTimeHiddenWhiteListedPositions') }}</v-icon>
-                          </v-list-item-action>
-                          <v-list-item-title>Select All</v-list-item-title>
-                        </v-list-item>
-                        <v-divider
-                            class="mt-2"
-                        ></v-divider>
-                      </template>
-                      <template
-                          v-slot:selection="{ item, index }"
-                      >
-                        <v-chip small
-                                v-if="index === 0 && event.endTimeHiddenWhiteListedPositions && event.endTimeHiddenWhiteListedPositions.length < 2">
-                          <span>{{ item.position }}</span>
-                        </v-chip>
-                        <span
-                            v-if="index === 1 && event.endTimeHiddenWhiteListedPositions && event.endTimeHiddenWhiteListedPositions.length >= 2"
-                            class="primary--text text-caption"
-                        >{{ event.endTimeHiddenWhiteListedPositions.length }} selected</span>
-                      </template>
-                    </v-autocomplete>
-                  </v-card-text>
-                </v-card>
+                <multi-select-group
+                  v-if="!eventLoading"
+                  background-color="primary lighten-9"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="event"
+                  :content="positions"
+                  :dropdownEnabled="event.endTimeHidden"
+                  :selectedContent="event.endTimeHiddenWhiteListedPositions"
+                  :title="'Hidden'"
+                  :label="'White Listed Positions'"
+                  :allow="event.endTimeHiddenAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="endTimeHiddenSelectedEventListener"
+                  @allow-changed="endTimeHiddenAllowEventListener"
+                  @checkbox-changed="endTimeHiddenCheckboxEventListener"></multi-select-group>
+
               </v-row>
             </v-col>
           </v-row>
@@ -253,102 +120,37 @@
                 item-value="id"
               ></v-autocomplete>
               <v-row class="flex-display">
-              <v-card flat color="primary lighten-9" class="square-card" style="width:50%">
-                <v-card-title style="height: 40px" class="py-0 title-medium">
-                  Read Only
-                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                              v-model="event.resourceReadOnly"></v-checkbox>
-                </v-card-title>
-                <v-card-text>
-                  <v-autocomplete
-                    v-if="event.resourceReadOnly"
-                    v-model="event.resourceWhiteListedPositions"
-                    :items="positions"
-                    :loading="positionsLoading"
-                    multiple
-                    clearable
-                    label="White Listed Positions"
-                    item-text="position"
-                    item-value="positionId"
-                    return-object
-                    height="35px"
-                    class="mr-3 mt-3"
-                    @change="event.resourcePositionsChanged = true">
-                    <template v-slot:prepend-item>
-                    <v-list-item
-                      ripple
-                      @click="[event.resourcePositionsChanged = true, toggleSelectAllPositions(event, 'resourceWhiteListedPositions')]"
-                    >
-                      <v-list-item-action>
-                        <v-icon>{{ icon(event, 'resourceWhiteListedPositions') }}</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item>
-                    <v-divider class="mt-2"></v-divider>
-                    </template>
-                    <template
-                      v-slot:selection="{ item, index }"
-                    >
-                      <v-chip small
-                              v-if="index === 0 && event.resourceWhiteListedPositions && event.resourceWhiteListedPositions.length < 2">
-                        <span>{{ item.position }}</span>
-                      </v-chip>
-                      <span
-                        v-if="index === 1 && event.resourceWhiteListedPositions && event.resourceWhiteListedPositions.length >= 2"
-                        class="primary--text text-caption"
-                      >{{ event.resourceWhiteListedPositions.length }} selected</span>
-                    </template>
-                  </v-autocomplete>
-                </v-card-text>
-              </v-card>
-              <v-card flat color="primary lighten-9" class="square-card" style="width:50%">
-                <v-card-title style="height: 40px" class="py-0 title-medium">
-                  Hidden
-                  <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                              v-model="event.resourceHidden"></v-checkbox>
-                </v-card-title>
-                <v-card-text>
-                  <v-autocomplete
-                    v-if="event.resourceHidden"
-                    v-model="event.resourceHiddenWhiteListedPositions"
-                    :items="positions"
-                    :loading="positionsLoading"
-                    multiple
-                    clearable
-                    label="White Listed Positions"
-                    item-text="position"
-                    item-value="positionId"
-                    return-object
-                    height="35px"
-                    class="mr-3 mt-3"
-                    @change="event.resourceHiddenPositionsChanged = true">
-                    <template v-slot:prepend-item>
-                    <v-list-item
-                      ripple
-                      @click="[event.resourcePositionsChanged = true, toggleSelectAllPositions(event, 'resourceHiddenWhiteListedPositions')]"
-                    >
-                      <v-list-item-action>
-                        <v-icon>{{ icon(event, 'resourceHiddenWhiteListedPositions') }}</v-icon>
-                      </v-list-item-action>
-                      <v-list-item-title>Select All</v-list-item-title>
-                    </v-list-item>
-                    <v-divider class="mt-2"></v-divider>
-                    </template>
-                    <template
-                      v-slot:selection="{ item, index }"
-                    >
-                      <v-chip small
-                              v-if="index === 0 && event.resourceHiddenWhiteListedPositions && event.resourceHiddenWhiteListedPositions.length < 2">
-                        <span>{{ item.position }}</span>
-                      </v-chip>
-                      <span
-                        v-if="index === 1 && event.resourceHiddenWhiteListedPositions && event.resourceHiddenWhiteListedPositions.length >= 2"
-                        class="primary--text text-caption"
-                      >{{ event.resourceHiddenWhiteListedPositions.length }} selected</span>
-                    </template>
-                  </v-autocomplete>
-                </v-card-text>
-              </v-card>
+                <multi-select-group
+                  v-if="!eventLoading"
+                  background-color="primary lighten-9"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="event"
+                  :content="positions"
+                  :dropdownEnabled="event.resourceReadOnly"
+                  :selectedContent="event.resourceWhiteListedPositions"
+                  :title="'Read Only'"
+                  :label="'White Listed Positions'"
+                  :allow="event.resourceReadOnlyAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="resourceReadOnlySelectedEventListener"
+                  @allow-changed="resourceReadOnlyAllowEventListener"
+                  @checkbox-changed="resourceReadOnlyCheckboxEventListener"></multi-select-group>
+
+                <multi-select-group
+                  v-if="!eventLoading"
+                  background-color="primary lighten-9"
+                  :userCanEdit="userCanEdit"
+                  :returnObject="event"
+                  :content="positions"
+                  :dropdownEnabled="event.resourceHidden"
+                  :selectedContent="event.resourceHiddenWhiteListedPositions"
+                  :title="'Hidden'"
+                  :label="'White Listed Positions'"
+                  :allow="event.resourceHiddenAllow"
+                  :contentLoading="positionsLoading"
+                  @selected-changed="resourceHiddenSelectedEventListener"
+                  @allow-changed="resourceHiddenAllowEventListener"
+                  @checkbox-changed="resourceHiddenCheckboxEventListener"></multi-select-group>
               </v-row>
             </v-col>
           </v-row>
@@ -725,6 +527,7 @@ import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import MultiSelectGroup from "../../../../components/MultiSelectGroup";
 
 const WhiteListTypeEnum = Object.freeze({
   EVENT_START_TIME_READ_ONLY: 6,
@@ -739,6 +542,7 @@ export default {
   name: 'EventCustomFieldGroups',
   mixins: [Vue2Filters.mixin],
   components: {
+    MultiSelectGroup,
     ConfirmationDialog,
     draggable,
   },
@@ -856,15 +660,77 @@ export default {
     async getEvent() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.eventLoading = true;
         const {data} = await getRequest(`/event/${this.eventId}`)
         this.event = data
         this.$store.commit(AppMutations.SET_LOADING, false)
+        this.eventLoading = false;
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    startTimeReadOnlySelectedEventListener(e){
+      this.event.startTimeWhiteListedPositions = e;
+      this.event.startTimePositionsChanged = true;
+    },
+    startTimeReadOnlyAllowEventListener(e){
+      this.event.startTimeReadOnlyAllow = (e === 0);
+    },
+    startTimeReadOnlyCheckboxEventListener(e){
+      this.event.startTimeReadOnly = e;
+    },
+    startTimeHiddenSelectedEventListener(e){
+      this.event.startTimeHiddenWhiteListedPositions = e;
+      this.event.startTimeHiddenPositionsChanged = true;
+    },
+    startTimeHiddenAllowEventListener(e){
+      this.event.startTimeHiddenAllow = (e === 0);
+    },
+    startTimeHiddenCheckboxEventListener(e){
+      this.event.startTimeHidden = e;
+    },
+    endTimeReadOnlySelectedEventListener(e){
+      this.event.endTimeWhiteListedPositions = e;
+      this.event.endTimePositionsChanged = true;
+    },
+    endTimeReadOnlyAllowEventListener(e){
+      this.event.endTimeReadOnlyAllow = (e === 0);
+    },
+    endTimeReadOnlyCheckboxEventListener(e){
+      this.event.endTimeReadOnly = e;
+    },
+    endTimeHiddenSelectedEventListener(e){
+      this.event.endTimeHiddenWhiteListedPositions = e;
+      this.event.endTimeHiddenPositionsChanged = true;
+    },
+    endTimeHiddenAllowEventListener(e){
+      this.event.endTimeHiddenAllow = (e === 0);
+    },
+    endTimeHiddenCheckboxEventListener(e){
+      this.event.endTimeHidden = e;
+    },
+    resourceReadOnlySelectedEventListener(e){
+      this.event.resourceWhiteListedPositions = e;
+      this.event.resourcePositionsChanged = true;
+    },
+    resourceReadOnlyAllowEventListener(e){
+      this.event.resourceReadOnlyAllow = (e === 0);
+    },
+    resourceReadOnlyCheckboxEventListener(e){
+      this.event.resourceReadOnly = e;
+    },
+    resourceHiddenSelectedEventListener(e){
+      this.event.resourceHiddenWhiteListedPositions = e;
+      this.event.resourceHiddenPositionsChanged = true;
+    },
+    resourceHiddenAllowEventListener(e){
+      this.event.resourceHiddenAllow = (e === 0);
+    },
+    resourceHiddenCheckboxEventListener(e){
+      this.event.resourceHidden = e;
     },
     selectAll(f, fieldName) {
       return f[fieldName]?.length === this.positions?.length
@@ -893,6 +759,12 @@ export default {
           this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_HIDDEN, (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.startTimeHiddenWhiteListedPositions)
         }
         if (this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
+
+          for (var i = 0; i < this.event.endTimeWhiteListedPositions.length; i++) {
+            this.event.endTimeWhiteListedPositions[i].allowFlag = true;
+            //Do something
+          }
+
           this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_READ_ONLY, (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0) ? [] : this.event.endTimeWhiteListedPositions)
         }
         if (this.event.endTimeHiddenPositionsChanged || (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0)) {
@@ -1251,6 +1123,7 @@ export default {
       this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
     }
+
   }
 
 }

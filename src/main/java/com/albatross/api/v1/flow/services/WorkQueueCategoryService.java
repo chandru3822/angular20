@@ -52,8 +52,45 @@ public class WorkQueueCategoryService {
     params.put("hiddenWqcOverride", userIsSuperAdmin);
     params.put("filtered", filtered);
 
-    return sqlCache.queryBySql(
+    List<WorkQueueCategory> categories = sqlCache.queryBySql(
       WorkQueueCategoryQuery.getCategoriesForCompany, params, new WorkQueueCategoryMapper<>(WorkQueueCategory.class, om));
+
+    if(!user.isSystemAdmin()) {
+      for (int x = 0; x < categories.size(); x++) {
+        boolean whiteListed = false;
+        boolean allowFlag = categories.get(x).getHiddenAllow();
+
+        //Checks if the user's position is in the whitelist
+        for (int y = 0; y < categories.get(x).getHiddenWhiteListedPositions().size(); y++) {
+          if (categories.get(x).getHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
+            whiteListed = true;
+          }
+        }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!allowFlag) {
+          whiteListed = !whiteListed;
+        }
+        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+        if (whiteListed && !allowFlag) {
+          WhiteListedPosition position = new WhiteListedPosition();
+          position.setPositionId(user.getUserPositionId());
+          categories.get(x).getHiddenWhiteListedPositions().add(position);
+        }
+        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+        else if (!whiteListed && !allowFlag) {
+          for (int y = 0; y < categories.get(x).getHiddenWhiteListedPositions().size(); y++) {
+            if (categories.get(x).getHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
+              categories.get(x).getHiddenWhiteListedPositions().remove(y);
+              x--;
+            }
+          }
+        }
+        categories.get(x).setHidden(!whiteListed);
+      }
+    }
+
+    return categories;
   }
 
   public Optional<WorkQueueCategory> getCategory(Long id) {
@@ -70,14 +107,13 @@ public class WorkQueueCategoryService {
 
   public void saveHiddenAndWhiteList(WorkQueueCategory workQueueCategory, Boolean savePositions) {
     User currentUser = securityService.getCurrentUser();
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("hidden", workQueueCategory.getHidden());
     params.put("wqcId", workQueueCategory.getId());
     params.put("whiteListTypeId", WhiteListType.WORK_QUEUE_CATEGORY_HIDDEN.id);
-
+    params.put("hiddenAllow", workQueueCategory.getHiddenAllow());
     sqlCache.updateBySql(WorkQueueCategoryQuery.saveHidden, params);
 
     if (!workQueueCategory.getHidden()) {

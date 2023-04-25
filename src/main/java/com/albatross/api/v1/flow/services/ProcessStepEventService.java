@@ -46,7 +46,40 @@ public class ProcessStepEventService {
     params.put("processStepId", processStepId);
     params.put("systemAdmin", systemAdmin);
     params.put("userPositions", userPositionIds);
-    return sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    List<ProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    for(int x = 0; x < processStepEvents.size(); x++){
+      boolean whiteListed = false;
+      boolean allowFlag = processStepEvents.get(x).getReadonlyAllow();
+
+      //Checks if the user's position is in the whitelist
+      for(int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++){
+        if(processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()){
+          whiteListed = true;
+        }
+      }
+
+      //If the flag is set to deny, flip the whitelist to be a deny list
+      if(!allowFlag){
+        whiteListed = !whiteListed;
+      }
+       //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+      if(whiteListed && !allowFlag){
+        WhiteListedPosition position = new WhiteListedPosition();
+        position.setPositionId(user.getUserPositionId());
+        processStepEvents.get(x).getReadonlyWhiteListPositions().add(position);
+      }
+      //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+      else if(!whiteListed && !allowFlag){
+        for(int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++){
+          if(processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()){
+            processStepEvents.get(x).getReadonlyWhiteListPositions().remove(y);
+            x--;
+          }
+        }
+      }
+      processStepEvents.get(x).setReadonly(!whiteListed);
+    }
+    return processStepEvents;
   }
 
   public List<ProcessStepEvent> getAvailableEventsForStep(Long processStepId) {
@@ -109,6 +142,7 @@ public class ProcessStepEventService {
       params.put("companyId", currentUser.getCompanyId());
       params.put("processStepEventId", processStepEvent.getId());
       params.put("readOnly", processStepEvent.getReadonly());
+      params.put("readOnlyAllow", processStepEvent.getReadonlyAllow());
       params.put("eventId", processStepEvent.getEventId());
       params.put("processStepId", processStepEvent.getProcessStepId());
       params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY.id);

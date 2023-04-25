@@ -201,19 +201,11 @@
         </div>
         <div v-for="action in filteredActions" :key="action.id" class="d-inline-block ma-1">
           <ActionButton
-            v-if="action.actionTypeId === 2 && !action.hideFromWeb"
             :action-result="action"
-            :block-perform="processStepReadOnly"
-            :projectProcessStepId="parseInt(projectProcessStepId)"
-            :handleOnComplete="handleActionCompleted"
-            :handleOnCompleteError="handleOnCompleteError"
+            :can-perform-action="!action.triggerAutomatically && (action.canPerform && !processStepReadOnly) && userCanEdit"
+            :complete-action="completeAction"
+            :follow-multiple-links="followMultipleLinks"
           />
-          <v-btn
-            v-else-if="action.actionTypeId === 1 && !action.hideFromWeb"
-            @click="followMultipleLinks(action)"
-          >
-            {{ action.actionName }}
-          </v-btn>
         </div>
 
         <v-row v-if="!processStepLoading">
@@ -459,7 +451,6 @@ export default {
       if (!this?.processStep?.actions) {
         return []
       }
-
       if (this.showUnperformableActions) {
         return this.processStep.actions
       } else if (this.processStepReadOnly) {
@@ -736,6 +727,21 @@ export default {
       action?.processStepActionLinks?.forEach(link => {
         followLink(link.url, params)
       })
+    },
+    completeAction: async function (action) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data, status} = await postRequest(`/projectProcessStep/${this.projectProcessStepId}/action/${action.id}`)
+        if (status === 204 || status === 200) {
+          this.handleActionCompleted(data)
+        } else {
+          this.handleOnCompleteError(action.id)
+        }
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        this.handleOnCompleteError(action.id, e.data.message)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     handleActionCompleted(data) {
       this.$emit('refresh-upcoming-pps')

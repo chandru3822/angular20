@@ -12,7 +12,7 @@ import lombok.Setter;
 public class WhiteListedPosition {
 
   private Long id, positionId, customFieldGroupAssignmentId, companyId, whiteListTypeId, eventId, processStepId, workQueueTypeId, workQueueCategoryId;
-  private Boolean archived;
+  private Boolean archived, allowFlag;
 
 }
 

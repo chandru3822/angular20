@@ -347,7 +347,9 @@ select
         cpst.project_status_type,
         cpst.project_status_type_id,
         cot.status_read_only,
+        cot.status_read_only_allow,
         cot.owner_read_only,
+        cot.owner_read_only_allow,
         coalesce((
              SELECT array_to_json(array_agg(row_to_json(tags)))
              FROM (

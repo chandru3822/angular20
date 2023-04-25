@@ -10,6 +10,7 @@ public class ProcessStepEventQuery {
            cest.event_status_type as initial_event_status_type,
            pse.event_id,
            pse.readonly,
+           pse.readonly_allow,
            pse.archived,
            e.event_name,
            e.hidden as eventHidden,
@@ -135,6 +136,7 @@ public class ProcessStepEventQuery {
                pse.event_id,
                pse.initial_company_event_status_type_id,
                pse.readonly,
+               pse.readonly_allow,
                cest.event_status_type as initialEventStatusType,
                e.event_name,
                pse.archived,
@@ -502,6 +504,7 @@ public class ProcessStepEventQuery {
     public final static String saveReadOnly = """
     update flow.process_step_event
          set readonly = :readOnly,
+             readonly_allow = :readOnlyAllow,
              modified_by_id = :userId,
              date_modified = now()
          where id = :processStepEventId

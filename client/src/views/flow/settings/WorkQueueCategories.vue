@@ -74,69 +74,44 @@
                   <v-color-picker v-if="item.showColor" class="my-3" v-model="item.color" :canvas-height="colorOptions.height" :width="colorOptions.width" :mode="colorOptions.mode" :hide-mode-switch="colorOptions.hideModeSwitch"></v-color-picker>
                 </td>
                 <td class="text-left">
-                  <v-card flat color="transparent" class="square-card my-2" v-if="selectedWorkQueueCategoryId === item.id">
-                    <v-card-title style="height: 40px" class="py-0 grey--text text--darken-1">
-                      Hidden
-                      <v-checkbox type="checkbox" class="ml-3"
-                                  v-model="item.hidden"></v-checkbox>
-                    </v-card-title>
-                    <v-card-text>
-                      <v-autocomplete
-                        v-if="item.hidden"
-                        v-model="item.hiddenWhiteListedPositions"
-                        :items="positions"
-                        :loading="positionsLoading"
-                        multiple
-                        clearable
-                        label="White Listed Positions"
-                        item-text="position"
-                        item-value="positionId"
-                        return-object
-                        height="35px"
-                        class="d-inline-block mr-3"
-                        @change="item.hiddenPositionsChanged = true">
-                        <v-list-item
-                          slot="prepend-item"
-                          ripple
-                          @click="toggleSelectAllPositions(item)"
-                        >
-                          <v-list-item-action>
-                            <v-icon>{{ iconOwner(item) }}</v-icon>
-                          </v-list-item-action>
-                          <v-list-item-title>Select All</v-list-item-title>
-                        </v-list-item>
-                        <v-divider
-                          slot="prepend-item"
-                          class="mt-2"
-                        ></v-divider>
-                        <template
-                          slot="selection"
-                          slot-scope="{ item: selectItem, index }"
-                        >
-                          <v-chip small
-                                  v-if="index === 0 && item.hiddenWhiteListedPositions && item.hiddenWhiteListedPositions.length < 2">
-                            <span>{{ selectItem.position }}</span>
-                          </v-chip>
-                          <span
-                            v-if="index === 1 && item.hiddenWhiteListedPositions && item.hiddenWhiteListedPositions.length >= 2"
-                            class="primary--text text-caption"
-                          >{{ item.hiddenWhiteListedPositions.length }} selected</span>
-                        </template>
-                      </v-autocomplete>
-                      <br/>
-                      <v-btn color="primary" dark class="d-inline-block white--text"
-                             @click="saveHiddenAndWhiteList(item)">
-                        <v-icon class="mr-2">save</v-icon>
-                        Save Hidden
-                      </v-btn>
-                    </v-card-text>
-                  </v-card>
+
+
+                                    <v-card flat color="transparent" class="square-card my-2" v-if="selectedWorkQueueCategoryId === item.id">
+<!--                    <v-card-title style="height: 40px" class="py-0 grey&#45;&#45;text text&#45;&#45;darken-1">-->
+<!--                      Hidden-->
+<!--                      <v-checkbox type="checkbox" class="ml-3"-->
+<!--                                  v-model="item.hidden"></v-checkbox>-->
+<!--                    </v-card-title>-->
+                                      <multi-select-group
+                                        v-if="!workQueueLoading"
+                                        :userCanEdit="userCanEdit"
+                                        :returnObject="item"
+                                        :content="positions"
+                                        :dropdownEnabled="item.hidden"
+                                        :selectedContent="item.hiddenWhiteListedPositions"
+                                        :title="'Hidden'"
+                                        :label="'White Listed Positions'"
+                                        :allow="item.hiddenAllow"
+                                        :contentLoading="positionsLoading"
+                                        backgroundColor="transparent"
+                                        @selected-changed="workQueueCategoriesHiddenSelectedEventListener"
+                                        @allow-changed="workQueueCategoriesHiddenAllowEventListener"
+                                        @checkbox-changed="workQueueCategoriesHiddenCheckboxEventListener"></multi-select-group>
+                                      <br v-if="!item.hidden">
+                                      <v-btn color="primary" dark class="d-inline-block white--text"
+                                             @click="saveHiddenAndWhiteList(item)">
+                                        <v-icon class="mr-2">save</v-icon>
+                                        Save Hidden
+                                      </v-btn>
+                                    </v-card>
+
                 </td>
+
                 <td class="text-right">
                   <div class="item-icons">
                     <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
                       <v-icon v-if="selectedWorkQueueCategoryId === item.id" @click="saveCategory(item)">save</v-icon>
-                      <v-icon v-else @click="selectedWorkQueueCategoryId = item.id">edit</v-icon>
+                      <v-icon v-else @click="selectedWorkQueueCategoryId = item.id; selectedWorkQueueCategoryDisplayOrder = item.displayOrder">edit</v-icon>
                     </v-btn>
                     <v-btn :disabled="!userCanDelete" small text color="primary" class="clickable" @click="categoryToDelete=item">
                       <v-icon>delete</v-icon>
@@ -220,6 +195,7 @@
           hideModeSwitch: true
         },
         workQueueCategories: [],
+        workQueueLoading: false,
         positions: [],
         positionsLoading: false,
         hiddenPositionsChanged: false,
@@ -227,6 +203,7 @@
         showColor: false,
         newCategory: { color: '#ffffff'},
         selectedWorkQueueCategoryId: null,
+        selectedWorkQueueCategoryDisplayOrder: null,
         userId: this.$store.state.user.details.id,
         companyId: this.$store.state.user.details.companyId,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
@@ -249,6 +226,19 @@
       }
     },
     methods: {
+      workQueueCategoriesHiddenSelectedEventListener(e){
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenWhiteListedPositions = e;
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
+      },
+      workQueueCategoriesHiddenAllowEventListener(e){
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenAllow = (e === 0);
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
+      },
+      workQueueCategoriesHiddenCheckboxEventListener(e){
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hidden = e;
+        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
+
+      },
       selectAllHidden (wqc) {
         return wqc.hiddenWhiteListedPositions?.length === this.positions?.length
       },
@@ -295,10 +285,10 @@
       async saveHiddenAndWhiteList (item) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${item.hiddenPositionsChanged ?? false}`, item)
+          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged ?? false}`, this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder])
           this.hiddenPositionsChanged = false
-          if(!item.hidden) {
-            item.hiddenWhiteListedPositions = []
+          if(!this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hidden) {
+            this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenWhiteListedPositions = []
           }
           this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -316,10 +306,11 @@
       async getWorkQueueCategories() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
+          this.workQueueLoading = true;
           const {data, status} = await getWorkQueueCategories(true)
           this.workQueueCategories = data
-
           handleHidingGlobalLoader(this, status)
+          this.workQueueLoading = false;
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
@@ -407,6 +398,6 @@
     async created() {
       this.getWorkQueueCategories()
       this.getPositions()
-    }
+    },
   }
 </script>

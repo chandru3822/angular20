@@ -56,7 +56,9 @@ public class CustomFieldGroupAssignmentQuery {
                                     cf.field_name as "fieldName",
                                     cf.system_readonly as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.required,
@@ -107,7 +109,9 @@ public class CustomFieldGroupAssignmentQuery {
                                     cf.field_name as "fieldName",
                                     cf.system_readonly as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.required,
@@ -137,7 +141,9 @@ public class CustomFieldGroupAssignmentQuery {
                                     coalesce(dvcfc.display_name, dvfc.display_name) as "fieldName",
                                     false as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.required,
@@ -426,6 +432,7 @@ public class CustomFieldGroupAssignmentQuery {
   public final static String saveReadOnly = """
     update flow.custom_field_group_assignment
           set read_only = :cfgaReadOnly,
+              read_only_allow = :cfgaReadOnlyAllow,
               date_modified = now(),
               modified_by_id = :userId
         where id = :cfgaId
@@ -435,6 +442,7 @@ public class CustomFieldGroupAssignmentQuery {
   public final static String saveHidden = """
     update flow.custom_field_group_assignment
         set hidden = :cfgaHidden,
+            hidden_allow = :cfgaHiddenAllow,
             date_modified = now(),
             modified_by_id = :userId
       where id = :cfgaId

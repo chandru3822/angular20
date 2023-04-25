@@ -131,6 +131,9 @@ export const UserStore = {
       return getters.isSystemAdmin(state.details.highestCompanyId) || state.details.userPositions?.some(p => {
         return positionIds.includes(p.positionId)
       })
+    },
+    getUserPositionIds: (state) => {
+      return state.details.userPositions.map(a => a.id);
     }
   }
 }

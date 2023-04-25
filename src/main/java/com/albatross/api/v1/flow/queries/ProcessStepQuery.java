@@ -62,6 +62,7 @@ select ps.id,
        ps.created_by_id,
        ps.modified_by_id,
        ps.readonly,
+       ps.readonly_allow,
        coalesce((
                   SELECT array_to_json(array_agg(row_to_json(wlp)))
                   FROM (
@@ -325,6 +326,7 @@ where ps.id = :id
   public final static String saveReadOnly = """
     update flow.process_step
          set readonly = :readOnly,
+             readonly_allow = :readOnlyAllow,
              modified_by_id = :userId,
              date_modified = now()
          where id = :psId
