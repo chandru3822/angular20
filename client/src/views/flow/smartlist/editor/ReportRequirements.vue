@@ -1,16 +1,128 @@
 <template>
 <fragment>
-<v-autocomplete
-  :items="availableFields"
-  item-text="name"
-  return-object
-  @change="add"
-/>
+<v-sheet
+  :class="{'add-field': showOverflow}"
+  class="pa-2"
+  :elevation="editorElevation"
+  :rounded="showOverflow"
+>
+  <v-row class="align-center justify-start no-gutters">
+    <v-col
+      v-if="newRequirement !== null"
+      class="pa-0 flex-grow-1"
+    >
+      {{ newRequirement.name }}
+    </v-col>
+
+    <v-col
+      v-if="newRequirement !== null && newOperator !== null"
+      class="pa-0 flex-grow-1"
+    >
+      {{ newOperator.operatorType }}
+    </v-col>
+
+    <v-col
+      v-if="newRequirement !== null && newOperator !== null && newValue?.secondaryRequirement"
+      class="pa-0 flex-grow-1"
+    >
+      {{ newValue.dataTypeValue }}
+    </v-col>
+
+    <v-col class="flex-grow-1">
+      <v-autocomplete
+        v-show="newRequirement === null"
+        ref="requirementField"
+        v-model="newRequirement"
+        :items="availableFields"
+        item-text="name"
+        return-object
+        placeholder="Add Filter"
+        solo
+        :flat="showOverflow"
+        hide-details="true"
+        :class="{'field-selector': !showOverflow}"
+        @change="[getDataTypeRequirements(), getOperators()]"
+        @focus="toggleOverflow(true)"
+        @blur="() => { if(operatorField !== null) {focus(operatorField) }}"
+      >
+        <template #append>
+          <v-btn
+            icon
+            @click.stop="reset"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-autocomplete>
+
+      <v-autocomplete
+        v-show="newRequirement != null && newOperator === null"
+        ref="operatorField"
+        v-model="newOperator"
+        :items="availableOperators"
+        item-text="operatorType"
+        item-value="id"
+        return-object
+        placeholder="Type or Select Operator"
+        solo
+        flat
+        hide-details="true"
+        :class="{'field-selector': !showOverflow}"
+        @blur="() => { if(valueField !== null) {focus(valueField) }}"
+      >
+        <template #append v-if="showOverflow">
+          <v-btn
+            icon
+            @click.stop="reset"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-autocomplete>
+
+      <v-combobox
+        v-show="newOperator != null"
+        ref="valueField"
+        v-model="newValue"
+        :items="availableDataTypeRequirements"
+        item-text="dataTypeValue"
+        item-value="id"
+        return-object
+        placeholder="Type or Select Value"
+        solo
+        flat
+        hide-details="true"
+        :class="{'field-selector': !showOverflow}"
+        @change="(!newValue?.secondaryRequirement) ? add() : () => {}"
+      >
+        <template #append>
+          <v-btn
+            icon
+            @click.stop="reset"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-combobox>
+
+      <v-text-field
+        v-show="newValue?.secondaryRequirement"
+        ref="secondaryValueField"
+        v-model="secondaryValue"
+        placeholder="Type Value"
+        solo
+        flat
+        hide-details="true"
+        @change="add"
+      />
+    </v-col>
+    </v-row>
+</v-sheet>
 <v-list>
   <template v-for="(requirement, index) in requirements">
-    <v-list-item v-if="requirement.updateType !== updateTypes.DELETE">
+    <v-list-item v-if="requirement.updateType !== updateTypes.DELETE" :key="UUID()">
       <v-list-item-content>
-        {{ calculatedName(requirement) }}
+        {{ requirement.name }}
       </v-list-item-content>
 
       <v-list-item-action>
@@ -29,8 +141,13 @@
 
 <script setup>
 import { Fragment } from 'vue-frag'
+import { computed, getCurrentInstance, ref } from 'vue'
+import { getRequest, logError, UUID } from '@/helpers/helpers'
 
-const emit = defineEmits(['added', 'updated', 'deleted'])
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+
+const emit = defineEmits(['added', 'updated', 'deleted', 'overflow-required'])
 
 const props = defineProps({
   requirements: {
@@ -51,6 +168,36 @@ const props = defineProps({
   }
 })
 
+const newRequirement = ref(null)
+const newOperator = ref(null)
+const newValue = ref(null)
+const secondaryValue = ref(null)
+
+const availableDataTypeRequirements = ref([])
+const availableOperators = ref([])
+const showOverflow = ref(false)
+
+const requirementField = ref(null)
+const operatorField = ref(null)
+const valueField = ref(null)
+const secondaryValueField = ref(null)
+
+const editorElevation = computed(() => (showOverflow) ? 1 : 0)
+
+// const selectedOperator = computed(() => {
+//   if (!newRequirement.value?.operatorTypeId) {
+//     return {}
+//   }
+//
+//   const selectedOperator = availableOperators.value.find(o => o.id === newRequirement.value.operatorTypeId)
+//
+//   if (!selectedOperator) {
+//     return {}
+//   } else {
+//     return selectedOperator
+//   }
+// })
+
 const calculatedName = (r) => {
   let name = r.name
 
@@ -63,8 +210,43 @@ const calculatedName = (r) => {
   return name
 }
 
-const add = (requirement) => {
-  emit('added', requirement)
+const toggleOverflow = (toggle) => {
+  showOverflow.value = toggle
+  emit('overflow-required', toggle)
+}
+
+const add = () => {
+  //data integrity checks
+  if (newRequirement.value === null || newOperator.value === null || newValue.value === null) {
+    return
+  }
+
+  //vuetify's combobox will return custom input as a string
+  if (typeof newValue.value === 'string' && newValue.value.trim().length === 0) {
+    snackbar('ERROR', 'Invalid value')
+    return
+  }
+
+  if (newValue.value?.secondaryRequirement && secondaryValue.value.trim().length === 0) {
+    snackbar('ERROR', 'Invalid value')
+    return
+  }
+
+  newRequirement.value.operatorTypeId = newOperator.value.id
+
+  if (typeof newValue.value === 'string') {
+    newRequirement.value.requirementValue = newValue.value.trim()
+  } else {
+    newRequirement.value.dataTypeRequirementId = newValue.value.id
+  }
+
+  if (newValue.value?.secondaryRequirement) {
+    newRequirement.value.secondaryRequirement = true
+    newRequirement.value.secondaryRequirementValue = secondaryValue.value.trim()
+  }
+
+  emit('added', newRequirement.value)
+  reset()
 }
 
 const remove = (index) => {
@@ -74,8 +256,59 @@ const remove = (index) => {
 const update = (requirement, index) => {
   emit('updated', requirement, index)
 }
+
+const getDataTypeRequirements = async () => {
+  if (!newRequirement.value?.dataTypeId) {
+    return
+  }
+
+  try {
+    const {data} = await getRequest(`/dataType/getDataTypeRequirements/${newRequirement.value.dataTypeId}`)
+    availableDataTypeRequirements.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Unable to fetch data type requirements')
+  }
+}
+
+const getOperators = async () => {
+  if (!newRequirement.value?.dataTypeId) {
+    return
+  }
+
+  try {
+    const {data} = await getRequest(`/operator/${newRequirement.value.dataTypeId}`)
+    availableOperators.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Unable to fetch operators')
+  }
+}
+
+const reset = () => {
+  newRequirement.value = null
+  newOperator.value = null
+  newValue.value = null
+  showOverflow.value = false
+  emit('overflow-required', false)
+}
+
+const focus = (field) => {
+  if (showOverflow.value) {
+    field.focus()
+    field.activateMenu()
+  }
+}
 </script>
 
 <style scoped lang="scss">
+.field-selector {
+  :deep(.v-input__append-inner) {
+    display: none !important;
+  }
+}
 
+.add-field {
+  width: max-content;
+}
 </style>

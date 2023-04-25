@@ -4,8 +4,12 @@
   :items="availableFields"
   item-text="name"
   return-object
+  placeholder="Add Column"
   :loading="loading"
   @change="add"
+  solo
+  hide-details="true"
+  class="field-selector pa-2"
 />
 <draggable
   :list="fields"
@@ -18,7 +22,7 @@
       </v-list-item-action>
 
       <v-list-item-content>
-        {{ calculatedName(field) }}
+        {{ field.name }}
       </v-list-item-content>
 
       <v-list-item-action>
@@ -87,5 +91,9 @@ const reorder = () => {
 </script>
 
 <style scoped lang="scss">
-
+.field-selector {
+  :deep(.v-input__append-inner) {
+    display: none;
+  }
+}
 </style>

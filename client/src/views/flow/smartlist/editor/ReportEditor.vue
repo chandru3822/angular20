@@ -59,12 +59,15 @@
     </v-col>
     <v-col cols="12">
       <v-row>
-        <v-col cols="3">
-          <v-tabs v-model="tab">
+        <v-col cols="3" class="field-container">
+          <v-tabs v-model="tab" class="tabs">
             <v-tab>Columns</v-tab>
             <v-tab>Filters</v-tab>
           </v-tabs>
-          <v-tabs-items v-model="tab">
+          <v-tabs-items
+            v-model="tab"
+            :class="{'show-overflow': showRequirementOverflow}"
+          >
             <v-tab-item>
               <ReportFields
                 :fields="fields"
@@ -78,6 +81,7 @@
             </v-tab-item>
             <v-tab-item>
               <ReportRequirements
+                ref="requirementContainer"
                 :requirements="requirements"
                 :available-fields="availableFields"
                 :loading="loadingAvailableFields"
@@ -85,6 +89,7 @@
                 @added="addRequirement"
                 @deleted="deleteRequirement"
                 @updated="updateRequirement"
+                @overflow-required="toggleRequirementOverflow"
               />
             </v-tab-item>
           </v-tabs-items>
@@ -133,6 +138,7 @@ const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELE
 
 const tab = ref(null)
 const loadingAvailableFields = ref(false)
+const showRequirementOverflow = ref(false)
 
 const reportId = vueInstance.$route.params.reportId
 const report = ref({mainProcessSteps: true, name: ''})
@@ -322,12 +328,15 @@ const reorderFields = (updatedFields) => {
 const addRequirement = (requirement) => {
   requirement.updateType = UPDATE_TYPE.ADD
   requirements.value.push(requirement)
-  updateDisplayOrder()
 }
 
 const deleteRequirement = (index) => requirements.value[index].updateType = UPDATE_TYPE.DELETE
 
 const updateRequirement = (requirement, index) => requirements.value[index] = requirement
+
+const toggleRequirementOverflow = (required) => {
+  showRequirementOverflow.value = required
+}
 
 onMounted(async () => {
   await getReportTypes()
@@ -348,5 +357,17 @@ onMounted(async () => {
 
 .report-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
+}
+
+.tabs {
+  border-bottom: solid 1px #E0E0E0;
+}
+
+.field-container {
+  min-width: 260px;
+}
+
+.show-overflow.v-window {
+  overflow: visible !important;
 }
 </style>
