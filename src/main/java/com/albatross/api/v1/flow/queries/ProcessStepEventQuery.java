@@ -10,6 +10,7 @@ public class ProcessStepEventQuery {
            cest.event_status_type as initial_event_status_type,
            pse.event_id,
            pse.readonly,
+           pse.readonly_allow,
            pse.archived,
            e.event_name,
            e.hidden as eventHidden,

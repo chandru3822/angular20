@@ -95,6 +95,7 @@ public class ProjectProcessStepEventQuery {
            e.resource_hidden_allow,
            pse.event_id,
            pse.readonly,
+           pse.readonly_allow,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type_id,
            pse.unique_behavior_type_id,

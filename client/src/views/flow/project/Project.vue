@@ -439,9 +439,7 @@ export default {
     projectOwnerFieldIsReadOnly() {
       if(this.is7oaksAdmin) {
         return false
-      } else if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
-      } else {
+      }else {
         return this.project.ownerReadOnly
       }
     },

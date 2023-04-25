@@ -136,6 +136,39 @@ public class ContactService {
               contact.get().getOwner().getUserId(),
               com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
       contact.get().getOwner().setPresignedUrl(presignedUrl);
+
+
+      boolean ownerWhiteListed = false;
+      boolean ownerAllowFlag = contact.get().getOwnerReadOnlyAllow();
+
+      //Checks if the user's position is in the whitelist
+      for(int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
+        if(contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+          ownerWhiteListed = true;
+        }
+      }
+
+      //If the flag is set to deny, flip the whitelist to be a deny list
+      if(!ownerAllowFlag){
+        ownerWhiteListed = !ownerWhiteListed;
+      }
+
+      //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+      if(ownerWhiteListed && !ownerAllowFlag){
+        WhiteListedPosition position = new WhiteListedPosition();
+        position.setPositionId(user.getUserPositionId());
+        contact.get().getOwnerReadOnlyWhiteListedPositions().add(position);
+      }
+      //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+      else if(!ownerWhiteListed && !ownerAllowFlag){
+        for(int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
+          if(contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+            contact.get().getOwnerReadOnlyWhiteListedPositions().remove(x);
+            x--;
+          }
+        }
+      }
+      contact.get().setOwnerReadOnly(!ownerWhiteListed);
     }
 
     return contact.orElse(null);
