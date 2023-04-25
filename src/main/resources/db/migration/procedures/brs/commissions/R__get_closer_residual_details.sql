@@ -50,7 +50,8 @@ begin
   into v_has_previous_snapshot_id
   from brs.user_residual_snapshot s
          inner join brs.residual r2 on r2.id = s.residual_id
-  where r2.period_start = p_date - interval '1 month';
+  where r2.period_start = p_date - interval '1 month'
+    and s.user_id = p_closer_user_id;
 
   select value
   into v_no_previous_month_message
@@ -257,7 +258,7 @@ begin
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
-                                 inner join brs.project_details p2 on p2.id = urps.project_id
+                                 inner join brs.project_details p2 on p2.project_id = urps.project_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code =
@@ -281,7 +282,7 @@ begin
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
-                                 inner join brs.project_details p2 on p2.id = urps.project_id
+                                 inner join brs.project_details p2 on p2.project_id = urps.project_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code = 'FDS_QUALIFIED_THIS_PERIOD'
@@ -295,7 +296,7 @@ begin
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
-                                 inner join brs.project_details p2 on p2.id = urps.project_id
+                                 inner join brs.project_details p2 on p2.project_id = urps.project_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code = 'CLAWBACKS'
@@ -307,7 +308,7 @@ begin
                           from brs.user_residual_snapshot urs
                                  inner join brs.user_residual_project_snapshot urps
                                             on urps.user_residual_snapshot_id = urs.id
-                                 inner join brs.project_details p2 on p2.id = urps.project_id
+                                 inner join brs.project_details p2 on p2.project_id = urps.project_id
                                  inner join brs.user_residual_project_snapshot_type urpst
                                             on urpst.id = urps.user_residual_project_snapshot_type_id and
                                                urpst.user_residual_project_snapshot_code = 'LIFETIME_QUALIFIED_FDS'

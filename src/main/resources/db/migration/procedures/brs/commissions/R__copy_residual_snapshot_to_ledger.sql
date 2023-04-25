@@ -39,9 +39,9 @@ BEGIN
               'Residuals',
               d.residual_id,
               now(),
-              2350555,
+              p_updated_by_id,
               now(),
-              2350555);
+              p_updated_by_id);
 
     END LOOP;
 
@@ -66,7 +66,7 @@ BEGIN
         insert into brs.residual_clawback(user_id, clawback_due, applied_clawback, date_created, created_by_id,
                                           date_modified, modified_by_id)
         values (d.user_id, coalesce(d.current_clawbacks_in_period,0),0, now(),
-                2350555, now(), 2350555);
+                p_updated_by_id, now(), p_updated_by_id);
       end if;
 
     end loop;
