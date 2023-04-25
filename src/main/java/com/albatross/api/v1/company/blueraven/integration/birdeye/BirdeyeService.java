@@ -100,7 +100,7 @@ public class BirdeyeService {
       .toList();
 
     LocalDate reviewedStart = lastSyncDate != null ? lastSyncDate.toLocalDate() : LocalDate.now();
-    List<BirdEyeReview> reviews = getReviews(toplevelBusinessId, reviewedStart.minusDays(1));
+    List<BirdEyeReview> reviews = getReviews(toplevelBusinessId, reviewedStart.minusDays(1), LocalDate.now());
     if (reviews == null || reviews.isEmpty()) {
       return;
     }
@@ -140,7 +140,7 @@ public class BirdeyeService {
                 .findFirst()
                 .ifPresent(lov -> cfv.setIntValue(lov.getId()));
             } else if (HOMEOWNER_REVIEW_DATE.equals(cf.getCustomFieldId())) {
-              cfv.setDateValue(Timestamp.valueOf(r.getResponseDate().atStartOfDay(ZoneOffset.UTC).toLocalDateTime()));
+              cfv.setDateValue(Timestamp.valueOf(r.getReviewDate().atStartOfDay(ZoneOffset.UTC).toLocalDateTime()));
             } else if (HOMEOWNER_REVIEW_TEXT.equals(cf.getCustomFieldId())) {
               cfv.setTextValue(r.getComments());
             }
@@ -155,10 +155,14 @@ public class BirdeyeService {
     setLastSyncDate(toplevelBusinessId, BirdEyeSyncType.REVIEW, "review-sync");
   }
 
-  private List<BirdEyeReview> getReviews(String businessId, LocalDate reviewedStart) {
+  private List<BirdEyeReview> getReviews(String businessId, LocalDate startDate, LocalDate endDate) {
     try {
       final BirdEyeReviewRequest request = BirdEyeReviewRequest.builder()
-        .fromDate(reviewedStart)
+        .fromDate(startDate) //inclusive
+        .toDate(endDate) //exclusive
+        .fetchExtraParams(true)
+        .needCustomerInfo(true)
+        .status(BirdEyeReviewStatus.all)
         .build();
 
       return birdeyeApi.getReviewsByBusinessId(businessId, request)

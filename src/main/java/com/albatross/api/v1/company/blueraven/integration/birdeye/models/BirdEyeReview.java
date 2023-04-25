@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -34,11 +35,13 @@ class BirdEyeReview {
 
   @JsonFormat
     (shape = JsonFormat.Shape.STRING, pattern = "MMM dd, yyyy hh:mm a")
-  private LocalDate responseDate;
+  private LocalDateTime responseDate;
 
   private String response;
 
   private Integer featured;
+
+  private String sentimentType;
 
   private Boolean enableReply;
 
