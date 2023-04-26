@@ -93,7 +93,7 @@
         flat
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @change="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
+        @blur="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
       >
         <template #append>
           <v-btn
@@ -285,7 +285,8 @@ const reset = () => {
   newOperator.value = null
   newValue.value = null
   secondaryValue.value = null
-  showOverflow.value = false
+  showOverflow.value = null
+  valueField.value.isMenuActive = false
   emit('overflow-required', false)
 }
 
