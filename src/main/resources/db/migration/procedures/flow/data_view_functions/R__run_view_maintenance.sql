@@ -28,6 +28,19 @@ BEGIN
     where d.id = x.id;
     end loop;
 
+--  this updates all fields in the data_view_maintenance table if they cfga id goes back to the same custom_field_id.  we only
+  -- need to update the field once.
+  UPDATE flow.data_view_maintenance m
+  SET processed = true
+  FROM (SELECT m1.*, ROW_NUMBER() OVER (PARTITION BY cfga.custom_field_id ORDER BY m1.id) as seqnum
+        FROM flow.data_view_maintenance m1
+        inner join flow.data_view_field_config dvfc3 on dvfc3.id = m1.data_view_field_config_id
+        inner join flow.custom_field_group_assignment cfga on cfga.id = dvfc3.custom_field_group_assignment_id
+        where processed is false
+       ) m2
+  WHERE m2.id =m.id and
+      m2.seqnum > 1;
+
   for x in select distinct coalesce(dv.id, dvm.data_view_id)       as data_view_id,
                            coalesce(c.schema_name, c1.schema_name) as schema_name,
                            coalesce(dv.view_name, dv1.view_name)   as view_name,
@@ -83,7 +96,7 @@ BEGIN
         if v_sql is not null then
           v_insert_sql = $$insert into flow.data_view_update(generated_update)
           ($$||v_sql||$$);$$;
-          raise notice 'v_insert_sql: %', v_insert_sql;
+          --raise notice 'v_insert_sql: %', v_sql;
           --raise notice 'v_sql: %', v_sql;
          execute  v_insert_sql;
         end if;
@@ -114,11 +127,11 @@ BEGIN
               x.lov_new_name || ''' where ' || v_field_to_update || ' = ''' || x.lov_old_name || ''';';
 
       if v_sql is not  null then
-        --raise notice 'v_sql_line: %', v_sql;
+--        raise notice 'v_sql_line: %', v_sql;
         execute v_sql;
       end if;
     end loop;
-    call flow.process_data_view_updates();
+   call flow.process_data_view_updates();
 END
 $BODY$
   LANGUAGE plpgsql;

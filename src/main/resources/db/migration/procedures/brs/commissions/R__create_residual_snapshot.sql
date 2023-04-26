@@ -25,6 +25,7 @@ BEGIN
     WHERE r.id = p_residual_id
 
     LOOP
+      v_snapshot_id = null;
       INSERT INTO brs.user_residual_snapshot(residual_id,
                                              user_id,
                                              user_first_name,
@@ -145,7 +146,8 @@ BEGIN
          from brs.get_residual_qualified_lifetime_fds(d.user_id) rqlf
          inner join brs.user_residual_snapshot as u on u.user_id = d.user_id and
                                                        u.paid_in_period is true and
-                                                       u.residual_earned is true);
+                                                       u.residual_earned is true and
+                                                       u.id = v_snapshot_id);
 
       insert into brs.user_residual_project_snapshot(user_residual_snapshot_id,
                                                      project_id,

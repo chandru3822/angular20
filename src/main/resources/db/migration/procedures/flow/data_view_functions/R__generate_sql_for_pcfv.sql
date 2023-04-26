@@ -52,7 +52,7 @@ BEGIN
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
           p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, pcfv.$$
-                    || flow.get_value_based_on_data_type(z.data_type_id) || $$, pcfv.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
+                    || flow.get_value_based_on_data_type(z.data_type_id) || $$::text, pcfv.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
