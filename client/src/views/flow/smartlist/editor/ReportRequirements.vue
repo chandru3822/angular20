@@ -9,23 +9,23 @@
   <v-row class="align-center justify-start no-gutters mt-2">
     <v-col
       v-if="newRequirement !== null"
-      class="pa-0 text-no-wrap"
+      class="flex-grow-0 text-no-wrap px-2"
     >
-      {{ newRequirement.name }}
+      <span class="highlight-background pa-2 rounded">{{ newRequirement.name }}</span>
     </v-col>
 
     <v-col
       v-if="newRequirement !== null && newOperator !== null"
-      class="pa-0 text-no-wrap"
+      class="flex-grow-0 text-no-wrap px-2"
     >
       {{ newOperator.operatorType }}
     </v-col>
 
     <v-col
       v-if="newRequirement !== null && newOperator !== null && newValue?.secondaryRequirement"
-      class="pa-0 text-no-wrap"
+      class="flex-grow-0 text-no-wrap px-2"
     >
-      {{ newValue.dataTypeValue }}
+      <span class="highlight-background pa-2 rounded">{{ newValue.dataTypeValue }}</span>
     </v-col>
 
     <v-col class="flex-grow-1">
@@ -43,7 +43,7 @@
         :class="{'field-selector': !showOverflow}"
         @change="[getDataTypeRequirements(), getOperators()]"
         @focus="toggleOverflow(true)"
-        @blur="() => { if(operatorField !== null) {focus(operatorField) }}"
+        @blur="focus(operatorField)"
       >
         <template #append>
           <v-btn
@@ -68,7 +68,7 @@
         flat
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @blur="() => { if(valueField !== null) {focus(valueField) }}"
+        @blur="focus(valueField)"
       >
         <template #append v-if="showOverflow">
           <v-btn
@@ -93,7 +93,7 @@
         flat
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @change="(!newValue?.secondaryRequirement) ? add() : () => {}"
+        @change="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
       >
         <template #append>
           <v-btn
@@ -150,7 +150,7 @@
 
 <script setup>
 import { Fragment } from 'vue-frag'
-import { computed, getCurrentInstance, ref } from 'vue'
+import { computed, getCurrentInstance, nextTick, ref } from 'vue'
 import { getRequest, logError, UUID } from '@/helpers/helpers'
 
 const vueInstance = getCurrentInstance().proxy
@@ -193,31 +193,17 @@ const secondaryValueField = ref(null)
 
 const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 
-// const selectedOperator = computed(() => {
-//   if (!newRequirement.value?.operatorTypeId) {
-//     return {}
+// const calculatedName = (r) => {
+//   let name = r.name
+//
+//   if (r.objectTypeId === 4) {
+//     name += ` - (PS) ${r.processStepName}`
+//   } else if (r.objectTypeId === 6) {
+//     name += ` - (E) ${r.eventName}`
 //   }
 //
-//   const selectedOperator = availableOperators.value.find(o => o.id === newRequirement.value.operatorTypeId)
-//
-//   if (!selectedOperator) {
-//     return {}
-//   } else {
-//     return selectedOperator
-//   }
-// })
-
-const calculatedName = (r) => {
-  let name = r.name
-
-  if (r.objectTypeId === 4) {
-    name += ` - (PS) ${r.processStepName}`
-  } else if (r.objectTypeId === 6) {
-    name += ` - (E) ${r.eventName}`
-  }
-
-  return name
-}
+//   return name
+// }
 
 const toggleOverflow = (toggle) => {
   showOverflow.value = toggle
@@ -298,14 +284,22 @@ const reset = () => {
   newRequirement.value = null
   newOperator.value = null
   newValue.value = null
+  secondaryValue.value = null
   showOverflow.value = false
   emit('overflow-required', false)
 }
 
 const focus = (field) => {
+  if (field === null) {
+    return
+  }
+
   if (showOverflow.value) {
-    field.focus()
-    field.activateMenu()
+    nextTick(field.focus)
+
+    if (Object.hasOwn(field, 'activateMenu')) {
+      nextTick(field.activateMenu)
+    }
   }
 }
 </script>
@@ -319,5 +313,9 @@ const focus = (field) => {
 
 .add-field {
   width: max-content;
+}
+
+.highlight-background {
+  background-color: var(--v-primary-lighten9);
 }
 </style>
