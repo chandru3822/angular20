@@ -1,29 +1,29 @@
 <template>
 <fragment>
 <v-sheet
-  :class="{'add-field': showOverflow}"
-  class="pa-2"
+  :class="{'add-field': showOverflow && newRequirement !== null}"
+  class="mx-4 mb-2"
   :elevation="editorElevation"
   :rounded="showOverflow"
 >
-  <v-row class="align-center justify-start no-gutters">
+  <v-row class="align-center justify-start no-gutters mt-2">
     <v-col
       v-if="newRequirement !== null"
-      class="pa-0 flex-grow-1"
+      class="pa-0 text-no-wrap"
     >
       {{ newRequirement.name }}
     </v-col>
 
     <v-col
       v-if="newRequirement !== null && newOperator !== null"
-      class="pa-0 flex-grow-1"
+      class="pa-0 text-no-wrap"
     >
       {{ newOperator.operatorType }}
     </v-col>
 
     <v-col
       v-if="newRequirement !== null && newOperator !== null && newValue?.secondaryRequirement"
-      class="pa-0 flex-grow-1"
+      class="pa-0 text-no-wrap"
     >
       {{ newValue.dataTypeValue }}
     </v-col>
@@ -56,7 +56,7 @@
       </v-autocomplete>
 
       <v-autocomplete
-        v-show="newRequirement != null && newOperator === null"
+        v-show="newRequirement !== null && newOperator === null"
         ref="operatorField"
         v-model="newOperator"
         :items="availableOperators"
@@ -81,7 +81,7 @@
       </v-autocomplete>
 
       <v-combobox
-        v-show="newOperator != null"
+        v-show="newOperator !== null && newValue === null"
         ref="valueField"
         v-model="newValue"
         :items="availableDataTypeRequirements"
@@ -114,7 +114,16 @@
         flat
         hide-details="true"
         @change="add"
-      />
+      >
+        <template #append>
+          <v-btn
+            icon
+            @click.stop="reset"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-text-field>
     </v-col>
     </v-row>
 </v-sheet>
@@ -182,7 +191,7 @@ const operatorField = ref(null)
 const valueField = ref(null)
 const secondaryValueField = ref(null)
 
-const editorElevation = computed(() => (showOverflow) ? 1 : 0)
+const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 
 // const selectedOperator = computed(() => {
 //   if (!newRequirement.value?.operatorTypeId) {
