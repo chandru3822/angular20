@@ -30,7 +30,7 @@
 
     <v-col class="flex-grow-1">
       <v-autocomplete
-        v-show="newRequirement === null"
+        v-show="showFieldInput"
         ref="requirementField"
         v-model="newRequirement"
         :items="availableFields"
@@ -43,6 +43,30 @@
         :class="{'field-selector': !showOverflow}"
         @change="[getDataTypeRequirements(), getOperators()]"
         @focus="toggleOverflow(true)"
+        @blur="(!showFieldInput && newRequirement?.smartlistFieldId) ? focus(psEventField) : focus(operatorField)"
+      >
+        <template #append>
+          <v-btn
+            icon
+            @click.stop="reset"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-autocomplete>
+
+      <v-autocomplete
+        v-show="showPsEventInput"
+        ref="psEventField"
+        v-model="newPsEventId"
+        :items="calculatedAvailablePsEvents"
+        item-text="name"
+        return-object
+        placeholder="Type or Select Process Step"
+        solo
+        :flat="showOverflow"
+        hide-details="true"
+        :class="{'field-selector': !showOverflow}"
         @blur="focus(operatorField)"
       >
         <template #append>
@@ -56,7 +80,7 @@
       </v-autocomplete>
 
       <v-autocomplete
-        v-show="newRequirement !== null && newOperator === null"
+        v-show="showOperatorInput"
         ref="operatorField"
         v-model="newOperator"
         :items="availableOperators"
@@ -208,6 +232,7 @@ const props = defineProps({
 })
 
 const newRequirement = ref(null)
+const newPsEventId = ref(null)
 const newOperator = ref(null)
 const newValue = ref(null)
 const secondaryValue = ref(null)
@@ -217,6 +242,7 @@ const availableOperators = ref([])
 const showOverflow = ref(false)
 
 const requirementField = ref(null)
+const psEventField = ref(null)
 const operatorField = ref(null)
 const valueField = ref(null)
 const listOfValueField = ref(null)
@@ -235,6 +261,35 @@ const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 //
 //   return name
 // }
+
+const calculatedAvailablePsEvents = computed(() => {
+
+  if (newRequirement.value === null) {
+    return
+  }
+
+  let items = []
+   props.availableFields.filter(f => {
+     if (f.objectTypeId === newRequirement.value.objectTypeId) {
+       let alreadyIncluded
+
+       if (f.objectTypeId === 4) {
+         alreadyIncluded = items.findIndex(i => i.processStepId === f.processStepId) === -1
+       } else if (f.objectTypeId === 6) {
+         alreadyIncluded = items.findIndex(i => i.eventId === f.eventId) === -1
+       }
+
+       if (!alreadyIncluded) {
+         items.push({
+           id: f.id,
+           name: (f.objectTypeId === 4) ? f.processStepName : f.eventName
+         })
+       }
+     }
+   })
+
+  return items
+})
 
 const calculatedAvailableValues = computed(() => {
   if (newRequirement.value === null || availableDataTypeRequirements.length === 0) {
@@ -257,6 +312,18 @@ const calculatedAvailableValues = computed(() => {
   return newValues
 })
 
+const showFieldInput = computed(() => newRequirement.value === null)
+
+const showPsEventInput = computed(() => {
+  return !showFieldInput.value && !!newRequirement.value?.smartlistFieldId
+})
+
+const showOperatorInput = computed(() => {
+  return !showFieldInput.value &&
+         !showPsEventInput.value &&
+         newOperator.value === null
+})
+
 const toggleOverflow = (toggle) => {
   showOverflow.value = toggle
   emit('overflow-required', toggle)
@@ -277,6 +344,14 @@ const add = () => {
   if (newValue.value?.secondaryRequirement && secondaryValue.value.trim().length === 0) {
     snackbar('ERROR', 'Invalid value')
     return
+  }
+
+  if (newPsEventId.value !== null) {
+    if (newRequirement.value.objectTypeId === 4) {
+      newRequirement.value.processStepId = newPsEventId.value
+    } else {
+      newRequirement.value.eventId = newPsEventId.value
+    }
   }
 
   newRequirement.value.operatorTypeId = newOperator.value.id
@@ -341,8 +416,10 @@ const getOperators = async () => {
 
 const reset = () => {
   newRequirement.value = null
+  newPsEventId.value = null
   newOperator.value = null
   newValue.value = null
+  psEventField.value = null
   listOfValueField.value = null
   secondaryValue.value = null
   showOverflow.value = null
