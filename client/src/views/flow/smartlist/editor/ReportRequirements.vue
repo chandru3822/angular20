@@ -80,11 +80,12 @@
         </template>
       </v-autocomplete>
 
-      <template v-show="newOperator !== null && newValue === null">
+      <span v-show="newOperator !== null && newValue === null">
         <v-combobox
           v-show="newRequirement !== null && !newRequirement.hasListValues"
           ref="valueField"
           v-model="newValue"
+          :key="UUID()"
           :items="availableDataTypeRequirements"
           item-text="dataTypeValue"
           item-value="id"
@@ -109,7 +110,8 @@
         <v-autocomplete
           v-show="newRequirement !== null && newRequirement.hasListValues"
           ref="listOfValueField"
-          v-model="newListOfValue"
+          v-model="newValue"
+          :key="UUID()"
           :items="calculatedAvailableValues"
           item-text="name"
           item-value="id"
@@ -130,7 +132,7 @@
             </v-btn>
           </template>
         </v-autocomplete>
-      </template>
+      </span>
 
       <v-text-field
         v-show="newValue?.secondaryRequirement"
@@ -208,7 +210,6 @@ const props = defineProps({
 const newRequirement = ref(null)
 const newOperator = ref(null)
 const newValue = ref(null)
-const newListOfValue = ref(null)
 const secondaryValue = ref(null)
 
 const availableDataTypeRequirements = ref([])
@@ -263,7 +264,7 @@ const toggleOverflow = (toggle) => {
 
 const add = () => {
   //data integrity checks
-  if (newRequirement.value === null || newOperator.value === null || (newValue.value === null && newListOfValue.value === null)) {
+  if (newRequirement.value === null || newOperator.value === null || newValue.value === null) {
     return
   }
 
@@ -289,7 +290,7 @@ const add = () => {
       newRequirement.value.dataTypeRequirementId = newValue.value.id
     } else {
       //selected value is a list value
-      newRequirement.value.listOfValueId = newListOfValue.value.id
+      newRequirement.value.listOfValueId = newValue.value.id
     }
   }
 
@@ -342,7 +343,7 @@ const reset = () => {
   newRequirement.value = null
   newOperator.value = null
   newValue.value = null
-  newListOfValue.value = null
+  listOfValueField.value = null
   secondaryValue.value = null
   showOverflow.value = null
   valueField.value.isMenuActive = false
