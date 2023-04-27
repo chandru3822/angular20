@@ -84,8 +84,8 @@
         v-show="newOperator !== null && newValue === null"
         ref="valueField"
         v-model="newValue"
-        :items="availableDataTypeRequirements"
-        item-text="dataTypeValue"
+        :items="calculatedAvailableValues"
+        item-text="name"
         item-value="id"
         return-object
         placeholder="Type or Select Value"
@@ -152,6 +152,7 @@
 import { Fragment } from 'vue-frag'
 import { computed, getCurrentInstance, nextTick, ref } from 'vue'
 import { getRequest, logError, UUID } from '@/helpers/helpers'
+import cloneDeep from 'lodash.clonedeep'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -205,6 +206,27 @@ const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 //   return name
 // }
 
+const calculatedAvailableValues = computed(() => {
+  if (newRequirement.value === null || availableDataTypeRequirements.length === 0) {
+    return []
+  }
+
+  let newValues = cloneDeep(availableDataTypeRequirements.value).map(i => {
+    return {
+      ...i,
+      name: i.dataTypeValue
+    }
+  })
+
+  if (newRequirement.value.listOfValues?.length > 0) {
+    newValues.push({divider: true})
+
+    newValues = newValues.concat(newRequirement.value.listOfValues)
+  }
+
+  return newValues
+})
+
 const toggleOverflow = (toggle) => {
   showOverflow.value = toggle
   emit('overflow-required', toggle)
@@ -229,10 +251,17 @@ const add = () => {
 
   newRequirement.value.operatorTypeId = newOperator.value.id
 
+  //if select value is custom
   if (typeof newValue.value === 'string') {
     newRequirement.value.requirementValue = newValue.value.trim()
   } else {
-    newRequirement.value.dataTypeRequirementId = newValue.value.id
+    //if selected value is a data type requirement
+    if (newValue.value?.dataTypeId) {
+      newRequirement.value.dataTypeRequirementId = newValue.value.id
+    } else {
+      //selected value is a list value
+      newRequirement.value.listOfValueId = newValue.value.id
+    }
   }
 
   if (newValue.value?.secondaryRequirement) {
