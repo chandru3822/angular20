@@ -68,7 +68,7 @@
         flat
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @blur="focus(valueField)"
+        @blur="(newRequirement?.hasListValues) ? focus(listOfValueField) : focus(valueField)"
       >
         <template #append v-if="showOverflow">
           <v-btn
@@ -80,30 +80,57 @@
         </template>
       </v-autocomplete>
 
-      <v-combobox
-        v-show="newOperator !== null && newValue === null"
-        ref="valueField"
-        v-model="newValue"
-        :items="calculatedAvailableValues"
-        item-text="name"
-        item-value="id"
-        return-object
-        placeholder="Type or Select Value"
-        solo
-        flat
-        hide-details="true"
-        :class="{'field-selector': !showOverflow}"
-        @blur="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
-      >
-        <template #append>
-          <v-btn
-            icon
-            @click.stop="reset"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-      </v-combobox>
+      <template v-show="newOperator !== null && newValue === null">
+        <v-combobox
+          v-show="newRequirement !== null && !newRequirement.hasListValues"
+          ref="valueField"
+          v-model="newValue"
+          :items="availableDataTypeRequirements"
+          item-text="dataTypeValue"
+          item-value="id"
+          return-object
+          placeholder="Type or Select Value"
+          solo
+          flat
+          hide-details="true"
+          :class="{'field-selector': !showOverflow}"
+          @change="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
+        >
+          <template #append>
+            <v-btn
+              icon
+              @click.stop="reset"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-combobox>
+
+        <v-autocomplete
+          v-show="newRequirement !== null && newRequirement.hasListValues"
+          ref="listOfValueField"
+          v-model="newListOfValue"
+          :items="calculatedAvailableValues"
+          item-text="name"
+          item-value="id"
+          return-object
+          placeholder="Type or Select Value"
+          solo
+          flat
+          hide-details="true"
+          :class="{'field-selector': !showOverflow}"
+          @change="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
+        >
+          <template #append>
+            <v-btn
+              icon
+              @click.stop="reset"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </template>
+        </v-autocomplete>
+      </template>
 
       <v-text-field
         v-show="newValue?.secondaryRequirement"
@@ -181,6 +208,7 @@ const props = defineProps({
 const newRequirement = ref(null)
 const newOperator = ref(null)
 const newValue = ref(null)
+const newListOfValue = ref(null)
 const secondaryValue = ref(null)
 
 const availableDataTypeRequirements = ref([])
@@ -190,6 +218,7 @@ const showOverflow = ref(false)
 const requirementField = ref(null)
 const operatorField = ref(null)
 const valueField = ref(null)
+const listOfValueField = ref(null)
 const secondaryValueField = ref(null)
 
 const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
@@ -234,7 +263,7 @@ const toggleOverflow = (toggle) => {
 
 const add = () => {
   //data integrity checks
-  if (newRequirement.value === null || newOperator.value === null || newValue.value === null) {
+  if (newRequirement.value === null || newOperator.value === null || (newValue.value === null && newListOfValue.value === null)) {
     return
   }
 
@@ -260,7 +289,7 @@ const add = () => {
       newRequirement.value.dataTypeRequirementId = newValue.value.id
     } else {
       //selected value is a list value
-      newRequirement.value.listOfValueId = newValue.value.id
+      newRequirement.value.listOfValueId = newListOfValue.value.id
     }
   }
 
@@ -313,6 +342,7 @@ const reset = () => {
   newRequirement.value = null
   newOperator.value = null
   newValue.value = null
+  newListOfValue.value = null
   secondaryValue.value = null
   showOverflow.value = null
   valueField.value.isMenuActive = false
