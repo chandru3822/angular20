@@ -41,9 +41,8 @@
         :flat="showOverflow"
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @change="[getDataTypeRequirements(), getOperators()]"
+        @change="[getDataTypeRequirements(), getOperators(), dothis()]"
         @focus="toggleOverflow(true)"
-        @blur="(!showFieldInput && newRequirement?.smartlistFieldId) ? focus(psEventField) : focus(operatorField)"
       >
         <template #append>
           <v-btn
@@ -61,6 +60,7 @@
         v-model="newPsEventId"
         :items="calculatedAvailablePsEvents"
         item-text="name"
+        item-value="id"
         return-object
         placeholder="Type or Select Process Step"
         solo
@@ -104,7 +104,7 @@
         </template>
       </v-autocomplete>
 
-      <span v-show="newOperator !== null && newValue === null">
+      <span v-if="newOperator !== null && newValue === null">
         <v-combobox
           v-show="newRequirement !== null && !newRequirement.hasListValues"
           ref="valueField"
@@ -135,7 +135,6 @@
           v-show="newRequirement !== null && newRequirement.hasListValues"
           ref="listOfValueField"
           v-model="newValue"
-          :key="UUID()"
           :items="calculatedAvailableValues"
           item-text="name"
           item-value="id"
@@ -265,30 +264,30 @@ const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 const calculatedAvailablePsEvents = computed(() => {
 
   if (newRequirement.value === null) {
-    return
+    return []
   }
 
   let items = []
    props.availableFields.filter(f => {
-     if (f.objectTypeId === newRequirement.value.objectTypeId) {
-       let alreadyIncluded
+     if (f.objectTypeId === newRequirement.value.objectTypeId && !f.smartlistFieldId) {
+       let notIncluded
 
        if (f.objectTypeId === 4) {
-         alreadyIncluded = items.findIndex(i => i.processStepId === f.processStepId) === -1
+         notIncluded = items.findIndex(i => i.id === f.processStepId) === -1
        } else if (f.objectTypeId === 6) {
-         alreadyIncluded = items.findIndex(i => i.eventId === f.eventId) === -1
+         notIncluded = items.findIndex(i => i.id === f.eventId) === -1
        }
 
-       if (!alreadyIncluded) {
+       if (notIncluded) {
          items.push({
-           id: f.id,
+           id: (f.objectTypeId === 4) ? f.processStepId : f.eventId,
            name: (f.objectTypeId === 4) ? f.processStepName : f.eventName
          })
        }
      }
    })
 
-  return items
+  return items.sort((a, b) => a.name.localeCompare(b.name))
 })
 
 const calculatedAvailableValues = computed(() => {
@@ -315,8 +314,18 @@ const calculatedAvailableValues = computed(() => {
 const showFieldInput = computed(() => newRequirement.value === null)
 
 const showPsEventInput = computed(() => {
-  return !showFieldInput.value && !!newRequirement.value?.smartlistFieldId
+  return !showFieldInput.value && !!newRequirement.value?.smartlistFieldId && newPsEventId.value === null
 })
+
+const dothis = () => {
+  if (!showFieldInput.value && !!newRequirement.value?.smartlistFieldId) {
+    console.log('ps')
+    focus(psEventField.value)
+  } else {
+    console.log('operator')
+    focus(operatorField.value)
+  }
+}
 
 const showOperatorInput = computed(() => {
   return !showFieldInput.value &&
@@ -348,9 +357,11 @@ const add = () => {
 
   if (newPsEventId.value !== null) {
     if (newRequirement.value.objectTypeId === 4) {
-      newRequirement.value.processStepId = newPsEventId.value
+      newRequirement.value.processStepId = newPsEventId.value.id
+      newRequirement.value.processStepName = newPsEventId.value.name
     } else {
-      newRequirement.value.eventId = newPsEventId.value
+      newRequirement.value.eventId = newPsEventId.value.id
+      newRequirement.value.eventName = newPsEventId.value.name
     }
   }
 
@@ -423,7 +434,11 @@ const reset = () => {
   listOfValueField.value = null
   secondaryValue.value = null
   showOverflow.value = null
-  valueField.value.isMenuActive = false
+
+  if (valueField.value !== null && Object.hasOwn(valueField.value, 'isMenuActive')) {
+    valueField.value.isMenuActive = false
+  }
+
   emit('overflow-required', false)
 }
 
