@@ -41,7 +41,7 @@
         :flat="showOverflow"
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @change="[getDataTypeRequirements(), getOperators(), dothis()]"
+        @blur="afterFieldSelected"
         @focus="toggleOverflow(true)"
       >
         <template #append>
@@ -55,7 +55,7 @@
       </v-autocomplete>
 
       <v-autocomplete
-        v-show="showPsEventInput"
+        v-if="showPsEventInput"
         ref="psEventField"
         v-model="newPsEventId"
         :items="calculatedAvailablePsEvents"
@@ -317,12 +317,13 @@ const showPsEventInput = computed(() => {
   return !showFieldInput.value && !!newRequirement.value?.smartlistFieldId && newPsEventId.value === null
 })
 
-const dothis = () => {
+const afterFieldSelected = () => {
+  getDataTypeRequirements()
+  getOperators()
+
   if (!showFieldInput.value && !!newRequirement.value?.smartlistFieldId) {
-    console.log('ps')
     focus(psEventField.value)
   } else {
-    console.log('operator')
     focus(operatorField.value)
   }
 }
