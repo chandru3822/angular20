@@ -618,10 +618,10 @@ public class SmartlistService {
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
     if (smartlist.isProjectDetails()) {
-      query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements);
+      query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements, null);
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
       if (smartlist.getObjectTypeId() == 4) {
-        query = reportEngine.buildProcessStepSql(smartlist, fields, requirements);
+        query = reportEngine.buildProcessStepSql(smartlist, fields, requirements, null);
       } else {
         query = reportEngine.buildEventSql(smartlist, fields, requirements, null, null);
       }
@@ -629,7 +629,7 @@ public class SmartlistService {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
         query = reportEngine.buildWorkQueueSql(smartlist, fields, true, timezone);
       } else {
-        query = reportEngine.buildSql(smartlist, fields, requirements, timezone, null, false);
+        query = reportEngine.buildSql(smartlist, fields, requirements, timezone, null, false, null);
       }
     }
 
@@ -787,7 +787,7 @@ public class SmartlistService {
     }
   }
 
-  public List<Map<String, Object>> getAdhocReportData(Smartlist report, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, String timezone) {
+  public List<Map<String, Object>> getAdhocReportData(Smartlist report, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit, String timezone) {
 
     //if we are working with an existing smartlist, verify read access
     if (report.getId() != null) {
@@ -798,14 +798,63 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have a data type");
     }
 
+    User user = securityService.getCurrentUser();
+
+    //get tables for any fields/reqs using smartlist fields
+    List<Long> usedSmartlistFieldIds = new ArrayList<>(fields.stream()
+                                                             .map(SmartlistFieldAssignment::getSmartlistFieldId)
+                                                             .filter(Objects::nonNull)
+                                                             .toList());
+
+    usedSmartlistFieldIds.addAll(requirements.stream()
+                                             .map(SmartlistRequirement::getSmartlistFieldId)
+                                             .filter(Objects::nonNull)
+                                             .toList()
+    );
+
+    if (!usedSmartlistFieldIds.isEmpty()) {
+      var params = Map.of("companyId", user.getCompanyId(), "ids", usedSmartlistFieldIds);
+      List<SmartlistFieldAssignment> smartlistFields = sqlCacheRO.queryBySql(SmartlistQuery.getSmartlistFieldsByIds, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+
+      fields.forEach(field -> {
+        if (field.getSmartlistFieldId() != null) {
+          var fieldFromDb = smartlistFields.stream()
+                                           .filter(f -> Objects.equals(f.getSmartlistFieldId(), field.getSmartlistFieldId()))
+                                           .findFirst();
+
+          fieldFromDb.ifPresent(f -> {
+            field.setReferenceTable(f.getReferenceTable());
+            field.setReferenceColumn(f.getReferenceColumn());
+            field.setJoinTable(f.getJoinTable());
+            field.setJoinColumn(f.getJoinColumn());
+          });
+        }
+      });
+
+      requirements.forEach(requirement -> {
+        if (requirement.getSmartlistFieldId() != null) {
+          var fieldFromDb = smartlistFields.stream()
+                                           .filter(f -> Objects.equals(f.getSmartlistFieldId(), requirement.getSmartlistFieldId()))
+                                           .findFirst();
+
+          fieldFromDb.ifPresent(f -> {
+            requirement.setReferenceTable(f.getReferenceTable());
+            requirement.setReferenceColumn(f.getReferenceColumn());
+            requirement.setJoinTable(f.getJoinTable());
+            requirement.setJoinColumn(f.getJoinColumn());
+          });
+        }
+      });
+    }
+
     String query;
 
     if (List.of(4L, 6L).contains(report.getObjectTypeId())) {
-      query = reportEngine.buildProcessStepSql(report, fields, requirements);
+      query = reportEngine.buildProcessStepSql(report, fields, requirements, limit);
     } else {
       query = (report.isProjectDetails()) ?
-        reportEngine.buildProjectDetailsSql(report, fields, requirements) :
-        reportEngine.buildSql(report, fields, requirements, timezone, null, true);
+        reportEngine.buildProjectDetailsSql(report, fields, requirements, limit) :
+        reportEngine.buildSql(report, fields, requirements, timezone, null, false, limit);
     }
 
     try {

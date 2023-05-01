@@ -44,7 +44,7 @@ public class ReportEngine {
   }
 
   public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
-    return buildSql(smartlist, fields, requirements, null, null, false);
+    return buildSql(smartlist, fields, requirements, null, null, false, null);
   }
 
   public String buildSql(
@@ -53,8 +53,9 @@ public class ReportEngine {
     List<SmartlistRequirement> requirements,
     String timezone,
     List<Long> installationCrewIds,
-    Boolean addProjectContactIdFields)
-  {
+    Boolean addProjectContactIdFields,
+    Integer limit
+  ) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
@@ -1036,6 +1037,10 @@ public class ReportEngine {
       query.append(" order by \"Days In Queue\" desc ");
     }
 
+    if (limit != null) {
+      query.append(String.format(" limit %s", limit));
+    }
+
     query.append(";");
 
     return query.toString();
@@ -1539,11 +1544,11 @@ public class ReportEngine {
     return defaultFields.append(selectQuery).append(query).append(";").toString();
   }
 
-  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
-    return buildProcessStepSql(smartlist, fields, requirements, null, false);
+  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit) {
+    return buildProcessStepSql(smartlist, fields, requirements, null, false, limit);
   }
 
-  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, String timezone, Boolean useEventData) {
+  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, String timezone, Boolean useEventData, Integer limit) {
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
@@ -2323,6 +2328,10 @@ public class ReportEngine {
 
     // remove comma and space from with clause
     query.delete(query.length() - 7, query.length());
+
+    if (limit != null) {
+      query.append(String.format(" limit %s", limit));
+    }
 
     query.append(";");
 
@@ -3251,7 +3260,7 @@ public class ReportEngine {
     return query.toString();
   }
 
-  public String buildProjectDetailsSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
+  public String buildProjectDetailsSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit) {
 
     StringBuilder query = new StringBuilder();
 
@@ -3348,6 +3357,10 @@ public class ReportEngine {
 
     // remove the last "and "
     query = query.delete(query.length() - 5, query.length());
+
+    if (limit != null) {
+      query.append(String.format(" limit %s", limit));
+    }
 
     query.append(";");
 

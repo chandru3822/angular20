@@ -662,4 +662,26 @@ public class SmartlistQuery {
       date_modified = now()
     where id = :id
   """;
+
+  //language=PostgreSQL
+  public final static String getSmartlistFieldsByIds = """
+    select
+      sf.id as "smartlistFieldId",
+      sf.smartlist_system_list_id,
+      cot.object_type_id,
+      sf.name,
+      cdt.data_type_id as "dataTypeId",
+      case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
+      cdt.allow_multiple,
+      sf.reference_table,
+      sf.reference_column,
+      sf.join_table,
+      sf.join_column
+    from flow.smartlist_field sf
+    inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+    inner join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
+    where 
+      cot.company_id = :companyId and 
+      sf.id = any(array[ :ids ]::bigint[])
+  """;
 }
