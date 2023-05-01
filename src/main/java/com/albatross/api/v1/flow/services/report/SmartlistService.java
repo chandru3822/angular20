@@ -148,6 +148,11 @@ public class SmartlistService {
     return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist, true);
   }
 
+  /**
+   *
+   * @param id
+   * @return Smartlist or ResponseStatusException
+   */
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of(
@@ -780,6 +785,36 @@ public class SmartlistService {
     } catch (IOException e) {
       return null;
     }
+  }
+
+  public List<Map<String, Object>> getAdhocReportData(Smartlist report, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, String timezone) {
+
+    //if we are working with an existing smartlist, verify read access
+    if (report.getId() != null) {
+      getById(report.getId());
+    }
+
+    if (!List.of(1L,2L,3L,4L,5L,6L).contains(report.getObjectTypeId())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have a data type");
+    }
+
+    String query;
+
+    if (List.of(4L, 6L).contains(report.getObjectTypeId())) {
+      query = reportEngine.buildProcessStepSql(report, fields, requirements);
+    } else {
+      query = (report.isProjectDetails()) ?
+        reportEngine.buildProjectDetailsSql(report, fields, requirements) :
+        reportEngine.buildSql(report, fields, requirements, timezone, null, true);
+    }
+
+    try {
+      return sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+    } catch (Exception e) {
+      saveError(report, query, fields, requirements, e);
+      throw e;
+    }
+
   }
 
   public List<SmartlistFieldAssignment> getEventWorkqueueDefaultFields(boolean isCSV) {

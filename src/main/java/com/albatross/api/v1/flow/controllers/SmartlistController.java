@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -177,5 +178,10 @@ public class SmartlistController {
   @GetMapping(value = "/fields", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableFields(@RequestParam List<Long> objectTypeIds) {
     return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeIds), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/adhoc", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Map<String, Object>>> getAdhocReportData(@RequestBody ReportDTO report, @RequestParam(required = false) String timezone) {
+    return ResponseEntity.ok(smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), timezone));
   }
 }
