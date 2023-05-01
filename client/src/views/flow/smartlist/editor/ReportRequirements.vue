@@ -104,9 +104,9 @@
         </template>
       </v-autocomplete>
 
-      <span v-if="newOperator !== null && newValue === null">
+      <span v-if="newOperator !== null && !newValue?.secondaryRequirement">
         <v-combobox
-          v-show="newRequirement !== null && !newRequirement.hasListValues"
+          v-show="!newRequirement.hasListValues"
           ref="valueField"
           v-model="newValue"
           :key="UUID()"
@@ -119,7 +119,7 @@
           flat
           hide-details="true"
           :class="{'field-selector': !showOverflow}"
-          @change="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
+          @change="afterValueSelected"
         >
           <template #append>
             <v-btn
@@ -132,7 +132,7 @@
         </v-combobox>
 
         <v-autocomplete
-          v-show="newRequirement !== null && newRequirement.hasListValues"
+          v-show="newRequirement.hasListValues"
           ref="listOfValueField"
           v-model="newValue"
           :items="calculatedAvailableValues"
@@ -143,10 +143,23 @@
           solo
           flat
           hide-details="true"
+          :multiple="newRequirement.allowMultiple"
+          ripple="false"
           :class="{'field-selector': !showOverflow}"
-          @change="(!newValue?.secondaryRequirement) ? add() : focus(secondaryValueField)"
+          @change="afterValueSelected(false)"
         >
+          <template #item="data">
+            <v-list-item-content>{{ data.item.name }}</v-list-item-content>
+          </template>
+
           <template #append>
+            <v-btn
+              v-if="newValue !== null && newValue.length > 0"
+              icon
+              @click="afterValueSelected(true)"
+            >
+              <v-icon>mdi-check</v-icon>
+            </v-btn>
             <v-btn
               icon
               @click.stop="reset"
@@ -298,7 +311,8 @@ const calculatedAvailableValues = computed(() => {
   let newValues = cloneDeep(availableDataTypeRequirements.value).map(i => {
     return {
       ...i,
-      name: i.dataTypeValue
+      name: i.dataTypeValue,
+      isDataTypeRequirement: true
     }
   })
 
@@ -325,6 +339,26 @@ const afterFieldSelected = () => {
     focus(psEventField.value)
   } else {
     focus(operatorField.value)
+  }
+}
+
+const afterValueSelected = (userCheckedToAdd) => {
+  if (newRequirement.value?.allowMultiple) {
+    const dataTypeRequirement = newValue.value.find(v => v.isDataTypeRequirement)
+
+    if (dataTypeRequirement) {
+      newValue.value = dataTypeRequirement
+      add()
+    }
+
+    if (userCheckedToAdd) {
+      add()
+    }
+
+  } else if (newValue.value?.secondaryRequirement) {
+    focus(secondaryValueField.value)
+  } else {
+    add()
   }
 }
 
@@ -371,14 +405,15 @@ const add = () => {
   //if select value is custom
   if (typeof newValue.value === 'string') {
     newRequirement.value.requirementValue = newValue.value.trim()
-  } else {
+  } else if (Array.isArray(newValue.value)) {
+    //if selected value is a multi-select
+    newRequirement.value.listOfValueIds = newValue.value.map(v => v.id)
+  } else if (newValue.value?.dataTypeId) {
     //if selected value is a data type requirement
-    if (newValue.value?.dataTypeId) {
-      newRequirement.value.dataTypeRequirementId = newValue.value.id
-    } else {
-      //selected value is a list value
-      newRequirement.value.listOfValueId = newValue.value.id
-    }
+    newRequirement.value.dataTypeRequirementId = newValue.value.id
+  } else {
+    //selected value is a list value
+    newRequirement.value.listOfValueId = newValue.value.id
   }
 
   if (newValue.value?.secondaryRequirement) {
