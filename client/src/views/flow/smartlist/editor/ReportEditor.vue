@@ -108,7 +108,7 @@
 
 <script setup>
 import useReportStore from '@/views/flow/smartlist/reportStore'
-import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue'
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
 import { getRequest, getSnackbar, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import { DateTime } from 'luxon'
@@ -117,6 +117,7 @@ import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
 import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
 import isEqual from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
+import { saveAs } from 'file-saver'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -224,7 +225,7 @@ const exportReport = async () => {
       saveAs(blob, `${report.value.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`)
     } catch (e) {
       logError(e)
-      store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data.message))
+      store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data?.message || 'An error was encountered during export'))
     } finally {
       store.commit(AppMutations.SET_LOADING, false)
     }
