@@ -96,9 +96,11 @@
 
         </v-col>
         <v-col cols="9">
-          <v-data-table>
-
-          </v-data-table>
+          <ReportViewer
+            :requirements="requirements"
+            :fields="fields"
+            :report="report"
+          />
         </v-col>
       </v-row>
     </v-col>
@@ -118,6 +120,7 @@ import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements
 import isEqual from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
 import { saveAs } from 'file-saver'
+import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
