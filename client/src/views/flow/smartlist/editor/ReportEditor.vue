@@ -315,7 +315,11 @@ const addField = (field) => {
 }
 
 const deleteField = (index) => {
-  fields.value[index].updateType = UPDATE_TYPE.DELETE
+  if (fields.value[index].id) {
+    fields.value[index].updateType = UPDATE_TYPE.DELETE
+  } else {
+    fields.value.splice(index, 1)
+  }
   updateDisplayOrder()
 }
 
@@ -334,7 +338,13 @@ const addRequirement = (requirement) => {
   requirements.value.push(requirement)
 }
 
-const deleteRequirement = (index) => requirements.value[index].updateType = UPDATE_TYPE.DELETE
+const deleteRequirement = (index) => {
+  if (requirements.value[index].id) {
+    requirements.value[index].updateType = UPDATE_TYPE.DELETE
+  } else {
+    requirements.value.splice(index, 1)
+  }
+}
 
 const updateRequirement = (requirement, index) => requirements.value[index] = requirement
 
