@@ -328,14 +328,17 @@ const calculatedAvailableValues = computed(() => {
 const showFieldInput = computed(() => newRequirement.value === null)
 
 const showPsEventInput = computed(() => {
-  return !showFieldInput.value && !!newRequirement.value?.smartlistFieldId && newPsEventId.value === null
+  const isPsEventSmartlistField = !!newRequirement.value?.smartlistFieldId && [4,6].includes(newRequirement.value?.objectTypeId)
+  return !showFieldInput.value && isPsEventSmartlistField && newPsEventId.value === null
 })
 
 const afterFieldSelected = () => {
   getDataTypeRequirements()
   getOperators()
 
-  if (!showFieldInput.value && !!newRequirement.value?.smartlistFieldId) {
+  const isPsEventSmartlistField = !!newRequirement.value?.smartlistFieldId && [4,6].includes(newRequirement.value?.objectTypeId)
+
+  if (!showFieldInput.value && isPsEventSmartlistField) {
     focus(psEventField.value)
   } else {
     focus(operatorField.value)
@@ -411,6 +414,7 @@ const add = () => {
   } else if (newValue.value?.dataTypeId) {
     //if selected value is a data type requirement
     newRequirement.value.dataTypeRequirementId = newValue.value.id
+    newRequirement.value.dataTypeRequirement = newValue.value
   } else {
     //selected value is a list value
     newRequirement.value.listOfValueId = newValue.value.id
@@ -420,6 +424,8 @@ const add = () => {
     newRequirement.value.secondaryRequirement = true
     newRequirement.value.secondaryRequirementValue = secondaryValue.value.trim()
   }
+
+  newRequirement.value.isCustomValue = typeof newValue.value === 'string'
 
   emit('added', newRequirement.value)
   reset()
