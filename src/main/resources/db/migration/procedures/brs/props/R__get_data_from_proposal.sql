@@ -140,7 +140,9 @@ begin
                           'custom_fields.Solar Rebate for HIC',
                           (solar_rebate_for_hic),
                           'custom_fields.Storage Size',
-                          (storage_size_kwh)
+                          (storage_size_kwh),
+                          'custom_fields.Solar Below the Line Rebates',
+                          (solar_below_the_line_rebates)
                       ) as results
                from brs.proposal_log_history pl
                  INNER JOIN flow.project p on p.id = pl.project_id
