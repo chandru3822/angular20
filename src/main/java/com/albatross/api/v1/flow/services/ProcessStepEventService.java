@@ -73,7 +73,7 @@ public class ProcessStepEventService {
         for(int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++){
           if(processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()){
             processStepEvents.get(x).getReadonlyWhiteListPositions().remove(y);
-            x--;
+            y--;
           }
         }
       }
