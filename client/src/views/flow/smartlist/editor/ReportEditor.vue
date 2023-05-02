@@ -1,6 +1,6 @@
 <template>
 <v-container id="report-editor" class="fill-height align-start">
-  <v-row class="align-content-start">
+  <v-row class="align-content-start fill-height">
     <v-col cols="12">
       <v-card class="elevation-1 square-card px-4">
         <v-toolbar flat color="white" class="report-toolbar">
@@ -55,11 +55,18 @@
         />
         <v-spacer />
       </v-card>
-
     </v-col>
-    <v-col cols="12">
-      <v-row>
-        <v-col cols="3" class="field-container">
+    <v-col
+      cols="12"
+      id="report-editor-data"
+      class="pb-0"
+    >
+      <v-row class="fill-height" no-gutters>
+        <v-col cols="3" class="field-container elevation-1">
+          <v-col class="tabs-header">
+            <v-icon>mdi-menu</v-icon>
+            Columns and Filters
+          </v-col>
           <v-tabs v-model="tab" class="tabs">
             <v-tab>Columns</v-tab>
             <v-tab>Filters</v-tab>
@@ -369,8 +376,28 @@ onMounted(async () => {
 <style scoped lang="scss">
 @import "@/styles/main";
 
+#report-editor-data {
+  height: calc(100vh - 257px);
+
+  :deep(.v-data-footer) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+  }
+
+  :deep(.v-data-table__wrapper) {
+    height: calc(100vh - 270px) !important;
+  }
+}
+
 .report-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
+}
+
+.tabs-header {
+  background-color: white;
 }
 
 .tabs {
@@ -379,6 +406,8 @@ onMounted(async () => {
 
 .field-container {
   min-width: 260px;
+  background-color: white;
+  z-index: 0;
 }
 
 .show-overflow.v-window {

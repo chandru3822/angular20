@@ -3,6 +3,8 @@
   :loading="isDataLoading"
   :headers="headers"
   :items="reportData"
+  fixed-header
+  class="rounded-0"
 >
   <template #no-data>
     No available report data
@@ -72,7 +74,8 @@ const headers = computed(() => {
 const getData = async () => {
   try {
     isDataLoading.value = true
-    const {data} = await postRequest(`/smartlist/adhoc?limit=20`, {
+    reportData.value = []
+    const {data} = await postRequest(`/smartlist/adhoc?limit=40`, {
       smartlist: props.report,
       fields: props.fields,
       requirements: props.requirements
