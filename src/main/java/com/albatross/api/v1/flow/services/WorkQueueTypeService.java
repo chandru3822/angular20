@@ -69,10 +69,44 @@ public class WorkQueueTypeService {
   }
 
   public Optional<WorkQueueType> getType(Long id) {
-    return sqlCache.getBySql(
+    User user = securityService.getCurrentUser();
+    Optional<WorkQueueType> type = sqlCache.getBySql(
       WorkQueueTypeQuery.getType,
         ImmutableMap.of("id", id),
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
+    if(!user.isSystemAdmin()) {
+        boolean whiteListed = false;
+        boolean allowFlag = type.get().getHiddenAllow();
+
+        //Checks if the user's position is in the whitelist
+        for (int y = 0; y < type.get().getHiddenWhiteListedPositions().size(); y++) {
+          if (type.get().getHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
+            whiteListed = true;
+          }
+        }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!allowFlag) {
+          whiteListed = !whiteListed;
+        }
+        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+        if (whiteListed && !allowFlag) {
+          WhiteListedPosition position = new WhiteListedPosition();
+          position.setPositionId(user.getUserPositionId());
+          type.get().getHiddenWhiteListedPositions().add(position);
+        }
+        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+        else if (!whiteListed && !allowFlag) {
+          for (int y = 0; y < type.get().getHiddenWhiteListedPositions().size(); y++) {
+            if (type.get().getHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
+              type.get().getHiddenWhiteListedPositions().remove(y);
+              y--;
+            }
+          }
+        }
+      type.get().setHidden(!whiteListed);
+      }
+    return type;
   }
 
   public void saveHiddenAndWhiteList(WorkQueueType workQueueType, Boolean savePositions) {
