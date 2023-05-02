@@ -72,11 +72,6 @@
           <v-toolbar-title class="title-large">Event Access Control</v-toolbar-title>
         </v-toolbar>
         <v-card flat color="rowShadeCustom" class="square-card mt-2">
-<!--          <v-card-title style="height: 40px" class="py-0">-->
-<!--            Hidden-->
-<!--            <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"-->
-<!--                        v-model="event.hidden"></v-checkbox>-->
-<!--          </v-card-title>-->
           <v-card-text>
             <multi-select-group
               v-if="!eventLoading"
@@ -92,43 +87,6 @@
               @selected-changed="hiddenSelectedEventListener"
               @allow-changed="hiddenAllowEventListener"
               @checkbox-changed="hiddenCheckboxEventListener"></multi-select-group>
-
-<!--            <v-autocomplete-->
-<!--                v-if="event.hidden"-->
-<!--                v-model="event.hiddenWhiteListedPositions"-->
-<!--                :items="positions"-->
-<!--                :loading="positionsLoading"-->
-<!--                multiple-->
-<!--                clearable-->
-<!--                label="White Listed Positions"-->
-<!--                item-text="position"-->
-<!--                item-value="positionId"-->
-<!--                return-object-->
-<!--                height="35px"-->
-<!--                class="d-inline-block mr-3"-->
-<!--                @change="hiddenPositionsChanged = true">-->
-<!--              <template v-slot:selection="{item, index}">-->
-<!--                <v-chip small-->
-<!--                        v-if="index === 0 && event.hiddenWhiteListedPositions && event.hiddenWhiteListedPositions.length < 2">-->
-<!--                  <span>{{ item.position }}</span>-->
-<!--                </v-chip>-->
-<!--                <span-->
-<!--                    v-if="index === 1 && event.hiddenWhiteListedPositions && event.hiddenWhiteListedPositions.length >= 2"-->
-<!--                    class="primary&#45;&#45;text text-caption"-->
-<!--                >{{ event.hiddenWhiteListedPositions.length }} selected</span>-->
-<!--              </template>-->
-<!--              <template v-slot:prepend-item>-->
-<!--              <v-list-item @click="toggleSelectAllPositionsOwner()">-->
-<!--                <v-list-item-action>-->
-<!--                  <v-icon>{{ icon() }}</v-icon>-->
-<!--                </v-list-item-action>-->
-<!--                <v-list-item-title>Select All</v-list-item-title>-->
-<!--              </v-list-item>-->
-<!--              <v-divider-->
-<!--                  class="mt-2"-->
-<!--              ></v-divider>-->
-<!--              </template>-->
-<!--            </v-autocomplete>-->
             <br/>
             <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
                    @click="saveHiddenAndWhiteList">

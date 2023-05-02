@@ -82,7 +82,7 @@ public class WorkQueueCategoryService {
           for (int y = 0; y < categories.get(x).getHiddenWhiteListedPositions().size(); y++) {
             if (categories.get(x).getHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
               categories.get(x).getHiddenWhiteListedPositions().remove(y);
-              x--;
+              y--;
             }
           }
         }
