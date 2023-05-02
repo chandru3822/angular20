@@ -60,3 +60,6 @@ alba_stage_dump.sh
 /processing
 # Local Netlify folder
 .netlify
+
+# local AWS development
+/localstack-s3-volume
