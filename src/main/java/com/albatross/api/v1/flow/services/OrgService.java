@@ -32,7 +32,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,6 +58,10 @@ public class OrgService {
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
+
+  public void doOrgStructureRefresh() {
+    sqlCache.updateBySql(OrgQuery.orgStructureRefresh, Collections.emptyMap());
+  }
 
   public List<Org> getOrgsForCompany() {
     User user = securityService.getCurrentUser();

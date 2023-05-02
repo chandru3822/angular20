@@ -61,7 +61,27 @@ declare
     v_user_id bigint;
     v_user_ids bigint[];
     v_count bigint;
+    v_position_ids bigint[];
 BEGIN
+
+--   if (TG_OP = 'INSERT') and new.end_date is null then
+--     select array_agg(distinct position_id)
+--     from (select distinct position_id
+--           from flow.project p
+--                  inner join flow.user_position up on up.id = p.user_position_id
+--           union
+--           select distinct position_id
+--           from flow.contact c
+--                  inner join flow.user_position u on u.id = c.owner_user_position_id) as foo
+--     into v_position_ids;
+--
+--     if new.position_id = any (v_position_ids) then
+--       insert into flow.org_structure_refresh(user_position_id)
+--       values(old.id);
+--     end if;
+--
+--
+--   end if;
 
     IF (TG_OP = 'DELETE') THEN
         v_user_id = old.user_id;
@@ -117,6 +137,15 @@ $BODY$
 declare
     v_user_ids bigint[];
 BEGIN
+
+    IF (TG_OP = 'UPDATE') and old.parent_org_id is not null and
+       ((new.parent_org_id is not null and
+       old.parent_org_id != new.parent_org_id) or new.parent_org_id is null) then
+
+      insert into flow.org_structure_refresh(org_id)
+      values(new.id);
+
+    end if;
 
     select array_agg(user_id)
     into v_user_ids
