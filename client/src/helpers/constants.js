@@ -23,7 +23,7 @@ constants.MAX_FILE_SIZE = 1048576000 //1 gb
 //dont put spaces in these strings of file extentions
 //all regular image files, plus some one-offs
 //currently used for user images, reimbursement receipts, tournament backgrounds, company logos, event and project status logos
-constants.STANDARD_IMAGES_ONLY = '.png,.jpg,.jpeg,.gif,.tiff,.psd,.raw,.heif,.heic,.jfif'
+constants.STANDARD_IMAGES_ONLY = '.png,.jpg,.jpeg,.gif,.tiff,.tif,.psd,.raw,.heif,.heic,.jfif'
 //all doc files, must be added one at a time, there is no "doc/*" sort of option
 constants.STANDARD_DOCS_ONLY = '.doc,.docx,.pdf,.xls,.xlsx,.csv,.txt,.xlsm,.xlsb,.dxf,.dwg'
 //all audio files, must be added one at a time
