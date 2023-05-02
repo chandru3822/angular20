@@ -62,7 +62,7 @@
         item-text="name"
         item-value="id"
         return-object
-        placeholder="Type or Select Process Step"
+        placeholder="Type or Select Name"
         solo
         :flat="showOverflow"
         hide-details="true"
