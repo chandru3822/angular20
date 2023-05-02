@@ -37,6 +37,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final ProjectProcessStepService projectProcessStepService;
   private final MessagingService messagingService;
   private final DataViewService dataViewService;
+  private final OrgService orgService;
   private final SecurityService securityService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
@@ -69,6 +70,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.runDataViewMaintenance.enabled:false}")
   private boolean doViewMaintenance;
 
+  @Value(value = "${app.cron.orgStructureRefresh.enabled:false}")
+  private boolean doOrgStructureRefresh;
+
   @Override
   public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
     final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(10);
@@ -98,6 +102,17 @@ public class ScheduledConfig implements SchedulingConfigurer {
       // method will rollback the db transaction which contains very important information
       // about outbound texts
       smsService.processTwilioWebhookPayloads();
+    }
+  }
+
+  //    every  day at 11pm MST)
+  @Scheduled(cron = "0 0 5 * * *", zone = "UTC")
+  public void doOrgStructureRefresh() {
+    if (doOrgStructureRefresh) {
+      log.info("*** CRON: start org structure refresh ***");
+      setCronUser();
+      orgService.doOrgStructureRefresh();
+      log.info("*** CRON: end org structure refresh ***");
     }
   }
 
