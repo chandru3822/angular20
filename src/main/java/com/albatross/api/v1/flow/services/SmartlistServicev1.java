@@ -26,7 +26,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -3542,6 +3541,12 @@ public class SmartlistServicev1 {
          .append("flow.project_process_step.archived is not true and ")
          .append("flow.project_process_step_event.archived is not true");
 
+    //do work queue cycle filters if a work queue smartlist
+    if(null != smartlist.getWorkQueueTypeId()) {
+      query.append(" and wqc.date_entered_queue is not null and ")
+      .append("wqc.date_exited_queue is null ");
+    }
+
 
     //apply statuses/categories for any attached work queue types
     if (!smartlist.getEventWorkQueueTypes().isEmpty()) {
@@ -3726,7 +3731,7 @@ public class SmartlistServicev1 {
                    .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
                    .append("flow.process_step.process_step_name as \"Process Step Name\", ")
                    .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
-                   .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
+                   .append("coalesce(extract(days from now()::timestamp - wqc.date_entered_queue), DATE_PART('day', now() - flow.project_process_step_event.date_created)) as \"Days In Queue\", ")
                    .append("flow.process_step_event_work_queue_type.id as \"processStepEventWorkQueueTypeId\", ");
 
       if (timezone != null) {
@@ -4300,7 +4305,12 @@ public class SmartlistServicev1 {
     if (smartlistObjectTypeId == 4) {
       join += " flow.project_process_step";
     } else if (smartlistObjectTypeId == 6) {
-      join += " flow.project_process_step_event";
+      if(null == workQueueTypeId) {
+        join += " flow.project_process_step_event ";
+      } else {
+        join += " flow.work_queue_cycle wqc ";
+        join += " inner join flow.project_process_step_event on flow.project_process_step_event.id = wqc.project_process_step_event_id ";
+      }
       join += " inner join flow.process_step_event on flow.process_step_event.id = flow.project_process_step_event.process_step_event_id ";
       if (smartlistObjectTypeId == 6 && limitingId != null) {
         join += " and process_step_event.id = " + limitingId;
@@ -4431,7 +4441,7 @@ public class SmartlistServicev1 {
                    .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
                    .append("flow.process_step.process_step_name as \"Process Step Name\", ")
                    .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
-                   .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
+                   .append("coalesce(extract(days from now()::timestamp - wqc.date_entered_queue), DATE_PART('day', now() - flow.project_process_step_event.date_created)) as \"Days In Queue\", ")
                    .append("flow.process_step_event_work_queue_type.id as \"processStepEventWorkQueueTypeId\", ");
 
       if (customTimezone != null) {

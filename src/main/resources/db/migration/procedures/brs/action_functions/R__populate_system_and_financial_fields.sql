@@ -40,6 +40,10 @@ BEGIN
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
+    if v_loan_type = 'SunPower' then
+      v_loan_type = 'SunPower Financial';
+    end if;
+
     select cp.company_id
     into v_company_id
     from flow.project p

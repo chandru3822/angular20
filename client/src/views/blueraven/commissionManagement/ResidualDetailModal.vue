@@ -36,18 +36,19 @@
               </v-btn>
             </td>
             <td class="text-left" v-if="typeId !== 4">{{item.state}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignSignedDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignCompleteDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.utilityBillVerifiedDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.financialAgreementSignedDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.proofOfHomeownersInsuranceObtainedDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.substantialCompletionDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.cancelledDate}}</td>
-            <td class="text-left" v-if="typeId !== 4">{{item.onHoldDate}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignSignedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignCompleteDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.utilityBillVerifiedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.financialAgreementSignedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.proofOfHomeownersInsuranceObtainedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.substantialCompletionDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.projectName }}</td>
+            <td class="text-left">{{item.cancelledDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.onHoldDate | formatDate('date')}}</td>
             <td class="text-left" v-if="typeId !== 4">{{item.totalCashDownPayment | currency('$', 0)}}</td>
             <td class="text-left" v-if="typeId !== 4">{{item.firstCashPaymentAmount | currency('$', 0)}}</td>
             <td class="text-left" v-if="typeId === 4">{{item.clawbackAmount | currency('$', 0)}}</td>
-            <td class="text-left" v-if="typeId === 4">{{item.clawbackDate}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.clawbackDate | formatDate('date')}}</td>
           </tr>
         </template>
       </v-data-table>
@@ -92,8 +93,10 @@
         ],
         clawbackHeaders: [
           {text: 'Project ID', value: 'projectId', show: true},
+          {text: 'Project Name', value: 'projectName', show: true},
+          {text: 'Cancelled Date', value: 'cancelledDate', show: true},
           {text: 'Clawback Amount', value: 'clawbackAmount', show: true},
-          {text: 'Clawback Date', value: 'clawbackDate', show: true},
+          {text: 'Period Paid', value: 'clawbackDate', show: true},
         ]
       }
     },
@@ -106,12 +109,14 @@
           let csvData = ''
 
           if(this.typeId === 4) {
-            csvData = 'Project ID, Clawback Amount, Clawback Date';
+            csvData = 'Project ID, Project Name, Cancelled Date, Clawback Amount, Period Paid';
             csvData += '\n';
 
             this.data.forEach(p => {
               csvData +=
                 p.projectId + ',' +
+                '"' + p.projectName + '",' +
+                (p.cancelledDate || '') + ',' +
                 (p.clawbackAmount || '') + ',' +
                 (p.clawbackDate || '')
               csvData += '\n';
