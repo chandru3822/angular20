@@ -797,7 +797,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Accounting Review.csv';
-          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
           csvData += '\n';
 
           this.accountingData.forEach(p => {
@@ -823,6 +823,8 @@
                 p.commission_plan + '",' +
                 p.commission_earned + ',' +
                 p.commission_paid_to_date + ',' +
+                p.commission_forfeited_paid_to_date + ',' +
+                p.commission_forfeited_by_closer + ',' +
                 p.commission_adjustments + ',' +
                 p.current_pay_commissions + ',' +
                 p.remaining_value_commissions + ',"' +
