@@ -44,6 +44,18 @@ public class ResidualQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getCurrentClawbacks = """
+    select gcrc.user_id,
+           gcrc.project_id,
+           pd.project_name,
+           pd.cancelled_date,
+           gcrc.clawback_date,
+           gcrc.amount as clawback_amount
+    from  brs.get_current_residual_clawbacks(:userId) gcrc
+    inner join brs.project_details pd on pd.project_id = gcrc.project_id
+    """;
+
+  //language=PostgreSQL
   public final static String getResidualQualifiedLifetimeFds = """
     select *
     from brs.get_residual_qualified_lifetime_fds(:userId::bigint)

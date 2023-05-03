@@ -18,5 +18,5 @@ public class Residual {
 
     private Boolean residualEarned;
 
-    private Double percentOfResidualEarned, potentialResidual, earnedResidual, clawback, adjustmentOverride, total;
+    private Double percentOfResidualEarned, potentialResidual, earnedResidual, totalClawback, currentClawback, existingClawback, adjustmentOverride, total;
 }

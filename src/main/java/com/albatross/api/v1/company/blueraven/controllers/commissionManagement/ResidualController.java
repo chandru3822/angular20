@@ -42,6 +42,12 @@ public class ResidualController {
     residualService.saveProjectOverride(projectOverride);
   }
 
+
+  @GetMapping(value = "/currentClawbacks/{userId}")
+  public List<ResidualDetail> getCurrentClawbacks(@PathVariable Long userId) {
+    return residualService.getCurrentClawbacks(userId);
+  }
+
   @GetMapping(value = "/qualifiedLifetime/{userId}")
   public List<ResidualDetail> getResidualQualifiedLifetimeFds(@PathVariable Long userId) {
     return residualService.getResidualQualifiedLifetimeFds(userId);

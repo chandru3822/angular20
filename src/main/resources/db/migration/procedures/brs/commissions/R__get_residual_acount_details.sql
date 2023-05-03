@@ -23,7 +23,9 @@ CREATE OR REPLACE FUNCTION brs.get_residual_account_details()
             percent_of_residual_earned numeric,
             potential_residual         numeric,
             earned_residual            numeric,
-            clawback                   numeric,
+            current_clawback           numeric,
+            existing_clawback          numeric,
+            total_clawback             numeric,
             adjustment_override        numeric,
             total                      numeric
           )
@@ -57,14 +59,16 @@ begin
              when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) then
                foo1.potential_residual
              else 0.00 end as earned_residual,
-           foo1.clawback,
+           foo1.current_clawback,
+           foo1.existing_clawback,
+           foo1.total_clawback,
            foo1.adjustment_override,
            case
              when foo1.residual_earned is true and foo1.user_id = any(foo1.selected_user_ids) and
-                  coalesce(foo1.potential_residual,0) + coalesce(foo1.adjustment_override,0) - coalesce(foo1.clawback,0) > 0 then
-                 coalesce(foo1.potential_residual,0) + coalesce(foo1.adjustment_override,0) - coalesce(foo1.clawback,0)
-             when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and coalesce(foo1.adjustment_override,0) > coalesce(foo1.clawback,0)  then
-                 coalesce(foo1.adjustment_override,0) - coalesce(foo1.clawback,0)
+                  coalesce(foo1.potential_residual,0) + coalesce(foo1.adjustment_override,0) - coalesce(foo1.total_clawback,0) > 0 then
+                 coalesce(foo1.potential_residual,0) + coalesce(foo1.adjustment_override,0) - coalesce(foo1.total_clawback,0)
+             when foo1.residual_earned is false and foo1.user_id = any(foo1.selected_user_ids) and coalesce(foo1.adjustment_override,0) > coalesce(foo1.total_clawback,0)  then
+                 coalesce(foo1.adjustment_override,0) - coalesce(foo1.total_clawback,0)
              else 0.00 end as total
     from (select *,
                  rpa.allocation                                                   as required_fdc_per_month,
@@ -127,7 +131,9 @@ begin
                         from brs.get_residual_fds_qualified_this_period(u.id,false)) as qualified_this_period_fdc,
                        (select count(1)
                         from brs.get_residual_fds_not_qualified_this_period(u.id))           as fds_not_qualified,
-                       (select * from brs.get_total_residual_clawbacks(u.id))                as clawback,
+                       coalesce((select sum(amount)  from brs.get_current_residual_clawbacks(u.id)),0) as current_clawback,
+                       coalesce((select sum(amount) from brs.get_existing_residual_clawbacks(u.id)),0) as existing_clawback,
+                       coalesce((select * from brs.get_total_residual_clawbacks(u.id)),0)                as total_clawback,
                        rp.total,
                        coalesce((select sum(ra.amount)
                                  from brs.residual_adjustment ra
@@ -158,7 +164,7 @@ begin
                                                                         rppa.fdc_count =
                                                                         foo.qualified_this_period_fdc) as foo1
     where foo1.lifetime_fdc > 0
-       or foo1.clawback != 0;
+       or foo1.total_clawback != 0;
 
 END
 $$;
