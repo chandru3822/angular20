@@ -847,6 +847,13 @@ public class SmartlistService {
       });
     }
 
+    //@TODO: #smartlistsv2 - ID is used in some cases for fields in report engine. Setting a random ID for now. This has potential to cause conflicts and needs a long term solution
+    fields.forEach(f -> {
+      if (f.getId() == null) {
+        f.setId((long) ((Math.random() * (40000 - 20000)) + 20000));
+      }
+    });
+
     String query;
 
     if (List.of(4L, 6L).contains(report.getObjectTypeId())) {
