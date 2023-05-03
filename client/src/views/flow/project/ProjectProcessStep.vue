@@ -713,10 +713,11 @@ export default {
       if (null != field) {
         fieldReadOnly = getCustomFieldReadOnly(this.$store, field)
       }
-      return (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
+      let val = (!this.userIsAdmin && this?.processStep?.processStepStatusTypeId !== 1)
         || fieldReadOnly
         || !this.userCanEdit
         || this.processStepReadOnly
+      return val;
     },
     followMultipleLinks(action) {
       let params = {

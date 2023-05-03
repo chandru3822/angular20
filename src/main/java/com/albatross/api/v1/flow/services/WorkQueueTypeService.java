@@ -77,7 +77,6 @@ public class WorkQueueTypeService {
     if(!user.isSystemAdmin()) {
         boolean whiteListed = false;
         boolean allowFlag = type.get().getHiddenAllow();
-
         //Checks if the user's position is in the whitelist
         for (int y = 0; y < type.get().getHiddenWhiteListedPositions().size(); y++) {
           if (type.get().getHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {

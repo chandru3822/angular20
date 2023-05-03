@@ -763,7 +763,7 @@
       async saveReadOnlyAndWhiteList(field) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
+          const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${this.currentField.positionsChanged ?? false}`, field)
           field.positionsChanged = false
           if (!field.customFieldGroupAssignmentReadOnly) {
             this.$set(field, 'whiteListedPositions', [])
@@ -949,15 +949,15 @@
       },
       readOnlySelectedEventListener(e){
         this.currentField.whiteListedPositions = e;
-        this.currentField.readOnlyPositionsChanged = true;
+        this.currentField.positionsChanged = true;
       },
       readOnlyAllowEventListener(e){
         this.currentField.customFieldGroupAssignmentReadOnlyAllow = (e === 0);
-        this.currentField.readOnlyPositionsChanged = true;
+        this.currentField.positionsChanged = true;
       },
       readOnlyCheckboxEventListener(e){
         this.currentField.customFieldGroupAssignmentReadOnly = e;
-        this.currentField.readOnlyPositionsChanged = true;
+        this.currentField.positionsChanged = true;
       },
       setCurrentField(cf){
         this.currentField = cf;
