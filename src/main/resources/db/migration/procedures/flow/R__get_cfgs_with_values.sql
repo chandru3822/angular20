@@ -810,8 +810,4 @@ drop table if exists cfvs;
 return v_json;
 
 END;
-
 $$;
-
-alter function get_cfgs_with_values(bigint, bigint, bigint, bigint, boolean, bigint[], boolean, boolean) owner to albatross_stage;
-
