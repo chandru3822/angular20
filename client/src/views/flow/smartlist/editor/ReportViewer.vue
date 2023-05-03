@@ -56,7 +56,8 @@ const reportData = ref([])
 const isDataLoading = ref(false)
 
 watchEffect(async () => {
-  if (!props.report?.objectTypeId || props.fields.length < 1 || props.requirements.length < 1) {
+  if (!props.report?.objectTypeId || props.fields?.length < 1 || props.requirements.length < 1) {
+    reportData.value = []
     return
   }
 

@@ -210,6 +210,12 @@
     </v-list-item>
   </template>
 </v-list>
+  <v-btn
+    text
+    @click="emit('cleared')"
+  >
+    Remove All Filters
+  </v-btn>
 </fragment>
 </template>
 
@@ -222,7 +228,7 @@ import cloneDeep from 'lodash.clonedeep'
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 
-const emit = defineEmits(['added', 'updated', 'deleted', 'overflow-required'])
+const emit = defineEmits(['added', 'updated', 'deleted', 'cleared', 'overflow-required'])
 
 const props = defineProps({
   requirements: {

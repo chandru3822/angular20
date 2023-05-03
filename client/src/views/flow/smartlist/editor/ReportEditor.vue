@@ -16,7 +16,7 @@
               <v-text-field
                 v-model="report.name"
                 outlined
-                label="Name"
+                placeholder="Type Name"
                 hide-details="true"
                 ref="name"
               />
@@ -76,15 +76,18 @@
             :class="{'show-overflow': showRequirementOverflow}"
           >
             <v-tab-item>
-              <ReportFields
-                :fields="fields"
-                :available-fields="availableFields"
-                :loading="loadingAvailableFields"
-                :update-types="UPDATE_TYPE"
-                @added="addField"
-                @deleted="deleteField"
-                @reordered="reorderFields"
-              />
+              <div>
+                <ReportFields
+                  :fields="fields"
+                  :available-fields="availableFields"
+                  :loading="loadingAvailableFields"
+                  :update-types="UPDATE_TYPE"
+                  @added="addField"
+                  @deleted="deleteField"
+                  @reordered="reorderFields"
+                  @cleared="clearFields"
+                />
+              </div>
             </v-tab-item>
             <v-tab-item>
               <ReportRequirements
@@ -97,15 +100,15 @@
                 @deleted="deleteRequirement"
                 @updated="updateRequirement"
                 @overflow-required="toggleRequirementOverflow"
+                @cleared="clearRequirements"
               />
             </v-tab-item>
           </v-tabs-items>
-
         </v-col>
         <v-col cols="9">
           <ReportViewer
-            :requirements="requirements"
-            :fields="fields"
+            :requirements="requirements.filter(r => r.updateType !== UPDATE_TYPE.DELETE)"
+            :fields="fields.filter(f => f?.updateType !== UPDATE_TYPE.DELETE)"
             :report="report"
           />
         </v-col>
@@ -338,6 +341,16 @@ const updateDisplayOrder = () => {
 const reorderFields = (updatedFields) => {
   fields.value = updatedFields
   updateDisplayOrder()
+}
+
+const clearFields = () => {
+  fields.value = fields.value.filter(f => !!f.id)
+  fields.value.forEach(f => f.updateType = UPDATE_TYPE.DELETE)
+}
+
+const clearRequirements = () => {
+  requirements.value = requirements.value.filter(r => !!r.id)
+  requirements.value.forEach(r => r.updateType = UPDATE_TYPE.DELETE)
 }
 
 const addRequirement = (requirement) => {

@@ -1,58 +1,71 @@
 <template>
 <fragment>
-<v-autocomplete
-  v-show="!showPsEventField"
-  v-model="newValue"
-  :items="availableFields"
-  item-text="name"
-  return-object
-  placeholder="Add Column"
-  :loading="loading"
-  solo
-  hide-details="true"
-  class="field-selector pa-2"
-  @change="afterFieldSelected"
-/>
+<v-row no-gutters>
+  <v-col cols="12">
+    <v-autocomplete
+      v-show="!showPsEventField"
+      v-model="newValue"
+      :items="availableFields"
+      item-text="name"
+      return-object
+      placeholder="Add Column"
+      :loading="loading"
+      solo
+      hide-details="true"
+      class="field-selector pa-2"
+      @change="afterFieldSelected"
+    />
 
-<v-autocomplete
-  v-show="showPsEventField"
-  ref="psEventField"
-  :items="calculatedAvailablePsEvents"
-  v-model="newPsEvent"
-  item-text="name"
-  return-object
-  placeholder="Type or Select Name"
-  solo
-  hide-details="true"
-  class="field-selector pa-2"
-  @change="add"
-/>
+    <v-autocomplete
+      v-show="showPsEventField"
+      ref="psEventField"
+      :items="calculatedAvailablePsEvents"
+      v-model="newPsEvent"
+      item-text="name"
+      return-object
+      placeholder="Type or Select Name"
+      solo
+      hide-details="true"
+      class="field-selector pa-2"
+      @change="add"
+    />
 
-<draggable
-  :list="fields"
-  @change="reorder"
->
-  <template v-for="(field, index) in fields">
-    <v-list-item v-if="field.updateType !== updateTypes.DELETE" :key="UUID()">
-      <v-list-item-action>
-        <v-icon>drag_handle</v-icon>
-      </v-list-item-action>
+    <draggable
+      :list="fields"
+      @change="reorder"
+    >
+      <template v-for="(field, index) in fields">
+        <v-list-item v-if="field.updateType !== updateTypes.DELETE" :key="UUID()">
+          <v-list-item-action>
+            <v-icon>drag_handle</v-icon>
+          </v-list-item-action>
 
-      <v-list-item-content>
-        {{ field.name }}
-      </v-list-item-content>
+          <v-list-item-content>
+            {{ field.name }}
+          </v-list-item-content>
 
-      <v-list-item-action>
-        <v-btn
-          icon
-          @click.stop="remove(index)"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-list-item-action>
-    </v-list-item>
-  </template>
-</draggable>
+          <v-list-item-action>
+            <v-btn
+              icon
+              @click.stop="remove(index)"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-list-item-action>
+        </v-list-item>
+      </template>
+    </draggable>
+  </v-col>
+
+  <v-col class="clear-btn">
+    <v-btn
+      text
+      @click="emit('cleared')"
+    >
+      Remove All Columns
+    </v-btn>
+  </v-col>
+</v-row>
 </fragment>
 </template>
 
@@ -62,7 +75,7 @@ import draggable from 'vuedraggable'
 import { UUID } from '@/helpers/helpers'
 import { computed, nextTick, ref } from 'vue'
 
-const emit = defineEmits(['added', 'reordered', 'deleted'])
+const emit = defineEmits(['added', 'reordered', 'deleted', 'cleared'])
 
 const props = defineProps({
   fields: {
