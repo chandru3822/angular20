@@ -160,6 +160,31 @@
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+<!--            todo: set up and wire up backend-->
+            <div v-if="userIsAdmin" class="snippet-selector-grid snippet-selector-background">
+              <div class="label-medium">Field to Display on Event Snippet</div>
+            <v-autocomplete
+                label="Custom Field Group"
+                v-model="cfgToDisplayOnSnippet"
+                return-object
+                clearable
+                item-text="groupName"
+                :items="filterCustomFieldGroups()"/>
+            <v-autocomplete
+                v-if="cfgToDisplayOnSnippet"
+                label="Custom Field"
+                v-model="event.snippetCustomField"
+                :items="cfgToDisplayOnSnippet.customFields"
+                item-text="fieldName"
+                item-value="id"
+                return-object
+            />
+              <v-btn v-if="event.snippetCustomField" color="primary">save</v-btn>
+            </div>
+            <div v-else class="pa-5 d-flex align-baseline snippet-selector-background" style="gap: 1rem">
+              <div class="label-medium">Field to Display on Event Snippet: </div>
+              <div>{{ event.snippetCustomField?.fieldName || 'none' }}</div>
+            </div>
             <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
               <v-icon>add</v-icon>
               <span v-if="!constants.IS_MOBILE">Create Group</span>
@@ -600,6 +625,7 @@ export default {
       availableCustomFields: [],
       parent: {},
       eventId: this.$route.params.id,
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       companyId: this.$store.state.user.details.companyId,
@@ -614,9 +640,17 @@ export default {
       expanded: [],
       eventResourceFields: [],
       eventTypes: [],
+      cfgToDisplayOnSnippet: null,
       cfgToDelete: null,
       cFieldToDelete: null,
       WhiteListTypeEnum
+    }
+  },
+  watch: {
+    cfgToDisplayOnSnippet() {
+      if (this.cfgToDisplayOnSnippet === null){
+        this.event.snippetCustomField = null
+      }
     }
   },
   computed: {
@@ -1155,6 +1189,18 @@ export default {
 
 .add-new {
   border-bottom: 1px solid #E6E6E6;
+}
+
+.snippet-selector-grid {
+  display: grid;
+  grid-template-columns: 3fr 3fr 3fr 1fr;
+  column-gap: 2rem;
+  align-items: baseline;
+  padding: 1rem;
+  margin-right: 1rem;
+}
+.snippet-selector-background {
+  background-color: var(--v-grey-lighten4);
 }
 
 </style>
