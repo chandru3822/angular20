@@ -674,8 +674,8 @@ FROM (select cfvs.id,
                             then cfvs.show_on_user_profile is true
                         else true end
                 and case
-                        when cfvs.custom_field_group_assignment_hidden and
-                             p_is_system_admin::boolean is false
+                        when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
+                                        and cfvs.custom_field_group_assignment_hidden_allow is true
                             then cfvs.custom_field_group_assignment_id =
                                  (select wlp2.custom_field_group_assignment_id
                                   from flow.white_listed_position wlp2
@@ -685,6 +685,17 @@ FROM (select cfvs.id,
                                     and wlp2.archived is not true
                                     and wlp2.position_id = any (p_user_position_ids::bigint[])
                                   limit 1)
+                        when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
+                            and cfvs.custom_field_group_assignment_hidden_allow is false
+                          then coalesce((cfvs.custom_field_group_assignment_id !=
+                               (select wlp2.custom_field_group_assignment_id
+                                from flow.white_listed_position wlp2
+                                where wlp2.custom_field_group_assignment_id =
+                                      cfvs.custom_field_group_assignment_id
+                                  and wlp2.white_list_type_id = 2
+                                  and wlp2.archived is not true
+                                  and wlp2.position_id = any (p_user_position_ids::bigint[])
+                                limit 1)), true)
                         else 1 = 1 end
       order by field_order, field_name) as sub_rows;
 else
@@ -774,17 +785,28 @@ FROM (select cfg.id,
                              from cfvs
                              where cfvs.custom_field_group_id = cfg.id
                                and case
-                                     when cfvs.custom_field_group_assignment_hidden and
-                                          p_is_system_admin::boolean is false
-                               then cfvs.custom_field_group_assignment_id =
-                                                        (select wlp2.custom_field_group_assignment_id
-                                                         from flow.white_listed_position wlp2
-                                                         where wlp2.custom_field_group_assignment_id =
-                                                               cfvs.custom_field_group_assignment_id
-                                                           and wlp2.white_list_type_id = 2
-                                                           and wlp2.archived is not true
-                                                           and wlp2.position_id = any (p_user_position_ids::bigint[])
-                                                         limit 1)
+                                     when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
+                                       and cfvs.custom_field_group_assignment_hidden_allow is true
+                                       then cfvs.custom_field_group_assignment_id =
+                                            (select wlp2.custom_field_group_assignment_id
+                                             from flow.white_listed_position wlp2
+                                             where wlp2.custom_field_group_assignment_id =
+                                                   cfvs.custom_field_group_assignment_id
+                                               and wlp2.white_list_type_id = 2
+                                               and wlp2.archived is not true
+                                               and wlp2.position_id = any (p_user_position_ids::bigint[])
+                                             limit 1)
+                                     when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
+                                       and cfvs.custom_field_group_assignment_hidden_allow is false
+                                       then coalesce((cfvs.custom_field_group_assignment_id !=
+                                                      (select wlp2.custom_field_group_assignment_id
+                                                       from flow.white_listed_position wlp2
+                                                       where wlp2.custom_field_group_assignment_id =
+                                                             cfvs.custom_field_group_assignment_id
+                                                         and wlp2.white_list_type_id = 2
+                                                         and wlp2.archived is not true
+                                                         and wlp2.position_id = any (p_user_position_ids::bigint[])
+                                                       limit 1)), true)
                                                else 1 = 1 end
                              order by field_order, field_name) fields), '[]') AS "customFieldValues"
       from flow.custom_field_group cfg
