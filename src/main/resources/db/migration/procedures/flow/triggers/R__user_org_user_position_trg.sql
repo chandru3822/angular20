@@ -1,4 +1,4 @@
-drop function if exists flow.refresh_company_user_status_records();
+drop function if exists flow.refresh_company_user_status_records() cascade;
 CREATE OR REPLACE FUNCTION flow.refresh_company_user_status_records()
     RETURNS trigger AS
 $BODY$
@@ -26,7 +26,7 @@ $BODY$
     COST 100;
 
 
-drop function if exists flow.refresh_user_records();
+drop function if exists flow.refresh_user_records() cascade;
 CREATE OR REPLACE FUNCTION flow.refresh_user_records()
     RETURNS trigger AS
 $BODY$
@@ -53,7 +53,7 @@ $BODY$
     VOLATILE
     COST 100;
 
-drop function if exists flow.refresh_user_position_records();
+drop function if exists flow.refresh_user_position_records() cascade;
 CREATE OR REPLACE FUNCTION flow.refresh_user_position_records()
     RETURNS trigger AS
 $BODY$
@@ -111,7 +111,7 @@ $BODY$
     COST 100;
 
 
-drop function if exists flow.refresh_position_records();
+drop function if exists flow.refresh_position_records() cascade;
 CREATE OR REPLACE FUNCTION flow.refresh_position_records()
     RETURNS trigger AS
 $BODY$
@@ -130,7 +130,7 @@ $BODY$
     COST 100;
 
 
-drop function if exists flow.refresh_org_records();
+drop function if exists flow.refresh_org_records() cascade;
 CREATE OR REPLACE FUNCTION flow.refresh_org_records()
     RETURNS trigger AS
 $BODY$
@@ -162,7 +162,7 @@ $BODY$
     COST 100;
 
 
-drop function if exists flow.refresh_user_status_type_records();
+drop function if exists flow.refresh_user_status_type_records() cascade;
 CREATE OR REPLACE FUNCTION flow.refresh_user_status_type_records()
     RETURNS trigger AS
 $BODY$
