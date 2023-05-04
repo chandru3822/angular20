@@ -35,17 +35,20 @@
                 {{item.projectId}}
               </v-btn>
             </td>
-            <td class="text-left">{{item.state}}</td>
-            <td class="text-left">{{item.finalDesignSignedDate}}</td>
-            <td class="text-left">{{item.finalDesignCompleteDate}}</td>
-            <td class="text-left">{{item.utilityBillVerifiedDate}}</td>
-            <td class="text-left">{{item.financialAgreementSignedDate}}</td>
-            <td class="text-left">{{item.proofOfHomeownersInsuranceObtainedDate}}</td>
-            <td class="text-left">{{item.substantialCompletionDate}}</td>
-            <td class="text-left">{{item.cancelledDate}}</td>
-            <td class="text-left">{{item.onHoldDate}}</td>
-            <td class="text-left">{{item.totalCashDownPayment | currency('$', 0)}}</td>
-            <td class="text-left">{{item.firstCashPaymentAmount | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.state}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignSignedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.finalDesignCompleteDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.utilityBillVerifiedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.financialAgreementSignedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.proofOfHomeownersInsuranceObtainedDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.substantialCompletionDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.projectName }}</td>
+            <td class="text-left">{{item.cancelledDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.onHoldDate | formatDate('date')}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.totalCashDownPayment | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId !== 4">{{item.firstCashPaymentAmount | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.clawbackAmount | currency('$', 0)}}</td>
+            <td class="text-left" v-if="typeId === 4">{{item.clawbackDate | formatDate('date')}}</td>
           </tr>
         </template>
       </v-data-table>
@@ -61,14 +64,20 @@
     props: {
       userFullName: String,
       data: Array,
-      title: String
+      title: String,
+      typeId: Number
+    },
+    computed: {
+      headers(){
+        return this.typeId === 4 ? this.clawbackHeaders : this.residualHeaders
+      }
     },
     created() {
     },
     data() {
       return {
         snackbar: {},
-        headers: [
+        residualHeaders: [
           {text: 'Project ID', value: 'projectId', show: true},
           {text: 'State', value: 'state', show: true},
           {text: 'FDA', value: 'finalDesignSignedDate', show: true},
@@ -82,7 +91,13 @@
           {text: 'Total Cash Down Payment', value: 'totalCashDownPayment', show: true},
           {text: 'First Cash Payment Amount', value: 'firstCashPaymentAmount', show: true},
         ],
-
+        clawbackHeaders: [
+          {text: 'Project ID', value: 'projectId', show: true},
+          {text: 'Project Name', value: 'projectName', show: true},
+          {text: 'Cancelled Date', value: 'cancelledDate', show: true},
+          {text: 'Clawback Amount', value: 'clawbackAmount', show: true},
+          {text: 'Period Paid', value: 'clawbackDate', show: true},
+        ]
       }
     },
     methods: {
@@ -90,25 +105,43 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = `${this.userFullName} - ${this.title}.csv`;
-          let csvData = 'Project ID, State, FDA, FDC, Utility Bill Verified, FAS, Proof Of Homeowners Insurance, SC, Cancelled, On Hold, Total Cash Down Payment, First Cash Payment Amount';
-          csvData += '\n';
 
-          this.data.forEach(p => {
-            csvData +=
-              p.projectId + ',"' +
-              p.state + '",' +
-              (p.finalDesignSignedDate || '') + ',"' +
-              (p.finalDesignCompleteDate || '') + '",' +
-              (p.utilityBillVerifiedDate || '') + ',' +
-              (p.financialAgreementSignedDate || '') + ',"' +
-              (p.proofOfHomeownersInsuranceObtainedDate || '') + '",' +
-              (p.substantialCompletionDate || '') + ',' +
-              (p.cancelledDate || '') + ',' +
-              (p.onHoldDate || '') + ',' +
-              (p.totalCashDownPayment || '') + ',' +
-              (p.firstCashPaymentAmount || '')
+          let csvData = ''
+
+          if(this.typeId === 4) {
+            csvData = 'Project ID, Project Name, Cancelled Date, Clawback Amount, Period Paid';
             csvData += '\n';
-          })
+
+            this.data.forEach(p => {
+              csvData +=
+                p.projectId + ',' +
+                '"' + p.projectName + '",' +
+                (p.cancelledDate || '') + ',' +
+                (p.clawbackAmount || '') + ',' +
+                (p.clawbackDate || '')
+              csvData += '\n';
+            })
+          } else {
+            csvData = 'Project ID, State, FDA, FDC, Utility Bill Verified, FAS, Proof Of Homeowners Insurance, SC, Cancelled, On Hold, Total Cash Down Payment, First Cash Payment Amount';
+            csvData += '\n';
+
+            this.data.forEach(p => {
+              csvData +=
+                p.projectId + ',"' +
+                p.state + '",' +
+                (p.finalDesignSignedDate || '') + ',"' +
+                (p.finalDesignCompleteDate || '') + '",' +
+                (p.utilityBillVerifiedDate || '') + ',' +
+                (p.financialAgreementSignedDate || '') + ',"' +
+                (p.proofOfHomeownersInsuranceObtainedDate || '') + '",' +
+                (p.substantialCompletionDate || '') + ',' +
+                (p.cancelledDate || '') + ',' +
+                (p.onHoldDate || '') + ',' +
+                (p.totalCashDownPayment || '') + ',' +
+                (p.firstCashPaymentAmount || '')
+              csvData += '\n';
+            })
+          }
 
           let blob = new Blob([csvData], {
             type: 'text/csv;charset=utf-8'

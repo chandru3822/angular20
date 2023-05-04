@@ -30,12 +30,19 @@ public class WorkQueueCategoryQuery {
         from flow.work_queue_category wqc
         where company_id = :companyId
           and archived is not true
-          and case when wqc.hidden and not :hiddenWqcOverride and :filtered
+          and case when wqc.hidden and not :hiddenWqcOverride and :filtered and wqc.hidden_allow
             then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                   FROM flow.white_listed_position wlp
                                                   WHERE wlp.white_list_type_id = 11
                                                     AND wlp.archived is not true
-                                                    AND wlp.work_queue_category_id = wqc.id)::bigint[] else 1=1 end
+                                                    AND wlp.work_queue_category_id = wqc.id)::bigint[]
+            when wqc.hidden and not :hiddenWqcOverride and :filtered and not wqc.hidden_allow
+                then not array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
+                FROM flow.white_listed_position wlp
+                WHERE wlp.white_list_type_id = 11
+                AND wlp.archived is not true
+                AND wlp.work_queue_category_id = wqc.id)::bigint[]
+                else  1=1 end
         order by display_order
         """;
 

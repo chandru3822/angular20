@@ -318,13 +318,13 @@ BEGIN
                            AND dcl.ledger_type_id = 1
                            and dcl.position_id = 1)
                             AS commission_paid_to_date,
-                        (SELECT coalesce(sum(amount), 0)
+                        coalesce((SELECT coalesce(sum(amount), 0)
                          FROM brs.project_commission_ledger dcl
                          WHERE dcl.project_id = p.id::bigint
                            AND dcl.ledger_type_id = 7
-                           and dcl.position_id = 1)
+                           and dcl.position_id = 1),0)
                           AS commission_forfeited_paid_to_date,
-                        pd.commission_forfeited_by_closer,
+                        coalesce(pd.commission_forfeited_by_closer,0) as commission_forfeited_by_closer,
                         (
                             SELECT coalesce(sum(dcl.paid_to_date), 0)
                             FROM brs.project_commission_ledger dcl

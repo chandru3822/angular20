@@ -28,6 +28,10 @@ BEGIN
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
+    if v_loan_type = 'SunPower' then
+      v_loan_type = 'SunPower Financial';
+    end if;
+
     select cp.company_id
     into v_company_id
     from flow.project p
@@ -355,7 +359,7 @@ BEGIN
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-       -- raise notice 'cfga% value %',_key,_value;
+      --  raise notice 'cfga% value %',_key,_value;
       perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
 

@@ -67,6 +67,13 @@ public class ResidualService {
     }
   }
 
+  public List<ResidualDetail> getCurrentClawbacks(Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    List<ResidualDetail> results = sqlCache.queryBySql(ResidualQuery.getCurrentClawbacks, params, ResidualDetail.class);
+    return results;
+  }
+
   public List<ResidualDetail> getResidualQualifiedLifetimeFds(Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
