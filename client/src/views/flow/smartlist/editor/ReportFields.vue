@@ -60,12 +60,42 @@
   <v-col class="clear-btn">
     <v-btn
       text
-      @click="emit('cleared')"
+      @click="showDeleteDialog = true"
     >
       Remove All Columns
     </v-btn>
   </v-col>
 </v-row>
+
+<v-dialog
+  v-model="showDeleteDialog"
+  persistent
+  width="450"
+>
+  <v-card>
+    <v-card-title>Clear All Columns</v-card-title>
+
+    <v-card-text>
+      Do you want to delete all columns?
+    </v-card-text>
+
+    <v-card-actions class="justify-end">
+      <v-btn
+        text
+        @click="showDeleteDialog = false"
+      >
+        Cancel
+      </v-btn>
+
+      <v-btn
+        color="primary"
+        @click="[showDeleteDialog = false, emit('cleared')]"
+      >
+        Save
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 </fragment>
 </template>
 
@@ -100,6 +130,7 @@ const newValue = ref(null)
 const newPsEvent = ref(null)
 const psEventField = ref(null)
 const showPsEventField = ref(false)
+const showDeleteDialog = ref(false)
 
 // const calculatedName = (field) => {
 //   let name = field.name

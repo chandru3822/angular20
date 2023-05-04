@@ -210,12 +210,42 @@
     </v-list-item>
   </template>
 </v-list>
-  <v-btn
-    text
-    @click="emit('cleared')"
-  >
-    Remove All Filters
-  </v-btn>
+<v-btn
+  text
+  @click="showDeleteDialog = true"
+>
+  Remove All Filters
+</v-btn>
+
+<v-dialog
+  v-model="showDeleteDialog"
+  persistent
+  width="450"
+>
+  <v-card>
+    <v-card-title>Clear All Filters</v-card-title>
+
+    <v-card-text>
+      Do you want to delete all filters?
+    </v-card-text>
+
+    <v-card-actions class="justify-end">
+      <v-btn
+        text
+        @click="showDeleteDialog = false"
+      >
+        Cancel
+      </v-btn>
+
+      <v-btn
+        color="primary"
+        @click="[showDeleteDialog = false, emit('cleared')]"
+      >
+        Save
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 </fragment>
 </template>
 
@@ -265,6 +295,8 @@ const operatorField = ref(null)
 const valueField = ref(null)
 const listOfValueField = ref(null)
 const secondaryValueField = ref(null)
+
+const showDeleteDialog = ref(false)
 
 const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 
