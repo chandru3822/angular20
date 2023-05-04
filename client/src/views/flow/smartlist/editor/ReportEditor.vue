@@ -29,7 +29,7 @@
               text
               color="primary"
               :disabled="!hasUnsavedChanges"
-              @click.stop="save"
+              @click.stop="showSaveDialog = true"
             >
               <v-icon>save</v-icon>
               <span v-if="!constants.IS_MOBILE">Save</span>
@@ -117,6 +117,36 @@
     </v-col>
   </v-row>
 </v-container>
+
+<v-dialog
+  v-model="showSaveDialog"
+  persistent
+  width="450"
+>
+  <v-card>
+    <v-card-title>Save Smartlist</v-card-title>
+
+    <v-card-text>
+      Do you want to save this smartlist?
+    </v-card-text>
+
+    <v-card-actions class="justify-end">
+      <v-btn
+        text
+        @click="showSaveDialog = false"
+      >
+        Cancel
+      </v-btn>
+
+      <v-btn
+        color="primary"
+        @click="[showSaveDialog = false, save()]"
+      >
+        Save
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 
 <v-dialog
   v-model="showUnsavedDialog"
