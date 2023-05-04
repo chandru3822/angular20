@@ -133,7 +133,7 @@ export const UserStore = {
       })
     },
     getUserPositionIds: (state) => {
-      return state.details.userPositions.map(a => a.id);
+      return state.details.userPositions.map(a => a.positionId);
     }
   }
 }
