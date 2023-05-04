@@ -1,4 +1,5 @@
 <template>
+<fragment>
 <v-container id="report-editor" class="fill-height align-start">
   <v-row class="align-content-start fill-height">
     <v-col cols="12">
@@ -116,11 +117,42 @@
     </v-col>
   </v-row>
 </v-container>
+
+<v-dialog
+  v-model="showUnsavedDialog"
+  persistent
+  width="450"
+>
+  <v-card>
+    <v-card-title>Unsaved Work</v-card-title>
+
+    <v-card-text>
+      You have unsaved changes to your smartlist. Would you like to save changes before leaving?
+    </v-card-text>
+
+    <v-card-actions class="justify-end">
+      <v-btn
+        text
+        @click="unsavedPromiseResolve(false)"
+      >
+        Leave Without Saving
+      </v-btn>
+
+      <v-btn
+        color="primary"
+        @click="unsavedPromiseResolve(true)"
+      >
+        Save
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
+</fragment>
 </template>
 
 <script setup>
 import useReportStore from '@/views/flow/smartlist/reportStore'
-import { computed, getCurrentInstance, onMounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue'
 import { getRequest, getSnackbar, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import { DateTime } from 'luxon'
@@ -131,6 +163,8 @@ import isEqual from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
 import { saveAs } from 'file-saver'
 import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
+import { onBeforeRouteLeave } from 'vue-router/composables'
+import { Fragment } from 'vue-frag'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -153,6 +187,9 @@ const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELE
 const tab = ref(null)
 const loadingAvailableFields = ref(false)
 const showRequirementOverflow = ref(false)
+const showSaveDialog = ref(false)
+const showUnsavedDialog = ref(false)
+const unsavedPromiseResolve = ref(null)
 
 const reportId = vueInstance.$route.params.reportId
 const report = ref({mainProcessSteps: true, name: ''})
@@ -251,6 +288,7 @@ const save = async () => {
 
     if (report.value?.id) {
       //send all fields for re-ordering, but send only requirements which have changed
+      const hasReportUpdated = !isEqual(report.value, sourceReport.value)
       const hasFieldsUpdated = !isEqual(fields.value, sourceFields.value)
       const updatedRequirements = requirements.value.filter(r => r.updateType)
 
@@ -267,9 +305,14 @@ const save = async () => {
       if (updatedRequirements.length > 0) {
         getRequirements()
       }
+
+      if (hasReportUpdated) {
+        sourceReport.value = cloneDeep(report.value)
+      }
     } else {
       const {data} = await postRequest(`/smartlist`, report.value)
-      report.value = data
+      report.value = cloneDeep(data)
+      sourceReport.value = cloneDeep(data)
       vueInstance.$router.replace({name: 'reportEditor', params: {reportId: data.id}})
     }
     snackbar('SUCCESS', 'Save Successful')
@@ -373,6 +416,8 @@ const toggleRequirementOverflow = (required) => {
 }
 
 onMounted(async () => {
+  window.addEventListener('beforeunload', windowLeave)
+
   await getReportTypes()
 
   if (reportId) {
@@ -384,6 +429,35 @@ onMounted(async () => {
     name.value.focus()
   }
 })
+
+onUnmounted(() => window.removeEventListener('beforeunload', windowLeave))
+
+onBeforeRouteLeave(async (to, from, next) => {
+  if (hasUnsavedChanges.value) {
+    const shouldSave = await unsavedPrompt()
+
+    if (shouldSave) {
+      await save()
+    }
+  }
+
+  next()
+})
+
+
+const unsavedPrompt = async () => {
+  showUnsavedDialog.value = true
+  return new Promise((resolve, reject) => {
+    unsavedPromiseResolve.value = resolve
+  })
+}
+
+const windowLeave = async (event) => {
+  if (hasUnsavedChanges.value) {
+    event.preventDefault()
+    event.returnValue = ''
+  }
+}
 </script>
 
 <style scoped lang="scss">
