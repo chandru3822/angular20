@@ -3,7 +3,6 @@
 
 name: Albatross Build [Flux]
 on:
-  #  workflow_dispatch
   push:
     branches:
       - "flux"
@@ -56,7 +55,7 @@ jobs:
                     docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
                     docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-                    echo image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+                    echo image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG >> $GITHUB_OUTPUT
 
             -   name: Fill in the new image ID for App Fargate task definition
                 id: app-task-def
