@@ -227,8 +227,9 @@ public class CustomFieldValueService {
                   }
                 }
               }
-              fieldGroups.get(z).getCustomFieldValues().get(x).setCustomFieldGroupAssignmentReadOnly(!whiteListed);
-
+              if(fieldGroups.get(z).getCustomFieldValues().get(x).getCustomFieldGroupAssignmentReadOnly()) {
+                fieldGroups.get(z).getCustomFieldValues().get(x).setCustomFieldGroupAssignmentReadOnly(!whiteListed);
+              }
            }
             //Same thing as above, but for hidden list
             boolean hiddenWhiteListed = false;
