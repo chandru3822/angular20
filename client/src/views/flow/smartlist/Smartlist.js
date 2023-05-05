@@ -16,7 +16,7 @@ export default class Smartlist {
    * @returns boolean
    */
   static #isSharedWithCurrentUser (smartlist, checkEditAccess) {
-    if (!smartlist || !smartlist.ownerId || !smartlist.accessControl || smartlist.accessControl.length === 0) {
+    if (!smartlist || !smartlist.ownerId) {
       return false
     }
 
@@ -30,6 +30,10 @@ export default class Smartlist {
 
     if (isAdmin) {
       return true
+    }
+
+    if (!smartlist.accessControl || smartlist.accessControl.length === 0) {
+      return false
     }
 
     const primaryPositions = store.state.user.details.userPositions.filter(p => p.primaryFlag === true)
