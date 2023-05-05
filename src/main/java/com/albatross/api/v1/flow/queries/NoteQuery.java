@@ -3,11 +3,6 @@ package com.albatross.api.v1.flow.queries;
 public class NoteQuery {
 
   //language=PostgreSQL
-  public final static String getByPrimaryAndType = """
-select * from flow.get_notes(:primaryId::bigint, :typeId::bigint, :companyId::bigint)
-    """;
-
-  //language=PostgreSQL
   public final static String getProjectProcessStepWorkQueueNotes = """
 select n.id,
        n.note,
@@ -83,11 +78,6 @@ select n.id,
             date_modified = now(),
             follow_up_date = :followUpDate::date
     where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String insertNoteRelation = """
-select * from flow.insert_note_relation(:primaryId::bigint, :noteId::bigint, :typeId::bigint, :currentUserId::bigint)
     """;
 
   //language=PostgreSQL

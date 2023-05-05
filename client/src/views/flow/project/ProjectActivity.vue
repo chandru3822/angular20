@@ -385,8 +385,8 @@ export default {
           }
 
         case 1:
-          return this.orgId ? 'Organization Notes' : this.userId ? 'User Notes'
-              : this.contactId ? 'Contact Notes' : this.projectId ? 'Project Notes' : null
+          return this.orgId ? 'Organization Notes & Activities' : this.userId ? 'User Notes & Activities'
+              : this.contactId ? 'Contact Notes & Activities' : this.projectId ? 'Project Notes & Activities' : null
         case 2:
           return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
               : this.projectId ? 'Project Documents' : null

@@ -1,12 +1,13 @@
 <template>
-  <NotesAndActivityContent
+  <ActivitySection
     v-if="primaryId"
-    ref="notes"
+    ref="activities"
     :showNotes="true"
+    :path="path"
     :showActivity="false"
-    :notes="notes"
+    :activities="activities"
     :primaryId="primaryId"
-    :type="noteType"
+    :type="sectionType"
     class="px-2"
   />
 
@@ -14,14 +15,14 @@
 
 <script>
 
-import {getRequestWithParams} from '@/helpers/helpers'
-import NotesAndActivityContent from "@/views/flow/components/NotesAndActivityContent";
+import {getRequest} from '@/helpers/helpers'
+import ActivitySection from "@/views/flow/components/ActivitySection";
 
 
 export default {
   name: 'ProjectNotes',
   components: {
-    NotesAndActivityContent,
+    ActivitySection,
   },
   props: {
     contactId: Number,
@@ -33,10 +34,10 @@ export default {
   data() {
     return {
       snackbar: {},
-      notes: [],
+      activities: [],
       path: null,
       primaryId: null,
-      noteType: null
+      sectionType: null
     }
   },
   created() {
@@ -44,40 +45,36 @@ export default {
       case 2:
         this.primaryId = this.contactId
         this.path = `/note/getContactNotes`
-        this.noteType = `Contact`
+        this.sectionType = `Contact`
         break
       case 3:
         this.primaryId = this.userId
         this.path = `/note/getUserNotes`
-        this.noteType = `User`
+        this.sectionType = `User`
         break
       case 5:
         this.primaryId = this.orgId
         this.path = `/note/getOrgNotes`
-        this.noteType = `Org`
+        this.sectionType = `Org`
         break
       default:
         this.primaryId = this.projectId
-        this.path = `/note/getProjectNotes`
-        this.noteType = `Project`
+        this.path = `/activity/project/${this.projectId}`
+        this.sectionType = `Project`
         break
     }
-    this.getNotes()
+    this.getActivities()
   },
   computed: {},
   methods: {
-    hasDirtyNotes() {
-      return this.$refs.notes.hasUnsavedNotes()
+    hasDirtyActivities() {
+      return this.$refs.activities.hasUnsavedActivities()
     },
-    getNotes: async function () {
+    getActivities: async function () {
       if (this.primaryId && this.path) {
         try {
-          const {data} = await getRequestWithParams(this.path, {
-            params: {
-              primaryId: this.primaryId
-            }
-          })
-          this.notes = data
+          const {data} = await getRequest(this.path)
+          this.activities = data
         } catch {
           console.log('done gone boom')
         }

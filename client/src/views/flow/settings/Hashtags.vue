@@ -133,7 +133,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import orderBy from 'lodash.orderby'
-
+import { getHashtags } from "@/services/activityService"
 import {
   handleHidingGlobalLoader,
   getRequest,
@@ -199,8 +199,8 @@ export default {
     async getTags() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/hashtag`)
-        this.tags = orderBy(data, [a => a.hashtag.toLowerCase()])
+        const {data, status} = await getHashtags()
+        this.tags = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

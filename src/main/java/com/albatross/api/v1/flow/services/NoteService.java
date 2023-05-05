@@ -44,16 +44,6 @@ public class NoteService {
   @Value("${app.home_url}")
   private String homeUrl;
 
-  public List<Note> getByPrimaryAndType(Long typeId, Long primaryId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("typeId", typeId);
-    params.put("primaryId", primaryId);
-    params.put("companyId", currentUser.getCompanyId());
-    return sqlCache.queryBySql(NoteQuery.getByPrimaryAndType, params, new NoteMapper<>(Note.class, om));
-  }
-
   public List<Note> getProjectProcessStepWorkQueueNotes(
       Long projectProcessStepId, Long processStepWorkQueueTypeId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -69,10 +59,6 @@ public class NoteService {
     // currently won't return child notes. this is only called when saving a new note so it doesn't
     // matter, but would matter later on
     return sqlCache.getBySql(NoteQuery.getNote, params, Note.class).orElse(null);
-  }
-
-  public Note saveNote(Long typeId, Note note) {
-    return saveNote(typeId, note, false, false, false);
   }
 
   public Note saveNote(
@@ -120,13 +106,6 @@ public class NoteService {
         p2.put("productionType", note.getInstallDashTile());
         p2.put("noteId", noteId);
         sqlCache.updateBySql(NoteQuery.insertProjectProdStatsNoteRelation, p2);
-      } else {
-        // add to the glue table only if it is a new note
-        p2.put("primaryId", note.getPrimaryId());
-        p2.put("noteId", noteId);
-        p2.put("typeId", typeId);
-        p2.put("currentUserId", securityService.getCurrentUser().trueUserId());
-        sqlCache.queryBySql(NoteQuery.insertNoteRelation, p2, String.class);
       }
     }
 

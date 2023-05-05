@@ -29,6 +29,11 @@ public class HashtagController {
     return hashtagService.getHashtags();
   }
 
+  @GetMapping(value = "/note", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Hashtag> getNoteHashtags() {
+    return hashtagService.getNoteHashtags();
+  }
+
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Hashtag> saveHashTag(@RequestBody Hashtag tag) {
     return hashtagService.saveHashtag(tag);
