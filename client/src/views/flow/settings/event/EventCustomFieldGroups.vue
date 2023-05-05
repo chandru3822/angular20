@@ -506,7 +506,7 @@
                 item-value="id"
                 return-object
             />
-            <v-btn v-if="cfToDisplayOnSnippet" @click="saveCfToDisplayOnSnippet" color="primary">save</v-btn>
+            <v-btn v-if="cfToDisplayOnSnippet" @click="saveCfToDisplayOnSnippet" color="primary"><v-icon class="mr-2">save</v-icon>save field to display</v-btn>
           </div>
           <div v-else class="pa-5 d-flex align-baseline" style="gap: 1rem">
             <div class="label-medium">Field to Display on Event Snippet: </div>
@@ -1223,7 +1223,7 @@ export default {
 
 .snippet-selector-grid {
   display: grid;
-  grid-template-columns: 2fr 3fr 3fr 1fr;
+  grid-template-columns: 2fr 3fr 3fr 2fr;
   column-gap: 2rem;
   align-items: baseline;
   padding: 1rem;
