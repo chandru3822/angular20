@@ -11,7 +11,7 @@
         :dropdownEnabled="projectObjectType.statusReadOnly"
         :selectedContent="projectObjectType.statusReadOnlyWhiteListedPositions"
         :title="'Status Read Only'"
-        :label="'White Listed Positions'"
+        user
         :allow="projectObjectType.statusReadOnlyAllow"
         :contentLoading="objectTypeDetailsLoading"
         @selected-changed="statusReadOnlySelectedEventListener"
@@ -36,7 +36,8 @@
           :dropdownEnabled="projectObjectType.ownerReadOnly"
           :selectedContent="projectObjectType.ownerReadOnlyWhiteListedPositions"
           :title="'Owner Read Only'"
-          :label="'White Listed Positions'"
+          :label="'Allowed Positions'"
+          :alternateLabel = "'Denied Positions'"
           :allow="projectObjectType.ownerReadOnlyAllow"
           :contentLoading="objectTypeDetailsLoading"
           @selected-changed="ownerReadOnlySelectedEventListener"
