@@ -378,14 +378,14 @@ public class SmartlistService {
     //give old owner edit access if not system or smartlist admin
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
 
-    if (oldOwnerPosition != null && !user.isSystemAdmin()) {
+    if (oldOwnerPosition != null) {
       try {
         Map<String, Object> params = new HashMap<>();
         params.put("smartlistId", smartlistId);
         params.put("orgId", null);
         params.put("userPositionId", oldOwnerPosition.getId());
         params.put("accessControlId", 2);
-        params.put("userId", user.getId());
+        params.put("userId", oldOwnerPosition.getUserId());
         sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
                 .longValue();
       } catch (Exception e) {
@@ -524,6 +524,7 @@ public class SmartlistService {
       share.setIsOrg(false);
       share.setName(up.getFullName());
       share.setPosition(up.getPosition());
+      share.setUserId(up.getUserId());
       combinedList.add(share);
     });
 

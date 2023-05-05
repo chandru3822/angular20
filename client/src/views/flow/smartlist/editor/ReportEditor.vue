@@ -25,15 +25,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn
-              text
-              color="primary"
+            <SmartlistShare
+              :smartlist="report"
+              :show-text="true"
               :disabled="!canEdit"
-              @click="showShareDialog = true"
-            >
-              <v-icon>mdi-share-variant</v-icon>
-              <span v-if="!constants.IS_MOBILE">Share</span>
-            </v-btn>
+              @updated-public="(isPublic) => report.public = isPublic"
+              @updated-owner="updateOwner"
+            />
 
             <v-btn
               text
@@ -188,15 +186,6 @@
     </v-card-actions>
   </v-card>
 </v-dialog>
-
-<ShareDialog
-  v-if="showShareDialog"
-  :smartlist="report"
-  :open-dialog="showShareDialog"
-  @dialog-closed="showShareDialog = false"
-  @updated-public=""
-  @updated-owner=""
-/>
 </fragment>
 </template>
 
@@ -215,8 +204,8 @@ import { saveAs } from 'file-saver'
 import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
 import { onBeforeRouteLeave } from 'vue-router/composables'
 import { Fragment } from 'vue-frag'
-import ShareDialog from '@/views/flow/smartlist/ShareDialog.vue'
 import Smartlist from '@/views/flow/smartlist/Smartlist'
+import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -325,6 +314,11 @@ const getRequirements = async() => {
     logError(e)
     snackbar('ERROR', 'Unable to fetch filters')
   }
+}
+
+const updateOwner = (newOwner) => {
+  report.value.ownerId = newOwner.userId
+  report.value.owner = newOwner.name
 }
 
 const exportReport = async () => {

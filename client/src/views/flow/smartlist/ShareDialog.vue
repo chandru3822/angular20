@@ -352,6 +352,8 @@ const updateOwner = async () => {
     emit('updated-owner', {
       name: newOwner.value.name,
       position: newOwner.value.position,
+      userId: newOwner.value.userId,
+      userPositionId: newOwner.value.userPositionId,
       smartlistId: props.smartlist.id
     })
   } catch (err) {

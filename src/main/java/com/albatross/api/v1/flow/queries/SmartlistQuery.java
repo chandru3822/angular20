@@ -377,6 +377,7 @@ public class SmartlistQuery {
     select
       sac.id,
       sac.smartlist_id,
+      up.user_id,
       sac.org_id,
       sac.user_position_id,
       sac.user_position_id is not null as "isUser",

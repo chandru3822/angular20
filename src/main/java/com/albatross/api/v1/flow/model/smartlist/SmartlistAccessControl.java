@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class SmartlistAccessControl {
 
-  private Long id, smartlistId, orgId, userPositionId, accessControlId, createdById, modifiedById;
+  private Long id, smartlistId, orgId, userPositionId, userId, accessControlId, createdById, modifiedById;
 
   private String name, position, accessLevel;
 

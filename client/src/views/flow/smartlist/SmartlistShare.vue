@@ -2,10 +2,13 @@
   <fragment>
     <v-btn
       @click.stop="showDialog = true"
-      icon
+      :icon="!showText"
+      :text="showText"
       class="pa-5"
+      :disabled="disabled"
     >
       <v-icon>mdi-share-variant</v-icon>
+      <span v-if="showText">Share</span>
     </v-btn>
 
     <ShareDialog
@@ -13,8 +16,8 @@
       :smartlist="smartlist"
       :open-dialog="showDialog"
       @dialog-closed="showDialog = false"
-      @updated-public="(isPublic) => $emit('updated-public', isPublic)"
-      @updated-owner="(newOwner) => $emit('updated-owner', newOwner)"
+      @updated-public="(isPublic) => emit('updated-public', isPublic)"
+      @updated-owner="(newOwner) => emit('updated-owner', newOwner)"
     />
   </fragment>
 </template>
@@ -30,6 +33,16 @@ const props = defineProps({
   smartlist: {
     type: Object,
     required: true
+  },
+  showText: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 
