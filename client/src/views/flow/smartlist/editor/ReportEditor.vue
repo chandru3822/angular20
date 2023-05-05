@@ -28,8 +28,18 @@
             <v-btn
               text
               color="primary"
-              :disabled="!hasUnsavedChanges"
-              @click.stop="showSaveDialog = true"
+              :disabled="!canEdit"
+              @click="showShareDialog = true"
+            >
+              <v-icon>mdi-share-variant</v-icon>
+              <span v-if="!constants.IS_MOBILE">Share</span>
+            </v-btn>
+
+            <v-btn
+              text
+              color="primary"
+              :disabled="!hasUnsavedChanges || !canEdit"
+              @click="showSaveDialog = true"
             >
               <v-icon>save</v-icon>
               <span v-if="!constants.IS_MOBILE">Save</span>
@@ -37,7 +47,8 @@
             <v-btn
               text
               color="primary"
-              @click.stop="exportReport"
+              :disabled="!report?.id"
+              @click="exportReport"
             >
               <v-icon>mdi-tray-arrow-down</v-icon>
               <span>Export</span>
@@ -177,6 +188,15 @@
     </v-card-actions>
   </v-card>
 </v-dialog>
+
+<ShareDialog
+  v-if="showShareDialog"
+  :smartlist="report"
+  :open-dialog="showShareDialog"
+  @dialog-closed="showShareDialog = false"
+  @updated-public=""
+  @updated-owner=""
+/>
 </fragment>
 </template>
 
@@ -195,6 +215,8 @@ import { saveAs } from 'file-saver'
 import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
 import { onBeforeRouteLeave } from 'vue-router/composables'
 import { Fragment } from 'vue-frag'
+import ShareDialog from '@/views/flow/smartlist/ShareDialog.vue'
+import Smartlist from '@/views/flow/smartlist/Smartlist'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -210,15 +232,18 @@ const reportStore = useReportStore()
 reportStore.$subscribe((mut, state) => localStorage.setItem('report', JSON.stringify(state)))
 
 const store = vueInstance.$store
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const userCanEdit = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
-const userCanDelete = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
+const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasEditAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
+const hasDeleteAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
+const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = store.getters.isFullAdmin
 
 const tab = ref(null)
 const loadingAvailableFields = ref(false)
 const showRequirementOverflow = ref(false)
 const showSaveDialog = ref(false)
 const showUnsavedDialog = ref(false)
+const showShareDialog = ref(false)
 const unsavedPromiseResolve = ref(null)
 
 const reportId = vueInstance.$route.params.reportId
@@ -259,6 +284,14 @@ const hasUnsavedChanges = computed(() => {
   return !isEqual(report.value, sourceReport.value) ||
          !isEqual(fields.value, sourceFields.value) ||
          !isEqual(requirements.value, sourceRequirements.value)
+})
+
+const canEdit = computed(() => {
+  if (!hasEditAccess && !isSmartlistAdmin && !isSystemAdmin) {
+    return false
+  }
+
+  return Smartlist.userCanEdit(report.value)
 })
 
 const getReport = async () => {
