@@ -6,6 +6,7 @@ public class ActivityQuery {
   public final static String getProjectActivities = """
       select pa.id,
              pa.project_id,
+             pa.activity_type_id,
              pa.date_modified,
              pa.note,
              pa.date_created,
@@ -82,6 +83,7 @@ public class ActivityQuery {
       select pa.id,
              pa.project_id,
              pa.date_modified,
+             pa.activity_type_id,
              pa.note,
              pa.pinned,
              pa.linked,

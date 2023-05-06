@@ -5,18 +5,40 @@
         prepend-inner-icon="search"
         text
         label="Search"
+        clearable
         v-model="search"
       ></v-text-field>
       <v-btn text small color="primary" @click="changeSortDirection()">
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
         <v-icon v-else>mdi-arrow-down</v-icon>
       </v-btn>
-      <v-btn text small color="primary">
-        <v-icon>mdi-filter</v-icon>
-      </v-btn>
+      <v-menu v-model="filterMenuOpen" transition="scale-transition" offset-y
+              min-width="290px" :close-on-content-click="false">
+        <template v-slot:activator="{ on }">
+          <v-btn text small color="primary" v-on="on">
+            <v-icon>mdi-filter</v-icon>
+          </v-btn>
+        </template>
+        <v-list dense class="pa-3">
+          <v-list-item v-for="at in activityTypes">
+            <v-list-item-content>
+              <v-list-item-title>
+                <v-checkbox
+                  dense
+                  v-model="at.show"
+                  :label="at.activityType"
+                />
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </div>
     <div>
-      <v-card v-for="(a, aIdx) in sortedFilteredActivities" class="mt-2 elevation-1"
+      <div v-if="sortedFilteredActivities.length === 0">
+        No available note or activities
+      </div>
+      <v-card v-else v-for="(a, aIdx) in sortedFilteredActivities" class="mt-2 elevation-1"
               :class="{'pinned-card': a.pinned}">
         <v-card-title>
           <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
@@ -24,10 +46,10 @@
             <span v-if="idx !== 0">, </span>
             #{{ ah.hashtag }}
           </span>
-          <span v-if="a.linked">
-            <v-icon>mdi-link</v-icon>
+          <a v-if="a.linked" @click="goToPath(a)">
+            <v-icon color="primary">mdi-link</v-icon>
             {{a.linkLabel}}
-          </span>
+          </a>
           <v-spacer></v-spacer>
           <v-menu v-model="a.menuOpen" transition="scale-transition" offset-y
                   min-width="290px" :close-on-content-click="false">
@@ -86,7 +108,9 @@
           item-text="hashtag"
         ></v-autocomplete>
         <v-checkbox
-          v-if="null != $route.params.processStepId || null != $route.params.ppsEventId"
+          v-if="null != $route.params.processStepId
+                || null != $route.params.ppsEventId
+                || editedActivity.linked"
           class="pt-5 ml-3"
           dense
           v-model="editedActivity.linked"
@@ -147,7 +171,13 @@ export default {
       savingActivity: false,
       sortDirection: 'desc',
       sectionType: '',
-      primaryId: null
+      primaryId: null,
+      filterMenuOpen: false,
+      //should probably load this but hardcoding for now
+      activityTypes: [
+        { id: 1, activityType: 'Activities', show: true},
+        { id: 2, activityType: 'Notes', show: true},
+      ]
     }
   },
   watch: {
@@ -157,7 +187,12 @@ export default {
       return orderBy(this.activities.filter(a => {
         //filter out archived
         //if search is not empty then filter that stuff here too
+        //and ensure the activityTypeId is selected in the filter
+        let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
+
         return !a.archived && ((this.search == null || this.search === '') || this.activityContainsSearch(a))
+         && shownActivityTypes.includes(a.activityTypeId)
+
       }), ['pinned', 'dateCreated'], ['desc', this.sortDirection])
     }
   },
@@ -188,6 +223,17 @@ export default {
     // hasDirtyActivities() {
     //   return this.$refs.activities.hasUnsavedActivities()
     // },
+    goToPath(activity) {
+      let path = ''
+      if(null !== activity.linkedPpseId) {
+        path = `/project/${this.projectId}/processStep/${activity.linkedPpsId}/event/${activity.linkedPpseId}`
+      } else if(null !== activity.linkedPpsId) {
+        path = `/project/${this.projectId}/processStep/${activity.linkedPpsId}`
+      }
+      if(path !== this.$route.path) {
+        this.$router.push(path)
+      }
+    },
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
     },
@@ -298,7 +344,8 @@ export default {
           activityHashtags: this.editedActivity?.activityHashtags || [],
           linked: this.editedActivity.linked,
           linkedPpseId: this.editedActivity.linked ? parseInt(this.$route.params.ppsEventId) : null,
-          linkedPpsId: this.editedActivity.linked && null == this.$route.params.ppsEventId ? parseInt(this.$route.params.processStepId) : null,
+          //this has to populate even when the linked item is an event or else we can't re-load the link path correctly
+          linkedPpsId: this.editedActivity.linked ? parseInt(this.$route.params.processStepId) : null,
         }
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
         this.sortedFilteredActivities[index] = data
