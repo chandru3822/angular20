@@ -14,11 +14,11 @@ import java.util.List;
 @Setter
 public class Activity {
 
-  private Long id, createdById, modifiedById;
-  private String note, createdBy, modifiedBy, createdByPosition;
-  private Boolean archived;
+  private Long id, createdById, modifiedById, linkedPpsId, linkedPpseId;
+  private String note, createdBy, modifiedBy, createdByPosition, linkLabel;
+  private Boolean archived, pinned, linked;
 
-  private List<Hashtag> hashtags;
+  private List<ActivityHashtag> activityHashtags;
 
   //various object ids
   private Long projectId, contactId, userId, orgId;

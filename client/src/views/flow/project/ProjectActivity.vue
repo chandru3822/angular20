@@ -102,9 +102,9 @@
       <div class="project-activity-inner-container hide-xs">
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
-          <ProjectNotes :contact-id="contactId" :user-id="userId"
+          <ActivitySection :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
+                        :org-id="orgId" v-else-if="selectedOption === 1"></ActivitySection>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                  :user-id="userId"
@@ -288,7 +288,7 @@
 <script>
 
 import SpinnerInline from '@/components/SpinnerInline'
-import ProjectNotes from '@/views/flow/project/ProjectNotes'
+import ActivitySection from '@/views/flow/components/ActivitySection'
 import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import { ProjectMutations } from '@/stores/ProjectStore'
@@ -309,7 +309,7 @@ export default {
     TeamAssignmentChips,
     SpinnerInline,
     AttachmentsFolderList,
-    ProjectNotes,
+    ActivitySection,
     Messaging
   },
   props: {
