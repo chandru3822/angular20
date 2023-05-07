@@ -34,7 +34,8 @@
         </v-list>
       </v-menu>
     </div>
-    <div>
+    <div v-if="!timelineView">Do timeline view</div>
+    <div v-else>
       <div v-if="sortedFilteredActivities.length === 0">
         No available note or activities
       </div>
@@ -153,12 +154,13 @@ export default {
     orgId: Number,
     userId: Number,
     projectId: Number,
-    objectTypeId: Number
+    objectTypeId: Number,
+    timelineView: Boolean
   },
   data() {
     return {
       snackbar: {},
-      search: '',
+      search: this.$route.query.search != null ? this.$route.query.search : '',
       linkLabel: '',
       addActivity: false,
       blankActivity: { id: null, activityHashtags: []},

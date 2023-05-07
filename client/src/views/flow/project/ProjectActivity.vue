@@ -76,6 +76,37 @@
               </v-btn>
             </v-btn-toggle>
           </div>
+          <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
+
+            <v-btn-toggle
+              v-model="toggleTimelineView"
+              mandatory
+              borderless
+              color="primary"
+              class="d-inline-block one-hunned body-medium"
+              style="opacity: 1 !important;"
+              id="focused-toggle"
+            >
+
+
+              <v-btn :color="toggleTimelineView === 0 ? 'primary' : 'white'"
+                     id="focused-toggle"
+                     :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
+                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
+                     style="width: 50% !important;"
+              >
+                Timeline
+              </v-btn>
+              <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
+                     id="focused-toggle"
+                     :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
+                     class="text-capitalize  fix-toggle-opacity body-medium"
+                     style="width: 50% !important;"
+              >
+                Topic
+              </v-btn>
+            </v-btn-toggle>
+          </div>
           <slot name="collapse-button">
           <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
             <v-icon>mdi-menu</v-icon>
@@ -103,8 +134,9 @@
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
           <ActivitySection :contact-id="contactId" :user-id="userId"
-                        :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId" v-else-if="selectedOption === 1"></ActivitySection>
+                           :timeline-view="toggleTimelineView === 0"
+                           :object-type-id="objectTypeId" :project-id="projectId"
+                           :org-id="orgId" v-else-if="selectedOption === 1"></ActivitySection>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                  :user-id="userId"
@@ -181,9 +213,9 @@
           <div class="headline-small mobile-contact-header show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Notes</div>
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
           <div class="mobile-content-padding" v-else-if="selectedOption === 1">
-          <ProjectNotes :contact-id="contactId" :user-id="userId"
+          <ActivitySection :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId"></ProjectNotes>
+                        :org-id="orgId"></ActivitySection>
           </div>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
@@ -360,6 +392,7 @@ export default {
       projectIsLoading: true,
       toggleFocused: 0,
       toggleFocusedXs: 0,
+      toggleTimelineView: 0
     }
   },
   created() {
