@@ -97,7 +97,6 @@ export default {
         this.activeEventsLoading = true
         const {data} = await getRequest(`/project/${this.projectId}/activeEvents`, null, [])
         this.events = data
-        console.log(this.events);
       } catch (e) {
         logError(e)
       } finally {
