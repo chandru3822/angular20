@@ -230,15 +230,6 @@
                                 <v-row>
                                   <v-col cols="6">
                                     <v-card flat :color="localCustomFieldGroups.indexOf(item) % 2 ? undefined : 'primary lighten-9'" class="square-card">
-<!--                                      <v-card-title style="height: 40px" class="py-0">-->
-<!--                                        Read Only-->
-<!--                                        <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"-->
-<!--                                                    :disabled="true"-->
-<!--                                                    :readonly="true"-->
-<!--                                                    v-model="cf.systemReadonly"></v-checkbox>-->
-<!--                                        <v-checkbox type="checkbox" class="ml-3" v-else-->
-<!--                                                    v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>-->
-<!--                                      </v-card-title>-->
                                       <v-card-text v-if="cf.systemReadonly" class="mt-2">
                                         System Readonly Cannot Change
                                       </v-card-text>
@@ -314,6 +305,73 @@
                                        @change="saveUseParentData(cf)"
                                        :readonly="!userCanEdit" :disabled="!userCanEdit">
                               </div>
+                              <v-row>
+                              <v-col cols="6">
+                              <v-card flat :color="localCustomFieldGroups.indexOf(item) % 2 ? undefined : 'primary lighten-9'" class="square-card">
+                                <v-card-text v-if="cf.systemReadonly" class="mt-2">
+                                  System Readonly Cannot Change
+                                </v-card-text>
+                                <v-card-text v-else>
+                                  <multi-select-group
+                                      v-if="!positionsLoading"
+                                      :userCanEdit="userCanEdit"
+                                      :returnObject="cf"
+                                      :content="positions"
+                                      :dropdownEnabled="cf.customFieldGroupAssignmentReadOnly"
+                                      :selectedContent="cf.whiteListedPositions"
+                                      :title="'Read Only'"
+                                      :label="'Allowed Positions'"
+                                      :alternateLabel = "'Denied Positions'"
+                                      :allow="cf.customFieldGroupAssignmentReadOnlyAllow"
+                                      :contentLoading="positionsLoading"
+                                      background-color="primary lighten-9"
+                                      @selected-changed="cf.whiteListedPositions = $event; cf.positionsChanged = true"
+                                      @allow-changed="cf.customFieldGroupAssignmentReadOnlyAllow = ($event === 0); cf.positionsChanged = true"
+                                      @checkbox-changed="cf.customFieldGroupAssignmentReadOnly = $event; cf.positionsChanged = true"></multi-select-group>
+                                  <br/>
+                                  <v-btn color="primary" dark class="d-inline-block white--text"
+                                         @click="saveReadOnlyAndWhiteList(cf)">
+                                    <v-icon class="mr-2">save</v-icon>
+                                    Save Read Only
+                                  </v-btn>
+                                </v-card-text>
+                              </v-card>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-card flat :color="localCustomFieldGroups.indexOf(item) % 2 ? undefined : 'primary lighten-9'" class="square-card">
+                      <!--                                      <v-card-title style="height: 40px" class="py-0">-->
+                      <!--                                        Hidden-->
+                      <!--                                        <v-checkbox type="checkbox" class="ml-2"-->
+                      <!--                                                    v-model="cf.customFieldGroupAssignmentHidden"></v-checkbox>-->
+                      <!--                                      </v-card-title>-->
+                      <v-card-text>
+
+                        <multi-select-group
+                            v-if="!positionsLoading"
+                            :userCanEdit="userCanEdit"
+                            :returnObject="cf"
+                            :content="positions"
+                            :dropdownEnabled="cf.customFieldGroupAssignmentHidden"
+                            :selectedContent="cf.hiddenWhiteListedPositions"
+                            :title="'Hidden'"
+                            :label="'Allowed Positions'"
+                            :alternateLabel = "'Denied Positions'"
+                            :allow="cf.customFieldGroupAssignmentHiddenAllow"
+                            :contentLoading="positionsLoading"
+                            background-color="primary lighten-9"
+                            @selected-changed="cf.hiddenWhiteListedPositions = $event; cf.hiddenPositionsChanged = true"
+                            @allow-changed="cf.customFieldGroupAssignmentHiddenAllow = ($event === 0); cf.hiddenPositionsChanged = true"
+                            @checkbox-changed="cf.customFieldGroupAssignmentHidden = $event; cf.hiddenPositionsChanged = true"></multi-select-group>
+                        <br/>
+                        <v-btn color="primary" dark class="white--text d-inline-block"
+                               @click="saveHiddenAndWhiteList(cf)">
+                          <v-icon class="mr-2">save</v-icon>
+                          Save Hidden
+                        </v-btn>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                              </v-row>
                             </div>
                           </v-list-item-content>
                           <v-tooltip left>
