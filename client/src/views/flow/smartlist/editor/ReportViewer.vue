@@ -30,12 +30,14 @@
 
 <script setup>
 
-import { computed, getCurrentInstance, watchEffect } from 'vue'
+import { computed, getCurrentInstance, watch, watchEffect } from 'vue'
 import { logError, postRequest, UUID } from '@/helpers/helpers'
 import { ref } from 'vue'
+import isEqual from 'lodash.isequal'
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
+
 
 const props = defineProps({
   report: {
@@ -52,17 +54,36 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['updated', 'queued'])
+
 const reportData = ref([])
 const isDataLoading = ref(false)
+const isUpdateQueued = ref(false)
 
-watchEffect(async () => {
-  if (!props.report?.objectTypeId || props.fields?.length < 1 || props.requirements.length < 1) {
-    reportData.value = []
-    return
+watch(
+  () => [props.report, props.fields, props.requirements],
+  async ([newReport, newFields, newRequirements], [oldReport, oldFields, oldRequirements]) => {
+
+    if (isDataLoading.value) {
+      return
+    }
+
+    if (!props.report?.objectTypeId || props.fields?.length < 1 || props.requirements.length < 1) {
+      reportData.value = []
+      return
+    }
+
+    //fetch new data only if report, fields, or reqs have changed
+    if (!isEqual(newReport, oldReport) || !isEqual(newFields, oldFields) || !isEqual(newRequirements, oldRequirements)) {
+      if (isDataLoading.value) {
+        isUpdateQueued.value = true
+        emit('queued')
+      } else {
+        processQueue()
+      }
+    }
   }
-
-  getData()
-})
+)
 
 const headers = computed(() => {
   return props.fields.map(f => ({
@@ -72,9 +93,10 @@ const headers = computed(() => {
   }))
 })
 
-const getData = async () => {
+const processQueue = async () => {
   try {
     isDataLoading.value = true
+    isUpdateQueued.value = false
     reportData.value = []
     const {data} = await postRequest(`/smartlist/adhoc?limit=40`, {
       smartlist: props.report,
@@ -83,11 +105,15 @@ const getData = async () => {
     })
 
     reportData.value = data
+    emit('updated')
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Error while fetching smartlist data')
   } finally {
     isDataLoading.value = false
+    if (isUpdateQueued.value) {
+      processQueue()
+    }
   }
 }
 </script>

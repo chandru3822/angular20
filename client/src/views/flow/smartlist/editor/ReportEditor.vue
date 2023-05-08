@@ -127,6 +127,8 @@
             :requirements="requirements.filter(r => r.updateType !== UPDATE_TYPE.DELETE)"
             :fields="fields.filter(f => f?.updateType !== UPDATE_TYPE.DELETE)"
             :report="report"
+            @queued=""
+            @updated=""
           />
         </v-col>
       </v-row>
@@ -342,7 +344,6 @@ const copied = async (copiedReport) => {
   await getReport()
   getFields()
   getRequirements()
-  getAvailableFields()
 }
 
 const exportReport = async () => {
