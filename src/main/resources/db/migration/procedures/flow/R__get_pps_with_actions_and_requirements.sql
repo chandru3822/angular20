@@ -337,6 +337,7 @@ BEGIN
                                       e.event_name as "eventName",
                                       (select concat(cf.field_name, ': ',
                                                      coalesce(ppsecfv.text_value,
+															ppsecfv.rich_text_value::text,
                                                               ppsecfv.boolean_value::text,
                                                               ppsecfv.date_value::text,
                                                               ppsecfv.timestamp_value::text,
