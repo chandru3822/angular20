@@ -195,13 +195,14 @@
 
 <script setup>
 
-import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
+import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
 import { Fragment } from 'vue-frag'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   openDialog: {
@@ -310,27 +311,23 @@ const updateAccess = async () => {
     }
   })
 
-  let snackbar
-
   if (Object.keys(payload).length > 0) {
     try {
       store.commit(AppMutations.SET_LOADING, true)
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
-      snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
+      snackbar('SUCCESS', `Smartlist Successfully Shared`)
       emit('dialog-closed')
       if (props.smartlist.public !== isPublic.value) {
         emit('updated-public', isPublic.value)
       }
     } catch (err) {
       logError(err)
-      snackbar = getSnackbar('ERROR', 'Error while Sharing Smartlist')
+      snackbar('ERROR', 'Error while Sharing Smartlist')
     } finally {
       handleHidingGlobalLoader(vueInstance, true)
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
     }
   } else {
-    snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('SUCCESS', `Smartlist Successfully Shared`)
     emit('dialog-closed')
   }
 }
@@ -341,13 +338,10 @@ const confirmOwnershipChange = async (accessLevel) => {
 }
 
 const updateOwner = async () => {
-
-  let snackbar
-
   try {
     store.commit(AppMutations.SET_LOADING, true)
     await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
-    snackbar = getSnackbar('SUCCESS', `Ownership successfully transferred`)
+    snackbar('SUCCESS', `Ownership successfully transferred`)
     emit('dialog-closed')
     emit('updated-owner', {
       name: newOwner.value.name,
@@ -358,10 +352,9 @@ const updateOwner = async () => {
     })
   } catch (err) {
     logError(err)
-    snackbar = getSnackbar('ERROR', 'Error while transferring ownership')
+    snackbar('ERROR', 'Error while transferring ownership')
   } finally {
     handleHidingGlobalLoader(vueInstance, true)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
 }
 

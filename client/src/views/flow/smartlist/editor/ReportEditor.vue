@@ -9,7 +9,7 @@
             <div class="d-flex justify-start align-center">
               <v-btn
                 icon
-                @click="vueInstance.$router.go(-1)"
+                @click="router.go(-1)"
               >
                 <v-icon>mdi-chevron-left</v-icon>
               </v-btn>
@@ -25,6 +25,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <SmartlistCopy
+              :smartlist="report"
+              :show-text="true"
+              :disabled="!canView || !hasAddAccess"
+              @copied="copied"
+            />
+
             <SmartlistShare
               :smartlist="report"
               :show-text="true"
@@ -36,11 +43,11 @@
             <v-btn
               text
               color="primary"
-              :disabled="!hasUnsavedChanges || !canEdit"
+              :disabled="!hasUnsavedChanges || (vueInstance.$route.params?.reportId && !canEdit)"
               @click="showSaveDialog = true"
             >
               <v-icon>save</v-icon>
-              <span v-if="!constants.IS_MOBILE">Save</span>
+              Save
             </v-btn>
             <v-btn
               text
@@ -49,7 +56,7 @@
               @click="exportReport"
             >
               <v-icon>mdi-tray-arrow-down</v-icon>
-              <span>Export</span>
+              Export
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -202,10 +209,11 @@ import isEqual from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
 import { saveAs } from 'file-saver'
 import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
-import { onBeforeRouteLeave } from 'vue-router/composables'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 import { Fragment } from 'vue-frag'
 import Smartlist from '@/views/flow/smartlist/Smartlist'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
+import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -215,6 +223,7 @@ const UPDATE_TYPE = Object.freeze({
 })
 
 const vueInstance = getCurrentInstance().proxy
+const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
 const reportStore = useReportStore()
@@ -235,13 +244,12 @@ const showUnsavedDialog = ref(false)
 const showShareDialog = ref(false)
 const unsavedPromiseResolve = ref(null)
 
-const reportId = vueInstance.$route.params.reportId
 const report = ref({mainProcessSteps: true, name: ''})
 const fields = ref([])
 const requirements = ref([])
 
 //keep track of original data
-const sourceReport = ref({})
+const sourceReport = ref({mainProcessSteps: true, name: ''})
 const sourceFields = ref([])
 const sourceRequirements = ref([])
 
@@ -254,7 +262,7 @@ const availableFields = ref([])
  * project/PS/PSE/contact, org/user
  */
 const filteredReportTypes = computed(() => {
-  if (reportId) {
+  if (vueInstance.$route.params.reportId) {
     let objectTypeIds = []
     if ([1,2,4].includes(report.value.objectTypeId)) {
       objectTypeIds = [1,2,4]
@@ -275,6 +283,14 @@ const hasUnsavedChanges = computed(() => {
          !isEqual(requirements.value, sourceRequirements.value)
 })
 
+const canView = computed(() => {
+  if (!hasAddAccess && !isSmartlistAdmin && !isSystemAdmin) {
+    return false
+  }
+
+  return Smartlist.userCanView(report.value)
+})
+
 const canEdit = computed(() => {
   if (!hasEditAccess && !isSmartlistAdmin && !isSystemAdmin) {
     return false
@@ -285,7 +301,7 @@ const canEdit = computed(() => {
 
 const getReport = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${reportId}?accessControl=true`)
+    const {data} = await getRequest(`/smartlist/${vueInstance.$route.params.reportId}?accessControl=true`)
     report.value = cloneDeep(data)
     sourceReport.value = cloneDeep(data)
   } catch (e) {
@@ -296,7 +312,7 @@ const getReport = async () => {
 
 const getFields = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${reportId}/field`)
+    const {data} = await getRequest(`/smartlist/${report.value.id}/field`)
     fields.value = cloneDeep(data)
     sourceFields.value = cloneDeep(data)
   } catch (e) {
@@ -307,7 +323,7 @@ const getFields = async () => {
 
 const getRequirements = async() => {
   try {
-    const {data} = await getRequest(`/smartlist/${reportId}/requirement`)
+    const {data} = await getRequest(`/smartlist/${report.value.id}/requirement`)
     requirements.value = cloneDeep(data)
     sourceRequirements.value = cloneDeep(data)
   } catch (e) {
@@ -319,6 +335,14 @@ const getRequirements = async() => {
 const updateOwner = (newOwner) => {
   report.value.ownerId = newOwner.userId
   report.value.owner = newOwner.name
+}
+
+const copied = async (copiedReport) => {
+  await router.push({name: 'reportEditor', params: {reportId: copiedReport.id}})
+  await getReport()
+  getFields()
+  getRequirements()
+  getAvailableFields()
 }
 
 const exportReport = async () => {
@@ -370,7 +394,11 @@ const save = async () => {
       const {data} = await postRequest(`/smartlist`, report.value)
       report.value = cloneDeep(data)
       sourceReport.value = cloneDeep(data)
-      vueInstance.$router.replace({name: 'reportEditor', params: {reportId: data.id}})
+      await router.replace({name: 'reportEditor', params: {reportId: data.id}})
+      await getReport()
+      getFields()
+      getRequirements()
+      getAvailableFields()
     }
     snackbar('SUCCESS', 'Save Successful')
   } catch (e) {
@@ -399,15 +427,6 @@ const getAvailableFields = async () => {
     const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
     const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}`)
     availableFields.value = data
-    // if (this.newField.objectTypeId === 4) {
-    //   this.availableProcessSteps = data.reduce((fields, field) => (field.processStepId === null || fields.find(f => f.processStepId === field.processStepId)) ? [...fields] : [...fields, field], [])
-    //   this.availableProcessSteps = this.availableProcessSteps.sort((a, b) => a.processStepName.localeCompare(b.processStepName))
-    // } else if (this.newField.objectTypeId === 6) {
-    //   this.availableEvents = data.reduce((fields, field) => (field.eventId ===  null || fields.find(f => f.eventName === field.eventName)) ? [...fields] : [...fields, field], [])
-    //   this.availableEvents = this.availableEvents.sort((a, b) => a.eventName.localeCompare(b.eventName))
-    // } else {
-    //   this.calculateAvailableFields()
-    // }
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Error fetching available columns')
@@ -477,7 +496,7 @@ onMounted(async () => {
 
   await getReportTypes()
 
-  if (reportId) {
+  if (vueInstance.$route.params?.reportId) {
     await getReport()
     getFields()
     getRequirements()
@@ -490,6 +509,18 @@ onMounted(async () => {
 onUnmounted(() => window.removeEventListener('beforeunload', windowLeave))
 
 onBeforeRouteLeave(async (to, from, next) => {
+  if (hasUnsavedChanges.value) {
+    const shouldSave = await unsavedPrompt()
+
+    if (shouldSave) {
+      await save()
+    }
+  }
+
+  next()
+})
+
+onBeforeRouteUpdate(async (to, from, next) => {
   if (hasUnsavedChanges.value) {
     const shouldSave = await unsavedPrompt()
 

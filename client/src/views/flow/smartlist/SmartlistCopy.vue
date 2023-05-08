@@ -1,11 +1,13 @@
 <template>
   <v-btn
     @click.stop="copySmartlist"
-    text
-    icon
+    :icon="!showText"
+    :text="showText"
     class="pa-5"
+    :disabled="disabled"
   >
     <v-icon >mdi-content-copy</v-icon>
+    <span v-if="showText">Duplicate</span>
   </v-btn>
 </template>
 
@@ -18,6 +20,16 @@ const props = defineProps({
   smartlist: {
     type: Object,
     required: true
+  },
+  showText: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 
