@@ -200,7 +200,7 @@
 
 <script setup>
 import useReportStore from '@/views/flow/smartlist/reportStore'
-import { computed, getCurrentInstance, onMounted, onUnmounted, ref } from 'vue'
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
 import { getRequest, getSnackbar, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
 import { DateTime } from 'luxon'
@@ -264,7 +264,7 @@ const availableFields = ref([])
  * project/PS/PSE/contact, org/user
  */
 const filteredReportTypes = computed(() => {
-  if (vueInstance.$route.params.reportId) {
+  if (vueInstance.$route.params?.reportId) {
     let objectTypeIds = []
     if ([1,2,4].includes(report.value.objectTypeId)) {
       objectTypeIds = [1,2,4]
@@ -301,9 +301,23 @@ const canEdit = computed(() => {
   return Smartlist.userCanEdit(report.value)
 })
 
+watch(() => vueInstance.$route.params?.reportId, async () => {
+  if (vueInstance.$route.params?.reportId) {
+    console.log('refresh')
+    refreshReport()
+  }
+})
+
+const refreshReport = async () => {
+  await getReport()
+  getFields()
+  getRequirements()
+  getAvailableFields()
+}
+
 const getReport = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${vueInstance.$route.params.reportId}?accessControl=true`)
+    const {data} = await getRequest(`/smartlist/${vueInstance.$route.params?.reportId}?accessControl=true`)
     report.value = cloneDeep(data)
     sourceReport.value = cloneDeep(data)
   } catch (e) {
@@ -341,9 +355,7 @@ const updateOwner = (newOwner) => {
 
 const copied = async (copiedReport) => {
   await router.push({name: 'reportEditor', params: {reportId: copiedReport.id}})
-  await getReport()
-  getFields()
-  getRequirements()
+  await refreshReport()
 }
 
 const exportReport = async () => {
@@ -396,9 +408,7 @@ const save = async () => {
       report.value = cloneDeep(data)
       sourceReport.value = cloneDeep(data)
       await router.replace({name: 'reportEditor', params: {reportId: data.id}})
-      await getReport()
-      getFields()
-      getRequirements()
+      await refreshReport()
       getAvailableFields()
     }
     snackbar('SUCCESS', 'Save Successful')
@@ -423,16 +433,19 @@ const getReportTypes = async () => {
 }
 
 const getAvailableFields = async () => {
-  try {
-    loadingAvailableFields.value = true
-    const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
-    const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}`)
-    availableFields.value = data
-  } catch (e) {
-    logError(e)
-    snackbar('ERROR', 'Error fetching available columns')
-  } finally {
-    loadingAvailableFields.value = false
+  //this endpoint returns a large amount of data. Fetch data only if we already haven't
+  if (availableFields.value.length === 0) {
+    try {
+      loadingAvailableFields.value = true
+      const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
+      const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}`)
+      availableFields.value = data
+    } catch (e) {
+      logError(e)
+      snackbar('ERROR', 'Error fetching available columns')
+    } finally {
+      loadingAvailableFields.value = false
+    }
   }
 }
 
@@ -498,10 +511,7 @@ onMounted(async () => {
   await getReportTypes()
 
   if (vueInstance.$route.params?.reportId) {
-    await getReport()
-    getFields()
-    getRequirements()
-    getAvailableFields()
+    refreshReport()
   } else {
     name.value.focus()
   }
