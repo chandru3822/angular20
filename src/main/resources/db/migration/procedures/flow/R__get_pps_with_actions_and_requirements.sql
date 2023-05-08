@@ -334,7 +334,22 @@ BEGIN
                                       case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
                                       ppse.modified_by_id as "modifiedById",
                                       pse.event_id as "eventId",
-                                      e.event_name as "eventName"
+                                      e.event_name as "eventName",
+                                      (select concat(cf.field_name, ': ',
+                                                     coalesce(ppsecfv.text_value,
+                                                              ppsecfv.boolean_value::text,
+                                                              ppsecfv.date_value::text,
+                                                              ppsecfv.timestamp_value::text,
+                                                              ppsecfv.numeric_value::text,
+                                                              ppsecfv.int_value::text,
+                                                              ppsecfv.int_array_value::text)
+	                                              )
+                                       from flow.project_process_step_event_custom_field_value ppsecfv
+	                                            inner join flow.custom_field_group_assignment cfga
+	                                                       on ppsecfv.custom_field_group_assignment_id = cfga.id
+		                                                       and cfga.archived is false and cfga.display_on_snippet is true
+	                                            inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                       where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValue"
                                FROM flow.project_process_step_event ppse
                                     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                                     inner join flow.event e on pse.event_id = e.id

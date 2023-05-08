@@ -510,7 +510,7 @@
           </div>
           <div v-else class="pa-5 d-flex align-baseline" style="gap: 1rem">
             <div class="label-medium">Field to Display on Event Snippet: </div>
-            <div>{{ event.snippetCustomField?.fieldName || 'none' }}</div>
+            <div>{{ cfToDisplayOnSnippet?.fieldName || 'none' }}</div>
           </div>
         </v-card>
       </v-col>
