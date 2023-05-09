@@ -199,7 +199,7 @@
         <v-list-item-content>
           <v-row no-gutters class="align-center">
             <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ requirement.name }}</span></v-col>
-            <v-col class="text-no-wrap pl-2">{{ requirement.operatorType }}</v-col>
+            <v-col class="text-no-wrap px-2">{{ requirement.operatorType }}</v-col>
             <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ getValue(requirement) }}</span></v-col>
           </v-row>
         </v-list-item-content>
@@ -446,6 +446,8 @@ const add = () => {
       newRequirement.value.eventName = newPsEventId.value.name
     }
   }
+
+  newRequirement.value.displayOrder = props.requirements.length + 1
 
   newRequirement.value.operatorTypeId = newOperator.value.id
   newRequirement.value.operatorType = newOperator.value.operatorType
