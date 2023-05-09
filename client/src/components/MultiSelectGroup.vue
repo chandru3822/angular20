@@ -40,7 +40,7 @@
         :loading="contentLoading"
         multiple
         clearable
-        :label="label"
+        :label="textLabel"
         item-text="position"
         item-value="positionId"
         return-object
@@ -96,7 +96,8 @@ export default {
     fullSize: {
       default: false,
       type: Boolean
-    }
+    },
+    alternateLabel: String
   },
   data() {
     return {
@@ -104,11 +105,15 @@ export default {
       enabled: this.dropdownEnabled,
       contentChanged: false,
       selected: this.selectedContent,
+      textLabel: this.label
     };
   },
   mounted() {
-    if(!this.allow){
+    if(!this.allow) {
       this.allowFlag = 1;
+      if (this.alternateLabel != null) {
+        this.textLabel = this.alternateLabel;
+      }
     }
     this.selected = this.selectedContent;
   },
@@ -143,10 +148,20 @@ export default {
       this.$emit('selected-changed', this.selected)
     },
     allowChanged(){
-      this.$emit('allow-changed', this.allowFlag)
+      this.switchLabel();
+      this.$emit('allow-changed', this.allowFlag);
     },
     checkboxChanged(){
       this.$emit('checkbox-changed', this.enabled)
+    },
+    switchLabel(){
+      if(this.alternateLabel != null) {
+        if (this.allowFlag == 0) {
+          this.textLabel = this.label
+        } else {
+          this.textLabel = this.alternateLabel
+        }
+      }
     }
   }
 }

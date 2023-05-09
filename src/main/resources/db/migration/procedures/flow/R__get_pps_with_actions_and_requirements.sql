@@ -30,6 +30,7 @@ BEGIN
              ps.id as "processStepId",
              ps.company_id as "companyId",
              ps.readonly,
+             ps.readonly_allow as "readonlyAllow",
              case when (select psat.id
                         from flow.process_step_attachment_type psat
                         where psat.process_step_id = ps.id

@@ -234,7 +234,7 @@
           let csvData = ''
 
           if(this.payroll.positionId === 1) {
-            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
             csvData += '\n'
 
             this.payrollSnapshot.forEach(p => {
@@ -254,6 +254,8 @@
                 p.commissionPlan + '",' +
                 p.commissionsEarned + ',' +
                 p.commissionPaidToDate + ',' +
+                p.commissionForfeitedPaidToDate + ',' +
+                p.commissionForfeitedByCloser + ',' +
                 p.commissionAdjustment + ',' +
                 p.currentPayCommissions + ',' +
                 p.remainingValueCommissions + ',' +
@@ -282,6 +284,8 @@
                 p.commission_plan + ',' +
                 p.commissions_earned + ',' +
                 p.commission_paid_to_date + ',' +
+                p.commission_forfeited_paid_to_date + ',' +
+                p.commission_forfeited_by_closer + ',' +
                 p.commission_adjustment + ',' +
                 p.current_pay_commissions + ',' +
                 p.override_plan + ',' +

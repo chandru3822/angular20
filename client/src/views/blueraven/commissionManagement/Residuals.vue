@@ -3,6 +3,7 @@
     <v-dialog v-model="showModal" class="square-card">
       <ResidualDetailModal :data="modalData"
                            :title="modalTitle"
+                           :type-id="modalTypeId"
                            :user-full-name="modalUserFullName"
                            @residualDetailModalClosed="showModal = false"
       ></ResidualDetailModal>
@@ -217,7 +218,13 @@
                 <td class="text-left">{{item.percentOfResidualEarned | percent(0)}}</td>
                 <td class="text-left">{{item.potentialResidual | currency('$', 0)}}</td>
                 <td class="text-left">{{item.earnedResidual | currency('$', 0)}}</td>
-                <td class="text-left">{{item.clawback | currency('$', 0)}}</td>
+                <td class="text-left">
+                  <a @click="loadModalData(item, 4)">
+                    {{item.currentClawback | currency('$', 0)}}
+                  </a>
+                </td>
+                <td class="text-left">{{item.existingClawback | currency('$', 0)}}</td>
+                <td class="text-left">{{item.totalClawback | currency('$', 0)}}</td>
                 <td class="text-left">
                   {{item.adjustmentOverride | currency('$', 0)}}
 
@@ -350,6 +357,7 @@
         modalUserFullName: '',
         modalData: [],
         modalTitle: '',
+        modalTypeId: null,
         totalPay: null,
         headers: [
           {text: 'User First Name', value: 'firstName', show: true},
@@ -372,7 +380,9 @@
           {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
           {text: 'Potential Residual', value: 'potentialResidual', show: true},
           {text: 'Earned Residual', value: 'earnedResidual', show: true},
-          {text: 'Clawback', value: 'clawback', show: true},
+          {text: 'Current Clawbacks', value: 'currentClawbacks', show: true},
+          {text: 'Existing Clawbacks', value: 'existingClawbacks', show: true},
+          {text: 'Total Clawbacks', value: 'totalClawbacks', show: true},
           {text: 'Adjustment/Override', value: 'adjustmentOverride', show: true},
           {text: 'Total', value: 'total', show: true},
         ],
@@ -483,16 +493,24 @@
         }
       },
       async loadModalData (residualItem, typeId) {
-        //typeId: 1 = lifetime qualified, 2 = qualified fds in period, 3 = fds not qualified this period
+        //typeId: 1 = lifetime qualified,
+        // 2 = qualified fds in period,
+        // 3 = fds not qualified this period
+        // 4 = current clawbacks/cancelled projects
+        this.modalTypeId = typeId
         this.showModal = false
         this.modalData = []
         this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDC' :
-          typeId === 2 ? 'Qualified FDC in Period' : 'FDA Not Qualified this Period'
+          typeId === 2 ? 'Qualified FDC in Period' :
+          typeId === 3 ? 'FDA Not Qualified this Period'
+            : 'Cancelled Projects'
         this.modalUserFullName = ''
         try {
           let url = typeId === 1 ? `/commissionManagement/residuals/qualifiedLifetime/${residualItem.userId}` :
                     typeId === 2 ? `/commissionManagement/residuals/qualifiedPeriod/${residualItem.userId}` :
-                      `/commissionManagement/residuals/notQualifiedPeriod/${residualItem.userId}`
+                    typeId === 3 ? `/commissionManagement/residuals/notQualifiedPeriod/${residualItem.userId}`
+                      : `/commissionManagement/residuals/currentClawbacks/${residualItem.userId}`
+
 
           const {data, status} = await getRequest(url, 'blueraven')
           this.modalData = data
@@ -620,7 +638,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Residuals.csv';
-          let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Clawback,Adjustment/Override,Total';
+          let csvData = 'User First Name,User Last Name,Employee ID,Region,Org Name,Org State,User Position,User Status,Hire Date,Usable Name,Residual Start Date,LTD Qualified FDC,Qualified FDC This Period,FDA Not Qualified This Period,Required FDS for Month,Residual Earned, % of Residual Earned,Potential Residual,Earned Residual,Current Clawback,Existing Clawback,Total Clawback,Adjustment/Override,Total';
           csvData += '\n';
 
           this.residuals.forEach(p => {
@@ -644,7 +662,9 @@
                 p.percentOfResidualEarned + ',"' +
                 p.potentialResidual + '",' +
                 p.earnedResidual + ',' +
-                p.clawback + ',' +
+                p.currentClawback + ',' +
+                p.existingClawback + ',' +
+                p.totalClawback + ',' +
                 p.adjustmentOverride + ',' +
                 p.total
               csvData += '\n';
