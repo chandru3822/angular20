@@ -55,6 +55,11 @@ public class WorkQueueCategoryService {
     List<WorkQueueCategory> categories = sqlCache.queryBySql(
       WorkQueueCategoryQuery.getCategoriesForCompany, params, new WorkQueueCategoryMapper<>(WorkQueueCategory.class, om));
 
+    for(WorkQueueCategory category : categories){
+      if(!category.getHiddenAllow() && (category.getHiddenWhiteListedPositions() == null || category.getHiddenWhiteListedPositions().size() == 0)){
+        category.setHidden(false);
+      }
+    }
     return categories;
   }
 
