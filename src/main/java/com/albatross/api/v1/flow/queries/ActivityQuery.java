@@ -3,6 +3,47 @@ package com.albatross.api.v1.flow.queries;
 public class ActivityQuery {
 
   //language=PostgreSQL
+  public final static String getActivityTopicsByProject = """
+    select a.id,
+           a.activity_type,
+           coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
+                     FROM (
+
+                         select pah.hashtag_id as "hashtagId",
+                                h.hashtag,
+                                count(pah.*) as "activityCount",
+                                0 as fake_display_order,
+                                max(pa.date_modified) as "lastUpdated",
+                                '[]' as "activities"
+                         from flow.project_activity_hashtag pah
+                          inner join flow.project_activity pa on pa.id = pah.project_activity_id and pa.project_id = :sourceId and pa.archived is false
+                          inner join flow.hashtag h on h.id = pah.hashtag_id
+                          and pa.activity_type_id = a.id
+                         and pah.archived is false
+                         group by hashtag_id, hashtag
+                         union
+                         select -1 as "hashtagId",
+                                'uncategorized' as hashtag,
+                                count(pa.*) as "activityCount",
+                                1 as fake_display_order,
+                                max(pa.date_modified) as "lastUpdated",
+                                '[]' as "activities"
+                         from flow.project_activity pa
+                          where pa.archived is false
+                          and pa.project_id = :sourceId
+                          and pa.activity_type_id = a.id
+                          and pa.id not in (
+                            select pah.project_activity_id from flow.project_activity_hashtag pah
+                                      where pah.project_activity_id = pa.id
+                                      and pah.archived is false
+                            )
+                            order by fake_display_order, hashtag
+                          ) ht), '[]') AS "activityHashtags"
+    from flow.activity_type a
+    order by a.display_order
+  """;
+
+  //language=PostgreSQL
   public final static String getProjectActivities = """
       select pa.id,
              pa.project_id,
@@ -191,5 +232,11 @@ public class ActivityQuery {
     inner join flow.hashtag_type ht on ht.id = h.hashtag_type_id
     where pah.project_activity_id = :activityId
       and pah.archived is false
+  """;
+
+
+  //language=PostgreSQL
+  public final static String addSystemActivity = """
+    select from flow.add_system_activity(:activityId, :objectTypeId, :projectId, :ppsId, :ppseId);
   """;
 }

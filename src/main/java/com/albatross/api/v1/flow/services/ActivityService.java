@@ -27,6 +27,16 @@ public class ActivityService {
   private final ObjectMapper om;
   private final SecurityService securityService;
 
+  public List<ActivityType> getActivityTopicsByObject(Long objectTypeId, Long sourceId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("sourceId", sourceId);
+    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getActivityTopicsByProject :
+                   null;
+
+    return sqlCache.queryBySql(sql, params, new ActivityTypeMapper<>(ActivityType.class, om));
+  }
+
+
   public List<Activity> getActivitiesByObject(Long objectTypeId, Long sourceId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
@@ -156,6 +166,25 @@ public class ActivityService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ActivityHashtag>> activityHashtagsRef = new TypeReference<>() {};
+      bw.registerCustomEditor(
+        List.class,
+        "activityHashtags",
+        new JsonCollectionDeserializer(activityHashtagsRef, objectMapper));
+
+    }
+  }
+
+  public static class ActivityTypeMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ActivityTypeMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ActivityTypeHashtag>> activityHashtagsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
         List.class,
         "activityHashtags",

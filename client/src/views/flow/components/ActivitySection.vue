@@ -34,10 +34,21 @@
         </v-list>
       </v-menu>
     </div>
-    <div v-if="!timelineView">Do timeline view</div>
+    <div v-if="!timelineView">
+      <div v-for="type in activityTopics">
+        {{type.activityType}}
+        <v-list>
+          <v-list-item v-for="h in type.activityHashtags">
+            <span class="mr-2">#{{h.hashtag}}</span>
+            <span>{{h.activityCount}} {{type.activityType.toLowerCase()}} |
+            last updated: {{h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+          </v-list-item>
+        </v-list>
+      </div>
+    </div>
     <div v-else>
       <div v-if="sortedFilteredActivities.length === 0">
-        No available note or activities
+        No available notes or activities
       </div>
       <v-card v-else v-for="(a, aIdx) in sortedFilteredActivities" class="mt-2 elevation-1"
               :class="{'pinned-card': a.pinned}">
@@ -166,6 +177,7 @@ export default {
       blankActivity: { id: null, activityHashtags: []},
       editedActivity: {},
       editedIndex: null,
+      activityTopics: [],
       selectedTopics: [],
       topics: [],
       activities: [],
@@ -183,6 +195,14 @@ export default {
     }
   },
   watch: {
+    timelineView: function () {
+      console.log('tl here: ', this.timelineView)
+      if(this.timelineView) {
+        this.getActivities()
+      } else {
+        this.getActivityTopics()
+      }
+    }
   },
   computed: {
     sortedFilteredActivities() {
@@ -218,6 +238,7 @@ export default {
         break
     }
     this.getTopics()
+    //when this page loads for the first time it will always be on timeline view so we dont have to check here. only on watch
     this.getActivities()
   },
   methods: {
@@ -253,6 +274,18 @@ export default {
         })
       } else {
         this.selectedTopics = []
+      }
+    },
+    getActivityTopics: async function () {
+      if (this.primaryId && this.sectionType) {
+        try {
+          const {data} = await getRequest(`/activity/topics/${this.sectionType}/${this.primaryId}`)
+          this.activityTopics = data
+        } catch {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error loading notes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
       }
     },
     getActivities: async function () {

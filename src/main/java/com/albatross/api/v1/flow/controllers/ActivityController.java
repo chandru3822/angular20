@@ -3,6 +3,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.Activity;
 import com.albatross.api.v1.flow.model.ActivityHashtag;
+import com.albatross.api.v1.flow.model.ActivityType;
 import com.albatross.api.v1.flow.services.ActivityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,11 @@ import java.util.Optional;
 public class ActivityController {
 
   private final ActivityService activityService;
+
+  @GetMapping(value = "/topics/project/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ActivityType> getProjectActivityTopics(@PathVariable Long id) {
+    return activityService.getActivityTopicsByObject(ObjectType.PROJECT.id, id);
+  }
 
   @GetMapping(value = "/project/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Activity> getProjectActivities(@PathVariable Long id) {
