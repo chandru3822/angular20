@@ -6,7 +6,7 @@
   :elevation="editorElevation"
   :rounded="showOverflow"
 >
-  <v-row class="align-center justify-start no-gutters mt-2">
+  <v-row class="align-center justify-start no-gutters mt-4">
     <v-col
       v-if="newRequirement !== null"
       class="flex-grow-0 text-no-wrap px-2"
@@ -194,20 +194,26 @@
 </v-sheet>
 <v-list>
   <template v-for="(requirement, index) in requirements">
-    <v-list-item v-if="requirement.updateType !== updateTypes.DELETE" :key="UUID()">
-      <v-list-item-content>
-        {{ requirement.name }}
-      </v-list-item-content>
+    <v-card class="ma-4">
+      <v-list-item v-if="requirement.updateType !== updateTypes.DELETE" :key="UUID()">
+        <v-list-item-content>
+          <v-row no-gutters class="align-center">
+            <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ requirement.name }}</span></v-col>
+            <v-col class="text-no-wrap pl-2">{{ requirement.operatorType }}</v-col>
+            <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ getValue(requirement) }}</span></v-col>
+          </v-row>
+        </v-list-item-content>
 
-      <v-list-item-action>
-        <v-btn
-          icon
-          @click.stop="remove(index)"
-        >
-          <v-icon>mdi-close</v-icon>
-        </v-btn>
-      </v-list-item-action>
-    </v-list-item>
+        <v-list-item-action>
+          <v-btn
+            icon
+            @click.stop="remove(index)"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-list-item-action>
+      </v-list-item>
+    </v-card>
   </template>
 </v-list>
 <v-btn
@@ -370,6 +376,12 @@ const showPsEventInput = computed(() => {
   return !showFieldInput.value && isPsEventSmartlistField && newPsEventId.value === null
 })
 
+const showOperatorInput = computed(() => {
+  return !showFieldInput.value &&
+    !showPsEventInput.value &&
+    newOperator.value === null
+})
+
 const afterFieldSelected = () => {
   getDataTypeRequirements()
   getOperators()
@@ -402,12 +414,6 @@ const afterValueSelected = (userCheckedToAdd) => {
     add()
   }
 }
-
-const showOperatorInput = computed(() => {
-  return !showFieldInput.value &&
-         !showPsEventInput.value &&
-         newOperator.value === null
-})
 
 const toggleOverflow = (toggle) => {
   showOverflow.value = toggle
@@ -442,6 +448,7 @@ const add = () => {
   }
 
   newRequirement.value.operatorTypeId = newOperator.value.id
+  newRequirement.value.operatorType = newOperator.value.operatorType
 
   //if select value is custom
   if (typeof newValue.value === 'string') {
@@ -534,6 +541,47 @@ const focus = (field) => {
       nextTick(field.activateMenu)
     }
   }
+}
+
+const getValue = (requirement) => {
+
+  if (requirement.requirementValue) {
+    return requirement.requirementValue
+  }
+
+  if (requirement.dataTypeRequirementId) {
+
+    let value = requirement.dataTypeRequirement?.dataTypeValue
+
+    if (requirement.dataTypeRequirement?.secondaryRequirement) {
+      value += ` ${requirement.secondaryRequirementValue}`
+    }
+
+    return value
+  }
+
+  if (requirement.listOfValueId || requirement.customFieldSql || requirement.companySystemListId) {
+    const idToUse = (requirement.customSqlOptionId) ? requirement.customSqlOptionId :
+                    (requirement.systemListOptionId) ? requirement.systemListOptionId : requirement.listOfValueId
+    const match = requirement.availableListOfValues.find(i => i.id === idToUse)
+    return match?.name
+  }
+
+  if (requirement.listOfValues) {
+    if (requirement.smartlistSystemListId === null) {
+      return requirement.listOfValues
+                        .map(v => ` ${v.name}`)
+                        .toString()
+    } else {
+      //The backend returns incorrect listOfValues for smartlist field multiselects
+      return requirement.availableListOfValues
+                        .filter(v => req.listOfValueIds.includes(v.id))
+                        .map(v => ` ${v.name}`)
+                        .toString()
+    }
+  }
+
+  return 'unknown'
 }
 </script>
 

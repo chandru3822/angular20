@@ -30,7 +30,7 @@
 
 <script setup>
 
-import { computed, getCurrentInstance, watch, watchEffect } from 'vue'
+import { computed, getCurrentInstance, watch } from 'vue'
 import { logError, postRequest, UUID } from '@/helpers/helpers'
 import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
@@ -124,4 +124,16 @@ const processQueue = async () => {
 tr:nth-of-type(even) {
   @extend .shaded-row;
 }
+
+th {
+  :not(:last-child) {
+    border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
+  }
+}
+
+td:not(:last-child) {
+  border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
+}
+
+
 </style>

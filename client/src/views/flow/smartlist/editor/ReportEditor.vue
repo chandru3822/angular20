@@ -587,11 +587,13 @@ const windowLeave = async (event) => {
 }
 
 .tabs {
-  border-bottom: solid 1px #E0E0E0;
+  border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
 }
 
 .field-container {
-  min-width: 260px;
+  width: 350px;
+  min-width: 350px;
+  max-width: 350px;
   background-color: white;
   z-index: 0;
 }

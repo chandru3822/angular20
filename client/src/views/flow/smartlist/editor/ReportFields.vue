@@ -12,7 +12,7 @@
       :loading="loading"
       solo
       hide-details="true"
-      class="field-selector pa-2"
+      class="field-selector pa-4"
       @change="afterFieldSelected"
     />
 
@@ -32,27 +32,34 @@
 
     <draggable
       :list="fields"
+      handle=".handle"
       @change="reorder"
     >
       <template v-for="(field, index) in fields">
-        <v-list-item v-if="field.updateType !== updateTypes.DELETE" :key="UUID()">
-          <v-list-item-action>
-            <v-icon>drag_handle</v-icon>
-          </v-list-item-action>
+        <v-card class="ma-4">
+          <v-list-item
+            v-if="field.updateType !== updateTypes.DELETE"
+            :key="UUID()"
+            class="pl-0"
+          >
+            <v-list-item-action class="handle grab mr-0">
+              <v-icon x-large>mdi-drag-vertical</v-icon>
+            </v-list-item-action>
 
-          <v-list-item-content>
-            {{ field.name }}
-          </v-list-item-content>
+            <v-list-item-content>
+              {{ field.name }}
+            </v-list-item-content>
 
-          <v-list-item-action>
-            <v-btn
-              icon
-              @click.stop="remove(index)"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </v-list-item-action>
-        </v-list-item>
+            <v-list-item-action>
+              <v-btn
+                icon
+                @click.stop="remove(index)"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+        </v-card>
       </template>
     </draggable>
   </v-col>
