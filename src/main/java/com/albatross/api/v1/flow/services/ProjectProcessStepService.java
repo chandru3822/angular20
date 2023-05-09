@@ -266,7 +266,7 @@ public class ProjectProcessStepService {
         });
 
 
-        if(!user.isSystemAdmin()) {
+        if(!user.isSystemAdmin() && step.getReadonly()) {
           boolean whiteListed = false;
           boolean allowFlag = step.getReadonlyAllow();
 
