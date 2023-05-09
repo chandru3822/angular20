@@ -37,13 +37,22 @@
     <div v-if="!timelineView">
       <div v-for="type in activityTopics">
         {{type.activityType}}
-        <v-list>
-          <v-list-item v-for="h in type.activityHashtags">
-            <span class="mr-2">#{{h.hashtag}}</span>
-            <span>{{h.activityCount}} {{type.activityType.toLowerCase()}} |
+        <v-expansion-panels accordion multiple flat class=".rounded-0">
+          <v-expansion-panel v-for="h in type.activityHashtags" :key="h.hashtagId">
+            <v-expansion-panel-header class="expansion-panel-header">
+              <template v-slot:default="{ open }">
+                <v-row no-gutters class="align-center" :class="{'bold' : open}">
+                  <span class="mr-2">#{{h.hashtag}}</span>
+                  <span>{{h.activityCount}} {{type.activityType.toLowerCase()}} |
             last updated: {{h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
-          </v-list-item>
-        </v-list>
+                </v-row>
+              </template>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              notes here
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </div>
     </div>
     <div v-else>
@@ -155,10 +164,11 @@ import {getNoteHashtags} from "@/services/activityService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
+import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 
 export default {
   name: 'ActivitySection',
-  components: {ConfirmationDialog},
+  components: {AttachmentsTable, ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
   props: {
     contactId: Number,
@@ -196,7 +206,6 @@ export default {
   },
   watch: {
     timelineView: function () {
-      console.log('tl here: ', this.timelineView)
       if(this.timelineView) {
         this.getActivities()
       } else {

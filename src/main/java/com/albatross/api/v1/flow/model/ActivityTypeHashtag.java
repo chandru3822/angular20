@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by randanunn on 2019-05-20.
@@ -17,6 +18,6 @@ public class ActivityTypeHashtag {
   private String hashtag;
 
   private Date lastUpdated;
-
+  private List<Activity> activities;
 }
 
