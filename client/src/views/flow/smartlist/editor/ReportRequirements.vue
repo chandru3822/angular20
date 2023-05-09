@@ -1,227 +1,236 @@
 <template>
 <fragment>
-<v-sheet
-  :class="{'add-field': showOverflow && newRequirement !== null}"
-  class="mx-4 mb-2"
-  :elevation="editorElevation"
-  :rounded="showOverflow"
->
-  <v-row class="align-center justify-start no-gutters mt-4">
-    <v-col
-      v-if="newRequirement !== null"
-      class="flex-grow-0 text-no-wrap px-2"
+<v-row class="no-gutters fill-height flex-column">
+  <v-col class="flex-shrink-1 flex-grow-0">
+    <v-sheet
+      :class="{'add-field': showOverflow && newRequirement !== null}"
+      class="mx-4 mb-2"
+      :elevation="editorElevation"
+      :rounded="showOverflow"
     >
-      <span class="highlight-background pa-2 rounded">{{ newRequirement.name }}</span>
-    </v-col>
-
-    <v-col
-      v-if="newRequirement !== null && newOperator !== null"
-      class="flex-grow-0 text-no-wrap px-2"
-    >
-      {{ newOperator.operatorType }}
-    </v-col>
-
-    <v-col
-      v-if="newRequirement !== null && newOperator !== null && newValue?.secondaryRequirement"
-      class="flex-grow-0 text-no-wrap px-2"
-    >
-      <span class="highlight-background pa-2 rounded">{{ newValue.dataTypeValue }}</span>
-    </v-col>
-
-    <v-col class="flex-grow-1">
-      <v-autocomplete
-        v-show="showFieldInput"
-        ref="requirementField"
-        v-model="newRequirement"
-        :items="availableFields"
-        item-text="name"
-        return-object
-        placeholder="Add Filter"
-        solo
-        :flat="showOverflow"
-        hide-details="true"
-        :class="{'field-selector': !showOverflow}"
-        @blur="afterFieldSelected"
-        @focus="toggleOverflow(true)"
-      >
-        <template #append>
-          <v-btn
-            icon
-            @click.stop="reset"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-      </v-autocomplete>
-
-      <v-autocomplete
-        v-if="showPsEventInput"
-        ref="psEventField"
-        v-model="newPsEventId"
-        :items="calculatedAvailablePsEvents"
-        item-text="name"
-        item-value="id"
-        return-object
-        placeholder="Type or Select Name"
-        solo
-        :flat="showOverflow"
-        hide-details="true"
-        :class="{'field-selector': !showOverflow}"
-        @blur="focus(operatorField)"
-      >
-        <template #append>
-          <v-btn
-            icon
-            @click.stop="reset"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-      </v-autocomplete>
-
-      <v-autocomplete
-        v-show="showOperatorInput"
-        ref="operatorField"
-        v-model="newOperator"
-        :items="availableOperators"
-        item-text="operatorType"
-        item-value="id"
-        return-object
-        placeholder="Type or Select Operator"
-        solo
-        flat
-        hide-details="true"
-        :class="{'field-selector': !showOverflow}"
-        @blur="(newRequirement?.hasListValues) ? focus(listOfValueField) : focus(valueField)"
-      >
-        <template #append v-if="showOverflow">
-          <v-btn
-            icon
-            @click.stop="reset"
-          >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-      </v-autocomplete>
-
-      <span v-if="newOperator !== null && !newValue?.secondaryRequirement">
-        <v-combobox
-          v-show="!newRequirement.hasListValues"
-          ref="valueField"
-          v-model="newValue"
-          :key="UUID()"
-          :items="availableDataTypeRequirements"
-          item-text="dataTypeValue"
-          item-value="id"
-          return-object
-          placeholder="Type or Select Value"
-          solo
-          flat
-          hide-details="true"
-          :class="{'field-selector': !showOverflow}"
-          @change="afterValueSelected"
+      <v-row class="align-center justify-start no-gutters mt-4">
+        <v-col
+          v-if="newRequirement !== null"
+          class="flex-grow-0 text-no-wrap px-2"
         >
-          <template #append>
-            <v-btn
-              icon
-              @click.stop="reset"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </template>
-        </v-combobox>
+          <span class="highlight-background pa-2 rounded">{{ newRequirement.name }}</span>
+        </v-col>
 
-        <v-autocomplete
-          v-show="newRequirement.hasListValues"
-          ref="listOfValueField"
-          v-model="newValue"
-          :items="calculatedAvailableValues"
-          item-text="name"
-          item-value="id"
-          return-object
-          placeholder="Type or Select Value"
-          solo
-          flat
-          hide-details="true"
-          :multiple="newRequirement.allowMultiple"
-          ripple="false"
-          :class="{'field-selector': !showOverflow}"
-          @change="afterValueSelected(false)"
+        <v-col
+          v-if="newRequirement !== null && newOperator !== null"
+          class="flex-grow-0 text-no-wrap px-2"
         >
-          <template #item="data">
-            <v-list-item-content>{{ data.item.name }}</v-list-item-content>
-          </template>
+          {{ newOperator.operatorType }}
+        </v-col>
 
-          <template #append>
-            <v-btn
-              v-if="newValue !== null && newValue.length > 0"
-              icon
-              @click="afterValueSelected(true)"
-            >
-              <v-icon>mdi-check</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              @click.stop="reset"
-            >
-              <v-icon>mdi-close</v-icon>
-            </v-btn>
-          </template>
-        </v-autocomplete>
-      </span>
+        <v-col
+          v-if="newRequirement !== null && newOperator !== null && newValue?.secondaryRequirement"
+          class="flex-grow-0 text-no-wrap px-2"
+        >
+          <span class="highlight-background pa-2 rounded">{{ newValue.dataTypeValue }}</span>
+        </v-col>
 
-      <v-text-field
-        v-show="newValue?.secondaryRequirement"
-        ref="secondaryValueField"
-        v-model="secondaryValue"
-        placeholder="Type Value"
-        solo
-        flat
-        hide-details="true"
-        @change="add"
-      >
-        <template #append>
-          <v-btn
-            icon
-            @click.stop="reset"
+        <v-col class="flex-grow-1">
+          <v-autocomplete
+            v-show="showFieldInput"
+            ref="requirementField"
+            v-model="newRequirement"
+            :items="availableFields"
+            item-text="name"
+            return-object
+            placeholder="Add Filter"
+            solo
+            :flat="showOverflow"
+            hide-details="true"
+            :class="{'field-selector': !showOverflow}"
+            @blur="afterFieldSelected"
+            @focus="toggleOverflow(true)"
           >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </template>
-      </v-text-field>
-    </v-col>
-    </v-row>
-</v-sheet>
-<v-list>
-  <template v-for="(requirement, index) in requirements">
-    <v-card class="ma-4">
-      <v-list-item v-if="requirement.updateType !== updateTypes.DELETE" :key="UUID()">
-        <v-list-item-content>
-          <v-row no-gutters class="align-center">
-            <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ requirement.name }}</span></v-col>
-            <v-col class="text-no-wrap px-2">{{ requirement.operatorType }}</v-col>
-            <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ getValue(requirement) }}</span></v-col>
-          </v-row>
-        </v-list-item-content>
+            <template #append>
+              <v-btn
+                icon
+                @click.stop="reset"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </template>
+          </v-autocomplete>
 
-        <v-list-item-action>
-          <v-btn
-            icon
-            @click.stop="remove(index)"
+          <v-autocomplete
+            v-if="showPsEventInput"
+            ref="psEventField"
+            v-model="newPsEventId"
+            :items="calculatedAvailablePsEvents"
+            item-text="name"
+            item-value="id"
+            return-object
+            placeholder="Type or Select Name"
+            solo
+            :flat="showOverflow"
+            hide-details="true"
+            :class="{'field-selector': !showOverflow}"
+            @blur="focus(operatorField)"
           >
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-list-item-action>
-      </v-list-item>
-    </v-card>
-  </template>
-</v-list>
-<v-btn
-  text
-  @click="showDeleteDialog = true"
->
-  Remove All Filters
-</v-btn>
+            <template #append>
+              <v-btn
+                icon
+                @click.stop="reset"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </template>
+          </v-autocomplete>
+
+          <v-autocomplete
+            v-show="showOperatorInput"
+            ref="operatorField"
+            v-model="newOperator"
+            :items="availableOperators"
+            item-text="operatorType"
+            item-value="id"
+            return-object
+            placeholder="Type or Select Operator"
+            solo
+            flat
+            hide-details="true"
+            :class="{'field-selector': !showOverflow}"
+            @blur="(newRequirement?.hasListValues) ? focus(listOfValueField) : focus(valueField)"
+          >
+            <template #append v-if="showOverflow">
+              <v-btn
+                icon
+                @click.stop="reset"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </template>
+          </v-autocomplete>
+
+          <span v-if="newOperator !== null && !newValue?.secondaryRequirement">
+            <v-combobox
+              v-show="!newRequirement.hasListValues"
+              ref="valueField"
+              v-model="newValue"
+              :key="UUID()"
+              :items="availableDataTypeRequirements"
+              item-text="dataTypeValue"
+              item-value="id"
+              return-object
+              placeholder="Type or Select Value"
+              solo
+              flat
+              hide-details="true"
+              :class="{'field-selector': !showOverflow}"
+              @change="afterValueSelected"
+            >
+              <template #append>
+                <v-btn
+                  icon
+                  @click.stop="reset"
+                >
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-combobox>
+
+            <v-autocomplete
+              v-show="newRequirement.hasListValues"
+              ref="listOfValueField"
+              v-model="newValue"
+              :items="calculatedAvailableValues"
+              item-text="name"
+              item-value="id"
+              return-object
+              placeholder="Type or Select Value"
+              solo
+              flat
+              hide-details="true"
+              :multiple="newRequirement.allowMultiple"
+              ripple="false"
+              :class="{'field-selector': !showOverflow}"
+              @change="afterValueSelected(false)"
+            >
+              <template #item="data">
+                <v-list-item-content>{{ data.item.name }}</v-list-item-content>
+              </template>
+
+              <template #append>
+                <v-btn
+                  v-if="newValue !== null && newValue.length > 0"
+                  icon
+                  @click="afterValueSelected(true)"
+                >
+                  <v-icon>mdi-check</v-icon>
+                </v-btn>
+                <v-btn
+                  icon
+                  @click.stop="reset"
+                >
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-autocomplete>
+          </span>
+
+          <v-text-field
+            v-show="newValue?.secondaryRequirement"
+            ref="secondaryValueField"
+            v-model="secondaryValue"
+            placeholder="Type Value"
+            solo
+            flat
+            hide-details="true"
+            @change="add"
+          >
+            <template #append>
+              <v-btn
+                icon
+                @click.stop="reset"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </template>
+          </v-text-field>
+        </v-col>
+        </v-row>
+    </v-sheet>
+  </v-col>
+  <v-col class="flex-grow-1 flex-shrink-0">
+    <v-list>
+      <template v-for="(requirement, index) in requirements">
+        <v-card class="ma-4">
+          <v-list-item v-if="requirement.updateType !== updateTypes.DELETE" :key="UUID()">
+            <v-list-item-content>
+              <v-row no-gutters class="align-center">
+                <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ requirement.name }}</span></v-col>
+                <v-col class="text-no-wrap px-2">{{ requirement.operatorType }}</v-col>
+                <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ getValue(requirement) }}</span></v-col>
+              </v-row>
+            </v-list-item-content>
+
+            <v-list-item-action>
+              <v-btn
+                icon
+                @click.stop="remove(index)"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+        </v-card>
+      </template>
+    </v-list>
+  </v-col>
+
+  <v-col class="flex-shrink-1 flex-grow-0 text-right">
+    <v-btn
+      text
+      @click="showDeleteDialog = true"
+    >
+      Remove All Filters
+    </v-btn>
+  </v-col>
+</v-row>
 
 <v-dialog
   v-model="showDeleteDialog"

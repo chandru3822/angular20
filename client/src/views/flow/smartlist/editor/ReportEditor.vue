@@ -93,18 +93,16 @@
             :class="{'show-overflow': showRequirementOverflow}"
           >
             <v-tab-item>
-              <div>
-                <ReportFields
-                  :fields="fields"
-                  :available-fields="availableFields"
-                  :loading="loadingAvailableFields"
-                  :update-types="UPDATE_TYPE"
-                  @added="addField"
-                  @deleted="deleteField"
-                  @reordered="reorderFields"
-                  @cleared="clearFields"
-                />
-              </div>
+              <ReportFields
+                :fields="fields"
+                :available-fields="availableFields"
+                :loading="loadingAvailableFields"
+                :update-types="UPDATE_TYPE"
+                @added="addField"
+                @deleted="deleteField"
+                @reordered="reorderFields"
+                @cleared="clearFields"
+              />
             </v-tab-item>
             <v-tab-item>
               <ReportRequirements
@@ -576,6 +574,14 @@ const windowLeave = async (event) => {
   :deep(.v-data-table__wrapper) {
     height: calc(100vh - 270px) !important;
   }
+}
+
+.v-item-group {
+  height: calc(100vh - 369px);
+}
+
+.v-window-item {
+  height: calc(100vh - 369px);
 }
 
 .report-toolbar {
