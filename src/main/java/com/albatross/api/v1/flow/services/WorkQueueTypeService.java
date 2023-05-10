@@ -74,7 +74,13 @@ public class WorkQueueTypeService {
       WorkQueueTypeQuery.getType,
         ImmutableMap.of("id", id),
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
-    if(!user.isSystemAdmin()) {
+
+    if(!type.get().getHiddenAllow() && (type.get().getHiddenWhiteListedPositions() == null || type.get().getHiddenWhiteListedPositions().size() == 0)){
+      type.get().setHidden(false);
+    }
+
+
+    if(!user.isSystemAdmin() && type.get().getHidden()) {
         boolean whiteListed = false;
         boolean allowFlag = type.get().getHiddenAllow();
         //Checks if the user's position is in the whitelist

@@ -188,37 +188,65 @@ public class ProjectProcessStepEventService {
         }
       }
 
-      boolean whiteListed = false;
-      boolean allowFlag = result.get().getReadonlyAllow();
+      WhiteListedPosition position = new WhiteListedPosition();
+      position.setPositionId(user.getUserPositionId());
 
-      //Checks if the user's position is in the whitelist
-      for(int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++){
-        if(result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-          whiteListed = true;
-        }
+
+      if(!result.get().getStartTimeReadOnlyAllow() && (result.get().getStartTimeWhiteListedPositions() == null || result.get().getStartTimeWhiteListedPositions().size() == 0)){
+        result.get().setStartTimeReadOnly(false);
       }
 
-      //If the flag is set to deny, flip the whitelist to be a deny list
-      if(!allowFlag){
-        whiteListed = !whiteListed;
+      if(!result.get().getStartTimeHiddenAllow() && (result.get().getStartTimeHiddenWhiteListedPositions() == null || result.get().getStartTimeHiddenWhiteListedPositions().size() == 0)){
+        result.get().setStartTimeHidden(false);
       }
 
-      //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-      if(whiteListed && !allowFlag){
-        WhiteListedPosition position = new WhiteListedPosition();
-        position.setPositionId(user.getUserPositionId());
-        result.get().getReadonlyWhiteListedPositions().add(position);
+      if(!result.get().getEndTimeReadOnlyAllow() && (result.get().getEndTimeWhiteListedPositions() == null || result.get().getEndTimeWhiteListedPositions().size() == 0)){
+        result.get().setEndTimeReadOnly(false);
       }
-      //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-      else if(!whiteListed && !allowFlag){
-        for(int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++){
-          if(result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-            result.get().getReadonlyWhiteListedPositions().remove(x);
-            x--;
+
+      if(!result.get().getEndTimeHiddenAllow() && (result.get().getEndTimeHiddenWhiteListedPositions() == null || result.get().getEndTimeHiddenWhiteListedPositions().size() == 0)){
+        result.get().setEndTimeHidden(false);
+      }
+
+      if(!result.get().getResourceReadOnlyAllow() && (result.get().getResourceWhiteListedPositions() == null || result.get().getResourceWhiteListedPositions().size() == 0)){
+        result.get().setResourceReadOnly(false);
+      }
+
+      if(!result.get().getResourceHiddenAllow() && (result.get().getResourceHiddenWhiteListedPositions() == null || result.get().getResourceHiddenWhiteListedPositions().size() == 0)){
+        result.get().setResourceHidden(false);
+      }
+
+      if(result.get().getReadonly() && !user.isSystemAdmin()) {
+        boolean whiteListed = false;
+        boolean allowFlag = result.get().getReadonlyAllow();
+
+        //Checks if the user's position is in the whitelist
+        for (int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++) {
+          if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
+            whiteListed = true;
           }
         }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!allowFlag) {
+          whiteListed = !whiteListed;
+        }
+
+        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+        if (whiteListed && !allowFlag) {
+          result.get().getReadonlyWhiteListedPositions().add(position);
+        }
+        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+        else if (!whiteListed && !allowFlag) {
+          for (int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++) {
+            if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
+              result.get().getReadonlyWhiteListedPositions().remove(x);
+              x--;
+            }
+          }
+        }
+        result.get().setReadonly(!whiteListed);
       }
-      result.get().setReadonly(!whiteListed);
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }
