@@ -109,7 +109,8 @@ const headers = computed(() => {
   return props.fields.map(f => ({
     text: f.name,
     value: f.name,
-    id: UUID()
+    id: UUID(),
+    class: 'text-no-wrap'
   }))
 })
 
@@ -162,8 +163,13 @@ tr:nth-of-type(even) {
   @extend .shaded-row;
 }
 
-th {
-  :not(:last-child) {
+:deep(th) {
+
+  &:first-child {
+    border-left: 1px solid var(--v-grey-lighten2) !important;
+  }
+
+  &:not(:last-child) {
     border-right: 1px solid var(--v-grey-lighten2) !important;
   }
 }
@@ -171,6 +177,5 @@ th {
 td:not(:last-child) {
   border-right: 1px solid var(--v-grey-lighten2) !important;
 }
-
 
 </style>
