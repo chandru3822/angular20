@@ -81,7 +81,7 @@ BEGIN
               d.percent_of_residual_earned,
               d.potential_residual,
               d.earned_residual,
-              d.clawback,
+              d.total_clawback,
               d.adjustment_override,
               d.total,
               case
@@ -255,7 +255,8 @@ BEGIN
                                                      date_created,
                                                      created_by_id,
                                                      date_modified,
-                                                     modified_by_id)
+                                                     modified_by_id,
+                                                     clawback_date)
         (select v_snapshot_id,
                 rqlf.project_id,
                 (select id
@@ -266,7 +267,8 @@ BEGIN
                 now(),
                 p_updated_by_id,
                 now(),
-                p_updated_by_id
+                p_updated_by_id,
+                rqlf.clawback_date
          from brs.get_current_residual_clawbacks(d.user_id) rqlf
          inner join brs.project_details as pd on pd.project_id = rqlf.project_id);
 
