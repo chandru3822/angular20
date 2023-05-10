@@ -1,7 +1,7 @@
 <template>
 <fragment>
-<v-row no-gutters>
-  <v-col cols="12">
+<v-row class="no-gutters fill-height flex-column">
+  <v-col class="flex-shrink-1 flex-grow-0">
     <v-autocomplete
       v-show="!showPsEventField"
       v-model="newValue"
@@ -29,7 +29,9 @@
       class="field-selector pa-2"
       @change="add"
     />
+  </v-col>
 
+  <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
     <draggable
       :list="fields"
       handle=".handle"
@@ -64,7 +66,7 @@
     </draggable>
   </v-col>
 
-  <v-col class="clear-btn">
+  <v-col class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4">
     <v-btn
       text
       @click="showDeleteDialog = true"
@@ -226,6 +228,15 @@ const afterFieldSelected = () => {
 .field-selector {
   :deep(.v-input__append-inner) {
     display: none;
+  }
+}
+
+.btn-remove-container {
+
+  border-top: 1px solid var(--v-grey-lighten2);
+
+  button:hover::before {
+    opacity: 0 !important;
   }
 }
 </style>
