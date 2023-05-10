@@ -266,6 +266,10 @@ public class ProjectProcessStepService {
         });
 
 
+        if(!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)){
+          step.setReadonly(false);
+        }
+
         if(!user.isSystemAdmin() && step.getReadonly()) {
           boolean whiteListed = false;
           boolean allowFlag = step.getReadonlyAllow();
