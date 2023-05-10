@@ -195,7 +195,7 @@
         </v-row>
     </v-sheet>
   </v-col>
-  <v-col class="flex-grow-1 flex-shrink-0">
+  <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
     <v-list>
       <template v-for="(requirement, index) in requirements">
         <v-card class="ma-4">
@@ -222,9 +222,11 @@
     </v-list>
   </v-col>
 
-  <v-col class="flex-shrink-1 flex-grow-0 text-right">
+  <v-col class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4">
     <v-btn
       text
+      color="primary"
+      class="btn-remove"
       @click="showDeleteDialog = true"
     >
       Remove All Filters
@@ -609,5 +611,14 @@ const getValue = (requirement) => {
 
 .highlight-background {
   background-color: var(--v-primary-lighten9);
+}
+
+.btn-remove-container {
+
+  border-top: 1px solid var(--v-grey-lighten2);
+
+  button:hover::before {
+    opacity: 0 !important;
+  }
 }
 </style>

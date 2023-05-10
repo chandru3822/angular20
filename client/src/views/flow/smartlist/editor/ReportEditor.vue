@@ -585,7 +585,7 @@ const windowLeave = async (event) => {
 }
 
 .report-toolbar {
-  border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
+  border-bottom: solid 1px var(--v-grey-lighten2) !important;
 }
 
 .tabs-header {
@@ -593,7 +593,7 @@ const windowLeave = async (event) => {
 }
 
 .tabs {
-  border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;
+  border-bottom: solid 1px var(--v-grey-lighten2) !important;
 }
 
 .field-container {

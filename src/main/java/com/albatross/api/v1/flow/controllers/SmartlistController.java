@@ -184,4 +184,11 @@ public class SmartlistController {
   public ResponseEntity<List<Map<String, Object>>> getAdhocReportData(@RequestBody ReportDTO report, @RequestParam Integer limit, @RequestParam(required = false) String timezone) {
     return ResponseEntity.ok(smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), limit, timezone));
   }
+
+  @PreAuthorize("hasRootLevelAccess()")
+  @PostMapping(value = "/adhoc/query", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Map<String, Object>> getReportQuery(@RequestBody ReportDTO report) {
+    var result = smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), null, null, true);
+    return ResponseEntity.ok(result.get(0));
+  }
 }

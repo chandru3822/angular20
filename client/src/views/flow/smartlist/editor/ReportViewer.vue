@@ -1,4 +1,5 @@
 <template>
+<fragment>
 <v-data-table
   :loading="isDataLoading"
   :headers="headers"
@@ -26,6 +27,21 @@
     </tr>
   </template>
 </v-data-table>
+
+<v-btn
+  v-if="isSystemAdmin"
+  fab
+  absolute
+  bottom
+  right
+  color="info"
+  class="mb-16"
+  @click="getQuery"
+>
+  <v-icon>mdi-plus</v-icon>
+</v-btn>
+
+</fragment>
 </template>
 
 <script setup>
@@ -34,8 +50,10 @@ import { computed, getCurrentInstance, watch } from 'vue'
 import { logError, postRequest, UUID } from '@/helpers/helpers'
 import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
+import { Fragment } from 'vue-frag'
 
 const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
 
@@ -55,6 +73,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['updated', 'queued'])
+
+const isSystemAdmin = store.getters.isFullAdmin
 
 const reportData = ref([])
 const isDataLoading = ref(false)
@@ -116,6 +136,23 @@ const processQueue = async () => {
     }
   }
 }
+
+const getQuery = async () => {
+  try {
+    const {data} = await postRequest(`/smartlist/adhoc/query`, {
+      smartlist: props.report,
+      fields: props.fields,
+      requirements: props.requirements
+    })
+
+    navigator.clipboard.writeText(data.query);
+    snackbar('SUCCESS', 'Query copied to clipboard')
+
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching query')
+  }
+}
 </script>
 
 <style scoped lang="scss">
@@ -127,12 +164,12 @@ tr:nth-of-type(even) {
 
 th {
   :not(:last-child) {
-    border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
+    border-right: 1px solid var(--v-grey-lighten2) !important;
   }
 }
 
 td:not(:last-child) {
-  border-right: 1px solid rgba(0, 0, 0, 0.12) !important;
+  border-right: 1px solid var(--v-grey-lighten2) !important;
 }
 
 

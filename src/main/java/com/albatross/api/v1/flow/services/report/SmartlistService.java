@@ -788,7 +788,24 @@ public class SmartlistService {
     }
   }
 
-  public List<Map<String, Object>> getAdhocReportData(Smartlist report, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit, String timezone) {
+  public List<Map<String, Object>> getAdhocReportData(
+    Smartlist report,
+    List<SmartlistFieldAssignment> fields,
+    List<SmartlistRequirement> requirements,
+    Integer limit,
+    String timezone
+  ) {
+    return getAdhocReportData(report, fields, requirements, limit, timezone, false);
+  }
+
+  public List<Map<String, Object>> getAdhocReportData(
+    Smartlist report,
+    List<SmartlistFieldAssignment> fields,
+    List<SmartlistRequirement> requirements,
+    Integer limit,
+    String timezone,
+    Boolean queryOnly
+  ) {
 
     //if we are working with an existing smartlist, verify read access
     if (report.getId() != null) {
@@ -863,6 +880,10 @@ public class SmartlistService {
       query = (report.isProjectDetails()) ?
         reportEngine.buildProjectDetailsSql(report, fields, requirements, limit) :
         reportEngine.buildSql(report, fields, requirements, timezone, null, false, limit);
+    }
+
+    if (Objects.equals(queryOnly, true)) {
+      return List.of(Map.of("query", query));
     }
 
     try {
