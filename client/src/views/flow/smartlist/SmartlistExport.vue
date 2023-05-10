@@ -1,11 +1,13 @@
 <template>
   <v-btn
     @click.stop="exportSmartlist"
-    text
-    icon
+    :icon="!showText"
+    :text="showText"
     class="pa-5"
+    :disabled="disabled"
   >
     <v-icon>mdi-tray-arrow-down</v-icon>
+    <span v-if="showText">Export</span>
   </v-btn>
 </template>
 
@@ -20,6 +22,16 @@ const props = defineProps({
   smartlist: {
     type: Object,
     required: true
+  },
+  showText: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 

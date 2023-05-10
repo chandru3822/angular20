@@ -5,7 +5,7 @@
       :icon="!showText"
       :text="showText"
       class="pa-5"
-      :disabled="disabled"
+      :disabled="!smartlistId || disabled"
     >
       <v-icon>mdi-delete</v-icon>
       <span v-if="showText">Delete</span>
@@ -32,8 +32,20 @@ import { Fragment } from 'vue-frag'
 
 const props = defineProps({
   smartlistId: {
-    type: Number,
-    required: true
+    required: true,
+    validator(value) {
+      //'undefined' might be passed in from the editor (due to it being a route param) and we want to allow this
+
+      if (value === null) {
+        return false
+      }
+
+      if (typeof value === 'undefined') {
+        return true
+      }
+
+      return Number.isInteger(value)
+    }
   },
   showText: {
     type: Boolean,

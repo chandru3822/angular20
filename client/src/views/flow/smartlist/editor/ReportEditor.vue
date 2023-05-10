@@ -33,7 +33,6 @@
             />
 
             <SmartlistDelete
-              v-if="report.id"
               :smartlist-id="report.id"
               :disabled="!canDelete"
               :show-text="true"
@@ -57,15 +56,12 @@
               <v-icon>save</v-icon>
               Save
             </v-btn>
-            <v-btn
-              text
-              color="primary"
+
+            <SmartlistExport
+              :smartlist="report"
+              :show-text="true"
               :disabled="!report?.id"
-              @click="exportReport"
-            >
-              <v-icon>mdi-tray-arrow-down</v-icon>
-              Export
-            </v-btn>
+            />
           </v-toolbar-items>
         </v-toolbar>
 
@@ -223,6 +219,7 @@ import Smartlist from '@/views/flow/smartlist/Smartlist'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
+import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -374,24 +371,6 @@ const updateOwner = (newOwner) => {
 const copied = async (copiedReport) => {
   await router.push({name: 'reportEditor', params: {reportId: copiedReport.id}})
   await refreshReport()
-}
-
-const exportReport = async () => {
-  if (Object.keys(report.value).length > 0) {
-    try {
-      store.commit(AppMutations.SET_LOADING, true)
-      const {data} = await getRequest(`/smartlist/${report.value.id}/export`)
-      let blob = new Blob([data], {
-        type: 'text/csv;charset=utf-8'
-      })
-      saveAs(blob, `${report.value.name} ${DateTime.local().toFormat('yyyy-MM-dd h_mm a')}.csv`)
-    } catch (e) {
-      logError(e)
-      store.commit(AppMutations.SHOW_SNACK, getSnackbar('ERROR', e.data?.message || 'An error was encountered during export'))
-    } finally {
-      store.commit(AppMutations.SET_LOADING, false)
-    }
-  }
 }
 
 const save = async () => {
