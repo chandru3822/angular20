@@ -86,6 +86,8 @@ public class ResidualPayrollQuery {
             s.user_position_name as "userPositionName",
             s.user_status as "userStatus",
             s.hire_date as "hireDate",
+            coalesce(s.current_clawbacks_in_period,0) as "currentClawback",
+            coalesce(s.existing_clawbacks, 0) as "existingClawback",
             s.user_full_name as "userFullName",
             s.residual_plan_name as "residualPlanName",
             s.residual_start_date as "residualStartDate",
@@ -105,7 +107,7 @@ public class ResidualPayrollQuery {
             s.created_by_id as "createdById",
             s.date_modified as "dateModified",
             s.modified_by_id as "modifiedById",
-            s.clawback
+            coalesce(s.clawback, 0) as "totalClawback"
           FROM brs.user_residual_snapshot s
                  INNER JOIN flow.user u on u.id = s.user_id
           WHERE residual_id = :residualId
