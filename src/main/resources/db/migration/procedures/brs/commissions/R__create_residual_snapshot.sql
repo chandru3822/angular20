@@ -81,7 +81,7 @@ BEGIN
               d.percent_of_residual_earned,
               d.potential_residual,
               d.earned_residual,
-              d.clawback,
+              d.total_clawback,
               d.adjustment_override,
               d.total,
               case
