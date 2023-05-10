@@ -288,22 +288,6 @@ public class ProjectService {
             statusWhiteListed = !statusWhiteListed;
           }
 
-          //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-//          if(statusWhiteListed && !statusAllowFlag){
-//            WhiteListedPosition position = new WhiteListedPosition();
-//            position.setPositionId(user.getUserPositionId());
-//            result.get().getStatusReadOnlyWhiteListedPositions().add(position);
-//          }
-//          //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-//          else if(!statusWhiteListed && !statusAllowFlag){
-//            for(int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++){
-//              if(result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-//                result.get().getStatusReadOnlyWhiteListedPositions().remove(x);
-//                x--;
-//              }
-//            }
-//          }
-
 
         boolean ownerWhiteListed = false;
         boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
@@ -643,33 +627,37 @@ public class ProjectService {
     params.put("systemAdmin", systemAdmin);
     params.put("userPositions", userPositionIds);
     List<ProjectProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
-
     if(!user.isSystemAdmin()){
       for(int x = 0; x < processStepEvents.size(); x++) {
-        boolean whiteListed = false;
-        boolean allowFlag = processStepEvents.get(x).getEventHiddenAllow();
+          if(!processStepEvents.get(x).getEventHiddenAllow() && (processStepEvents.get(x).getEventHiddenWhiteListedPositions() == null || processStepEvents.get(x).getEventHiddenWhiteListedPositions().size() == 0)){
+          processStepEvents.get(x).setEventHidden(false);
+        }
+        if(processStepEvents.get(x).getEventHidden()) {
+          boolean whiteListed = false;
+          boolean allowFlag = processStepEvents.get(x).getEventHiddenAllow();
 
-        //Checks if the user's position is in the whitelist
-        for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-          if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
-            whiteListed = true;
+          //Checks if the user's position is in the whitelist
+          for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
+            if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
+              whiteListed = true;
+            }
           }
-        }
 
-        //If the flag is set to deny, flip the whitelist to be a deny list
-        if (!allowFlag) {
-          whiteListed = !whiteListed;
-        }
-        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-        if (whiteListed && !allowFlag) {
-          WhiteListedPosition position = new WhiteListedPosition();
-          position.setPositionId(user.getUserPositionId());
-          processStepEvents.get(x).getEventHiddenWhiteListedPositions().add(position);
-        }
-        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-        else if (!whiteListed && !allowFlag) {
-          processStepEvents.remove(x);
-          x--;
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if (!allowFlag) {
+            whiteListed = !whiteListed;
+          }
+          //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
+          if (whiteListed && !allowFlag) {
+            WhiteListedPosition position = new WhiteListedPosition();
+            position.setPositionId(user.getUserPositionId());
+            processStepEvents.get(x).getEventHiddenWhiteListedPositions().add(position);
+          }
+          //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
+          else if (!whiteListed && !allowFlag) {
+            processStepEvents.remove(x);
+            x--;
+          }
         }
     }
     }
