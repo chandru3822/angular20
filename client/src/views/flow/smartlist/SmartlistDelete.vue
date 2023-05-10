@@ -2,11 +2,13 @@
   <fragment>
     <v-btn
       @click.stop="showDialog = true"
-      text
-      icon
+      :icon="!showText"
+      :text="showText"
       class="pa-5"
+      :disabled="disabled"
     >
       <v-icon>mdi-delete</v-icon>
+      <span v-if="showText">Delete</span>
     </v-btn>
 
     <ConfirmationDialog
@@ -32,6 +34,16 @@ const props = defineProps({
   smartlistId: {
     type: Number,
     required: true
+  },
+  showText: {
+    type: Boolean,
+    required: false,
+    default: false
+  },
+  disabled: {
+    type: Boolean,
+    required: false,
+    default: false
   }
 })
 

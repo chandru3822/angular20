@@ -32,6 +32,14 @@
               @copied="copied"
             />
 
+            <SmartlistDelete
+              v-if="report.id"
+              :smartlist-id="report.id"
+              :disabled="!canDelete"
+              :show-text="true"
+              @deleted="router.go(-1)"
+            />
+
             <SmartlistShare
               :smartlist="report"
               :show-text="true"
@@ -214,6 +222,7 @@ import { Fragment } from 'vue-frag'
 import Smartlist from '@/views/flow/smartlist/Smartlist'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
+import SmartlistDelete from '@/views/flow/smartlist/SmartlistDelete.vue'
 
 //This matches the backend fieldUpdateType enum. Could potentially fetch types dynamically from the backend
 const UPDATE_TYPE = Object.freeze({
@@ -299,9 +308,20 @@ const canEdit = computed(() => {
   return Smartlist.userCanEdit(report.value)
 })
 
+const canDelete = computed(() => {
+  if (isSmartlistAdmin || isSystemAdmin) {
+    return true
+  }
+
+  if (report.value?.ownerId === store.state.user.details.id && hasAddAccess) {
+    return true
+  }
+
+  return false
+})
+
 watch(() => vueInstance.$route.params?.reportId, async () => {
   if (vueInstance.$route.params?.reportId) {
-    console.log('refresh')
     refreshReport()
   }
 })

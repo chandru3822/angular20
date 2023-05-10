@@ -6,7 +6,7 @@
     class="pa-5"
     :disabled="disabled"
   >
-    <v-icon >mdi-content-copy</v-icon>
+    <v-icon>mdi-content-copy</v-icon>
     <span v-if="showText">Duplicate</span>
   </v-btn>
 </template>
