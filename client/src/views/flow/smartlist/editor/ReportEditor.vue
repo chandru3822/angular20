@@ -83,6 +83,17 @@
               :rules="constants.BASIC_REQUIRED_RULE"
             />
           </v-col>
+
+          <v-col class="flex-shrink-1 flex-grow-0 text-no-wrap">
+            <v-checkbox
+              v-if="[4,6].includes(report?.objectTypeId)"
+              v-model="report.mainProcessSteps"
+              label="Primary Steps Only"
+              hide-details
+              :ripple="false"
+              class="px-4"
+            />
+          </v-col>
         </v-row>
 
       </v-card>
