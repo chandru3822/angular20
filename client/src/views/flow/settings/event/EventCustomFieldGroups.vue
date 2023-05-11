@@ -323,62 +323,27 @@
                                   <v-row class="flex-display">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'"
                                           class="square-card px-4" style="width:50%">
-                                    <v-card-title style="height: 40px" class="py-0">
-                                      Read Only
-                                      <v-checkbox type="checkbox" class="ml-3" v-if="cf.systemReadonly"
-                                                  :disabled="true"
-                                                  :readonly="true"
-                                                  v-model="cf.systemReadonly"></v-checkbox>
-                                      <v-checkbox type="checkbox" class="ml-3" v-else
-                                                  v-model="cf.customFieldGroupAssignmentReadOnly"></v-checkbox>
-                                    </v-card-title>
                                     <v-card-text v-if="cf.systemReadonly" class="mt-2">
                                       System Readonly Cannot Change
                                     </v-card-text>
                                     <v-card-text v-else>
-                                      <v-autocomplete
-                                        v-if="cf.customFieldGroupAssignmentReadOnly"
-                                        v-model="cf.whiteListedPositions"
-                                        :items="positions"
-                                        :loading="positionsLoading"
-                                        multiple
-                                        clearable
-                                        label="White Listed Positions"
-                                        item-text="position"
-                                        item-value="positionId"
-                                        return-object
-                                        height="35px"
-                                        class="mr-3 mt-3"
-                                        @change="cf.positionsChanged = true">
-                                        <v-list-item
-                                          slot="prepend-item"
-                                          ripple
-                                          @click="toggleSelectAllPositions(cf, 'whiteListedPositions')"
-                                        >
-                                          <v-list-item-action>
-                                            <v-icon>{{ icon(cf, 'whiteListedPositions') }}</v-icon>
-                                          </v-list-item-action>
-                                          <v-list-item-title>Select All</v-list-item-title>
-                                        </v-list-item>
-                                        <v-divider
-                                          slot="prepend-item"
-                                          class="mt-2"
-                                        ></v-divider>
-                                        <template
-                                          slot="selection"
-                                          slot-scope="{ item, index }"
-                                        >
-                                          <v-chip small
-                                                  v-if="index === 0 && cf.whiteListedPositions && cf.whiteListedPositions.length < 2">
-                                            <span>{{ item.position }}</span>
-                                          </v-chip>
-                                          <span
-                                            v-if="index === 1 && cf.whiteListedPositions && cf.whiteListedPositions.length >= 2"
-                                            class="primary--text text-caption"
-                                          >{{ cf.whiteListedPositions.length }} selected</span>
-                                        </template>
-                                      </v-autocomplete>
-                                      <br/>
+                                      <multi-select-group
+                                        v-if="!eventLoading"
+                                        background-color="primary lighten-9"
+                                        :userCanEdit="userCanEdit"
+                                        :returnObject="cf"
+                                        :content="positions"
+                                        :dropdownEnabled="cf.customFieldGroupAssignmentReadOnly"
+                                        :selectedContent="cf.whiteListedPositions"
+                                        :title="'Read Only'"
+                                        :label="'Allowed Positions'"
+                                        :alternateLabel = "'Denied Positions'"
+                                        :allow="cf.customFieldGroupAssignmentReadOnlyAllow"
+                                        :contentLoading="positionsLoading"
+                                        @selected-changed="cfgReadOnlySelectedEventListener($event, cf)"
+                                        @allow-changed="cfgReadOnlyAllowEventListener($event, cf)"
+                                        @checkbox-changed="cfgReadOnlyCheckboxEventListener($event, cf)"></multi-select-group>
+                           <br/>
                                       <v-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveReadOnlyAndWhiteList(cf)">
                                         <v-icon class="mr-2">save</v-icon>
@@ -388,53 +353,24 @@
                                   </v-card>
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'"
                                           class="square-card px-4" style="width:50%">
-                                    <v-card-title style="height: 40px" class="py-0">
-                                      Hidden
-                                      <v-checkbox type="checkbox" class="ml-3"
-                                                  v-model="cf.customFieldGroupAssignmentHidden"></v-checkbox>
-                                    </v-card-title>
                                     <v-card-text>
-                                      <v-autocomplete
-                                        v-if="cf.customFieldGroupAssignmentHidden"
-                                        v-model="cf.hiddenWhiteListedPositions"
-                                        :items="positions"
-                                        :loading="positionsLoading"
-                                        multiple
-                                        clearable
-                                        label="White Listed Positions"
-                                        item-text="position"
-                                        item-value="positionId"
-                                        return-object
-                                        height="35px"
-                                        class="mr-3 mt-3"
-                                        @change="cf.hiddenPositionsChanged = true">
-                                        <template v-slot:prepend-item>
-                                        <v-list-item
-                                          ripple
-                                          @click="toggleHiddenSelectAllPositions(cf, 'hiddenWhiteListedPositions')"
-                                        >
-                                          <v-list-item-action>
-                                            <v-icon>{{ icon(cf, 'hiddenWhiteListedPositions') }}</v-icon>
-                                          </v-list-item-action>
-                                          <v-list-item-title>Select All</v-list-item-title>
-                                        </v-list-item>
-                                        <v-divider
-                                          class="mt-2"
-                                        ></v-divider>
-                                        </template>
-                                        <template
-                                          v-slot:selection="{ item, index }"
-                                        >
-                                          <v-chip small
-                                                  v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">
-                                            <span>{{ item.position }}</span>
-                                          </v-chip>
-                                          <span
-                                            v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"
-                                            class="primary--text text-caption"
-                                          >{{ cf.hiddenWhiteListedPositions.length }} selected</span>
-                                        </template>
-                                      </v-autocomplete>
+                                      <multi-select-group
+                                        v-if="!eventLoading"
+                                        background-color="primary lighten-9"
+                                        :userCanEdit="userCanEdit"
+                                        :returnObject="cf"
+                                        :content="positions"
+                                        :dropdownEnabled="cf.customFieldGroupAssignmentHidden"
+                                        :selectedContent="cf.hiddenWhiteListedPositions"
+                                        :title="'Hidden'"
+                                        :label="'Allowed Positions'"
+                                        :alternateLabel = "'Denied Positions'"
+                                        :allow="cf.customFieldGroupAssignmentHiddenAllow"
+                                        :contentLoading="positionsLoading"
+                                        @selected-changed="cfgHiddenSelectedEventListener($event, cf)"
+                                        @allow-changed="cfgHiddenAllowEventListener($event, cf)"
+                                        @checkbox-changed="cfgHiddenCheckboxEventListener($event, cf)"></multi-select-group>
+
                                       <br/>
                                       <v-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveHiddenAndWhiteList(cf)">
@@ -786,6 +722,30 @@ export default {
     },
     resourceHiddenCheckboxEventListener(e){
       this.event.resourceHidden = e;
+    },
+    cfgReadOnlySelectedEventListener(e, cf){
+      cf.whiteListedPositions = e;
+      cf.positionsChanged = true;
+    },
+    cfgReadOnlyAllowEventListener(e, cf){
+      cf.customFieldGroupAssignmentReadOnlyAllow = (e == 0);
+      cf.positionsChanged = true;
+    },
+    cfgReadOnlyCheckboxEventListener(e, cf){
+      cf.customFieldGroupAssignmentReadOnly = e;
+      cf.positionsChanged = true;
+    },
+    cfgHiddenSelectedEventListener(e, cf){
+      cf.hiddenWhiteListedPositions = e;
+      cf.hiddenPositionsChanged = true;
+    },
+    cfgHiddenAllowEventListener(e, cf){
+      cf.customFieldGroupAssignmentHiddenAllow = (e == 0);
+      cf.hiddenPositionsChanged = true;
+    },
+    cfgHiddenCheckboxEventListener(e, cf){
+      cf.customFieldGroupAssignmentHidden = e;
+      cf.hiddenPositionsChanged = true;
     },
     selectAll(f, fieldName) {
       return f[fieldName]?.length === this.positions?.length

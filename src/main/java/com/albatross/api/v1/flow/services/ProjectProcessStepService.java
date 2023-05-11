@@ -276,13 +276,17 @@ public class ProjectProcessStepService {
             }
         }
 
-        if(!user.isSystemAdmin()) {
+        if(!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)){
+          step.setReadonly(false);
+        }
+
+        if(!user.isSystemAdmin() && step.getReadonly()) {
           boolean whiteListed = false;
           boolean allowFlag = step.getReadonlyAllow();
 
           //Checks if the user's position is in the whitelist
           for (int x = 0; x < step.getWhiteListedPositions().size(); x++) {
-            if (step.getWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
+            if (step.getWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
               whiteListed = true;
             }
           }
@@ -292,21 +296,7 @@ public class ProjectProcessStepService {
             whiteListed = !whiteListed;
           }
 
-          //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-          if (whiteListed && !allowFlag) {
-            WhiteListedPosition position = new WhiteListedPosition();
-            position.setPositionId(user.getUserPositionId());
-            step.getWhiteListedPositions().add(position);
-          }
-          //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-          else if (!whiteListed && !allowFlag) {
-            for (int x = 0; x < step.getWhiteListedPositions().size(); x++) {
-              if (step.getWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
-                step.getWhiteListedPositions().remove(x);
-                x--;
-              }
-            }
-          }
+          step.getWhiteListedPositions().clear();
           step.setReadonly(!whiteListed);
 
         }
