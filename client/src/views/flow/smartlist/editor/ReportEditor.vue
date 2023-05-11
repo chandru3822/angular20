@@ -23,7 +23,12 @@
                 outlined
                 placeholder="Type Name"
                 hide-details="true"
-                ref="name"
+                ref="reportNameField"
+                class="report-name"
+                :class="{'borderless': !isEditingReportName}"
+                @blur="isEditingReportName = false"
+                @keyup.enter.esc="[isEditingReportName = false, reportNameField.blur()]"
+                @click="isEditingReportName = true"
               />
             </div>
           </v-toolbar-title>
@@ -131,7 +136,6 @@
             </v-tab-item>
             <v-tab-item>
               <ReportRequirements
-                ref="requirementContainer"
                 :requirements="requirements"
                 :available-fields="availableFields"
                 :loading="loadingAvailableFields"
@@ -223,16 +227,14 @@
 
 <script setup>
 import useReportStore from '@/views/flow/smartlist/reportStore'
-import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch } from 'vue'
-import { getRequest, getSnackbar, logError, postRequest, putRequest } from '@/helpers/helpers'
+import { computed, getCurrentInstance, onMounted, onUnmounted, ref, watch, nextTick } from 'vue'
+import { getRequest, logError, postRequest, putRequest } from '@/helpers/helpers'
 import { AppMutations } from '@/stores/AppStore'
-import { DateTime } from 'luxon'
 import constants from '@/helpers/constants'
 import ReportFields from '@/views/flow/smartlist/editor/ReportFields.vue'
 import ReportRequirements from '@/views/flow/smartlist/editor/ReportRequirements.vue'
 import isEqual from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
-import { saveAs } from 'file-saver'
 import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
 import { Fragment } from 'vue-frag'
@@ -268,8 +270,9 @@ const loadingAvailableFields = ref(false)
 const showRequirementOverflow = ref(false)
 const showSaveDialog = ref(false)
 const showUnsavedDialog = ref(false)
-const showShareDialog = ref(false)
 const unsavedPromiseResolve = ref(null)
+const isEditingReportName = ref(false)
+const reportNameField = ref(null)
 
 const report = ref({mainProcessSteps: true, name: ''})
 const fields = ref([])
@@ -280,7 +283,6 @@ const sourceReport = ref({mainProcessSteps: true, name: ''})
 const sourceFields = ref([])
 const sourceRequirements = ref([])
 
-const name = ref(null)
 const reportTypes = ref([])
 const availableFields = ref([])
 
@@ -432,6 +434,7 @@ const save = async () => {
     snackbar('SUCCESS', 'Save Successful')
   } catch (e) {
     logError(e)
+    snackbar('ERROR', 'Error saving smartlist')
   } finally {
     store.commit(AppMutations.SET_LOADING, false)
   }
@@ -531,7 +534,8 @@ onMounted(async () => {
   if (vueInstance.$route.params?.reportId) {
     refreshReport()
   } else {
-    name.value.focus()
+    nextTick(reportNameField.value.focus)
+    isEditingReportName.value = true
   }
 })
 
@@ -580,6 +584,22 @@ const windowLeave = async (event) => {
 <style scoped lang="scss">
 @import "@/styles/main";
 
+.report-toolbar {
+  :deep(.v-toolbar__content) {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .report-name {
+    font-size: 20px;
+    font-weight: 700;
+  }
+
+  :deep(.borderless fieldset) {
+    border: none;
+  }
+}
+
 #report-editor-data {
   height: calc(100vh - 257px);
 
@@ -594,40 +614,33 @@ const windowLeave = async (event) => {
   :deep(.v-data-table__wrapper) {
     height: calc(100vh - 270px) !important;
   }
-}
 
-.v-item-group {
-  height: calc(100vh - 369px);
-}
-
-.v-window-item {
-  height: calc(100vh - 369px);
-}
-
-.report-toolbar {
-  :deep(.v-toolbar__content) {
-    padding-left: 0;
-    padding-right: 0;
+  .v-item-group {
+    height: calc(100vh - 369px);
   }
-}
 
-.tabs-header {
-  background-color: white;
-}
+  .v-window-item {
+    height: calc(100vh - 369px);
+  }
 
-.tabs {
-  border-bottom: solid 1px var(--v-grey-lighten2) !important;
-}
+  .tabs-header {
+    background-color: white;
+  }
 
-.field-container {
-  width: 350px;
-  min-width: 350px;
-  max-width: 350px;
-  background-color: white;
-  z-index: 0;
-}
+  .tabs {
+    border-bottom: solid 1px var(--v-grey-lighten2) !important;
+  }
 
-.show-overflow.v-window {
-  overflow: visible !important;
+  .field-container {
+    width: 350px;
+    min-width: 350px;
+    max-width: 350px;
+    background-color: white;
+    z-index: 0;
+  }
+
+  .show-overflow.v-window {
+    overflow: visible !important;
+  }
 }
 </style>
