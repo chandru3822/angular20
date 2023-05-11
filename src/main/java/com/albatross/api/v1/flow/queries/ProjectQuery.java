@@ -597,11 +597,19 @@ select
                                                and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
             )
             when e.hidden and :systemAdmin::boolean is false and not e.hidden_allow
-                       then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+            --case when below is empty, then true else do below
+                      then case when ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
                                                and wlp2.archived is not true
                                          limit 1
-            )
+            ) is null then true
+                       else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                         limit 1
+            ) end
                    else 1=1 end
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
     """;
