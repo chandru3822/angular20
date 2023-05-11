@@ -3,8 +3,12 @@
 <v-container id="report-editor" class="fill-height align-start">
   <v-row class="align-content-start fill-height">
     <v-col cols="12">
-      <v-card class="elevation-1 square-card px-4">
-        <v-toolbar flat color="white" class="report-toolbar">
+      <v-card class="elevation-1 square-card pr-4">
+        <v-toolbar
+          flat
+          color="white"
+          class="report-toolbar pt-2"
+        >
           <v-toolbar-title>
             <div class="d-flex justify-start align-center">
               <v-btn
@@ -65,16 +69,22 @@
           </v-toolbar-items>
         </v-toolbar>
 
-        <v-autocomplete
-          v-model="report.companyObjectTypeId"
-          :items="filteredReportTypes"
-          item-value="companyObjectTypeId"
-          item-text="objectType"
-          label="Data Type"
-          placeholder="Data Type"
-          :rules="constants.BASIC_REQUIRED_RULE"
-        />
-        <v-spacer />
+        <v-divider class="my-4 ml-4" />
+
+        <v-row class="no-gutters ml-4">
+          <v-col cols="4">
+            <v-autocomplete
+              v-model="report.companyObjectTypeId"
+              :items="filteredReportTypes"
+              item-value="companyObjectTypeId"
+              item-text="objectType"
+              label="Data Type"
+              placeholder="Data Type"
+              :rules="constants.BASIC_REQUIRED_RULE"
+            />
+          </v-col>
+        </v-row>
+
       </v-card>
     </v-col>
     <v-col
@@ -584,7 +594,10 @@ const windowLeave = async (event) => {
 }
 
 .report-toolbar {
-  border-bottom: solid 1px var(--v-grey-lighten2) !important;
+  :deep(.v-toolbar__content) {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 .tabs-header {

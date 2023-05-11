@@ -165,6 +165,10 @@ tr:nth-of-type(even) {
 
 :deep(th) {
 
+  span {
+    font-size: 16px;
+  }
+
   &:first-child {
     border-left: 1px solid var(--v-grey-lighten2) !important;
   }
