@@ -13,6 +13,7 @@ import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
@@ -627,6 +628,17 @@ public class ProjectService {
     params.put("systemAdmin", systemAdmin);
     params.put("userPositions", userPositionIds);
     List<ProjectProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
+
+      for(ProjectProcessStepEvent event: processStepEvents){
+          if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+              HashMap<String, Object> moreParams = new HashMap<>();
+              moreParams.put("objectTypeId", 6); //6 is the event object type
+              moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+              moreParams.put("primaryId", event.getId());
+              List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, CustomFieldValueDisplay.class);
+              event.setCustomFieldDisplayValue(cfvs.get(0));
+          }
+      }
     if(!user.isSystemAdmin()){
       for(int x = 0; x < processStepEvents.size(); x++) {
           if(!processStepEvents.get(x).getEventHiddenAllow() && (processStepEvents.get(x).getEventHiddenWhiteListedPositions() == null || processStepEvents.get(x).getEventHiddenWhiteListedPositions().size() == 0)){

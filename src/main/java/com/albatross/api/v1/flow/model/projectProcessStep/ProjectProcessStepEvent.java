@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.model.projectProcessStep;
 
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValueDisplay;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventAction;
 import lombok.Data;
@@ -20,7 +21,7 @@ public class ProjectProcessStepEvent {
 
   private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId, companyProcessStepStatusTypeId,
     eventId, resourceId, uniqueBehaviorTypeId, eventStatusTypeId, rootProjectProcessStepStatusTypeId, //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
-    processStepId, projectId, saveVersion;
+    processStepId, projectId, saveVersion, customFieldDisplayValueGroupAssignmentId;
   private String eventName, eventStatusType, resource, processStepName, lastUpdated,
     dateCreated, cancelledDate, completedDate, scheduledDate, createdBy;
   private Timestamp startTime, endTime;
@@ -29,6 +30,7 @@ public class ProjectProcessStepEvent {
   private List<ProcessStepEventAction> eventActions, eventBanners;
   private Boolean archived, readonly, readonlyAllow, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned, startTimeReadOnlyAllow, startTimeHiddenAllow, endTimeReadOnlyAllow, endTimeHiddenAllow, resourceReadOnlyAllow, resourceHiddenAllow, eventHiddenAllow;;
   private List<WhiteListedPosition> readonlyWhiteListedPositions, eventHiddenWhiteListedPositions, startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions, endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions, resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
+  private CustomFieldValueDisplay customFieldDisplayValue;
 
 
   @Data

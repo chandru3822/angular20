@@ -13,6 +13,20 @@
             - {{ event.endTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
           </span>
       </div>
+      <div v-if="event.customFieldDisplayValue">
+      <div>{{event.customFieldDisplayValue.fieldName}}:
+        <span v-if="event.customFieldDisplayValue.dateValue">{{ event.customFieldDisplayValue.dateValue | formatDate('timestamp', 'M/D/YY') }}</span>
+        <span v-if="event.customFieldDisplayValue.timestampValue">{{ event.customFieldDisplayValue.timestampValue | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+        <span v-if="event.customFieldDisplayValue.textValue" >{{ event.customFieldDisplayValue.textValue }}</span>
+        <span v-if="event.customFieldDisplayValue.richTextValue" >{{ event.customFieldDisplayValue.richTextValue }}</span>
+        <span v-if="event.customFieldDisplayValue.intValueAsText" >{{ event.customFieldDisplayValue.intValueAsText }}</span>
+        <span v-else-if="event.customFieldDisplayValue.intValue" >{{ event.customFieldDisplayValue.intValue }}</span>  <!--else required here b/c if it has intValueAsText, it will also have intValue, but we the reverse is not true -->
+        <span v-if="event.customFieldDisplayValue.intArrayValueAsText" >{{ event.customFieldDisplayValue.intArrayValueAsText }}</span>
+        <span v-else-if="event.customFieldDisplayValue.intArrayValue" >{{ event.customFieldDisplayValue.intArrayValue }}</span><!--else required here b/c if it has intArrayValueAsText, it will also have intArrayValue, but we the reverse is not true -->
+        <v-icon v-if="event.customFieldDisplayValue.booleanValue" class="ml-1 mb-1" size="20">check</v-icon>
+        <v-icon v-else-if="event.customFieldDisplayValue.booleanValue === false" class="ml-1 mb-1" size="20">close</v-icon> <!--else required here to ensure we don't show the x if the vooleanValue is undefined/null instead of false -->
+      </div>
+      </div>
     </div>
     <div class="albatross-body-3 grey--text text--darken-2"
          v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">

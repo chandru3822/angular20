@@ -428,6 +428,25 @@ public class CustomFieldGroupAssignmentQuery {
         where id = :cfgaId
         """;
 
+    //language=PostgreSQL
+    public final static String saveDisplayOnSnippet = """
+        update flow.custom_field_group_assignment
+        set display_on_snippet = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where id = :cfgaId
+""";
+
+    //language=PostgreSQL
+    public final static String clearDisplayOnSnippet = """
+        update flow.custom_field_group_assignment
+        set display_on_snippet = false,
+            date_modified = now(),
+            modified_by_id = :userId
+        where id != :cfgaId and display_on_snippet = true
+""";
+
+
   //language=PostgreSQL
   public final static String saveReadOnly = """
     update flow.custom_field_group_assignment
