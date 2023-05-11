@@ -469,9 +469,11 @@ public class SmartlistQuery {
     select case when count(1) > 0 then false else true end
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
-    where lower(s.name) = lower(:name::text) and
-    cot.company_id = :companyId and
-    s.archived is not true
+    where
+      s.name = :name::text and
+      cot.company_id = :companyId and
+      s.archived is not true and
+      s.work_queue_type_id is null
   """;
 
   //language=PostgreSQL

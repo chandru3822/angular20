@@ -236,11 +236,13 @@ public class SmartlistService {
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
-    if (!smartlistServicev1.isNameUnique(smartlist.getName())) {
+    User user = securityService.getCurrentUser();
+
+    boolean isNameUnique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", smartlist.getName(), "companyId", user.getCompanyId()), Boolean.class);
+    if (!isNameUnique) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
     }
 
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("ownerId", user.getId());
     params.put("createdById", user.trueUserId());
@@ -261,11 +263,13 @@ public class SmartlistService {
 
     final boolean updatingName = !existingSmartlist.getName().trim().equals(smartlist.getName().trim());
 
-    if (updatingName && !smartlistServicev1.isNameUnique(smartlist.getName())) {
+    User user = securityService.getCurrentUser();
+    boolean isNameUnique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", smartlist.getName(), "companyId", user.getCompanyId()), Boolean.class);
+
+    if (updatingName && !isNameUnique) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
     }
 
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.trueUserId());
 
