@@ -38,7 +38,7 @@
   class="mb-16"
   @click="getQuery"
 >
-  <v-icon>mdi-plus</v-icon>
+  <v-icon>mdi-database-eye-outline</v-icon>
 </v-btn>
 
 </fragment>
