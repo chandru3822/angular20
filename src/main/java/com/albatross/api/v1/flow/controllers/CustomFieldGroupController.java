@@ -66,6 +66,11 @@ public class CustomFieldGroupController {
     customFieldGroupService.saveDetailView(cfgaId, detailView);
   }
 
+  @PutMapping(value = "/saveDisplayOnSnippet/{cfgaId}")
+  public void saveDisplayOnSnippet(@PathVariable Long cfgaId) {
+    customFieldGroupService.saveDisplayOnSnippet(cfgaId);
+  }
+
   @PutMapping(value = "/saveHiddenAndWhiteList")
   public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean savePositions,
                                      @RequestBody CustomField customField) {

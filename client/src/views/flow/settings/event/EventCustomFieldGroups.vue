@@ -429,8 +429,35 @@
             </v-data-table>
           </v-col>
         </v-row>
+        <v-card>
+          <div v-if="userIsAdmin" class="snippet-selector-grid">
+            <div class="label-medium">Field to Display on Event Snippet</div>
+            <v-autocomplete
+                label="Custom Field Group"
+                v-model="cfgToDisplayOnSnippet"
+                return-object
+                clearable
+                item-text="groupName"
+                :items="filterCustomFieldGroups()"/>
+            <v-autocomplete
+                v-if="cfgToDisplayOnSnippet"
+                label="Custom Field"
+                v-model="cfToDisplayOnSnippet"
+                :items="cfgToDisplayOnSnippet.customFields"
+                item-text="fieldName"
+                item-value="id"
+                return-object
+            />
+            <v-btn v-if="cfToDisplayOnSnippet" @click="saveCfToDisplayOnSnippet" color="primary"><v-icon class="mr-2">save</v-icon>save field to display</v-btn>
+          </div>
+          <div v-else class="pa-5 d-flex align-baseline" style="gap: 1rem">
+            <div class="label-medium">Field to Display on Event Snippet: </div>
+            <div>{{ cfToDisplayOnSnippet?.fieldName || 'none' }}</div>
+          </div>
+        </v-card>
       </v-col>
     </v-row>
+
     <ConfirmationDialog
       :open-dialog="cfgToDelete && !cFieldToDelete"
       @confirm="deleteWithChecks(cfgToDelete, cfgToDelete.id, null)"
@@ -542,6 +569,7 @@ export default {
       availableCustomFields: [],
       parent: {},
       eventId: this.$route.params.id,
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       companyId: this.$store.state.user.details.companyId,
@@ -556,9 +584,18 @@ export default {
       expanded: [],
       eventResourceFields: [],
       eventTypes: [],
+      cfgToDisplayOnSnippet: null,
+      cfToDisplayOnSnippet: null,
       cfgToDelete: null,
       cFieldToDelete: null,
       WhiteListTypeEnum
+    }
+  },
+  watch: {
+    cfgToDisplayOnSnippet() {
+      if (this.cfgToDisplayOnSnippet === null){
+        this.event.snippetCustomField = null
+      }
     }
   },
   computed: {
@@ -605,6 +642,7 @@ export default {
         this.eventLoading = true;
         const {data} = await getRequest(`/event/${this.eventId}`)
         this.event = data
+        this.getDisplayOnSnippet()
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.eventLoading = false;
       } catch (e) {
@@ -613,6 +651,17 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    getDisplayOnSnippet(){
+      for(let cfg of this.event.customFieldGroups){
+        const customFieldToDisplay = cfg.customFields.find(cf => cf.displayOnSnippet === true)
+        if(customFieldToDisplay) {
+          this.cfgToDisplayOnSnippet = cfg
+          this.cfToDisplayOnSnippet = customFieldToDisplay
+          break
+        }
+      }
+
     },
     startTimeReadOnlySelectedEventListener(e){
       this.event.startTimeWhiteListedPositions = e;
@@ -774,6 +823,21 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveCfToDisplayOnSnippet(){
+      debugger;
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/customFieldGroup/saveDisplayOnSnippet/${this.cfToDisplayOnSnippet.customFieldGroupAssignmentId}`)
+        this.snackbar = getSnackbar('SUCCESS', 'Custom Field to Display on Snippet Saved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Custom Field to Display on Snippet')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -1121,6 +1185,18 @@ export default {
 
 .add-new {
   border-bottom: 1px solid #E6E6E6;
+}
+
+.snippet-selector-grid {
+  display: grid;
+  grid-template-columns: 2fr 3fr 3fr 2fr;
+  column-gap: 2rem;
+  align-items: baseline;
+  padding: 1rem;
+  margin-right: 1rem;
+}
+.snippet-selector-background {
+  background-color: var(--v-grey-lighten4);
 }
 
 </style>
