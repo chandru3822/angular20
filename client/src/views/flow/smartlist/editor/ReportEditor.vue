@@ -19,17 +19,23 @@
               </v-btn>
 
               <v-text-field
+                v-show="isEditingReportName"
                 v-model="report.name"
                 outlined
                 placeholder="Type Name"
                 hide-details="true"
                 ref="reportNameField"
                 class="report-name"
-                :class="{'borderless': !isEditingReportName}"
                 @blur="isEditingReportName = false"
                 @keyup.enter.esc="[isEditingReportName = false, reportNameField.blur()]"
-                @click="isEditingReportName = true"
               />
+              <span
+                v-show="!isEditingReportName"
+                class="report-name ml-3"
+                @click="[isEditingReportName = true, nextTick(reportNameField.focus)]"
+              >
+                {{ report.name }}
+              </span>
             </div>
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -593,6 +599,11 @@ const windowLeave = async (event) => {
   .report-name {
     font-size: 20px;
     font-weight: 700;
+    letter-spacing: normal;
+
+    &:hover {
+      cursor: pointer;
+    }
   }
 
   :deep(.borderless fieldset) {
