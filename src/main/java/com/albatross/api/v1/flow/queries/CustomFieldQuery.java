@@ -120,6 +120,7 @@ public class CustomFieldQuery {
            cf.company_data_type_id,
            cdt.data_type_id,
            cf.allow_now,
+           cf.allow_select_self,
            cf.custom_field_sql_key,
            cf.custom_field_sql,
                       cf.custom_field_sql_smartlist,
