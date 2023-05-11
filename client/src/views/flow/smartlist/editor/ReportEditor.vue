@@ -7,9 +7,9 @@
         <v-toolbar
           flat
           color="white"
-          class="report-toolbar pt-2"
+          class="report-toolbar pt-2 justify"
         >
-          <v-toolbar-title>
+          <v-toolbar-title class="one-hunned">
             <div class="d-flex justify-start align-center">
               <v-btn
                 icon
@@ -27,7 +27,7 @@
                 ref="reportNameField"
                 class="report-name"
                 @blur="isEditingReportName = false"
-                @keyup.enter.esc="[isEditingReportName = false, reportNameField.blur()]"
+                @keydown.enter.esc="[isEditingReportName = false, reportNameField.blur()]"
               />
               <span
                 v-show="!isEditingReportName"
@@ -38,7 +38,6 @@
               </span>
             </div>
           </v-toolbar-title>
-          <v-spacer></v-spacer>
           <v-toolbar-items>
             <SmartlistCopy
               :smartlist="report"
@@ -540,8 +539,8 @@ onMounted(async () => {
   if (vueInstance.$route.params?.reportId) {
     refreshReport()
   } else {
-    nextTick(reportNameField.value.focus)
     isEditingReportName.value = true
+    nextTick(reportNameField.value.focus)
   }
 })
 
@@ -594,6 +593,7 @@ const windowLeave = async (event) => {
   :deep(.v-toolbar__content) {
     padding-left: 0;
     padding-right: 0;
+    justify-content: space-between;
   }
 
   .report-name {
