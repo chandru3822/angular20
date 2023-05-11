@@ -265,6 +265,16 @@ public class ProjectProcessStepService {
         ProjectProcessStep step = om.readValue(json, new TypeReference<>() {
         });
 
+        for(ProjectProcessStepEvent event: step.getProjectProcessStepEvents()){
+            if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+                HashMap<String, Object> moreParams = new HashMap<>();
+                moreParams.put("objectTypeId", 6); //6 is the event object type
+                moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+                moreParams.put("primaryId", event.getId());
+               List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, CustomFieldValueDisplay.class);
+               event.setCustomFieldDisplayValue(cfvs.get(0));
+            }
+        }
 
         if(!user.isSystemAdmin()) {
           boolean whiteListed = false;

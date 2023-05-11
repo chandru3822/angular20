@@ -13,7 +13,7 @@
             - {{ event.endTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
           </span>
       </div>
-      <div>{{event.customFieldDisplayValue}}</div>
+      <div>{{event.customFieldDisplayValueGroupAssignmentId}}</div>
     </div>
     <div class="albatross-body-3 grey--text text--darken-2"
          v-if="$store.getters.userHasFeatureAccessLevel('EVENTS', 'ADMIN')">
@@ -29,6 +29,9 @@ export default {
   props: {
     projectId: Number,
     event: Object,
+  },
+  created() {
+    debugger
   },
   computed: {
     ppsEventId () {
