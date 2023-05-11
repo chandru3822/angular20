@@ -37,11 +37,11 @@ public class WorkQueueCategoryQuery {
                                                     AND wlp.archived is not true
                                                     AND wlp.work_queue_category_id = wqc.id)::bigint[]
             when wqc.hidden and not :hiddenWqcOverride and :filtered and not wqc.hidden_allow
-                then not array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
+                then not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
                 FROM flow.white_listed_position wlp
                 WHERE wlp.white_list_type_id = 11
                 AND wlp.archived is not true
-                AND wlp.work_queue_category_id = wqc.id)::bigint[]
+                AND wlp.work_queue_category_id = wqc.id)::bigint[], '{}')
                 else  1=1 end
         order by display_order
         """;
