@@ -279,7 +279,7 @@ public class ProjectService {
 
           //Checks if the user's position is in the whitelist
           for(int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++){
-              if(result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+              if(result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())){
               statusWhiteListed = true;
             }
           }
@@ -292,10 +292,11 @@ public class ProjectService {
 
         boolean ownerWhiteListed = false;
         boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
+        System.out.println(ownerAllowFlag);
 
         //Checks if the user's position is in the whitelist
         for(int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
-          if(result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
+          if(result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())){
             ownerWhiteListed = true;
           }
         }
@@ -305,24 +306,12 @@ public class ProjectService {
           ownerWhiteListed = !ownerWhiteListed;
         }
 
-        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-        if(ownerWhiteListed && !ownerAllowFlag){
-          WhiteListedPosition position = new WhiteListedPosition();
-          position.setPositionId(user.getUserPositionId());
-          result.get().getOwnerReadOnlyWhiteListedPositions().add(position);
-        }
-        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-        else if(!ownerWhiteListed && !ownerAllowFlag){
-          for(int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
-            if(result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-              result.get().getOwnerReadOnlyWhiteListedPositions().remove(x);
-              x--;
-            }
-          }
-        }
 
         result.get().getOwnerReadOnlyWhiteListedPositions().clear();
         result.get().getStatusReadOnlyWhiteListedPositions().clear();
+
+        System.out.println("Owner Read Only: " + !ownerWhiteListed);
+        System.out.println("Status Read Only: " + !statusWhiteListed);
         result.get().setOwnerReadOnly(!ownerWhiteListed);
         result.get().setStatusReadOnly(!statusWhiteListed);
         return result;
