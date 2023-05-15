@@ -213,6 +213,15 @@ BEGIN
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id), round(plh.system_size::numeric/1000,2),
+                           (select cfga.id
+                            from flow.custom_field cf
+                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                            where cf.id = 35 --Estimated Annual Energy Consumption (kWh)
+                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                              and cf.company_id = v_company_id
+                              and cfg.process_step_id = p_process_step_id), current_yearly_consumption::numeric,
+
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
