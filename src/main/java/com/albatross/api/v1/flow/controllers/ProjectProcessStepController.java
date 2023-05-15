@@ -355,6 +355,7 @@ public class ProjectProcessStepController {
 
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
+      log.error("PPS: Unexpected error on PPS ID: {}", projectProcessStepId, e);
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }
