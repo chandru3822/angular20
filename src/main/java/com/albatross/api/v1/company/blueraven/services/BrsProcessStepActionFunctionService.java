@@ -443,16 +443,7 @@ public class BrsProcessStepActionFunctionService {
 
                 final String projectStatusParam = paramValues.get(0).getDynamicValue();
                 if (projectStatusParam != null && !projectStatusParam.isBlank()) {
-
-                    if (projectStatusParam.trim().equalsIgnoreCase("Final Design Sent")) {
-                        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-                        LocalDateTime finalDesignSent = LocalDateTime.parse(project.getFinalDesignSentToHomeownerDate());
-                        if (finalDesignSent.isBefore(yesterday)) {
-                            lead.remove("projectStatus");
-                        }
-                    } else {
-                        lead.put("projectStatus", projectStatusParam);
-                    }
+                  lead.put("projectStatus", projectStatusParam);
                 }
 
                 if (project.getFinalDesignApprovedDate() == null) {
