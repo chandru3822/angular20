@@ -47,15 +47,28 @@
 <script setup>
 
 import { computed, getCurrentInstance, watch } from 'vue'
-import { logError, postRequest, UUID } from '@/helpers/helpers'
+import { logError, postRequest, requestInterceptor, responseInterceptor, UUID } from '@/helpers/helpers'
 import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
 import { Fragment } from 'vue-frag'
+import axios from 'axios'
+import constants from '@/helpers/constants'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 
+const http = axios.create({
+  baseURL: `${constants.VUE_APP_BASE_API}${constants.VUE_APP_API_PATH}/flow`,
+})
+http.interceptors.request.use(requestInterceptor)
+http.interceptors.response.use((response) => {
+  if (response.status !== 200 && response.status !== 500) {
+    responseInterceptor({response})
+  }
+
+  return response
+})
 
 const props = defineProps({
   report: {
@@ -119,16 +132,15 @@ const processQueue = async () => {
     isDataLoading.value = true
     isUpdateQueued.value = false
     reportData.value = []
-    const {data} = await postRequest(`/smartlist/adhoc?limit=40`, {
+
+    const response = await http.post(`/smartlist/adhoc?limit=40`, {
       smartlist: props.report,
       fields: props.fields,
       requirements: props.requirements
     })
-
-    reportData.value = data
+    reportData.value = response.data
     emit('updated')
   } catch (e) {
-    logError(e)
     snackbar('ERROR', 'Error while fetching smartlist data')
   } finally {
     isDataLoading.value = false
