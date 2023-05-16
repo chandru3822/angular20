@@ -220,7 +220,7 @@ BEGIN
                             where cf.id = 35 --Estimated Annual Energy Consumption (kWh)
                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                               and cf.company_id = v_company_id
-                              and cfg.process_step_id = p_process_step_id), current_yearly_consumption::numeric,
+                              and cfg.process_step_id = p_process_step_id), total_yearly_usage_pre_solar::numeric,
 
                             (select cfga.id
                              from flow.custom_field cf
