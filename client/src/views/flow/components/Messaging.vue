@@ -420,6 +420,9 @@ a.chatLink {
   font-size: 0.875rem;
 }
 
+//this makes new lines show up when the user does shift + enter
+.sc-message--text, .sc-message--file-text { white-space: pre-wrap; }
+
 .sc-chat-window {
   position: unset !important;
   max-width: 100%;

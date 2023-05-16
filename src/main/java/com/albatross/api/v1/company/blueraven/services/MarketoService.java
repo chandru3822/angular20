@@ -207,18 +207,10 @@ public class MarketoService {
     }
 
     public Map<String, Object> projectToLead(MarketoProject project) {
-        Map<String, Object> lead = new HashMap<>();
-        lead.put("projectId", project.getId());
-        lead.put("firstName", project.getFirstName());
-        lead.put("lastName", project.getLastName());
-        lead.put("address", project.getStreet1());
-        lead.put("state", project.getState());
-        lead.put("country", project.getCountry());
-        lead.put("postalCode", project.getPostalCode());
-        lead.put("phone", project.getPhone());
-        lead.put("email", project.getEmail());
-        lead.put("leadSource", project.getLeadSource());
-        lead.put("leadStatus", project.getLeadStatus());
+        Map<String, Object> lead = om.convertValue(project, HashMap.class);
+        lead.remove("companyProjectStatusTypeId");
+        lead.remove("projectStatusType");
+        lead.remove("doNotSolicitReview");
         return lead;
     }
 
@@ -298,17 +290,7 @@ public class MarketoService {
         reactivatedProjects.forEach(p -> {
             if (!p.getDoNotSolicitReview()) {
                 Map<String, Object> lead = projectToLead(p);
-
-                //fill all marketo fields with current values
                 lead.put("projectStatus", p.getProjectStatusType());
-                lead.put("closerAppointmentStartTime", formatDateTime(p.getCloserAppointmentStartTime()));
-                lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
-                lead.put("substantialCompletionDate", p.getSubstantialCompletionDate());
-                lead.put("inspectionStartTime", formatDateTime(p.getInspectionStartTime()));
-                lead.put("inspectionPassedDate", p.getInspectionPassedDate());
-                lead.put("energizedDate", p.getEnergizedDate());
-                lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
-
                 reactivatedLeads.add(lead);
             }
         });

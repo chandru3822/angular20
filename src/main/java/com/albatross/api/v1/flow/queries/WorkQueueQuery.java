@@ -59,7 +59,7 @@ public class WorkQueueQuery {
                                                             AND wlp.archived is not true
                                                             AND wlp.work_queue_type_id = wqt.id)::bigint[]
               when wqt.hidden and not :hiddenWqtOverride and not wqt.hidden_allow
-onsole.logthen not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
+ then not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
