@@ -627,11 +627,11 @@ const windowLeave = async (event) => {
   }
 
   .v-item-group {
-    height: calc(100vh - 369px);
+    height: calc(100vh - 400px);
   }
 
   .v-window-item {
-    height: calc(100vh - 369px);
+    height: calc(100vh - 400px);
   }
 
   .tabs-header {
