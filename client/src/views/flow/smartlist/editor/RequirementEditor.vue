@@ -56,7 +56,7 @@
       <v-autocomplete
         v-if="showPsEventInput"
         ref="psEventField"
-        v-model="psEventId"
+        v-model="psEvent"
         :items="calculatedAvailablePsEvents"
         item-text="name"
         item-value="id"
@@ -66,7 +66,7 @@
         :flat="showOverflow"
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @blur="focus(operatorField)"
+        @blur="afterPsEventSelected"
       >
         <template #append>
           <v-btn
@@ -214,7 +214,7 @@ const availableDataTypeRequirements = ref([])
 const availableOperators = ref([])
 
 const requirement = ref(null)
-const psEventId = ref(null)
+const psEvent = ref(null)
 const operator = ref(null)
 const value = ref(null)
 const secondaryValue = ref(null)
@@ -233,7 +233,7 @@ const showFieldInput = computed(() => requirement.value === null)
 
 const showPsEventInput = computed(() => {
   const isPsEventSmartlistField = !!requirement.value?.smartlistFieldId && [4,6].includes(requirement.value?.objectTypeId)
-  return !showFieldInput.value && isPsEventSmartlistField && psEventId.value === null
+  return !showFieldInput.value && isPsEventSmartlistField && psEvent.value === null
 })
 
 const showOperatorInput = computed(() => {
@@ -316,13 +316,31 @@ const afterFieldSelected = () => {
   getDataTypeRequirements()
   getOperators()
 
-  const isPsEventSmartlistField = !!requirement.value?.smartlistFieldId && [4,6].includes(requirement.value?.objectTypeId)
+  const isPsEventSmartlistField = !!requirement.value.smartlistFieldId && [4,6].includes(requirement.value.objectTypeId)
+
+  //check project/contact owner
+  if ([1,2].includes(requirement.value.objectTypeId) && ['Project Owner','Contact Owner'].includes(requirement.value.name)) {
+    getSystemListValues()
+  }
 
   if (!showFieldInput.value && isPsEventSmartlistField) {
     focus(psEventField.value)
   } else {
     focus(operatorField.value)
   }
+}
+
+const afterPsEventSelected = () => {
+  if (requirement.value.objectTypeId === 4 && requirement.value.name === 'Process Step Owner') {
+    getSystemListValues()
+  }
+
+  //@TODO: #smartlistsv2 - Maybe narrow this down
+  if (requirement.value.objectTypeId === 6) {
+    getSystemListValues()
+  }
+
+  focus(operatorField.value)
 }
 
 const afterValueSelected = (userCheckedToAdd) => {
@@ -347,7 +365,7 @@ const afterValueSelected = (userCheckedToAdd) => {
 
 const reset = () => {
   requirement.value = null
-  psEventId.value = null
+  psEvent.value = null
   operator.value = null
   value.value = null
   psEventField.value = null
@@ -379,13 +397,13 @@ const add = () => {
     return
   }
 
-  if (psEventId.value !== null) {
+  if (psEvent.value !== null) {
     if (requirement.value.objectTypeId === 4) {
-      requirement.value.processStepId = psEventId.value.id
-      requirement.value.processStepName = psEventId.value.name
+      requirement.value.processStepId = psEvent.value.id
+      requirement.value.processStepName = psEvent.value.name
     } else {
-      requirement.value.eventId = psEventId.value.id
-      requirement.value.eventName = psEventId.value.name
+      requirement.value.eventId = psEvent.value.id
+      requirement.value.eventName = psEvent.value.name
     }
   }
 
@@ -416,6 +434,45 @@ const add = () => {
 
   emit('added', requirement.value)
   reset()
+}
+
+const getSystemListValues = async () => {
+  if (!requirement.value?.name) {
+    return
+  }
+
+  let url
+  const fieldName = requirement.value.name
+  if (fieldName === 'Project Owner') {
+    url = `/project/owners`
+  } else if (fieldName === 'Contact Owner') {
+    url = `/contact/owners`
+  } else if (fieldName === 'Process Step Owner' && psEvent.value?.id) {
+    url = `/processStep/${psEvent.value.id}/owners`
+  } else if (requirement.value.objectTypeId === 6) {
+    if (fieldName === 'Event Resource') {
+      url = `/event/${psEvent.value.id}/owners`
+    } else if (fieldName === 'Event Status') {
+      url = `/event/${psEvent.value.id}/lovStatus`
+    } else if (fieldName === 'Event Category') {
+      url = `/event/${psEvent.value.id}/lovCategory`
+    } else {
+      return
+    }
+  } else {
+    return
+  }
+
+  try {
+    const {data} = await getRequest(url)
+
+    requirement.value.isCustomValue = true
+    requirement.value.hasListOfValues = true
+    //Event data return correctly and doesn't need manipulation
+    requirement.value.listOfValues = (requirement.value.objectTypeId === 6) ? data : data.map(v => ({id: v.userPositionId, name: v.fullName}))
+  } catch (e) {
+    snackbar('ERROR', 'Error fetching available owners')
+  }
 }
 
 const getDataTypeRequirements = async () => {
