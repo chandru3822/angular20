@@ -47,53 +47,57 @@ public class ProcessStepEventService {
     params.put("systemAdmin", systemAdmin);
     params.put("userPositions", userPositionIds);
     List<ProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
-    for(int x = 0; x < processStepEvents.size(); x++){
+    if(!user.isSystemAdmin()) {
+      for (int x = 0; x < processStepEvents.size(); x++) {
+        if (processStepEvents.get(x).getEventHidden()) {
+          boolean hiddenWhiteListed = false;
+          boolean hiddenAllowFlag = processStepEvents.get(x).getEventHiddenAllow();
 
-      if(processStepEvents.get(x).getEventHidden()) {
-        boolean hiddenWhiteListed = false;
-        boolean hiddenAllowFlag = processStepEvents.get(x).getEventHiddenAllow();
-
-        //Checks if the user's position is in the whitelist
-        for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-          if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
-            hiddenWhiteListed = true;
+          //Checks if the user's position is in the whitelist
+          for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
+            if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
+              hiddenWhiteListed = true;
+            }
           }
+
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if (!hiddenAllowFlag) {
+            hiddenWhiteListed = !hiddenWhiteListed;
+          }
+
+
+          processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
+          processStepEvents.get(x).setEventHidden(!hiddenWhiteListed);
+          System.out.println("Hidden: " + !hiddenWhiteListed);
+          if (!hiddenWhiteListed) {
+            processStepEvents.remove(x);
+            x--;
+            continue;
+          }
+
+
         }
 
-        //If the flag is set to deny, flip the whitelist to be a deny list
-        if (!hiddenAllowFlag) {
-          hiddenWhiteListed = !hiddenWhiteListed;
+        if(processStepEvents.get(x).getReadonly()) {
+          boolean whiteListed = false;
+          boolean allowFlag = processStepEvents.get(x).getReadonlyAllow();
+
+          //Checks if the user's position is in the whitelist
+          for (int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++) {
+            if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()) {
+              whiteListed = true;
+            }
+          }
+
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if (!allowFlag) {
+            whiteListed = !whiteListed;
+          }
+
+          processStepEvents.get(x).getReadonlyWhiteListPositions().clear();
+          processStepEvents.get(x).setReadonly(!whiteListed);
         }
-
-
-        processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
-        processStepEvents.get(x).setEventHidden(!hiddenWhiteListed);
-        if(!hiddenWhiteListed){
-          processStepEvents.remove(x);
-          x--;
-          continue;
-        }
-
-
       }
-
-      boolean whiteListed = false;
-      boolean allowFlag = processStepEvents.get(x).getReadonlyAllow();
-
-      //Checks if the user's position is in the whitelist
-      for(int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++){
-        if(processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()){
-          whiteListed = true;
-        }
-      }
-
-      //If the flag is set to deny, flip the whitelist to be a deny list
-      if(!allowFlag){
-        whiteListed = !whiteListed;
-      }
-
-      processStepEvents.get(x).getReadonlyWhiteListPositions().clear();
-      processStepEvents.get(x).setReadonly(!whiteListed);
     }
     return processStepEvents;
   }
