@@ -443,59 +443,11 @@ public class BrsProcessStepActionFunctionService {
 
                 final String projectStatusParam = paramValues.get(0).getDynamicValue();
                 if (projectStatusParam != null && !projectStatusParam.isBlank()) {
-
-                    if (projectStatusParam.trim().equalsIgnoreCase("Final Design Sent")) {
-                        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-                        if (project.getFinalDesignSentToHomeownerDate().isAfter(yesterday)) {
-                            lead.put("projectStatus", projectStatusParam);
-                        }
-                    } else {
-                        lead.put("projectStatus", projectStatusParam);
-                    }
+                  lead.put("projectStatus", projectStatusParam);
                 }
 
-                //closerAppointmentStartTime
-                final boolean updatecCloserAppointmentStartTime = Boolean.parseBoolean(paramValues.get(1).getDynamicValue());
-                if (updatecCloserAppointmentStartTime) {
-                    lead.put("closerAppointmentStartTime", marketoService.formatDateTime(project.getCloserAppointmentStartTime()));
-                }
-
-                //installationStartTime
-                final boolean updateInstallationStartTime = Boolean.parseBoolean(paramValues.get(2).getDynamicValue());
-                if (updateInstallationStartTime) {
-                    lead.put("installationStartTime", marketoService.formatDateTime(project.getInstallationStartTime()));
-                }
-
-                //substantialCompletionDate
-                final boolean updateSubstantialCompletionDate = Boolean.parseBoolean(paramValues.get(3).getDynamicValue());
-                if (updateSubstantialCompletionDate) {
-                    lead.put("substantialCompletionDate", project.getSubstantialCompletionDate());
-                }
-
-                //inspectionStartTime
-                final boolean updateInspectionStartTime = Boolean.parseBoolean(paramValues.get(4).getDynamicValue());
-                if (updateInspectionStartTime) {
-                    lead.put("inspectionStartTime", marketoService.formatDateTime(project.getInspectionStartTime()));
-                }
-
-                //inspectionPassedDate
-                final boolean updateInspectionPassedDate = Boolean.parseBoolean(paramValues.get(5).getDynamicValue());
-                if (updateInspectionPassedDate) {
-                    lead.put("inspectionPassedDate", project.getInspectionPassedDate());
-                }
-
-                //energizedDate
-                final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(6).getDynamicValue());
-                if (updateEnergizedDate) {
-                    lead.put("energizedDate", project.getEnergizedDate());
-                }
-
-                //finalDesignApprovedDate
-                final boolean updateFinalDesignApprovedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
-                if (updateFinalDesignApprovedDate) {
-                    if (project.getFinalDesignApprovedDate() != null) {
-                        lead.put("finalDesignApprovedDate", project.getFinalDesignApprovedDate());
-                    }
+                if (project.getFinalDesignApprovedDate() == null) {
+                    lead.remove("finalDesignApprovedDate");
                 }
 
                 try {
