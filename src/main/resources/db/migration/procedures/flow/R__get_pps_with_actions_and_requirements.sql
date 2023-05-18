@@ -355,13 +355,27 @@ BEGIN
                                     left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
                                WHERE ppse.project_process_step_id = pps.id
                                  and ppse.archived is not true
-								and case when e.hidden and p_systemAdmin is false
+								and case when e.hidden and e.hidden_allow and p_systemAdmin is false
 								then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
 									where wlp2.event_id = pse.event_id
 									and wlp2.white_list_type_id = 17
 									and wlp2.archived is not true
 									and wlp2.position_id = any(p_userPositions) limit 1
 								)
+                 when e.hidden and not e.hidden_allow and p_systemAdmin is false
+                   then case when ( select wlp2.event_id from flow.white_listed_position wlp2
+                                    where wlp2.event_id = pse.event_id
+                                      and wlp2.white_list_type_id = 17
+                                      and wlp2.archived is not true
+                                    limit 1
+                 ) is null then true
+                             else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                                   where wlp2.event_id = pse.event_id
+                                                     and wlp2.white_list_type_id = 17
+                                                     and not wlp2.position_id = any(p_userPositions)
+                                                     and wlp2.archived is not true
+                                                   limit 1
+                             ) end
 								else 1=1 end
                               order by ppse.start_time, ppse.end_time, resource, e.event_name
                              ) events), '[]') AS "projectProcessStepEvents"

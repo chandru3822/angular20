@@ -274,46 +274,43 @@ public class ProjectService {
       Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
       if (result.isPresent()) {
 
+        if(result.get().getStatusReadOnly()) {
           boolean statusWhiteListed = false;
           boolean statusAllowFlag = result.get().getStatusReadOnlyAllow();
 
           //Checks if the user's position is in the whitelist
-          for(int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++){
-              if(result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())){
+          for (int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++) {
+            if (result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
               statusWhiteListed = true;
             }
           }
 
           //If the flag is set to deny, flip the whitelist to be a deny list
-          if(!statusAllowFlag){
+          if (!statusAllowFlag) {
             statusWhiteListed = !statusWhiteListed;
           }
+          result.get().getStatusReadOnlyWhiteListedPositions().clear();
+          result.get().setStatusReadOnly(!statusWhiteListed);
+        }
+        if(result.get().getOwnerReadOnly()) {
+          boolean ownerWhiteListed = false;
+          boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
 
-
-        boolean ownerWhiteListed = false;
-        boolean ownerAllowFlag = result.get().getOwnerReadOnlyAllow();
-        System.out.println(ownerAllowFlag);
-
-        //Checks if the user's position is in the whitelist
-        for(int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
-          if(result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())){
-            ownerWhiteListed = true;
+          //Checks if the user's position is in the whitelist
+          for (int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
+            if (result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
+              ownerWhiteListed = true;
+            }
           }
+
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if (!ownerAllowFlag) {
+            ownerWhiteListed = !ownerWhiteListed;
+          }
+          result.get().getOwnerReadOnlyWhiteListedPositions().clear();
+          result.get().setOwnerReadOnly(!ownerWhiteListed);
         }
 
-        //If the flag is set to deny, flip the whitelist to be a deny list
-        if(!ownerAllowFlag){
-          ownerWhiteListed = !ownerWhiteListed;
-        }
-
-
-        result.get().getOwnerReadOnlyWhiteListedPositions().clear();
-        result.get().getStatusReadOnlyWhiteListedPositions().clear();
-
-        System.out.println("Owner Read Only: " + !ownerWhiteListed);
-        System.out.println("Status Read Only: " + !statusWhiteListed);
-        result.get().setOwnerReadOnly(!ownerWhiteListed);
-        result.get().setStatusReadOnly(!statusWhiteListed);
         return result;
       } else {
           throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
@@ -630,7 +627,7 @@ public class ProjectService {
       }
     if(!user.isSystemAdmin()){
       for(int x = 0; x < processStepEvents.size(); x++) {
-          if(!processStepEvents.get(x).getEventHiddenAllow() && (processStepEvents.get(x).getEventHiddenWhiteListedPositions() == null || processStepEvents.get(x).getEventHiddenWhiteListedPositions().size() == 0)){
+        if(!processStepEvents.get(x).getEventHiddenAllow() && (processStepEvents.get(x).getEventHiddenWhiteListedPositions() == null || processStepEvents.get(x).getEventHiddenWhiteListedPositions().size() == 0)){
           processStepEvents.get(x).setEventHidden(false);
         }
         if(processStepEvents.get(x).getEventHidden()) {
@@ -648,19 +645,18 @@ public class ProjectService {
           if (!allowFlag) {
             whiteListed = !whiteListed;
           }
-          //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-          if (whiteListed && !allowFlag) {
-            WhiteListedPosition position = new WhiteListedPosition();
-            position.setPositionId(user.getUserPositionId());
-            processStepEvents.get(x).getEventHiddenWhiteListedPositions().add(position);
-          }
-          //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-          else if (!whiteListed && !allowFlag) {
+
+
+          processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
+          processStepEvents.get(x).setEventHidden(!whiteListed);
+          if(whiteListed){
             processStepEvents.remove(x);
             x--;
           }
+
         }
-    }
+
+      }
     }
 
     return processStepEvents;
