@@ -68,7 +68,6 @@ public class ProcessStepEventService {
 
           processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
           processStepEvents.get(x).setEventHidden(!hiddenWhiteListed);
-          System.out.println("Hidden: " + !hiddenWhiteListed);
           if (!hiddenWhiteListed) {
             processStepEvents.remove(x);
             x--;
@@ -84,7 +83,7 @@ public class ProcessStepEventService {
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++) {
-            if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()) {
+            if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
               whiteListed = true;
             }
           }
