@@ -290,8 +290,10 @@ public class ProjectProcessStepService {
 
           //Checks if the user's position is in the whitelist
           for (int x = 0; x < step.getWhiteListedPositions().size(); x++) {
-            if (step.getWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
-              whiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (step.getWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                whiteListed = true;
+              }
             }
           }
 
