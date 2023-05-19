@@ -636,7 +636,7 @@ public class ProjectService {
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-            if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId() == user.getUserPositionId()) {
+            if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
               whiteListed = true;
             }
           }

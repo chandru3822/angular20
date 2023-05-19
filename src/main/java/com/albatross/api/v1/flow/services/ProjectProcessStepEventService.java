@@ -222,7 +222,7 @@ public class ProjectProcessStepEventService {
 
         //Checks if the user's position is in the whitelist
         for (int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++) {
-          if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
+          if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
             whiteListed = true;
           }
         }
@@ -232,21 +232,9 @@ public class ProjectProcessStepEventService {
           whiteListed = !whiteListed;
         }
 
-        //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-        if (whiteListed && !allowFlag) {
-          result.get().getReadonlyWhiteListedPositions().add(position);
-        }
-        //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-        else if (!whiteListed && !allowFlag) {
-          for (int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++) {
-            if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
-              result.get().getReadonlyWhiteListedPositions().remove(x);
-              x--;
-            }
-          }
-        }
+        result.get().getReadonlyWhiteListedPositions().clear();
         result.get().setReadonly(!whiteListed);
-      }
+          }
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }
