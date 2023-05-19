@@ -649,7 +649,7 @@ public class ProjectService {
 
           processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
           processStepEvents.get(x).setEventHidden(!whiteListed);
-          if(whiteListed){
+          if(!whiteListed){
             processStepEvents.remove(x);
             x--;
           }
