@@ -141,11 +141,22 @@ public class ContactService {
       if(contact.get().getOwnerReadOnly()) {
         boolean ownerWhiteListed = false;
         boolean ownerAllowFlag = contact.get().getOwnerReadOnlyAllow();
-
+        boolean breakLoop = false;
         //Checks if the user's position is in the whitelist
         for (int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
-           if (contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
-            ownerWhiteListed = true;
+          if(!breakLoop) {
+            for (int z = 0; z < user.getUserPositions().size(); z++) {
+               if (contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                ownerWhiteListed = true;
+              }
+
+//              Re-enable Below when BR wants to handle multiple position stuff
+//              else if (!ownerAllowFlag) {
+//                ownerWhiteListed = false;
+//                breakLoop = true;
+//                break;
+//              }
+            }
           }
         }
 

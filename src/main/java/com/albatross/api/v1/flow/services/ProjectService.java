@@ -280,8 +280,10 @@ public class ProjectService {
 
           //Checks if the user's position is in the whitelist
           for (int x = 0; x < result.get().getStatusReadOnlyWhiteListedPositions().size(); x++) {
-            if (result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
-              statusWhiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (result.get().getStatusReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                statusWhiteListed = true;
+              }
             }
           }
 
@@ -298,8 +300,10 @@ public class ProjectService {
 
           //Checks if the user's position is in the whitelist
           for (int x = 0; x < result.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
-            if (result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositionId())) {
-              ownerWhiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (result.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                ownerWhiteListed = true;
+              }
             }
           }
 
@@ -636,8 +640,10 @@ public class ProjectService {
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-            if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
-              whiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                whiteListed = true;
+              }
             }
           }
 
