@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 public class ActivityTypeHashtag {
 
-  private Long id, hashtagId, activityCount;
+  private Long hashtagId, activityCount;
   private String hashtag;
 
   private Date lastUpdated;

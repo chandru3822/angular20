@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.Activity;
-import com.albatross.api.v1.flow.model.ActivityHashtag;
 import com.albatross.api.v1.flow.model.ActivityType;
 import com.albatross.api.v1.flow.services.ActivityService;
 import lombok.RequiredArgsConstructor;
@@ -53,11 +52,11 @@ public class ActivityController {
   }
 
 
-  @PutMapping(value = "/{id}/hashtag/project", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ActivityHashtag> updateProjectActivityHashtag(@PathVariable("id") Long activityId,
-                                                            @RequestBody List<ActivityHashtag> hashtags) {
-    return activityService.updateActivityHashtag(ObjectType.PROJECT.id, activityId, hashtags);
-  }
+//  @PutMapping(value = "/{id}/hashtag/project", produces = MediaType.APPLICATION_JSON_VALUE)
+//  public List<ActivityHashtag> updateProjectActivityHashtag(@PathVariable("id") Long activityId,
+//                                                            @RequestBody List<ActivityHashtag> hashtags) {
+//    return activityService.updateActivityHashtag(ObjectType.PROJECT.id, activityId, hashtags);
+//  }
 
   @PostMapping(value = "/{id}/pin/project", produces = MediaType.APPLICATION_JSON_VALUE)
   public void pinProjectActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {

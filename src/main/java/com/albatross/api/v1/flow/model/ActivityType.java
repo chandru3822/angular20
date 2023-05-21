@@ -15,7 +15,7 @@ public class ActivityType {
 
   private Long id, displayOrder;
   private String activityType;
-  private List<ActivityTypeHashtag> activityHashtags;
+  private List<ActivityTypeHashtag> activityTypeHashtags;
 
 }
 

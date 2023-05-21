@@ -6,39 +6,127 @@ public class ActivityQuery {
   public final static String getActivityTopicsByProject = """
     select a.id,
            a.activity_type,
+           a.display_order,
            coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
                      FROM (
 
-                         select pah.hashtag_id as "hashtagId",
-                                h.hashtag,
-                                count(pah.*) as "activityCount",
-                                0 as fake_display_order,
-                                max(pa.date_modified) as "lastUpdated",
-                                '[]' as "activities"
-                         from flow.project_activity_hashtag pah
-                          inner join flow.project_activity pa on pa.id = pah.project_activity_id and pa.project_id = :sourceId and pa.archived is false
-                          inner join flow.hashtag h on h.id = pah.hashtag_id
-                          and pa.activity_type_id = a.id
-                         and pah.archived is false
-                         group by hashtag_id, hashtag
-                         union
-                         select -1 as "hashtagId",
-                                'uncategorized' as hashtag,
-                                count(pa.*) as "activityCount",
-                                1 as fake_display_order,
-                                max(pa.date_modified) as "lastUpdated",
-                                '[]' as "activities"
-                         from flow.project_activity pa
-                          where pa.archived is false
-                          and pa.project_id = :sourceId
-                          and pa.activity_type_id = a.id
-                          and pa.id not in (
-                            select pah.project_activity_id from flow.project_activity_hashtag pah
-                                      where pah.project_activity_id = pa.id
-                                      and pah.archived is false
+                            select pah.hashtag_id as "hashtagId",
+                                   h.hashtag,
+                                   count(pah.*) as "activityCount",
+                                   0 as fake_display_order,
+                                   max(pa.date_modified) as "lastUpdated",
+                                   coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
+                                     from (
+                                             select pa2.id,
+                                                    pa2.note,
+                                                    pa2.linked,
+                                                    pa2.project_id as "projectId",
+                                                    pa2.activity_type_id as "activityTypeId",
+                                                    pa2.date_modified as "dateModified",
+                                                    pa2.date_created as "dateCreated",
+                                                    pa2.linked_pps_id as "linkedPpsId",
+                                                    pa2.linked_ppse_id as "linkedPpseId",
+                                                    case when pa2.linked_ppse_id is not null then
+                                                           ( select concat(e.event_name, ' (', ppse.id, ')')
+                                                             from flow.project_process_step_event ppse
+                                                                    inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
+                                                                    inner join flow.event e on e.id = pse.event_id
+                                                             where ppse.id = pa2.linked_ppse_id
+                                                           )
+                                                         when pa2.linked_pps_id is not null then
+                                                           ( select concat(ps.process_step_name, ' (', pps.id, ')')
+                                                             from flow.project_process_step pps
+                                                                    inner join flow.process_step ps on ps.id = pps.process_step_id
+                                                             where pps.id = pa2.linked_pps_id
+                                                           )
+                                                      end as "linkLabel",
+                                                    pa2.pinned,
+                                                    pa2.created_by_id as "createdById",
+                                                    concat(u.first_name, ' ', u.last_name) as "createdBy",
+                                                    concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+                                                    pa2.archived,
+                                                    pa2.modified_by_id as "modifiedById",
+                                                    pa2.activity_type_id as "activityTypeId"
+                                             from flow.project_activity_hashtag pah2
+                                                    inner join flow.project_activity pa2 on pa2.id = pah2.project_activity_id and pa2.project_id = :sourceId and pa2.archived is false
+                                                    inner join flow."user" u on u.id = pa2.created_by_id
+                                                    inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
+                                                    inner join flow.position p on p.id = up.position_id
+                                                    inner join flow.org o on o.id = up.org_id
+                                             where pa2.activity_type_id = a.id
+                                               and pah2.archived is false
+                                               and pa2.archived is false
+                                               and pah2.hashtag_id = pah.hashtag_id
+                                    ) ht), '[]')::jsonb as "activities"
+                            from flow.project_activity_hashtag pah
+                                   inner join flow.project_activity pa on pa.id = pah.project_activity_id and pa.project_id = :sourceId and pa.archived is false
+                                   inner join flow.hashtag h on h.id = pah.hashtag_id and pa.activity_type_id = a.id
+                            where pa.activity_type_id = a.id
+                              and pah.archived is false
+                            group by hashtag_id, hashtag
+                            union
+                            select -1 as "hashtagId",
+                                   'uncategorized' as hashtag,
+                                   count(pa.*) as "activityCount",
+                                   1 as fake_display_order,
+                                   max(pa.date_modified) as "lastUpdated",
+                                   coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
+                                             from (
+                                                    select pa2.id,
+                                                           pa2.note,
+                                                           pa2.linked,
+                                                           pa2.project_id as "projectId",
+                                                           pa2.activity_type_id as "activityTypeId",
+                                                           pa2.date_modified as "dateModified",
+                                                           pa2.date_created as "dateCreated",
+                                                           pa2.linked_pps_id as "linkedPpsId",
+                                                           pa2.linked_ppse_id as "linkedPpseId",
+                                                           case when pa2.linked_ppse_id is not null then
+                                                                  ( select concat(e.event_name, ' (', ppse.id, ')')
+                                                                    from flow.project_process_step_event ppse
+                                                                           inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
+                                                                           inner join flow.event e on e.id = pse.event_id
+                                                                    where ppse.id = pa2.linked_ppse_id
+                                                                  )
+                                                                when pa2.linked_pps_id is not null then
+                                                                  ( select concat(ps.process_step_name, ' (', pps.id, ')')
+                                                                    from flow.project_process_step pps
+                                                                           inner join flow.process_step ps on ps.id = pps.process_step_id
+                                                                    where pps.id = pa2.linked_pps_id
+                                                                  )
+                                                             end as "linkLabel",
+                                                           pa2.pinned,
+                                                           pa2.created_by_id as "createdById",
+                                                           concat(u.first_name, ' ', u.last_name) as "createdBy",
+                                                           concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+                                                           pa2.archived,
+                                                           pa2.modified_by_id as "modifiedById",
+                                                           pa2.activity_type_id as "activityTypeId"
+                                                    from flow.project_activity pa2
+                                                           inner join flow."user" u on u.id = pa2.created_by_id
+                                                           inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
+                                                           inner join flow.position p on p.id = up.position_id
+                                                           inner join flow.org o on o.id = up.org_id
+                                                    where pa2.archived is false
+                                                      and pa2.project_id = :sourceId
+                                                      and pa2.activity_type_id = a.id
+                                                      and pa2.id not in (
+                                                      select pah2.project_activity_id from flow.project_activity_hashtag pah2
+                                                      where pah2.project_activity_id = pa2.id
+                                                        and pah2.archived is false
+                                                    )
+                                                  ) ht), '[]')::jsonb as "activities"
+                            from flow.project_activity pa
+                            where pa.archived is false
+                              and pa.project_id = :sourceId
+                              and pa.activity_type_id = a.id
+                              and pa.id not in (
+                              select pah.project_activity_id from flow.project_activity_hashtag pah
+                              where pah.project_activity_id = pa.id
+                                and pah.archived is false
                             )
                             order by fake_display_order, hashtag
-                          ) ht), '[]') AS "activityHashtags"
+                          ) ht), '[]') AS "activityTypeHashtags"
     from flow.activity_type a
     order by a.display_order
   """;

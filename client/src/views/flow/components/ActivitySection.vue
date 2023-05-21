@@ -38,7 +38,7 @@
       <div v-for="type in activityTopics">
         {{type.activityType}}
         <v-expansion-panels accordion multiple flat class=".rounded-0">
-          <v-expansion-panel v-for="h in type.activityHashtags" :key="h.hashtagId">
+          <v-expansion-panel v-for="h in type.activityTypeHashtags" :key="h.hashtagId">
             <v-expansion-panel-header class="expansion-panel-header">
               <template v-slot:default="{ open }">
                 <v-row no-gutters class="align-center" :class="{'bold' : open}">
@@ -49,76 +49,38 @@
               </template>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
-              notes here
+              <ActivityList :activities="h.activities"
+                               :project-id="projectId"
+                               :contact-id="contactId"
+                               :user-id="userId"
+                               :org-id="orgId"
+                               :section-type="sectionType"
+                               :edit-callback="setEditedActivity"
+              ></ActivityList>
             </v-expansion-panel-content>
           </v-expansion-panel>
         </v-expansion-panels>
       </div>
     </div>
-    <div v-else>
-      <div v-if="sortedFilteredActivities.length === 0">
-        No available notes or activities
-      </div>
-      <v-card v-else v-for="(a, aIdx) in sortedFilteredActivities" class="mt-2 elevation-1"
-              :class="{'pinned-card': a.pinned}">
-        <v-card-title>
-          <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
-          <span v-for="(ah, idx) in a.activityHashtags">
-            <span v-if="idx !== 0">, </span>
-            #{{ ah.hashtag }}
-          </span>
-          <a v-if="a.linked" @click="goToPath(a)">
-            <v-icon color="primary">mdi-link</v-icon>
-            {{a.linkLabel}}
-          </a>
-          <v-spacer></v-spacer>
-          <v-menu v-model="a.menuOpen" transition="scale-transition" offset-y
-                  min-width="290px" :close-on-content-click="false">
-            <template v-slot:activator="{ on }">
-              <v-btn text small color="primary" v-on="on">
-                <v-icon>mdi-dots-horizontal</v-icon>
-              </v-btn>
-            </template>
-            <v-list dense class="pa-3">
-              <v-list-item @click="[a.menuOpen = false, editedActivity = cloneDeep(a),
-                                    editedIndex = aIdx, addActivity = false,
-                                    populateSelectedTopics()]">
-                <v-list-item-content>
-                  <v-list-item-title>Edit</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item @click="[a.menuOpen = false, pinActivity(a)]">
-                <v-list-item-content>
-                  <v-list-item-title>{{ a.pinned ? 'Unpin' : 'Pin'}}</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item @click="[a.menuOpen = false, deleteActivity(a)]">
-                <v-list-item-content>
-                  <v-list-item-title>Delete</v-list-item-title>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-menu>
-
-        </v-card-title>
-        <v-card-text>
-          {{ a.note }}
-        </v-card-text>
-        <v-card-actions>
-          {{ a.createdBy }}, {{ a.createdByPosition }} | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
-        </v-card-actions>
-      </v-card>
-    </div>
+      <ActivityList v-else
+                       :activities="sortedFilteredActivities"
+                       :project-id="projectId"
+                       :contact-id="contactId"
+                       :user-id="userId"
+                       :org-id="orgId"
+                       :section-type="sectionType"
+                       :edit-callback="setEditedActivity"
+      ></ActivityList>
     <div>
-      <v-divider v-if="addActivity || null != editedIndex" class="my-3"></v-divider>
+      <v-divider v-if="addActivity || null != editedActivity.id" class="my-3"></v-divider>
       <v-btn outlined color="primary"
-             v-if="!addActivity && null == editedIndex"
+             v-if="!addActivity && null == editedActivity.id"
              :loading="topicsLoading"
              @click="[addActivity = true, selectedTopics = [] ]">
         <v-icon>mdi-plus</v-icon>
         Add note
       </v-btn>
-      <div v-if="addActivity || null != editedIndex">
+      <div v-if="addActivity || null != editedActivity.id">
         <v-textarea outlined v-model="editedActivity.note"></v-textarea>
         <v-autocomplete
           v-model="selectedTopics"
@@ -139,14 +101,14 @@
           :label="getLinkLabel()"
         />
       </div>
-      <div v-if="addActivity || null != editedIndex">
+      <div v-if="addActivity || null != editedActivity.id">
         <v-btn text color="primary"
-               @click="[addActivity = false, editedActivity = {}, editedIndex = null]">
+               @click="[addActivity = false, editedActivity = {}]">
           cancel
         </v-btn>
         <v-btn color="primary"
                :loading="savingActivity"
-               @click="saveActivity(null == editedActivity.id, editedIndex)"
+               @click="saveActivity(null == editedActivity.id)"
                :disabled="!editedActivity.note">
           Save
         </v-btn>
@@ -162,13 +124,13 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
 import {getNoteHashtags} from "@/services/activityService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ActivityList from "@/views/flow/components/ActivityList.vue";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
-import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 
 export default {
   name: 'ActivitySection',
-  components: {AttachmentsTable, ConfirmationDialog},
+  components: {ActivityList, ConfirmationDialog},
   mixins: [Vue2Filters.mixin],
   props: {
     contactId: Number,
@@ -252,20 +214,6 @@ export default {
   },
   methods: {
     cloneDeep,
-    // hasDirtyActivities() {
-    //   return this.$refs.activities.hasUnsavedActivities()
-    // },
-    goToPath(activity) {
-      let path = ''
-      if(null !== activity.linkedPpseId) {
-        path = `/project/${this.projectId}/processStep/${activity.linkedPpsId}/event/${activity.linkedPpseId}`
-      } else if(null !== activity.linkedPpsId) {
-        path = `/project/${this.projectId}/processStep/${activity.linkedPpsId}`
-      }
-      if(path !== this.$route.path) {
-        this.$router.push(path)
-      }
-    },
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
     },
@@ -275,11 +223,11 @@ export default {
         || activity.createdBy.toLowerCase().includes(lowerSearch)
         || activity.createdByPosition.toLowerCase().includes(lowerSearch)
     },
-    populateSelectedTopics() {
+    populateSelectedTopics(editedActivity) {
       //i can never figure out how to do this... when the list is like: topics = [{id: 1}] but the data coming back is like [{ id: 1723, topicId: 1}]
-      if(this.editedActivity?.activityHashtags?.length > 0) {
+      if(editedActivity?.activityHashtags?.length > 0) {
         this.selectedTopics = this.topics.filter(t => {
-          return this.editedActivity?.activityHashtags?.some(ah => ah.hashtagId === t.id)
+          return editedActivity?.activityHashtags?.some(ah => ah.hashtagId === t.id)
         })
       } else {
         this.selectedTopics = []
@@ -325,11 +273,16 @@ export default {
         this.topicsLoading = false
       }
     },
-    saveActivity(isNew, activityIndex) {
+    setEditedActivity(item) {
+      console.log('item here', item)
+      this.editedActivity = cloneDeep(item)
+      this.populateSelectedTopics(item)
+    },
+    saveActivity(isNew) {
       if(isNew) {
         this.saveNewActivity()
       } else {
-        this.editActivity(activityIndex)
+        this.editActivity()
       }
     },
     async saveNewActivity() {
@@ -366,7 +319,7 @@ export default {
         this.savingActivity = false
       }
     },
-    async editActivity(index) {
+    async editActivity() {
       this.savingActivity = true
       //handle hashtags that existed then were removed
       this.editedActivity?.activityHashtags?.forEach(ah => {
@@ -392,8 +345,12 @@ export default {
           linkedPpsId: this.editedActivity.linked ? parseInt(this.$route.params.processStepId) : null,
         }
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
-        this.sortedFilteredActivities[index] = data
-        //this.$set(item, 'adjustmentHistory', data)
+        //todo: handle this
+        let editedIndex = this.sortedFilteredActivities.findIndex(a => a.id === this.editedActivity.id)
+        console.log('randaLogger',editedIndex)
+        this.sortedFilteredActivities[editedIndex] = data
+        console.log('data',this.sortedFilteredActivities[editedIndex])
+
         this.editedActivity = {}
         this.editedIndex = null
         this.savingActivity = false
@@ -402,36 +359,6 @@ export default {
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error saving note')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.savingActivity = false
-      }
-    },
-    async pinActivity(activity) {
-      try {
-        activity.pinned = !activity.pinned
-        let params = {
-          pinned: activity.pinned
-        }
-        await postRequestWithRequestParams(`/activity/${activity.id}/pin/${this.sectionType}`, null, params)
-        let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
-        this.snackbar = getSnackbar('SUCCESS', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error pinning note')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.savingActivity = false
-      }
-    },
-    async deleteActivity(activity) {
-      try {
-        await deleteRequest(`/activity/${activity.id}/${this.sectionType}`)
-        activity.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting note')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.savingActivity = false
       }

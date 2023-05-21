@@ -36,7 +36,6 @@ public class ActivityService {
     return sqlCache.queryBySql(sql, params, new ActivityTypeMapper<>(ActivityType.class, om));
   }
 
-
   public List<Activity> getActivitiesByObject(Long objectTypeId, Long sourceId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
@@ -187,7 +186,7 @@ public class ActivityService {
       TypeReference<List<ActivityTypeHashtag>> activityHashtagsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
         List.class,
-        "activityHashtags",
+        "activityTypeHashtags",
         new JsonCollectionDeserializer(activityHashtagsRef, objectMapper));
 
     }
