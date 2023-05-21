@@ -1,6 +1,6 @@
 <template>
   <v-container class="px-5">
-    <div class="flex-display">
+    <div class="activity-header">
       <v-text-field
         prepend-inner-icon="search"
         text
@@ -12,19 +12,20 @@
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
         <v-icon v-else>mdi-arrow-down</v-icon>
       </v-btn>
-      <v-menu v-model="filterMenuOpen" transition="scale-transition" offset-y
-              min-width="290px" :close-on-content-click="false">
+      <v-menu v-model="filterMenuOpen" transition="scale-transition" offset-y left attach
+              :close-on-content-click="false">
         <template v-slot:activator="{ on }">
           <v-btn text small color="primary" v-on="on">
             <v-icon>mdi-filter</v-icon>
           </v-btn>
         </template>
-        <v-list dense class="pa-3">
+        <v-list dense class="">
           <v-list-item v-for="at in activityTypes">
             <v-list-item-content>
               <v-list-item-title>
                 <v-checkbox
                   dense
+                  hide-details
                   v-model="at.show"
                   :label="at.activityType"
                 />
@@ -34,53 +35,56 @@
         </v-list>
       </v-menu>
     </div>
-    <div v-if="!timelineView">
-      <div v-for="type in activityTopics">
-        {{type.activityType}}
-        <v-expansion-panels accordion multiple flat class=".rounded-0">
-          <v-expansion-panel v-for="h in type.activityTypeHashtags" :key="h.hashtagId">
-            <v-expansion-panel-header class="expansion-panel-header">
-              <template v-slot:default="{ open }">
-                <v-row no-gutters class="align-center" :class="{'bold' : open}">
-                  <span class="mr-2">#{{h.hashtag}}</span>
-                  <span>{{h.activityCount}} {{type.activityType.toLowerCase()}} |
-            last updated: {{h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
-                </v-row>
-              </template>
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <ActivityList :activities="h.activities"
-                               :project-id="projectId"
-                               :contact-id="contactId"
-                               :user-id="userId"
-                               :org-id="orgId"
-                               :section-type="sectionType"
-                               :edit-callback="setEditedActivity"
-              ></ActivityList>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
+    <div class="activity-body">
+      <div v-if="!timelineView">
+        <div v-for="type in activityTopics">
+          {{ type.activityType }}
+          <v-expansion-panels accordion multiple flat class=".rounded-0">
+            <v-expansion-panel v-for="h in type.activityTypeHashtags" :key="h.hashtagId">
+              <v-expansion-panel-header class="expansion-panel-header">
+                <template v-slot:default="{ open }">
+                  <v-row no-gutters class="align-center" :class="{'bold' : open}">
+                    <span class="mr-2">#{{ h.hashtag }}</span>
+                    <span>{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
+            last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+                  </v-row>
+                </template>
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <ActivityList :activities="h.activities"
+                              :project-id="projectId"
+                              :contact-id="contactId"
+                              :user-id="userId"
+                              :org-id="orgId"
+                              :section-type="sectionType"
+                              :edit-callback="setEditedActivity"
+                ></ActivityList>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </div>
       </div>
-    </div>
       <ActivityList v-else
-                       :activities="sortedFilteredActivities"
-                       :project-id="projectId"
-                       :contact-id="contactId"
-                       :user-id="userId"
-                       :org-id="orgId"
-                       :section-type="sectionType"
-                       :edit-callback="setEditedActivity"
+                    :activities="sortedFilteredActivities"
+                    :project-id="projectId"
+                    :contact-id="contactId"
+                    :user-id="userId"
+                    :org-id="orgId"
+                    :section-type="sectionType"
+                    :edit-callback="setEditedActivity"
       ></ActivityList>
-    <div>
-      <v-divider v-if="addActivity || null != editedActivity.id" class="my-3"></v-divider>
+    </div>
+    <div class="activity-footer">
+      <v-divider class="my-3 activity-hr"></v-divider>
       <v-btn outlined color="primary"
+             class="one-hunned"
              v-if="!addActivity && null == editedActivity.id"
              :loading="topicsLoading"
              @click="[addActivity = true, selectedTopics = [] ]">
         <v-icon>mdi-plus</v-icon>
         Add note
       </v-btn>
-      <div v-if="addActivity || null != editedActivity.id">
+      <div v-else>
         <v-textarea outlined v-model="editedActivity.note"></v-textarea>
         <v-autocomplete
           v-model="selectedTopics"
@@ -100,26 +104,35 @@
           @change="editedActivity.linkLabel = null"
           :label="getLinkLabel()"
         />
+        <div>
+          <v-btn text color="primary"
+                 @click="[addActivity = false, editedActivity = {}]">
+            cancel
+          </v-btn>
+          <v-btn color="primary"
+                 :loading="savingActivity"
+                 @click="saveActivity(null == editedActivity.id)"
+                 :disabled="!editedActivity.note">
+            Save
+          </v-btn>
+        </div>
       </div>
-      <div v-if="addActivity || null != editedActivity.id">
-        <v-btn text color="primary"
-               @click="[addActivity = false, editedActivity = {}]">
-          cancel
-        </v-btn>
-        <v-btn color="primary"
-               :loading="savingActivity"
-               @click="saveActivity(null == editedActivity.id)"
-               :disabled="!editedActivity.note">
-          Save
-        </v-btn>
-      </div>
+
     </div>
   </v-container>
 
 </template>
 
 <script>
-import {getRequest, deleteRequest, postRequest, putRequest, postRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
+import {
+  getRequest,
+  deleteRequest,
+  postRequest,
+  putRequest,
+  postRequestWithRequestParams,
+  getSnackbar,
+  handleHidingGlobalLoader
+} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
 import {getNoteHashtags} from "@/services/activityService"
@@ -146,7 +159,7 @@ export default {
       search: this.$route.query.search != null ? this.$route.query.search : '',
       linkLabel: '',
       addActivity: false,
-      blankActivity: { id: null, activityHashtags: []},
+      blankActivity: {id: null, activityHashtags: []},
       editedActivity: {},
       editedIndex: null,
       activityTopics: [],
@@ -161,14 +174,14 @@ export default {
       filterMenuOpen: false,
       //should probably load this but hardcoding for now
       activityTypes: [
-        { id: 1, activityType: 'Activities', show: true},
-        { id: 2, activityType: 'Notes', show: true},
+        {id: 1, activityType: 'Activities', show: true},
+        {id: 2, activityType: 'Notes', show: true},
       ]
     }
   },
   watch: {
     timelineView: function () {
-      if(this.timelineView) {
+      if (this.timelineView) {
         this.getActivities()
       } else {
         this.getActivityTopics()
@@ -184,7 +197,7 @@ export default {
         let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
 
         return !a.archived && ((this.search == null || this.search === '') || this.activityContainsSearch(a))
-         && shownActivityTypes.includes(a.activityTypeId)
+          && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['pinned', 'dateCreated'], ['desc', this.sortDirection])
     }
@@ -225,7 +238,7 @@ export default {
     },
     populateSelectedTopics(editedActivity) {
       //i can never figure out how to do this... when the list is like: topics = [{id: 1}] but the data coming back is like [{ id: 1723, topicId: 1}]
-      if(editedActivity?.activityHashtags?.length > 0) {
+      if (editedActivity?.activityHashtags?.length > 0) {
         this.selectedTopics = this.topics.filter(t => {
           return editedActivity?.activityHashtags?.some(ah => ah.hashtagId === t.id)
         })
@@ -279,7 +292,7 @@ export default {
       this.populateSelectedTopics(item)
     },
     saveActivity(isNew) {
-      if(isNew) {
+      if (isNew) {
         this.saveNewActivity()
       } else {
         this.editActivity()
@@ -328,9 +341,9 @@ export default {
 
       //handle hashtags that didn't exist there were added
       this.selectedTopics.forEach(st => {
-        if(!this.editedActivity?.activityHashtags?.some(ah => ah.hashtagId === st.id)) {
+        if (!this.editedActivity?.activityHashtags?.some(ah => ah.hashtagId === st.id)) {
           this.editedActivity?.activityHashtags.push(
-            { 'hashtagId': st.id}
+            {'hashtagId': st.id}
           )
         }
       })
@@ -347,9 +360,9 @@ export default {
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
         //todo: handle this
         let editedIndex = this.sortedFilteredActivities.findIndex(a => a.id === this.editedActivity.id)
-        console.log('randaLogger',editedIndex)
+        console.log('randaLogger', editedIndex)
         this.sortedFilteredActivities[editedIndex] = data
-        console.log('data',this.sortedFilteredActivities[editedIndex])
+        console.log('data', this.sortedFilteredActivities[editedIndex])
 
         this.editedActivity = {}
         this.editedIndex = null
@@ -371,5 +384,37 @@ export default {
 <style scoped lang="scss">
 .pinned-card {
   background: #FB8C0010;
+}
+
+.activity-header {
+  display: flex !important;
+  position: sticky;
+  top: -1px;
+  background-color: white;
+  padding: 0 10px;
+  z-index: 200;
+  margin-left: -10px;
+  margin-right: -10px;
+  align-items: center;
+}
+
+.activity-hr {
+  margin-left: -20px;
+  margin-right: -20px;
+  max-width: unset !important;
+}
+
+.activity-body {
+
+}
+
+.activity-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  padding: 0px 10px 15px 10px;
+  z-index: 200;
+  margin-left: -10px;
+  margin-right: -10px;
 }
 </style>

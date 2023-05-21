@@ -8,7 +8,7 @@
           <v-toolbar flat color="transparent">
             <v-toolbar-title>
               <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
-              <span v-for="(ah, idx) in a.activityHashtags">
+              <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">,</span>
                 #{{ ah.hashtag }}
               </span>
@@ -146,5 +146,9 @@ export default {
 <style scoped lang="scss">
 .pinned-card {
   background: #FB8C0010;
+}
+
+.test {
+  white-space: pre;
 }
 </style>
