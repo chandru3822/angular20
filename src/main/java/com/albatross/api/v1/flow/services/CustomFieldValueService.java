@@ -203,8 +203,10 @@ public class CustomFieldValueService {
             //Checks if the user's position is in the whitelist
             if(fieldGroups.get(z).getCustomFieldValues().get(x).getWhiteListedPositions() != null) {
               for (int y = 0; y < fieldGroups.get(z).getCustomFieldValues().get(x).getWhiteListedPositions().size(); y++) {
-                if (fieldGroups.get(z).getCustomFieldValues().get(x).getWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
-                  whiteListed = true;
+                for(int a = 0; a < user.getUserPositions().size(); a++) {
+                  if (fieldGroups.get(z).getCustomFieldValues().get(x).getWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(a).getPositionId())) {
+                    whiteListed = true;
+                  }
                 }
               }
 
@@ -225,8 +227,10 @@ public class CustomFieldValueService {
             //Checks if the user's position is in the whitelist
             if(fieldGroups.get(z).getCustomFieldValues().get(x).getHiddenWhiteListedPositions() != null) {
               for (int y = 0; y < fieldGroups.get(z).getCustomFieldValues().get(x).getHiddenWhiteListedPositions().size(); y++) {
-                if (fieldGroups.get(z).getCustomFieldValues().get(x).getHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
-                  hiddenWhiteListed = true;
+                for(int a = 0; a < user.getUserPositions().size(); a++) {
+                  if (fieldGroups.get(z).getCustomFieldValues().get(x).getHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(a))) {
+                    hiddenWhiteListed = true;
+                  }
                 }
               }
 

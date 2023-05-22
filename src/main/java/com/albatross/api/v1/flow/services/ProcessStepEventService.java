@@ -55,8 +55,10 @@ public class ProcessStepEventService {
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
-            if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositionId())) {
-              hiddenWhiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                hiddenWhiteListed = true;
+              }
             }
           }
 
@@ -68,7 +70,6 @@ public class ProcessStepEventService {
 
           processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
           processStepEvents.get(x).setEventHidden(!hiddenWhiteListed);
-          System.out.println("Hidden: " + !hiddenWhiteListed);
           if (!hiddenWhiteListed) {
             processStepEvents.remove(x);
             x--;
@@ -84,8 +85,10 @@ public class ProcessStepEventService {
 
           //Checks if the user's position is in the whitelist
           for (int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++) {
-            if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId() == user.getUserPositionId()) {
-              whiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                whiteListed = true;
+              }
             }
           }
 
