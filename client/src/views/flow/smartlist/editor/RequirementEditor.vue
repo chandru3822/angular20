@@ -5,31 +5,11 @@
   :elevation="editorElevation"
   :rounded="showOverflow"
 >
-  <v-row class="align-center justify-start no-gutters mt-4">
-    <v-col
-      v-if="requirement?.displayValue"
-      class="flex-grow-0 text-no-wrap px-2"
-    >
-      <span class="highlight-background pa-2 rounded">{{ requirement.name }}</span>
-    </v-col>
-
-    <v-col
-      v-if="operator?.displayValue"
-      class="flex-grow-0 text-no-wrap px-2"
-      :class="{'hover': isEditing}"
-      @click="focus(operatorField)"
-    >
-      {{ operator.operatorType }}
-    </v-col>
-
-    <v-col
-      v-if="requirement !== null && operator !== null && value"
-      class="flex-grow-0 text-no-wrap px-2"
-    >
-      <span class="highlight-background pa-2 rounded">{{ value.dataTypeValue }}</span>
-    </v-col>
-
-    <v-col class="flex-grow-1 flex-shrink-0">
+  <v-row
+    class="align-center justify-start no-gutters mt-4"
+    :class="{'py-3': !showFieldInput && !showPsEventInput && !showOperatorInput && !showValueInput}"
+  >
+    <v-col class="flex-grow-1 flex-shrink-0 d-flex justify-center align-center">
       <v-autocomplete
         v-show="showFieldInput"
         ref="requirementField"
@@ -54,6 +34,13 @@
           </v-btn>
         </template>
       </v-autocomplete>
+
+      <span
+        v-if="requirement?.displayValue"
+        class="flex-grow-0 text-no-wrap px-2"
+      >
+        <span class="highlight-background pa-2 rounded">{{ requirement.name }}</span>
+      </span>
 
       <v-autocomplete
         v-show="showPsEventInput"
@@ -105,74 +92,88 @@
         </template>
       </v-autocomplete>
 
-      <span v-if="operator !== null && !value?.secondaryRequirement">
-            <v-combobox
-              v-show="!requirement.hasListValues"
-              ref="valueField"
-              v-model="value"
-              :key="UUID()"
-              :items="availableDataTypeRequirements"
-              item-text="dataTypeValue"
-              item-value="id"
-              return-object
-              placeholder="Type or Select Value"
-              solo
-              flat
-              hide-details="true"
-              :class="{'field-selector': !showOverflow}"
-              @change="afterValueSelected"
-            >
-              <template #append>
-                <v-btn
-                  icon
-                  @click.stop="[reset(), emit('cancelled')]"
-                >
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </template>
-            </v-combobox>
+      <div
+        v-if="operator?.displayValue"
+        class="text-no-wrap px-2"
+        :class="{'hover': isEditing}"
+        @click="operatorDisplayClicked"
+      >
+        {{ operator.operatorType }}
+      </div>
 
-            <v-autocomplete
-              v-show="requirement.hasListValues"
-              ref="listOfValueField"
-              v-model="value"
-              :items="calculatedAvailableValues"
-              item-text="name"
-              item-value="id"
-              return-object
-              placeholder="Type or Select Value"
-              solo
-              flat
-              hide-details="true"
-              :multiple="requirement.allowMultiple"
-              ripple="false"
-              :class="{'field-selector': !showOverflow}"
-              @change="afterValueSelected(false)"
-            >
-              <template #item="data">
-                <v-list-item-content>{{ data.item.name }}</v-list-item-content>
-              </template>
+      <v-combobox
+        v-show="showValueInput && !requirement?.hasListValues"
+        ref="valueField"
+        v-model="value"
+        :key="UUID()"
+        :items="availableDataTypeRequirements"
+        item-text="dataTypeValue"
+        item-value="id"
+        return-object
+        placeholder="Type or Select Value"
+        solo
+        flat
+        hide-details="true"
+        :class="{'field-selector': !showOverflow}"
+        @change="afterValueSelected"
+      >
+        <template #append>
+          <v-btn
+            icon
+            @click.stop="[reset(), emit('cancelled')]"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-combobox>
 
-              <template #append>
-                <v-btn
-                  v-if="value !== null && value.length > 0"
-                  icon
-                  @click="afterValueSelected(true)"
-                >
-                  <v-icon>mdi-check</v-icon>
-                </v-btn>
-                <v-btn
-                  icon
-                  @click.stop="[reset(), emit('cancelled')]"
-                >
-                  <v-icon>mdi-close</v-icon>
-                </v-btn>
-              </template>
-            </v-autocomplete>
-          </span>
+      <span
+        v-if="value?.displayValue"
+        class="text-no-wrap px-2"
+      >
+        <span class="highlight-background pa-2 rounded">{{ value.dataTypeValue }}</span>
+      </span>
+
+      <v-autocomplete
+        v-show="showValueInput && requirement?.hasListValues"
+        ref="listOfValueField"
+        v-model="value"
+        :items="calculatedAvailableValues"
+        item-text="name"
+        item-value="id"
+        return-object
+        placeholder="Type or Select Value"
+        solo
+        flat
+        hide-details="true"
+        :multiple="requirement?.allowMultiple"
+        ripple="false"
+        :class="{'field-selector': !showOverflow}"
+        @change="afterValueSelected(false)"
+      >
+        <template #item="data">
+          <v-list-item-content>{{ data.item.name }}</v-list-item-content>
+        </template>
+
+        <template #append>
+          <v-btn
+            v-if="value !== null && value.length > 0"
+            icon
+            @click="afterValueSelected(true)"
+          >
+            <v-icon>mdi-check</v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            @click.stop="[reset(), emit('cancelled')]"
+          >
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </template>
+      </v-autocomplete>
 
       <v-text-field
-        v-show="value?.secondaryRequirement"
+        v-show="showValueInput && value?.secondaryRequirement"
         ref="secondaryValueField"
         v-model="secondaryValue"
         placeholder="Type Value"
@@ -242,13 +243,22 @@ const showFieldInput = computed(() => requirement.value === null)
 
 const showPsEventInput = computed(() => {
   const isPsEventSmartlistField = !!requirement.value?.smartlistFieldId && [4,6].includes(requirement.value?.objectTypeId)
-  return !showFieldInput.value && isPsEventSmartlistField && psEvent.value === null
+  return !showFieldInput.value &&
+         isPsEventSmartlistField &&
+         psEvent.value === null
 })
 
 const showOperatorInput = computed(() => {
   return !showFieldInput.value &&
-    !showPsEventInput.value &&
-    operator.value === null
+         !showPsEventInput.value &&
+         (operator.value === null || !operator.value.displayValue)
+})
+
+const showValueInput = computed(() => {
+  return operator.value !== null &&
+         !value.value?.secondaryRequirement &&
+         operator.value?.displayValue &&
+         !value.value?.displayValue
 })
 
 const calculatedAvailableValues = computed(() => {
@@ -303,16 +313,18 @@ const calculatedAvailablePsEvents = computed(() => {
 })
 
 const focus = (field) => {
-  if (field === null) {
+  if (field.value === null) {
     return
   }
 
   if (showOverflow.value) {
-    nextTick(field.focus)
+    nextTick(() => {
+      field.value.focus()
 
-    if (Object.hasOwn(field, 'activateMenu')) {
-      nextTick(field.activateMenu)
-    }
+      if (Object.hasOwn(field.value, 'activateMenu')) {
+        field.value.activateMenu()
+      }
+    })
   }
 }
 
@@ -334,9 +346,9 @@ const afterFieldSelected = () => {
   }
 
   if (!showFieldInput.value && isPsEventSmartlistField) {
-    focus(psEventField.value)
+    focus(psEventField)
   } else {
-    focus(operatorField.value)
+    focus(operatorField)
   }
 }
 
@@ -350,7 +362,7 @@ const afterPsEventSelected = () => {
     getSystemListValues()
   }
 
-  focus(operatorField.value)
+  focus(operatorField)
 }
 
 const afterOperatorSelected = () => {
@@ -377,10 +389,17 @@ const afterValueSelected = (userCheckedToAdd) => {
     }
 
   } else if (value.value?.secondaryRequirement) {
-    focus(secondaryValueField.value)
+    value.value.displayValue = true
+    focus(secondaryValueField)
   } else {
     add()
   }
+}
+
+const operatorDisplayClicked = () => {
+  operator.value = {...operator.value, displayValue: false}
+  value.value = {...value.value, displayValue: false}
+  focus(operatorField)
 }
 
 const reset = () => {
@@ -553,6 +572,10 @@ onMounted(() => {
 
     requirement.value.displayValue = true
     operator.value.displayValue = true
+    value.value.displayValue = true
+
+    getOperators()
+    getDataTypeRequirements()
   }
 })
 </script>
