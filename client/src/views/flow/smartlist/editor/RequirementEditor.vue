@@ -7,27 +7,29 @@
 >
   <v-row class="align-center justify-start no-gutters mt-4">
     <v-col
-      v-if="requirement !== null"
+      v-if="requirement?.displayValue"
       class="flex-grow-0 text-no-wrap px-2"
     >
       <span class="highlight-background pa-2 rounded">{{ requirement.name }}</span>
     </v-col>
 
     <v-col
-      v-if="requirement !== null && operator !== null"
+      v-if="operator?.displayValue"
       class="flex-grow-0 text-no-wrap px-2"
+      :class="{'hover': isEditing}"
+      @click="focus(operatorField)"
     >
       {{ operator.operatorType }}
     </v-col>
 
     <v-col
-      v-if="requirement !== null && operator !== null && value?.secondaryRequirement"
+      v-if="requirement !== null && operator !== null && value"
       class="flex-grow-0 text-no-wrap px-2"
     >
       <span class="highlight-background pa-2 rounded">{{ value.dataTypeValue }}</span>
     </v-col>
 
-    <v-col class="flex-grow-1">
+    <v-col class="flex-grow-1 flex-shrink-0">
       <v-autocomplete
         v-show="showFieldInput"
         ref="requirementField"
@@ -40,13 +42,13 @@
         :flat="showOverflow"
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @blur="afterFieldSelected"
+        @change="afterFieldSelected"
         @focus="toggleOverflow(true)"
       >
         <template #append>
           <v-btn
             icon
-            @click.stop="reset"
+            @click.stop="[reset(), emit('cancelled')]"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -54,7 +56,7 @@
       </v-autocomplete>
 
       <v-autocomplete
-        v-if="showPsEventInput"
+        v-show="showPsEventInput"
         ref="psEventField"
         v-model="psEvent"
         :items="calculatedAvailablePsEvents"
@@ -71,7 +73,7 @@
         <template #append>
           <v-btn
             icon
-            @click.stop="reset"
+            @click.stop="[reset(), emit('cancelled')]"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -91,12 +93,12 @@
         flat
         hide-details="true"
         :class="{'field-selector': !showOverflow}"
-        @blur="(requirement?.hasListValues) ? focus(listOfValueField) : focus(valueField)"
+        @change="afterOperatorSelected"
       >
         <template #append v-if="showOverflow">
           <v-btn
             icon
-            @click.stop="reset"
+            @click.stop="[reset(), emit('cancelled')]"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -123,7 +125,7 @@
               <template #append>
                 <v-btn
                   icon
-                  @click.stop="reset"
+                  @click.stop="[reset(), emit('cancelled')]"
                 >
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -161,7 +163,7 @@
                 </v-btn>
                 <v-btn
                   icon
-                  @click.stop="reset"
+                  @click.stop="[reset(), emit('cancelled')]"
                 >
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -182,7 +184,7 @@
         <template #append>
           <v-btn
             icon
-            @click.stop="reset"
+            @click.stop="[reset(), emit('cancelled')]"
           >
             <v-icon>mdi-close</v-icon>
           </v-btn>
@@ -195,15 +197,20 @@
 
 <script setup>
 import { getRequest, logError, UUID } from '@/helpers/helpers'
-import { computed, getCurrentInstance, nextTick, ref } from 'vue'
+import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
 
-const emit = defineEmits(['added', 'updated', 'overflow-required'])
+const emit = defineEmits(['added', 'updated', 'cancelled', 'overflow-required'])
 
 const props = defineProps({
   availableFields: {
     type: Array,
     required: true
+  },
+  existingRequirement: {
+    type: Object,
+    required: false,
+    default: null
   }
 })
 
@@ -226,6 +233,8 @@ const valueField = ref(null)
 const listOfValueField = ref(null)
 const secondaryValueField = ref(null)
 const showOverflow = ref(false)
+
+const isEditing = computed(() => props.existingRequirement !== null)
 
 const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
 
@@ -313,13 +322,14 @@ const toggleOverflow = (toggle) => {
 }
 
 const afterFieldSelected = () => {
+  requirement.value.displayValue = true
   getDataTypeRequirements()
   getOperators()
 
-  const isPsEventSmartlistField = !!requirement.value.smartlistFieldId && [4,6].includes(requirement.value.objectTypeId)
+  const isPsEventSmartlistField = !!requirement.value?.smartlistFieldId && [4,6].includes(requirement.value?.objectTypeId)
 
   //check project/contact owner
-  if ([1,2].includes(requirement.value.objectTypeId) && ['Project Owner','Contact Owner'].includes(requirement.value.name)) {
+  if ([1,2].includes(requirement.value?.objectTypeId) && ['Project Owner','Contact Owner'].includes(requirement.value.name)) {
     getSystemListValues()
   }
 
@@ -341,6 +351,16 @@ const afterPsEventSelected = () => {
   }
 
   focus(operatorField.value)
+}
+
+const afterOperatorSelected = () => {
+  operator.value.displayValue = true
+
+  if (requirement?.hasListValues) {
+    focus(listOfValueField)
+  } else {
+    focus(valueField)
+  }
 }
 
 const afterValueSelected = (userCheckedToAdd) => {
@@ -368,7 +388,6 @@ const reset = () => {
   psEvent.value = null
   operator.value = null
   value.value = null
-  psEventField.value = null
   listOfValueField.value = null
   secondaryValue.value = null
   showOverflow.value = null
@@ -378,62 +397,6 @@ const reset = () => {
   }
 
   emit('overflow-required', false)
-}
-
-const add = () => {
-  //data integrity checks
-  if (requirement.value === null || operator.value === null || value.value === null) {
-    return
-  }
-
-  //vuetify's combobox will return custom input as a string
-  if (typeof value.value === 'string' && value.value.trim().length === 0) {
-    snackbar('ERROR', 'Invalid value')
-    return
-  }
-
-  if (value.value?.secondaryRequirement && secondaryValue.value.trim().length === 0) {
-    snackbar('ERROR', 'Invalid value')
-    return
-  }
-
-  if (psEvent.value !== null) {
-    if (requirement.value.objectTypeId === 4) {
-      requirement.value.processStepId = psEvent.value.id
-      requirement.value.processStepName = psEvent.value.name
-    } else {
-      requirement.value.eventId = psEvent.value.id
-      requirement.value.eventName = psEvent.value.name
-    }
-  }
-
-  requirement.value.operatorTypeId = operator.value.id
-  requirement.value.operatorType = operator.value.operatorType
-
-  //if select value is custom
-  if (typeof value.value === 'string') {
-    requirement.value.requirementValue = value.value.trim()
-  } else if (Array.isArray(value.value)) {
-    //if selected value is a multi-select
-    requirement.value.listOfValueIds = value.value.map(v => v.id)
-  } else if (value.value?.dataTypeId) {
-    //if selected value is a data type requirement
-    requirement.value.dataTypeRequirementId = value.value.id
-    requirement.value.dataTypeRequirement = value.value
-  } else {
-    //selected value is a list value
-    requirement.value.listOfValueId = value.value.id
-  }
-
-  if (value.value?.secondaryRequirement) {
-    requirement.value.secondaryRequirement = true
-    requirement.value.secondaryRequirementValue = secondaryValue.value.trim()
-  }
-
-  requirement.value.isCustomValue = typeof value.value === 'string'
-
-  emit('added', requirement.value)
-  reset()
 }
 
 const getSystemListValues = async () => {
@@ -502,8 +465,127 @@ const getOperators = async () => {
     snackbar('ERROR', 'Unable to fetch operators')
   }
 }
+
+const add = () => {
+  //data integrity checks
+  if (requirement.value === null || operator.value === null || value.value === null) {
+    return
+  }
+
+  //vuetify's combobox will return custom input as a string
+  if (typeof value.value === 'string' && value.value.trim().length === 0) {
+    snackbar('ERROR', 'Invalid value')
+    return
+  }
+
+  if (value.value?.secondaryRequirement && secondaryValue.value.trim().length === 0) {
+    snackbar('ERROR', 'Invalid value')
+    return
+  }
+
+  if (psEvent.value !== null) {
+    if (requirement.value.objectTypeId === 4) {
+      requirement.value.processStepId = psEvent.value.id
+      requirement.value.processStepName = psEvent.value.name
+    } else {
+      requirement.value.eventId = psEvent.value.id
+      requirement.value.eventName = psEvent.value.name
+    }
+  }
+
+  requirement.value.operatorTypeId = operator.value.id
+  requirement.value.operatorType = operator.value.operatorType
+
+  //if select value is custom
+  if (typeof value.value === 'string') {
+    requirement.value.requirementValue = value.value.trim()
+  } else if (Array.isArray(value.value)) {
+    //if selected value is a multi-select
+    requirement.value.listOfValueIds = value.value.map(v => v.id)
+  } else if (value.value?.dataTypeId) {
+    //if selected value is a data type requirement
+    requirement.value.dataTypeRequirementId = value.value.id
+    requirement.value.dataTypeRequirement = value.value
+  } else {
+    //selected value is a list value
+    requirement.value.listOfValueId = value.value.id
+  }
+
+  if (value.value?.secondaryRequirement) {
+    requirement.value.secondaryRequirement = true
+    requirement.value.secondaryRequirementValue = secondaryValue.value.trim()
+  }
+
+  requirement.value.isCustomValue = typeof value.value === 'string'
+
+  emit('added', requirement.value)
+  reset()
+}
+
+onMounted(() => {
+  if (isEditing.value) {
+    toggleOverflow(true)
+    requirement.value = cloneDeep(props.existingRequirement)
+    if (requirement.value.objectTypeId === 4) {
+      psEvent.value = {
+        id: requirement.value.processStepId,
+        name: requirement.value.processStepName
+      }
+    } else if (requirement.value.objectTypeId === 6) {
+      psEvent.value = {
+        id: requirement.value.eventId,
+        name: requirement.value.eventName
+      }
+    }
+
+    operator.value = {
+      id: requirement.value.operatorTypeId,
+      operatorType: requirement.value.operatorType
+    }
+
+    if (requirement.value.dataTypeRequirementId) {
+      value.value = requirement.value.dataTypeRequirement
+    }
+
+    if (value.value?.secondaryRequirement) {
+      secondaryValue.value = requirement.value.secondaryRequirementValue
+    }
+
+    requirement.value.displayValue = true
+    operator.value.displayValue = true
+  }
+})
 </script>
 
 <style scoped lang="scss">
 
+.highlight-background {
+  background-color: var(--v-primary-lighten9);
+}
+
+.field-selector {
+  :deep(.v-input__append-inner) {
+    display: none !important;
+  }
+}
+
+.add-field {
+  width: max-content;
+}
+
+.hover {
+  cursor: pointer;
+}
+
+.input-styled {
+  :deep(input) {
+    background-color: var(--v-primary-lighten9);
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  :deep(.v-input__append-inner) {
+    display: none !important;
+  }
+}
 </style>

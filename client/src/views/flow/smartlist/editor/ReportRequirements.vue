@@ -8,11 +8,16 @@
       @added="added"
     />
   </v-col>
-  <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
+  <v-col class="flex-grow-1 flex-shrink-0">
     <v-list>
       <template v-for="(requirement, index) in requirements">
-        <v-card class="ma-4">
-          <v-list-item v-if="requirement.updateType !== updateTypes.DELETE":key="UUID()">
+        <v-card
+          v-if="requirement.updateType !== updateTypes.DELETE && !edits[index]"
+          :key="UUID()"
+          class="ma-4"
+          @click="edits.splice(index, 1, true)"
+        >
+          <v-list-item>
             <v-list-item-content>
               <v-row no-gutters class="align-center">
                 <v-col class="text-no-wrap my-3"><span class="highlight-background px-2 py-1 rounded">{{ requirement.name }}</span></v-col>
@@ -31,6 +36,15 @@
             </v-list-item-action>
           </v-list-item>
         </v-card>
+
+        <RequirementEditor
+          v-if="edits[index]"
+          :available-fields="availableFields"
+          :existing-requirement="requirement"
+          @overflow-required="(required) => emit('overflow-required', required)"
+          @cancelled="edits.splice(index, 1, false)"
+          @updated=""
+        />
       </template>
     </v-list>
   </v-col>
@@ -108,6 +122,8 @@ const props = defineProps({
 
 const showDeleteDialog = ref(false)
 
+const edits = ref(Array(props.requirements.length).fill(false))
+
 // const calculatedName = (r) => {
 //   let name = r.name
 //
@@ -119,8 +135,6 @@ const showDeleteDialog = ref(false)
 //
 //   return name
 // }
-
-
 
 const remove = (index) => {
   emit('deleted', index)
@@ -178,15 +192,6 @@ const added = (newRequirement) => {
 </script>
 
 <style scoped lang="scss">
-.field-selector {
-  :deep(.v-input__append-inner) {
-    display: none !important;
-  }
-}
-
-.add-field {
-  width: max-content;
-}
 
 .highlight-background {
   background-color: var(--v-primary-lighten9);
