@@ -82,7 +82,7 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("note", newActivity.getNote());
     params.put("sourceId", sourceId);
-    params.put("linked", newActivity.getLinked());
+    params.put("linked", null != newActivity.getLinked() ? newActivity.getLinked() : false);
     params.put("linkedPpsId", newActivity.getLinkedPpsId());
     params.put("linkedPpseId", newActivity.getLinkedPpseId());
     params.put("userId", user.trueUserId());
