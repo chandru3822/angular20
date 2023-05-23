@@ -7,7 +7,6 @@ BEGIN
     --todo: figure out what to do with attachment type ancillary custom fields
 --todo: would be nice if this could return cfgs with cfvs OR just cfvs (could replace getUserProfileFields if it could do that...and maybe more)
 
-drop table if exists cfvs;
 create temp table cfvs
     (
         id                                         bigint, --this is the id from the corresponding custom_field_value table(unless it is from the data view then it is the dvfc.id)
