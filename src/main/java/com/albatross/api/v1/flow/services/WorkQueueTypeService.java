@@ -70,7 +70,6 @@ public class WorkQueueTypeService {
 
   public Optional<WorkQueueType> getType(Long id) {
     User user = securityService.getCurrentUser();
-    user.getUserPositions().get(0).getPositionId();
     Optional<WorkQueueType> type = sqlCache.getBySql(
       WorkQueueTypeQuery.getType,
         ImmutableMap.of("id", id),
