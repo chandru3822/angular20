@@ -56,6 +56,7 @@ select
                             cfga.custom_field_group_id as "customFieldGroupId",
                             cfga.id as "customFieldGroupAssignmentId",
                             cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                            cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                             cfga.required,
                             coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
                             cfga.field_order as "fieldOrder",
