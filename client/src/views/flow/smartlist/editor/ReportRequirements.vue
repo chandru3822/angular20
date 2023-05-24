@@ -43,7 +43,7 @@
           :existing-requirement="requirement"
           @overflow-required="(required) => emit('overflow-required', required)"
           @cancelled="edits.splice(index, 1, false)"
-          @updated=""
+          @updated="(updatedRequirement) => update(updatedRequirement, index)"
         />
       </template>
     </v-list>
@@ -142,6 +142,7 @@ const remove = (index) => {
 
 const update = (requirement, index) => {
   emit('updated', requirement, index)
+  edits.value.splice(index, 1, false)
 }
 
 const getValue = (requirement) => {

@@ -173,7 +173,7 @@
       </v-autocomplete>
 
       <v-text-field
-        v-show="showValueInput && value?.secondaryRequirement"
+        v-show="showSecondaryValueInput"
         ref="secondaryValueField"
         v-model="secondaryValue"
         placeholder="Type Value"
@@ -183,6 +183,13 @@
         @change="add"
       >
         <template #append>
+          <v-btn
+            v-if="secondaryValue !== null && secondaryValue.trim().length > 0"
+            icon
+            @click="afterValueSelected(true)"
+          >
+            <v-icon>mdi-check</v-icon>
+          </v-btn>
           <v-btn
             icon
             @click.stop="[reset(), emit('cancelled')]"
@@ -259,6 +266,13 @@ const showValueInput = computed(() => {
          !value.value?.secondaryRequirement &&
          operator.value?.displayValue &&
          !value.value?.displayValue
+})
+
+const showSecondaryValueInput = computed(() => {
+  return showValueInput &&
+         value.value?.secondaryRequirement &&
+         operator.value?.displayValue &&
+         value.value?.displayValue
 })
 
 const calculatedAvailableValues = computed(() => {
@@ -376,12 +390,18 @@ const afterOperatorSelected = () => {
 }
 
 const afterValueSelected = (userCheckedToAdd) => {
+  if (isEditing.value) {
+    add()
+    return
+  }
+
   if (requirement.value?.allowMultiple) {
     const dataTypeRequirement = value.value.find(v => v.isDataTypeRequirement)
 
     if (dataTypeRequirement) {
       value.value = dataTypeRequirement
       add()
+      return
     }
 
     if (userCheckedToAdd) {
@@ -389,8 +409,12 @@ const afterValueSelected = (userCheckedToAdd) => {
     }
 
   } else if (value.value?.secondaryRequirement) {
-    value.value.displayValue = true
-    focus(secondaryValueField)
+    if (value.value.displayValue) {
+      add()
+    } else {
+      value.value.displayValue = true
+      focus(secondaryValueField)
+    }
   } else {
     add()
   }
@@ -537,7 +561,11 @@ const add = () => {
 
   requirement.value.isCustomValue = typeof value.value === 'string'
 
-  emit('added', requirement.value)
+  if (isEditing.value) {
+    emit('updated', requirement.value)
+  } else {
+    emit('added', requirement.value)
+  }
   reset()
 }
 
@@ -598,17 +626,5 @@ onMounted(() => {
 
 .hover {
   cursor: pointer;
-}
-
-.input-styled {
-  :deep(input) {
-    background-color: var(--v-primary-lighten9);
-    border-radius: 4px;
-    text-align: center;
-  }
-
-  :deep(.v-input__append-inner) {
-    display: none !important;
-  }
 }
 </style>

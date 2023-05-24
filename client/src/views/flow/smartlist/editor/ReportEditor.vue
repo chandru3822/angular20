@@ -525,7 +525,7 @@ const deleteRequirement = (index) => {
   }
 }
 
-const updateRequirement = (requirement, index) => requirements.value[index] = requirement
+const updateRequirement = (requirement, index) => requirements.value.splice(index, 1, {...requirement, updateType: UPDATE_TYPE.UPDATE})
 
 const toggleRequirementOverflow = (required) => {
   showRequirementOverflow.value = required
