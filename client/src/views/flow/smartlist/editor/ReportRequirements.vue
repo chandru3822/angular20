@@ -4,7 +4,7 @@
   <v-col class="flex-shrink-1 flex-grow-0">
     <RequirementEditor
       :available-fields="availableFields"
-      @overflow-required="(required) => emit('overflow-required', required)"
+      @in-progress="(isInProgress) => isAddingInProgress = isInProgress"
       @added="added"
     />
   </v-col>
@@ -41,7 +41,6 @@
           v-if="edits[index]"
           :available-fields="availableFields"
           :existing-requirement="requirement"
-          @overflow-required="(required) => emit('overflow-required', required)"
           @cancelled="edits.splice(index, 1, false)"
           @updated="(updatedRequirement) => update(updatedRequirement, index)"
         />
@@ -99,7 +98,7 @@ import { ref } from 'vue'
 import { UUID } from '@/helpers/helpers'
 import RequirementEditor from '@/views/flow/smartlist/editor/RequirementEditor.vue'
 
-const emit = defineEmits(['added', 'updated', 'deleted', 'cleared', 'overflow-required'])
+const emit = defineEmits(['added', 'updated', 'deleted', 'cleared'])
 
 const props = defineProps({
   requirements: {
@@ -121,6 +120,8 @@ const props = defineProps({
 })
 
 const showDeleteDialog = ref(false)
+
+const isAddingInProgress = ref(false)
 
 const edits = ref(Array(props.requirements.length).fill(false))
 

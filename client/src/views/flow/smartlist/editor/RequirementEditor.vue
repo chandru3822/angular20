@@ -1,9 +1,9 @@
 <template>
 <v-sheet
-  :class="{'add-field': showOverflow && requirement !== null}"
+  :class="{'add-field': isEditorInUse && requirement !== null}"
   class="mx-4 mb-2"
   :elevation="editorElevation"
-  :rounded="showOverflow"
+  :rounded="isEditorInUse"
 >
   <v-row
     class="align-center justify-start no-gutters mt-4"
@@ -19,11 +19,11 @@
         return-object
         placeholder="Add Filter"
         solo
-        :flat="showOverflow"
+        :flat="isEditorInUse"
         hide-details="true"
-        :class="{'field-selector': !showOverflow}"
+        :class="{'field-selector': !isEditorInUse}"
         @change="afterFieldSelected"
-        @focus="toggleOverflow(true)"
+        @focus="onFieldFocus"
       >
         <template #append>
           <v-btn
@@ -52,9 +52,9 @@
         return-object
         placeholder="Type or Select Name"
         solo
-        :flat="showOverflow"
+        :flat="isEditorInUse"
         hide-details="true"
-        :class="{'field-selector': !showOverflow}"
+        :class="{'field-selector': !isEditorInUse}"
         @blur="afterPsEventSelected"
       >
         <template #append>
@@ -79,10 +79,10 @@
         solo
         flat
         hide-details="true"
-        :class="{'field-selector': !showOverflow}"
+        :class="{'field-selector': !isEditorInUse}"
         @change="afterOperatorSelected"
       >
-        <template #append v-if="showOverflow">
+        <template #append v-if="isEditorInUse">
           <v-btn
             icon
             @click.stop="[reset(), emit('cancelled')]"
@@ -114,7 +114,7 @@
         solo
         flat
         hide-details="true"
-        :class="{'field-selector': !showOverflow}"
+        :class="{'field-selector': !isEditorInUse}"
         @change="afterValueSelected"
       >
         <template #append>
@@ -148,7 +148,7 @@
         hide-details="true"
         :multiple="requirement?.allowMultiple"
         ripple="false"
-        :class="{'field-selector': !showOverflow}"
+        :class="{'field-selector': !isEditorInUse}"
         @change="afterValueSelected(false)"
       >
         <template #item="data">
@@ -208,7 +208,7 @@ import { getRequest, logError, UUID } from '@/helpers/helpers'
 import { computed, getCurrentInstance, nextTick, onMounted, ref } from 'vue'
 import cloneDeep from 'lodash.clonedeep'
 
-const emit = defineEmits(['added', 'updated', 'cancelled', 'overflow-required'])
+const emit = defineEmits(['adding', 'added', 'updated', 'cancelled', 'in-progress'])
 
 const props = defineProps({
   availableFields: {
@@ -240,11 +240,11 @@ const operatorField = ref(null)
 const valueField = ref(null)
 const listOfValueField = ref(null)
 const secondaryValueField = ref(null)
-const showOverflow = ref(false)
+const isEditorInUse = ref(false)
 
 const isEditing = computed(() => props.existingRequirement !== null)
 
-const editorElevation = computed(() => (showOverflow.value) ? 1 : 0)
+const editorElevation = computed(() => (isEditorInUse.value) ? 1 : 0)
 
 const showFieldInput = computed(() => requirement.value === null)
 
@@ -331,7 +331,7 @@ const focus = (field) => {
     return
   }
 
-  if (showOverflow.value) {
+  if (isEditorInUse.value) {
     nextTick(() => {
       field.value.focus()
 
@@ -342,9 +342,11 @@ const focus = (field) => {
   }
 }
 
-const toggleOverflow = (toggle) => {
-  showOverflow.value = toggle
-  emit('overflow-required', toggle)
+const onFieldFocus = () => {
+  if (!isEditing.value) {
+    isEditorInUse.value = true
+    emit('in-progress', true)
+  }
 }
 
 const afterFieldSelected = () => {
@@ -433,13 +435,13 @@ const reset = () => {
   value.value = null
   listOfValueField.value = null
   secondaryValue.value = null
-  showOverflow.value = null
+  isEditorInUse.value = null
 
   if (valueField.value !== null && Object.hasOwn(valueField.value, 'isMenuActive')) {
     valueField.value.isMenuActive = false
   }
 
-  emit('overflow-required', false)
+  emit('in-progress', false)
 }
 
 const getSystemListValues = async () => {
@@ -571,7 +573,9 @@ const add = () => {
 
 onMounted(() => {
   if (isEditing.value) {
-    toggleOverflow(true)
+    isEditorInUse.value = true
+    emit('in-progress', true)
+
     requirement.value = cloneDeep(props.existingRequirement)
     if (requirement.value.objectTypeId === 4) {
       psEvent.value = {

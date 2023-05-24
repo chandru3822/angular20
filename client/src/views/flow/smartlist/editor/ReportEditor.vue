@@ -125,7 +125,7 @@
           </v-tabs>
           <v-tabs-items
             v-model="tab"
-            :class="{'show-overflow': showRequirementOverflow}"
+            class="show-overflow"
           >
             <v-tab-item>
               <ReportFields
@@ -148,7 +148,6 @@
                 @added="addRequirement"
                 @deleted="deleteRequirement"
                 @updated="updateRequirement"
-                @overflow-required="toggleRequirementOverflow"
                 @cleared="clearRequirements"
               />
             </v-tab-item>
