@@ -49,11 +49,15 @@ BEGIN
                   ( select o.org_name
                     from flow.org o
                     where o.id = ppsecfv.int_value)
-                when sl.system_list_type_id = 2 then
+                when sl.system_list_type_id = 2 and sl.id != 4 then
                   (select concat(u.first_name, ' ', u.last_name)
                    from flow.user_position up
                           inner join flow.user u on u.id = up.user_id
                    where up.id = ppsecfv.int_value)
+                when sl.system_list_type_id = 2 and sl.id = 4 then
+                  (select concat(u.first_name, ' ', u.last_name)
+                   from flow.user u
+                   where u.id = ppsecfv.int_value)
              end as int_value_as_text,
            case when ppsecfv.int_array_value is not null and cf.list_of_value_id is not null then
                   (select string_agg(name, ',')
