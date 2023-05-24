@@ -48,8 +48,7 @@ BEGIN
   for d in SELECT urs.*
            FROM brs.user_residual_snapshot urs
            where urs.current_clawbacks_in_period > 0
-
-
+          and urs.residual_id = p_residual_id
     loop
 
       select rc.id
@@ -75,8 +74,7 @@ BEGIN
   for d in SELECT urs.*
            FROM brs.user_residual_snapshot urs
            where  clawback > 0
-
-
+             and urs.residual_id = p_residual_id
     loop
 
       select rc.id
@@ -88,16 +86,16 @@ BEGIN
         v_amount = 0;
       elsif d.paid_in_period is true and coalesce(d.residual_total,0) = 0 and
             coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
-            d.adjustment_override > d.clawback then
+            d.adjustment_override >= d.clawback then
         v_amount = d.adjustment_override - d.clawback;
       elsif d.paid_in_period is true and coalesce(d.residual_total,0) = 0 and
             coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
             d.adjustment_override < d.clawback then
         v_amount = d.adjustment_override;
-      elsif d.paid_in_period is true and coalesce(d.clawback,0) > coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0) and
+      elsif d.paid_in_period is true and coalesce(d.clawback,0) > (coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0)) and
             coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0) > 0 then
         v_amount = d.earned_residual + coalesce(d.adjustment_override,0);
-      elsif d.paid_in_period is true and coalesce(d.earned_residual,0)  + coalesce(d.adjustment_override,0) >= coalesce(d.clawback,0) then
+      elsif d.paid_in_period is true and (coalesce(d.earned_residual,0)  + coalesce(d.adjustment_override,0)) >= coalesce(d.clawback,0) then
         v_amount = coalesce(d.clawback,0);
       elsif d.paid_in_period is true and coalesce(d.clawback,0) > 0 and coalesce(d.earned_residual,0) < 1 then
         v_amount = 0;
