@@ -84,19 +84,25 @@ BEGIN
 
       if d.paid_in_period is not true then
         v_amount = 0;
-      elsif d.paid_in_period is true and coalesce(d.residual_total,0) = 0 and
+        --adjustments that have clawbacks but not no residuals were earned and adjustments are greater than the clawback
+      elsif d.paid_in_period is true and coalesce(d.earned_residual,0) = 0 and
             coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
             d.adjustment_override >= d.clawback then
         v_amount = d.adjustment_override - d.clawback;
-      elsif d.paid_in_period is true and coalesce(d.residual_total,0) = 0 and
+        --adjustments that have clawbacks but not no residuals were earned and adjustments are less than the clawback
+      elsif d.paid_in_period is true and coalesce(d.earned_residual,0) = 0 and
             coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
             d.adjustment_override < d.clawback then
         v_amount = d.adjustment_override;
+        --have earned residuals and the clawbacks are greater than the earned residuals
       elsif d.paid_in_period is true and coalesce(d.clawback,0) > (coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0)) and
             coalesce(d.earned_residual,0) + coalesce(d.adjustment_override,0) > 0 then
         v_amount = d.earned_residual + coalesce(d.adjustment_override,0);
-      elsif d.paid_in_period is true and (coalesce(d.earned_residual,0)  + coalesce(d.adjustment_override,0)) >= coalesce(d.clawback,0) then
+        --have earned residuals and the clawbacks are less than the earned residuals
+      elsif d.paid_in_period is true and (coalesce(d.earned_residual,0)  + coalesce(d.adjustment_override,0)) >= coalesce(d.clawback,0) and
+            coalesce(d.clawback,0) > 0 then
         v_amount = coalesce(d.clawback,0);
+        --there aren't any earned residuals to payback the clawbacks
       elsif d.paid_in_period is true and coalesce(d.clawback,0) > 0 and coalesce(d.earned_residual,0) < 1 then
         v_amount = 0;
       end if;
