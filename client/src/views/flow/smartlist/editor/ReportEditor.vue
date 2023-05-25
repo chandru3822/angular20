@@ -391,11 +391,11 @@ watch(() => vueInstance.$route.params?.reportId, async () => {
   }
 })
 
-const refreshReport = async () => {
+const refreshReport = async (forceUpdate = false) => {
   await getReport()
   getFields()
   getRequirements()
-  getAvailableFields()
+  getAvailableFields(forceUpdate)
 }
 
 const getReport = async () => {
@@ -474,7 +474,6 @@ const save = async () => {
       sourceReport.value = cloneDeep(data)
       await router.replace({name: 'reportEditor', params: {reportId: data.id}})
       await refreshReport()
-      getAvailableFields()
     }
     snackbar('SUCCESS', 'Save Successful')
   } catch (e) {
@@ -498,13 +497,13 @@ const getReportTypes = async () => {
   }
 }
 
-const getAvailableFields = async () => {
+const getAvailableFields = async (forceUpdate = false) => {
   //this endpoint returns a large amount of data. Fetch data only if we already haven't
-  if (availableFields.value.length === 0) {
+  if (availableFields.value.length === 0 || forceUpdate) {
     try {
       loadingAvailableFields.value = true
       const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
-      const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}`)
+      const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}&projectDetails=${report.value.projectDetails}`)
       availableFields.value = data
     } catch (e) {
       logError(e)
@@ -571,7 +570,7 @@ const toggleDataView = async () => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
     await putRequest(`/smartlist/${report.value.id}/toggleProjectDetails`)
-    refreshReport()
+    refreshReport(true)
   } catch (e) {
     report.value.projectDetails = !report.value.projectDetails
     snackbar('ERROR', 'Unable to update project details setting')

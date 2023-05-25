@@ -1063,9 +1063,14 @@ public class SmartlistService {
     }
   }
 
-  public List<SmartlistFieldAssignment> getAvailableFields(@NotNull List<Long> objectTypeIds) {
-    Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeIds", objectTypeIds);
-    return sqlCache.queryBySql(SmartlistQuery.getAvailableFields, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  public List<SmartlistFieldAssignment> getAvailableFields(@NotNull List<Long> objectTypeIds, @NotNull boolean isProjectDetails) {
+    if (isProjectDetails) {
+      //@TODO: #smartlistsv2 - revamp with data view updates
+      return sqlCache.queryBySql(SmartlistQueryv1.getAvailableProjectDetailsFields, null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    } else {
+      Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeIds", objectTypeIds);
+      return sqlCache.queryBySql(SmartlistQuery.getAvailableFields, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    }
   }
 
   // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp

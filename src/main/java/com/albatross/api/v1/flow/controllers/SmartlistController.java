@@ -176,8 +176,8 @@ public class SmartlistController {
 
 
   @GetMapping(value = "/fields", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableFields(@RequestParam List<Long> objectTypeIds) {
-    return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeIds), HttpStatus.OK);
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableFields(@RequestParam List<Long> objectTypeIds, @RequestParam boolean projectDetails) {
+    return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeIds, projectDetails), HttpStatus.OK);
   }
 
   @PostMapping(value = "/adhoc", produces = MediaType.APPLICATION_JSON_VALUE)
