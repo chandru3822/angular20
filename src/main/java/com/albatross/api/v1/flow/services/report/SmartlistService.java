@@ -327,7 +327,7 @@ public class SmartlistService {
       var updatedRequirements = requirements.stream()
                                           .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
                                           .toList();
-      addedRequirements.forEach(r -> {
+      updatedRequirements.forEach(r -> {
         r.setModifiedById(user.trueUserId());
         r.setSmartlistId(smartlist.getId());
       });

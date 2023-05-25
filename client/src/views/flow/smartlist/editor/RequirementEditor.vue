@@ -565,6 +565,10 @@ const add = () => {
     requirement.value.secondaryRequirementValue = secondaryValue.value.trim()
   }
 
+  if (requirement.value.hasListOfValues) {
+    requirement.value.availableListOfValues = requirement.value.listOfValues
+  }
+
   requirement.value.isCustomValue = typeof value.value === 'string'
 
   if (isEditing.value) {
