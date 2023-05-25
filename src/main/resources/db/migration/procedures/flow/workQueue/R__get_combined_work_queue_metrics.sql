@@ -56,6 +56,9 @@ declare
   v_timezone varchar = 'US/Mountain';
 BEGIN
 
+--   NOTE: THIS CODE SUCKS NOW CUZ IT RUNS IN THE READ-ONLY REPLICA SO WE CAN'T CREATE TEMP TABLES
+--   FOR NOW THE SOLUTION IS TO DUPE A BUNCH OF CODE AND USE CTE'S.  SEEMS TO WORK AND IS FAST BUT I HATE IT
+
   select wqt.long_window,
          wqt.short_window,
          wqt.long_window_duration_type_id,
@@ -88,20 +91,17 @@ BEGIN
 
   select (now() at time zone v_timezone)::date,
          (now() at time zone v_timezone)::timestamp
-         into v_now_date, v_now_timestamp;
+  into v_now_date, v_now_timestamp;
 
   select v_now_date::date,
          (v_now_date - v_short_window)::date,
          (v_now_date - v_long_window)::date
   into v_end_date,v_short_start_date,v_long_start_date;
 
-  drop table if exists randa_wqc_values;
-
-  raise notice 'wqt_id %',p_work_queue_type_id;
-  raise notice 'use_event_data %',p_use_event_data;
+--   drop table if exists randa_wqc_values;
 
   if(p_use_event_data) then
-    create temp table randa_wqc_values as (
+    with randa_wqc_values as (
       select wqc2.id,
              (date_entered_queue at time zone 'UTC' at time zone v_timezone)::date as date_entered_queue_date,
              (date_exited_queue at time zone 'UTC' at time zone v_timezone)::date as date_exited_queue_date,
@@ -125,9 +125,34 @@ BEGIN
           OR
           ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
         )
-    );
+    )
+    select count(1) filter (where date_exited_queue_date between v_short_start_date and v_end_date),
+           count(1) filter (where date_entered_queue_date between v_short_start_date and v_end_date),
+           count(1) filter (where date_exited_queue_date between v_long_start_date and v_end_date),
+           count(1) filter (where date_entered_queue_date between v_long_start_date and v_end_date),
+           count(1) filter (where date_exited_queue_date between v_short_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10),
+           count(1) filter (where date_entered_queue_date between v_short_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10),
+           count(1) filter (where date_exited_queue_date between v_long_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10),
+           count(1) filter (where date_entered_queue_date between v_long_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10)
+    into v_short_window_exited_wip, v_short_window_entered_wip,
+      v_long_window_exited_wip, v_long_window_entered_wip,
+      v_short_window_exited, v_short_window_entered,
+      v_long_window_exited, v_long_window_entered
+    from randa_wqc_values;
   else
-    create temp table randa_wqc_values as (
+    with randa_wqc_values as (
 
       select wqc2.id,
              (date_entered_queue at time zone 'UTC' at time zone v_timezone)::date as date_entered_queue_date,
@@ -141,48 +166,48 @@ BEGIN
       where pswqt2.work_queue_type_id = p_work_queue_type_id
         and pswqtpsst2.archived is false
         and pswqt2.archived is false
-      and (
+        and (
         --todo: i actually think the v_long_start_date would cover both scenarios here
-  --         ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
-  --         OR
-  --         ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
-  --         OR
+        --         ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
+        --         OR
+        --         ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_short_start_date and v_end_date)
+        --         OR
           ((date_exited_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
           OR
           ((date_entered_queue at time zone 'UTC' at time zone v_timezone)::date between v_long_start_date and v_end_date)
         )
-    );
+    )
+    select count(1) filter (where date_exited_queue_date between v_short_start_date and v_end_date),
+           count(1) filter (where date_entered_queue_date between v_short_start_date and v_end_date),
+           count(1) filter (where date_exited_queue_date between v_long_start_date and v_end_date),
+           count(1) filter (where date_entered_queue_date between v_long_start_date and v_end_date),
+           count(1) filter (where date_exited_queue_date between v_short_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10),
+           count(1) filter (where date_entered_queue_date between v_short_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10),
+           count(1) filter (where date_exited_queue_date between v_long_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10),
+           count(1) filter (where date_entered_queue_date between v_long_start_date and v_end_date
+             and flow.get_difference_of_dates_by_duration(
+                   date_exited_queue_timestamp,
+                   date_entered_queue_timestamp, 4) > 10)
+    into v_short_window_exited_wip, v_short_window_entered_wip,
+      v_long_window_exited_wip, v_long_window_entered_wip,
+      v_short_window_exited, v_short_window_entered,
+      v_long_window_exited, v_long_window_entered
+    from randa_wqc_values;
   end if;
-  select count(1) filter (where date_exited_queue_date between v_short_start_date and v_end_date),
-         count(1) filter (where date_entered_queue_date between v_short_start_date and v_end_date),
-         count(1) filter (where date_exited_queue_date between v_long_start_date and v_end_date),
-         count(1) filter (where date_entered_queue_date between v_long_start_date and v_end_date),
-         count(1) filter (where date_exited_queue_date between v_short_start_date and v_end_date
-           and flow.get_difference_of_dates_by_duration(
-                 date_exited_queue_timestamp,
-                 date_entered_queue_timestamp, 4) > 10),
-         count(1) filter (where date_entered_queue_date between v_short_start_date and v_end_date
-           and flow.get_difference_of_dates_by_duration(
-                 date_exited_queue_timestamp,
-                 date_entered_queue_timestamp, 4) > 10),
-         count(1) filter (where date_exited_queue_date between v_long_start_date and v_end_date
-           and flow.get_difference_of_dates_by_duration(
-                 date_exited_queue_timestamp,
-                 date_entered_queue_timestamp, 4) > 10),
-         count(1) filter (where date_entered_queue_date between v_long_start_date and v_end_date
-           and flow.get_difference_of_dates_by_duration(
-                 date_exited_queue_timestamp,
-                 date_entered_queue_timestamp, 4) > 10)
-  into v_short_window_exited_wip, v_short_window_entered_wip,
-    v_long_window_exited_wip, v_long_window_entered_wip,
-    v_short_window_exited, v_short_window_entered,
-    v_long_window_exited, v_long_window_entered
-  from randa_wqc_values;
 
-  drop table if exists randa_wqc_other;
+--   drop table if exists randa_wqc_other;
 
   if(p_use_event_data) then
-    create temp table randa_wqc_other as (
+    with randa_wqc_other as (
       select wqc.id,
              wqt.short_window,
              wqt.long_window,
@@ -210,166 +235,297 @@ BEGIN
            (v_now_timestamp -
             (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp)
         )
-    );
+    ), short_window_numerator_cte as (
+      select count(1) as short_window_numerator
+--       into v_short_window_numerator
+      from randa_wqc_other wqc
+      where case
+              when wqc.date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0 and
+                    case
+                      when v_cycle_duration_type = 'Days' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 1) <=
+                          v_expected_cycle
+                      when v_cycle_duration_type = 'Hours' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 2) <=
+                          v_expected_cycle
+                      else
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 3) <=
+                          v_expected_cycle
+                      end
+              else
+                case
+                  when v_cycle_duration_type = 'Days' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               1) <=
+                      v_expected_cycle
+                  when v_cycle_duration_type = 'Hours' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               2) <=
+                      v_expected_cycle
+                  else
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               3) <=
+                      v_expected_cycle
+                  end
+              end
+    ), short_window_denominator_cte as (
+      select count(1) as short_window_denominator
+--       into v_short_window_denominator
+      from randa_wqc_other wqc
+      where case
+              when date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0
+              else
+                date_exited_queue_timestamp is null
+              end
+    ), long_window_numerator_cte as (
+      select count(1) as long_window_numerator
+--       into v_long_window_numerator
+      from randa_wqc_other wqc
+      where case
+              when date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0 and
+                    case
+                      when v_cycle_duration_type = 'Days' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 1) <=
+                          v_expected_cycle
+                      when v_cycle_duration_type = 'Hours' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 2) <=
+                          v_expected_cycle
+                      else
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 3) <=
+                          v_expected_cycle
+                      end
+
+              else
+                case
+                  when v_cycle_duration_type = 'Days' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               1) <=
+                      v_expected_cycle
+                  when v_cycle_duration_type = 'Hours' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               2) <=
+                      v_expected_cycle
+                  else
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               3) <=
+                      v_expected_cycle
+                  end
+              end
+    ), long_window_denominator_cte as (
+      select count(1) as long_window_denominator
+--       into v_long_window_denominator
+      from randa_wqc_other wqc
+      where case
+              when date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0
+              else
+                date_exited_queue_timestamp is null
+              end)
+    select ( select * from short_window_numerator_cte), (select * from short_window_denominator_cte),
+           ( select * from long_window_numerator_cte), (select * from long_window_denominator_cte)
+    into v_short_window_numerator, v_short_window_denominator, v_long_window_numerator, v_long_window_denominator;
   else
-    create temp table randa_wqc_other as (
+    with randa_wqc_other as (
       select wqc.id,
              wqt.short_window,
              wqt.long_window,
              (date_entered_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_entered_queue_timestamp,
              (date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp as date_exited_queue_timestamp
       from flow.work_queue_cycle wqc
-      inner join flow.company_process_step_status_type cpsst
-      on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
-      inner join flow.process_step_status_type psst
-      on psst.id = cpsst.process_step_status_type_id and psst.archived is false
-      inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
-      on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and
-      pswqtpsst.archived is false
-      inner join flow.process_step_work_queue_type pswqt
-      on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
-      inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
-      inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
+             inner join flow.company_process_step_status_type cpsst
+                        on wqc.company_process_step_status_type_id = cpsst.id and cpsst.archived is false
+             inner join flow.process_step_status_type psst
+                        on psst.id = cpsst.process_step_status_type_id and psst.archived is false
+             inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst
+                        on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id and
+                           pswqtpsst.archived is false
+             inner join flow.process_step_work_queue_type pswqt
+                        on pswqtpsst.process_step_work_queue_type_id = pswqt.id and pswqt.archived is false
+             inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id and wqt.archived is false
+             inner join flow.work_queue_category wqct on wqct.id = wqt.work_queue_category_id and wqct.archived is false
       where wqt.id = p_work_queue_type_id
         and (
           date_exited_queue is null
           OR
           ((wqc.date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp >=
-          (v_now_timestamp - (wqt.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp)
+           (v_now_timestamp - (wqt.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp)
           OR
           ((wqc.date_exited_queue at time zone 'UTC' at time zone v_timezone)::timestamp >=
-          (v_now_timestamp -
-           (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp)
+           (v_now_timestamp -
+            (wqt.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp)
         )
-    );
+    ), short_window_numerator_cte as (
+      select count(1) as short_window_numerator
+--       into v_short_window_numerator
+      from randa_wqc_other wqc
+      where case
+              when wqc.date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0 and
+                    case
+                      when v_cycle_duration_type = 'Days' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 1) <=
+                          v_expected_cycle
+                      when v_cycle_duration_type = 'Hours' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 2) <=
+                          v_expected_cycle
+                      else
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 3) <=
+                          v_expected_cycle
+                      end
+              else
+                case
+                  when v_cycle_duration_type = 'Days' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               1) <=
+                      v_expected_cycle
+                  when v_cycle_duration_type = 'Hours' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               2) <=
+                      v_expected_cycle
+                  else
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               3) <=
+                      v_expected_cycle
+                  end
+              end
+    ), short_window_denominator_cte as (
+      select count(1) as short_window_denominator
+--       into v_short_window_denominator
+      from randa_wqc_other wqc
+      where case
+              when date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0
+              else
+                date_exited_queue_timestamp is null
+              end
+    ), long_window_numerator_cte as (
+      select count(1) as long_window_numerator
+--       into v_long_window_numerator
+      from randa_wqc_other wqc
+      where case
+              when date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0 and
+                    case
+                      when v_cycle_duration_type = 'Days' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 1) <=
+                          v_expected_cycle
+                      when v_cycle_duration_type = 'Hours' then
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 2) <=
+                          v_expected_cycle
+                      else
+                          flow.get_difference_of_dates_by_duration(
+                            date_exited_queue_timestamp,
+                            date_entered_queue_timestamp, 3) <=
+                          v_expected_cycle
+                      end
+
+              else
+                case
+                  when v_cycle_duration_type = 'Days' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               1) <=
+                      v_expected_cycle
+                  when v_cycle_duration_type = 'Hours' then
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               2) <=
+                      v_expected_cycle
+                  else
+                      flow.get_difference_of_dates_by_duration(v_now_timestamp,
+                                                               date_entered_queue_timestamp,
+                                                               3) <=
+                      v_expected_cycle
+                  end
+              end
+    ), long_window_denominator_cte as (
+      select count(1) as long_window_denominator
+--       into v_long_window_denominator
+      from randa_wqc_other wqc
+      where case
+              when date_exited_queue_timestamp is not null then
+                    date_exited_queue_timestamp >=
+                    (v_now_timestamp -
+                     (wqc.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
+                    flow.get_difference_of_dates_by_duration(
+                      date_exited_queue_timestamp,
+                      date_entered_queue_timestamp, 4) > 0
+              else
+                date_exited_queue_timestamp is null
+              end)
+    select ( select * from short_window_numerator_cte), (select * from short_window_denominator_cte),
+           ( select * from long_window_numerator_cte), (select * from long_window_denominator_cte)
+    into v_short_window_numerator, v_short_window_denominator, v_long_window_numerator, v_long_window_denominator;
   end if;
-  select count(1) as short_window_numerator
-  into v_short_window_numerator
-  from randa_wqc_other wqc
-    where case
-          when wqc.date_exited_queue_timestamp is not null then
-                date_exited_queue_timestamp >=
-                (v_now_timestamp -
-                 (wqc.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
-                flow.get_difference_of_dates_by_duration(
-                  date_exited_queue_timestamp,
-                  date_entered_queue_timestamp, 4) > 0 and
-                case
-                  when v_cycle_duration_type = 'Days' then
-                      flow.get_difference_of_dates_by_duration(
-                        date_exited_queue_timestamp,
-                        date_entered_queue_timestamp, 1) <=
-                      v_expected_cycle
-                  when v_cycle_duration_type = 'Hours' then
-                      flow.get_difference_of_dates_by_duration(
-                        date_exited_queue_timestamp,
-                        date_entered_queue_timestamp, 2) <=
-                      v_expected_cycle
-                  else
-                      flow.get_difference_of_dates_by_duration(
-                        date_exited_queue_timestamp,
-                        date_entered_queue_timestamp, 3) <=
-                      v_expected_cycle
-                  end
-          else
-            case
-              when v_cycle_duration_type = 'Days' then
-                  flow.get_difference_of_dates_by_duration(v_now_timestamp,
-                                                           date_entered_queue_timestamp,
-                                                           1) <=
-                  v_expected_cycle
-              when v_cycle_duration_type = 'Hours' then
-                  flow.get_difference_of_dates_by_duration(v_now_timestamp,
-                                                           date_entered_queue_timestamp,
-                                                           2) <=
-                  v_expected_cycle
-              else
-                  flow.get_difference_of_dates_by_duration(v_now_timestamp,
-                                                           date_entered_queue_timestamp,
-                                                           3) <=
-                  v_expected_cycle
-              end
-    end;
-
-  select count(1) as short_window_denominator
-  into v_short_window_denominator
-  from randa_wqc_other wqc
-  where case
-          when date_exited_queue_timestamp is not null then
-                date_exited_queue_timestamp >=
-                (v_now_timestamp -
-                 (wqc.short_window || ' ' || v_short_window_duration_type)::interval)::timestamp and
-                flow.get_difference_of_dates_by_duration(
-                  date_exited_queue_timestamp,
-                  date_entered_queue_timestamp, 4) > 0
-          else
-            date_exited_queue_timestamp is null
-    end;
-
-
-  select count(1) as long_window_numerator
-  into v_long_window_numerator
-  from randa_wqc_other wqc
-  where case
-          when date_exited_queue_timestamp is not null then
-                date_exited_queue_timestamp >=
-                (v_now_timestamp -
-                 (wqc.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
-                flow.get_difference_of_dates_by_duration(
-                  date_exited_queue_timestamp,
-                  date_entered_queue_timestamp, 4) > 0 and
-                case
-                  when v_cycle_duration_type = 'Days' then
-                      flow.get_difference_of_dates_by_duration(
-                        date_exited_queue_timestamp,
-                        date_entered_queue_timestamp, 1) <=
-                      v_expected_cycle
-                  when v_cycle_duration_type = 'Hours' then
-                      flow.get_difference_of_dates_by_duration(
-                        date_exited_queue_timestamp,
-                        date_entered_queue_timestamp, 2) <=
-                      v_expected_cycle
-                  else
-                      flow.get_difference_of_dates_by_duration(
-                        date_exited_queue_timestamp,
-                        date_entered_queue_timestamp, 3) <=
-                      v_expected_cycle
-                  end
-
-          else
-            case
-              when v_cycle_duration_type = 'Days' then
-                  flow.get_difference_of_dates_by_duration(v_now_timestamp,
-                                                           date_entered_queue_timestamp,
-                                                           1) <=
-                  v_expected_cycle
-              when v_cycle_duration_type = 'Hours' then
-                  flow.get_difference_of_dates_by_duration(v_now_timestamp,
-                                                           date_entered_queue_timestamp,
-                                                           2) <=
-                  v_expected_cycle
-              else
-                  flow.get_difference_of_dates_by_duration(v_now_timestamp,
-                                                           date_entered_queue_timestamp,
-                                                           3) <=
-                  v_expected_cycle
-              end
-    end;
-
-  select count(1) as long_window_denominator
-  into v_long_window_denominator
-  from randa_wqc_other wqc
-  where case
-          when date_exited_queue_timestamp is not null then
-                date_exited_queue_timestamp >=
-                (v_now_timestamp -
-                 (wqc.long_window || ' ' || v_long_window_duration_type)::interval)::timestamp and
-                flow.get_difference_of_dates_by_duration(
-                  date_exited_queue_timestamp,
-                  date_entered_queue_timestamp, 4) > 0
-          else
-            date_exited_queue_timestamp is null
-    end;
 
   return query
     select p_work_queue_type_id::bigint,
