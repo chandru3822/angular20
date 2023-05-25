@@ -148,7 +148,7 @@ const update = (requirement, index) => {
   edits.value.splice(index, 1, false)
 }
 
-const getValue = (requirement) => {
+const getValue = (requirement, isEditing = false) => {
 
   if (requirement.requirementValue) {
     return requirement.requirementValue
@@ -158,7 +158,7 @@ const getValue = (requirement) => {
 
     let value = requirement.dataTypeRequirement?.dataTypeValue
 
-    if (requirement.dataTypeRequirement?.secondaryRequirement) {
+    if (requirement.dataTypeRequirement?.secondaryRequirement && (requirement?.secondaryRequirementValue && !isEditing)) {
       value += ` ${requirement.secondaryRequirementValue}`
     }
 

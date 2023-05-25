@@ -92,14 +92,14 @@
         </template>
       </v-autocomplete>
 
-      <div
+      <span
         v-if="operator?.displayValue"
         class="text-no-wrap px-2"
         :class="{'hover': isEditing}"
         @click="operatorDisplayClicked"
       >
         {{ operator.operatorType }}
-      </div>
+      </span>
 
       <v-combobox
         v-show="showValueInput && !requirement?.hasListValues"
@@ -115,7 +115,7 @@
         flat
         hide-details="true"
         :class="{'field-selector': !isEditorInUse}"
-        @change="afterValueSelected"
+        @change="afterValueSelected(false)"
       >
         <template #append>
           <v-btn
@@ -130,14 +130,29 @@
       <span
         v-if="value?.displayValue"
         class="text-no-wrap px-2"
+        :class="{'hover': isEditing}"
+        @click="valueDisplayClicked"
       >
-        <span class="highlight-background pa-2 rounded">{{ getValue(requirement) }}</span>
+        <span class="highlight-background pa-2 rounded">{{ getValue(requirement, isEditing) }}</span>
+      </span>
+
+      <span
+        v-if="isEditing && requirement?.displayValue && operator?.displayValue && value?.displayValue && !showSecondaryValueInput"
+        class="px-2"
+      >
+        <v-btn
+          icon
+          @click.stop="[reset(), emit('cancelled')]"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
       </span>
 
       <v-autocomplete
         v-show="showValueInput && requirement?.hasListValues"
         ref="listOfValueField"
         v-model="value"
+        :key="UUID()"
         :items="calculatedAvailableValues"
         item-text="name"
         item-value="id"
@@ -267,7 +282,6 @@ const showOperatorInput = computed(() => {
 
 const showValueInput = computed(() => {
   return operator.value !== null &&
-         !value.value?.secondaryRequirement &&
          operator.value?.displayValue &&
          !value.value?.displayValue
 })
@@ -388,7 +402,7 @@ const afterPsEventSelected = () => {
 const afterOperatorSelected = () => {
   operator.value.displayValue = true
 
-  if (requirement?.hasListValues) {
+  if (requirement.value?.hasListValues) {
     focus(listOfValueField)
   } else {
     focus(valueField)
@@ -418,6 +432,8 @@ const afterValueSelected = (userCheckedToAdd) => {
     if (value.value.displayValue) {
       add()
     } else {
+      requirement.value.dataTypeRequirementId = value.value.id
+      requirement.value.dataTypeRequirement = value.value
       value.value.displayValue = true
       focus(secondaryValueField)
     }
@@ -430,6 +446,16 @@ const operatorDisplayClicked = () => {
   operator.value = {...operator.value, displayValue: false}
   value.value = {...value.value, displayValue: false}
   focus(operatorField)
+}
+
+const valueDisplayClicked = () => {
+  value.value = {...value.value, displayValue: false}
+
+  if (requirement.value?.hasListValues) {
+    focus(listOfValueField)
+  } else {
+    focus(valueField)
+  }
 }
 
 const reset = () => {
