@@ -131,7 +131,7 @@
         v-if="value?.displayValue"
         class="text-no-wrap px-2"
       >
-        <span class="highlight-background pa-2 rounded">{{ value.dataTypeValue }}</span>
+        <span class="highlight-background pa-2 rounded">{{ getValue(requirement) }}</span>
       </span>
 
       <v-autocomplete
@@ -219,6 +219,10 @@ const props = defineProps({
     type: Object,
     required: false,
     default: null
+  },
+  getValue: {
+    type: Function,
+    required: true
   }
 })
 
@@ -596,6 +600,9 @@ onMounted(() => {
 
     if (requirement.value.dataTypeRequirementId) {
       value.value = requirement.value.dataTypeRequirement
+    } else if (requirement.value.listOfValueId) {
+      requirement.value.listOfValues = requirement.value.availableListOfValues
+      value.value = requirement.value.availableListOfValues.find(v => v.id === requirement.value.listOfValueId)
     }
 
     if (value.value?.secondaryRequirement) {

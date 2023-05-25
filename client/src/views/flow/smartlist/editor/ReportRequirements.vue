@@ -4,6 +4,7 @@
   <v-col class="flex-shrink-1 flex-grow-0">
     <RequirementEditor
       :available-fields="availableFields"
+      :get-value="getValue"
       @in-progress="(isInProgress) => isAddingInProgress = isInProgress"
       @added="added"
     />
@@ -41,6 +42,7 @@
           v-if="edits[index]"
           :available-fields="availableFields"
           :existing-requirement="requirement"
+          :get-value="getValue"
           @cancelled="edits.splice(index, 1, false)"
           @updated="(updatedRequirement) => update(updatedRequirement, index)"
         />
