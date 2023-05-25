@@ -104,6 +104,17 @@
               class="px-4"
             />
           </v-col>
+
+          <v-col class="flex-shrink-1 flex-grow-0 text-no-wrap">
+            <v-checkbox
+              v-model="report.projectDetails"
+              label="Project Details"
+              hide-details
+              :ripple="false"
+              class="px-4"
+              @click="showDataViewDialog = true"
+            />
+          </v-col>
         </v-row>
 
       </v-card>
@@ -226,6 +237,36 @@
     </v-card-actions>
   </v-card>
 </v-dialog>
+
+<v-dialog
+  v-model="showDataViewDialog"
+  persistent
+  width="450"
+>
+  <v-card>
+    <v-card-title>Confirm</v-card-title>
+
+    <v-card-text>
+      Toggling project details will reset your smartlist. Are you sure you want to continue?
+    </v-card-text>
+
+    <v-card-actions class="justify-end">
+      <v-btn
+        text
+        @click="[report.projectDetails = !report.projectDetails, showDataViewDialog = false]"
+      >
+        Cancel
+      </v-btn>
+
+      <v-btn
+        color="primary"
+        @click="[showDataViewDialog = false, toggleDataView()]"
+      >
+        Save
+      </v-btn>
+    </v-card-actions>
+  </v-card>
+</v-dialog>
 </fragment>
 </template>
 
@@ -271,12 +312,12 @@ const isSystemAdmin = store.getters.isFullAdmin
 
 const tab = ref(null)
 const loadingAvailableFields = ref(false)
-const showRequirementOverflow = ref(false)
 const showSaveDialog = ref(false)
 const showUnsavedDialog = ref(false)
 const unsavedPromiseResolve = ref(null)
 const isEditingReportName = ref(false)
 const reportNameField = ref(null)
+const showDataViewDialog = ref(false)
 
 const report = ref({mainProcessSteps: true, name: ''})
 const fields = ref([])
@@ -526,8 +567,17 @@ const deleteRequirement = (index) => {
 
 const updateRequirement = (requirement, index) => requirements.value.splice(index, 1, {...requirement, updateType: UPDATE_TYPE.UPDATE})
 
-const toggleRequirementOverflow = (required) => {
-  showRequirementOverflow.value = required
+const toggleDataView = async () => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await putRequest(`/smartlist/${report.value.id}/toggleProjectDetails`)
+    refreshReport()
+  } catch (e) {
+    report.value.projectDetails = !report.value.projectDetails
+    snackbar('ERROR', 'Unable to update project details setting')
+  } finally {
+    store.commit(AppMutations.SET_LOADING, false)
+  }
 }
 
 onMounted(async () => {

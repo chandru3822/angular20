@@ -12,9 +12,7 @@ import com.albatross.api.v1.flow.model.smartlist.*;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.albatross.api.v1.flow.services.OrgService;
-import com.albatross.api.v1.flow.services.SmartlistServicev1;
 import com.albatross.api.v1.flow.services.UserPositionService;
-import com.albatross.api.v1.flow.services.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,15 +60,11 @@ public class SmartlistService {
 
   private final ObjectMapper om;
 
-  private final UserService userService;
-
   private final OrgService orgService;
 
   private final UserPositionService userPositionService;
 
   private final ReportEngine reportEngine;
-
-  private final SmartlistServicev1 smartlistServicev1;
 
   private boolean isSmartlistAdmin() {
     User user = securityService.getCurrentUser();
@@ -217,7 +211,7 @@ public class SmartlistService {
     }
 
     updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
-    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
+    sqlCache.updateBySql(SmartlistQuery.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
     return getById(smartlist.getId());
   }
 
@@ -232,7 +226,7 @@ public class SmartlistService {
     smartlist.setProjectDetails(!smartlist.isProjectDetails());
     this.updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
 
-    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.updateBySql(SmartlistQuery.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {

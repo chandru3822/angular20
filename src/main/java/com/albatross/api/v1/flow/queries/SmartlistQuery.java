@@ -687,4 +687,25 @@ public class SmartlistQuery {
       cot.company_id = :companyId and 
       sf.id = any(array[ :ids ]::bigint[])
   """;
+
+  //language=PostgreSQL
+  public final static String clearFieldsAndRequirements = """
+    update flow.smartlist_field_assignment
+    set
+      archived = true,
+      date_modified = now(),
+      modified_by_id = :userId
+    where
+      smartlist_id = :smartlistId and
+      archived is not true;
+
+    update flow.smartlist_requirement
+    set
+      archived = true,
+      date_modified = now(),
+      modified_by_id = :userId
+    where
+      smartlist_id = :smartlistId and
+      archived is not true
+  """;
 }
