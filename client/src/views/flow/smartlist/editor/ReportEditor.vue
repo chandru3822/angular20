@@ -112,7 +112,7 @@
               hide-details
               :ripple="false"
               class="px-4"
-              @click="showDataViewDialog = true"
+              @click="projectDetailsClicked"
             />
           </v-col>
         </v-row>
@@ -579,6 +579,12 @@ const toggleDataView = async () => {
   }
 }
 
+const projectDetailsClicked = () => {
+  if (report.value?.id) {
+    showDataViewDialog.value = true
+  }
+}
+
 onMounted(async () => {
   window.addEventListener('beforeunload', windowLeave)
 
@@ -617,7 +623,6 @@ onBeforeRouteUpdate(async (to, from, next) => {
 
   next()
 })
-
 
 const unsavedPrompt = async () => {
   showUnsavedDialog.value = true
