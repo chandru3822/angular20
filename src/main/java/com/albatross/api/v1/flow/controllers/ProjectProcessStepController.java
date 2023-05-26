@@ -149,6 +149,7 @@ public class ProjectProcessStepController {
       // Consolidate to projectProcessStepService
       // run autotriggers for ancillary fields
       List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(projectProcessStepId);
+
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
             projectProcessStepService.getIdsForAutoTriggerByCfgaIds(

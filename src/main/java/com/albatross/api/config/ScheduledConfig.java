@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -198,6 +199,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     user.setId(cronUser.getId());
     user.setCompanyId(cronUser.getCompanyId());
     user.setHighestCompanyId(cronUser.getCompanyId());
+    user.setUserPositions(new ArrayList<>());
     user.setHighestParentCompanyId(cronUser.getCompanyId());
 
     final UserAccountDetails uad = new UserAccountDetails(user, List.of());

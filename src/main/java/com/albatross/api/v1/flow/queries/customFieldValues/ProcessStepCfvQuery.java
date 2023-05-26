@@ -5,26 +5,44 @@ public class ProcessStepCfvQuery {
 
   //language=PostgreSQL
   public final static String upsertCustomFieldValue = """
-    insert into flow.project_process_step_custom_field_value(project_process_step_id, date_value, custom_field_group_assignment_id, timestamp_value, boolean_value, text_value, rich_text_value, numeric_value, int_value, int_array_value, created_by_id, date_created, modified_by_id, date_modified)
-            select :sourceId, :dateValue::date, (
-              select cfga.id
-              from flow.custom_field_group_assignment cfga
-                inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and (cfg.process_step_id = (select process_step_id from flow.project_process_step where id = :sourceId))
-              where cfga.id = :customFieldGroupAssignmentId
-                and cfga.archived is not true
-              ), :timestampValue::timestamp, :booleanValue, :textValue, :richTextValue, :numericValue, :intValue, :intArrayValue::bigint[], :userId, now(), :userId, now()
-            ON CONFLICT (project_process_step_id, custom_field_group_assignment_id)
-              DO UPDATE
-              set date_value = :dateValue::date,
-                  timestamp_value = :timestampValue::timestamp,
-                  boolean_value = :booleanValue,
-                  text_value = :textValue,
-                  rich_text_value = :richTextValue,
-                  numeric_value = :numericValue,
-                  int_value = :intValue,
-                  int_array_value = :intArrayValue::bigint[],
-                  modified_by_id = :userId,
-                  date_modified = now()
+insert into flow.project_process_step_custom_field_value(project_process_step_id, date_value,
+                                                         custom_field_group_assignment_id, timestamp_value,
+                                                         boolean_value, text_value, rich_text_value, numeric_value,
+                                                         int_value, int_array_value, created_by_id, date_created,
+                                                         modified_by_id, date_modified)
+select :sourceId,
+       :dateValue::date,
+       (select cfga.id
+        from flow.custom_field_group_assignment cfga
+                 inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and
+                                                           (cfg.process_step_id = (select process_step_id
+                                                                                   from flow.project_process_step
+                                                                                   where id = :sourceId))
+        where cfga.id = :customFieldGroupAssignmentId
+          and cfga.archived is not true),
+       :timestampValue::timestamp,
+       :booleanValue,
+       :textValue,
+       :richTextValue,
+       :numericValue,
+       :intValue,
+       :intArrayValue::bigint[],
+       :userId,
+       now(),
+       :userId,
+       now()
+ON CONFLICT (project_process_step_id, custom_field_group_assignment_id)
+    DO UPDATE
+    set date_value      = excluded.date_value,
+        timestamp_value = excluded.timestamp_value,
+        boolean_value   = excluded.boolean_value,
+        text_value      = excluded.text_value,
+        rich_text_value = excluded.rich_text_value,
+        numeric_value   = excluded.numeric_value,
+        int_value       = excluded.int_value,
+        int_array_value = excluded.int_array_value,
+        modified_by_id  = excluded.modified_by_id,
+        date_modified   = now()
         """;
 
   //language=PostgreSQL
