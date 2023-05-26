@@ -1,6 +1,5 @@
-drop function if exists flow.process_org_structure_refresh();
-CREATE OR REPLACE FUNCTION flow.process_org_structure_refresh()
-  returns void AS
+drop procedure if exists flow.process_org_structure_refresh();
+CREATE OR REPLACE procedure flow.process_org_structure_refresh() AS
 $BODY$
 declare
   x         record;
@@ -48,5 +47,4 @@ BEGIN
 
 END
 $BODY$
-  LANGUAGE plpgsql VOLATILE
-                   COST 100;
+  LANGUAGE plpgsql;
