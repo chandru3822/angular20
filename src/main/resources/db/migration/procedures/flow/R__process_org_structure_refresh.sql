@@ -1,4 +1,4 @@
-drop procedure if exists flow.process_org_structure_refresh();
+drop routine if exists flow.process_org_structure_refresh();
 CREATE OR REPLACE procedure flow.process_org_structure_refresh() AS
 $BODY$
 declare
