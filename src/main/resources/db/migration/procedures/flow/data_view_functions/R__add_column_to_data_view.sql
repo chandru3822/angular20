@@ -47,13 +47,13 @@ BEGIN
 --     raise notice 'what is this %',v_sql;
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
-    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+    EXECUTE $$CREATE INDEX if not exists $$||v_view_name||$$_$$||v_field_to_update||$$_idx ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
 
     if v_update_first_value_only is true then
       v_data_type = 'bigint';
       EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
-              v_field_to_update || $$_cfv_id $$ || v_data_type || $$;$$;
-      EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
+              v_field_to_update || $$_cfv_id$$ ||$$ $$|| v_data_type || $$;$$;
+      EXECUTE $$CREATE INDEX if not exists $$||v_view_name||$$_$$||v_field_to_update||$$_1idx ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update ||
               $$_cfv_id);$$;
 
       update flow.data_view_field_config
@@ -78,7 +78,7 @@ BEGIN
 
     EXECUTE $$ALTER TABLE $$ || v_schema_name || $$.$$ || v_view_name || $$ ADD COLUMN if not exists $$ ||
             v_field_to_update || $$ $$ || v_data_type || $$;$$;
-    EXECUTE $$CREATE INDEX  ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
+    EXECUTE $$CREATE INDEX if not exists $$||v_view_name||$$_$$||v_field_to_update||$$_2idx ON $$ || v_schema_name || $$.$$ || v_view_name || $$($$ || v_field_to_update || $$);$$;
     insert into flow.data_view_maintenance(data_view_field_config_id,date_created)
     values(p_data_view_field_config_id,now()) on conflict  do nothing;
   end if;

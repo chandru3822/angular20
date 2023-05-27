@@ -87,7 +87,7 @@ BEGIN
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$uc.$$ || x.field_to_update)::character varying);
           v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, c.$$
-                    || z.column_name || $$::text, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
+                    || z.column_name || $$::text,0::bigint, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -158,7 +158,7 @@ BEGIN
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$up.$$ || x.field_to_update)::character varying);
           v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, p.$$ || z.column_name ||
-                  $$::text, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
+                  $$::text,0::bigint, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
