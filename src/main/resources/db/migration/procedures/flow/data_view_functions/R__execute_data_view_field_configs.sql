@@ -7,7 +7,8 @@ drop function if exists flow.execute_data_view_field_configs(p_contains_children
                                                              p_update_first_value_only boolean,
                                                              p_update_first_value_only_id varchar,
                                                              p_is_last_row boolean,
-                                                             p_data_type_id bigint);
+                                                             p_data_type_id bigint,
+                                                             p_project_id bigint);
 CREATE OR REPLACE FUNCTION flow.execute_data_view_field_configs(p_contains_children boolean,
                                                                 p_value text,
                                                                 p_dvfc_id bigint,
@@ -17,7 +18,8 @@ CREATE OR REPLACE FUNCTION flow.execute_data_view_field_configs(p_contains_child
                                                                 p_update_first_value_only boolean,
                                                                 p_update_first_value_only_id varchar,
                                                                 p_is_last_row boolean,
-                                                                p_data_type_id bigint)
+                                                                p_data_type_id bigint,
+                                                                p_project_id bigint default 0)
   RETURNS text
 AS
 $BODY$
@@ -50,12 +52,11 @@ BEGIN
              ubt.return_data_type_id,
              flow.get_prepared_value(ubt.return_data_type_id,
                                      flow.get_unique_behavior_value(ubt.unique_behavior_code,
-                                                                    p_value::text, p_id,v_object_code))  as value
+                                                                    p_value::text, p_project_id,p_id,v_object_code))  as value
       from flow.data_view_child_field_config dvcvc
              inner join flow.unique_behavior_type ubt on dvcvc.unique_behavior_type_id = ubt.id
       where data_view_field_config_id = p_dvfc_id
       loop
-
         select flow.prepare_update_data_view_details(p_id, p_sql, p_field_to_update,
                                                      p_value, v_secondary_records.field_to_update::text,
                                                      v_secondary_records.value::text,
