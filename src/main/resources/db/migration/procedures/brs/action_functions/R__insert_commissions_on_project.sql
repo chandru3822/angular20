@@ -96,7 +96,7 @@ BEGIN
         commission_plan_status = v_commission_status
     where project_id = p_project_id;
 
-  else
+  elsif p_project_id is not null and v_user_id is not null then
     select cf.id
     into v_company_feature_id
     from flow.company_feature cf
@@ -119,7 +119,7 @@ BEGIN
         override_plan = v_override_plan,
         override_plan_status = v_override_status
     where project_id = p_project_id;
-  else
+  elsif p_project_id is not null and v_user_id is not null then
 
     select cf.id
     into v_company_feature_id
