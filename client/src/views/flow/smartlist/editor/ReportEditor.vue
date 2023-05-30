@@ -389,7 +389,7 @@ const canEdit = computed(() => {
 })
 
 const canShare = computed(() => {
-  return !!(canAdd && (isOwner.value || isSmartlistAdmin || isSystemAdmin))
+  return !!(canAdd.value && (isOwner.value || isSmartlistAdmin || isSystemAdmin))
 })
 
 const canDelete = computed(() => {

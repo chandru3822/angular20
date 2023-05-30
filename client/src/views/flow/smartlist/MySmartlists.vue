@@ -36,13 +36,15 @@
             <td>{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
             <td class="td-action">
-              <smartlist-copy v-if="userCanAdd"
+              <smartlist-copy
+                v-if="canAdd"
                 :smartlist="smartlist"
                 @copied="(newSmartlist) => smartlists = [newSmartlist, ...smartlists]"
               />
             </td>
             <td class="td-action">
               <smartlist-share
+                v-if="canAdd"
                 :smartlist="smartlist"
                 @updated-public="(isPublic) => smartlist.public = isPublic"
                 @updated-owner="removeFromList(smartlist)"
@@ -52,7 +54,8 @@
               <smartlist-export :smartlist="smartlist" />
             </td>
             <td class="td-action">
-              <smartlist-delete v-if="userCanAdd"
+              <smartlist-delete
+                v-if="canAdd"
                 :smartlist-id="smartlist.id"
                 @deleted="smartlists = smartlists.filter(s => s.id !== smartlist.id)"
               />
@@ -65,7 +68,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue'
+import { ref, onMounted, getCurrentInstance, computed } from 'vue'
 import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
@@ -94,9 +97,14 @@ const isLoading = ref(false)
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 
-let smartlists = ref([])
+const smartlists = ref([])
+
+const canAdd = computed(() => {
+  return hasAddAccess || hasManageAccess
+})
 
 onMounted(async () => await getSmartlists())
 
