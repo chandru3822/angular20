@@ -45,6 +45,7 @@
             class="px-2 pt-0"
           >
             <v-checkbox
+              v-if="canMakePublic"
               v-model="isPublic"
               label="Make Public"
               :hide-details="true"
@@ -221,18 +222,30 @@ const emit = defineEmits([
   'updated-owner'
 ])
 
-//a list of user positions and orgs the smartlist can be shared with
-let sharables = ref([])
+const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = store.getters.isFullAdmin
 
-let accessLevels = ref([])
+//a list of user positions and orgs the smartlist can be shared with
+const sharables = ref([])
+
+const accessLevels = ref([])
 
 //a list of user positions and orgs the smartlist is CURRENTLY shared with
-let currentAccess = ref([])
+const currentAccess = ref([])
 
-let newAccess = ref({accessControlId: 1})
-let isPublic = ref(props.smartlist.public)
-let openOwnershipDialog = ref(false)
-let newOwner = ref({})
+const newAccess = ref({accessControlId: 1})
+const isPublic = ref(props.smartlist.public)
+const openOwnershipDialog = ref(false)
+const newOwner = ref({})
+
+const isOwner = computed(() => {
+  return props.smartlist?.ownerId === store.state.user.details.id
+})
+
+const canMakePublic = computed(() => {
+  return (hasManageAccess && isOwner) || isSmartlistAdmin || isSystemAdmin
+})
 
 const filteredSharables = computed(() => {
   if (sharables.value.length === 0) {
