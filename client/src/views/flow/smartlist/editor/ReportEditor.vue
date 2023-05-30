@@ -36,6 +36,8 @@
                 @click="editNameClicked()"
               >
                 {{ report.name }}
+
+                <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               </span>
             </div>
           </v-toolbar-title>
@@ -694,6 +696,11 @@ const windowLeave = async (event) => {
     &:hover {
       cursor: pointer;
     }
+  }
+
+  .owner-display {
+    font-size: 12px;
+    font-weight: 400;
   }
 
   :deep(.borderless fieldset) {
