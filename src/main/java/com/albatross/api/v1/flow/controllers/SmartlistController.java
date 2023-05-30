@@ -22,26 +22,26 @@ public class SmartlistController {
 
   private final SmartlistService smartlistService;
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> getSmartlistById(@PathVariable Long smartlistId, @RequestParam(required = false) boolean includeAccessControl) {
     return new ResponseEntity<>(smartlistService.getById(smartlistId, includeAccessControl), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> addSmartlist(@RequestBody Smartlist smartlist) {
     return new ResponseEntity<>(smartlistService.addSmartlist(smartlist), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateSmartlist(@RequestBody ReportDTO report) {
     smartlistService.updateSmartlist(report.getSmartlist(), report.getFields(), report.getRequirements());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_DELETE', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @DeleteMapping(value = "/{smartlistId}")
   public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
     smartlistService.delete(smartlistId);
@@ -126,13 +126,13 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.getRequirements(smartlistId, true), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PostMapping(value = "/{smartlistId}/requirement", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistRequirement> addSmartlistRequirement(@PathVariable Long smartlistId, @RequestBody SmartlistRequirement requirement) {
     return new ResponseEntity<>(smartlistService.addRequirement(smartlistId, requirement), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}/requirement/{requirementId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistRequirement> updateRequirementOfSmartlist(@RequestBody SmartlistRequirement requirement) {
     return new ResponseEntity<>(smartlistService.updateRequirement(requirement), HttpStatus.OK);
@@ -155,14 +155,14 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}/toggleProjectDetails")
   public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
     smartlistService.updateProjectDetails(smartlistId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}/toggleObjectType", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
     return new ResponseEntity<>(smartlistService.updateObjectType(smartlist), HttpStatus.OK);
