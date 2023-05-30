@@ -7,6 +7,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
@@ -70,6 +71,7 @@ public class ProjectProcessStepEventService {
   private final AuroraProxy auroraService;
 
   private final MarketoService marketoService;
+  private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
 
   private final ProjectService projectService;
@@ -606,7 +608,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);
