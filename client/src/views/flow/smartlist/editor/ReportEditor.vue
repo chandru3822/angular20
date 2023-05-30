@@ -313,8 +313,6 @@ const store = vueInstance.$store
 const hasViewAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
 const hasViewAllAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
 const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const hasEditAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
-const hasDeleteAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
 const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 const isSystemAdmin = store.getters.isFullAdmin
@@ -383,7 +381,7 @@ const canAdd = computed(() => {
 })
 
 const canEdit = computed(() => {
-  if (!hasEditAccess && !isSmartlistAdmin && !isSystemAdmin) {
+  if (!hasAddAccess && !isSmartlistAdmin && !isSystemAdmin) {
     return false
   }
 
