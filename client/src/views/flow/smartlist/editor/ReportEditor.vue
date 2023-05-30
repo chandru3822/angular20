@@ -31,8 +31,9 @@
               />
               <span
                 v-show="!isEditingReportName"
-                class="report-name ml-3"
-                @click="[isEditingReportName = true, nextTick(reportNameField.focus)]"
+                class="ml-3"
+                :class="{'report-name': canEdit}"
+                @click="editNameClicked()"
               >
                 {{ report.name }}
               </span>
@@ -85,6 +86,7 @@
           <v-col cols="4">
             <v-autocomplete
               v-model="report.companyObjectTypeId"
+              :disabled="!canEdit"
               :items="filteredReportTypes"
               item-value="companyObjectTypeId"
               item-text="objectType"
@@ -98,6 +100,7 @@
             <v-checkbox
               v-if="[4,6].includes(report?.objectTypeId)"
               v-model="report.mainProcessSteps"
+              :disabled="!canEdit"
               label="Primary Steps Only"
               hide-details
               :ripple="false"
@@ -108,6 +111,7 @@
           <v-col class="flex-shrink-1 flex-grow-0 text-no-wrap">
             <v-checkbox
               v-model="report.projectDetails"
+              :disabled="!canEdit"
               label="Project Details"
               hide-details
               :ripple="false"
@@ -144,6 +148,7 @@
                 :available-fields="availableFields"
                 :loading="loadingAvailableFields"
                 :update-types="UPDATE_TYPE"
+                :can-edit="canEdit"
                 @added="addField"
                 @deleted="deleteField"
                 @reordered="reorderFields"
@@ -156,6 +161,7 @@
                 :available-fields="availableFields"
                 :loading="loadingAvailableFields"
                 :update-types="UPDATE_TYPE"
+                :can-edit="canEdit"
                 @added="addRequirement"
                 @deleted="deleteRequirement"
                 @updated="updateRequirement"
@@ -304,9 +310,12 @@ const reportStore = useReportStore()
 reportStore.$subscribe((mut, state) => localStorage.setItem('report', JSON.stringify(state)))
 
 const store = vueInstance.$store
+const hasViewAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW')
+const hasViewAllAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL')
 const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 const hasEditAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
 const hasDeleteAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')
+const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
 const isSystemAdmin = store.getters.isFullAdmin
 
@@ -358,11 +367,15 @@ const hasUnsavedChanges = computed(() => {
 })
 
 const canView = computed(() => {
-  if (!hasAddAccess && !isSmartlistAdmin && !isSystemAdmin) {
+  if (!hasViewAccess && !hasViewAllAccess && !hasManageAccess && !isSmartlistAdmin && !isSystemAdmin) {
     return false
   }
 
   return Smartlist.userCanView(report.value)
+})
+
+const canAdd = computed(() => {
+  return !!(hasAddAccess || hasManageAccess || isSmartlistAdmin || isSystemAdmin);
 })
 
 const canEdit = computed(() => {
@@ -393,6 +406,12 @@ watch(() => vueInstance.$route.params?.reportId, async () => {
 
 const refreshReport = async (forceUpdate = false) => {
   await getReport()
+
+  if (!Smartlist.userCanView(report.value)) {
+    router.push('/')
+    return
+  }
+
   getFields()
   getRequirements()
   getAvailableFields(forceUpdate)
@@ -579,6 +598,13 @@ const toggleDataView = async () => {
   }
 }
 
+const editNameClicked = () => {
+  if (canEdit.value) {
+    isEditingReportName.value = true
+    nextTick(reportNameField.value.focus)
+  }
+}
+
 const projectDetailsClicked = () => {
   if (report.value?.id) {
     showDataViewDialog.value = true
@@ -593,6 +619,11 @@ onMounted(async () => {
   if (vueInstance.$route.params?.reportId) {
     refreshReport()
   } else {
+    if (!canAdd) {
+      router.push('/')
+      return
+    }
+
     isEditingReportName.value = true
     nextTick(reportNameField.value.focus)
   }

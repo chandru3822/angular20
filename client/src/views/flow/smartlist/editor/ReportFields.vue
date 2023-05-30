@@ -1,7 +1,10 @@
 <template>
 <fragment>
 <v-row class="no-gutters fill-height flex-column">
-  <v-col class="flex-shrink-1 flex-grow-0">
+  <v-col
+    v-if="canEdit"
+    class="flex-shrink-1 flex-grow-0"
+  >
     <v-autocomplete
       v-show="!showPsEventField"
       v-model="newValue"
@@ -34,6 +37,7 @@
   <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
     <draggable
       :list="fields"
+      :draggable="false"
       handle=".handle"
       @change="reorder"
     >
@@ -52,7 +56,7 @@
               {{ field.name }}
             </v-list-item-content>
 
-            <v-list-item-action>
+            <v-list-item-action v-if="canEdit">
               <v-btn
                 icon
                 @click.stop="remove(index)"
@@ -66,7 +70,10 @@
     </draggable>
   </v-col>
 
-  <v-col class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4">
+  <v-col
+    v-if="canEdit"
+    class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4"
+  >
     <v-btn
       text
       @click="showDeleteDialog = true"
@@ -131,6 +138,10 @@ const props = defineProps({
   },
   updateTypes: {
     type: Object,
+    required: true
+  },
+  canEdit: {
+    type: Boolean,
     required: true
   }
 })

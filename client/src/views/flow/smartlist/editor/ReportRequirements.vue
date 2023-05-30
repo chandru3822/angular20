@@ -3,6 +3,7 @@
 <v-row class="no-gutters fill-height flex-column">
   <v-col class="flex-shrink-1 flex-grow-0">
     <RequirementEditor
+      v-if="canEdit"
       :available-fields="availableFields"
       :get-value="getValue"
       @in-progress="(isInProgress) => isAddingInProgress = isInProgress"
@@ -16,7 +17,8 @@
           v-if="requirement.updateType !== updateTypes.DELETE && !edits[index]"
           :key="UUID()"
           class="ma-4"
-          @click="edits.splice(index, 1, true)"
+          :disabled="!canEdit"
+          @click="edit(index)"
         >
           <v-list-item>
             <v-list-item-content>
@@ -27,7 +29,7 @@
               </v-row>
             </v-list-item-content>
 
-            <v-list-item-action>
+            <v-list-item-action v-if="canEdit">
               <v-btn
                 icon
                 @click.stop="remove(index)"
@@ -50,7 +52,10 @@
     </v-list>
   </v-col>
 
-  <v-col class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4">
+  <v-col
+    v-if="canEdit"
+    class="btn-remove-container flex-shrink-1 flex-grow-0 text-right py-4 pr-4"
+  >
     <v-btn
       text
       color="primary"
@@ -118,6 +123,10 @@ const props = defineProps({
   updateTypes: {
     type: Object,
     required: true
+  },
+  canEdit: {
+    type: Boolean,
+    required: true
   }
 })
 
@@ -146,6 +155,12 @@ const remove = (index) => {
 const update = (requirement, index) => {
   emit('updated', requirement, index)
   edits.value.splice(index, 1, false)
+}
+
+const edit = (index) => {
+  if (props.canEdit) {
+    edits.value.splice(index, 1, true)
+  }
 }
 
 const getValue = (requirement, isEditing = false) => {
@@ -208,5 +223,10 @@ const added = (newRequirement) => {
   button:hover::before {
     opacity: 0 !important;
   }
+}
+
+//don't change opacity when the requirement cards are disabled
+:deep(.v-card--disabled > div) {
+  opacity: 1 !important;
 }
 </style>
