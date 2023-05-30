@@ -57,7 +57,7 @@
             <SmartlistShare
               :smartlist="report"
               :show-text="true"
-              :disabled="!canEdit"
+              :disabled="!canShare"
               @updated-public="(isPublic) => report.public = isPublic"
               @updated-owner="updateOwner"
             />
@@ -366,6 +366,10 @@ const hasUnsavedChanges = computed(() => {
          !isEqual(requirements.value, sourceRequirements.value)
 })
 
+const isOwner = computed(() => {
+  return report.value?.ownerId === store.state.user.details.id
+})
+
 const canView = computed(() => {
   if (!hasViewAccess && !hasViewAllAccess && !hasManageAccess && !isSmartlistAdmin && !isSystemAdmin) {
     return false
@@ -386,12 +390,16 @@ const canEdit = computed(() => {
   return Smartlist.userCanEdit(report.value)
 })
 
+const canShare = computed(() => {
+  return !!(canAdd && (isOwner.value || isSmartlistAdmin || isSystemAdmin))
+})
+
 const canDelete = computed(() => {
   if (isSmartlistAdmin || isSystemAdmin) {
     return true
   }
 
-  if (report.value?.ownerId === store.state.user.details.id && hasAddAccess) {
+  if (isOwner.value && hasAddAccess) {
     return true
   }
 

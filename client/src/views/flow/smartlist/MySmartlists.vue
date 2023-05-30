@@ -31,7 +31,7 @@
         </template>
 
         <template #item="{item: smartlist}">
-          <tr class="clickable" @click="editSmartlist(smartlist)">
+          <tr class="clickable" @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})">
             <td class="td-name">{{ smartlist.name }}</td>
             <td>{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
@@ -111,12 +111,6 @@ const getSmartlists = async () => {
     logError(e)
   } finally {
     isLoading.value = false
-  }
-}
-
-let editSmartlist = (smartlist) => {
-  if(userCanEdit) {
-    router.push({name: 'reportEditor', params: {reportId: smartlist.id}})
   }
 }
 
