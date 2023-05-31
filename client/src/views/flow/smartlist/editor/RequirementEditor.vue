@@ -14,8 +14,8 @@
         v-show="showFieldInput"
         ref="requirementField"
         v-model="requirement"
-        :items="availableFields"
-        item-text="name"
+        :items="calculatedAvailableFields"
+        item-text="calculatedName"
         return-object
         placeholder="Add Filter"
         solo
@@ -315,6 +315,37 @@ const calculatedAvailableValues = computed(() => {
   return newValues
 })
 
+const calculatedAvailableFields = computed(() => {
+  return props.availableFields.map(f => {
+      let suffix = ''
+
+      if (f?.customFieldGroupAssignmentId) {
+        switch (f.objectTypeId) {
+          case 1:
+            suffix = `- Project`
+            break
+          case 2:
+            suffix = `- Contact`
+            break
+          case 3:
+            suffix = `- User`
+            break
+          case 4:
+            suffix = `- ${f.processStepName}`
+            break
+          case 5:
+            suffix = `- Org`
+            break
+          case 6:
+            suffix = `- ${f.eventName} - ${f.processStepName}`
+        }
+      }
+
+      f.calculatedName = `${f.name} ${suffix}`
+      return f
+    })
+})
+
 const calculatedAvailablePsEvents = computed(() => {
 
   if (requirement.value === null) {
@@ -322,7 +353,7 @@ const calculatedAvailablePsEvents = computed(() => {
   }
 
   let items = []
-  props.availableFields.filter(f => {
+  calculatedAvailableFields.value.filter(f => {
     if (f.objectTypeId === requirement.value.objectTypeId && !f.smartlistFieldId) {
       let notIncluded
 
