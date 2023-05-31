@@ -8,7 +8,7 @@
     <v-autocomplete
       v-show="!showPsEventField"
       v-model="newValue"
-      :items="availableFields"
+      :items="calculatedAvailableFields"
       item-text="name"
       return-object
       placeholder="Add Column"
@@ -163,6 +163,18 @@ const showDeleteDialog = ref(false)
 //
 //   return name
 // }
+
+const calculatedAvailableFields = computed(() => {
+  return props.availableFields.filter(f => {
+    if (f?.smartlistFieldId) {
+      return props.fields.findIndex(field => field?.smartlistFieldId === f.smartlistFieldId) === -1
+    } else if (f?.customFieldGroupAssignmentId) {
+      return props.fields.findIndex(field => field?.customFieldGroupAssignmentId === f.customFieldGroupAssignmentId) === -1
+    }
+    //catch-all removing field
+    return false
+  })
+})
 
 const calculatedAvailablePsEvents = computed(() => {
 
