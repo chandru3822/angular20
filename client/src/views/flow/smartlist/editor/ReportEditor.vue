@@ -415,7 +415,7 @@ watch(() => vueInstance.$route.params?.reportId, async () => {
 const refreshReport = async (forceUpdate = false) => {
   await getReport()
 
-  if (!Smartlist.userCanView(report.value)) {
+  if (!Smartlist.userCanView(report.value) && !report.value?.public) {
     router.push('/')
     return
   }

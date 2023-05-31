@@ -259,7 +259,7 @@ const filteredSharables = computed(() => {
   let filtered = []
 
   sharables.value.forEach(s => {
-    if (s.isUser && !currentAccess.value.find(a => a.userPositionId === s.userPositionId)) {
+    if (s.isUser && s.userId !== props.smartlist.ownerId && !currentAccess.value.find(a => a.userPositionId === s.userPositionId)) {
       filtered.push(s)
     } else if (s.isOrg && !currentAccess.value.find(a => a.orgId === s.orgId)) {
       filtered.push(s)
