@@ -1,6 +1,7 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.exception.ApiException;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Contact;
@@ -42,6 +43,7 @@ public class CommunicationService {
   private final UserService userService;
   private final MailService mailService;
   private final SMSService smsService;
+  private final SecurityService securityService;
   private final ProjectService projectService;
 
   @Async
@@ -270,6 +272,32 @@ public class CommunicationService {
     }
   }
 
+  @Async
+  public void queueTextMessagesForUser (
+    String messageGroupId,
+    Long recipientUserId,
+    String toPhone,
+    String template,
+    List<URI> mediaURLs,
+    Long sentByUserId,
+    Long sentBySmsTeamId) {
+    try {
+      smsService.queueMessage(
+        messageGroupId,
+        recipientUserId,
+        null,
+        null,
+        toPhone,
+        template,
+        mediaURLs,
+        RecipientType.PROJECT,
+        sentByUserId,
+        sentBySmsTeamId);
+    } catch (Exception ex) {
+      log.error("MESSAGING: Error queueing SMS ", ex);
+    }
+  }
+
   public String renderTemplate(String templateContent, Map<String, Object> contextMap)
       throws Exception {
     try (var output = new ByteArrayOutputStream()) {
@@ -347,6 +375,56 @@ public class CommunicationService {
         throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
       }
+  }
+
+  public Map<String, Object> sendTextsForUser(User recipientUser, String message, List<URI> mediaURLs, Long smsTeamId) {
+    User currentUser = securityService.getCurrentUser();
+    String groupId = UUID.randomUUID().toString();
+    String phoneNumber = recipientUser.getPhoneNumber();
+    try {
+      String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+
+      Map<String, Object> contextMap =
+        Map.of(
+          "user",
+          recipientUser);
+
+      String template =
+        renderTemplate(
+          message == null ? "" : message, contextMap);
+
+      queueTextMessagesForUser(
+        groupId,
+        recipientUser.getId(),
+        safePhone,
+        template,
+        mediaURLs,
+        currentUser.getId(),
+        smsTeamId);
+
+      return Map.of("messageGroup", groupId);
+    } catch (NumberParseException ex) {
+      log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+    } catch (InvalidReferenceException ire) {
+      Pattern invalidParameter = Pattern.compile("([$]\\S+)");
+      Matcher m = invalidParameter.matcher(ire.getMessage());
+      if (m.find()) {
+        String invalidParamName = m.group(1);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Invalid parameter " + invalidParamName + " ",
+          new Exception());
+      } else {
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
+      }
+    } catch (Exception e) {
+      log.error("MESSAGING: Error queueing SMS message ", e);
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
+    }
   }
 
   private CommunicationController.ProjectDetails getProjectTemplateFields(Long projectId, String projectTimeZone) {

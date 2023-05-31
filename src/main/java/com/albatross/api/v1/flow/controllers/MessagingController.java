@@ -1,9 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.MessageTemplate;
-import com.albatross.api.v1.flow.model.ProjectMessageOwner;
-import com.albatross.api.v1.flow.model.ProjectMessageProperties;
-import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.model.smsTeam.SmsTeam;
 import com.albatross.api.v1.flow.services.MessageTemplateService;
 import com.albatross.api.v1.flow.services.MessagingService;
@@ -31,6 +29,16 @@ public class MessagingController {
     return messageTemplateService.getTemplates();
   }
 
+  @GetMapping(value = "/availableProjects")
+  public List<Project> getAvailableProjects(@RequestParam String query) {
+    return messageTemplateService.getAvailableProjects(query);
+  }
+
+  @GetMapping(value = "/availableUsers")
+  public List<MessageRecipient> getAvailableUsers() {
+    return messageTemplateService.getAvailableUsers();
+  }
+
   @GetMapping(value = "/templatesWithTeams")
   public List<MessageTemplate> getTemplatesWithTeamInfo() {
     return messageTemplateService.getTemplatesWithTeamInfo();
@@ -51,68 +59,120 @@ public class MessagingController {
     messageTemplateService.deleteTemplate(templateId);
   }
 
-  @PostMapping(value = "/addTeam/{projectId}")
-  public void addTeam(
+  @PostMapping(value = "/addTeam/project/{projectId}")
+  public void addProjectTeam(
       @PathVariable Long projectId,
       @RequestBody SmsTeam request,
       @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.addTeam(
+    messagingService.addTeamForProject(
         projectId, request.getId(), request.getUsers(), false, details.getTrueUserId());
   }
 
-  @PutMapping(value = "/removeTeam/{projectId}/{smsTeamId}")
-  public void removeTeam(
+  @PostMapping(value = "/addTeam/user/{userId}")
+  public void addUserTeam(
+    @PathVariable Long userId,
+    @RequestBody SmsTeam request,
+    @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.addTeamForUser(
+      userId, request.getId(), request.getUsers(), false, details.getTrueUserId());
+  }
+
+  @PutMapping(value = "/removeTeam/project/{projectId}/{smsTeamId}")
+  public void removeProjectTeam(
       @PathVariable Long projectId,
       @PathVariable Long smsTeamId,
       @AuthenticationPrincipal UserAccountDetails details) {
 
-    messagingService.removeTeam(projectId, smsTeamId, details.getTrueUserId());
+    messagingService.removeProjectTeam(projectId, smsTeamId, details.getTrueUserId());
   }
 
-  @PostMapping(value = "/projects")
-  public Page<ProjectMessageProperties> getProjects(
+  @PutMapping(value = "/removeTeam/user/{userId}/{smsTeamId}")
+  public void removeUserTeam(
+    @PathVariable Long userId,
+    @PathVariable Long smsTeamId,
+    @AuthenticationPrincipal UserAccountDetails details) {
+
+    messagingService.removeUserTeam(userId, smsTeamId, details.getTrueUserId());
+  }
+
+  @PostMapping(value = "/conversations")
+  public Page<ConversationMessageProperties> getConversations(
       @RequestParam(required = false, defaultValue = "") String query,
       @RequestBody FilterData filterData,
       Pageable pageable) {
 
-    return messagingService.getProjects(
+    return messagingService.getConversations(
         query,
         filterData.getOwnerUserIds(),
         filterData.getSmsTeamIds(),
         filterData.getNotifProjectIds(),
+        filterData.getNotifUserIds(),
+        filterData.getShowProjects(),
+        filterData.getShowUsers(),
         filterData.getShowInbox(),
         pageable);
   }
 
-  @GetMapping(value = "/projects/{projectId}")
-  public ProjectMessageProperties getProject(
+  @GetMapping(value = "/project/{projectId}")
+  public ConversationMessageProperties getProject(
       @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
     return messagingService.getProject(projectId, details.getTrueUserId());
   }
 
-  @GetMapping(value = "/history/{projectId}")
-  public String getHistory(@PathVariable Long projectId) {
-    return messagingService.getHistory(projectId);
+  @GetMapping(value = "/user/{userId}")
+  public ConversationMessageProperties getUser(
+    @PathVariable Long userId, @AuthenticationPrincipal UserAccountDetails details) {
+    return messagingService.getUser(userId, details.getTrueUserId());
   }
 
-  @PutMapping(value = "/setLastSent/{projectId}")
-  public void setLastSent(
+  @GetMapping(value = "/history/project/{projectId}")
+  public String getProjectHistory(@PathVariable Long projectId) {
+    return messagingService.getProjectHistory(projectId);
+  }
+
+  @GetMapping(value = "/history/user/{userId}")
+  public String getHistory(@PathVariable Long userId) {
+    return messagingService.getUserHistory(userId);
+  }
+
+  @PutMapping(value = "/setLastSent/project/{projectId}")
+  public void setLastSentForProject(
       @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.setLastSent(projectId, details.getTrueUserId());
+    messagingService.setLastSentForProject(projectId, details.getTrueUserId());
   }
 
-  @PutMapping(value = "/removeOwner/{projectId}")
-  public void removeOwner(
+  @PutMapping(value = "/setLastSent/user/{userId}")
+  public void setLastSentForUser(
+    @PathVariable Long userId, @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.setLastSentForUser(userId, details.getTrueUserId());
+  }
+
+  @PutMapping(value = "/removeOwner/project/{projectId}")
+  public void removeProjectOwner(
       @PathVariable Long projectId,
       @RequestBody ProjectMessageOwner owner,
       @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.removeOwner(projectId, owner, details.getTrueUserId());
+    messagingService.removeProjectOwner(projectId, owner, details.getTrueUserId());
   }
 
-  @PostMapping(value = "/createNotification/{projectId}")
-  public void createNotification(
+  @PutMapping(value = "/removeOwner/user/{userId}")
+  public void removeProjectOwner(
+    @PathVariable Long userId,
+    @RequestBody UserMessageOwner owner,
+    @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.removeUserOwner(userId, owner, details.getTrueUserId());
+  }
+
+  @PostMapping(value = "/createNotification/project/{projectId}")
+  public void createProjectNotification(
       @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
-    messagingService.addSmsOwnershipNotification(projectId, details.getTrueUserId());
+    messagingService.addSmsProjectOwnershipNotification(projectId, details.getTrueUserId());
+  }
+
+  @PostMapping(value = "/createNotification/user/{userId}")
+  public void createUserNotification(
+    @PathVariable Long userId, @AuthenticationPrincipal UserAccountDetails details) {
+    messagingService.addSmsUserOwnershipNotification(userId, details.getTrueUserId());
   }
 
   @Data
@@ -120,6 +180,15 @@ public class MessagingController {
     private List<Long> ownerUserIds;
     private List<Long> smsTeamIds;
     private List<Long> notifProjectIds;
+    private List<Long> notifUserIds;
+    private Boolean showProjects;
+    private Boolean showUsers;
     private Boolean showInbox;
+  }
+
+  @Data
+  public static class MessageRecipient {
+    private String name;
+    private Long userId;
   }
 }

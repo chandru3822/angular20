@@ -35,9 +35,14 @@ public class SmsQueueController {
     return smsService.getOwners();
   }
 
-  @GetMapping(value = "/messages/{projectId}")
-  public List<SMSQueueItem> getMessages(@PathVariable Long projectId) {
+  @GetMapping(value = "/messages/project/{projectId}")
+  public List<SMSQueueItem> getProjectMessages(@PathVariable Long projectId) {
     return smsService.getSmsByProjectId(projectId);
+  }
+
+  @GetMapping(value = "/messages/user/{userId}")
+  public List<SMSQueueItem> getUserMessages(@PathVariable Long userId) {
+    return smsService.getSmsByUserId(userId);
   }
 
   @PostMapping(value = "/updateSms")

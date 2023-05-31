@@ -109,6 +109,12 @@ public class SMSService {
       SmsServiceQuery.fetchByProjectId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
+  public List<SMSQueueItem> getSmsByUserId(Long userId) {
+    Map<String, Object> params = Map.of("userId", userId);
+    return sqlCache.queryBySql(
+      SmsServiceQuery.fetchByUserId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+  }
+
   public SMSQueueItem queueMessage(
     String messageGroup,
     Long userId,
@@ -369,7 +375,8 @@ public class SMSService {
 
     PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
     String twilioMessageServiceSID = getMessageServiceSID(recipientType);
-    String twilioPhoneNumber = properties.getTwilioPhoneNumber();
+    String twilioPhoneNumber = recipientType == RecipientType.PROJECT ?
+      properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
 
     MessageCreator creator = null;
     // prefer Message Service SID over phone number if available

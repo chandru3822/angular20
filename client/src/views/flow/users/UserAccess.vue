@@ -1,5 +1,12 @@
 <template>
   <v-container>
+    <!--    modal for leaving with unsaved fields -->
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false"
+                         @confirm="[navigationOverride = true, goToPath(toPath)]">
+      You have unsaved fields. Are you sure you want to continue without saving?
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Don't Save</template>
+    </confirmation-dialog>
     <v-row class="text-left">
       <v-col>
         <v-toolbar flat color="transparent" class="app-toolbar">
@@ -17,7 +24,8 @@
                        :key="accessControlKey"
                        :show-secondary="true"
                        :user-can-edit="userCanEdit"
-                       :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"></AccessControl>
+                       :companyFeatures="userCompanyFeatures || []" :callback="this.companyFeatureCallback"
+                       :dirtyFieldsCallback="this.setFieldsDirty"></AccessControl>
       </v-col>
     </v-row>
     <v-row class="text-left">
@@ -131,13 +139,29 @@
         ],
         accessControlKey: 0,
         showDeleteDialog: false,
-        itemToDelete: null
+        itemToDelete: null,
+        navigationOverride: false,
+        toPath: null,
+        dirtyFields: false,
+        unsavedFieldsModal: false
       }
     },
     created () {
       this.getUserCompanyFeatures()
       this.getAllOrgCalendars()
       this.getUserOrgCalendars()
+    },
+    beforeRouteLeave(to, from, next) {
+      // called when the route that renders this component is about to
+      // be navigated away from.
+      // has access to `this` component instance.
+      if (this.navigationOverride || !this.dirtyFields) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
     },
     methods: {
       async getUserCompanyFeatures() {
@@ -225,6 +249,7 @@
           this.userCompanyFeatures = data
           this.accessControlKey++
           handleHidingGlobalLoader(this, status)
+          this.dirtyFields = false
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving User Access Details')
@@ -239,10 +264,20 @@
       filterUserOrgAccess () {
         return this.userOrgCalendars.filter(uoc => { return !uoc.archived})
       },
-
       closeDeleteDialog() {
         this.showDeleteDialog = false
         this.itemToDelete = null
+      },
+      setFieldsDirty() {
+        this.dirtyFields = true;
+      },
+      goToPath(path, targetBlank) {
+        if (targetBlank) {
+          let routerData = this.$router.resolve({path})
+          window.open(routerData.href, '_blank')
+        } else {
+          this.$router.push(path)
+        }
       }
     }
   }

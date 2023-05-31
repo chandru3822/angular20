@@ -68,6 +68,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
   private boolean closeProjectConversations;
 
+  @Value(value = "${app.cron.closeUserConversations.enabled:false}")
+  private boolean closeUserConversations;
+
   @Value(value = "${app.cron.runDataViewMaintenance.enabled:false}")
   private boolean doViewMaintenance;
 
@@ -135,8 +138,20 @@ public class ScheduledConfig implements SchedulingConfigurer {
     if (closeProjectConversations) {
       setCronUser();
       log.info("*** CRON: start close SMS project conversations ***");
-      messagingService.closeStaleProjects(SystemSettings.CRON_USER.getId());
+      messagingService.closeStaleProjectConversations(SystemSettings.CRON_USER.getId());
       log.info("*** CRON: end close SMS project conversations ***");
+    }
+  }
+
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  // zone = "America/Denver")
+  public void closeUserConversations() {
+    if (closeUserConversations) {
+      setCronUser();
+      log.info("*** CRON: start close SMS user conversations ***");
+      messagingService.closeStaleUserConversations(SystemSettings.CRON_USER.getId());
+      log.info("*** CRON: end close SMS user conversations ***");
     }
   }
 

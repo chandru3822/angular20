@@ -225,9 +225,9 @@
       </template>
       <template v-slot:right-column>
         <ProjectActivity v-if="user && user.id"
-                         :user-id="userId"
+                         :user-id-in="userId"
                          :force-show-upload-btn="true"
-                         :show-sms-tab="false"></ProjectActivity>
+                         :show-sms-tab="true"></ProjectActivity>
       </template>
     </ThreeColumnLayout>
 

@@ -277,7 +277,8 @@ BEGIN
                                                     x.update_first_value_only,
                                                     x.update_first_value_only_id,
                                                     x.is_last_row,
-                                                    x.data_type_id);
+                                                    x.data_type_id,
+                                                     new.id);
 
         end loop;
       select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
@@ -287,6 +288,7 @@ BEGIN
                                                    x.is_last_row, true, v_project_ids)
       into v_sql;
       begin
+        --raise notice 'v_sql $$$$$$$$$$ %',v_sql;
         execute v_sql;
       exception
         when others then
@@ -368,7 +370,8 @@ BEGIN
                                                     x.update_first_value_only,
                                                     x.update_first_value_only_id,
                                                     true,
-                                                    x.data_type_id);
+                                                    x.data_type_id,
+                                                    new.project_id);
 
           select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
                                                        v_value, null::text, null::text,
@@ -600,7 +603,8 @@ BEGIN
                                                       x.update_first_value_only,
                                                       x.update_first_value_only_id,
                                                       true,
-                                                      x.data_type_id);
+                                                      x.data_type_id,
+                                                      coalesce(v_project_id, v_project_id1));
 
             select flow.prepare_update_data_view_details(new.id, v_sql, x.field_to_update,
                                                          v_value,

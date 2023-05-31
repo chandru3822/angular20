@@ -48,6 +48,7 @@ public class UserService {
   @Autowired private AttachmentService attachmentService;
   @Autowired private SqlCache sqlCache;
   @Autowired private SecurityService securityService;
+  @Autowired private MessagingService messagingService;
   @Autowired private SmsTeamService smsTeamService;
   @Autowired private UserPositionService userPositionService;
   @Autowired private ObjectMapper om;
@@ -376,8 +377,11 @@ public class UserService {
           smsTeamService.deleteUserByUserId(userId, primaryPosition.getOrgId(), primaryPosition.getPositionId());
         }
         else {
+          // Remove user from any SMS teams they've been added to via User
           smsTeamService.deleteUserByUserId(userId, null, null);
         }
+        // Remove all teams from this User's conversation
+        messagingService.removeTeamsFromUserConversation(userId, user.trueUserId());
       }
     }
   }
@@ -618,6 +622,15 @@ public class UserService {
         sqlCache.updateBySql(SmsTeamQuery.deleteSmsTeamUserUnassignedNotification, params);
       }
     }
+  }
+
+  public boolean hasSmsAccess(Long userId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+
+    return sqlCache
+      .queryForObjectOptionalBySql(UserQuery.getSmsAccess, params, Boolean.class)
+      .orElse(false);
   }
 
   public static class UserMapper<T> extends BeanPropertyRowMapper<T> {

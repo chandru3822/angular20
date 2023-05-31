@@ -10,7 +10,7 @@
       </v-card-title>
     <v-data-table
       :headers="headers"
-      :items="projectHistory"
+      :items="conversationHistory"
       :items-per-page="10"
       disable-sort
       class="elevation-0 height-one-hunned"
@@ -47,7 +47,7 @@
     components: {
     },
     props: {
-      projectHistory: Array
+      conversationHistory: Array
     },
     watch: {
     },
