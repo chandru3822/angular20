@@ -66,6 +66,40 @@ public class SmsServiceQuery {
         """;
 
   //language=PostgreSQL
+  public final static String fetchByUserId = """
+    SELECT sms.message,
+           array_to_json(sms.media_urls) AS media_urls,
+           created,
+           sms.from_phone,
+           sms.recipient_type_id,
+           sms.message_sent_by_user_id   as user_id,
+           case
+               when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text)
+               end                       as full_name
+    FROM flow.sms_queue sms
+             inner join flow.user u on sms.message_sent_by_user_id = u.id
+        AND (error_message IS NULL OR
+             (LOWER(error_message) IN
+              ('api.twilio.com:443 failed to respond') AND
+                 -- so we don't retry very very old texts
+              created >= '2017-11-08'
+                 ))
+        AND sms.search_to_phone = (select u2.search_phone from flow.user u2 where u2.id = :userId)
+        AND sms.project_id is null
+    UNION ALL
+    SELECT body          as message,
+           array_to_json(media_urls),
+           date_received as created,
+           from_phone,
+           1             as recipient_type_id,
+           null::bigint     as user_id,
+           null::text    as full_name
+    from flow.sms_reply sr
+    where sr.search_from_phone = (select u3.search_phone from flow.user u3 where u3.id = :userId)
+    ORDER BY created ASC
+        """;
+
+  //language=PostgreSQL
   public final static String exportAll = """
     SELECT
                 concat(u.first_name, ' ', u.last_name) AS full_name,
@@ -269,6 +303,13 @@ public class SmsServiceQuery {
       inner join flow.contact c on p.contact_id = c.id
      where c.search_phones = :from
      and p.archived is false
+     """;
+
+  //language=PostgreSQL
+  public final static String getUsers = """
+    select u.id from flow.user u
+     where u.search_phone = :from
+     and u.archived is false
      """;
 
   //language=PostgreSQL

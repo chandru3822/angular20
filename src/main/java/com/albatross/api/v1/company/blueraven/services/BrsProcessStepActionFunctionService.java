@@ -501,7 +501,6 @@ public class BrsProcessStepActionFunctionService {
         });
 
       if (marketoEnabled) {
-//          Note: not sure if I need all these fields
         MarketoProject project = marketoService.getProject(projectId);
 
         if (project == null) {
@@ -510,7 +509,6 @@ public class BrsProcessStepActionFunctionService {
 
         HashMap<String, Object> lead = new HashMap<>();
         lead.put("projectId", project.getProjectId());
-        lead.put("projectStatusType", project.getProjectStatusType());
         lead.put("firstName", project.getFirstName());
         lead.put("lastName", project.getLastName());
         lead.put("email", project.getEmail());

@@ -339,11 +339,6 @@ public class SmsTeamQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getAssociatedProjectCountTeam = """
-    select count(*) from flow.project_message_team where sms_team_id = :teamId
-        """;
-
-  //language=PostgreSQL
   public final static String getPosition = """
     select stp.*,
            p.position as "name"
