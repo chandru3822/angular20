@@ -59,11 +59,11 @@ public class WorkQueueQuery {
                                                             AND wlp.archived is not true
                                                             AND wlp.work_queue_type_id = wqt.id)::bigint[]
               when wqt.hidden and not :hiddenWqtOverride and not wqt.hidden_allow
-              then not array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
-            FROM flow.white_listed_position wlp
-            WHERE wlp.white_list_type_id = 10
-              AND wlp.archived is not true
-              AND wlp.work_queue_type_id = wqt.id)::bigint[]
+ then not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
+                                                          FROM flow.white_listed_position wlp
+                                                          WHERE wlp.white_list_type_id = 10
+                                                            AND wlp.archived is not true
+                                                            AND wlp.work_queue_type_id = wqt.id)::bigint[], '{}')
                                                             else 1=1 end
         union all
         select wqt.id as work_queue_type_id,
@@ -120,11 +120,11 @@ public class WorkQueueQuery {
           and wqt.archived is not true
           and wqt.use_event_data is true
           and case when wqt.hidden and not :hiddenWqtOverride and not wqt.hidden_allow
-          then not array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
-                                                          FROM flow.white_listed_position wlp
-                                                          WHERE wlp.white_list_type_id = 10
-                                                            AND wlp.archived is not true
-                                                            AND wlp.work_queue_type_id = wqt.id)::bigint[]
+     then not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
+                                                               FROM flow.white_listed_position wlp
+                                                               WHERE wlp.white_list_type_id = 10
+                                                                 AND wlp.archived is not true
+                                                                 AND wlp.work_queue_type_id = wqt.id)::bigint[], '{}')
                                                             when wqt.hidden and not :hiddenWqtOverride and wqt.hidden_allow
           then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                           FROM flow.white_listed_position wlp

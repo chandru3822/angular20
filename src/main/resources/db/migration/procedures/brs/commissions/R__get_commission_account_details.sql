@@ -115,7 +115,7 @@ BEGIN
                         foo.cancelled_date is null and
                         coalesce(foo.commission_paid_to_date,0) > 0  then
                        (coalesce(foo.commission_earned,0)
-                       - coalesce(foo.commission_paid_to_date,0)) - coalesce(foo.commission_forfeited_by_closer,0)
+                       - coalesce(foo.commission_paid_to_date,0)) - coalesce(foo.commission_forfeited_paid_to_date,0)
               else
                coalesce(foo.commission_earned,0)
                    - coalesce(foo.commission_paid_to_date,0)   end                       AS current_pay_commissions,

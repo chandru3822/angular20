@@ -1,16 +1,69 @@
 drop function if exists flow.get_unique_behavior_value(p_unique_behavior_code text, p_value text,
+                                                       p_project_id bigint,
                                                        p_id bigint,
                                                        p_type varchar);
 CREATE OR REPLACE FUNCTION flow.get_unique_behavior_value(p_unique_behavior_code text, p_value text,
+                                                          p_project_id bigint,
                                                           p_id bigint default 0::bigint,
                                                           p_type varchar default null)
   RETURNS text AS
 $BODY$
 DECLARE
-  v_value text;
+  v_value              text;
+  v_commission_plan_id bigint;
+  v_override_plan_id   bigint;
 BEGIN
+  if p_unique_behavior_code = 'COMMISSION_EARNED_TRIGGER' then
 
-  if p_value is null then
+    if p_project_id is not null then
+      select id
+      into v_commission_plan_id
+      from brs.project_commission pc
+      where pc.project_id = p_project_id;
+
+      if v_commission_plan_id is null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+
+      select *
+      into v_value
+      from brs.get_commissions_earned(p_project_id);
+    end if;
+
+  elsif p_unique_behavior_code = 'OVERRIDES_EARNED_TRIGGER' then
+
+    if p_project_id is not null then
+      select id
+      into v_override_plan_id
+      from brs.project_override po
+      where po.project_id = p_project_id;
+
+      if v_override_plan_id is null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+
+      select *
+      into v_value
+      from brs.get_overrides_earned(p_project_id);
+    end if;
+
+  elsif p_unique_behavior_code = 'TOTAL_COMMISSIONS_TRIGGER' then
+
+    if p_project_id is not null then
+      select *
+      into v_value
+      from brs.get_total_commissions_amount(p_project_id);
+    end if;
+
+  elsif p_unique_behavior_code = 'TOTAL_OVERRIDES_TRIGGER' then
+
+    if p_project_id is not null then
+      select *
+      into v_value
+      from brs.get_total_overrides_amount(p_project_id);
+    end if;
+
+  elsif p_value is null then
     v_value = null;
   elsif p_unique_behavior_code = 'EVENT_RESOURCE_TRIGGER' then
 
@@ -20,7 +73,9 @@ BEGIN
            inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
            inner join flow.event e on pse.event_id = e.id
            inner join flow.custom_field cf on e.resource_custom_field_id = cf.id
-           inner join lateral  (select * from flow.get_system_list_option_value(cf.company_system_list_id, p_value::bigint)) t on true
+           inner join lateral (select *
+                               from flow.get_system_list_option_value(cf.company_system_list_id, p_value::bigint)) t
+                      on true
     where ppse.id = p_id;
 
   elsif p_unique_behavior_code = 'STATE_FIELD_TRIGGER' then
@@ -59,14 +114,14 @@ BEGIN
     select ps.process_step_name
     into v_value
     from flow.process_step_event pse
-        inner join flow.process_step ps on pse.process_step_id = ps.id
+           inner join flow.process_step ps on pse.process_step_id = ps.id
     where pse.id = p_value::bigint;
 
   elsif p_unique_behavior_code = 'CONVERT_TIMESTAMP_TO_DATE_TRIGGER' then
     if p_value is null then
       select 'null' into v_value;
     else
-      select ((p_value::timestamp at time zone 'UTC') at time zone  'US/Mountain')::date
+      select ((p_value::timestamp at time zone 'UTC') at time zone 'US/Mountain')::date
       into v_value;
     end if;
 

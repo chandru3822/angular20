@@ -181,7 +181,7 @@ BEGIN
           -- do the message for id 22 = project cancelled - fix for commissions
           insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
           values(v_closer_user_id,
-                 concat('The project for your customer, ', v_project_name, ' has been cancelled. You have 10 days from today to reactivate this account to receive commission on this project. Please call Retentions at (385) 200-3940 for help reactivating the project.'),
+                 concat('Hi ', v_closer_first_name, ', ', v_project_name, ' ', p_project_id, ' has requested to cancel. You have 10 days from today to contact Retentions about the project to receive commission. Please call Retentions at (385) 200-3940 for help reactivating.'),
                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1, p_current_user_id);
         end if;
     end if;

@@ -55,6 +55,7 @@ public class CustomField {
     hasListValues,
     allowMultiple,
     detailView,
+    displayOnSnippet,
     readonly,
     systemReadonly,
     customFieldGroupAssignmentReadOnly,

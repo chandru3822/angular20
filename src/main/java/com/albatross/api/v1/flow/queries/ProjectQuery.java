@@ -552,6 +552,14 @@ select
         e.id as event_id,
         e.event_name,
         e.hidden as eventHidden,
+        e.hidden_allow as eventHiddenAllow,
+        (select cfga.id
+            from flow.project_process_step_event_custom_field_value ppsecfv
+               inner join flow.custom_field_group_assignment cfga
+                 on ppsecfv.custom_field_group_assignment_id = cfga.id
+                  and cfga.archived is false and cfga.display_on_snippet is true
+               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+            where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValueGroupAssignmentId",
         ppse.resource_id,
         cest.event_status_type_id,
         cest.id as company_event_status_type_id,
@@ -588,13 +596,27 @@ select
         and ppse.archived is not true
         and p.archived is not true
         and case when :statusTypeId::bigint is not null then :statusTypeId::bigint = cest.event_status_type_id else 1=1 end
-         and case when e.hidden and :systemAdmin::boolean is false
+         and case when e.hidden and :systemAdmin::boolean is false and e.hidden_allow
                        then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
                                                and wlp2.archived is not true
                                                and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
             )
+            when e.hidden and :systemAdmin::boolean is false and not e.hidden_allow
+            --case when below is empty, then true else do below
+                      then case when ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                         limit 1
+            ) is null then true
+                       else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                         limit 1
+            ) end
                    else 1=1 end
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
     """;

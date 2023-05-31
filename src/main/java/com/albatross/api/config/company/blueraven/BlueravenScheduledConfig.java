@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -39,11 +40,15 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
+  @Value(value = "${app.cron.blueraven.processMetroPostalCodes.enabled:false}")
+  private Boolean processMetroPostalCodes;
+
   private final GenesysService genesysService;
 
   private final MarketoService marketoService;
 
   private final BirdeyeService birdeyeService;
+  private final BlueravenProjectService blueravenProjectService;
 
   private final SecurityService securityService;
 
@@ -77,6 +82,16 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       log.info("*** CRON: start processing Genesys contacts ***");
       genesysService.processGenesysContacts();
       log.info("*** CRON: end processing Genesys contacts ***");
+    }
+  }
+
+  //    every  day at 11 pm - mtn
+  @Scheduled(cron = "0 0 5 * * *", zone = "UTC")
+  public void updateProjectMetroAreaPostalCodes() {
+    if (processMetroPostalCodes) {
+      log.info("*** CRON: start processing Metro Area Postal Codes ***");
+      blueravenProjectService.processMetroAreaPostalCodes();
+      log.info("*** CRON: end processing Metro Area Postal Codes ***");
     }
   }
 

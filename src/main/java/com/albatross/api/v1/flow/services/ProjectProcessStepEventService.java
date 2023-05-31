@@ -7,6 +7,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
@@ -72,6 +73,7 @@ public class ProjectProcessStepEventService {
   private final AuroraProxy auroraService;
 
   private final MarketoService marketoService;
+  private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
 
   private final ProjectService projectService;
@@ -203,37 +205,55 @@ public class ProjectProcessStepEventService {
         }
       }
 
-      boolean whiteListed = false;
-      boolean allowFlag = result.get().getReadonlyAllow();
+      WhiteListedPosition position = new WhiteListedPosition();
+      position.setPositionId(user.getUserPositionId());
 
-      //Checks if the user's position is in the whitelist
-      for(int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++){
-        if(result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-          whiteListed = true;
-        }
+
+      if(!result.get().getStartTimeReadOnlyAllow() && (result.get().getStartTimeWhiteListedPositions() == null || result.get().getStartTimeWhiteListedPositions().size() == 0)){
+        result.get().setStartTimeReadOnly(false);
       }
 
-      //If the flag is set to deny, flip the whitelist to be a deny list
-      if(!allowFlag){
-        whiteListed = !whiteListed;
+      if(!result.get().getStartTimeHiddenAllow() && (result.get().getStartTimeHiddenWhiteListedPositions() == null || result.get().getStartTimeHiddenWhiteListedPositions().size() == 0)){
+        result.get().setStartTimeHidden(false);
       }
 
-      //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-      if(whiteListed && !allowFlag){
-        WhiteListedPosition position = new WhiteListedPosition();
-        position.setPositionId(user.getUserPositionId());
-        result.get().getReadonlyWhiteListedPositions().add(position);
+      if(!result.get().getEndTimeReadOnlyAllow() && (result.get().getEndTimeWhiteListedPositions() == null || result.get().getEndTimeWhiteListedPositions().size() == 0)){
+        result.get().setEndTimeReadOnly(false);
       }
-      //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-      else if(!whiteListed && !allowFlag){
-        for(int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++){
-          if(result.get().getReadonlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-            result.get().getReadonlyWhiteListedPositions().remove(x);
-            x--;
+
+      if(!result.get().getEndTimeHiddenAllow() && (result.get().getEndTimeHiddenWhiteListedPositions() == null || result.get().getEndTimeHiddenWhiteListedPositions().size() == 0)){
+        result.get().setEndTimeHidden(false);
+      }
+
+      if(!result.get().getResourceReadOnlyAllow() && (result.get().getResourceWhiteListedPositions() == null || result.get().getResourceWhiteListedPositions().size() == 0)){
+        result.get().setResourceReadOnly(false);
+      }
+
+      if(!result.get().getResourceHiddenAllow() && (result.get().getResourceHiddenWhiteListedPositions() == null || result.get().getResourceHiddenWhiteListedPositions().size() == 0)){
+        result.get().setResourceHidden(false);
+      }
+
+      if(result.get().getReadonly() && !user.isSystemAdmin()) {
+        boolean whiteListed = false;
+        boolean allowFlag = result.get().getReadonlyAllow();
+
+        //Checks if the user's position is in the whitelist
+        for (int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++) {
+          for(int z = 0; z < user.getUserPositions().size(); z++) {
+            if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+              whiteListed = true;
+            }
           }
         }
-      }
-      result.get().setReadonly(!whiteListed);
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!allowFlag) {
+          whiteListed = !whiteListed;
+        }
+
+        result.get().getReadonlyWhiteListedPositions().clear();
+        result.get().setReadonly(!whiteListed);
+          }
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }
@@ -603,7 +623,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);

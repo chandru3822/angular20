@@ -38,6 +38,12 @@ BEGIN
       update brs.project_details
       set cancelled_date = v_cancelled_date
       where project_id = p_project_id;
+
+      update brs.financial_details fd
+      set cancelled_date = v_cancelled_date
+      where project_id = p_project_id;
+
+
       if v_on_hold_date is not null and v_off_hold_date is null then
         v_off_hold_date = now();
         update brs.project_details
@@ -56,9 +62,17 @@ BEGIN
       set cancelled_date = v_cancelled_date
       where project_id = p_project_id;
 
+      update brs.financial_details f
+      set cancelled_date = v_cancelled_date
+      where project_id = p_project_id;
+
     elsif v_new_project_status_type_id = 2 and v_old_project_status_type_id = 3 then
       v_cancelled_date = now();
       update brs.project_details
+      set cancelled_date = v_cancelled_date
+      where project_id = p_project_id;
+
+      update brs.financial_details d
       set cancelled_date = v_cancelled_date
       where project_id = p_project_id;
 
@@ -77,6 +91,10 @@ BEGIN
       set on_hold_date   = v_on_hold_date,
           off_hold_date  = v_off_hold_date,
           cancelled_date = v_cancelled_date
+      where project_id = p_project_id;
+
+      update brs.financial_details fd2
+      set cancelled_date = v_cancelled_date
       where project_id = p_project_id;
     end if;
   end if;

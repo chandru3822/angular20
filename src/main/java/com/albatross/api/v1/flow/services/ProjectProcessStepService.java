@@ -9,6 +9,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
+import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
@@ -81,6 +82,7 @@ public class ProjectProcessStepService {
   private final CommunicationService communicationService;
   private final MessagingService messagingService;
   private final UserPositionService userPositionService;
+  private final CustomerPortalService customerPortalService;
 
   private final PubSubService pubSubService;
 
@@ -265,15 +267,31 @@ public class ProjectProcessStepService {
         ProjectProcessStep step = om.readValue(json, new TypeReference<>() {
         });
 
+        for(ProjectProcessStepEvent event: step.getProjectProcessStepEvents()){
+            if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+                HashMap<String, Object> moreParams = new HashMap<>();
+                moreParams.put("objectTypeId", 6); //6 is the event object type
+                moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+                moreParams.put("primaryId", event.getId());
+               List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, CustomFieldValueDisplay.class);
+               event.setCustomFieldDisplayValue(cfvs.get(0));
+            }
+        }
 
-        if(!user.isSystemAdmin()) {
+        if(!step.getReadonlyAllow() && (step.getWhiteListedPositions() == null || step.getWhiteListedPositions().size() == 0)){
+          step.setReadonly(false);
+        }
+
+        if(!user.isSystemAdmin() && step.getReadonly()) {
           boolean whiteListed = false;
           boolean allowFlag = step.getReadonlyAllow();
 
           //Checks if the user's position is in the whitelist
           for (int x = 0; x < step.getWhiteListedPositions().size(); x++) {
-            if (step.getWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
-              whiteListed = true;
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (step.getWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                whiteListed = true;
+              }
             }
           }
 
@@ -282,21 +300,7 @@ public class ProjectProcessStepService {
             whiteListed = !whiteListed;
           }
 
-          //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-          if (whiteListed && !allowFlag) {
-            WhiteListedPosition position = new WhiteListedPosition();
-            position.setPositionId(user.getUserPositionId());
-            step.getWhiteListedPositions().add(position);
-          }
-          //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-          else if (!whiteListed && !allowFlag) {
-            for (int x = 0; x < step.getWhiteListedPositions().size(); x++) {
-              if (step.getWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()) {
-                step.getWhiteListedPositions().remove(x);
-                x--;
-              }
-            }
-          }
+          step.getWhiteListedPositions().clear();
           step.setReadonly(!whiteListed);
 
         }
@@ -1214,7 +1218,7 @@ public class ProjectProcessStepService {
           systemValues.put("companyId", user.getCompanyId());
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, listOfValueService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);

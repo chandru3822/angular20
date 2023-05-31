@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +29,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class is to hold functions performed by actions which perform gnhttp calls.
+ * This class is to hold functions performed by actions which perform http calls.
  * Each function should take the action function being ran (ProcessStepActionChildFunction) and a map of system values (this hold contextual values given from the action).
  * Each function should return void and throw a descriptive exception on failure (exceptions are handled within the action code for transactional purposes).
  */
@@ -40,472 +39,490 @@ import java.util.Objects;
 @Service
 public class BrsProcessStepActionFunctionService {
 
-    private final SqlCache sqlCache;
+  private final SqlCache sqlCache;
 
-    private final GoodleapService goodleapService;
+  private final GoodleapService goodleapService;
 
-    private final AuroraProxy auroraService;
+  private final AuroraProxy auroraService;
 
-    private final MarketoService marketoService;
+  private final MarketoService marketoService;
 
-    private final ListOfValueService listOfValueService;
+  private final CustomerPortalService customerPortalService;
 
-    // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
-    public Boolean marketoEnabled;
+  private final ListOfValueService listOfValueService;
 
-    private String formatErrorMessage(ProcessStepActionChildFunction func, String message) {
-        final String originalFuncName = func.getFunctionName();
-        final int dot = originalFuncName.indexOf('.');
-        final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
-        final String functionType = (func.getRunInBackend()) ? "MANUAL" : "AUTOTRIGGER";
+  // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
+  public Boolean marketoEnabled;
 
-        throw new RuntimeException(String.format("PPS: Unable to perform %s action for java function: %s *** %s", functionType, functionName, message));
+  private String formatErrorMessage(ProcessStepActionChildFunction func, String message) {
+    final String originalFuncName = func.getFunctionName();
+    final int dot = originalFuncName.indexOf('.');
+    final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
+    final String functionType = (func.getRunInBackend()) ? "MANUAL" : "AUTOTRIGGER";
+
+    throw new RuntimeException(String.format("PPS: Unable to perform %s action for java function: %s *** %s", functionType, functionName, message));
+  }
+
+  // inverters should maybe be an enum if they start to get used anywhere else in the codebase
+  private String getMappedAuroraInverter(String inverter) {
+    var inverterMap = Map.of("IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
+      "IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters",
+      "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
+      "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
+    return inverterMap.getOrDefault(inverter, null);
+  }
+
+  public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+
+    try {
+      long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      JSONObject application = goodleapService.getApplicationByProjectId(projectId, true);
+
+      Long cfgaId = Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue());
+      if (cfgaId != null && cfgaId > 0) {
+        //ensure that cfgaId is a valid id
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+        params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+        params.put("customFieldGroupAssignmentId", cfgaId);
+
+        LocalDate sentAt = null;
+
+        if (!application.isNull("docsSentAt")) {
+          sentAt = LocalDate.parse(application.getString("docsSentAt"), DateTimeFormatter.ISO_DATE_TIME);
+        }
+
+        params.put("dateValue", sentAt);
+
+        //default values
+        params.put("textValue", null);
+        params.put("timestampValue", null);
+        params.put("booleanValue", null);
+        params.put("numericValue", null);
+        params.put("intValue", null);
+        params.put("intArrayValue", null);
+        params.put("richTextValue", null);
+
+        sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+      } else {
+        //we think that sometimes this code fails to find a cfgaId. adding this log/code to help isolate and find out when/why
+        log.error("ACTION FUNCTION: Could not find cfgaId for project {}", projectId);
+        throw new RuntimeException(formatErrorMessage(func, "cfga not found"));
+      }
+    } catch (GoodleapService.NotFoundException e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
+  }
 
-    // inverters should maybe be an enum if they start to get used anywhere else in the codebase
-    private String getMappedAuroraInverter(String inverter) {
-        var inverterMap = Map.of("IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
-                                                  "IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters",
-                                                  "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
-                                                  "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
-        return inverterMap.getOrDefault(inverter, null);
+  public void getLoanDocsSignedDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+      JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+      params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+
+      LocalDate signedAt = null;
+
+      if (!application.isNull("docsSignedAt")) {
+        signedAt = LocalDate.parse(application.getString("docsSignedAt"), DateTimeFormatter.ISO_DATE_TIME);
+      }
+
+      params.put("dateValue", signedAt);
+
+      //default values
+      params.put("textValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("richTextValue", null);
+
+      sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    } catch (GoodleapService.NotFoundException e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
+  }
 
-    public void getLoanDocsSentDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+  public void getLoanApprovalStatus(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+      JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()));
 
-        try {
-            long projectId = Long.parseLong(systemValues.get("projectId").toString());
-            JSONObject application = goodleapService.getApplicationByProjectId(projectId, true);
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+      params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
 
-            Long cfgaId = Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue());
-            if(cfgaId != null && cfgaId > 0) {
-              //ensure that cfgaId is a valid id
-              HashMap<String, Object> params = new HashMap<>();
-              params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-              params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-              params.put("customFieldGroupAssignmentId", cfgaId);
+      params.put("textValue", application.getString("status"));
 
-              LocalDate sentAt = null;
+      //default values
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("richTextValue", null);
 
-              if (!application.isNull("docsSentAt")) {
-                  sentAt = LocalDate.parse(application.getString("docsSentAt"), DateTimeFormatter.ISO_DATE_TIME);
-              }
+      sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    } catch (GoodleapService.NotFoundException e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
+  }
 
-              params.put("dateValue", sentAt);
+  public void getLoanDocumentStatus(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+      JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
 
-              //default values
-              params.put("textValue", null);
-              params.put("timestampValue", null);
-              params.put("booleanValue", null);
-              params.put("numericValue", null);
-              params.put("intValue", null);
-              params.put("intArrayValue", null);
-              params.put("richTextValue", null);
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+      params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
 
+      String status = GoodleapDocumentStatus.UNSENT.toString();
+
+      if (!application.isNull("docsSignedAt")) {
+        status = GoodleapDocumentStatus.SIGNED.toString();
+      } else if (!application.isNull("docsSentAt")) {
+        status = GoodleapDocumentStatus.SENT.toString();
+      }
+
+      params.put("textValue", status);
+
+      //default values
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("richTextValue", null);
+
+      sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    } catch (GoodleapService.NotFoundException e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
+  }
+
+  public void sendLoanDocuments(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+      JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()));
+      goodleapService.sendDocs(application.getString("id"));
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+      params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+
+      params.put("dateValue", LocalDate.now());
+
+      //default values
+      params.put("textValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("richTextValue", null);
+
+      sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    } catch (Exception e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
+  }
+
+  public void getLoanStipulations(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+      JSONArray stipulations = goodleapService.getApplicationStipulations(Long.parseLong(systemValues.get("projectId").toString()));
+      StringBuilder formattedStipulations = new StringBuilder();
+
+      for (Object stipulation : stipulations) {
+        var stip = (JSONObject) stipulation;
+        formattedStipulations.append(String.format("%s\n", stip.getString("name")));
+      }
+
+      // Remove the last comma and space
+      if (!formattedStipulations.isEmpty()) {
+        formattedStipulations.delete(formattedStipulations.length() - 1, formattedStipulations.length());
+      }
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
+      params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+
+      params.put("textValue", formattedStipulations);
+
+      //default values
+      params.put("dateValue", null);
+      params.put("timestampValue", null);
+      params.put("booleanValue", null);
+      params.put("numericValue", null);
+      params.put("intValue", null);
+      params.put("intArrayValue", null);
+      params.put("richTextValue", null);
+
+      sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+    } catch (Exception e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
+  }
+
+  /**
+   * Fetch design summary using Aurora's API
+   * <p>
+   * 1) get aurora id
+   * 2) fetch design summary
+   * 3) save fields to specific param CFGA ids
+   * 4) save entire json object by upserting into given param CFGA id
+   *
+   * @param func         The DB function being ran
+   * @param systemValues System/context values
+   */
+  @Transactional
+  public void getDesignSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+
+      Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
+      String designCfgaId = func.getActionParamDynamicValues().stream()
+        .filter(p -> p.getParameterName().contains("Aurora Design ID"))
+        .map(ActionParamDynamicValue::getDynamicValue)
+        .findFirst()
+        .orElse(null);
+
+      if (designCfgaId == null) {
+        throw new RuntimeException("Unable to locate Aurora Design ID custom field");
+      }
+
+      String designId = auroraService.getDesignId(ppsId, Long.parseLong(designCfgaId));
+      if (designId == null) {
+        throw new RuntimeException("Unable to fetch design ID from Aurora");
+      }
+
+      AuroraProxy.DesignSummary designResponse;
+
+      try {
+        designResponse = auroraService.getDesignSummary(designId);
+      } catch (Exception e) {
+        throw new RuntimeException("Unable to fetch design summary from Aurora");
+      }
+
+      var design = designResponse.getFields().get("design");
+      int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
+      var arrays = design.get("arrays");
+      int panelQuantity = 0;
+      int panelWatts = 0;
+      String manufacturer = null;
+      String inverter = null;
+      String panelName = null;
+
+      if (!arrays.isEmpty()) {
+        //this is returning with extra quotes around the string ¯\_(ツ)_/¯
+        manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
+        panelName = arrays.get(0).get("module").get("name").toString().replace("\"", "");
+
+        panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
+        if (arrays.get(0).get("microinverter") != null) {
+          inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
+        }
+
+        for (JsonNode array : arrays) {
+          if (array.has("module")) {
+            panelQuantity += Integer.parseInt(array.get("module").get("count").toString().replace("\"", ""));
+          }
+        }
+      }
+
+      if (inverter == null) {
+        var inverters = design.get("string_inverters");
+        if (!inverters.isEmpty()) {
+          inverter = getMappedAuroraInverter(inverters.get(0).get("name").toString().replace("\"", ""));
+        }
+      }
+
+      // if we haven't found an inverter yet, check for sunpower. In that case, inverters are integrated on panel
+      if (inverter == null && manufacturer.toLowerCase().contains("sunpower")) {
+        inverter = "Sunpower";
+      }
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
+      params.put("sourceId", ppsId);
+
+      for (ActionParamDynamicValue dynamicValue : func.getActionParamDynamicValues()) {
+        final String paramName = dynamicValue.getParameterName();
+        var cfgaId = Long.parseLong(dynamicValue.getDynamicValue());
+        params.put("customFieldGroupAssignmentId", cfgaId);
+
+        //default values
+        params.put("dateValue", null);
+        params.put("textValue", null);
+        params.put("timestampValue", null);
+        params.put("booleanValue", null);
+        params.put("numericValue", null);
+        params.put("intValue", null);
+        params.put("intArrayValue", null);
+        params.put("richTextValue", null);
+        params.put("jsonValue", null);
+
+        //IDing by field name is about a generic as we can get as of now, but not ideal
+        if (paramName.contains("System Size")) {
+          // Divide by 1000 to get kilowatt system size
+          float systemSizeInKw = Float.parseFloat(design.get("system_size_stc").toString()) / 1000;
+          params.put("numericValue", systemSizeInKw);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Panel Quantity")) {
+          params.put("intValue", panelQuantity);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Production Estimate")) {
+          params.put("intValue", productionEstimate);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Panel Brand")) {
+          if (manufacturer != null) {
+            try {
+              Long lovId = sqlCache.queryForObjectBySql(CustomFieldValueQuery.getListOfValueIdByCfgaIdAndName, Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
+              params.put("intValue", lovId);
+              sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+            } catch (EmptyResultDataAccessException e) {
+              throw new RuntimeException("Unable to find list item for given panel brand");
+            }
+          } else {
+            throw new RuntimeException("Unable to find list item for given panel brand");
+          }
+        } else if (paramName.contains("Inverter Brand")) {
+          if (inverter != null) {
+            final String javaSucksInverter = inverter.replace("\"", "");
+            //this is as general as I can make it as of now...
+            final long companyId = Long.parseLong(systemValues.get("companyId").toString());
+            final String sql = "select id from flow.custom_field cf where field_name = 'Inverter Brand' and company_id = " + companyId;
+            Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
+            List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
+            final Long inverterLovId = values.stream()
+              .filter(i -> Objects.equals(i.getName(), javaSucksInverter))
+              .map(ListOfValue::getId)
+              .findFirst()
+              .orElse(null);
+            if (inverterLovId != null) {
+              params.put("intValue", inverterLovId);
               sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
             } else {
-              //we think that sometimes this code fails to find a cfgaId. adding this log/code to help isolate and find out when/why
-              log.error("ACTION FUNCTION: Could not find cfgaId for project {}", projectId);
-              throw new RuntimeException(formatErrorMessage(func, "cfga not found"));
+              throw new RuntimeException("Unable to find list item for given inverter brand");
             }
-        } catch (GoodleapService.NotFoundException e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+          }
+        } else if (paramName.contains("Panel Watts")) {
+          params.put("intValue", panelWatts);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        } else if (paramName.contains("Design JSON")) {
+          //store the entire json object for future proposal log history calculations
+          params.put("jsonValue", design.toString());
+          sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
+        } else if (paramName.contains("Panel Name")) {
+          params.put("textValue", panelName);
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
+  }
 
-    public void getLoanDocsSignedDate(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-        try {
-            JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
+  public void pushDataToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    if (marketoEnabled) {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      MarketoProject project = sqlCache.getBySql(MarketoQuery.getProject, Map.of("projectId", projectId), MarketoProject.class)
+        .orElse(null);
 
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-            params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
+      if (project == null) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+      }
 
-            LocalDate signedAt = null;
+      try {
+        Map<String, Object> lead = marketoService.projectToLead(project);
+        List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
 
-            if (!application.isNull("docsSignedAt")) {
-                signedAt = LocalDate.parse(application.getString("docsSignedAt"), DateTimeFormatter.ISO_DATE_TIME);
-            }
-
-            params.put("dateValue", signedAt);
-
-            //default values
-            params.put("textValue", null);
-            params.put("timestampValue", null);
-            params.put("booleanValue", null);
-            params.put("numericValue", null);
-            params.put("intValue", null);
-            params.put("intArrayValue", null);
-            params.put("richTextValue", null);
-
-            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-        } catch (GoodleapService.NotFoundException e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+        final String projectStatusParam = paramValues.get(0).getDynamicValue();
+        if (projectStatusParam != null && !projectStatusParam.isBlank()) {
+          lead.put("projectStatus", projectStatusParam);
         }
-    }
 
-    public void getLoanApprovalStatus(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-        try {
-            JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()));
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-            params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
-
-            params.put("textValue", application.getString("status"));
-
-            //default values
-            params.put("dateValue", null);
-            params.put("timestampValue", null);
-            params.put("booleanValue", null);
-            params.put("numericValue", null);
-            params.put("intValue", null);
-            params.put("intArrayValue", null);
-            params.put("richTextValue", null);
-
-            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-        } catch (GoodleapService.NotFoundException e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+        if (project.getFinalDesignApprovedDate() == null) {
+          lead.remove("finalDesignApprovedDate");
         }
-    }
 
-    public void getLoanDocumentStatus(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
         try {
-            JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()), true);
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-            params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
-
-            String status = GoodleapDocumentStatus.UNSENT.toString();
-
-            if (!application.isNull("docsSignedAt")) {
-                status = GoodleapDocumentStatus.SIGNED.toString();
-            } else if (!application.isNull("docsSentAt")) {
-                status = GoodleapDocumentStatus.SENT.toString();
-            }
-
-            params.put("textValue", status);
-
-            //default values
-            params.put("dateValue", null);
-            params.put("timestampValue", null);
-            params.put("booleanValue", null);
-            params.put("numericValue", null);
-            params.put("intValue", null);
-            params.put("intArrayValue", null);
-            params.put("richTextValue", null);
-
-            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-        } catch (GoodleapService.NotFoundException e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
-        }
-    }
-
-    public void sendLoanDocuments(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-        try {
-            JSONObject application = goodleapService.getApplicationByProjectId(Long.parseLong(systemValues.get("projectId").toString()));
-            goodleapService.sendDocs(application.getString("id"));
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-            params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
-
-            params.put("dateValue", LocalDate.now());
-
-            //default values
-            params.put("textValue", null);
-            params.put("timestampValue", null);
-            params.put("booleanValue", null);
-            params.put("numericValue", null);
-            params.put("intValue", null);
-            params.put("intArrayValue", null);
-            params.put("richTextValue", null);
-
-            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+          marketoService.pushData(List.of(lead));
         } catch (Exception e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+          throw new RuntimeException(e.getMessage());
         }
+      } catch (Exception e) {
+        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+      }
     }
+  }
 
-    public void getLoanStipulations(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+  public void generateCustomerPortalLink(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    try {
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      final Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
+      final Long userId = Long.parseLong(systemValues.get("userId").toString());
+
+      String customerPortalLink = customerPortalService.getCustomerPortalLink(projectId);
+      if (customerPortalLink == null) {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to generate customer portal link"));
+      }
+
+      func.getActionParamDynamicValues().stream()
+        .filter(p -> p.getParameterName().contains("Custom Field Group Assignment ID"))
+        .map(ActionParamDynamicValue::getDynamicValue)
+        .filter(Objects::nonNull)
+        .map(Long::parseLong)
+        .findFirst()
+        .ifPresent(cfgaId -> {
+
+          HashMap<String, Object> params = new HashMap<>();
+          params.put("userId", userId);
+          params.put("sourceId", ppsId);
+          params.put("customFieldGroupAssignmentId", cfgaId);
+          params.put("textValue", customerPortalLink);
+
+          //default values
+          params.put("dateValue", null);
+          params.put("timestampValue", null);
+          params.put("booleanValue", null);
+          params.put("numericValue", null);
+          params.put("intValue", null);
+          params.put("intArrayValue", null);
+          params.put("richTextValue", null);
+          params.put("jsonValue", null);
+
+          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+        });
+
+      if (marketoEnabled) {
+        MarketoProject project = marketoService.getProject(projectId);
+
+        if (project == null) {
+          throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
+        }
+
+        HashMap<String, Object> lead = new HashMap<>();
+        lead.put("projectId", project.getProjectId());
+        lead.put("firstName", project.getFirstName());
+        lead.put("lastName", project.getLastName());
+        lead.put("email", project.getEmail());
+        lead.put("phone", project.getPhone());
+        lead.put("customerPortalLink", customerPortalLink);
+
         try {
-            JSONArray stipulations = goodleapService.getApplicationStipulations(Long.parseLong(systemValues.get("projectId").toString()));
-            StringBuilder formattedStipulations = new StringBuilder();
-
-            for (Object stipulation : stipulations) {
-                var stip = (JSONObject) stipulation;
-                formattedStipulations.append(String.format("%s\n", stip.getString("name")));
-            }
-
-            // Remove the last comma and space
-            if (!formattedStipulations.isEmpty()) {
-                formattedStipulations.delete(formattedStipulations.length() - 1, formattedStipulations.length());
-            }
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", Long.parseLong(systemValues.get("ppsId").toString()));
-            params.put("customFieldGroupAssignmentId", Long.parseLong(func.getActionParamDynamicValues().get(0).getDynamicValue()));
-
-            params.put("textValue", formattedStipulations);
-
-            //default values
-            params.put("dateValue", null);
-            params.put("timestampValue", null);
-            params.put("booleanValue", null);
-            params.put("numericValue", null);
-            params.put("intValue", null);
-            params.put("intArrayValue", null);
-            params.put("richTextValue", null);
-
-            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
+          marketoService.pushData(List.of(lead));
         } catch (Exception e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+          throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
         }
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
-
-    /**
-     * Fetch design summary using Aurora's API
-     *
-     * 1) get aurora id
-     * 2) fetch design summary
-     * 3) save fields to specific param CFGA ids
-     * 4) save entire json object by upserting into given param CFGA id
-     *
-     * @param func         The DB function being ran
-     * @param systemValues System/context values
-     */
-    @Transactional
-    public void getDesignSummary(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-        try {
-
-            Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
-            String designCfgaId = func.getActionParamDynamicValues().stream()
-                                      .filter(p -> p.getParameterName().contains("Aurora Design ID"))
-                                      .map(ActionParamDynamicValue::getDynamicValue)
-                                      .findFirst()
-                                      .orElse(null);
-
-            if (designCfgaId == null) {
-                throw new RuntimeException("Unable to locate Aurora Design ID custom field");
-            }
-
-            String designId = auroraService.getDesignId(ppsId, Long.parseLong(designCfgaId));
-            if (designId == null) {
-                throw new RuntimeException("Unable to fetch design ID from Aurora");
-            }
-
-            AuroraProxy.DesignSummary designResponse;
-
-            try {
-                designResponse = auroraService.getDesignSummary(designId);
-            } catch (Exception e) {
-                throw new RuntimeException("Unable to fetch design summary from Aurora");
-            }
-
-            var design = designResponse.getFields().get("design");
-            int productionEstimate = (int) Double.parseDouble(design.get("energy_production").get("annual").toString());
-            var arrays = design.get("arrays");
-            int panelQuantity = 0;
-            int panelWatts = 0;
-            String manufacturer = null;
-            String inverter = null;
-            String panelName = null;
-
-            if (!arrays.isEmpty()) {
-                //this is returning with extra quotes around the string ¯\_(ツ)_/¯
-                manufacturer = arrays.get(0).get("module").get("manufacturer").toString().replace("\"", "");
-                panelName = arrays.get(0).get("module").get("name").toString().replace("\"", "");
-
-                panelWatts = Math.round(Float.parseFloat(arrays.get(0).get("module").get("rating_stc").toString()));
-                if (arrays.get(0).get("microinverter") != null) {
-                    inverter = getMappedAuroraInverter(arrays.get(0).get("microinverter").get("name").toString().replace("\"", ""));
-                }
-
-                for (JsonNode array : arrays) {
-                    if (array.has("module")) {
-                        panelQuantity += Integer.parseInt(array.get("module").get("count").toString().replace("\"", ""));
-                    }
-                }
-            }
-
-            if (inverter == null) {
-                var inverters = design.get("string_inverters");
-                if (!inverters.isEmpty()) {
-                    inverter = getMappedAuroraInverter(inverters.get(0).get("name").toString().replace("\"", ""));
-                }
-            }
-
-            // if we haven't found an inverter yet, check for sunpower. In that case, inverters are integrated on panel
-            if (inverter == null && manufacturer.toLowerCase().contains("sunpower")) {
-                inverter = "Sunpower";
-            }
-
-            HashMap<String, Object> params = new HashMap<>();
-            params.put("userId", Long.parseLong(systemValues.get("userId").toString()));
-            params.put("sourceId", ppsId);
-
-            for (ActionParamDynamicValue dynamicValue : func.getActionParamDynamicValues()) {
-                final String paramName = dynamicValue.getParameterName();
-                var cfgaId = Long.parseLong(dynamicValue.getDynamicValue());
-                params.put("customFieldGroupAssignmentId", cfgaId);
-
-                //default values
-                params.put("dateValue", null);
-                params.put("textValue", null);
-                params.put("timestampValue", null);
-                params.put("booleanValue", null);
-                params.put("numericValue", null);
-                params.put("intValue", null);
-                params.put("intArrayValue", null);
-                params.put("richTextValue", null);
-                params.put("jsonValue", null);
-
-                //IDing by field name is about a generic as we can get as of now, but not ideal
-                if (paramName.contains("System Size")) {
-                    // Divide by 1000 to get kilowatt system size
-                    float systemSizeInKw = Float.parseFloat(design.get("system_size_stc").toString()) / 1000;
-                    params.put("numericValue", systemSizeInKw);
-                    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                } else if (paramName.contains("Panel Quantity")) {
-                    params.put("intValue", panelQuantity);
-                    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                } else if (paramName.contains("Production Estimate")) {
-                    params.put("intValue", productionEstimate);
-                    sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                } else if (paramName.contains("Panel Brand")) {
-                    if (manufacturer != null) {
-                        try {
-                            Long lovId = sqlCache.queryForObjectBySql(CustomFieldValueQuery.getListOfValueIdByCfgaIdAndName, Map.of("cfgaId", cfgaId, "name", manufacturer), Long.class);
-                            params.put("intValue", lovId);
-                            sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                        } catch (EmptyResultDataAccessException e) {
-                            throw new RuntimeException("Unable to find list item for given panel brand");
-                        }
-                    } else {
-                        throw new RuntimeException("Unable to find list item for given panel brand");
-                    }
-                } else if (paramName.contains("Inverter Brand")) {
-                    if (inverter != null) {
-                        final String javaSucksInverter = inverter.replace("\"", "");
-                        //this is as general as I can make it as of now...
-                        final long companyId = Long.parseLong(systemValues.get("companyId").toString());
-                        final String sql = "select id from flow.custom_field cf where field_name = 'Inverter Brand' and company_id = " + companyId;
-                        Long customFieldId = sqlCache.queryForObjectBySql(sql, null, Long.class);
-                        List<ListOfValue> values = listOfValueService.getByCustomFieldId(customFieldId);
-                        final Long inverterLovId = values.stream()
-                                                         .filter(i -> Objects.equals(i.getName(), javaSucksInverter))
-                                                         .map(ListOfValue::getId)
-                                                         .findFirst()
-                                                         .orElse(null);
-                        if (inverterLovId != null) {
-                            params.put("intValue", inverterLovId);
-                          sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                        } else {
-                            throw new RuntimeException("Unable to find list item for given inverter brand");
-                        }
-                    }
-                } else if (paramName.contains("Panel Watts")) {
-                    params.put("intValue", panelWatts);
-                  sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                } else if (paramName.contains("Design JSON")) {
-                    //store the entire json object for future proposal log history calculations
-                    params.put("jsonValue", design.toString());
-                    sqlCache.updateBySql(CustomFieldValueQuery.upsertAuroraDesign, params);
-                } else if (paramName.contains("Panel Name")) {
-                    params.put("textValue", panelName);
-                  sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
-                }
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
-        }
-    }
-
-    public void pushDataToMarketo(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-        if (marketoEnabled) {
-            final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-            MarketoProject project = sqlCache.getBySql(MarketoQuery.getProject, Map.of("projectId", projectId), MarketoProject.class)
-                                             .orElse(null);
-
-            if (project == null) {
-                throw new RuntimeException(formatErrorMessage(func, "Unable to find project from given projectId"));
-            }
-
-            try {
-                Map<String, Object> lead = marketoService.projectToLead(project);
-                List<ActionParamDynamicValue> paramValues = func.getActionParamDynamicValues();
-
-                final String projectStatusParam = paramValues.get(0).getDynamicValue();
-                if (projectStatusParam != null && !projectStatusParam.isBlank()) {
-
-                    if (projectStatusParam.trim().equalsIgnoreCase("Final Design Sent")) {
-                        LocalDateTime yesterday = LocalDateTime.now().minusDays(1);
-                        if (project.getFinalDesignSentToHomeownerDate().isAfter(yesterday)) {
-                            lead.put("projectStatus", projectStatusParam);
-                        }
-                    } else {
-                        lead.put("projectStatus", projectStatusParam);
-                    }
-                }
-
-                //closerAppointmentStartTime
-                final boolean updatecCloserAppointmentStartTime = Boolean.parseBoolean(paramValues.get(1).getDynamicValue());
-                if (updatecCloserAppointmentStartTime) {
-                    lead.put("closerAppointmentStartTime", marketoService.formatDateTime(project.getCloserAppointmentStartTime()));
-                }
-
-                //installationStartTime
-                final boolean updateInstallationStartTime = Boolean.parseBoolean(paramValues.get(2).getDynamicValue());
-                if (updateInstallationStartTime) {
-                    lead.put("installationStartTime", marketoService.formatDateTime(project.getInstallationStartTime()));
-                }
-
-                //substantialCompletionDate
-                final boolean updateSubstantialCompletionDate = Boolean.parseBoolean(paramValues.get(3).getDynamicValue());
-                if (updateSubstantialCompletionDate) {
-                    lead.put("substantialCompletionDate", project.getSubstantialCompletionDate());
-                }
-
-                //inspectionStartTime
-                final boolean updateInspectionStartTime = Boolean.parseBoolean(paramValues.get(4).getDynamicValue());
-                if (updateInspectionStartTime) {
-                    lead.put("inspectionStartTime", marketoService.formatDateTime(project.getInspectionStartTime()));
-                }
-
-                //inspectionPassedDate
-                final boolean updateInspectionPassedDate = Boolean.parseBoolean(paramValues.get(5).getDynamicValue());
-                if (updateInspectionPassedDate) {
-                    lead.put("inspectionPassedDate", project.getInspectionPassedDate());
-                }
-
-                //energizedDate
-                final boolean updateEnergizedDate = Boolean.parseBoolean(paramValues.get(6).getDynamicValue());
-                if (updateEnergizedDate) {
-                    lead.put("energizedDate", project.getEnergizedDate());
-                }
-
-                //finalDesignApprovedDate
-                final boolean updateFinalDesignApprovedDate = Boolean.parseBoolean(paramValues.get(7).getDynamicValue());
-                if (updateFinalDesignApprovedDate) {
-                    if (project.getFinalDesignApprovedDate() != null) {
-                        lead.put("finalDesignApprovedDate", project.getFinalDesignApprovedDate());
-                    }
-                }
-
-                try {
-                    marketoService.pushData(List.of(lead));
-                } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage());
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
-            }
-        }
-    }
+  }
 }

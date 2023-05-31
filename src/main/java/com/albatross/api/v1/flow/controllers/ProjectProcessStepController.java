@@ -149,6 +149,7 @@ public class ProjectProcessStepController {
       // Consolidate to projectProcessStepService
       // run autotriggers for ancillary fields
       List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(projectProcessStepId);
+
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
             projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
@@ -355,6 +356,7 @@ public class ProjectProcessStepController {
 
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
+      log.error("PPS: Unexpected error on PPS ID: {}", projectProcessStepId, e);
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }

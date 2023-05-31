@@ -39,6 +39,11 @@ public class ProjectProcessStepQuery {
   """;
 
   //language=PostgreSQL
+    public final static String getOneCustomFieldValue = """
+select * from flow.get_one_cfv(:objectTypeId::bigint, :cfgaId::bigint, :primaryId::bigint)
+""";
+
+  //language=PostgreSQL
   public final static String getStatus = """
       select pps.id as project_process_step_id,
              pps.company_process_step_status_type_id,
