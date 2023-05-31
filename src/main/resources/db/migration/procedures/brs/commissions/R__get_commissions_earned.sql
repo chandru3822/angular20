@@ -3,78 +3,28 @@ CREATE OR REPLACE FUNCTION brs.get_commissions_earned(p_project_id bigint)
   RETURNS NUMERIC AS
 $BODY$
 DECLARE
-  v_total                numeric;
-  v_primary_financier    bigint;
-  v_source_id            bigint;
-  v_system_size          numeric;
-  v_loan_term            bigint;
-  v_interest_rate        numeric;
-  v_cancelled_date       timestamp;
+  v_total             numeric;
+  v_primary_financier bigint;
+  v_source_id         bigint;
+  v_system_size       numeric;
+  v_loan_term         bigint;
+  v_interest_rate     numeric;
+  v_cancelled_date    timestamp;
 BEGIN
 
-  select cancelled_date
-  into v_cancelled_date
-  from flow.project p2
-  where p2.id = p_project_id;
-
-  select int_value
-  into v_primary_financier
-  from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (460, 19465)
-  where p.project_id = p_project_id
-    and p.process_step_id in (3355, 4)
-    and int_value is not null
-  order by v.date_modified desc
-  limit 1;
-
-  select int_value
-  into v_source_id
-  from flow.project_custom_field_value pcfv
-  where pcfv.project_id = p_project_id
-    and pcfv.custom_field_group_assignment_id = 17280
-    and pcfv.int_value is not null
-  order by pcfv.date_modified desc
-  limit 1;
-
-  select numeric_value
-  into v_system_size
-  from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (40, 19451)
-  where p.project_id = p_project_id
-    and p.process_step_id in (3355, 4)
-    and numeric_value is not null
-  order by v.date_modified desc
-  limit 1;
-
-  select int_value
-  into v_loan_term
-  from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (58, 19469)
-  where p.project_id = p_project_id
-    and p.process_step_id in (3355, 4)
-    and int_value is not null
-  order by v.date_modified desc
-  limit 1;
-
-  select numeric_value
-  into v_interest_rate
-  from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (48, 19470)
-  where p.project_id = p_project_id
-    and p.process_step_id in (3355, 4)
-    and numeric_value is not null
-  order by v.date_modified desc
-  limit 1;
---   raise notice 'p_project_id $$$$$$$$ %',p_project_id;
---   raise notice 'v_primary_financier $$$$$$$$ %',v_primary_financier;
---   raise notice 'v_source_id $$$$$$$$ %',v_source_id;
---   raise notice 'v_system_size $$$$$$$$ %',v_system_size;
---   raise notice 'v_loan_term $$$$$$$$ %',v_loan_term;
---   raise notice 'v_interest_rate $$$$$$$$ %',v_interest_rate;
+  select cancelled_date,
+         interest_rate,
+         loan_term,
+         system_size,
+         source_id,
+         primary_financier
+  from brs.get_commission_data(p_project_id)
+  into v_cancelled_date,
+    v_interest_rate,
+    v_loan_term,
+    v_system_size,
+    v_source_id,
+    v_primary_financier;
 
   select coalesce(
            (SELECT case
