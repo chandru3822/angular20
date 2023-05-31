@@ -47,30 +47,6 @@
           <span class="albatross-header-4-new">Add Template</span>
         </v-card-title>
         <v-card-text>
-          <v-autocomplete v-model="templateTeams"
-                          :items="this.$parent.$data.teamsAssociatedToUser"
-                          item-text="teamName"
-                          item-value="id"
-                          multiple
-                          label="Select Team(s)"
-                          height="35px"
-                          class="pt-3 mt-0"
-                          @change="getTemplates()"
-          >
-            <template
-              slot="selection"
-              slot-scope="{ item, index }"
-            >
-              <v-chip small v-if="index === 0 && templateTeams && templateTeams.length < 2">
-                <span>{{ item.teamName }}</span>
-              </v-chip>
-              <span
-                v-if="index === 1 && templateTeams && templateTeams.length >= 2"
-                class="primary--text text-caption"
-              >{{ templateTeams.length }} selected</span>
-            </template>
-          </v-autocomplete>
-
           <v-select label="Template"
                     class="template-selector pt-1"
                     v-model="selectedTemplate"
@@ -103,20 +79,24 @@ import moment from 'moment'
 export default {
   name: 'Messaging',
   created() {
-    this.fetchContact()
+    if (this.projectId) {
+      this.fetchContact()
+    }
     this.fetchSmsData()
   },
   mounted() {
-    this.toggleChatBox()
+    this.toggleChatBox();
   },
   props: {
-    userAssigned: Boolean
+    userAssigned: Boolean,
+    userIdIn: Number
   },
   data() {
     return {
       snackbar: {},
       currentUserFullName: this.$store.state.user.details.fullName,
       projectId: parseInt(this.$route.params.projectId),
+      userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       participants: [],
       messageList: [], // the list of the messages to show, can be paginated and adjusted dynamically
       newMessagesCount: 0,
@@ -172,20 +152,31 @@ export default {
       this.projectId = parseInt(this.$route.params.projectId) | null
       this.fetchContact()
       this.fetchSmsData()
-      if (this.$parent.$data.teamsAssociatedToUser.length === 1) {
-        console.log('watch projectID set templateTeams')
-        this.templateTeams = [this.$parent.$data.teamsAssociatedToUser[0]]
+      this.templateTeams = []
+      for (let team of this.$parent.$data.teamsAssociatedToUser){
+        this.templateTeams.push(team.id);
       }
+      this.getTemplates()
+    },
+    '$route.params.userId': function() {
+      this.userId = parseInt(this.$route.params.userId) | null
+      this.fetchSmsData()
+      this.templateTeams = []
+      for (let team of this.$parent.$data.teamsAssociatedToUser){
+        this.templateTeams.push(team.id);
+      }
+      this.getTemplates()
     },
     '$parent.$data.teamsAssociatedToUser': function() {
-      if (this.$parent.$data.teamsAssociatedToUser.length === 1) {
-        this.templateTeams = [this.$parent.$data.teamsAssociatedToUser[0].id]
-        this.getTemplates()
+      this.templateTeams = []
+      for (let team of this.$parent.$data.teamsAssociatedToUser){
+        this.templateTeams.push(team.id);
       }
+      this.getTemplates()
     },
-    userAssigned: function() {
+    userAssigned: debounce(function() {
       this.toggleChatBox()
-    },
+    }, 500),
     smsOwnershipEvents: debounce(function() {
       this.fetchSmsData()
     }, 500)
@@ -199,6 +190,8 @@ export default {
           chatBox.classList.add('hide-chat')
         } else {
           chatBox.classList.remove('hide-chat')
+          // Used to keep cursor in chat box when a refresh happens from an ownership change event
+          chatBox.focus()
         }
       }
     },
@@ -217,6 +210,12 @@ export default {
       }
       // called when the user sends a message
       let params
+      let userIds = this.projectId ? [this.contactId] : [this.userId]
+      let attachmentUrl = this.projectId ? `/project/${this.projectId}/attachment` : `/user/${this.userId}/attachment`
+      let sendTextUrl = this.projectId ? `/communication/sendTextsForProject/${this.projectId}` : `/communication/sendTextsForUser/${this.userId}`
+      let lastSentUrl = this.projectId ? `/messaging/setLastSent/project/` + this.projectId : `/messaging/setLastSent/user/` + this.userId
+      let createNotificationUrl = this.projectId ? `/messaging/createNotification/project/${this.projectId}` : `/messaging/createNotification/user/${this.userId}`
+
       try {
         if (message.type === 'file') {
           let mediaUrls = []
@@ -224,7 +223,11 @@ export default {
           formData.append('file', message.data.file)
           formData.append('attachmentTypeId', 3)
 
-          const resp = await postRequest(`/project/${this.projectId}/attachment`, formData)
+          if (!this.projectId) {
+            formData.append('displayName', message.data.file.name.substr(0, message.data.file.name.lastIndexOf('.')))
+          }
+
+          const resp = await postRequest(attachmentUrl, formData)
           const { status } = resp
 
           if (status === 200) {
@@ -232,25 +235,25 @@ export default {
           }
 
           params = {
-            userIDs: [this.contactId],
+            userIDs: userIds,
             message: message.data.file.name,
             mediaURLs: mediaUrls,
             smsTeamId: this.$parent.$data.teamsAssociatedToUser[0].id
           }
-          await postRequest(`/communication/sendTextsForProject/${this.projectId}`, params)
+          await postRequest(sendTextUrl, params)
         }
 
         if (message.data.text) {
           params = {
-            userIDs: [this.contactId],
+            userIDs: userIds,
             message: message.data.text,
             smsTeamId: this.$parent.$data.teamsAssociatedToUser[0].id
           }
-          await postRequest(`/communication/sendTextsForProject/${this.projectId}`, params)
+          await postRequest(sendTextUrl, params)
         }
 
-        await putRequest(`/messaging/setLastSent/` + this.projectId)
-        await postRequest(`/messaging/createNotification/${this.projectId}`)
+        await putRequest(lastSentUrl)
+        await postRequest(createNotificationUrl)
 
         //dont add to the ui unless the message goes thru successfully
         message.data.meta = this.currentUserFullName + ' ' + moment().format('M/D/YYYY h:mm a')
@@ -294,12 +297,23 @@ export default {
     },
     async fetchSmsData() {
       try {
-        const { data } = await getRequest(`/sms/messages/${this.projectId}`, null, [])
+        let fetchSmsDataUrl = ''
+        if (this.projectId) {
+          fetchSmsDataUrl = `/sms/messages/project/${this.projectId}`
+        }
+        else if (this.userId) {
+          fetchSmsDataUrl = `/sms/messages/user/${this.userId}`
+        }
+        else {
+          return;
+        }
+
+        const { data } = await getRequest(fetchSmsDataUrl, null, [])
 
         let messages = []
         data.forEach(u => {
           let msgFrom = 'me'
-          if (u.fromPhone != null && u.fromPhone !== '+18014480212') {
+          if (u.fromPhone != null && u.fromPhone !== '+18014480212' && u.fromPhone !== '+18014480029') {
             msgFrom = u.contactId
           }
 
@@ -341,7 +355,6 @@ export default {
             emojiIcon.replaceWith(templateIcon)
           }
         }
-
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching messages')
@@ -369,7 +382,7 @@ export default {
       this.selectedTemplate = undefined
       if (this.$parent.$data.teamsAssociatedToUser.length != 1) {
         this.selectableTemplates = []
-        this.templateTeams = ''
+        this.templateTeams = []
       }
       this.showTemplateDialog = false
     }

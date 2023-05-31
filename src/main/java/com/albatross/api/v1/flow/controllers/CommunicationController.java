@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.*;
 import com.google.common.collect.Maps;
 import lombok.Data;
@@ -23,10 +24,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -56,7 +54,18 @@ public class CommunicationController {
   public Map<String, Object> sendTextsForProject(
       @PathVariable Long projectId, @RequestBody SendTextsRequest sendTexts) {
     User user = securityService.getCurrentUser();
-    Long contactId = sendTexts.getUserIDs().get(0);
+
+    Long contactId = 0L;
+    if (sendTexts.getUserIDs() == null || sendTexts.getUserIDs().isEmpty()) {
+      Optional<Project> project = projectService.getProject(projectId);
+      if (project.isPresent()) {
+        contactId = project.get().getContactId();
+      }
+    }
+    else {
+      contactId = sendTexts.getUserIDs().get(0);
+    }
+
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);
     if (null != contact) {
@@ -66,6 +75,22 @@ public class CommunicationController {
           HttpStatus.BAD_REQUEST,
           "Could not find contact for contact id: " + contactId,
           new Exception());
+    }
+  }
+
+  @PostMapping(value = "/sendTextsForUser/{userId}")
+  public Map<String, Object> sendTextsForUser(
+    @PathVariable Long userId, @RequestBody SendTextsRequest sendTexts) {
+    Optional<User> recipientUser = userService.getUser(userId, false);
+    log.debug("TWILIO: attempting text for user ID: {}", userId);
+
+    if (recipientUser.isPresent()) {
+      return communicationService.sendTextsForUser(recipientUser.get(), sendTexts.getMessage(), sendTexts.getMediaURLs(), sendTexts.getSmsTeamId());
+    } else {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Could not find user for user id: " + userId,
+        new Exception());
     }
   }
 

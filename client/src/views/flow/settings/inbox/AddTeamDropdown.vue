@@ -59,7 +59,8 @@ export default {
   props: {
     smsTeamOwners:[],
     defaultTeamId: Number,
-    projectId:Number
+    projectId: Number,
+    ownerUserId: Number
   },
   data () {
     return {
@@ -108,7 +109,13 @@ export default {
         users: this.ownersToSave
       }
       try {
-        const {data, status} = await postRequest(`/messaging/addTeam/${this.projectId}`, params)
+        if (this.projectId) {
+          await postRequest(`/messaging/addTeam/project/${this.projectId}`, params)
+        }
+        else if (this.ownerUserId) {
+          await postRequest(`/messaging/addTeam/user/${this.ownerUserId}`, params)
+        }
+
         const snackbarText = (!this.ownersToSave || this.ownersToSave.length === 0 ) ? 'Team added':
             (this.isTeamAlreadyAdded(this.teamToSave) ? 'Conversation assigned' : `Conversation assigned and ${this.teamToSave.teamName} team added`)
         this.snackbar = getSnackbar('SUCCESS', snackbarText)

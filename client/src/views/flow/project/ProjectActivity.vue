@@ -1,26 +1,34 @@
 <template>
 
-  <v-row id="project-activity-container" ref="projectActivityContainer" class="flex-column flex-nowrap" no-gutters>
-      <div class="project-activity-header-container hide-xs" :class="{'pt-n2':selectedOption === 0}">
+  <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="flex-column flex-nowrap" no-gutters>
+      <div class="conversation-activity-header-container hide-xs" :class="{'pt-n2':selectedOption === 0}">
 
-        <div class="albatross-header-3 pt-0 d-flex align-center project-activity-header"
+        <div class="albatross-header-3 pt-0 d-flex align-center conversation-activity-header"
              :class="{'title-collapse': isSidebarCollapsed,
                       'title-no-collapse': !isSidebarCollapsed,
-                      'ml-2': isSidebarCollapsed && $route.path.indexOf('project') < 0,
-                      'mt-0': $route.path.indexOf('project') < 0,
+                      'ml-2': isSidebarCollapsed && ($route.path.indexOf('project') < 0 && $route.path.indexOf('user') < 0),
+                      'mt-0': ($route.path.indexOf('project') < 0 && $route.path.indexOf('user') < 0),
                       'headline-small': true}">
 
           <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
             <template v-slot:activator="{on, attrs}">
 
-              <a v-if="!isSidebarCollapsed"
+              <a v-if="!isSidebarCollapsed && messageProperties.projectName"
                  v-bind="attrs" v-on="on"
-                 class="d-inline-block clickable project-name-link"
+                 class="d-inline-block clickable conversation-name-link"
                 :href="`/project/${projectId}/details`">
-                {{ projectMessageProperties.projectName }}
+                {{ messageProperties.projectName }}
+              </a>
+
+              <a v-else
+                 v-bind="attrs" v-on="on"
+                 class="d-inline-block clickable conversation-name-link"
+                 :href="`/user/${userId}/details`">
+                {{ messageProperties.fullName }}
               </a>
             </template>
-            <span class="albatross-body-3">Go to project</span>
+            <span v-if="messageProperties.projectName" class="albatross-body-3">Go to project</span>
+            <span v-else class="albatross-body-3">Go to user</span>
           </v-tooltip>
           <div v-else-if="!isSidebarCollapsed" >
             {{sidebarTitle}}
@@ -38,7 +46,7 @@
             <v-dialog v-model="showHistoryDialog" max-width="800px">
               <OwnershipHistoryDrilldown
                 class="overflow-y-hidden"
-                :project-history="this.projectHistory"
+                :conversation-history="this.conversationHistory"
                 @historyDialogClosed="showHistoryDialog = false"
               ></OwnershipHistoryDrilldown>
             </v-dialog>
@@ -85,13 +93,14 @@
         <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
         <TeamAssignmentChips
           v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
-          :sms-team-owners="projectMessageProperties.smsTeamOwners"
+          :sms-team-owners="messageProperties.smsTeamOwners"
           :team-names-associated-to-user="teamNamesAssociatedToUser"
-          :reloading="projectIsLoading"
+          :reloading="conversationIsLoading"
           :show-assign-to-me-button="!userAssigned && userHasTeam"
           :project-id="projectId"
+          :user-id="userId"
           class="px-6 pb-1 mt-n1"
-          @updateOwner="loadProject"
+          @updateOwner="loadConversation"
           @joinConversation="startJoinConversation"
         />
 
@@ -99,9 +108,9 @@
         <div class="mb-3" v-if="!isSidebarCollapsed"></div>
       </div>
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-      <div class="project-activity-inner-container hide-xs">
+      <div class="conversation-activity-inner-container hide-xs">
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
-          <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
+          <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
           <ProjectNotes :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
                         :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
@@ -156,18 +165,19 @@
         @joinConversation="joinConversation" />
 
     <div class="show-xs">
-      <div class="project-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
+      <div class="conversation-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
 
         <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
         <TeamAssignmentChips
           v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
-          :sms-team-owners="projectMessageProperties.smsTeamOwners"
+          :sms-team-owners="messageProperties.smsTeamOwners"
           :team-names-associated-to-user="teamNamesAssociatedToUser"
-          :reloading="projectIsLoading"
+          :reloading="conversationIsLoading"
           :show-assign-to-me-button="!userAssigned && userHasTeam"
           :project-id="projectId"
+          :user-id="userId"
           class="px-6 pb-1 mt-n1"
-          @updateOwner="loadProject"
+          @updateOwner="loadConversation"
           @joinConversation="startJoinConversation"
         />
 
@@ -175,7 +185,7 @@
         <div class="mb-3" v-if="!isSidebarCollapsed"></div>
       </div>
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-      <div v-if="showNotes" class="project-activity-inner-container">
+      <div v-if="showNotes" class="conversation-activity-inner-container">
         <div class="scrollable-area">
           <div class="headline-small hide-xs">Contact Notes</div>
           <div class="headline-small mobile-contact-header show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Notes</div>
@@ -318,7 +328,7 @@ export default {
       default: true
     },
     contactId: Number,
-    userId: Number,
+    userIdIn: Number,
     orgId: Number,
     forceShowUploadBtn: Boolean,
     allowSidebarCollapse: {
@@ -334,6 +344,11 @@ export default {
       this.fetchTeamsForUser()
       this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab)
     },
+    '$route.params.userId': function() {
+      this.userId = parseInt(this.$route.params.userId) || null
+      this.fetchTeamsForUser()
+      this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.user.selectedTab ? 1 : this.$store.state.user.selectedTab)
+    },
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
     }, 500)
@@ -342,6 +357,7 @@ export default {
     return {
       userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
       projectId: parseInt(this.$route.params.projectId) || null,
+      userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
       selectedOption: this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab || (this.$store.state.project.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.$store.state.project.selectedTab,
@@ -351,19 +367,19 @@ export default {
       teamsAssociatedToUser: [],
       teamNamesAssociatedToUser: [],
       selectableTeams: [],
-      projectMessageProperties: {},
+      messageProperties: {},
       currentUserId: this.$store.state.user.details.id,
       showHistoryDialog: false,
       teamsMenuOpen: false,
       myOwner: [],
-      projectHistory: [],
-      projectIsLoading: true,
+      conversationHistory: [],
+      conversationIsLoading: true,
       toggleFocused: 0,
       toggleFocusedXs: 0,
     }
   },
   created() {
-    if(this.userCanViewSms) {
+    if (this.userCanViewSms) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       this.fetchTeamsForUser()
       this.getAvailableTeams()
@@ -379,9 +395,19 @@ export default {
       switch (this.selectedOption) {
         case 0:
           if (this.userCanViewSms) {
-            return this.$route.path.includes('inboxConversation') ? this.projectMessageProperties.projectName : 'Project Communication'
+            if (this.projectId) {
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Project Communication'
+            }
+            else {
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'User Communication'
+            }
           } else {
-            return this.$route.path.includes('inboxConversation') ? this.projectMessageProperties.projectName : 'Project Communication (Read-only)'
+            if (this.projectId) {
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Project Communication (Read-only)'
+            }
+            else {
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'User Communication (Read-only)'
+            }
           }
 
         case 1:
@@ -416,8 +442,8 @@ export default {
     },
     scrollToTop(){
       //have to get ref of something not stuck behind a v-if, the query down to the actual element we want
-      this.$vuetify.goTo(this.$refs.projectActivityContainer.querySelector('div.scrollable-area'),
-          {container: '.project-activity-inner-container'}) //if you don't set the container, it defaults to document.scrollingElement, which is the page scroll, not the component we want to scroll
+      this.$vuetify.goTo(this.$refs.conversationActivityContainer.querySelector('div.scrollable-area'),
+          {container: '.conversation-activity-inner-container'}) //if you don't set the container, it defaults to document.scrollingElement, which is the page scroll, not the component we want to scroll
     },
     startJoinConversation() {
       if (this.teamsAssociatedToUser?.length === 1) {
@@ -433,10 +459,16 @@ export default {
     },
     async joinConversation(selectedTeam) {
       try {
-        await postRequest(`/messaging/addTeam/${this.projectId}`, selectedTeam)
+        if (this.projectId) {
+          await postRequest(`/messaging/addTeam/project/${this.projectId}`, selectedTeam)
+        }
+        else if (this.userId) {
+          await postRequest(`/messaging/addTeam/user/${this.userId}`, selectedTeam)
+        }
+
         this.snackbar = getSnackbar('SUCCESS', 'Successfully joined conversation')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        await this.loadProject()
+        await this.loadConversation()
 
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -448,7 +480,7 @@ export default {
     async fetchTeamsForUser() {
       if(this.showSmsTab) {
         try {
-          this.projectIsLoading = true
+          this.conversationIsLoading = true
           const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.teamsAssociatedToUser = data
@@ -458,37 +490,62 @@ export default {
             this.teamNamesAssociatedToUser = this.teamsAssociatedToUser.map(team => team.teamName)
           }
           handleHidingGlobalLoader(this, status)
-          await this.loadProject()
+          await this.loadConversation()
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.projectIsLoading = false
+          this.conversationIsLoading = false
         }
       }
     },
-    async loadProject() {
+    async loadConversation() {
       this.userAssigned = false
-      try {
-        const { data, status } = await getRequest('/messaging/projects/' + this.projectId)
-        this.projectMessageProperties = data
-        this.projectMessageProperties.smsTeamOwners?.forEach(team => {
-          if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
-            team.users?.forEach(owner => {
-              if (owner.userId === this.currentUserId) {
-                this.userAssigned = true
-                this.myOwner.push(owner)
-              }
-            })
-          }
-        })
-        handleHidingGlobalLoader(this, status)
-        this.projectIsLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching project messaging details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.projectIsLoading = false
+      if (this.projectId) {
+        try {
+          const { data, status } = await getRequest('/messaging/project/' + this.projectId)
+          this.messageProperties = data
+          this.messageProperties.smsTeamOwners?.forEach(team => {
+            if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
+              team.users?.forEach(owner => {
+                if (owner.userId === this.currentUserId) {
+                  this.userAssigned = true
+                  this.myOwner.push(owner)
+                }
+              })
+            }
+          })
+          handleHidingGlobalLoader(this, status)
+          this.conversationIsLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching project messaging details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.conversationIsLoading = false
+        }
+      }
+      else if (this.userId) {
+        try {
+          const { data, status } = await getRequest('/messaging/user/' + this.userId)
+          this.messageProperties = data
+          this.messageProperties.smsTeamOwners?.forEach(team => {
+            if (this.teamNamesAssociatedToUser.includes(team.teamName)) {
+              team.users?.forEach(owner => {
+                if (owner.userId === this.currentUserId) {
+                  this.userAssigned = true
+                  this.myOwner.push(owner)
+                }
+              })
+            }
+          })
+          handleHidingGlobalLoader(this, status)
+          this.conversationIsLoading = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching user messaging details')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.conversationIsLoading = false
+        }
       }
     },
     async getAvailableTeams() {
@@ -509,8 +566,15 @@ export default {
     },
     async openHistoryDrilldown() {
       try {
-        const { data } = await getRequest(`/messaging/history/${this.projectId}`)
-        this.projectHistory = data
+        let historyUrl = ''
+        if (this.projectId) {
+          historyUrl = `/messaging/history/project/${this.projectId}`
+        }
+        else {
+          historyUrl = `/messaging/history/user/${this.userId}`
+        }
+        const { data } = await getRequest(historyUrl)
+        this.conversationHistory = data
         this.showHistoryDialog = true
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -541,23 +605,23 @@ export default {
   }
 }
 
-#project-activity-container {
+#conversation-activity-container {
   height: 100%;
   width: 100%;
   position: relative;
 }
 
-.project-activity-inner-container {
+.conversation-activity-inner-container {
   max-height: 100%;
   overflow: auto;
   flex-grow: 4;
 }
 
-.project-activity-header {
+.conversation-activity-header {
   height: 41px;
 }
 
-.project-activity-content {
+.conversation-activity-content {
   min-height: 800px;
   overflow-y: scroll;
   width: 100%;
@@ -597,7 +661,7 @@ export default {
   margin-right: 11px;
 }
 
-.project-name-link {
+.conversation-name-link {
   text-decoration: none;
 }
 
@@ -627,7 +691,7 @@ export default {
   align-items: flex-start;
 }
 
-#project-activity-container .fix-toggle-opacity:before {
+#conversation-activity-container .fix-toggle-opacity:before {
   background-color: unset !important;
 }
 </style>

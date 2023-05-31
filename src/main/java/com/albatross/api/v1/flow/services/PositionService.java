@@ -79,6 +79,7 @@ public class PositionService {
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("smsOwner", null != p.getSmsOwner() ? p.getSmsOwner() : false);
+    params.put("smsEnabled", null != p.getSmsEnabled() ? p.getSmsEnabled() : false);
     params.put(
         "availableToChildren",
         null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
@@ -112,6 +113,7 @@ public class PositionService {
     params.put("contactOwner", null != p.getContactOwner() ? p.getContactOwner() : false);
     params.put("projectOwner", null != p.getProjectOwner() ? p.getProjectOwner() : false);
     params.put("smsOwner", null != p.getSmsOwner() ? p.getSmsOwner() : false);
+    params.put("smsEnabled", null != p.getSmsEnabled() ? p.getSmsEnabled() : false);
     params.put(
         "availableToChildren",
         null != p.getAvailableToChildren() ? p.getAvailableToChildren() : false);
@@ -157,6 +159,7 @@ public class PositionService {
     params.put("contactOwner", null != clonedPosition.getContactOwner() ? clonedPosition.getContactOwner() : false);
     params.put("projectOwner", null != clonedPosition.getProjectOwner() ? clonedPosition.getProjectOwner() : false);
     params.put("smsOwner", null != clonedPosition.getSmsOwner() ? clonedPosition.getSmsOwner() : false);
+    params.put("smsEnabled", null != clonedPosition.getSmsEnabled() ? clonedPosition.getSmsEnabled() : false);
     params.put(
       "availableToChildren",
       null != clonedPosition.getAvailableToChildren() ? clonedPosition.getAvailableToChildren() : false);

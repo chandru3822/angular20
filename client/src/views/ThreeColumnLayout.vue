@@ -41,7 +41,7 @@
                                                                                                   'white-bg': this.rightSideWhiteBg,
                                                                                                   'hide-column-xs': true  }">
         <slot name="right-column">
-          <ProjectActivity v-if="!projectLoading && projectId !== 0" :show-sms-tab="true" :allow-sidebar-collapse="showRightCollapseBtn"
+          <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true" :allow-sidebar-collapse="showRightCollapseBtn"
                            @closeRight="closeRight()"
                            @click="collapseSide('right')"
                            @openRight="$store.state.project.rightSideSplit = false">
@@ -114,6 +114,9 @@ export default {
     '$route.params.projectId': function () {
       this.projectId = parseInt(this.$route.params.projectId) | null
       this.getProject()
+    },
+    '$route.params.userId': function () {
+      this.userId = parseInt(this.$route.params.userId) | null
     }
   },
   data() {
@@ -121,6 +124,7 @@ export default {
       constants,
       projectLoading: false,
       projectId: parseInt(this.$route.params.projectId) | null,
+      userId: parseInt(this.$route.params.userId) | null,
       rightHiddenMobile: this.rightCollapsed
   }
   },

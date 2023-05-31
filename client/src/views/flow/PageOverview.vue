@@ -106,6 +106,11 @@
           <span v-if="detail.value.hasAccess && detail.value.phoneNumber" :class="{'clickable':!!detail.value.phoneNumber}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value.phoneNumber), `${detail.label} Phone Number`)">
              <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>{{ formatPhoneNumber(detail.value.phoneNumber) }}<br/>
           </span>
+          <v-btn v-if="teamsAssociatedToUser.length > 0 && userCanViewSms" outlined small color="" :color="detail.value.hasSmsAccess ? 'primary' : 'grey'"
+                 class="label-medium text-transform-unset px-3 py-1 send-message-div" @click="openSendMessageDialogue(detail.value)" target="_blank">Send message<v-icon small class="pl-2">mdi-forum</v-icon></v-btn>
+          <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog"
+                            :is-inbox="false"
+                            :owner-user-id="detail.value.userId"/>
         </div>
         <span v-else class="d-inline-block detail-item body-medium pl-2">N/A</span>
       </div>
@@ -115,10 +120,11 @@
 </template>
 
 <script>
-import {formatPhoneNumber, cleanPhoneNumberForCopying, getSnackbar} from "@/helpers/helpers";
+import {formatPhoneNumber, cleanPhoneNumberForCopying, getRequest, getSnackbar} from "@/helpers/helpers";
 import constants from '@/helpers/constants'
 import {getStatusColorClass} from "@/services/projectStatusTypeService";
 import {AppMutations} from "@/stores/AppStore";
+import NewMessageDialog from "./settings/inbox/NewMessageDialog";
 
 export default {
   name: "PageOverview",
@@ -132,13 +138,22 @@ export default {
     details: Array,
     owner: Object
   },
+  components: {
+    NewMessageDialog
+  },
   data() {
     return {
       constants,
       formatPhoneNumber,
       cleanPhoneNumberForCopying,
-      getStatusColorClass
+      getStatusColorClass,
+      showNewMessageDialog: false,
+      teamsAssociatedToUser: [],
+      userCanViewSms: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
     }
+  },
+  created() {
+    this.fetchTeamsForUser()
   },
   methods: {
     formatDate(value){
@@ -162,6 +177,31 @@ export default {
     },
     openMenu(){
       this.$store.state.project.leftSideSplit = false;
+    },
+    openSendMessageDialogue(owner) {
+      if (!owner.hasSmsAccess) {
+        this.snackbar = getSnackbar('ERROR', 'Message cannot be sent to a user that does not have SMS access')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+      else if (!owner.hasAccess) {
+        this.snackbar = getSnackbar('ERROR', 'Message cannot be sent to a user that is no longer active')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+      else {
+        this.showNewMessageDialog = true
+      }
+    },
+    async fetchTeamsForUser() {
+      try {
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.teamsAssociatedToUser = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.conversationIsLoading = false
+      }
     },
    }
 }

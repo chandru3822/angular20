@@ -80,6 +80,7 @@ public class PositionQuery {
                p.contact_owner,
                p.project_owner,
                p.sms_owner,
+               p.sms_enabled,
                p.available_to_children,
                coalesce((
                    SELECT array_to_json(array_agg(row_to_json(companyFeatures)))
@@ -123,10 +124,10 @@ public class PositionQuery {
   //language=PostgreSQL
   public final static String insert = """
         insert into flow.position(company_id, position, org_type_id, schedulable, available_to_children, scheduler,
-                              contact_owner, project_owner, sms_owner, use_slot_schedule, created_by_id, date_created,
-                              modified_by_id, date_modified)
+                              contact_owner, project_owner, sms_owner, sms_enabled, use_slot_schedule, created_by_id,
+                              date_created, modified_by_id, date_modified)
     values (:companyId, :position, :orgTypeId, :schedulable, :availableToChildren, :scheduler, :contactOwner, :projectOwner,
-            :smsOwner, :useSlotSchedule, :createdById, now(), :createdById, now())
+            :smsOwner, :smsEnabled, :useSlotSchedule, :createdById, now(), :createdById, now())
         """;
 
   //language=PostgreSQL
@@ -142,6 +143,7 @@ public class PositionQuery {
             contact_owner = :contactOwner,
             project_owner = :projectOwner,
             sms_owner = :smsOwner,
+            sms_enabled = :smsEnabled,
             date_modified = now()
     where id = :id
     """;

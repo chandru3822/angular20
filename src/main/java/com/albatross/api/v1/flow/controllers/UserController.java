@@ -309,6 +309,11 @@ public class UserController {
     userService.saveSmsTeamNotification(userId, smsTeams);
   }
 
+  @GetMapping(value = "/smsAccess/{userId}")
+  public boolean hasSmsAccess(@PathVariable Long userId) {
+    return userService.hasSmsAccess(userId);
+  }
+
   @Data
   public static class NewUserCompanyRequest {
     private Long companyId, companyUserStatusTypeId, userId;

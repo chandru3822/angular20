@@ -9,23 +9,25 @@
                 class="chip"
                 :class="{
                   'unassigned-team-chip': teamNamesAssociatedToUser.includes(team.teamName),
-                  'other-team-chip': !teamNamesAssociatedToUser.includes(team.teamName),  'selected': selectedProjectId === projectId && showSelectedStyles}"
+                  'other-team-chip': !teamNamesAssociatedToUser.includes(team.teamName),  'selected': (selectedProjectId === projectId ||
+                                                                                                        selectedUserId === userId) && showSelectedStyles}"
         >
           <span >{{team.teamName}} - Unassigned</span>
         </v-chip>
         <v-chip v-else v-for="(user, index) in team.users"
                 label
-                :close="(user.userId === userId && userCanView) || (teamNamesAssociatedToUser.includes(team.teamName) && userCanManage)"
+                :close="(user.userId === loggedInUserId && userCanView) || (teamNamesAssociatedToUser.includes(team.teamName) && userCanManage)"
                 close-icon="mdi-close"
                 @click:close="close(user)"
                 :ripple="false"
                 class="chip"
                 :class="{'assigned-team-chip': teamNamesAssociatedToUser.includes(team.teamName),
-                 'other-team-chip': !teamNamesAssociatedToUser.includes(team.teamName), 'selected': selectedProjectId === projectId && showSelectedStyles}">
+                 'other-team-chip': !teamNamesAssociatedToUser.includes(team.teamName), 'selected': (selectedProjectId === projectId ||
+                                                                                                        selectedUserId === userId) && showSelectedStyles}">
           <span>{{team.teamName}} - {{user.name}}</span>
         </v-chip>
       </span>
-    <v-chip v-if="(project && project.showAssignToMeButton) || showAssignToMeButton && !reloading"
+    <v-chip v-if="(conversation && conversation.showAssignToMeButton) || showAssignToMeButton && !reloading && !readOnly"
             label
             class="white--text text-capitalize clickable"
             :ripple="false"
@@ -99,7 +101,7 @@
       </v-card>
 
     </v-dialog>
-    <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView">
+    <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
       <template v-slot:activator="{on, attrs}">
         <v-btn icon v-bind="attrs" v-on="on" large class="align-self-baseline">
           <v-tooltip top small><template v-slot:activator="{on, attrs}">
@@ -111,14 +113,14 @@
           </v-tooltip>
         </v-btn>
       </template>
-      <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
+      <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
     </v-menu>
 
   </v-chip-group>
 </template>
 
 <script>
-import {getSnackbar, putRequest} from "@/helpers/helpers";
+import {getSnackbar, getRequest, putRequest} from "@/helpers/helpers";
 import AddTeamDropdown from "@/views/flow/settings/inbox/AddTeamDropdown";
 import {AppMutations} from "@/stores/AppStore";
 
@@ -131,16 +133,17 @@ export default {
     smsTeamOwners: Array,
     teamNamesAssociatedToUser: Array,
     projectId: Number,
-    project: Object,
+    conversation: Object,
     showSelectedStyles: Boolean,
     showAssignToMeButton: Boolean,
-    reloading: Boolean
+    reloading: Boolean,
+    userId: Number
   },
   data (){
     return {
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE'),
       userCanView: this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'VIEW'),
-      userId: this.$store.state.user.details.id,
+      loggedInUserId: this.$store.state.user.details.id,
       showRemoveDialog: false,
       showRemoveLastTeamDialog: false,
       showRemoveTeamDialog: false,
@@ -149,16 +152,26 @@ export default {
       removeOption:0,
       teamsMenuOpen: false,
       unassignedTeamMenuOpen: false,
-      selectedProjectId: null
+      selectedProjectId: null,
+      selectedUserId: null,
+      readOnly: false
     }
   },
   watch: {
     '$route.params.projectId': function () {
       this.selectedProjectId = parseInt(this.$route.params.projectId) | null
+    },
+    '$route.params.userId': function () {
+      this.selectedUserId = parseInt(this.$route.params.userId) | null
     }
   },
   created() {
     this.selectedProjectId = parseInt(this.$route.params.projectId) | null
+    this.selectedUserId = parseInt(this.$route.params.userId) | null
+
+    if (this.userId) {
+      this.getSmsAccess()
+    }
   },
   methods: {
     teamAdded() {
@@ -196,9 +209,17 @@ export default {
       this.showRemoveTeamDialog=false
       this.showRemoveLastTeamDialog = false
       try {
-        await putRequest(`/messaging/removeTeam/`+ this.projectId + '/' + teamId)
-        // If the project is currently opened on the right panel, navigate back to main inbox to close it
-        if (this.$route.path.includes('inboxConversation') && this.$route.path.includes(this.projectId)) {
+        let removeTeamUrl = ''
+        if (this.projectId) {
+          removeTeamUrl = `/messaging/removeTeam/project/`+ this.projectId + '/' + teamId
+        }
+        else if (this.userId) {
+          removeTeamUrl = `/messaging/removeTeam/user/`+ this.userId + '/' + teamId
+        }
+
+        await putRequest(removeTeamUrl)
+        // If the project/user is currently opened on the right panel, navigate back to main inbox to close it
+        if (this.$route.path.includes('inboxConversation') && (this.$route.path.includes(this.projectId) || this.$route.path.includes(this.userId))) {
           await this.$router.push({path: `/inbox`})
         }
 
@@ -212,14 +233,26 @@ export default {
     },
     async removeUser() {
       try {
-        const bodyData = {
-          projectId: this.projectId,
-          smsTeamId: this.userToRemove.smsTeamId,
-          userId: this.userToRemove.userId,
-          name: this.userToRemove.name,
-          archived: this.userToRemove.archived
+        if (this.projectId) {
+          const bodyData = {
+            projectId: this.projectId,
+            smsTeamId: this.userToRemove.smsTeamId,
+            userId: this.userToRemove.userId,
+            name: this.userToRemove.name,
+            archived: this.userToRemove.archived
+          }
+          await putRequest(`/messaging/removeOwner/project/`+ this.projectId, bodyData)
         }
-        await putRequest(`/messaging/removeOwner/`+ this.projectId, bodyData)
+        else if (this.userId) {
+          const bodyData = {
+            ownerUserId: this.userId,
+            smsTeamId: this.userToRemove.smsTeamId,
+            userId: this.userToRemove.userId,
+            name: this.userToRemove.name,
+            archived: this.userToRemove.archived
+          }
+          await putRequest(`/messaging/removeOwner/user/`+ this.userId, bodyData)
+        }
         this.snackbar = getSnackbar('SUCCESS', 'Unassigned')
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -237,6 +270,17 @@ export default {
       });
 
       return unassignedExists;
+    },
+    async getSmsAccess() {
+      try {
+        const { data, status } = await getRequest(`/user/smsAccess/${this.userId}`)
+        this.readOnly = !data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving SMS Access')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
   }
 

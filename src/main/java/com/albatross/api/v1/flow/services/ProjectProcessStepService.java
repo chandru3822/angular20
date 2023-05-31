@@ -2078,7 +2078,7 @@ public class ProjectProcessStepService {
           if (null != contact) {
             communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, null);
             smsTemplate.getTeamIds().forEach(teamId -> {
-              messagingService.addTeam(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
+              messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
             });
           } else {
             throw new ResponseStatusException(

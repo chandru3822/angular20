@@ -16,7 +16,7 @@ public class Position {
   private Long id, orgTypeId, orgLevelId, level;
   private String position, orgType;
   private Boolean archived, schedulable, scheduler, availableToChildren, contactOwner, projectOwner, smsOwner, useSlotSchedule,
-    cloneAccess, cloneOwnership, cloneSystemList, cloneWhitelist;
+    cloneAccess, cloneOwnership, cloneSystemList, cloneWhitelist, smsEnabled;
 
   //until i figure out how to do a v-select with the list using one key and the value using a different key i need this:
   private Long positionId;
