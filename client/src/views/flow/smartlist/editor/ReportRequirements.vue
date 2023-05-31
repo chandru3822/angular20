@@ -42,7 +42,7 @@
 
         <RequirementEditor
           v-if="edits[index]"
-          :available-fields="availableFields"
+          :available-fields="[]"
           :existing-requirement="requirement"
           :get-value="getValue"
           @cancelled="edits.splice(index, 1, false)"

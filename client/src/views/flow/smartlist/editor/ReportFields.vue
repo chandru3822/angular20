@@ -9,7 +9,7 @@
       v-show="!showPsEventField"
       v-model="newValue"
       :items="calculatedAvailableFields"
-      item-text="name"
+      item-text="calculatedName"
       return-object
       placeholder="Add Column"
       :loading="loading"
@@ -152,27 +152,47 @@ const psEventField = ref(null)
 const showPsEventField = ref(false)
 const showDeleteDialog = ref(false)
 
-// const calculatedName = (field) => {
-//   let name = field.name
-//
-//   if (field.objectTypeId === 4) {
-//     name += ` - (PS) ${field.processStepName}`
-//   } else if (field.objectTypeId === 6) {
-//     name += ` - (E) ${field.eventName}`
-//   }
-//
-//   return name
-// }
-
 const calculatedAvailableFields = computed(() => {
   return props.availableFields.filter(f => {
+    let keep = false
+    let suffix = ''
     if (f?.smartlistFieldId) {
-      return props.fields.findIndex(field => field?.smartlistFieldId === f.smartlistFieldId) === -1
+      keep = props.fields.findIndex(field => {
+        return field?.smartlistFieldId === f.smartlistFieldId &&
+               (
+                 //PS/event system fields can be added once per PS/event. Other object type system fields can be added just once
+                 [1,2,3,5].includes(field.objectTypeId) ||
+                 (field.objectTypeId === 4 && field.processStepId !== f.processStepId) ||
+                 (field.objectTypeId === 6 && field.eventId !== f.eventId)
+               )
+      }) === -1
     } else if (f?.customFieldGroupAssignmentId) {
-      return props.fields.findIndex(field => field?.customFieldGroupAssignmentId === f.customFieldGroupAssignmentId) === -1
+      keep = props.fields.findIndex(field => field?.customFieldGroupAssignmentId === f.customFieldGroupAssignmentId) === -1
+      if (keep) {
+        switch (f.objectTypeId) {
+          case 1:
+            suffix = ` - Project`
+            break
+          case 2:
+            suffix = ` - Contact`
+            break
+          case 3:
+            suffix = ` - User`
+            break
+          case 4:
+            suffix = ` - ${f.processStepName}`
+            break
+          case 5:
+            suffix = ` - Org`
+            break
+          case 6:
+            suffix = ` - ${f.eventName} - ${f.processStepName}`
+        }
+      }
     }
-    //catch-all removing field
-    return false
+
+    f.calculatedName = `${f.name}${suffix}`
+    return keep
   })
 })
 
@@ -196,7 +216,7 @@ const calculatedAvailablePsEvents = computed(() => {
       if (notIncluded) {
         items.push({
           id: (f.objectTypeId === 4) ? f.processStepId : f.eventId,
-          name: (f.objectTypeId === 4) ? f.processStepName : f.eventName
+          name: (f.objectTypeId === 4) ? f.processStepName : `${f.eventName} - ${f.processStepName}`
         })
       }
     }
