@@ -4,7 +4,9 @@
   :loading="isDataLoading"
   :headers="headers"
   :items="reportData"
+  :items-per-page="25"
   fixed-header
+  :footer-props="footerProps"
   class="rounded-0"
 >
   <template #no-data>
@@ -87,8 +89,12 @@ const props = defineProps({
 
 const emit = defineEmits(['updated', 'queued'])
 
-const isSystemAdmin = store.getters.isFullAdmin
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100],
+  'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
 
+const isSystemAdmin = store.getters.isFullAdmin
 const reportData = ref([])
 const isDataLoading = ref(false)
 const isUpdateQueued = ref(false)
@@ -133,7 +139,7 @@ const processQueue = async () => {
     isUpdateQueued.value = false
     reportData.value = []
 
-    const response = await http.post(`/smartlist/adhoc?limit=40`, {
+    const response = await http.post(`/smartlist/adhoc`, {
       smartlist: props.report,
       fields: props.fields,
       requirements: props.requirements

@@ -60,7 +60,7 @@ import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import constants from '@/helpers/constants'
 
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 
