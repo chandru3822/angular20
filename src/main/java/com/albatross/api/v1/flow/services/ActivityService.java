@@ -3,20 +3,27 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.ActivityQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -26,6 +33,13 @@ public class ActivityService {
   private final SqlCache sqlCache;
   private final ObjectMapper om;
   private final SecurityService securityService;
+  private final CommunicationService communicationService;
+  private final ContactService contactService;
+  private final ProjectService projectService;
+  private final UserService userService;
+
+  @Value("${app.home_url}")
+  private String homeUrl;
 
   public List<ActivityType> getActivityTopicsByObject(Long objectTypeId, Long sourceId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -96,7 +110,98 @@ public class ActivityService {
     //handle any activity hashtags
     updateActivityHashtag(objectTypeId, id, newActivity.getActivityHashtags());
 
-    return getOneActivity(objectTypeId, id);
+    Optional<Activity> savedActivity = getOneActivity(objectTypeId, id);
+
+    //todo: handle any @ users
+    //only notify @ users if project or contact cuz users dont usually have access to the other screens (org and user)
+    if(savedActivity.isPresent() && (objectTypeId.equals(ObjectType.PROJECT.id) || objectTypeId.equals(ObjectType.CONTACT.id))) {
+      notifyMentionedUsers(savedActivity.get(), objectTypeId, sourceId);
+    }
+
+    return savedActivity;
+  }
+
+  public void notifyMentionedUsers(Activity activity, Long typeId, Long sourceId) {
+    User currentUser = securityService.getCurrentUser();
+
+    try (InputStream inputStream =
+           NoteService.class.getResourceAsStream(
+             "/communication/templates/note-mention-email.ftl.html")) {
+
+      // Match for firstName lastName (Email)
+      Pattern mentionedNameRegex = Pattern.compile("\\B@([a-zA-Z-\\s*()]+)\\s(\\S+) \\(([^)]+)\\)");
+      Matcher m = mentionedNameRegex.matcher(activity.getNote());
+
+      if (inputStream == null) {
+        throw new RuntimeException("[Note] Unable to find template");
+      }
+      String template = IOUtils.toString(inputStream, Charset.defaultCharset());
+
+      // If mention(s) are found in the Note
+      while (m.find()) {
+        String firstName = m.group(1);
+        String lastName = m.group(2);
+        String emailAddress = m.group(3);
+
+        String locationOfNote = "";
+        String link = "";
+        // Used to store the Contact name or Project name which contains the Note
+        String noteRefName = "";
+        if (null != typeId && typeId.equals(ObjectType.CONTACT.id)) {
+          locationOfNote = "contact";
+          link = homeUrl + "/contact/" + sourceId;
+          Contact c = contactService.getContact(sourceId);
+          noteRefName = c.getFirstName() + " " + c.getLastName() + " - " + c.getId();
+        } else if (null != typeId && typeId.equals(ObjectType.PROJECT.id)) {
+          locationOfNote = "project";
+          link = homeUrl + "/project/" + sourceId + "/details";
+          Optional<Project> p = projectService.getProject(sourceId);
+          if (p.isPresent()) {
+            noteRefName = p.get().getProjectName() + " - " + p.get().getId();
+          }
+        }
+
+        User mentionedUser = userService.findByUsernameOrEmailIgnoreCase(emailAddress);
+        if (mentionedUser != null) {
+          if (NotificationType.EMAIL.id.equals(mentionedUser.getNotificationTypeId())) {
+            Map<String, Object> context = new HashMap<>();
+            context.put("firstName", firstName);
+            context.put("lastName", lastName);
+            context.put("locationOfNote", locationOfNote);
+            context.put("link", link);
+            context.put("noteContents", activity.getNote());
+            String emailSubject =
+              currentUser.getFirstName()
+                + " "
+                + currentUser.getLastName()
+                + " mentioned you in a note on "
+                + noteRefName;
+            communicationService.sendEmail(
+              emailSubject,
+              emailAddress,
+              template,
+              context,
+              "noreply@albatross.myblueraven.com",
+              "Albatross",
+              currentUser.trueUserId());
+          } else {
+            String groupId = UUID.randomUUID().toString();
+            String textMessage =
+              "You were mentioned in an Albatross note. Click here: "
+                + link
+                + " to open the "
+                + locationOfNote
+                + ".";
+            communicationService.queueTextMessages(
+              groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
+          }
+        } else {
+          log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
+        }
+      }
+    } catch (IOException e) {
+      log.error("NOTE: Error sending user mention email", e);
+    }
   }
 
   public Optional<Activity> editActivityByObject(Long objectTypeId, Long activityId, Activity activity) {

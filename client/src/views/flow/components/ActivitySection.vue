@@ -85,7 +85,34 @@
         Add note
       </v-btn>
       <div v-else>
-        <v-textarea outlined v-model="editedActivity.note"></v-textarea>
+<!--        <v-textarea outlined v-model="editedActivity.note"></v-textarea>-->
+        <Mentionable
+          :keys="['@']"
+          :items="users"
+          offset="6"
+          insert-space
+        >
+          <v-textarea class="body-medium" hide-details
+                      auto-grow
+                      rows="4"
+                      background-color="grey lighten-4"
+                      filled v-model="editedActivity.note">
+          </v-textarea>
+
+          <template #no-result>
+            <div class="dim">
+              No result
+            </div>
+          </template>
+
+          <template #item-@="{ item }">
+            <div class="user">
+                <span class="dim">
+                  ({{ item.value }})
+                </span>
+            </div>
+          </template>
+        </Mentionable>
         <v-autocomplete
           v-model="selectedTopics"
           :items="topics"
@@ -140,10 +167,11 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ActivityList from "@/views/flow/components/ActivityList.vue";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
+import {Mentionable} from 'vue-mention'
 
 export default {
   name: 'ActivitySection',
-  components: {ActivityList, ConfirmationDialog},
+  components: {ActivityList, ConfirmationDialog, Mentionable},
   mixins: [Vue2Filters.mixin],
   props: {
     contactId: Number,
@@ -158,6 +186,7 @@ export default {
       snackbar: {},
       search: this.$route.query.search != null ? this.$route.query.search : '',
       linkLabel: '',
+      users: [],
       addActivity: false,
       blankActivity: {id: null, activityHashtags: []},
       editedActivity: {},
@@ -224,6 +253,7 @@ export default {
     this.getTopics()
     //when this page loads for the first time it will always be on timeline view so we dont have to check here. only on watch
     this.getActivities()
+    this.getUsers()
   },
   methods: {
     cloneDeep,
@@ -268,6 +298,19 @@ export default {
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
+      }
+    },
+    getUsers: async function () {
+      //todo: debounce and limit this shiz
+      try {
+        const {data} = await getRequest('/user/mentionableUsers', null, [])
+        this.users = data
+
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     changeSortDirection() {
