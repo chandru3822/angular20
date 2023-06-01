@@ -240,8 +240,7 @@ public class AvailabilityQuery {
         FROM flow.resource_appointment ra
                  LEFT JOIN flow.org o ON o.id = ra.org_id
                  LEFT JOIN flow.user u ON u.id = ra.user_id
-        WHERE case when :orgId::bigint is not null then ra.org_id = :orgId
-                   else ra.user_id = :userId end
+        WHERE (ra.org_id = any(array[ :orgIds ]::bigint[]) or ra.user_id = any(array[ :userIds ]::bigint[]))
           and ra.company_id = :companyId
           and ra.archived is not true
           and ((ra.start_time between :startTime::timestamp AND :endTime::timestamp)

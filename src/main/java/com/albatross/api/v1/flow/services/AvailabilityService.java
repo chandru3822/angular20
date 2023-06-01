@@ -325,12 +325,12 @@ public class AvailabilityService {
 
   //dont touch this or mobile will hurt you
   public List<ResourceAppointment> getResourceAppointmentsInRange(
-    Long userId, Long orgId, String startTime, String endTime) {
+    List<Long> userIds, List<Long> orgIds, String startTime, String endTime) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
-    params.put("orgId", orgId);
+    params.put("userIds", userIds);
+    params.put("orgIds", orgIds);
     params.put("startTime", startTime);
     params.put("endTime", endTime);
     params.put("companyId", user.getCompanyId());

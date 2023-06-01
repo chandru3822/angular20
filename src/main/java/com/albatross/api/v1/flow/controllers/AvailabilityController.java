@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,12 +64,21 @@ public class AvailabilityController {
 
   @GetMapping(value = "/appointmentsInRange")
   public ResponseEntity<List<ResourceAppointment>> getResourceAppointmentsInRange(
-    @RequestParam(required = false) Long userId,
-    @RequestParam(required = false) Long orgId,
+    @RequestParam(required = false) List<Long> userIds,
+    @RequestParam(required = false) List<Long> orgIds,
     @RequestParam String startTime,
-    @RequestParam String endTime) {
+    @RequestParam String endTime)
+  {
+    if (orgIds == null) {
+      orgIds = Collections.emptyList();
+    }
+
+    if (userIds == null) {
+      userIds = Collections.emptyList();
+    }
+
     return new ResponseEntity<>(
-      availabilityService.getResourceAppointmentsInRange(userId, orgId, startTime, endTime), HttpStatus.OK);
+      availabilityService.getResourceAppointmentsInRange(userIds, orgIds, startTime, endTime), HttpStatus.OK);
   }
 
   @GetMapping(value = "/appointments")
