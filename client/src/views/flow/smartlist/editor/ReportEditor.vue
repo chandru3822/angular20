@@ -59,7 +59,7 @@
             <SmartlistShare
               :smartlist="report"
               :show-text="true"
-              :disabled="!canShare"
+              :disabled="!canShare || !isEditing"
               @updated-public="(isPublic) => report.public = isPublic"
               @updated-owner="updateOwner"
             />
@@ -67,8 +67,8 @@
             <v-btn
               text
               color="primary"
-              :disabled="!hasUnsavedChanges || (vueInstance.$route.params?.reportId && !canEdit)"
-              @click="showSaveDialog = true"
+              :disabled="!hasUnsavedChanges || (isEditing && !canEdit)"
+              @click="saveClicked"
             >
               <v-icon>save</v-icon>
               Save
@@ -88,7 +88,7 @@
           <v-col cols="4">
             <v-autocomplete
               v-model="report.companyObjectTypeId"
-              :disabled="!canEdit"
+              :disabled="!canEdit && isEditing"
               :items="filteredReportTypes"
               item-value="companyObjectTypeId"
               item-text="objectType"
@@ -339,13 +339,14 @@ const sourceRequirements = ref([])
 
 const reportTypes = ref([])
 const availableFields = ref([])
+const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
 
 /**
  * If editing a report, show only types available to that group
  * project/PS/PSE/contact, org/user
  */
 const filteredReportTypes = computed(() => {
-  if (vueInstance.$route.params?.reportId) {
+  if (isEditing.value) {
     let objectTypeIds = []
     if ([1,2,4].includes(report.value.objectTypeId)) {
       objectTypeIds = [1,2,4]
@@ -408,6 +409,7 @@ const canDelete = computed(() => {
 
 watch(() => vueInstance.$route.params?.reportId, async () => {
   if (vueInstance.$route.params?.reportId) {
+    isEditing.value = true
     refreshReport()
   }
 })
@@ -606,6 +608,17 @@ const toggleDataView = async () => {
   }
 }
 
+const saveClicked = () => {
+  if (!isEditing.value) {
+    if (!Object.hasOwn(report.value, 'companyObjectTypeId') || report.value.name.trim().length < 1) {
+      snackbar('ERROR', 'Smartlist must have a name and data type')
+      return
+    }
+  }
+
+  showSaveDialog.value = true
+}
+
 const editNameClicked = () => {
   if (canEdit.value) {
     isEditingReportName.value = true
@@ -624,7 +637,7 @@ onMounted(async () => {
 
   await getReportTypes()
 
-  if (vueInstance.$route.params?.reportId) {
+  if (isEditing.value) {
     refreshReport()
   } else {
     if (!canAdd) {
