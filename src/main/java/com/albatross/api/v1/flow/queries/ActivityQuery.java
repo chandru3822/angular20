@@ -48,10 +48,12 @@ public class ActivityQuery {
                                                     concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                     pa2.archived,
                                                     pa2.modified_by_id as "modifiedById",
+                                                    concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
                                                     pa2.activity_type_id as "activityTypeId"
                                              from flow.project_activity_hashtag pah2
                                                     inner join flow.project_activity pa2 on pa2.id = pah2.project_activity_id and pa2.project_id = :sourceId and pa2.archived is false
                                                     inner join flow."user" u on u.id = pa2.created_by_id
+                                                    inner join flow."user" mod on mod.id = pa2.modified_by_id
                                                     inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
                                                     inner join flow.position p on p.id = up.position_id
                                                     inner join flow.org o on o.id = up.org_id
@@ -106,9 +108,11 @@ public class ActivityQuery {
                                                            concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                            pa2.archived,
                                                            pa2.modified_by_id as "modifiedById",
+                                                           concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
                                                            pa2.activity_type_id as "activityTypeId"
                                                     from flow.project_activity pa2
                                                            inner join flow."user" u on u.id = pa2.created_by_id
+                                                           inner join flow."user" mod on mod.id = pa2.modified_by_id
                                                            inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
                                                            inner join flow.position p on p.id = up.position_id
                                                            inner join flow.org o on o.id = up.org_id
@@ -169,6 +173,7 @@ public class ActivityQuery {
              pa.pinned_by_id as "pinnedById",
              concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
+             concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
              pa.archived,
              pa.activity_type_id,
              coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
@@ -190,6 +195,7 @@ public class ActivityQuery {
                                                   and pah.archived is false) ht), '[]') AS "activityHashtags"
       from flow.project_activity pa
         inner join flow."user" u on u.id = pa.created_by_id
+        inner join flow."user" mod on mod.id = pa.modified_by_id
         inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
         inner join flow.position p on p.id = up.position_id
         inner join flow.org o on o.id = up.org_id
@@ -248,6 +254,7 @@ public class ActivityQuery {
              pa.pinned_by_id as "pinnedById",
              concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
+             concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
              pa.archived,
              pa.activity_type_id,
               coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
@@ -269,6 +276,7 @@ public class ActivityQuery {
                                                   and pah.archived is false) ht), '[]') AS "activityHashtags"
       from flow.project_activity pa
         inner join flow."user" u on u.id = pa.created_by_id
+        inner join flow."user" mod on mod.id = pa.modified_by_id
         inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
         inner join flow.position p on p.id = up.position_id
         inner join flow.org o on o.id = up.org_id
@@ -287,8 +295,8 @@ public class ActivityQuery {
   public final static String editProjectActivity = """
       update flow.project_activity
       set note = :note,
-          date_modified = now(),
-          modified_by_id = :userId,
+          date_modified = case when note != :note then now() else date_modified end,
+          modified_by_id = case when note != :note then :userId else modified_by_id end,
           linked = :linked,
           linked_pps_id = :linkedPpsId,
           linked_ppse_id = :linkedPpseId
@@ -303,6 +311,14 @@ public class ActivityQuery {
           date_modified = now(),
           modified_by_id = :userId
       where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String setProjectActivityModified = """
+      update flow.project_activity pa
+      set date_modified = now(),
+          modified_by_id = :userId
+      where id = :activityId
     """;
 
   //language=PostgreSQL

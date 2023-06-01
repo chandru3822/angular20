@@ -109,6 +109,7 @@ public class ActivityService {
     params.put("linkedPpsId", activity.getLinkedPpsId());
     params.put("linkedPpseId", activity.getLinkedPpseId());
     params.put("userId", user.trueUserId());
+    //only update the date modified and the modified by id if the content of the note changed, see sql
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.editProjectActivity : null;
 
     sqlCache.updateBySql(sql, params);
@@ -126,7 +127,7 @@ public class ActivityService {
     params.put("userId", user.trueUserId());
     params.put("activityId", activityId);
 
-    if(null != activityHashtags) {
+    if(null != activityHashtags && activityHashtags.size() > 0) {
       for(ActivityHashtag activityHashtag : activityHashtags) {
         if(null != activityHashtag.getArchived() && activityHashtag.getArchived()) {
           //archive hashtag
@@ -140,6 +141,9 @@ public class ActivityService {
           sqlCache.updateBySql(sql, params);
         }
       }
+      //because at least one hashtag was changed, we set the "modified by id" on the activity because that is how BR wants it to work
+      String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.setProjectActivityModified : null;
+      sqlCache.updateBySql(sql, params);
     }
 
     return getActivityHashtags(objectTypeId, activityId);
