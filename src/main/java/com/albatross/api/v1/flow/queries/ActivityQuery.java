@@ -44,6 +44,8 @@ public class ActivityQuery {
                                                     pa2.created_by_id as "createdById",
                                                     concat(u.first_name, ' ', u.last_name) as "createdBy",
                                                     concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+                                                    pa2.pinned_by_id as "pinnedById",
+                                                    concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                     pa2.archived,
                                                     pa2.modified_by_id as "modifiedById",
                                                     pa2.activity_type_id as "activityTypeId"
@@ -53,6 +55,7 @@ public class ActivityQuery {
                                                     inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
                                                     inner join flow.position p on p.id = up.position_id
                                                     inner join flow.org o on o.id = up.org_id
+                                                    left join flow."user" pin on pin.id = pa2.pinned_by_id
                                              where pa2.activity_type_id = a.id
                                                and pah2.archived is false
                                                and pa2.archived is false
@@ -99,6 +102,8 @@ public class ActivityQuery {
                                                            pa2.created_by_id as "createdById",
                                                            concat(u.first_name, ' ', u.last_name) as "createdBy",
                                                            concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+                                                           pa2.pinned_by_id as "pinnedById",
+                                                           concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                            pa2.archived,
                                                            pa2.modified_by_id as "modifiedById",
                                                            pa2.activity_type_id as "activityTypeId"
@@ -107,6 +112,7 @@ public class ActivityQuery {
                                                            inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
                                                            inner join flow.position p on p.id = up.position_id
                                                            inner join flow.org o on o.id = up.org_id
+                                                           left join flow."user" pin on pin.id = pa2.pinned_by_id
                                                     where pa2.archived is false
                                                       and pa2.project_id = :sourceId
                                                       and pa2.activity_type_id = a.id
@@ -160,6 +166,8 @@ public class ActivityQuery {
              pa.created_by_id,
              concat(u.first_name, ' ', u.last_name) as "createdBy",
              concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+             pa.pinned_by_id as "pinnedById",
+             concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
              pa.archived,
              pa.activity_type_id,
@@ -185,6 +193,7 @@ public class ActivityQuery {
         inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
         inner join flow.position p on p.id = up.position_id
         inner join flow.org o on o.id = up.org_id
+        left join flow."user" pin on pin.id = pa.pinned_by_id
       where pa.archived is false
        and pa.project_id = :sourceId
     """;
@@ -202,8 +211,8 @@ public class ActivityQuery {
   public final static String saveProjectActivityPinned = """
       update flow.project_activity
       set pinned = :pinned,
-          date_modified = now(),
-          modified_by_id = :userId
+          date_pinned = now(),
+          pinned_by_id = :userId
       where id = :activityId
     """;
 
@@ -236,6 +245,8 @@ public class ActivityQuery {
              pa.created_by_id,
              concat(u.first_name, ' ', u.last_name) as "createdBy",
              concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+             pa.pinned_by_id as "pinnedById",
+             concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
              pa.archived,
              pa.activity_type_id,
@@ -261,6 +272,7 @@ public class ActivityQuery {
         inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
         inner join flow.position p on p.id = up.position_id
         inner join flow.org o on o.id = up.org_id
+        left join flow."user" pin on pin.id = pa.pinned_by_id
       where pa.archived is false
        and pa.id = :id
     """;
