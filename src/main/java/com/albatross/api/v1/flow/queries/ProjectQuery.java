@@ -333,7 +333,8 @@ select
                      pos.position,
                      u.phone_number as "phoneNumber",
                      up.id as "userPositionId",
-                     ust.has_access as "hasAccess"
+                     ust.has_access as "hasAccess",
+                     pos.sms_enabled as "hasSmsAccess"
                   FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position pos on pos.id = up.position_id
