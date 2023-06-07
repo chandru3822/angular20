@@ -106,11 +106,23 @@
           <span v-if="detail.value.hasAccess && detail.value.phoneNumber" :class="{'clickable':!!detail.value.phoneNumber}" @click="copyToClipBoard(cleanPhoneNumberForCopying(detail.value.phoneNumber), `${detail.label} Phone Number`)">
              <span class="detail-label label-small pr-2"><v-icon small>mdi-phone</v-icon></span>{{ formatPhoneNumber(detail.value.phoneNumber) }}<br/>
           </span>
-          <v-btn v-if="teamsAssociatedToUser.length > 0 && userCanViewSms" outlined small color="" :color="detail.value.hasSmsAccess ? 'primary' : 'grey'"
-                 class="label-medium text-transform-unset px-3 py-1 send-message-div" @click="openSendMessageDialogue(detail.value)" target="_blank">Send message<v-icon small class="pl-2">mdi-forum</v-icon></v-btn>
-          <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog"
-                            :is-inbox="false"
-                            :owner-user-id="detail.value.userId"/>
+          <v-btn
+            v-if="teamsAssociatedToUser.length > 0 && userCanViewSms"
+            outlined
+            small
+            color=""
+            :color="detail.value.hasSmsAccess ? 'primary' : 'grey'"
+            class="label-medium text-transform-unset px-3 py-1 send-message-div"
+            @click="openSendMessageDialogue(detail.value)"
+            target="_blank"
+          >
+            Send message
+            <v-icon small class="pl-2">mdi-forum</v-icon>
+
+            <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog"
+                              :is-inbox="false"
+                              :owner-user-id="detail.value.userId"/>
+          </v-btn>
         </div>
         <span v-else class="d-inline-block detail-item body-medium pl-2">N/A</span>
       </div>
