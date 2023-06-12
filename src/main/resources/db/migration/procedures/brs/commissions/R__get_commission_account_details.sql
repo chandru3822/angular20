@@ -106,7 +106,8 @@ BEGIN
       select *,coalesce(foo1.current_pay_commissions,0) + coalesce(foo1.current_pay_overrides,0) as current_pay
         from (
         SELECT foo.*,
-               current_pay.amount_to_pay                                              AS current_pay_commissions,
+               case when foo.cancelled_date is null then coalesce(current_pay.amount_to_pay,0)
+                    else foo.commission_earned - foo.commission_paid_to_date end                                             AS current_pay_commissions,
                coalesce(foo.override_earned,0)
                    - coalesce(foo.overrides_paid_to_date,0)                           AS current_pay_overrides,
                case when foo.cancelled_date is not null then
