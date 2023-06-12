@@ -105,20 +105,8 @@ BEGIN
     RETURN QUERY
       select *,coalesce(foo1.current_pay_commissions,0) + coalesce(foo1.current_pay_overrides,0) as current_pay
         from (
-        SELECT *,
-              case when coalesce(foo.commission_forfeited_by_closer,0) > 0 and
-                        coalesce(foo.commission_paid_to_date,0) < 1 and
-                        foo.cancelled_date is null and
-                        coalesce(foo.commission_forfeited_by_closer,0) > coalesce(foo.total_commissions,0) - coalesce(foo.commission_earned,0)  then
-                        (coalesce(foo.commission_earned,0) - (coalesce(foo.commission_forfeited_by_closer,0) - (coalesce(foo.total_commissions,0) - coalesce(foo.commission_earned,0))))
-                   when coalesce(foo.commission_forfeited_by_closer,0) > 0 and
-                        foo.cancelled_date is null and
-                        coalesce(foo.commission_paid_to_date,0) > 0  then
-                       (coalesce(foo.commission_earned,0)
-                       - coalesce(foo.commission_paid_to_date,0)) - coalesce(foo.commission_forfeited_paid_to_date,0)
-              else
-               coalesce(foo.commission_earned,0)
-                   - coalesce(foo.commission_paid_to_date,0)   end                       AS current_pay_commissions,
+        SELECT foo.*,
+               current_pay.amount_to_pay                                              AS current_pay_commissions,
                coalesce(foo.override_earned,0)
                    - coalesce(foo.overrides_paid_to_date,0)                           AS current_pay_overrides,
                case when foo.cancelled_date is not null then
@@ -355,22 +343,19 @@ BEGIN
                                 THEN pd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
                             ELSE 1 = 1 END
              ) AS foo
-        WHERE CASE WHEN v_is_show_all IS TRUE and COALESCE(foo.commission_forfeited_by_closer,0) < 1
-                       THEN not (COALESCE(foo.commission_earned,0) + COALESCE(foo.override_earned,0) +
-                            (COALESCE(foo.commission_adjustments,0) - COALESCE(foo.commission_paid_to_date,0) -
-                             COALESCE(foo.overrides_paid_to_date,0)) =  any(v_amounts))
-                  when v_is_show_all IS TRUE and COALESCE(foo.commission_forfeited_by_closer,0) > 0 then
-                     not
-                     (COALESCE(foo.commission_earned,0) + COALESCE(foo.override_earned,0) +
-                      (COALESCE(foo.commission_adjustments,0) - COALESCE(foo.commission_paid_to_date,0) - COALESCE(foo.commission_forfeited_paid_to_date,0) -
-                       COALESCE(foo.overrides_paid_to_date,0)) =  any(v_amounts))
-                ELSE 1 = 1 END
-          AND CASE WHEN p_override_plan_id IS NOT NULL
-                       THEN foo.override_plan_id = p_override_plan_id ELSE 1 = 1 END
-          AND CASE WHEN p_commission_plan_id IS NOT NULL
-                       THEN foo.commission_plan_id = p_commission_plan_id
-                   ELSE 1 = 1 END
-    order by 3) as foo1;
+          join lateral brs.get_current_pay(coalesce(foo.total_commissions,0),
+          coalesce(foo.commission_earned,0),
+          coalesce(foo.commission_paid_to_date,0),
+          coalesce(foo.commission_forfeited_by_closer,0),
+          coalesce(foo.commission_forfeited_paid_to_date,0)) as current_pay on true
+        ) as foo1
+      WHERE NOT (coalesce(foo1.current_pay_commissions,0) + coalesce(foo1.current_pay_overrides,0) = any(v_amounts))
+        AND CASE WHEN p_override_plan_id IS NOT NULL
+                   THEN foo1.override_plan_id = p_override_plan_id ELSE 1 = 1 END
+        AND CASE WHEN p_commission_plan_id IS NOT NULL
+                   THEN foo1.commission_plan_id = p_commission_plan_id
+                 ELSE 1 = 1 END
+      order by 3;
     drop table milestone2;
     drop table milestone1;
 END
