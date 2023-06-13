@@ -43,6 +43,7 @@ BEGIN
     end if;
     return p_sql;
   else
+    -- updates to another field if they update the original first field only to null
     if p_update_first_value_only is true and p_value is null then
       perform flow.update_first_value(p_field_to_update,
                                       p_update_first_value_only_id,p_secondary_field_to_update,p_secondary_value,

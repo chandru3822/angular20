@@ -1798,8 +1798,7 @@ const router = new Router({
               },
               children: [
                   {
-                      path: 'inboxConversation/:projectId',
-                      name: 'inboxConversation',
+                      path: 'inboxConversation/project/:projectId',
                       meta: {title: 'Albatross - Inbox Conversation'},
                       component: () => {
                           if(store.getters.userHasFeature('SMS_INBOX')) {
@@ -1808,7 +1807,18 @@ const router = new Router({
                               return accessDenied()
                           }
                       }
+                  },
+                  {
+                  path: 'inboxConversation/user/:userId',
+                  meta: {title: 'Albatross - Inbox Conversation'},
+                  component: () => {
+                    if(store.getters.userHasFeature('SMS_INBOX')) {
+                      return import (/* webpackChunkName: "inboxConversation" */ './views/flow/settings/inbox/MainInbox')
+                    } else {
+                      return accessDenied()
+                    }
                   }
+                }
               ]
           },
       ]

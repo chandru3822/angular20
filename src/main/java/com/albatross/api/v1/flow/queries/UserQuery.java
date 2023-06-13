@@ -985,4 +985,18 @@ public class UserQuery {
         where oat.id = :id
         and oat.company_id = :companyId
     """;
+
+  //language=PostgreSQL
+  public final static String getSmsAccess = """
+    select p.sms_enabled
+    from flow.user_position up
+             inner join flow.position p on p.id = up.position_id
+             inner join flow.company_user_status cus on cus.user_id = up.user_id
+             inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+    where up.user_id = :userId
+      and up.primary_flag is true
+      and up.archived is not true
+      and ust.has_access is true
+    limit 1
+    """;
 }

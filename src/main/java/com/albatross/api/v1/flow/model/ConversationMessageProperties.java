@@ -6,7 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.*;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by John Berns on 2021-02-03.
@@ -15,13 +16,13 @@ import java.util.*;
 @Getter
 @Setter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProjectMessageProperties {
+public class ConversationMessageProperties {
 
-  private Long projectId, messageStatusId, ownerUserId, companyId;
+  private Long projectId, messageStatusId, ownerUserId, companyId, userId;
   private String projectName, fullName, orgName, displayedOwner, state, createdBy;
   private Date lastMessageSentAt;
   private boolean closed, showAssignedToMeButton = false;
   private List<SMSQueueItem> messageHistory;
   private List<SmsTeam> smsTeamOwners;
-  private List<Long> projectIdsForFilter, projectIdsInbox, projectIdsSent;
+  private List<Long> projectIdsForFilter, projectIdsInbox, projectIdsSent, userIdsForFilter, userIdsInbox, userIdsSent;
 }

@@ -47,7 +47,7 @@ BEGIN
     where pd.project_id = p_project_id;
 
     -- the user_id was jacked up.  user_id == the user it is being sent to, message_sent_by_id = the currently logged in user
-    if v_closer_phone_number is not null then
+    if v_closer_phone_number is not null and trim(v_closer_phone_number) != '' then
         if p_message_type_id = 1 then
             -- do the message for id 1 = appt scheduled
             -- i think message_group is just a random uuid so threads can be tracked

@@ -90,6 +90,16 @@ public class CustomSecurityExpressionRoot extends SecurityExpressionRoot
     return false;
   }
 
+  //Probably don't want BR specific code here...
+  public boolean isBrSystemUser() {
+    final var principal = this.getPrincipal();
+    if (principal instanceof final UserAccountDetails details) {
+      return Objects.equals(details.getId(), SystemSettings.BR_SYSTEM_USER.getId());
+    }
+
+    return false;
+  }
+
   @Override
   public Object getFilterObject() {
     return this.filterObject;

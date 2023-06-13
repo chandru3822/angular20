@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.tournament.queries.TournamentPoolQuery;
 import com.albatross.api.v1.flow.queries.DataViewQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,7 @@ public class BlueravenProjectService {
   private final SqlCache sqlCache;
 
   public void processMetroAreaPostalCodes() {
-    sqlCache.updateBySql(updateProjectMetroAreaPostalCodes, Collections.emptyMap());
+    sqlCache.queryBySql(updateProjectMetroAreaPostalCodes, Collections.emptyMap(), String.class);
   }
 
   //language=PostgreSQL

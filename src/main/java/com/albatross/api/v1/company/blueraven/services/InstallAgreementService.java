@@ -36,7 +36,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('INSTALLATION_AGREEMENT')")
+@PreAuthorize("hasFeatureAccess('INSTALLATION_AGREEMENT') || isBrSystemUser()")
 @RequiredArgsConstructor
 public class InstallAgreementService {
   private final SqlCache sqlCache;

@@ -265,23 +265,24 @@
             Send Bulk Emails/Texts
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="secondary" background-color="primary" slot="extension" dark slider-color="secondary">
+        <v-tabs color="primary" slot="extension"  slider-color="primary">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
             <v-tab @click="messageTab = 2">
-              Texts
+              SMS
             </v-tab>
         </v-tabs>
           </v-toolbar-items>
         <v-divider></v-divider>
         <div v-if="messageTab == 1"  class="pa-5">
+          <label class="mr-2">To:</label>
           <v-autocomplete
             v-model="selectedUsers"
             :items="allUsers"
             multiple
             clearable
-            label="To"
+            label="Select user(s)"
             item-text="fullName"
             item-value="id"
             height="35px"
@@ -318,13 +319,17 @@
             </template>
           </v-autocomplete>
 
-          <v-select attach
-                    label="From"
+          <div class="mb-3 flex-display">
+            <label class="mt-5 mr-2">From:</label>
+            <v-select attach
+                      label="Select email"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
                       item-value="email"
+                      class="select-email"
             />
+          </div>
 
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
@@ -356,23 +361,19 @@
                 color="primary" class="white--text mr-2 "
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
-                Send Emails Only
-              </v-btn>
-              <v-btn
-                color="primary" class="white--text"
-                :disabled="this.disableSendEmail || this.disableSendText"
-                @click="sendMessage(true, true)">
-                Send Both
+                Send
               </v-btn>
             </v-card-actions>
         </div>
-        <div v-else-if="messageTab == 2" style="height:700px;" class="pa-5">
+        <div v-else-if="messageTab == 2" style="height:400px;" class="pa-5">
+            <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
+            conversations, use Inbox to send messages. <br></span>
+            <label class="mr-2">To:</label>
             <v-autocomplete
               v-model="selectedUsers"
               :items="allUsers"
               multiple
               clearable
-              label="To"
               item-text="fullName"
               item-value="id"
               height="35px"
@@ -408,25 +409,62 @@
                 </template>
               </template>
             </v-autocomplete>
-            <span class="count-span flex-display">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
 
+          <div class="flex-display justify-end">
             <v-textarea solo v-model="textMessage"
                         auto-grow
-                        rows="7"
-                        placeholder="Enter your message..." class="py-3"></v-textarea>
+                        rows="4"
+                        placeholder="Enter message here" class="message-text-area py-3"></v-textarea>
+
+
+            <v-btn icon color="primary" class="white--text mr-2 mt-1 templateButton">
+              <v-tooltip bottom small>
+                <template v-slot:activator="{on, attrs}">
+                  <v-icon @click="" v-bind="attrs" v-on="on">
+                    article
+                  </v-icon>
+                </template>
+                <span class="albatross-body-3">Templates</span>
+              </v-tooltip>
+            </v-btn>
+            <v-menu top left offset-y activator=".templateButton" :close-on-content-click="false">
+              <v-card class="template-dialog" width="295px">
+                <v-card-title>
+                  <span class="albatross-header-4-new">Add Template</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-select label="Template"
+                            class="template-selector pt-1"
+                            v-model="selectedTemplate"
+                            :items="selectableTemplates"
+                            item-text="title"
+                            item-value="id"
+                            return-object
+                            @change="[textMessage = selectedTemplate.message]">
+
+                    <template slot="item" slot-scope="data">
+                      <!-- HTML that describes how select should render items when the select is open -->
+                      <div class="ellipse">
+                        <h4 class="template-title">{{ data.item.title }}<br /></h4>
+                        <span class="template-message">{{ data.item.message }}</span>
+                      </div>
+                    </template>
+                  </v-select>
+                </v-card-text>
+              </v-card>
+            </v-menu>
 
             <v-file-input
                 dense
                 outlined
+                hide-input
                 color="primary"
-                label="Upload image"
                 v-model="textFile"
                 @change="uploadTextAttachment"
                 @click:clear="[textFile = null, textMediaUrls = []]"
-                style="width: 245px"
             />
+          </div>
 
-            <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
             <v-card-actions class="flex-display justify-end px-4 pt-0">
               <v-btn
                 text color="primary"
@@ -437,19 +475,12 @@
                 color="primary" class="white--text mr-2"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
-                Send Text Only
-              </v-btn>
-              <v-btn
-                color="primary" class="white--text"
-                :disabled="this.disableSendEmail || this.disableSendText"
-                @click="sendMessage(true, true)">
-                Send Both
+                Send
               </v-btn>
             </v-card-actions>
         </div>
       </v-card>
     </v-dialog>
-
   </v-container>
   <v-container  v-else>
     <v-btn small text color="primary" @click="toggleImages()">
@@ -632,6 +663,9 @@
         allUsersLoading: false,
         companyId: this.$store.state.user.details.companyId,
         attachmentTypeId: 9,
+        templateTeams: [],
+        selectedTemplate: '',
+        selectableTemplates: [],
       }
     },
     computed: {
@@ -687,6 +721,7 @@
       this.getPositions()
       this.getOrgFilters(true)
       this.getEmailSenders()
+      this.fetchTeamsForUser()
     },
     methods: {
       cancelSendMessageDialog(){
@@ -1174,6 +1209,40 @@
           return false;
         }
       },
+      async fetchTeamsForUser() {
+        try {
+          this.conversationIsLoading = true
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.teamsAssociatedToUser = data
+          for (let team of this.teamsAssociatedToUser){
+            this.templateTeams.push(team.id);
+          }
+          handleHidingGlobalLoader(this, status)
+          await this.getSmsTeamTemplates();
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.conversationIsLoading = false
+        }
+      },
+      async getSmsTeamTemplates() {
+        try {
+          this.selectedTemplate = ''
+          if (this.teamsAssociatedToUser.length < 1) {
+            return
+          }
+
+          const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
+          this.selectableTemplates = data
+        } catch (e) {
+          console.log('ccc')
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
       async sendMessage(sendEmail, sendText) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1397,6 +1466,16 @@
   .user-images-filter-select .v-input__append-inner {
     margin-top: 5px !important;
   }
+  .select-email {
+    max-width: 60%;
+  }
 
+  .template-dialog {
+    max-width: 500px;
+  }
+
+  .message-text-area {
+    width: 100%;
+  }
 </style>
 
