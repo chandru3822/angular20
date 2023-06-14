@@ -221,6 +221,7 @@ public class CommunicationService {
     // dont try to send text if there is no phone number or the user doesnt have access
     if (null != user
         && user.getPhoneNumber() != null
+        && !user.getPhoneNumber().isEmpty()
         && user.getUserStatusType() != null
         && user.getHasAccess()) {
       try {

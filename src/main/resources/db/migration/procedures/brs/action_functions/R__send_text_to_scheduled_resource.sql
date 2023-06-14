@@ -99,7 +99,7 @@ BEGIN
     from flow."user" u
     where array[id] <@ array[v_users_to_message]
     LOOP
-      if r.phone_number is not null and v_message is not null then
+      if r.phone_number is not null and trim(r.phone_number) != '' and v_message is not null then
         insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id, message_sent_by_user_id)
         values(r.user_id,
                v_message,
