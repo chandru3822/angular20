@@ -30,7 +30,7 @@ BEGIN
   where po.project_id = p_project_id
     and op2.position_id = 1;
 
-  return v_total;
+  return coalesce(v_total,0);
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE

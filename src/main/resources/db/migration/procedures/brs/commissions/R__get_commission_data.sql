@@ -47,11 +47,11 @@ BEGIN
   into v_system_size
   from flow.project_process_step p
          left join flow.project_process_step_custom_field_value v
-                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19451) and
+                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19451,25391) and
                       numeric_value is not null
          inner join brs.project_details pd on pd.project_id = p.project_id
   where p.project_id = p_project_id
-    and p.process_step_id in (3355)
+    and p.process_step_id in (3355,3620)
     and p.main is true;
 
   select coalesce(v.int_value,pd.loan_term)
