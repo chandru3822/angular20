@@ -40,7 +40,8 @@ BEGIN
                    s.overrides_paid_to_date,
                    s.commission_forfeited_paid_to_date,
                    s.commission_forfeited_by_closer,
-                   s.cancelled
+                   s.cancelled,
+                   s.total_commissions
             FROM brs.project_commission_snapshot s
             WHERE payroll_id = p_payroll_id
             LOOP
