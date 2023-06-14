@@ -49,7 +49,24 @@ public class ActivityQuery {
                                                     pa2.archived,
                                                     pa2.modified_by_id as "modifiedById",
                                                     concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
-                                                    pa2.activity_type_id as "activityTypeId"
+                                                    pa2.activity_type_id as "activityTypeId",
+                                                    coalesce((SELECT array_to_json(array_agg(row_to_json(ht)))
+                                                       FROM (select pah3.id,
+                                                                    pah3.project_activity_id as "projectActivityId",
+                                                                    pah3.hashtag_id as "hashtagId",
+                                                                    pah3.date_created as "dateCreated",
+                                                                    pah3.date_modified as "dateModified",
+                                                                    pah3.created_by_id as "createdById",
+                                                                    pah3.modified_by_id as "modifiedById",
+                                                                    h3.hashtag_type_id as "hashtagTypeId",
+                                                                    pah3.archived,
+                                                                    h3.hashtag,
+                                                                    ht3.hashtag_type
+                                                            from flow.project_activity_hashtag pah3
+                                                            inner join flow.hashtag h3 on h3.id = pah3.hashtag_id
+                                                            inner join flow.hashtag_type ht3 on ht3.id = h3.hashtag_type_id
+                                                            where pah3.project_activity_id = pah2.project_activity_id
+                                                            and pah3.archived is false) ht), '[]') AS "activityHashtags"
                                              from flow.project_activity_hashtag pah2
                                                     inner join flow.project_activity pa2 on pa2.id = pah2.project_activity_id and pa2.project_id = :sourceId and pa2.archived is false
                                                     inner join flow."user" u on u.id = pa2.created_by_id

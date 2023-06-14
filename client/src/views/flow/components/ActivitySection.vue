@@ -37,10 +37,10 @@
     </div>
     <div class="activity-body">
       <div v-if="!timelineView">
-        <div v-for="type in activityTopics">
+        <div v-for="type in filteredTopics">
           {{ type.activityType }}
           <v-expansion-panels accordion multiple flat class=".rounded-0">
-            <v-expansion-panel v-for="h in type.activityTypeHashtags" :key="h.hashtagId">
+            <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
@@ -58,6 +58,7 @@
                               :org-id="orgId"
                               :section-type="sectionType"
                               :edit-callback="setEditedActivity"
+                              :search-callback="searchByClick"
                 ></ActivityList>
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -219,6 +220,15 @@ export default {
     }
   },
   computed: {
+    filteredTopics() {
+      let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
+      console.log('randalogger',shownActivityTypes)
+      console.log('at',this.activityTopics)
+      return this.activityTopics.filter(a => {
+        console.log('randalogger',a.id)
+        return shownActivityTypes.includes(a.id)
+      })
+    },
     sortedFilteredActivities() {
       return orderBy(this.activities.filter(a => {
         //filter out archived

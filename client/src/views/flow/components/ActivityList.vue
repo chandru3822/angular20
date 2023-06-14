@@ -1,6 +1,6 @@
 <template>
   <div>
-      <div v-if="activities.length === 0">
+      <div v-if="activities?.length === 0">
         No available notes or activities
       </div>
       <v-card v-else v-for="(a, aIdx) in activities" class="mt-2 elevation-1"
@@ -8,7 +8,7 @@
           <v-toolbar flat color="transparent">
             <v-toolbar-title>
               <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
-              <span class="uncategorized-text" v-if="a.activityHashtags.length === 0">[uncategorized]</span>
+              <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">,</span>
                 <a @click="searchCallback('#' + ah.hashtag)">#{{ ah.hashtag }}</a>
