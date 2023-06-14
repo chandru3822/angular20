@@ -182,7 +182,13 @@ public class SmartlistController {
 
   @PostMapping(value = "/adhoc", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Map<String, Object>>> getAdhocReportData(@RequestBody ReportDTO report, @RequestParam(required = false) Integer limit, @RequestParam(required = false) String timezone) {
-    return ResponseEntity.ok(smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), limit, timezone));
+    try {
+      return ResponseEntity.ok(smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), limit, timezone));
+    } catch (Exception e) {
+      //@TODO: #smartlistsv2 - Logging while in QA
+      smartlistService.saveError(report.getSmartlist(), null, report.getFields(), report.getRequirements(), e);
+      throw e;
+    }
   }
 
   @PreAuthorize("hasRootLevelAccess()")

@@ -540,7 +540,8 @@ public class SmartlistService {
     return combinedList;
   }
 
-  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Exception e) {
+  //@TODO: #smartlistsv2 - Made public for more logging during QA
+  public void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Exception e) {
     Map<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlist.getId());
     params.put("createdById", securityService.getCurrentUser().getId());
