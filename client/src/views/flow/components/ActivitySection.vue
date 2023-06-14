@@ -72,6 +72,7 @@
                     :org-id="orgId"
                     :section-type="sectionType"
                     :edit-callback="setEditedActivity"
+                    :search-callback="searchByClick"
       ></ActivityList>
     </div>
     <div class="activity-footer">
@@ -265,6 +266,7 @@ export default {
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
         || activity.createdByPosition.toLowerCase().includes(lowerSearch)
+        || activity.activityHashtags.find(ah => ('#' + ah.hashtag).includes(this.search))?.id != null
     },
     populateSelectedTopics(editedActivity) {
       //i can never figure out how to do this... when the list is like: topics = [{id: 1}] but the data coming back is like [{ id: 1723, topicId: 1}]
@@ -328,6 +330,9 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.topicsLoading = false
       }
+    },
+    searchByClick(newSearch) {
+      this.search = newSearch
     },
     setEditedActivity(item) {
       console.log('item here', item)

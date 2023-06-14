@@ -10,7 +10,7 @@
               <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">,</span>
-                #{{ ah.hashtag }}
+                <a @click="searchCallback('#' + ah.hashtag)">#{{ ah.hashtag }}</a>
               </span>
               <a v-if="a.linked" @click="goToPath(a)">
                 <v-icon color="primary">mdi-link</v-icon>
@@ -45,10 +45,20 @@
           </v-toolbar>
 
         <v-card-text>
-          {{ a.note }}
+          <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
+          <div class="text-formatting">
+            <vue-clamp ellipsis="" autoresize :max-lines="5">{{ a.note }}
+              <template #after="{ toggle, clamped }">
+                <button v-if="clamped === true" @click="toggle">
+                  ...see more
+                </button>
+              </template>
+            </vue-clamp>
+          </div>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions style="display: inline-block">
           {{ a.createdBy }}, {{ a.createdByPosition }} | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
+          <span v-if="a.dateCreated !== a.dateModified">| Edited by {{ a.modifiedBy }}</span>
         </v-card-actions>
       </v-card>
     </div>
@@ -60,10 +70,11 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from "vue2-filters"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
+import VueClamp from 'vue-clamp'
 
 export default {
   name: 'ActivityList',
-  components: {AttachmentsTable, ConfirmationDialog},
+  components: {AttachmentsTable, ConfirmationDialog, VueClamp},
   mixins: [Vue2Filters.mixin],
   props: {
     activities: Array,
@@ -72,7 +83,8 @@ export default {
     userId: Number,
     projectId: Number,
     sectionType: String,
-    editCallback: Function
+    editCallback: Function,
+    searchCallback: Function
   },
   data() {
     return {
@@ -151,4 +163,19 @@ export default {
 .test {
   white-space: pre;
 }
+
+.text-formatting {
+  white-space: pre-wrap;
+  display: block;
+}
+
+//.blah {
+//  display: -webkit-box;
+//  -webkit-line-clamp: 5;
+//  -webkit-box-orient: vertical;
+//  overflow: hidden;
+//  text-overflow: ellipsis " [..]";
+//}
+
+
 </style>
