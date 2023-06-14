@@ -37,7 +37,7 @@
   <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
     <draggable
       :list="fields"
-      :draggable="false"
+      :disabled="!canEdit"
       handle=".handle"
       @change="reorder"
     >
