@@ -8,6 +8,7 @@
           <v-toolbar flat color="transparent">
             <v-toolbar-title>
               <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
+              <span class="uncategorized-text" v-if="a.activityHashtags.length === 0">[uncategorized]</span>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">,</span>
                 <a @click="searchCallback('#' + ah.hashtag)">#{{ ah.hashtag }}</a>
@@ -167,6 +168,11 @@ export default {
 .text-formatting {
   white-space: pre-wrap;
   display: block;
+}
+
+.uncategorized-text {
+  font-size: 14px;
+  color: var(--v-grey-lighten1);
 }
 
 //.blah {
