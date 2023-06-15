@@ -800,7 +800,7 @@ public class SmartlistQuery {
     from flow.smartlist_field sf
     inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
     inner join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
-    where 
+    where
       cot.company_id = :companyId and 
       sf.id = any(array[ :ids ]::bigint[])
   """;

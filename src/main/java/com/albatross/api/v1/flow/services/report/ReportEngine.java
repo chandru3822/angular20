@@ -400,7 +400,8 @@ public class ReportEngine {
       }
 
       if (f.getCustomFieldSql() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        withClause.append(String.format("  \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
+        final String customSql = (f.getCustomFieldSqlSmartlist() != null) ? f.getCustomFieldSqlSmartlist() : f.getCustomFieldSql();
+        withClause.append(String.format("  \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), customSql));
       }
     }
 
@@ -412,7 +413,8 @@ public class ReportEngine {
 
       // If this custom sql is not already in the "with" clause, add it
       if (r.getCustomFieldSql() != null && withClause.indexOf(r.getCustomFieldSqlKey()) == -1) {
-        withClause.append(String.format("  \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), r.getCustomFieldSqlSmartlist()));
+        final String customSql = (r.getCustomFieldSqlSmartlist() != null) ? r.getCustomFieldSqlSmartlist() : r.getCustomFieldSql();
+        withClause.append(String.format("  \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), customSql));
       }
     }
 
@@ -1878,7 +1880,8 @@ public class ReportEngine {
 
       //prepend custom field sql queries
       if (f.getCustomFieldSql() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
+        final String customSql = (f.getCustomFieldSqlSmartlist() != null) ? f.getCustomFieldSqlSmartlist() : f.getCustomFieldSql();
+        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), customSql));
       }
     }
 
@@ -2682,7 +2685,8 @@ public class ReportEngine {
 
       //prepend custom field sql queries
       if (f.getCustomFieldSql() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
+        final String customSql = (f.getCustomFieldSqlSmartlist() != null) ? f.getCustomFieldSqlSmartlist() : f.getCustomFieldSql();
+        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), customSql));
       }
     }
     // get PS fields which don't belong an event field
