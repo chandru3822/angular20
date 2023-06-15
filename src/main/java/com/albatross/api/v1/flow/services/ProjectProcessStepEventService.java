@@ -105,6 +105,8 @@ public class ProjectProcessStepEventService {
       actParams.put("userId", result.get().getProjectId());
       actParams.put("ppsId", projectProcessStepId);
       actParams.put("ppseId", user.trueUserId());
+      actParams.put("oldStatusId", null);
+      actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
     }
 

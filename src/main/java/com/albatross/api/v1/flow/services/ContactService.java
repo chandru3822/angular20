@@ -433,7 +433,8 @@ public class ContactService {
       actParams.put("sourceId", project.get().getId());
       actParams.put("ppsId", null);
       actParams.put("ppseId", null);
-      actParams.put("noteOverride", null);
+      actParams.put("oldStatusId", null);
+      actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
 
       // create all initial project_process_steps - these wont have a userPositionId

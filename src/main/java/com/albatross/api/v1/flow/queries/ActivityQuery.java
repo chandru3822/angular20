@@ -370,6 +370,6 @@ public class ActivityQuery {
 
   //language=PostgreSQL
   public final static String addSystemActivity = """
-    select from flow.add_system_activity(:activityId, :objectTypeId, :sourceId, :userId, :ppsId, :ppseId, :noteOverride);
+    select from flow.add_system_activity(:activityId, :objectTypeId, :sourceId, :userId, :ppsId, :ppseId, :oldStatusId, :newStatusId);
   """;
 }

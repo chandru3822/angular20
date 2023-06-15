@@ -564,6 +564,15 @@ BEGIN
           new.city, new.postal_code, new.time_zone, new.latitude, new.longitude, new.company_state_id,
           new.company_country_id, new.cancelled_date);
 
+  if new.company_project_status_type_id is not null
+    and old.company_project_status_type_id is not null
+    and old.company_project_status_type_id != new.company_project_status_type_id then
+
+    perform flow.add_system_activity((select id from flow.activity where activity_code = 'PROJECT_STATUS_CHANGED'),
+                                     1, new.id,
+                                     new.modified_by_id, null, null, old.company_project_status_type_id, new.company_project_status_type_id);
+  end if;
+
   RETURN NULL;
 END
 $$
@@ -678,6 +687,16 @@ BEGIN
           new.user_position_id, new.company_process_step_status_type_id,
           new.process_step_complete_date, new.date_created, new.date_modified,
           new.created_by_id, new.modified_by_id, new.archived, new.main, new.cancelled_date);
+
+  if new.company_process_step_status_type_id is not null
+    and old.company_process_step_status_type_id is not null
+    and old.company_process_step_status_type_id != new.company_process_step_status_type_id then
+
+    perform flow.add_system_activity((select id from flow.activity where activity_code = 'PS_STATUS_CHANGED'),
+                                     1, new.project_id,
+                                     new.modified_by_id, new.id, null, old.company_process_step_status_type_id, new.company_process_step_status_type_id);
+  end if;
+
   RETURN NULL;
 END
 $$
@@ -712,6 +731,15 @@ BEGIN
           new.start_time, new.end_time, new.date_created, new.date_modified,
           new.created_by_id, new.modified_by_id, new.archived, new.scheduled_date, new.cancelled_date,
           new.completed_date);
+
+  if new.company_event_status_type_id is not null
+      and old.company_event_status_type_id is not null
+      and old.company_event_status_type_id != new.company_event_status_type_id then
+
+     perform flow.add_system_activity((select id from flow.activity where activity_code = 'EVENT_STATUS_CHANGED'),
+                                   1, (select project_id from flow.project_process_step pps where pps.id = new.project_process_step_id),
+                                   new.modified_by_id, new.project_process_step_id, new.id, old.company_event_status_type_id, new.company_event_status_type_id);
+  end if;
 
   if old.start_time is null and new.start_time is not null and
      old.end_time is null and new.end_time is not null and

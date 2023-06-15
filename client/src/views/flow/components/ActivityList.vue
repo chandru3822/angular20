@@ -26,7 +26,7 @@
                 </v-btn>
               </template>
               <v-list dense class="pa-3">
-                <v-list-item @click="editItem(a)">
+                <v-list-item @click="editItem(a)" v-if="a.activityTypeId !== 1">
                   <v-list-item-content>
                     <v-list-item-title>Edit</v-list-item-title>
                   </v-list-item-content>
@@ -36,7 +36,7 @@
                     <v-list-item-title>{{ a.pinned ? 'Unpin' : 'Pin'}}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item @click="deleteActivity(a)">
+                <v-list-item @click="deleteActivity(a)" v-if="a.activityTypeId !== 1">
                   <v-list-item-content>
                     <v-list-item-title>Delete</v-list-item-title>
                   </v-list-item-content>
