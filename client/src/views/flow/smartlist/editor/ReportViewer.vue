@@ -147,7 +147,13 @@ const processQueue = async () => {
     reportData.value = response.data
     emit('updated')
   } catch (e) {
-    snackbar('ERROR', 'Error while fetching smartlist data')
+    //@TODO: #smartlistsv2 - Frontend needs to know backend message here. Want a better way
+    const errMessage = e.response.data.message
+    if (errMessage.includes('An event smartlist must have at least 1 event type column')) {
+      snackbar('ERROR', errMessage)
+    } else {
+      snackbar('ERROR', 'Error while fetching smartlist data')
+    }
   } finally {
     isDataLoading.value = false
     if (isUpdateQueued.value) {
