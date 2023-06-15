@@ -616,7 +616,7 @@ public class SmartlistService {
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
     String query;
 
-    //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
+    //a workqueue report needs to use the buildSql function. It has special functionality for workqueus
     if (smartlist.isProjectDetails()) {
       query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements, null);
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
@@ -873,12 +873,21 @@ public class SmartlistService {
 
     String query;
 
-    if (List.of(4L, 6L).contains(report.getObjectTypeId())) {
-      query = reportEngine.buildProcessStepSql(report, fields, requirements, limit);
+    //a workqueue report needs to use the buildSql function. It has special functionality for workqueus
+    if (report.isProjectDetails()) {
+      query = reportEngine.buildProjectDetailsSql(report, fields, requirements, null);
+    } else if (List.of(4L, 6L).contains(report.getObjectTypeId()) && null == report.getWorkQueueTypeId()) {
+      if (report.getObjectTypeId() == 4) {
+        query = reportEngine.buildProcessStepSql(report, fields, requirements, null);
+      } else {
+        query = reportEngine.buildEventSql(report, fields, requirements, null, null);
+      }
     } else {
-      query = (report.isProjectDetails()) ?
-        reportEngine.buildProjectDetailsSql(report, fields, requirements, limit) :
-        reportEngine.buildSql(report, fields, requirements, timezone, null, false, limit);
+      if (report.getWorkQueueTypeId() != null && report.getObjectTypeId() == 6) {
+        query = reportEngine.buildWorkQueueSql(report, fields, true, timezone);
+      } else {
+        query = reportEngine.buildSql(report, fields, requirements, timezone, null, false, null);
+      }
     }
 
     if (Objects.equals(queryOnly, true)) {
