@@ -216,7 +216,8 @@ const calculatedAvailablePsEvents = computed(() => {
       if (notIncluded) {
         items.push({
           id: (f.objectTypeId === 4) ? f.processStepId : f.eventId,
-          name: (f.objectTypeId === 4) ? f.processStepName : `${f.eventName} - ${f.processStepName}`
+          name: (f.objectTypeId === 4) ? f.processStepName : `${f.eventName} - ${f.processStepName}`,
+          processStepEventId: f.processStepEventId
         })
       }
     }
@@ -233,6 +234,7 @@ const add = () => {
     } else {
       newValue.value.eventId = newPsEvent.value.id
       newValue.value.eventName = newPsEvent.value.name
+      newValue.value.processStepEventId = newPsEvent.value.processStepEventId
     }
   }
 
