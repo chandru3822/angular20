@@ -90,7 +90,7 @@
           </v-btn>
           </slot>
         </div>
-        <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
+
         <TeamAssignmentChips
           v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
           :sms-team-owners="messageProperties.smsTeamOwners"
@@ -167,7 +167,7 @@
     <div class="show-xs">
       <div class="conversation-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
 
-        <span v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms" class="pl-6 albatross-body-3 mt-n2">Members</span>
+
         <TeamAssignmentChips
           v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
           :sms-team-owners="messageProperties.smsTeamOwners"
@@ -176,7 +176,7 @@
           :show-assign-to-me-button="!userAssigned && userHasTeam"
           :project-id="projectId"
           :user-id="userId"
-          class="px-6 pb-1 mt-n1"
+          class="pb-1 mt-n1"
           @updateOwner="loadConversation"
           @joinConversation="startJoinConversation"
         />

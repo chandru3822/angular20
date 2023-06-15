@@ -12,7 +12,6 @@
       <ConfirmAssignmentDialog :show-join-conversation-dialog.sync="showAssignToMeDialog"
                                :teams-associated-to-user="teamsAssociatedToUser"
                                @joinConversation="joinConversation" />
-      <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog" :is-inbox="true"/>
       <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
           <v-tabs class="inbox-tabs pa-0" background-color="var(--v-secondary-base)">
@@ -36,8 +35,8 @@
             </v-tab>
             <v-spacer></v-spacer>
             <v-btn  v-if="teamsAssociatedToUser.length > 0" color="primary"
-                    class="justify-end" @click="showNewMessageDialog = true">
-              <v-icon>add</v-icon>
+                    class="justify-end new-message-button mt-3" @click="showNewMessageDialog = true">
+              <v-icon class="message-add-icon">add</v-icon>
               New Message
             </v-btn>
           </v-tabs>
@@ -52,13 +51,22 @@
               class="albatross-body-2 mb-n4 mt-2 pr-6"
               clearable
             />
-            <v-icon>filter_alt</v-icon>
             <v-select v-model="messageTypeFilter"
                       :items="messageTypes"
                       single-line
                       @change="reloadConversations"
-                      class="message-type-selector albatross-body-2 mb-n4 mt-2 pr-6"
-            ></v-select>
+                      class="message-type-selector albatross-body-2 mb-n4 pr-6 mt-2"
+                      prepend-icon="filter_alt"
+            >
+              <template v-slot:prepend>
+                <v-icon>filter_alt</v-icon>
+              </template>
+              <template v-slot:selection="{ item, index }">
+                <span class="d-flex justify-center" style="width: 100%;">
+                  {{ item }}
+                </span>
+              </template>
+            </v-select>
             <v-chip label color="primary--text" class="sort-chip align-self-center albatross-body-2 mr-6 flex-shrink-0"
                     @click="sortOldToNew = !sortOldToNew">
               {{ sortOldToNew ? 'Oldest to Newest' : 'Newest to Oldest' }}
@@ -199,10 +207,10 @@
                         class="albatross-body-2 px-2">{{ getTime(item.messageHistory[0].lastMessageSent)
                     }}</span>
                   <span class="albatross-body-2 px-1 grey--text text--darken-2" v-if="item.projectName">{{ item.state }}</span>
-                  <v-chip class="customer-chip" small  v-if="item.projectId">
+                  <v-chip class="customer-chip ml-1" small  v-if="item.projectId">
                     <span >Customer</span>
                   </v-chip>
-                  <v-chip class="internal-chip ml-2" small v-else>
+                  <v-chip class="internal-chip ml-1" small v-else>
                     <span >Internal</span>
                   </v-chip>
                 </div>
@@ -225,6 +233,7 @@
           </v-col>
         </template>
       </v-data-table>
+      <NewMessageDialog :show-new-message-dialog.sync="showNewMessageDialog" :is-inbox="true" class="pa-0"/>
     </template>
     <template v-slot:collapse-button>
       <v-btn class="d-inline-block align-self-center" small text color="primary"
@@ -975,7 +984,7 @@ conversation-search-no-teams {
 }
 
 .message-type-selector {
-  max-width: 120px;
+  max-width: 160px;
 }
 
 .internal-chip {
@@ -985,4 +994,15 @@ conversation-search-no-teams {
 .customer-chip {
   background-color: #FECDD2 !important;
 }
+
+.new-message-button {
+  text-transform: none;
+}
+
+.message-add-icon {
+  height: 16px !important;
+  width: 16px !important;
+  margin-right: 4px;
+}
+
 </style>

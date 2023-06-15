@@ -25,14 +25,15 @@ BEGIN
   from flow.project p2
   where p2.id = p_project_id;
 
-  select v.int_value
+  select coalesce(v.int_value,pd.primary_financier)
   into v_primary_financier
   from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19465)
+         left join flow.project_process_step_custom_field_value v
+                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19465) and
+                      int_value is not null
+         inner join brs.project_details pd on pd.project_id = p.project_id
   where p.project_id = p_project_id
     and p.process_step_id in (3355)
-    and int_value is not null
     and p.main is true;
 
   select pcfv.int_value
@@ -42,34 +43,37 @@ BEGIN
     and pcfv.custom_field_group_assignment_id = 17280
     and pcfv.int_value is not null;
 
-  select v.numeric_value
+  select coalesce(v.numeric_value,pd.system_size)
   into v_system_size
   from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19451)
+         left join flow.project_process_step_custom_field_value v
+                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19451,25391) and
+                      numeric_value is not null
+         inner join brs.project_details pd on pd.project_id = p.project_id
   where p.project_id = p_project_id
-    and p.process_step_id in (3355)
-    and numeric_value is not null
+    and p.process_step_id in (3355,3620)
     and p.main is true;
 
-  select v.int_value
+  select coalesce(v.int_value,pd.loan_term)
   into v_loan_term
   from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19469)
+         left join flow.project_process_step_custom_field_value v
+                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19469) and
+                      int_value is not null
+         inner join brs.project_details pd on pd.project_id = p.project_id
   where p.project_id = p_project_id
     and p.process_step_id in (3355)
-    and int_value is not null
     and p.main is true;
 
-  select v.numeric_value
+  select coalesce(v.numeric_value,pd.interest_rate)
   into v_interest_rate
   from flow.project_process_step p
-         inner join flow.project_process_step_custom_field_value v
-                    on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19470)
+         left join flow.project_process_step_custom_field_value v
+                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id in (19470) and
+                      numeric_value is not null
+         inner join brs.project_details pd on pd.project_id = p.project_id
   where p.project_id = p_project_id
     and p.process_step_id in (3355)
-    and numeric_value is not null
     and p.main is true;
 
   return query

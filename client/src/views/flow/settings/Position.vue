@@ -56,7 +56,7 @@
                 @change="setFieldsDirty"
             ></v-autocomplete>
             <div class="mb-3">
-              <label>Can receive SMS from Albatross:</label>
+              <label>Enable 2-way SMS:</label>
               <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsEnabled" @change="setFieldsDirty">
             </div>
             <div class="mb-3">

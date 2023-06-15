@@ -126,34 +126,39 @@ public class SMSService {
     RecipientType recipientType,
     Long sentByUserId,
     Long sentBySmsTeamId) {
-    String queueInsert = SmsServiceQuery.insert;
 
-    MapSqlParameterSource source = new MapSqlParameterSource();
-    source.addValue("messageGroup", messageGroup);
-    source.addValue("userId", userId);
-    source.addValue("contactId", contactId);
-    source.addValue("projectId", projectId);
-    source.addValue("message", message);
-    source.addValue("toPhone", toPhone);
-    source.addValue("mediaUrls", null);
-    source.addValue("recipientTypeId", recipientType.ordinal());
-    source.addValue("messageSentByUserId", sentByUserId);
-    source.addValue("sentBySmsTeamId", sentBySmsTeamId);
+    if(null != toPhone && !toPhone.isBlank()) {
+      String queueInsert = SmsServiceQuery.insert;
 
-    if (mediaURLs != null && !mediaURLs.isEmpty()) {
+      MapSqlParameterSource source = new MapSqlParameterSource();
+      source.addValue("messageGroup", messageGroup);
+      source.addValue("userId", userId);
+      source.addValue("contactId", contactId);
+      source.addValue("projectId", projectId);
+      source.addValue("message", message);
+      source.addValue("toPhone", toPhone);
+      source.addValue("mediaUrls", null);
+      source.addValue("recipientTypeId", recipientType.ordinal());
+      source.addValue("messageSentByUserId", sentByUserId);
+      source.addValue("sentBySmsTeamId", sentBySmsTeamId);
 
-      try (Connection connection = dataSource.getConnection()) {
-        String[] mediaUrls = mediaURLs.stream().map(URI::toString).toArray(String[]::new);
-        Array varchar = connection.createArrayOf("varchar", mediaUrls);
-        source.addValue("mediaUrls", varchar);
-      } catch (SQLException e) {
-        log.error("TWILIO_WEBHOOK_ERROR: media url problems, error={}", e.getMessage());
+      if (mediaURLs != null && !mediaURLs.isEmpty()) {
+
+        try (Connection connection = dataSource.getConnection()) {
+          String[] mediaUrls = mediaURLs.stream().map(URI::toString).toArray(String[]::new);
+          Array varchar = connection.createArrayOf("varchar", mediaUrls);
+          source.addValue("mediaUrls", varchar);
+        } catch (SQLException e) {
+          log.error("TWILIO_WEBHOOK_ERROR: media url problems, error={}", e.getMessage());
+        }
       }
-    }
 
-    List<SMSQueueItem> items =
-      jdbcTemplate.query(queueInsert, source, new SMSQueueMapper<>(SMSQueueItem.class, om));
-    return items.get(0);
+      List<SMSQueueItem> items =
+        jdbcTemplate.query(queueInsert, source, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      return items.get(0);
+    } else {
+      return null;
+    }
   }
 
   @Transactional
