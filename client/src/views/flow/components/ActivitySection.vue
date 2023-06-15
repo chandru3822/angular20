@@ -236,7 +236,8 @@ export default {
         //and ensure the activityTypeId is selected in the filter
         let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
 
-        return !a.archived && ((this.search == null || this.search === '') || this.activityContainsSearch(a))
+        return !a.archived
+          && ((this.search == null || this.search === '') || this.activityContainsSearch(a))
           && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['pinned', 'dateCreated'], ['desc', this.sortDirection])
@@ -276,7 +277,8 @@ export default {
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
         || activity.createdByPosition.toLowerCase().includes(lowerSearch)
-        || activity.activityHashtags.find(ah => ('#' + ah.hashtag).includes(this.search))?.id != null
+        || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
+        || activity.activityHashtags.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
     },
     populateSelectedTopics(editedActivity) {
       //i can never figure out how to do this... when the list is like: topics = [{id: 1}] but the data coming back is like [{ id: 1723, topicId: 1}]
@@ -345,7 +347,6 @@ export default {
       this.search = newSearch
     },
     setEditedActivity(item) {
-      console.log('item here', item)
       this.editedActivity = cloneDeep(item)
       this.populateSelectedTopics(item)
     },

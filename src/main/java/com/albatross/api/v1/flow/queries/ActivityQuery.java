@@ -120,7 +120,7 @@ public class ActivityQuery {
                                                            pa2.pinned,
                                                            pa2.created_by_id as "createdById",
                                                            concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                           concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+                                                           case when up.id is not null then concat(p.position, ' (', o.org_name, ')') end as "createdByPosition",
                                                            pa2.pinned_by_id as "pinnedById",
                                                            concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                            pa2.archived,
@@ -130,9 +130,9 @@ public class ActivityQuery {
                                                     from flow.project_activity pa2
                                                            inner join flow."user" u on u.id = pa2.created_by_id
                                                            inner join flow."user" mod on mod.id = pa2.modified_by_id
-                                                           inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
-                                                           inner join flow.position p on p.id = up.position_id
-                                                           inner join flow.org o on o.id = up.org_id
+                                                           left join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
+                                                           left join flow.position p on p.id = up.position_id
+                                                           left join flow.org o on o.id = up.org_id
                                                            left join flow."user" pin on pin.id = pa2.pinned_by_id
                                                     where pa2.archived is false
                                                       and pa2.project_id = :sourceId
@@ -186,7 +186,7 @@ public class ActivityQuery {
              pa.pinned,
              pa.created_by_id,
              concat(u.first_name, ' ', u.last_name) as "createdBy",
-             concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
+             case when up.id is not null then concat(p.position, ' (', o.org_name, ')') end as "createdByPosition",
              pa.pinned_by_id as "pinnedById",
              concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
@@ -213,9 +213,9 @@ public class ActivityQuery {
       from flow.project_activity pa
         inner join flow."user" u on u.id = pa.created_by_id
         inner join flow."user" mod on mod.id = pa.modified_by_id
-        inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
-        inner join flow.position p on p.id = up.position_id
-        inner join flow.org o on o.id = up.org_id
+        left join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
+        left join flow.position p on p.id = up.position_id
+        left join flow.org o on o.id = up.org_id
         left join flow."user" pin on pin.id = pa.pinned_by_id
       where pa.archived is false
        and pa.project_id = :sourceId
@@ -370,6 +370,6 @@ public class ActivityQuery {
 
   //language=PostgreSQL
   public final static String addSystemActivity = """
-    select from flow.add_system_activity(:activityId, :objectTypeId, :projectId, :ppsId, :ppseId);
+    select from flow.add_system_activity(:activityId, :objectTypeId, :sourceId, :userId, :ppsId, :ppseId, :noteOverride);
   """;
 }

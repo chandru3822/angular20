@@ -90,7 +90,7 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
     params.put("processStepEventId", processStepEventId);
-    params.put("createdById", user.getId());
+    params.put("createdById", user.trueUserId());
 
     Long id = sqlCache.updateBySqlReturningId(ProjectProcessStepEventQuery.insertEvent, params, "id").longValue();
 
@@ -101,9 +101,10 @@ public class ProjectProcessStepEventService {
       HashMap<String, Object> actParams = new HashMap<>();
       actParams.put("activityId", SystemActivity.EVENT_CREATED.id);
       actParams.put("objectTypeId", ObjectType.PROJECT.id);
-      actParams.put("projectId", result.get().getProjectId());
+      actParams.put("sourceId", result.get().getProjectId());
+      actParams.put("userId", result.get().getProjectId());
       actParams.put("ppsId", projectProcessStepId);
-      actParams.put("ppseId", id);
+      actParams.put("ppseId", user.trueUserId());
       sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
     }
 
@@ -114,7 +115,7 @@ public class ProjectProcessStepEventService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("ppseId", ppseId);
-    params.put("userId", user.getId());
+    params.put("userId", user.trueUserId());
 
     sqlCache.updateBySql(ProjectProcessStepEventQuery.delete, params);
   }
