@@ -261,11 +261,12 @@
 
     <v-dialog v-model="msgDialog" max-width="800px">
       <v-card>
-        <v-card-title class="text-h5" primary-title>
+        <v-card-title class="text-h5 justify-space-between" primary-title>
             Send Bulk Emails/Texts
+            <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="primary" slot="extension"  slider-color="primary">
+        <v-tabs color="primary" slot="extension" slider-color="primary" class="message-tabs">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
@@ -275,7 +276,7 @@
         </v-tabs>
           </v-toolbar-items>
         <v-divider></v-divider>
-        <div v-if="messageTab == 1"  class="pa-5">
+        <div v-if="messageTab == 1"  class="pa-6">
           <label class="mr-2">To:</label>
           <v-autocomplete
             v-model="selectedUsers"
@@ -350,22 +351,21 @@
                 style="width: 255px"
             />
 
-            <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
-            <v-card-actions class="flex-display justify-end px-4 pt-0">
+            <v-card-actions class="flex-display justify-end pt-0 px-0">
               <v-btn
                 text color="primary"
                 @click="cancelSendMessageDialog">
                 Cancel
               </v-btn>
               <v-btn
-                color="primary" class="white--text mr-2 "
+                color="primary" class="white--text"
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
                 Send
               </v-btn>
             </v-card-actions>
         </div>
-        <div v-else-if="messageTab == 2" style="height:400px;" class="pa-5">
+        <div v-else-if="messageTab == 2" style="height:374px;" class="pa-6">
             <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
             conversations, use Inbox to send messages. <br></span>
             <label class="mr-2">To:</label>
@@ -417,7 +417,7 @@
                         placeholder="Enter message here" class="message-text-area py-3"></v-textarea>
 
 
-            <v-btn icon color="primary" class="white--text mr-2 mt-1 templateButton">
+            <v-btn icon color="primary" class="white--text mt-1 templateButton">
               <v-tooltip bottom small>
                 <template v-slot:activator="{on, attrs}">
                   <v-icon @click="" v-bind="attrs" v-on="on">
@@ -465,14 +465,15 @@
             />
           </div>
 
-            <v-card-actions class="flex-display justify-end px-4 pt-0">
+            <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
+              <span v-if="textFile">Attached {{ textFile.name }}</span>
               <v-btn
                 text color="primary"
                 @click="cancelSendMessageDialog">
                 Cancel
               </v-btn>
               <v-btn
-                color="primary" class="white--text mr-2"
+                color="primary" class="white--text"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
                 Send
@@ -1476,6 +1477,18 @@
 
   .message-text-area {
     width: 100%;
+  }
+
+  .message-tabs {
+    margin-left: 24px;
+  }
+
+  .close-modal-x {
+    font-size: 30px;
+
+    &:hover {
+      font-weight: bolder;
+    }
   }
 </style>
 
