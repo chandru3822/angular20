@@ -1,6 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal.mappers;
 
-import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.convert.JsonObjectDeserializer;
 import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,11 +23,11 @@ public class ProposalDesignMapper<T> extends BeanPropertyRowMapper<T> {
     TypeReference<List<Proposal>> proposalsRef = new TypeReference<>() {
     };
     bw.registerCustomEditor(
-      List.class, "proposals", new JsonCollectionDeserializer(proposalsRef, objectMapper));
+      List.class, "proposals", new JsonObjectDeserializer<>(proposalsRef, objectMapper));
 
     TypeReference<List<Attachment>> attachmentsRef = new TypeReference<>() {
     };
     bw.registerCustomEditor(
-      List.class, "attachments", new JsonCollectionDeserializer(attachmentsRef, objectMapper));
+      List.class, "attachments", new JsonObjectDeserializer(attachmentsRef, objectMapper));
   }
 }

@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -33,11 +34,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/proposal", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -94,7 +97,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/{proposalId}")
-  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody List<CustomFieldValue> cfvs) {
+  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody @Size(min = 1) List<CustomFieldValue> cfvs) {
     return proposalService.updateProposalCustomFieldValues(proposalId, cfvs);
   }
 
