@@ -512,8 +512,11 @@ export default {
         ?.intValue !== undefined
 
       //has it been changed in this session
-      const isDirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId) !== undefined
-      return isDirtyCfv || isPrepopulated
+      const dirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId)
+      if (dirtyCfv !== undefined) {
+        return dirtyCfv.intValue !== null
+      }
+      return isPrepopulated
     },
     handleStepChange(updated) {
       this.proposal = { ...updated }
@@ -593,6 +596,10 @@ export default {
 .proposal-zoom-lock {
   --scale: 0.75;
   transform: scale(var(--scale));
-  transform-origin: top center;
+  transform-origin: top left;
+
+  @media (min-width: 1500px) {
+    transform-origin: top center;
+  }
 }
 </style>
