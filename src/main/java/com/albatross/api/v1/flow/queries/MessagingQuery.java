@@ -207,7 +207,7 @@ public class MessagingQuery {
   public final static String getUsers = """
     with users as (select distinct on (u.id)    u.id                                   as user_id,
                                                 concat(u.first_name, ' ', u.last_name) as "name",
-                                                u.phone_number                        as mobile
+                                                u.search_phone                        as mobile
                       from flow.user u
                                inner join flow.user_message_properties ump on ump.user_id = u.id
                                left join flow.user_message_team umt on umt.user_id = u.id and umt.archived is false
@@ -301,7 +301,7 @@ public class MessagingQuery {
   //language=PostgreSQL
   public final static String getUsersCount = """
     with users as (select distinct on (u.id) u.id                                   as user_id,
-                                               u.phone_number                        as mobile,
+                                               u.search_phone                        as mobile,
                                                concat(u.first_name, ' ', u.last_name) as "name"
                      from flow.user u
                               inner join flow.user_message_properties ump on ump.user_id = u.id

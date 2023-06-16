@@ -1,5 +1,8 @@
 <template>
   <v-chip-group column class="team-chips">
+    <div class="d-flex flex-column mt-3">
+    <span v-if="!readOnly" class="albatross-body-3 mt-n2 mb-2 members-span">Members</span>
+      <div class="d-flex">
       <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap">
         <v-chip v-if="team.users.length === 0"
                 label
@@ -27,95 +30,98 @@
           <span>{{team.teamName}} - {{user.name}}</span>
         </v-chip>
       </span>
-    <v-chip v-if="(conversation && conversation.showAssignToMeButton) || showAssignToMeButton && !reloading && !readOnly"
-            label
-            class="white--text text-capitalize clickable"
-            :ripple="false"
-            :class="unassignedTeamExits ? 'unassigned-join-button' : 'assigned-join-button'"
-            @click.stop="$emit('joinConversation')">
-      <span>Join</span>
-    </v-chip>
-    <v-dialog v-model="showRemoveDialog" max-width="709px">
-      <v-card class="pt-6 pl-6">
-        <v-card-title class="albatross-header-4-new pa-0">What would you like to do?</v-card-title>
-        <v-radio-group v-model="removeOption">
-          <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
-            <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
-          <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
-            <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
-          </v-radio>
-          <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
-        </v-radio-group>
-        <v-card-actions class="pb-4">
-          <v-spacer/>
-          <v-btn class="text-capitalize" text color="primary" @click="showRemoveDialog=false">Cancel</v-btn>
-          <v-btn class="text-capitalize white--text" depressed color="primary" @click="confirmChoice">Confirm</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="showRemoveLastTeamDialog" max-width="600px">
-      <v-card class="pt-6">
-        <v-card-title
-            class="albatross-header-4-new pt-0"
-            primary-title>
-          Remove Team
-        </v-card-title>
-        <v-card-text class="default-text-color albatross-body-1 px-6">
-         <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
-          <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
-        </v-card-text>
-        <v-card-actions class="pb-4">
-          <v-spacer/>
-          <v-btn class="text-capitalize" text color="primary" @click="showRemoveLastTeamDialog=false">Cancel</v-btn>
-          <v-btn class="text-capitalize white--text" color="primary" @click="removeTeam(teamToRemove.id)">Remove and Close</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-dialog v-model="showRemoveTeamDialog" max-width="509px">
-      <v-card>
-        <v-card-title
-            class="albatross-header-4-new"
-            primary-title>
-          Remove Team
-        </v-card-title>
-        <v-card-text class="albatross-body-1 pb-2 default-text-color">
-          <div>This action will remove the team from the conversation. </div>
-          <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-              text color="primary"
-              @click="showRemoveTeamDialog=false"
-              class="text-capitalize mr-2 mb-2"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-              color="primary"
-              class="white--text elevation-2 text-capitalize mb-2"
-              @click="removeTeam(teamToRemove.id)">
-            Remove
-          </v-btn>
-        </v-card-actions>
-      </v-card>
 
-    </v-dialog>
-    <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
-      <template v-slot:activator="{on, attrs}">
-        <v-btn icon v-bind="attrs" v-on="on" large class="align-self-baseline">
-          <v-tooltip top small><template v-slot:activator="{on, attrs}">
-            <v-icon color="primary" @click="" v-bind="attrs" v-on="on">
-              mdi-plus
-            </v-icon>
-          </template>
-            <span class="albatross-body-3">Add Member</span>
-          </v-tooltip>
-        </v-btn>
-      </template>
-      <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
-    </v-menu>
+      <v-chip v-if="(conversation && conversation.showAssignToMeButton) || showAssignToMeButton && !reloading && !readOnly"
+              label
+              class="white--text text-capitalize clickable"
+              :ripple="false"
+              :class="unassignedTeamExits ? 'unassigned-join-button' : 'assigned-join-button'"
+              @click.stop="$emit('joinConversation')">
+        <span>Join</span>
+      </v-chip>
+      <span v-if="readOnly">This user is either no longer active or the user’s position cannot receive SMS from Albatross</span>
+      <v-dialog v-model="showRemoveDialog" max-width="709px">
+        <v-card class="pt-6 pl-6">
+          <v-card-title class="albatross-header-4-new pa-0">What would you like to do?</v-card-title>
+          <v-radio-group v-model="removeOption">
+            <v-radio :key="0" :value="0" class="albatross-body-1 remove-dialog-option mb-4">
+              <template v-slot:label><div class="default-text-color"> Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> from the conversation</div></template></v-radio>
+            <v-radio :key="1" :value="1" class="albatross-body-1 remove-dialog-option mb-0" color="grey darken-4" :mesaages="[`This will also remove other ${teamToRemove.teamName} team members on the conversation`]">
+              <template v-slot:label><div class="default-text-color">Remove <strong>&nbsp;{{userToRemove.name}}&nbsp;</strong> and <strong>&nbsp;{{teamToRemove.teamName}}&nbsp;</strong> team from the conversation</div></template>
+            </v-radio>
+            <span class="albatross-body-3 remove-dialog-option-info px-8 pt-n4">This will also remove other {{teamToRemove.teamName}} team members on the conversation</span>
+          </v-radio-group>
+          <v-card-actions class="pb-4">
+            <v-spacer/>
+            <v-btn class="text-capitalize" text color="primary" @click="showRemoveDialog=false">Cancel</v-btn>
+            <v-btn class="text-capitalize white--text" depressed color="primary" @click="confirmChoice">Confirm</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="showRemoveLastTeamDialog" max-width="600px">
+        <v-card class="pt-6">
+          <v-card-title
+              class="albatross-header-4-new pt-0"
+              primary-title>
+            Remove Team
+          </v-card-title>
+          <v-card-text class="default-text-color albatross-body-1 px-6">
+           <div>Because no other team is on the conversation, this action will remove the team and close the conversation.</div>
+            <div>Are you sure you want to remove {{teamToRemove.teamName}} team and close conversation?</div>
+          </v-card-text>
+          <v-card-actions class="pb-4">
+            <v-spacer/>
+            <v-btn class="text-capitalize" text color="primary" @click="showRemoveLastTeamDialog=false">Cancel</v-btn>
+            <v-btn class="text-capitalize white--text" color="primary" @click="removeTeam(teamToRemove.id)">Remove and Close</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="showRemoveTeamDialog" max-width="509px">
+        <v-card>
+          <v-card-title
+              class="albatross-header-4-new"
+              primary-title>
+            Remove Team
+          </v-card-title>
+          <v-card-text class="albatross-body-1 pb-2 default-text-color">
+            <div>This action will remove the team from the conversation. </div>
+            <div>Are you sure you want to remove <b>{{teamToRemove.teamName}}</b> team?</div>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+                text color="primary"
+                @click="showRemoveTeamDialog=false"
+                class="text-capitalize mr-2 mb-2"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+                color="primary"
+                class="white--text elevation-2 text-capitalize mb-2"
+                @click="removeTeam(teamToRemove.id)">
+              Remove
+            </v-btn>
+          </v-card-actions>
+        </v-card>
 
+      </v-dialog>
+      <v-menu offset-y :close-on-content-click="false" v-model="teamsMenuOpen" v-if="userCanView && !readOnly">
+        <template v-slot:activator="{on, attrs}">
+          <v-btn icon v-bind="attrs" v-on="on" large class="align-self-baseline">
+            <v-tooltip top small><template v-slot:activator="{on, attrs}">
+              <v-icon color="primary" @click="" v-bind="attrs" v-on="on">
+                mdi-plus
+              </v-icon>
+            </template>
+              <span class="albatross-body-3">Add Member</span>
+            </v-tooltip>
+          </v-btn>
+        </template>
+        <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
+      </v-menu>
+      </div>
+    </div>
   </v-chip-group>
 </template>
 
@@ -336,5 +342,10 @@ export default {
 
 .remove-dialog-option-info {
   color: var(--v-grey-darken1);
+}
+
+.members-span {
+  height: 12px;
+  display: inline-block
 }
 </style>
