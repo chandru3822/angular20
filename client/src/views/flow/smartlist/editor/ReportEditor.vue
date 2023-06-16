@@ -95,12 +95,15 @@
               label="Data Type"
               placeholder="Data Type"
               :rules="constants.BASIC_REQUIRED_RULE"
+              @change="updateObjectType"
             />
           </v-col>
 
-          <v-col class="flex-shrink-1 flex-grow-0 text-no-wrap">
+          <v-col
+            class="flex-shrink-1 flex-grow-0 text-no-wrap"
+            v-if="[4,6].includes(report?.objectTypeId)"
+          >
             <v-checkbox
-              v-if="[4,6].includes(report?.objectTypeId)"
               v-model="report.mainProcessSteps"
               :disabled="!canEdit"
               label="Primary Steps Only"
@@ -110,7 +113,10 @@
             />
           </v-col>
 
-          <v-col class="flex-shrink-1 flex-grow-0 text-no-wrap">
+          <v-col
+            class="flex-shrink-1 flex-grow-0 text-no-wrap"
+            v-if="[1,2,4,6].includes(report?.objectTypeId)"
+          >
             <v-checkbox
               v-model="report.projectDetails"
               :disabled="!canEdit"
@@ -590,6 +596,13 @@ const deleteRequirement = (index) => {
     requirements.value[index].updateType = UPDATE_TYPE.DELETE
   } else {
     requirements.value.splice(index, 1)
+  }
+}
+
+const updateObjectType = () => {
+  const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
+  if (selectedType) {
+    report.value.objectTypeId = selectedType.objectTypeId
   }
 }
 
