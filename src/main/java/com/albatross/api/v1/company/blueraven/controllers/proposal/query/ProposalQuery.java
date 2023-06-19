@@ -49,6 +49,7 @@ public class ProposalQuery {
                                   p.name,
                                   p.revision_number                             as "revisionNumber",
                                   p.date_created                                as "dateCreated",
+                                  p.date_modified                               as "dateModified",
                                   p.archived,
                                   p.locked_tsz is not null                      as locked,
                                   p.credit_check_submitted_tsz is not null      as "creditCheckSubmitted",
@@ -110,6 +111,7 @@ public class ProposalQuery {
                                   p.name,
                                   p.revision_number                             as "revisionNumber",
                                   p.date_created                                as "dateCreated",
+                                  p.date_modified                               as "dateModified",
                                   p.archived,
                                   p.locked_tsz is not null                      as locked,
                                   p.credit_check_submitted_tsz is not null      as "creditCheckSubmitted",
@@ -166,6 +168,8 @@ public class ProposalQuery {
            c.email,
            p.project_process_step_id,
            p.archived,
+           p.date_created,
+           p.date_modified,
            p.locked_tsz is not null                               as locked,
            p.credit_check_submitted_tsz is not null               as credit_check_submitted,
            p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
@@ -510,4 +514,9 @@ public class ProposalQuery {
       and processed_tsz is null
       and error_msg is null
     """;
+  public static String getMaxProposalDiscountAmount = """
+    select get_max_proposal_discount_amount as max_amount from brs.get_max_proposal_discount_amount(:proposalId);
+    """;
+  public static String updateProposalDiscountAmount = """
+    update brs.project_details set commission_forfeited_by_closer = :amount where id = :projectId""";
 }

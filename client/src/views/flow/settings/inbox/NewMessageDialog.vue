@@ -33,8 +33,9 @@
             <v-list-item @click="on.click">
               <v-list-item-action>
                 <v-checkbox
-                  :input-value="selectedProjectIds.includes(item.id)"
-                  :disabled="attrs.disabled"
+                  class="select-check"
+                  :value="selectedProjectIds.includes(item.id)"
+                  :disabled="true"
                   @click.stop
                 ></v-checkbox>
               </v-list-item-action>
@@ -74,10 +75,10 @@
           <v-list-item @click="on.click">
             <v-list-item-action>
               <v-checkbox
-                v-model="selectedUserIds"
-                :value="item.userId"
-                :disabled="attrs.disabled"
-                hide-details
+                class="select-check"
+                :value="selectedUserIds.includes(item.userId)"
+                :disabled="true"
+                @click.stop
               ></v-checkbox>
             </v-list-item-action>
             <v-list-item-content>
@@ -558,6 +559,10 @@ export default {
   &:hover {
     font-weight: bolder;
   }
+}
+
+.select-check {
+  color: var(--v-primary-base) !important;
 }
 
 </style>
