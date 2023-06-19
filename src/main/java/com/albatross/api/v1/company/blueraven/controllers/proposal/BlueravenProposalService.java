@@ -204,18 +204,7 @@ public class BlueravenProposalService {
     Optional<CustomFieldValue> discountCfv = cfvs.stream()
       .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(DISCOUNT_AMOUNT_CFGA_ID)).findFirst();
 
-    if (discountCfv.isPresent()) {
-      getCustomFieldValue(unlockedProposal, SYSTEM_SIZE_CFGA_ID)
-        .filter(cfv -> cfv.getNumericValue() != null && cfv.getNumericValue().compareTo(BigDecimal.ZERO) > 0)
-        .orElseThrow(()->new ApiException("System size is required for discount amount"));
-
-      BigDecimal maxProposalDiscountAmount = getMaxProposalDiscountAmount(proposalId);
-      if (discountCfv.get().getNumericValue().compareTo(maxProposalDiscountAmount) > 0) {
-        String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
-        String errorMessage = "Proposal discount amount exceeds max allowed of " + currencyFormat;
-        throw new ApiException(errorMessage);
-      }
-    }
+    discountCfv.ifPresent(customFieldValue -> validateProposalDiscount(customFieldValue.getNumericValue(), unlockedProposal));
 
     blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, unlockedProposal.getId(), ObjectType.PROPOSAL);
 
@@ -225,13 +214,8 @@ public class BlueravenProposalService {
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
     return proposal.getCustomFieldGroups().stream()
       .flatMap(cfg -> cfg.getCustomFieldValues().stream())
-      .filter(cfv->cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
       .findFirst();
-  }
-
-  private BigDecimal getMaxProposalDiscountAmount(Long proposalId) {
-    Double amount = sqlCache.queryForObjectBySql(ProposalQuery.getMaxProposalDiscountAmount, Map.of("proposalId", proposalId), Double.class);
-    return new BigDecimal(amount);
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
@@ -329,18 +313,27 @@ public class BlueravenProposalService {
     Optional<CustomFieldValue> discountCfv = getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID);
 
     if (discountCfv.isPresent()) {
-      BigDecimal maxProposalDiscountAmount = getMaxProposalDiscountAmount(proposalId);
-      if (discountCfv.get().getNumericValue().compareTo(maxProposalDiscountAmount) > 0) {
-        String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
-        String errorMessage = "Proposal discount amount exceeds max allowed of " + currencyFormat;
-        throw new ApiException(errorMessage);
-      }
-
+      validateProposalDiscount(discountCfv.get().getNumericValue(), unlockedProposal);
       saveProjectDiscountAmount(unlockedProposal.getProjectId(), discountCfv.get().getNumericValue());
     }
 
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
     return getProposal(proposalId);
+  }
+
+  private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {
+    getCustomFieldValue(proposal, SYSTEM_SIZE_CFGA_ID)
+      .filter(cfv -> cfv.getNumericValue() != null)
+      .filter(cfv -> cfv.getNumericValue().compareTo(BigDecimal.ZERO) > 0)
+      .orElseThrow(() -> new ApiException("System size is required for discount amount"));
+
+    BigDecimal maxProposalDiscountAmount = proposal.getMaxDiscountAmount();
+    if (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.compareTo(maxProposalDiscountAmount) > 0) {
+      String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
+      String errorMessage = "Proposal discount must be greater than $0 and less than max of %s".formatted(currencyFormat);
+
+      throw new ApiException(errorMessage);
+    }
   }
 
   @Transactional

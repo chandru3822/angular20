@@ -256,6 +256,7 @@ export function responseInterceptor({ response }) {
           : response.status === 403
             ? 'User Unauthorized'
             : 'Unknown Error'
+
       if (response?.data?.maintenanceMode && status === 403) {
         //if we dont remove the store item then a logged in user who USED to have permission will still have permission later
         localStorage.removeItem('store')
@@ -275,11 +276,13 @@ export function responseInterceptor({ response }) {
         router.push({ path: `/serverError?code=${response.status}` })
       } else {
         //if local we dont reroute, but throw the error so we can see if failed
-        throw { data: response?.data, status }
+        // throw { data: response?.data, status }
+        return Promise.reject({ data: response?.data, status })
       }
     } else if (![200, 201, 204].includes(status)) {
       //dont take this out, it makes axios await errors work correctly
-      throw { data: response?.data, status }
+      // throw { data: response?.data, status }
+      return Promise.reject({ data: response?.data, status })
     }
   }
 }
