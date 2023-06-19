@@ -56,6 +56,7 @@
           :ripple="false"
           @change="callback(field)"
           :class="customClass"
+          :hint="hint"
         />
 
         <v-text-field
@@ -70,6 +71,7 @@
           :filled="filledStyle"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           type="number"
           v-model.number="field.numericValue"
           @change="callback(field)"
@@ -132,6 +134,7 @@
           :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           item-value="id"
           item-text="name"
           @input="handleInput"
@@ -165,6 +168,7 @@
           :rules="rules"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           item-value="id"
           item-text="name"
           @input="handleInput"
@@ -195,6 +199,7 @@
           :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           :rules="rules"
           placeholder=" "
           item-value="id"
@@ -228,6 +233,7 @@
           :disabled="readonly"
           :class="[customClass, {'error--text': readonly}]"
           :rules="rules"
+          :hint="hint"
           placeholder=" "
           item-value="id"
           item-text="name"
@@ -336,6 +342,10 @@ export default {
     },
     listOfValueFilter: {
       type: Function,
+      required: false
+    },
+    hint: {
+      type: String,
       required: false
     },
     minDate: String,

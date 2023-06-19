@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.models;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -12,6 +13,7 @@ public class Proposal {
   private Long id, proposalNbr, projectId, projectProcessStepId, proposalVersionId, revisionNumber;
   private String projectName, name, email, version;
   private OffsetDateTime dateCreated, dateModified;
+  private BigDecimal maxDiscountAmount;
   private boolean locked, archived, creditCheckSubmitted, financeDocsSent, installationAgreementSent;
   private List<CustomFieldGroup> customFieldGroups;
 
