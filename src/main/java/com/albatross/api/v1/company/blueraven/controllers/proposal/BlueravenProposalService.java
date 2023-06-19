@@ -6,6 +6,7 @@ import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
@@ -325,14 +326,14 @@ public class BlueravenProposalService {
     getCustomFieldValue(proposal, SYSTEM_SIZE_CFGA_ID)
       .filter(cfv -> cfv.getNumericValue() != null)
       .filter(cfv -> cfv.getNumericValue().compareTo(BigDecimal.ZERO) > 0)
-      .orElseThrow(() -> new ApiException("System size is required for discount amount"));
+      .orElseThrow(() -> new InvalidStateApiException("System size is required for discount amount"));
 
     BigDecimal maxProposalDiscountAmount = proposal.getMaxDiscountAmount();
     if (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.compareTo(maxProposalDiscountAmount) > 0) {
       String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
       String errorMessage = "Proposal discount must be greater than $0 and less than max of %s".formatted(currencyFormat);
 
-      throw new ApiException(errorMessage);
+      throw new InvalidStateApiException(errorMessage);
     }
   }
 
@@ -342,7 +343,7 @@ public class BlueravenProposalService {
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
     if (proposal.isLocked()) {
-      throw new ApiException("Proposal has already been locked");
+      throw new InvalidStateApiException("Proposal has already been locked");
     }
 
     sqlCache.updateBySql(ProposalQuery.setArchived, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));

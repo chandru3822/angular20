@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
@@ -18,6 +19,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
@@ -182,7 +184,7 @@ public class BlueravenProposalController {
     return proposalService.getProposal(proposalId)
       .map(proposal -> {
         if (!proposal.isLocked()) {
-          throw new ApiException("Proposal must be locked to continue");
+          throw new InvalidStateApiException("Proposal must be locked to continue");
         }
         return proposal;
       });
@@ -245,6 +247,12 @@ public class BlueravenProposalController {
     return new ProposalFilterResponse(filterIds);
   }
 
+  @ExceptionHandler({InvalidStateApiException.class})
+  protected ResponseEntity<ProposalErrorMessage> handleInvalidStateApiException(InvalidStateApiException ex) {
+    final Throwable rootCause = ExceptionUtils.getRootCause(ex);
+    return ResponseEntity.badRequest().body(new ProposalErrorMessage(rootCause.getMessage()));
+  }
+
   public record CreateNewDesignRequest(@NotEmpty String description,
                                        String dueDate,
                                        List<MultipartFile> attachments,
@@ -268,6 +276,10 @@ public class BlueravenProposalController {
 
   public record LoanStatusUpdate(String applicationUrl, String type) {
   }
+
+  record ProposalErrorMessage(String message) {
+  }
+
 
   @Data
   public static class DesignRequest {
