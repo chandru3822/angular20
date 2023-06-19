@@ -35,32 +35,32 @@ BEGIN
 
 
   if p_office_ids::text != '[]'::text then
-    raise notice '1';
+    --raise notice '1';
     select array_agg(elem)
     into v_org_ids
     from (SELECT (elem ->> 'office_id') :: bigint as elem
 
           FROM json_array_elements(p_office_ids::JSON) elem) as elem;
   elsif p_district_ids::text != '[]'::text then
-    raise notice '2';
+    --raise notice '2';
     select array_agg(elem)
     into v_org_ids
     from (SELECT (elem ->> 'district_id') :: bigint as elem
           FROM json_array_elements(p_district_ids::JSON) elem) as elem;
   elsif p_region_ids::text != '[]'::text then
-    raise notice '3';
+    --raise notice '3';
     select array_agg(elem)
     into v_org_ids
     from (SELECT (elem ->> 'region_id') :: bigint as elem
           FROM json_array_elements(p_region_ids::JSON) elem) as elem;
   elsif p_area_ids::text != '[]'::text then
-    raise notice '4';
+    --raise notice '4';
     select array_agg(elem)
     from (SELECT (elem ->> 'area_id') :: bigint as elem
           into v_org_ids
           FROM json_array_elements(p_area_ids::JSON) elem) as elem;
   end if;
-  raise notice 'v_org_ids,%',v_org_ids;
+  --raise notice 'v_org_ids,%',v_org_ids;
   -- org_level_id of 7 = Office
   case
     when p_area_ids::text = '[]'::text and p_region_ids::text = '[]'::text and
