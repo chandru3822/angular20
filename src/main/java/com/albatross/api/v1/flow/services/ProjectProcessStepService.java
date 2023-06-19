@@ -198,6 +198,7 @@ public class ProjectProcessStepService {
     sqlCache.queryBySql(ProjectProcessStepQuery.setStatus, params, String.class);
   }
 
+  @Transactional
   public void setMain(Long ppsId, CompanyProcessStepStatusType status) {
     Map<String, Object> params = new HashMap<>();
     params.put("ppsId", ppsId);
@@ -205,6 +206,7 @@ public class ProjectProcessStepService {
     params.put("cancelledCompanyProcessStepStatusTypeId", status.getCancelledCompanyProcessStepStatusTypeId());
     params.put("userId", securityService.getCurrentUser().getId());
     sqlCache.queryBySql(ProjectProcessStepQuery.setMain, params, String.class);
+    performAutoTriggerActions(ppsId, securityService.getCurrentUserDetails());
   }
 
   public void setProjectStatus(Long projectId, Long companyProjectStatusTypeId) {
