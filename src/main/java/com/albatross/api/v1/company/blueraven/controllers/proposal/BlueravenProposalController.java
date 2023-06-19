@@ -237,7 +237,6 @@ public class BlueravenProposalController {
     return ResponseEntity.ok(responseBody);
   }
 
-
   @GetMapping(value = "/{proposalId}/filter")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
@@ -245,7 +244,6 @@ public class BlueravenProposalController {
     final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposal.getProposalVersionId(), filter);
     return new ProposalFilterResponse(filterIds);
   }
-
 
   public record CreateNewDesignRequest(@NotEmpty String description,
                                        String dueDate,

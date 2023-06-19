@@ -66,6 +66,7 @@
                   :field="field"
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
+                  :hint="getHint(field)"
                 />
               </div>
             </div>
@@ -193,6 +194,11 @@ import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import { mapState } from 'vuex'
 import Vue2Filters from 'vue2-filters'
 
+const USD = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+});
+
 export default {
   name: 'Proposal',
   mixins: [Vue2Filters.mixin],
@@ -251,6 +257,18 @@ export default {
     })
   },
   methods: {
+    getHint(field){
+      if (!field){
+        return undefined
+      }
+
+      if (field.customFieldGroupAssignmentId === 167){
+        const maxDiscountAmount = this.proposal.maxDiscountAmount
+        if (maxDiscountAmount){
+          return `Max discount allowed is ${USD.format(this.proposal.maxDiscountAmount)}`
+        }
+      }
+    },
     userHasWhiteListedPosition(cf, arg = 'readonly') {
       const wlAttr = arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
       const prAttr = arg === 'readonly' ? 'customFieldGroupAssignmentReadOnly' : 'customFieldGroupAssignmentHidden'
@@ -504,12 +522,13 @@ export default {
         return true
       }
 
-      //does it come back from the server prepopulated
-      const isPrepopulated = this.proposal?.customFieldGroups
+      const cfg = this.proposal?.customFieldGroups
         ?.map(cfg => cfg.customFieldValues)
         ?.flat()
         ?.find(f => f.customFieldGroupAssignmentId === conditionalOnId)
-        ?.intValue !== undefined
+
+      //does it come back from the server prepopulated
+      const isPrepopulated = cfg?.intValue !== undefined && cfg?.intValue !== null
 
       //has it been changed in this session
       const dirtyCfv = this.dirtyCfvs.find(cfv => cfv.customFieldGroupAssignmentId === conditionalOnId)
