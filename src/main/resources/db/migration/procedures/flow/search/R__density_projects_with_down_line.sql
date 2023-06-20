@@ -36,8 +36,8 @@ as
 $$
 DECLARE
   v_company_ids               bigint[];
-  v_org_ids                   bigint[];
-  v_position_ids              bigint[];
+  v_org_ids                   integer[];
+  v_position_ids              integer[];
 BEGIN
 
   if p_is_parent then
@@ -94,7 +94,7 @@ BEGIN
                       left join flow.state s on s.id = cs.state_id
                where c.company_id = any (v_company_ids)
                  and p.archived is not true
-                 and (c.owner_org_ids::bigint[] && v_org_ids or c.owner_position_ids::bigint[] && v_position_ids)
+                 and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
                  and case when array_length(p_company_project_status_type_ids, 1) > 0 then p.company_project_status_type_id  = any(  p_company_project_status_type_ids ) else 1=1 end
                  and st_makepoint(p.longitude, p.latitude)
                  && ST_MakeEnvelope (
