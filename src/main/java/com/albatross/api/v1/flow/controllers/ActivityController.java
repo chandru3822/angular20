@@ -81,4 +81,66 @@ public class ActivityController {
   public void pinContactActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
     activityService.pinActivity(ObjectType.CONTACT.id, activityId, pinned);
   }
+
+  // ##### ORG ACTIVITY STUFF #######
+  @GetMapping(value = "/topics/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ActivityType> getOrgActivityTopics(@PathVariable Long id) {
+    return activityService.getActivityTopicsByObject(ObjectType.ORGANIZATION.id, id);
+  }
+
+  @GetMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Activity> getOrgActivities(@PathVariable Long id) {
+    return activityService.getActivitiesByObject(ObjectType.ORGANIZATION.id, id);
+  }
+
+  @DeleteMapping(value = "/{id}/org", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteOrgActivity(@PathVariable("id") Long activityId) {
+    activityService.deleteActivityById(ObjectType.ORGANIZATION.id, activityId);
+  }
+
+  @PostMapping(value = "/org/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Activity> addOrgActivity(@PathVariable Long id, @RequestBody Activity activity) {
+    return activityService.addActivityByObject(ObjectType.ORGANIZATION.id, id, activity);
+  }
+
+  @PutMapping(value = "/{id}/org", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Activity> editOrgActivity(@PathVariable("id") Long activityId, @RequestBody Activity activity) {
+    return activityService.editActivityByObject(ObjectType.ORGANIZATION.id, activityId, activity);
+  }
+
+  @PostMapping(value = "/{id}/pin/org", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void pinOrgActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
+    activityService.pinActivity(ObjectType.ORGANIZATION.id, activityId, pinned);
+  }
+
+  // ##### USER ACTIVITY STUFF #######
+  @GetMapping(value = "/topics/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ActivityType> getUserActivityTopics(@PathVariable Long id) {
+    return activityService.getActivityTopicsByObject(ObjectType.USER.id, id);
+  }
+
+  @GetMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Activity> getUserActivities(@PathVariable Long id) {
+    return activityService.getActivitiesByObject(ObjectType.USER.id, id);
+  }
+
+  @DeleteMapping(value = "/{id}/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteUserActivity(@PathVariable("id") Long activityId) {
+    activityService.deleteActivityById(ObjectType.USER.id, activityId);
+  }
+
+  @PostMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Activity> addUserActivity(@PathVariable Long id, @RequestBody Activity activity) {
+    return activityService.addActivityByObject(ObjectType.USER.id, id, activity);
+  }
+
+  @PutMapping(value = "/{id}/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Activity> editUserActivity(@PathVariable("id") Long activityId, @RequestBody Activity activity) {
+    return activityService.editActivityByObject(ObjectType.USER.id, activityId, activity);
+  }
+
+  @PostMapping(value = "/{id}/pin/user", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void pinUserActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
+    activityService.pinActivity(ObjectType.USER.id, activityId, pinned);
+  }
 }

@@ -1,14 +1,14 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
-import com.albatross.api.v1.flow.queries.ActivityQuery;
-import com.albatross.api.v1.flow.queries.ContactActivityQuery;
+import com.albatross.api.v1.flow.queries.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,9 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getActivityTopicsByProject :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getActivityTopicsByContact : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getActivityTopicsByContact :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getActivityTopicsByOrg :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.getActivityTopicsByUser : null;
 
     return sqlCache.queryBySql(sql, params, new ActivityTypeMapper<>(ActivityType.class, om));
   }
@@ -55,7 +57,9 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivities :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivities : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivities :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getOrgActivities :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.getUserActivities : null;
 
     return sqlCache.queryBySql(sql, params, new ActivityMapper<>(Activity.class, om));
   }
@@ -67,7 +71,9 @@ public class ActivityService {
     params.put("activityId", activityId);
     params.put("userId", user.trueUserId());
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.archiveProjectActivity :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.archiveContactActivity : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.archiveContactActivity :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.archiveOrgActivity :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.archiveUserActivity : null;
 
     sqlCache.updateBySql(sql, params);
   }
@@ -76,7 +82,9 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", activityId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivity :
-            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivity : null;
+            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivity :
+            objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getOrgActivity :
+            objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.getUserActivity : null;
 
     return sqlCache.getBySql(sql, params, new ActivityMapper<>(Activity.class, om));
   }
@@ -88,7 +96,9 @@ public class ActivityService {
     params.put("pinned", pinned);
     params.put("userId", user.trueUserId());
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.saveProjectActivityPinned :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.saveContactActivityPinned : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.saveContactActivityPinned :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.saveOrgActivityPinned :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.saveUserActivityPinned : null;
 
     sqlCache.updateBySql(sql, params);
   }
@@ -106,7 +116,9 @@ public class ActivityService {
     //parameterizing for future use
     params.put("activityTypeId", 2);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.addProjectActivity :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.addContactActivity : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.addContactActivity :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.addOrgActivity :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.addUserActivity : null;
 
     Long id = sqlCache.updateBySqlReturningId(sql, params, "id").longValue();
 
@@ -115,7 +127,6 @@ public class ActivityService {
 
     Optional<Activity> savedActivity = getOneActivity(objectTypeId, id);
 
-    //todo: handle any @ users
     //only notify @ users if project or contact cuz users dont usually have access to the other screens (org and user)
     if(savedActivity.isPresent() && (objectTypeId.equals(ObjectType.PROJECT.id) || objectTypeId.equals(ObjectType.CONTACT.id))) {
       notifyMentionedUsers(savedActivity.get(), objectTypeId, sourceId);
@@ -219,7 +230,9 @@ public class ActivityService {
     params.put("userId", user.trueUserId());
     //only update the date modified and the modified by id if the content of the note changed, see sql
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.editProjectActivity :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.editContactActivity : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.editContactActivity :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.editOrgActivity :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.editUserActivity : null;
 
     sqlCache.updateBySql(sql, params);
 
@@ -242,19 +255,25 @@ public class ActivityService {
           //archive hashtag
           params.put("id", activityHashtag.getId());
           String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.archiveProjectActivityHashtag :
-            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.archiveContactActivityHashtag : null;
+            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.archiveContactActivityHashtag :
+            objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.archiveOrgActivityHashtag :
+            objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.archiveUserActivityHashtag : null;
           sqlCache.updateBySql(sql, params);
         } else {
           //handle upsert here
           params.put("hashtagId", activityHashtag.getHashtagId());
           String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.upsertProjectActivityHashtag :
-            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.upsertContactActivityHashtag : null;
+            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.upsertContactActivityHashtag :
+            objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.upsertOrgActivityHashtag :
+              objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.upsertUserActivityHashtag : null;
           sqlCache.updateBySql(sql, params);
         }
       }
       //because at least one hashtag was changed, we set the "modified by id" on the activity because that is how BR wants it to work
       String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.setProjectActivityModified :
-        objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.setContactActivityModified : null;
+        objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.setContactActivityModified :
+        objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.setOrgActivityModified :
+        objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.setUserActivityModified : null;
       sqlCache.updateBySql(sql, params);
     }
 
@@ -265,7 +284,9 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("activityId", activityId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivityHashtags :
-      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivityHashtags : null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivityHashtags :
+      objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getOrgActivityHashtags :
+      objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.getUserActivityHashtags : null;
 
     return sqlCache.queryBySql(sql, params, ActivityHashtag.class);
   }
