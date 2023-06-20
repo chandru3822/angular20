@@ -98,8 +98,8 @@
           >{{ selectedUserIds.length }} selected</span>
         </template>
         </v-autocomplete>
-        <router-link  class="open-conversation-link pt-5 pl-5"
-                      :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : ''"
+        <router-link  class=" pt-5 pl-5"
+                      :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : 'open-conversation-link'"
                       v-if="selectedUserIds.length > 0"
                       :to="`/user/${this.selectedUserIds}/details`"
                       target="_blank">
@@ -115,7 +115,7 @@
                     rows="4"
                     v-model="message">
         </v-textarea>
-        <v-btn icon color="primary" class="white--text mx-2 mt-1 templateButton">
+        <v-btn icon color="primary" class="white--text mx-2 templateButton template-button-height">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-icon @click="" v-bind="attrs" v-on="on">
@@ -152,18 +152,18 @@
             </v-card-text>
           </v-card>
         </v-menu>
-
         <v-file-input
           dense
           hide-input
           multiple
           label="Upload file"
+          class="ma-0 mt-0"
           @change="uploadTextAttachment"
           @click:clear="[uploadedFiles = []]"
         />
       </div>
 
-      <v-card-actions class="pt-1 pb-0 px-0">
+      <v-card-actions class="pb-0 px-0">
         <span v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
         <v-spacer/>
         <v-btn
@@ -279,6 +279,7 @@ export default {
       }, 500) /* 500ms throttle */
     },
     async sendMessage() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.selectedProjectIds.length > 0) {
         for (let selectedProjectId of this.selectedProjectIds) {
           this.attachmentUrl = `/project/` + selectedProjectId + `/attachment`
@@ -319,6 +320,7 @@ export default {
 
       if (this.messageSuccess) {
         this.exitDialogue()
+        this.$store.commit(AppMutations.SET_LOADING, false)
         if (this.assignAndSend) {
           this.snackbar = getSnackbar('SUCCESS', 'Message sent and conversation assigned')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -328,6 +330,7 @@ export default {
         }
         else {
           this.snackbar = getSnackbar('SUCCESS', 'Message sent')
+          this.$store.commit(AppMutations.SET_LOADING, false)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       }
@@ -338,6 +341,7 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.messageSuccess = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
         return;
       }
 
@@ -394,12 +398,12 @@ export default {
           e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
         this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
         return;
       }
     },
     sendMessageAndAssign: async function () {
       let smsTeamId = this.teamsAssociatedToUser ? this.teamsAssociatedToUser[0].id : null
-
       let params = {
         id: smsTeamId,
         users: [{
@@ -528,8 +532,15 @@ export default {
 }
 
 .disabled-open-conversation {
-  opacity: 0.5;
+  max-width: 100%;
+  text-decoration: none;
+  color: lightgrey !important;
   pointer-events: none;
+
+  .mdi-open-in-new {
+    color: lightgrey !important;
+  }
+
 }
 
 .message-text-area {
@@ -563,6 +574,11 @@ export default {
 
 .select-check {
   color: var(--v-primary-base) !important;
+}
+
+.template-button-height {
+  height: 24px !important;
+  margin-top: 2px;
 }
 
 </style>

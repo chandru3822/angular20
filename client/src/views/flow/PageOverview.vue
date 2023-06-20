@@ -112,7 +112,7 @@
               outlined
               small
               color=""
-              :color="detail.value.hasSmsAccess ? 'primary' : 'grey'"
+              :color="!detail.value.hasSmsAccess || !detail.value.hasAccess ? 'grey' : 'primary'"
               class="label-medium text-transform-unset py-1"
               @click="openSendMessageDialogue(detail.value)"
               target="_blank"
