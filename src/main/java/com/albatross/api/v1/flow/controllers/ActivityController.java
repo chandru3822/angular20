@@ -51,15 +51,34 @@ public class ActivityController {
     return activityService.editActivityByObject(ObjectType.PROJECT.id, activityId, activity);
   }
 
+  // ##### CONTACT ACTIVITY STUFF #######
+  @GetMapping(value = "/topics/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ActivityType> getContactActivityTopics(@PathVariable Long id) {
+    return activityService.getActivityTopicsByObject(ObjectType.CONTACT.id, id);
+  }
 
-//  @PutMapping(value = "/{id}/hashtag/project", produces = MediaType.APPLICATION_JSON_VALUE)
-//  public List<ActivityHashtag> updateProjectActivityHashtag(@PathVariable("id") Long activityId,
-//                                                            @RequestBody List<ActivityHashtag> hashtags) {
-//    return activityService.updateActivityHashtag(ObjectType.PROJECT.id, activityId, hashtags);
-//  }
+  @GetMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<Activity> getContactActivities(@PathVariable Long id) {
+    return activityService.getActivitiesByObject(ObjectType.CONTACT.id, id);
+  }
 
-  @PostMapping(value = "/{id}/pin/project", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void pinProjectActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
-    activityService.pinActivity(ObjectType.PROJECT.id, activityId, pinned);
+  @DeleteMapping(value = "/{id}/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteContactActivity(@PathVariable("id") Long activityId) {
+    activityService.deleteActivityById(ObjectType.CONTACT.id, activityId);
+  }
+
+  @PostMapping(value = "/contact/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Activity> addContactActivity(@PathVariable Long id, @RequestBody Activity activity) {
+    return activityService.addActivityByObject(ObjectType.CONTACT.id, id, activity);
+  }
+
+  @PutMapping(value = "/{id}/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<Activity> editContactActivity(@PathVariable("id") Long activityId, @RequestBody Activity activity) {
+    return activityService.editActivityByObject(ObjectType.CONTACT.id, activityId, activity);
+  }
+
+  @PostMapping(value = "/{id}/pin/contact", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void pinContactActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
+    activityService.pinActivity(ObjectType.CONTACT.id, activityId, pinned);
   }
 }

@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.ActivityQuery;
+import com.albatross.api.v1.flow.queries.ContactActivityQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,7 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getActivityTopicsByProject :
-                   null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getActivityTopicsByContact : null;
 
     return sqlCache.queryBySql(sql, params, new ActivityTypeMapper<>(ActivityType.class, om));
   }
@@ -54,7 +55,7 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivities :
-                   null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivities : null;
 
     return sqlCache.queryBySql(sql, params, new ActivityMapper<>(Activity.class, om));
   }
@@ -65,7 +66,8 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("activityId", activityId);
     params.put("userId", user.trueUserId());
-    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.archiveProjectActivity : null;
+    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.archiveProjectActivity :
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.archiveContactActivity : null;
 
     sqlCache.updateBySql(sql, params);
   }
@@ -74,7 +76,7 @@ public class ActivityService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", activityId);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivity :
-                   null;
+            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivity : null;
 
     return sqlCache.getBySql(sql, params, new ActivityMapper<>(Activity.class, om));
   }
@@ -85,7 +87,8 @@ public class ActivityService {
     params.put("activityId", activityId);
     params.put("pinned", pinned);
     params.put("userId", user.trueUserId());
-    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.saveProjectActivityPinned : null;
+    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.saveProjectActivityPinned :
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.saveContactActivityPinned : null;
 
     sqlCache.updateBySql(sql, params);
   }
@@ -103,7 +106,7 @@ public class ActivityService {
     //parameterizing for future use
     params.put("activityTypeId", 2);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.addProjectActivity :
-                   null;
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.addContactActivity : null;
 
     Long id = sqlCache.updateBySqlReturningId(sql, params, "id").longValue();
 
@@ -215,7 +218,8 @@ public class ActivityService {
     params.put("linkedPpseId", activity.getLinkedPpseId());
     params.put("userId", user.trueUserId());
     //only update the date modified and the modified by id if the content of the note changed, see sql
-    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.editProjectActivity : null;
+    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.editProjectActivity :
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.editContactActivity : null;
 
     sqlCache.updateBySql(sql, params);
 
@@ -237,17 +241,20 @@ public class ActivityService {
         if(null != activityHashtag.getArchived() && activityHashtag.getArchived()) {
           //archive hashtag
           params.put("id", activityHashtag.getId());
-          String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.archiveProjectActivityHashtag : null;
+          String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.archiveProjectActivityHashtag :
+            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.archiveContactActivityHashtag : null;
           sqlCache.updateBySql(sql, params);
         } else {
           //handle upsert here
           params.put("hashtagId", activityHashtag.getHashtagId());
-          String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.upsertProjectActivityHashtag : null;
+          String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.upsertProjectActivityHashtag :
+            objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.upsertContactActivityHashtag : null;
           sqlCache.updateBySql(sql, params);
         }
       }
       //because at least one hashtag was changed, we set the "modified by id" on the activity because that is how BR wants it to work
-      String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.setProjectActivityModified : null;
+      String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.setProjectActivityModified :
+        objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.setContactActivityModified : null;
       sqlCache.updateBySql(sql, params);
     }
 
@@ -257,7 +264,8 @@ public class ActivityService {
   public List<ActivityHashtag> getActivityHashtags(Long objectTypeId, Long activityId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("activityId", activityId);
-    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivityHashtags : null;
+    String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivityHashtags :
+      objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivityHashtags : null;
 
     return sqlCache.queryBySql(sql, params, ActivityHashtag.class);
   }

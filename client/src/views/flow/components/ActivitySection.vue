@@ -360,7 +360,7 @@ export default {
     async saveNewActivity() {
       this.savingActivity = true
       //in this case a NEW activity's hashtags are the root level ones
-      let activityHashtags = this.editedActivity?.activityHashtags?.map(st => {
+      let activityHashtags = this.selectedTopics.map(st => {
         return {'hashtagId': st.id}
       })
       try {
