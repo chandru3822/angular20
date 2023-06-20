@@ -502,16 +502,16 @@ select
              wqt.work_queue_type,
              wq_cat.work_queue_category,
              (coalesce(wqc.date_exited_queue::date, now()::date) - wqc.date_entered_queue::date) as days_in_queue
-          from flow.work_queue_cycle wqc
-          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
-          inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
-          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst  on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
-          inner join flow.process_step_work_queue_type pswqt on pswqt.id = pswqtpsst.process_step_work_queue_type_id
-          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-          inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
-          where pps.project_id = :projectId
-          union all
-          select wqc.date_entered_queue,
+      from flow.work_queue_cycle wqc
+               inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
+               inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
+               inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst  on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+               inner join flow.process_step_work_queue_type pswqt on pswqt.id = pswqtpsst.process_step_work_queue_type_id
+               inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+               inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
+      where pps.project_id = :projectId
+      union all
+      select wqc.date_entered_queue,
              wqc.date_exited_queue,
              psewqt.work_queue_type_id,
              e.event_name,
@@ -520,18 +520,18 @@ select
              wqt.work_queue_type,
              wq_cat.work_queue_category,
              (coalesce(wqc.date_exited_queue::date, now()::date) - wqc.date_entered_queue::date) as days_in_queue
-          from flow.work_queue_cycle wqc
-             inner join flow.project_process_step_event ppse on ppse.id = wqc.project_process_step_event_id
-             inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
-             inner join flow.event e on e.id = pse.event_id
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
-             inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
-             inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
-             inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
-             inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
-          where pps.project_id = :projectId
-          order by date_exited_queue desc nulls first, date_entered_queue desc
+      from flow.work_queue_cycle wqc
+               inner join flow.project_process_step_event ppse on ppse.id = wqc.project_process_step_event_id and ppse.archived is false
+               inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
+               inner join flow.event e on e.id = pse.event_id
+               inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id and pps.archived is false
+               inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
+               inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
+               inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+               inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
+               inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
+      where pps.project_id = :projectId
+      order by date_exited_queue desc nulls first, date_entered_queue desc
     """;
 
   //language=PostgreSQL
