@@ -36,10 +36,9 @@ public class WorkQueueQuery {
                                wqc2.project_process_step_id not in (
                                select project_process_step_id
                                from flow.project_process_step_process_step_work_queue_type_note pn
-                                      inner join flow.note n on pn.note_id = n.id
                                where wqc2.project_process_step_id = pn.project_process_step_id
-                                 and n.archived is not true
-                                 and n.follow_up_date > now()::date
+                                 and pn.archived is not true
+                                 and pn.follow_up_date > now()::date
                                order by date_created desc
                                limit 1
                              )
@@ -104,10 +103,9 @@ public class WorkQueueQuery {
                                wqc2.project_process_step_event_id not in (
                                select project_process_step_event_id
                                from flow.pps_event_process_step_event_work_queue_type_note pn
-                                      inner join flow.note n on pn.note_id = n.id
                                where wqc2.project_process_step_event_id = pn.project_process_step_event_id
-                                 and n.archived is not true
-                                 and n.follow_up_date > now()::date
+                                 and pn.archived is not true
+                                 and pn.follow_up_date > now()::date
                                order by date_created desc
                                limit 1
                              )

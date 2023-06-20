@@ -45,8 +45,18 @@ public class NoteController {
     return new ResponseEntity<>(noteService.saveNote(null, note, false, false,true), HttpStatus.OK);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteNote(@PathVariable Long id) {
-    noteService.deleteNote(id);
+  @DeleteMapping(value = "/processStepWorkQueue/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletePsWqNote(@PathVariable Long id) {
+    noteService.deleteNote(id, "project_process_step_process_step_work_queue_type_note");
+  }
+
+  @DeleteMapping(value = "/eventWorkQueue/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteEventWqNote(@PathVariable Long id) {
+    noteService.deleteNote(id, "pps_event_process_step_event_work_queue_type_note");
+  }
+
+  @DeleteMapping(value = "/prodStat/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProdStatNote(@PathVariable Long id) {
+    noteService.deleteNote(id, "project_prod_stats_note");
   }
 }

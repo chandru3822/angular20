@@ -595,19 +595,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getNotes() {
-      try {
-        const {data} = await getRequestWithParams(`/note/getProjectProcessStepNotes`, {
-          params: {
-            primaryId: this.projectProcessStepId
-          }
-        })
-        this.notes = data
-      } catch {
-        console.log('suck')
-
-      }
-    },
     async getAvailableOwners() {
       // this.$store.commit(AppMutations.SET_LOADING, true)
       if (this.processStep?.processStepProcessId) {

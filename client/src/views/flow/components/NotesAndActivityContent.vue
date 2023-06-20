@@ -390,10 +390,12 @@ export default {
     async deleteNote() {
       const n = this.noteToDelete
       const isChildNote = !!this.parentOfNoteToDelete
-
+      let url = this.installDashTile != null ? `/note/prodStat/${n.id}` :
+        this.isPsWqtNote ? `/note/processStepWorkQueue/${n.id}` :
+          this.isEventWqtNote ? `/note/eventWorkQueue/${n.id}` : ``
       try {
         // @randa: Probably should create an object type enum on the frontend that mimics the backend?
-        await deleteRequest(`/note/${n.id}`)
+        await deleteRequest(url)
         n.archived = true
         if (isChildNote) {
           this.parentOfNoteToDelete.childNotes = this.parentOfNoteToDelete.childNotes.filter(cn => !cn.archived)
