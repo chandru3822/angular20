@@ -127,8 +127,21 @@
               @click="projectDetailsClicked"
             />
           </v-col>
-        </v-row>
 
+          <v-col
+            class="flex-shrink-1 flex-grow-0 text-no-wrap"
+            v-if="[3,5].includes(report?.objectTypeId)"
+          >
+            <v-checkbox
+              v-model="report.primaryUserPosition"
+              :disabled="!canEdit"
+              label="Primary Position"
+              hide-details
+              :ripple="false"
+              class="px-4"
+            />
+          </v-col>
+        </v-row>
       </v-card>
     </v-col>
     <v-col
