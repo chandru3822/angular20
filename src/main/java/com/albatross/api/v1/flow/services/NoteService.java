@@ -231,7 +231,6 @@ public class NoteService {
     params.put("startEvent", noteTimer.getStartEvent());
     params.put("endEvent", noteTimer.getEndEvent());
     params.put("timerType", noteTimer.getTimerType());
-    System.out.println(params.toString());
     sqlCache.updateBySql(NoteQuery.insertNoteTimer, params);
   }
 
