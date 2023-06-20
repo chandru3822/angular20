@@ -140,8 +140,8 @@
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
         >
           <v-col cols="4" class="px-0">
-            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
-                   :class="{'section-selected': selectedOption===0}">
+            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 0"
+                   :class="{'section-selected': selectedOption===0}" >
               <v-icon>mdi-forum-outline</v-icon>
             </v-btn>
           </v-col>
@@ -152,7 +152,7 @@
             </v-btn>
           </v-col>
           <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 2"
                    :class="{'section-selected': selectedOption===2}">
               <v-icon>mdi-folder-outline</v-icon>
             </v-btn>
@@ -309,6 +309,7 @@ import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHist
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
+import {endTimer} from "@/services/analyticsService";
 
 export default {
   name: 'ProjectActivity',
@@ -581,6 +582,9 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching history')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
+    },
+    endNotesTimer(endEvent){
+      endTimer(endEvent);
     }
   }
 }
