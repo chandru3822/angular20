@@ -93,7 +93,7 @@ BEGIN
           v_insert_sql = $$insert into flow.data_view_update(generated_update)
           ($$ || v_sql || $$);$$;
           --raise notice 'v_insert_sql: %', v_insert_sql;
-          raise notice 'v_sql: %', v_sql;
+          --raise notice 'v_sql: %', v_sql;
           execute v_insert_sql;
         end if;
       end if;

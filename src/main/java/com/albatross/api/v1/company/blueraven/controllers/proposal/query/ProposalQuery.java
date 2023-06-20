@@ -514,9 +514,6 @@ public class ProposalQuery {
       and processed_tsz is null
       and error_msg is null
     """;
-  public static String getMaxProposalDiscountAmount = """
-    select get_max_proposal_discount_amount as max_amount from brs.get_max_proposal_discount_amount(:proposalId);
-    """;
   public static String updateProposalDiscountAmount = """
     update brs.project_details set commission_forfeited_by_closer = :amount where id = :projectId""";
 }

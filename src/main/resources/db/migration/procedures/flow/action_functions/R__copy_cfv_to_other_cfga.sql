@@ -65,8 +65,8 @@ BEGIN
     into v_value_to_save
     from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_copy_from);
 
-    raise notice 'from object type = % ',v_to_object_type_id;
-    raise notice 'value to save = % ',v_value_to_save;
+    --raise notice 'from object type = % ',v_to_object_type_id;
+    --raise notice 'value to save = % ',v_value_to_save;
 
     --if there was a value then, set the value for the second cfga
     -- todo: add param for only saving if doesn't already have a value

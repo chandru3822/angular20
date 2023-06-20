@@ -6,6 +6,7 @@ import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
@@ -204,18 +205,7 @@ public class BlueravenProposalService {
     Optional<CustomFieldValue> discountCfv = cfvs.stream()
       .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(DISCOUNT_AMOUNT_CFGA_ID)).findFirst();
 
-    if (discountCfv.isPresent()) {
-      getCustomFieldValue(unlockedProposal, SYSTEM_SIZE_CFGA_ID)
-        .filter(cfv -> cfv.getNumericValue() != null && cfv.getNumericValue().compareTo(BigDecimal.ZERO) > 0)
-        .orElseThrow(()->new ApiException("System size is required for discount amount"));
-
-      BigDecimal maxProposalDiscountAmount = getMaxProposalDiscountAmount(proposalId);
-      if (discountCfv.get().getNumericValue().compareTo(maxProposalDiscountAmount) > 0) {
-        String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
-        String errorMessage = "Proposal discount amount exceeds max allowed of " + currencyFormat;
-        throw new ApiException(errorMessage);
-      }
-    }
+    discountCfv.ifPresent(customFieldValue -> validateProposalDiscount(customFieldValue.getNumericValue(), unlockedProposal));
 
     blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, unlockedProposal.getId(), ObjectType.PROPOSAL);
 
@@ -225,13 +215,8 @@ public class BlueravenProposalService {
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
     return proposal.getCustomFieldGroups().stream()
       .flatMap(cfg -> cfg.getCustomFieldValues().stream())
-      .filter(cfv->cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
       .findFirst();
-  }
-
-  private BigDecimal getMaxProposalDiscountAmount(Long proposalId) {
-    Double amount = sqlCache.queryForObjectBySql(ProposalQuery.getMaxProposalDiscountAmount, Map.of("proposalId", proposalId), Double.class);
-    return new BigDecimal(amount);
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
@@ -329,18 +314,27 @@ public class BlueravenProposalService {
     Optional<CustomFieldValue> discountCfv = getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID);
 
     if (discountCfv.isPresent()) {
-      BigDecimal maxProposalDiscountAmount = getMaxProposalDiscountAmount(proposalId);
-      if (discountCfv.get().getNumericValue().compareTo(maxProposalDiscountAmount) > 0) {
-        String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
-        String errorMessage = "Proposal discount amount exceeds max allowed of " + currencyFormat;
-        throw new ApiException(errorMessage);
-      }
-
+      validateProposalDiscount(discountCfv.get().getNumericValue(), unlockedProposal);
       saveProjectDiscountAmount(unlockedProposal.getProjectId(), discountCfv.get().getNumericValue());
     }
 
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
     return getProposal(proposalId);
+  }
+
+  private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {
+    getCustomFieldValue(proposal, SYSTEM_SIZE_CFGA_ID)
+      .filter(cfv -> cfv.getNumericValue() != null)
+      .filter(cfv -> cfv.getNumericValue().compareTo(BigDecimal.ZERO) > 0)
+      .orElseThrow(() -> new InvalidStateApiException("System size is required for discount amount"));
+
+    BigDecimal maxProposalDiscountAmount = proposal.getMaxDiscountAmount();
+    if (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.compareTo(maxProposalDiscountAmount) > 0) {
+      String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
+      String errorMessage = "Proposal discount must be greater than $0 and less than max of %s".formatted(currencyFormat);
+
+      throw new InvalidStateApiException(errorMessage);
+    }
   }
 
   @Transactional
@@ -349,7 +343,7 @@ public class BlueravenProposalService {
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
     if (proposal.isLocked()) {
-      throw new ApiException("Proposal has already been locked");
+      throw new InvalidStateApiException("Proposal has already been locked");
     }
 
     sqlCache.updateBySql(ProposalQuery.setArchived, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));

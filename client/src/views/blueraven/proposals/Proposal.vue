@@ -357,7 +357,6 @@ export default {
 
         handleHidingGlobalLoader(this, status)
       } catch (e) {
-        logError(e)
         const msg = e?.data?.message || 'Error Saving Proposal'
         this.$snackbar('ERROR', msg)
       } finally {
