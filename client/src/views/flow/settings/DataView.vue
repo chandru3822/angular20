@@ -444,7 +444,7 @@ export default {
         v => !!v || "Field is required",
         v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
         v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
-        v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start and end with a letter",
+        v => (!v || (/^[a-z]+(?:_+[a-z0-9]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start with a letter",
         v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
         v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
       ],

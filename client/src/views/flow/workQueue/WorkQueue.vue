@@ -231,6 +231,8 @@ export default {
   },
   computed: {},
   async created() {
+    this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
+    this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
     this.selectedWorkQueueCategoryId = parseInt(localStorage.getItem('wqCategoryId')) || null
     let requests = [this.getWorkQueueCategories(), this.loadBoth()]
     await Promise.all(requests)
@@ -259,10 +261,7 @@ export default {
 
         //trying to make the page load all requests simultaneously to speed things up.  dealing with those ramifications
         let matchingCategory = this.workQueueCategories.find(wqc => wqc.id === this.selectedWorkQueueCategoryId)
-        if(matchingCategory) {
-          this.hideFutureFollowUps = JSON.parse(localStorage.getItem('hideFutureWqFollowUps')) || false
-          this.hideFutureEvents = JSON.parse(localStorage.getItem('hideFutureWqEvents')) || false
-        } else {
+        if(!matchingCategory) {
           //unset the selection, should only mean the user no longer has access to a category they used to have access to
           this.selectedWorkQueueCategoryId = null
           localStorage.setItem('wqCategoryId', JSON.stringify(this.selectedWorkQueueCategoryId))

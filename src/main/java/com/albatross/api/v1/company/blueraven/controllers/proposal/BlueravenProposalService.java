@@ -223,7 +223,10 @@ public class BlueravenProposalService {
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
     //we divide the value in half because the user is only responsible for half, BRS will cover the other part
-    sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
+    int count = sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
+    if (count == 0) {
+      log.warn("Unable to update commission_forfeited_by_closer amount for projectId={}", projectId);
+    }
   }
 
   public Optional<Proposal> addProposal(Proposal proposal, @NonNull UserAccountDetails currentUser) {
