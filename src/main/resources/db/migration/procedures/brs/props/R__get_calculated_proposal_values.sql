@@ -1157,7 +1157,8 @@ create temp table proposal_value as (with version_values
                                                                                      cdt.data_type_id,
                                                                                      (vv2.value ->> 'value')::text    as value,
                                                                                      vv2.object_code,
-                                                                                     (vv2.value ->> 'intValue')::text as int_value
+                                                                                     (vv2.value ->> 'intValue')::text as int_value,
+                                                                                     (array(select jsonb_array_elements_text((vv2.value ->>'intArrayValue')::jsonb)::int)) as int_array_value
                                                                               from version_values vv2
                                                                                      inner join group_uuid_proposal_panel_watts_detail g1
                                                                                                 on g1.proposal_group_uuid = vv2.proposal_group_uuid
@@ -1198,7 +1199,8 @@ create temp table proposal_value as (with version_values
                                               ucr.value,
                                               ucr.utility_company::bigint,
                                               ucr.object_code,
-                                              ucr.int_value
+                                              ucr.int_value,
+                                              null::int[] as int_array_value
                                        from utility_company_results ucr
                                        union
                                        select ssr.proposal_group_uuid,
@@ -1208,7 +1210,8 @@ create temp table proposal_value as (with version_values
                                               ssr.value,
                                               null::bigint,
                                               ssr.object_code,
-                                              ssr.int_value
+                                              ssr.int_value,
+                                              null::int[]
                                        from site_survey_results ssr
                                        union
                                        select ssdr.proposal_group_uuid,
@@ -1218,7 +1221,8 @@ create temp table proposal_value as (with version_values
                                               ssdr.value,
                                               null::bigint,
                                               ssdr.object_code,
-                                              ssdr.int_value
+                                              ssdr.int_value,
+                                              null::int[]
                                        from site_survey_defualt_results ssdr
                                        union
                                        select ssdsr.proposal_group_uuid,
@@ -1228,7 +1232,8 @@ create temp table proposal_value as (with version_values
                                               ssdsr.value,
                                               null::bigint,
                                               ssdsr.object_code,
-                                              ssdsr.int_value
+                                              ssdsr.int_value,
+                                              null::int[]
                                        from site_survey_defualt_state_results ssdsr
                                        union
                                        select fcr.proposal_group_uuid,
@@ -1238,7 +1243,8 @@ create temp table proposal_value as (with version_values
                                               fcr.value,
                                               null::bigint,
                                               fcr.object_code,
-                                              fcr.int_value
+                                              fcr.int_value,
+                                              null::int[]
                                        from financier_company_results fcr
                                        union
                                        select fpcr.proposal_group_uuid,
@@ -1248,7 +1254,8 @@ create temp table proposal_value as (with version_values
                                               fpcr.value,
                                               fpcr.intValue::bigint,
                                               fpcr.object_code,
-                                              fpcr.intValue
+                                              fpcr.intValue,
+                                              null::int[]
                                        from finance_product_company_results fpcr
                                        union
                                        select zar.proposal_group_uuid,
@@ -1258,7 +1265,8 @@ create temp table proposal_value as (with version_values
                                               zar.value,
                                               null::bigint,
                                               zar.object_code,
-                                              zar.int_value
+                                              zar.int_value,
+                                              null::int[]
                                        from zone_adder_results zar
                                        union
                                        select frr.proposal_group_uuid,
@@ -1268,7 +1276,8 @@ create temp table proposal_value as (with version_values
                                               frr.value,
                                               null::bigint,
                                               frr.object_code,
-                                              frr.int_value
+                                              frr.int_value,
+                                              null::int[]
                                        from federal_rebate_results frr
                                        union
                                        select rrr.proposal_group_uuid,
@@ -1278,7 +1287,8 @@ create temp table proposal_value as (with version_values
                                               rrr.value,
                                               null::bigint,
                                               rrr.object_code,
-                                              rrr.int_value
+                                              rrr.int_value,
+                                              null::int[]
                                        from referral_rebate_results rrr
                                        union
                                        select srr.proposal_group_uuid,
@@ -1288,7 +1298,8 @@ create temp table proposal_value as (with version_values
                                               srr.value,
                                               null::bigint,
                                               srr.object_code,
-                                              srr.int_value
+                                              srr.int_value,
+                                              null::int[]
                                        from state_rebate_results srr
                                        union
                                        select urr.proposal_group_uuid,
@@ -1298,7 +1309,8 @@ create temp table proposal_value as (with version_values
                                               urr.value,
                                               null::bigint,
                                               urr.object_code,
-                                              urr.int_value
+                                              urr.int_value,
+                                              null::int[]
                                        from utility_rebate_results urr
 --                                       union
 --                                        select etir.proposal_group_uuid,
@@ -1328,7 +1340,8 @@ create temp table proposal_value as (with version_values
                                               etpsr.value,
                                               null::bigint,
                                               etpsr.object_code,
-                                              etpsr.intValue
+                                              etpsr.intValue,
+                                              null::int[]
                                        from equipment_type_storage_results etpsr
                                        union
                                        select etstr.proposal_group_uuid,
@@ -1338,7 +1351,8 @@ create temp table proposal_value as (with version_values
                                               etstr.value,
                                               null::bigint,
                                               etstr.object_code,
-                                              etstr.intValue
+                                              etstr.intValue,
+                                              null::int[]
                                        from equipment_type_smart_thermostat_results etstr
                                        union
                                        select etllr.proposal_group_uuid,
@@ -1348,7 +1362,8 @@ create temp table proposal_value as (with version_values
                                               etllr.value,
                                               null::bigint,
                                               etllr.object_code,
-                                              etllr.intValue
+                                              etllr.intValue,
+                                              null::int[]
                                        from equipment_type_led_lightbulbs_results etllr
                                        union
                                        select pmr.proposal_group_uuid,
@@ -1358,7 +1373,8 @@ create temp table proposal_value as (with version_values
                                               pmr.value,
                                               null::bigint,
                                               pmr.object_code,
-                                              pmr.int_value
+                                              pmr.int_value,
+                                              null::int[]
                                        from proposal_misc_results pmr
                                        union
                                        select dar.proposal_group_uuid,
@@ -1368,7 +1384,8 @@ create temp table proposal_value as (with version_values
                                               dar.value,
                                               null::bigint,
                                               dar.object_code,
-                                              dar.int_value
+                                              dar.int_value,
+                                              null::int[]
                                        from default_adder_results dar
                                        union
                                        select sar.proposal_group_uuid,
@@ -1378,7 +1395,8 @@ create temp table proposal_value as (with version_values
                                               sar.value,
                                               null::bigint,
                                               sar.object_code,
-                                              sar.int_value
+                                              sar.int_value,
+                                              null::int[]
                                        from source_adder_results sar
                                        union
                                        select ssar.proposal_group_uuid,
@@ -1388,7 +1406,8 @@ create temp table proposal_value as (with version_values
                                               ssar.value,
                                               null::bigint,
                                               ssar.object_code,
-                                              ssar.int_value
+                                              ssar.int_value,
+                                              null::int[]
                                        from small_system_adder_results ssar
                                        union
                                        select ppdr.proposal_group_uuid,
@@ -1398,8 +1417,9 @@ create temp table proposal_value as (with version_values
                                               ppdr.value,
                                               null::bigint,
                                               ppdr.object_code,
-                                              ppdr.int_value
-                                       from proposal_panel_detail_results ppdr
+                                              ppdr.int_value,
+                                              ppdr.int_array_value
+                                     from proposal_panel_detail_results ppdr
                                        union
                                        select pir.proposal_group_uuid,
                                               pir.field_id,
@@ -1408,7 +1428,8 @@ create temp table proposal_value as (with version_values
                                               pir.value,
                                               null::bigint,
                                               pir.object_code,
-                                              pir.intValue
+                                              pir.intValue,
+                                              null::int[]
                                        from proposal_inverter_results pir
                                        union
                                        select null::uuid,
@@ -1418,7 +1439,8 @@ create temp table proposal_value as (with version_values
                                               oa.numeric_value::text,
                                               null::bigint,
                                               'OTHER_ADDERS',
-                                              null::text
+                                              null::text,
+                                              null::int[]
                                        from other_adders oa
                                        union
                                        select snob.proposal_group_uuid::uuid,
@@ -1428,7 +1450,8 @@ create temp table proposal_value as (with version_values
                                               snob.value,
                                               snob.intValue::bigint,
                                               snob.object_code,
-                                              null::text
+                                              null::text,
+                                              null::int[]
                                        from storage_number_of_batteries snob
                                        order by 7, 1);
   --   --  raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
@@ -1738,11 +1761,11 @@ v_loan_price_storage = v_cash_price_storage;
 
   --  raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
 
-  v_equipment_panel_adder = brs.get_equipment_amount_by_type(v_system_size, 'PROPOSAL_PANEL_DETAIL');
-  --  raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
+  v_equipment_panel_adder = brs.get_equipment_amount_by_type(v_system_size, 'PROPOSAL_PANEL_DETAIL',v_state_id);
+    raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
 
   v_equipment_inverter_adder = brs.get_equipment_amount_by_type(v_system_size, 'PROPOSAL_INVERTER_DETAILS');
-  --  raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
+    raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
 
   v_misc_adders = brs.get_misc_adder_amount(v_system_size);
   --  raise notice 'v_misc_adders = %',v_misc_adders;
