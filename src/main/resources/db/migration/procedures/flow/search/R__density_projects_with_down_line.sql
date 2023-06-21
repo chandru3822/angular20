@@ -7,13 +7,14 @@ drop function if exists flow.density_projects_with_down_line(p_company_id bigint
                                                              p_lower_bound_longitude numeric
 );
 create or replace function flow.density_projects_with_down_line(p_company_id bigint,
-                                                               p_user_id bigint, p_is_parent boolean,
-                                                               p_company_project_status_type_ids bigint[],
+                                                                p_user_id bigint,
+                                                                p_is_parent boolean,
+                                                                p_company_project_status_type_ids bigint[],
                                                                 p_upper_bound_latitude numeric,
                                                                 p_upper_bound_longitude numeric,
                                                                 p_lower_bound_latitude numeric,
                                                                 p_lower_bound_longitude numeric
-                                                                )
+)
   returns TABLE
           (
             id                             bigint,
@@ -35,9 +36,9 @@ create or replace function flow.density_projects_with_down_line(p_company_id big
 as
 $$
 DECLARE
-  v_company_ids               bigint[];
-  v_org_ids                   integer[];
-  v_position_ids              integer[];
+  v_company_ids  bigint[];
+  v_org_ids      bigint[];
+  v_position_ids bigint[];
 BEGIN
 
   if p_is_parent then
@@ -57,50 +58,52 @@ BEGIN
   into v_position_ids
   from flow.user_position up
   where user_id = p_user_id;
-      return query
-      SELECT limited_projects.id::bigint,
-                limited_projects.project_name,
-                limited_projects.contact_id::bigint,
-                limited_projects.date_created,
-                limited_projects.street1,
-                limited_projects.street2,
-                limited_projects.city,
-                limited_projects.state,
-                limited_projects.state_abbreviation,
-                limited_projects."postalCode",
-                limited_projects.latitude,
-                limited_projects.longitude,
-                limited_projects.company_project_status_type_id::bigint,
-                limited_projects.project_status_type
-         FROM (select p.id::bigint,
-                      p.project_name,
-                      p.contact_id::bigint,
-                      p.date_created,
-                      p.street1,
-                      p.street2,
-                      p.city,
-                      s.state,
-                      s.abbreviation                           as state_abbreviation,
-                      p.postal_code                            as "postalCode",
-                      p.latitude,
-                      p.longitude,
-                      p.company_project_status_type_id::bigint,
-                      cpst.project_status_type
-               from flow.project p
-                      inner join flow.company_project_status_type cpst
-                                 on cpst.id = p.company_project_status_type_id
-                      inner join flow.contact c on c.id = p.contact_id
-                      left join flow.company_state cs on cs.id = p.company_state_id
-                      left join flow.state s on s.id = cs.state_id
-               where c.company_id = any (v_company_ids)
-                 and p.archived is not true
-                 and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
-                 and case when array_length(p_company_project_status_type_ids, 1) > 0 then p.company_project_status_type_id  = any(  p_company_project_status_type_ids ) else 1=1 end
-                 and st_makepoint(p.longitude, p.latitude)
-                 && ST_MakeEnvelope (
-                       p_upper_bound_longitude, p_upper_bound_latitude,
-                       p_lower_bound_longitude, p_lower_bound_latitude,
-                       4326)
-               ) as limited_projects;
+  return query
+    SELECT limited_projects.id::bigint,
+           limited_projects.project_name,
+           limited_projects.contact_id::bigint,
+           limited_projects.date_created,
+           limited_projects.street1,
+           limited_projects.street2,
+           limited_projects.city,
+           limited_projects.state,
+           limited_projects.state_abbreviation,
+           limited_projects."postalCode",
+           limited_projects.latitude,
+           limited_projects.longitude,
+           limited_projects.company_project_status_type_id::bigint,
+           limited_projects.project_status_type
+    FROM (select p.id::bigint,
+                 p.project_name,
+                 p.contact_id::bigint,
+                 p.date_created,
+                 p.street1,
+                 p.street2,
+                 p.city,
+                 s.state,
+                 s.abbreviation as state_abbreviation,
+                 p.postal_code  as "postalCode",
+                 p.latitude,
+                 p.longitude,
+                 p.company_project_status_type_id::bigint,
+                 cpst.project_status_type
+          from flow.project p
+                 inner join flow.company_project_status_type cpst
+                            on cpst.id = p.company_project_status_type_id
+                 inner join flow.contact c on c.id = p.contact_id
+                 left join flow.company_state cs on cs.id = p.company_state_id
+                 left join flow.state s on s.id = cs.state_id
+          where c.company_id = any (v_company_ids)
+            and p.archived is not true
+            and (c.owner_org_ids && v_org_ids or c.owner_position_ids && v_position_ids)
+            and case
+                  when array_length(p_company_project_status_type_ids, 1) > 0 then
+                      p.company_project_status_type_id = any (p_company_project_status_type_ids)
+                  else 1 = 1 end
+            and st_makepoint(p.longitude, p.latitude)
+            && ST_MakeEnvelope(
+                  p_upper_bound_longitude, p_upper_bound_latitude,
+                  p_lower_bound_longitude, p_lower_bound_latitude,
+                  4326)) as limited_projects;
 END ;
 $$;
