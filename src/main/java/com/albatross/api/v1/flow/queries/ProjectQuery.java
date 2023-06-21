@@ -85,10 +85,10 @@ from flow.density_projects_with_down_line(:companyId::bigint,
                                           :currentUserId::bigint,
                                           :isParent,
                                           ARRAY [ :companyProjectStatusTypeIds ]::bigint[],
-                                          :upperBoundLatitude,
-                                          :upperBoundLongitude,
-                                          :lowerBoundLatitude,
-                                          :lowerBoundLongitude)
+                                          :upperBoundLatitude::numeric,
+                                          :upperBoundLongitude::numeric,
+                                          :lowerBoundLatitude::numeric,
+                                          :lowerBoundLongitude::numeric)
     """;
 
   //language=PostgreSQL
