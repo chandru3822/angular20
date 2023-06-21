@@ -56,6 +56,11 @@ public class CloserDashboardController {
     return closerDashboardService.getCloserTableScores(timeInterval, officeFdcRank, selectedOrgId);
   }
 
+  @GetMapping(value="/leaderboardBookings")
+  public List<LeaderboardBooking> getLeaderboardBookings(@RequestParam String bookingDate) {
+    return closerDashboardService.getLeaderboardBookings(bookingDate);
+  }
+
   @GetMapping(value = "/getBrsProvidedSources")
   public List<Source> getBrsProvidedSources() {
     return closerDashboardService.getBrsProvidedSources();
