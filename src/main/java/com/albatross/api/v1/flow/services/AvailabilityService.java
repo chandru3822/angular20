@@ -858,17 +858,15 @@ public class AvailabilityService {
             project.ifPresent(p -> {
               try {
                 MarketoProject mp = marketoService.getProject(p.getId());
-                if (!mp.getDoNotSolicitReview()) {
-                  Map<String, Object> marketoLead = marketoService.projectToLead(mp);
-                  marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
-                  marketoLead.put("projectStatus", mp.getProjectStatusType());
-                  JSONArray result = marketoService.pushData(List.of(marketoLead));
-                  JSONObject firstResult = result.getJSONObject(0);
-                  // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
-                  if (firstResult.getString("status").equals("created")) {
-                    marketoLead.put("projectStatus", "Appointment Scheduled");
-                    marketoService.pushData(List.of(marketoLead));
-                  }
+                Map<String, Object> marketoLead = marketoService.projectToLead(mp);
+                marketoLead.put("closerAppointmentStartTime", marketoService.formatDateTime(appointmentStartTime));
+                marketoLead.put("projectStatus", mp.getProjectStatusType());
+                JSONArray result = marketoService.pushData(List.of(marketoLead));
+                JSONObject firstResult = result.getJSONObject(0);
+                // BR wants newly created Marketo leads to have a status of "Appointment Scheduled"
+                if (firstResult.getString("status").equals("created")) {
+                  marketoLead.put("projectStatus", "Appointment Scheduled");
+                  marketoService.pushData(List.of(marketoLead));
                 }
               } catch (Exception e) {
                 log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
