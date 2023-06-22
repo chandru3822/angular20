@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
+import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.OverrideManagementQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -80,12 +81,17 @@ public class CommissionManagementService {
     //see if project is already assigned
     Optional<Long> commissionPlanId = sqlCache.queryForObjectOptionalBySql(CommissionManagementQuery.checkProjectAssignment, params, Long.class);
 
+    //see if project owner is assigned to the override plan
+    Optional<Long> opauId = sqlCache.queryForObjectOptionalBySql(CommissionManagementQuery.checkProjectOwnerOnPlan, params, Long.class);
+
     if(companyId.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Project ID", new Exception());
     } else if(commissionPlanId.isPresent()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is already assigned to a plan.", new Exception());
+    } else if(opauId.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Owner is not assigned to this plan.", new Exception());
     } else {
-      sqlCache.updateBySql(CommissionManagementQuery.assignProject, params);
+      sqlCache.queryBySql(CommissionManagementQuery.assignProject, params, String.class);
     }
 
 

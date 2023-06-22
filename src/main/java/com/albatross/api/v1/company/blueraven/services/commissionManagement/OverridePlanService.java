@@ -129,12 +129,17 @@ public class OverridePlanService {
     //see if project is already assigned
     Optional<Long> commissionPlanId = sqlCache.queryForObjectOptionalBySql(OverrideManagementQuery.checkProjectAssignment, params, Long.class);
 
+    //see if project owner is assigned to the override plan
+    Optional<Long> opauId = sqlCache.queryForObjectOptionalBySql(OverrideManagementQuery.checkProjectOwnerOnPlan, params, Long.class);
+
     if(companyId.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Project ID", new Exception());
     } else if(commissionPlanId.isPresent()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project is already assigned to a plan.", new Exception());
+    } else if(opauId.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Project Owner is not assigned to this plan.", new Exception());
     } else {
-      sqlCache.updateBySql(OverrideManagementQuery.assignProject, params);
+      sqlCache.queryBySql(OverrideManagementQuery.assignProject, params, String.class);
     }
   }
 
