@@ -214,7 +214,7 @@
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
-                                      :hint="`Max allowed: ${$filters.currency(item.remaining_value, '$', 2)}`"
+                                      :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
                         </v-text-field>
                         <v-textarea
@@ -249,7 +249,7 @@
                           Cancel
                         </v-btn>
                         <v-btn color="primary" class="white--text"
-                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
+                               :disabled="adjustmentDisabled(item)"
                                @click="addAdjustment(item)">
                           Add
                         </v-btn>
@@ -304,7 +304,7 @@
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
-                                      :hint="`Max allowed: ${$filters.currency(item.remaining_value, '$', 2)}`"
+                                      :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
                         </v-text-field>
                         <v-textarea
@@ -339,7 +339,7 @@
                           Cancel
                         </v-btn>
                         <v-btn color="primary" class="white--text"
-                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
+                               :disabled="adjustmentDisabled(item)"
                                @click="addAdjustment(item)">
                           Add
                         </v-btn>
@@ -530,6 +530,16 @@
       this.getCurrentPayroll()
     },
     methods: {
+      _getCurrentMaxAdjustment(item){
+        const maxAdjustment = item.remaining_value_commissions - (item.current_pay_commissions < 0 ? 0 : item.current_pay_commissions) - item.commission_forfeited_by_closer - item.commission_forfeited_paid_to_date
+        return (maxAdjustment < 0) ? 0 : maxAdjustment
+      },
+
+      adjustmentDisabled(item){
+        const maxAdjustment = this._getCurrentMaxAdjustment(item)
+        return !item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > maxAdjustment
+      },
+
       toggleSelectAll () {
         this.accountingData.forEach(ad => {
           ad.selected = this.selectAll
