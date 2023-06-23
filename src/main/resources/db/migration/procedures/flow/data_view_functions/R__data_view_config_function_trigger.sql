@@ -677,6 +677,8 @@ BEGIN
       elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is null then
         new.cancelled_date = now();
         new.completed_date = null;
+      elseif new.company_event_status_type_id is not null and v_event_status_type_id = 3 and new.cancelled_date is not null and old.cancelled_date is not null then
+        --if the new status is cancelled AND the old one was cancelled, do nothing
       else
         new.cancelled_date = null;
         new.completed_date = null;
