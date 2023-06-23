@@ -4,9 +4,9 @@
         v-model="showNewMessageDialog"
         @click:outside="exitDialogue"
         width="803">
-    <v-card class="pa-5">
-      <v-card-title class="title-large pa-0 justify-space-between">
-        Compose new SMS Message
+    <v-card class="pa-3">
+      <v-card-title class="pa-0 justify-space-between">
+        <span class="title-large">Compose new SMS Message</span>
         <a class="close-modal-x pb-3" title="Close" @click="exitDialogue">×</a>
       </v-card-title>
       <span class="sub-message-span">You will be assigned to the conversation automatically, unless chosen otherwise</span>
@@ -73,7 +73,7 @@
             <v-list-item-action>
               <v-checkbox
                 class="select-check"
-                :value="selectedUserIds.includes(item.userId)"
+                :input-value="selectedUserIds.includes(item.userId)"
                 :disabled="true"
                 @click.stop
               ></v-checkbox>
@@ -95,12 +95,12 @@
           >{{ selectedUserIds.length }} selected</span>
         </template>
         </v-autocomplete>
-        <router-link  class=" pt-5 pl-5"
+        <router-link  class="pt-5 pl-5"
                       :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : 'open-conversation-link'"
                       v-if="selectedUserIds.length > 0"
                       :to="`/user/${this.selectedUserIds}/details`"
                       target="_blank">
-          Open conversation<v-icon>mdi-open-in-new</v-icon>
+          Open conversation<v-icon small>mdi-open-in-new</v-icon>
         </router-link>
       </div>
 
@@ -112,10 +112,10 @@
                     rows="4"
                     v-model="message">
         </v-textarea>
-        <v-btn icon color="primary" class="white--text mx-2 templateButton template-button-height">
+        <v-btn icon color="primary" class="white--text templateButton template-button-height">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
-              <v-icon @click="" v-bind="attrs" v-on="on">
+              <v-icon class="pr-2" @click="" v-bind="attrs" v-on="on">
                 article
               </v-icon>
             </template>
@@ -161,7 +161,7 @@
       </div>
 
       <div class="flex-display">
-        <span  v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
+        <span v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
         <v-spacer/>
         <v-card-actions class="pb-0 px-0 pt-6">
           <v-spacer/>
@@ -579,9 +579,6 @@ export default {
 .template-button-height {
   height: 24px !important;
   margin-top: 2px;
-  hover {
-    color: var(--v-primary-base);
-  }
 }
 
 </style>
