@@ -189,7 +189,8 @@ public class NoteService {
                 context,
                 "noreply@albatross.myblueraven.com",
                 "Albatross",
-                currentUser.trueUserId());
+                currentUser.trueUserId(),
+                null);
           } else {
             String groupId = UUID.randomUUID().toString();
             String textMessage =

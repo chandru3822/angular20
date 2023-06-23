@@ -150,6 +150,7 @@ public class CommunicationController {
         from,
         "Blue Raven Sales Operation",
         currentUser.trueUserId(),
+        null,
         null);
 
     final Predicate<User> userStatusTypePredicate = u -> u.getUserStatusType() == null;
@@ -202,7 +203,8 @@ public class CommunicationController {
           getUnsubscribeURLForEmails(request),
           "SalesOps@blueravensolar.com",
           "Blue Raven Sales Operation",
-          user.trueUserId());
+          user.trueUserId(),
+        null);
 
     } finally {
       for (File temporaryFile : temporaryFiles.values()) {

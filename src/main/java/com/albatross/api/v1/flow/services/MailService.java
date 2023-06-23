@@ -53,8 +53,9 @@ public class MailService {
       String message,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
-    sendMessage(to, subject, message, null, sentByEmail, sentByName, sentByUserId);
+      Long sentByUserId,
+      String cc) {
+    sendMessage(to, subject, message, null, sentByEmail, sentByName, sentByUserId, cc);
   }
 
   public void sendMessage(
@@ -64,7 +65,8 @@ public class MailService {
       Map<String, DataSource> attachments,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
 
     Session session = getSession();
 
@@ -81,6 +83,10 @@ public class MailService {
       msg.setReplyTo(new Address[] {salesOperationsEmail});
       msg.addRecipient(
           Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(to)));
+      if(cc != null) {
+        msg.addRecipient(
+          Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(cc)));
+      }
 
       msg.setSubject(subject);
 
@@ -106,7 +112,7 @@ public class MailService {
       Transport.send(msg);
 
       insertEmail(
-          sentByEmail, to, subject, message, attachmentNames, sentByUserId, true, sentByName);
+          sentByEmail, to, subject, message, attachmentNames, sentByUserId, true, sentByName, cc);
       log.debug("EMAIL: MESSAGE SENT");
     } catch (Exception e) {
       log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
@@ -174,7 +180,11 @@ public class MailService {
               mimeMessage.addRecipient(
                   Message.RecipientType.TO,
                   new InternetAddress(StringUtils.trimWhitespace(message.getTo())));
-
+              if(message.getCc() != null) {
+                mimeMessage.addRecipient(
+                  Message.RecipientType.CC,
+                  new InternetAddress(StringUtils.trimWhitespace(message.getCc())));
+              }
               mimeMessage.setSubject(message.getSubject());
 
               MimeBodyPart bodyPart = new MimeBodyPart();
@@ -226,7 +236,8 @@ public class MailService {
                     attachmentNames,
                     message.getSentByUserId(),
                     true,
-                    message.getFromDisplayName());
+                    message.getFromDisplayName(),
+                    message.getCc());
               }
 
               // count the number of successful emails sent
@@ -334,7 +345,8 @@ public class MailService {
       List<String> attachments,
       Long userId,
       Boolean processed,
-      String fromDisplayName) {
+      String fromDisplayName,
+      String cc) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("from", from);
     params.put("to", to);
@@ -349,6 +361,7 @@ public class MailService {
         "attachments",
         attachments.isEmpty() ? null : attachments.toString().replace("[", "").replace("]", ""));
     params.put("userId", userId);
+    params.put("cc", cc);
 
     sqlCache.updateBySql(EmailQuery.insert, params);
   }
