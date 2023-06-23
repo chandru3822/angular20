@@ -171,7 +171,6 @@ export default {
     this.selectedUserId = parseInt(this.$route.params.userId) | null
 
     if (this.userId) {
-      debugger
       this.getSmsAccess()
     }
   },
