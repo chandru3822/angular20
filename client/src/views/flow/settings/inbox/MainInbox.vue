@@ -210,11 +210,11 @@
                   <v-chip class="customer-chip ml-1" small  v-if="item.projectId">
                     <span >Customer</span>
                   </v-chip>
-                  <v-chip class="internal-chip ml-1" small v-else>
+                  <v-chip class="internal-chip" small v-else>
                     <span >Internal</span>
                   </v-chip>
                 </div>
-                <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}
+                <div v-if="item.messageHistory.length > 0" class="text-ellipses mt-1">{{ item.messageHistory[0].message }}
                 </div>
               </v-col>
             </v-row>
@@ -282,7 +282,7 @@ export default {
       searchQuery: '',
       constants,
       userId: this.$store.state.user.details.id,
-      sortOldToNew: true,
+      sortOldToNew: false,
       ownerFilterOptions: [],
       selectedOwnerFilters: [],
       teamFilterOptions: [],
@@ -989,10 +989,12 @@ conversation-search-no-teams {
 
 .internal-chip {
   background-color: #C8E6C9 !important;
+  height: 22px;
 }
 
 .customer-chip {
   background-color: #FECDD2 !important;
+  height: 22px;
 }
 
 .new-message-button {
