@@ -579,6 +579,9 @@ export default {
 .template-button-height {
   height: 24px !important;
   margin-top: 2px;
+  hover {
+    color: var(--v-primary-base);
+  }
 }
 
 </style>

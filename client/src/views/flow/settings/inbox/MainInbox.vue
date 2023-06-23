@@ -14,7 +14,7 @@
                                @joinConversation="joinConversation" />
       <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
-          <v-tabs class="inbox-tabs pa-0" background-color="var(--v-secondary-base)">
+          <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4">
             <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; reloadConversations()">
               New
               <v-badge
@@ -62,7 +62,7 @@
                 <v-icon>filter_alt</v-icon>
               </template>
               <template v-slot:selection="{ item, index }">
-                <span class="d-flex justify-center" style="width: 100%;">
+                <span class="d-flex" style="width: 100%;">
                   {{ item }}
                 </span>
               </template>
