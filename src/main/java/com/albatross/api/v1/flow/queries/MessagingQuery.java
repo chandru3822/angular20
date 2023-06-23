@@ -55,6 +55,7 @@ public class MessagingQuery {
                                      OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
                                       -- so we don't retry very very old texts
                                       AND created >= '2017-11-08')
+                                      AND q.recipient_type_id = 2
                                   group by p.project_id, message, recipient_type_id
                                   union all
                                 select p.project_id,
@@ -64,6 +65,7 @@ public class MessagingQuery {
                                          false              as outbound_message
                                   from flow.sms_reply sr
                                            inner join projects p on sr.search_from_phone = p.mobile
+                                  where sr.to_phone = '+18014480212'
                                   group by p.project_id, body, recipient_type_id) lastm order by project_id, last_message_sent desc
                             )
     select p.project_id,
@@ -152,6 +154,7 @@ public class MessagingQuery {
                                     OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
                                      -- so we don't retry very very old texts
                                      AND created >= '2017-11-08')
+                                     AND q.recipient_type_id = 2
                                  group by p.project_id
                                  union all
                                select p.project_id,
@@ -159,6 +162,7 @@ public class MessagingQuery {
                                         false              as outbound_message
                                  from flow.sms_reply sr
                                           inner join projects p on sr.search_from_phone = p.mobile
+                                 where sr.to_phone = '+18014480212'
                                  group by p.project_id) lastm order by project_id, last_message_sent desc
                            )
       select p.project_id
@@ -248,6 +252,7 @@ public class MessagingQuery {
                                      OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
                                       -- so we don't retry very very old texts
                                       AND created >= '2017-11-08')
+                                      AND q.recipient_type_id = 1
                                   group by u.user_id, message, recipient_type_id
                                   union all
                                 select u.user_id,
@@ -257,6 +262,7 @@ public class MessagingQuery {
                                          false              as outbound_message
                                   from flow.sms_reply sr
                                            inner join users u on sr.search_from_phone = u.mobile
+                                  where sr.to_phone = '+18014480029'
                                   group by u.user_id, body, recipient_type_id) lastm order by user_id, last_message_sent desc
                             )
     select u.user_id,
@@ -336,6 +342,7 @@ public class MessagingQuery {
                                     OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
                                      -- so we don't retry very very old texts
                                      AND created >= '2017-11-08')
+                                     AND q.recipient_type_id = 1
                                  group by u.user_id
                                  union all
                                select u.user_id,
@@ -343,6 +350,7 @@ public class MessagingQuery {
                                         false              as outbound_message
                                  from flow.sms_reply sr
                                           inner join users u on sr.search_from_phone = u.mobile
+                                 where sr.to_phone = '+18014480029'
                                  group by u.user_id) lastm order by user_id, last_message_sent desc
                            )
       select u.user_id
