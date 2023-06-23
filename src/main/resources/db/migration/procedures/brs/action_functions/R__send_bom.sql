@@ -1,13 +1,4 @@
--- drop function if exists flow.send_bom(p_project_id bigint,
---                                                                       p_pps_id bigint,
---                                                                       p_ppse_id bigint,
---                                                                       p_user_id bigint,
---                                                                       p_attachment_type_id bigint,
---                                                                       p_display_name_match_text varchar,
---                                                                       v_email_subject varchar,
---                                                                       p_email_message text,
---                                                                       p_email_sender_id int);
-CREATE OR REPLACE FUNCTION flow.send_bom(p_project_id bigint,
+CREATE OR REPLACE FUNCTION brs.send_bom(p_project_id bigint,
                                                                       p_pps_id bigint,
                                                                       p_ppse_id bigint,
                                                                       p_user_id bigint,
@@ -54,13 +45,14 @@ BEGIN
 
     select o.org_name from flow.custom_field_group_assignment cfga
        join flow.project_process_step_event_custom_field_value cfv on cfga.id = cfv.custom_field_group_assignment_id
-       join flow.org o on o.id = cfv.int_value where cfga.id = 25830
+       join flow.org o on o.id = cfv.int_value where cfga.id = p_supplier
        and cfv.project_process_step_event_id = project_process_step_event_id
     into v_supplier_name;
 
     select cfv.text_value from flow.custom_field_group_assignment cfga
     join flow.project_process_step_event_custom_field_value cfv on cfga.id = cfv.custom_field_group_assignment_id
     where cfga.id = p_additional_details
+      and cfv.project_process_step_event_id = p_ppse_id
     into v_additional_details;
 
 
@@ -69,7 +61,7 @@ BEGIN
             (select lov.name = 'Yes' from flow.custom_field_group_assignment cfga
             join flow.project_process_step_event_custom_field_value cfv on cfga.id = cfv.custom_field_group_assignment_id
             join flow.list_of_value lov on cfv.int_value = lov.id
-            where cfga.id = 23296 and cfv.project_process_step_event_id = 1625829)
+            where cfga.id = p_is_next_day_installation and cfv.project_process_step_event_id = p_ppse_id)
             then CONCAT('<mark>Next Day Installation</mark><br><br>') else '' end into v_next_day_text;
 
 

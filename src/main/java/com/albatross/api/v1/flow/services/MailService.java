@@ -84,8 +84,11 @@ public class MailService {
       msg.addRecipient(
           Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(to)));
       if(cc != null) {
-        msg.addRecipient(
-          Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(cc)));
+        List<String> ccs = Arrays.asList(cc.split("\\s*,\\s*"));
+        for(String recipient : ccs){
+          msg.addRecipient(
+                  Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+        }
       }
 
       msg.setSubject(subject);
