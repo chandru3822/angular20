@@ -190,7 +190,8 @@ public class UserController {
             context,
             "SalesOps@blueravensolar.com",
             "Blue Raven Sales Operation",
-            user.trueUserId());
+            user.trueUserId(),
+            null);
         log.debug(
             "AUTH: Password reset email has been sent to {}",
             passwordResetRequest.getUsernameOrEmail());

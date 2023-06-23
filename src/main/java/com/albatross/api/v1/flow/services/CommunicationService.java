@@ -55,7 +55,8 @@ public class CommunicationService {
       URL emailUnsubscribeURL,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
     for (Long userID : userIDs) {
       Optional<User> user = userService.getUser(userID, false);
       // do not send email if they do not have access to the system
@@ -69,7 +70,8 @@ public class CommunicationService {
             emailUnsubscribeURL,
             sentByEmail,
             sentByName,
-            sentByUserId);
+            sentByUserId,
+             cc);
       }
     }
     return new AsyncResult<>(null);
@@ -85,7 +87,8 @@ public class CommunicationService {
       URL emailUnsubscribeURL,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
     // don't send email if user does not have access to the system
     if (user != null && user.getUserStatusType() != null && user.getHasAccess()) {
 
@@ -96,7 +99,7 @@ public class CommunicationService {
 
         final String template = renderTemplate(templateContent, contextMap);
         mailService.sendMessage(
-            emailAddress, subject, template, attachments, sentByEmail, sentByName, sentByUserId);
+            emailAddress, subject, template, attachments, sentByEmail, sentByName, sentByUserId, cc);
 
       } catch (Exception ex) {
         log.error("EMAIL: ERROR: Error sending email to address={}", emailAddress, ex);
@@ -113,11 +116,12 @@ public class CommunicationService {
       Map<String, Object> context,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
     try {
       final String renderTemplate = renderTemplate(template, context);
       mailService.sendMessage(
-          email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId);
+          email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId, cc);
     } catch (Exception e) {
       log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
     }
@@ -133,7 +137,8 @@ public class CommunicationService {
       String sentByEmail,
       String sentByName,
       Long sentByUserId,
-      List<Long> attachmentIds)
+      List<Long> attachmentIds,
+      String cc)
       throws Exception {
 
     try {
@@ -168,7 +173,8 @@ public class CommunicationService {
                           sentByUserId,
                           true,
                           null,
-                          attachmentIds);
+                          attachmentIds,
+                          cc);
                     } catch (Exception e) {
                       log.error(
                           "EMAIL: ERROR: Generating template. template={}, address={}",
