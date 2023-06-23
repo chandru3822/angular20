@@ -96,13 +96,6 @@ public class SMSService {
       SmsServiceQuery.exportAll, Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
   }
 
-  public Optional<SMSQueueItem> getSmsById(Long id) {
-    Map<String, Object> params = Map.of("id", id);
-
-    return sqlCache.getBySql(
-      SmsServiceQuery.fetch, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
-  }
-
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
     return sqlCache.queryBySql(

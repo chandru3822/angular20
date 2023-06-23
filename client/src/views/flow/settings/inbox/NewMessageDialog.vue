@@ -4,11 +4,8 @@
         v-model="showNewMessageDialog"
         @click:outside="exitDialogue"
         width="803">
-    <v-card class="pa-6">
-      <v-card-title
-          class="albatross-header-4-new pa-0 justify-space-between"
-          primary-title
-      >
+    <v-card class="pa-5">
+      <v-card-title class="title-large pa-0 justify-space-between">
         Compose new SMS Message
         <a class="close-modal-x pb-3" title="Close" @click="exitDialogue">×</a>
       </v-card-title>
@@ -163,29 +160,32 @@
         />
       </div>
 
-      <v-card-actions class="pb-0 px-0">
-        <span v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
+      <div class="flex-display">
+        <span  v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
         <v-spacer/>
-        <v-btn
-          color="primary"
-          :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
-                        || (message.length == 0 && uploadedFiles.length == 0)"
-          @click="[assignAndSend = false, sendMessage()]"
-          class="send-button"
-          text
-        >
-          Send and don't assign
-        </v-btn>
+        <v-card-actions class="pb-0 px-0 pt-6">
+          <v-spacer/>
+          <v-btn
+            color="primary"
+            :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
+                          || (message.length == 0 && uploadedFiles.length == 0)"
+            @click="[assignAndSend = false, sendMessage()]"
+            class="send-button"
+            text
+          >
+            Send and don't assign
+          </v-btn>
 
-        <v-btn
-          color="primary"
-          class="white--text send-button"
-          :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
-                        || (message.length == 0 && uploadedFiles.length == 0)"
-          @click="[assignAndSend = true, sendMessage()]">
-          Send
-        </v-btn>
-      </v-card-actions>
+          <v-btn
+            color="primary"
+            class="white--text send-button"
+            :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
+                          || (message.length == 0 && uploadedFiles.length == 0)"
+            @click="[assignAndSend = true, sendMessage()]">
+            Send
+          </v-btn>
+        </v-card-actions>
+      </div>
     </v-card>
     </v-dialog>
   </v-container>
