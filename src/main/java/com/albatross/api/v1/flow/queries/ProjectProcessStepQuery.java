@@ -180,6 +180,7 @@ select * from flow.get_one_cfv(:objectTypeId::bigint, :cfgaId::bigint, :primaryI
 
         where
           ust.has_access is true and
+          up.archived is false and
           up.start_date <= now() and
           (up.end_date is null or up.end_date >= now()) and
           p.archived is not true
