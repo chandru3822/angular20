@@ -161,7 +161,7 @@
       </div>
 
       <div class="flex-display">
-        <span  v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
+        <span v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
         <v-spacer/>
         <v-card-actions class="pb-0 px-0 pt-6">
           <v-spacer/>
