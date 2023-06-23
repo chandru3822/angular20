@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
@@ -18,12 +19,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
@@ -33,11 +36,13 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 @Slf4j
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/proposal", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -94,7 +99,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/{proposalId}")
-  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody List<CustomFieldValue> cfvs) {
+  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody @Size(min = 1) List<CustomFieldValue> cfvs) {
     return proposalService.updateProposalCustomFieldValues(proposalId, cfvs);
   }
 
@@ -179,7 +184,7 @@ public class BlueravenProposalController {
     return proposalService.getProposal(proposalId)
       .map(proposal -> {
         if (!proposal.isLocked()) {
-          throw new ApiException("Proposal must be locked to continue");
+          throw new InvalidStateApiException("Proposal must be locked to continue");
         }
         return proposal;
       });
@@ -234,7 +239,6 @@ public class BlueravenProposalController {
     return ResponseEntity.ok(responseBody);
   }
 
-
   @GetMapping(value = "/{proposalId}/filter")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
@@ -243,6 +247,11 @@ public class BlueravenProposalController {
     return new ProposalFilterResponse(filterIds);
   }
 
+  @ExceptionHandler({InvalidStateApiException.class})
+  protected ResponseEntity<ProposalErrorMessage> handleInvalidStateApiException(InvalidStateApiException ex) {
+    final Throwable rootCause = ExceptionUtils.getRootCause(ex);
+    return ResponseEntity.badRequest().body(new ProposalErrorMessage(rootCause.getMessage()));
+  }
 
   public record CreateNewDesignRequest(@NotEmpty String description,
                                        String dueDate,
@@ -267,6 +276,10 @@ public class BlueravenProposalController {
 
   public record LoanStatusUpdate(String applicationUrl, String type) {
   }
+
+  record ProposalErrorMessage(String message) {
+  }
+
 
   @Data
   public static class DesignRequest {

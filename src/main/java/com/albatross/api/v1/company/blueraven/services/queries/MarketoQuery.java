@@ -45,17 +45,6 @@ public class MarketoQuery {
 
   //language=PostgreSQL
   public final static String projectsToRemove = """
-    -- projects marked 'do not solicit review' in the past 24 hours
-    select p.id
-    from flow.project p
-    inner join flow.company_process cp on p.company_process_id = cp.id
-    left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id
-    where pcfv.custom_field_group_assignment_id = 21067 and
-          pcfv.boolean_value = true and
-          pcfv.date_modified >= (now() - interval '24 hours') and
-          cp.company_id = 3 and
-          cp.process_id = 1
-    union
     -- projects cancelled in the past 24 hours (and still cancelled)
     select p.id
     from flow.project p
@@ -144,6 +133,38 @@ public class MarketoQuery {
              where pcfv.project_id = p.id and
                    pcfv.custom_field_group_assignment_id = 21067
            ), false) "doNotSolicitReview",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25827
+           ) "readyToSendInstallationReminderEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25824
+           ) "readyToSendFirstPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25825
+           ) "readyToSendSecondPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25826
+           ) "readyToSendThirdPermitUpdateEmail",
            pd.installation_start_time,
            pd.energized_date,
            pd.final_design_signed_date "finalDesignApprovedDate",
@@ -242,6 +263,38 @@ public class MarketoQuery {
              where pcfv.project_id = p.id and
                    pcfv.custom_field_group_assignment_id = 21067
            ), false) "doNotSolicitReview",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25827
+           ) "readyToSendInstallationReminderEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25824
+           ) "readyToSendFirstPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25825
+           ) "readyToSendSecondPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25826
+           ) "readyToSendThirdPermitUpdateEmail",
            pd.installation_start_time,
            pd.energized_date,
            pd.final_design_signed_date "finalDesignApprovedDate",

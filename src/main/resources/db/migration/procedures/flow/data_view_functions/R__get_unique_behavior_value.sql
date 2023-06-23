@@ -12,9 +12,9 @@ DECLARE
   v_value              text;
   v_commission_plan_id bigint;
   v_override_plan_id   bigint;
-  v_ppscfv_id      bigint;
+  v_ppscfv_id          bigint;
 BEGIN
-  if p_unique_behavior_code = 'COMMISSION_EARNED_TRIGGER' then
+  if p_unique_behavior_code in ('COMMISSION_EARNED_M1_TRIGGER', 'COMMISSION_EARNED_M2_TRIGGER') then
 
     if p_project_id is not null then
       select id
@@ -36,13 +36,19 @@ BEGIN
       end if;
 
       if v_ppscfv_id is not null then
-        select *
-        into v_value
-        from brs.get_commissions_earned(p_project_id);
+        if p_unique_behavior_code = 'COMMISSION_EARNED_M1_TRIGGER' then
+          select *
+          into v_value
+          from brs.get_commissions_earned(p_project_id, 'M1');
+        else
+          select *
+          into v_value
+          from brs.get_commissions_earned(p_project_id, 'M2');
+        end if;
       end if;
     end if;
 
-  elsif p_unique_behavior_code = 'OVERRIDES_EARNED_TRIGGER' then
+  elsif p_unique_behavior_code in ('OVERRIDES_EARNED_M1_TRIGGER', 'OVERRIDES_EARNED_M2_TRIGGER') then
 
     if p_project_id is not null then
       select id
@@ -64,12 +70,17 @@ BEGIN
       end if;
 
       if v_ppscfv_id is not null then
-        select *
-        into v_value
-        from brs.get_overrides_earned(p_project_id);
+        if p_unique_behavior_code = 'OVERRIDES_EARNED_M1_TRIGGER' then
+          select *
+          into v_value
+          from brs.get_overrides_earned(p_project_id, 'M1');
+        else
+          select *
+          into v_value
+          from brs.get_overrides_earned(p_project_id, 'M2');
+        end if;
       end if;
     end if;
-
   elsif p_unique_behavior_code = 'TOTAL_COMMISSIONS_TRIGGER' then
 
     if p_project_id is not null then
@@ -218,7 +229,8 @@ BEGIN
     from flow.contact c
     where c.id = p_value::bigint;
 
-  elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_BIGINT' then
+  elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or
+        p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_BIGINT' then
 
     if p_type = 'PROCESS_STEP' then
 
@@ -274,7 +286,7 @@ BEGIN
 
   end if;
   return v_value;
-END ;
+END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
                    COST 100;

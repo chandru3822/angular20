@@ -1,4 +1,4 @@
-drop function if exists flow.adjust_commission_override_trigger();
+drop function if exists flow.adjust_commission_override_trigger() cascade;
 CREATE OR REPLACE FUNCTION flow.adjust_commission_override_trigger()
     RETURNS TRIGGER AS
 $$

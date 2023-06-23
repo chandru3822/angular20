@@ -1,5 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.model.InteractionTimer;
 import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.services.NoteService;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +45,11 @@ public class NoteController {
   @PostMapping(value = "/saveProjectProdStatsNote", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Note> saveProjectProdStatsNote(@RequestBody Note note) {
     return new ResponseEntity<>(noteService.saveNote(null, note, false, false,true), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/saveProjectNoteTimer", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void saveProjectNoteTimer(@RequestBody InteractionTimer noteTimer) {
+    noteService.saveNoteTimer(noteTimer);
   }
 
   @DeleteMapping(value = "/processStepWorkQueue/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

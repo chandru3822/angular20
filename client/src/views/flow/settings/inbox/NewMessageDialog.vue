@@ -6,50 +6,85 @@
         width="803">
     <v-card class="pa-6">
       <v-card-title
-          class="albatross-header-4-new pa-0"
+          class="albatross-header-4-new pa-0 justify-space-between"
           primary-title
       >
         Compose new SMS Message
+        <a class="close-modal-x pb-3" title="Close" @click="exitDialogue">×</a>
       </v-card-title>
       <span class="sub-message-span">You will be assigned to the conversation automatically, unless chosen otherwise</span>
       <br>
       <div class="flex-display" v-if="isInbox">
         <label class="mt-5 mr-2">To:</label>
         <v-autocomplete
-          v-model="selectedProjectId"
-          :items="availableProjects"
+          v-model="selectedProjectIds"
+          :items="sortedProjects"
           :search-input.sync="projectQuery"
+          multiple
           attach
           item-text="firstName"
           item-value="id"
           :disabled="selectedUserIds.length > 0"
           label="Enter project ID"
           class="team-select pa-0 mt-4"
-        ><template #item="{item}">
-          <span>
-            {{item.projectName}}
-          </span>
-        </template>
+          hide-no-data
+        >
+          <template #item="{ item, attrs, on }">
+            <v-list-item @click="on.click">
+              <v-list-item-action>
+                <v-checkbox
+                  class="select-check"
+                  :value="selectedProjectIds.includes(item.id)"
+                  :disabled="true"
+                  @click.stop
+                ></v-checkbox>
+              </v-list-item-action>
+              <v-list-item-content>
+                <v-list-item-title v-text="item.projectName"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </template>
+          <template
+            slot="selection"
+            slot-scope="{ item, index }"
+          >
+            <v-chip small v-if="selectedProjectIds.length < 3">
+              <span>{{ item.projectName }}</span>
+            </v-chip>
+            <span
+              v-if="index === 1 && selectedProjectIds.length >= 3"
+            >{{ selectedProjectIds.length }} selected</span>
+          </template>
         </v-autocomplete>
       </div>
 
-      <div class="select-user-div mb-5">
+      <div class="select-user-div">
         <label v-if="!isInbox" class="mt-5 mr-2">To:</label>
         <v-autocomplete
           v-model="selectedUserIds"
-          :items="availableUsers"
+          :items="sortedUsers"
           multiple
-          :disabled="selectedProjectId != null && isInbox"
+          :disabled="selectedProjectIds.length > 0 && isInbox"
           item-text="name"
           item-value="userId"
-          label="Select users"
+          :label="selectedUserIds.length > 0 ? '' : 'Select users'"
           class="pa-0 mt-4 select-users"
           :class="isInbox ? 'ml-7' : ''"
           clearable
-        ><template #item="{item}">
-          <span>
-            {{item.name}}
-          </span>
+        ><template #item="{ item, on, attrs }">
+          <v-list-item @click="on.click">
+            <v-list-item-action>
+              <v-checkbox
+                class="select-check"
+                :value="selectedUserIds.includes(item.userId)"
+                :disabled="true"
+                @click.stop
+              ></v-checkbox>
+            </v-list-item-action>
+            <v-list-item-content>
+              <v-list-item-title v-text="item.name"></v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
         </template>
         <template
           slot="selection"
@@ -63,24 +98,24 @@
           >{{ selectedUserIds.length }} selected</span>
         </template>
         </v-autocomplete>
-        <router-link  class="open-conversation-link pt-5 pl-5"
-                      :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : ''"
+        <router-link  class=" pt-5 pl-5"
+                      :class="selectedUserIds.length > 1 ? 'disabled-open-conversation' : 'open-conversation-link'"
                       v-if="selectedUserIds.length > 0"
                       :to="`/user/${this.selectedUserIds}/details`"
                       target="_blank">
-          Open conversations<v-icon>mdi-open-in-new</v-icon>
+          Open conversation<v-icon>mdi-open-in-new</v-icon>
         </router-link>
       </div>
 
-      <div class="flex-display justify-end">
-        <v-textarea class="py-2 message-text-area" hide-details
+      <div class="flex-display">
+        <v-textarea class="message-text-area" hide-details
                     placeholder="Enter message here"
                     auto-grow
                     outlined
                     rows="4"
                     v-model="message">
         </v-textarea>
-        <v-btn icon color="primary" class="white--text mx-2 mt-1 templateButton">
+        <v-btn icon color="primary" class="white--text mx-2 templateButton template-button-height">
           <v-tooltip bottom small>
             <template v-slot:activator="{on, attrs}">
               <v-icon @click="" v-bind="attrs" v-on="on">
@@ -91,7 +126,7 @@
           </v-tooltip>
         </v-btn>
 
-        <v-menu top left offset-y activator=".templateButton" :close-on-content-click="false">
+        <v-menu v-model="menuOpen" top left offset-y activator=".templateButton" :close-on-content-click="false">
           <v-card class="template-dialog" width="295px">
             <v-card-title>
               <span class="albatross-header-4-new">Add Template</span>
@@ -104,7 +139,7 @@
                         item-text="title"
                         item-value="id"
                         return-object
-                        @change="[message = selectedTemplate.message]">
+                        @change="[message += selectedTemplate.message, menuOpen = false]">
 
                 <template slot="item" slot-scope="data">
                   <!-- HTML that describes how select should render items when the select is open -->
@@ -117,32 +152,36 @@
             </v-card-text>
           </v-card>
         </v-menu>
-
         <v-file-input
           dense
           hide-input
           multiple
           label="Upload file"
+          class="ma-0 mt-0"
           @change="uploadTextAttachment"
           @click:clear="[uploadedFiles = []]"
         />
       </div>
 
-      <v-card-actions class="pt-1 pb-0 px-0">
+      <v-card-actions class="pb-0 px-0">
         <span v-if="uploadedFiles.length > 0">Attached {{attachmentsText}}</span>
         <v-spacer/>
         <v-btn
-          class="text-capitalize"
+          color="primary"
+          :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
+                        || (message.length == 0 && uploadedFiles.length == 0)"
           @click="[assignAndSend = false, sendMessage()]"
-          text color="primary"
+          class="send-button"
+          text
         >
           Send and don't assign
         </v-btn>
 
         <v-btn
           color="primary"
-          class="text-capitalize white--text"
-          :disabled="!selectedProjectId && !selectedUserIds"
+          class="white--text send-button"
+          :disabled="(selectedProjectIds.length == 0 && selectedUserIds.length == 0)
+                        || (message.length == 0 && uploadedFiles.length == 0)"
           @click="[assignAndSend = true, sendMessage()]">
           Send
         </v-btn>
@@ -165,7 +204,7 @@ export default {
   },
   data () {
     return {
-      selectedProjectId: null,
+      selectedProjectIds: [],
       availableProjects: [],
       availableUsers: [],
       uploadedFiles: [],
@@ -182,7 +221,9 @@ export default {
       createNotificationUrl: '',
       inboxUrl: '',
       addTeamUrl: '',
-      assignAndSend: false
+      assignAndSend: false,
+      menuOpen: false,
+      messageSuccess: false
     }
   },
   created() {
@@ -197,6 +238,16 @@ export default {
       else if (this.uploadedFiles.length > 1) {
         return this.uploadedFiles.length + ' files'
       }
+    },
+    sortedProjects() {
+      const selectedProjects = this.availableProjects.filter(project => this.selectedProjectIds.includes(project.id));
+      const unselectedProjects = this.availableProjects.filter(project => !this.selectedProjectIds.includes(project.id));
+      return selectedProjects.concat(unselectedProjects);
+    },
+    sortedUsers() {
+      const selectedUsers = this.availableUsers.filter(user => this.selectedUserIds.includes(user.userId));
+      const unselectedUsers = this.availableUsers.filter(user => !this.selectedUserIds.includes(user.userId));
+      return selectedUsers.concat(unselectedUsers);
     }
   },
   watch: {
@@ -212,6 +263,13 @@ export default {
   },
   methods: {
     exitDialogue(){
+      this.selectedProjectIds = []
+      this.availableProjects = []
+      this.uploadedFiles = []
+      this.message = ''
+      this.selectedTemplate = ''
+      this.selectedUserIds = []
+      this.projectQuery = null
       this.$emit('update:showNewMessageDialog', false)
     },
     getProjectDebounced(val) {
@@ -220,21 +278,21 @@ export default {
         this.getProjects(val)
       }, 500) /* 500ms throttle */
     },
-    sendMessage() {
-      if (this.selectedProjectId) {
-        this.attachmentUrl = `/project/${this.selectedProjectId}/attachment`
-        this.sendTextUrl = `/communication/sendTextsForProject/${this.selectedProjectId}`
-        this.lastSentUrl = `/messaging/setLastSent/project/` + this.selectedProjectId
-        this.createNotificationUrl = `/messaging/createNotification/project/${this.selectedProjectId}`
-        this.inboxUrl = `/inbox/inboxConversation/project/${this.selectedProjectId}`
-        this.addTeamUrl = `/messaging/addTeam/project/${this.selectedProjectId}`
-        if (this.assignAndSend) {
-          this.sendMessageAndAssign();
-        }
-        else {
-          if (this.onMessageWasSent()) {
-            this.snackbar = getSnackbar('SUCCESS', 'Message sent')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    async sendMessage() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      if (this.selectedProjectIds.length > 0) {
+        for (let selectedProjectId of this.selectedProjectIds) {
+          this.attachmentUrl = `/project/` + selectedProjectId + `/attachment`
+          this.sendTextUrl = `/communication/sendTextsForProject/` + selectedProjectId
+          this.lastSentUrl = `/messaging/setLastSent/project/` + selectedProjectId
+          this.createNotificationUrl = `/messaging/createNotification/project/` + selectedProjectId
+          this.inboxUrl = `/inbox/inboxConversation/project/` + selectedProjectId
+          this.addTeamUrl = `/messaging/addTeam/project/` + selectedProjectId
+          if (this.assignAndSend) {
+            await this.sendMessageAndAssign();
+          }
+          else {
+            await this.onMessageWasSent();
           }
         }
       }
@@ -248,29 +306,49 @@ export default {
           this.inboxUrl = `/inbox/inboxConversation/user/` + currentUserId
           this.addTeamUrl = `/messaging/addTeam/user/` + currentUserId
           if (this.assignAndSend) {
-            this.sendMessageAndAssign();
+            await this.sendMessageAndAssign();
           }
           else {
-            if (this.onMessageWasSent()) {
-              this.snackbar = getSnackbar('SUCCESS', 'Message sent')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            }
+            await this.onMessageWasSent()
+          }
+
+          if (!this.messageSuccess) {
+            return;
           }
         }
       }
-      this.exitDialogue()
+
+      if (this.messageSuccess) {
+        this.exitDialogue()
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        if (this.assignAndSend) {
+          this.snackbar = getSnackbar('SUCCESS', 'Message sent and conversation assigned')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          if (this.isInbox) {
+            await this.$router.push({ path: this.inboxUrl })
+          }
+        }
+        else {
+          this.snackbar = getSnackbar('SUCCESS', 'Message sent')
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      }
     },
     async onMessageWasSent() {
       if (this.message && this.message.length > 1599) {
-        let textOverflowLength = message.data.text.length - 1599;
+        let textOverflowLength = this.message.length - 1599;
         this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        return
+        this.messageSuccess = false
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        return;
       }
 
       // called when the user sends a message
       let params
       let smsTeamId = this.teamsAssociatedToUser ? this.teamsAssociatedToUser[0].id : null
+      this.messageSuccess = true
 
       try {
         if (this.uploadedFiles && this.uploadedFiles.length > 0) {
@@ -313,25 +391,19 @@ export default {
 
         await putRequest(this.lastSentUrl)
         await postRequest(this.createNotificationUrl)
-
-        this.message = '';
-        this.uploadedFiles = [];
-        this.selectedUserIds = [];
-        this.selectedProjectId = null
-
-        return true;
       } catch (e) {
         console.error('*** ERROR ***', e)
+        this.messageSuccess = false
         let message = e?.message ? 'Error Sending Message: ' + e.message :
           e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
         this.snackbar = getSnackbar('ERROR', message)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        return false;
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        return;
       }
     },
     sendMessageAndAssign: async function () {
       let smsTeamId = this.teamsAssociatedToUser ? this.teamsAssociatedToUser[0].id : null
-
       let params = {
         id: smsTeamId,
         users: [{
@@ -342,15 +414,11 @@ export default {
 
       await postRequest(this.addTeamUrl, params)
 
-      if (await this.onMessageWasSent()) {
-        this.snackbar = getSnackbar('SUCCESS', 'Message sent and conversation assigned')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        await this.$router.push({ path: this.inboxUrl })
-      }
+      await this.onMessageWasSent()
     },
     async getProjects(val) {
       if (val == null) {
-        this.selectedProjectId = null
+        this.selectedProjectIds = []
         this.availableProjects = []
         return;
       }
@@ -464,12 +532,53 @@ export default {
 }
 
 .disabled-open-conversation {
-  opacity: 0.5;
+  max-width: 100%;
+  text-decoration: none;
+  color: lightgrey !important;
   pointer-events: none;
+
+  .mdi-open-in-new {
+    color: lightgrey !important;
+  }
+
 }
 
 .message-text-area {
-  width: 85%;
+  width: 90%;
+  margin-right: 5px;
+}
+
+.templateButton {
+  margin-left: 10px;
+  padding-left: 10px !important;
+}
+
+.mdi-open-in-new {
+  color: var(--v-primary-base);
+  height: 16px;
+  width: 16px;
+  margin-left: 8px;
+}
+
+.send-button {
+  text-transform: none;
+}
+
+.close-modal-x {
+  font-size: 30px;
+
+  &:hover {
+    font-weight: bolder;
+  }
+}
+
+.select-check {
+  color: var(--v-primary-base) !important;
+}
+
+.template-button-height {
+  height: 24px !important;
+  margin-top: 2px;
 }
 
 </style>

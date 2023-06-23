@@ -22,6 +22,10 @@
           Incentive
         </span>
         <div class="tab-separator mx-2"></div>
+        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('leaderboard')}" @click="goToRoute('closerLeaderboard')">
+          Leaderboard
+        </span>
+        <div class="tab-separator mx-2"></div>
         <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('residuals')}" @click="goToRoute('closerResiduals')">
           Residuals
         </span>

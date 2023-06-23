@@ -189,6 +189,7 @@
                 <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_forfeited_paid_to_date || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_forfeited_by_closer || 0 | currency('$', 2) }}</td>
+                <td class="text-left">{{item.forfeited_amount || 0 | currency('$', 2) }}</td>
                 <td class="text-left">
                   {{ item.commission_adjustments || 0 | currency('$', 2) }}
 
@@ -213,7 +214,7 @@
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
-                                      :hint="`Max allowed: ${$filters.currency(item.remaining_value, '$', 2)}`"
+                                      :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
                         </v-text-field>
                         <v-textarea
@@ -248,7 +249,7 @@
                           Cancel
                         </v-btn>
                         <v-btn color="primary" class="white--text"
-                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
+                               :disabled="adjustmentDisabled(item)"
                                @click="addAdjustment(item)">
                           Add
                         </v-btn>
@@ -303,7 +304,7 @@
                                       label="Adjustment Amount"
                                       prepend-icon="mdi-currency-usd"
                                       persistent-hint
-                                      :hint="`Max allowed: ${$filters.currency(item.remaining_value, '$', 2)}`"
+                                      :hint="`Max allowed: ${$filters.currency(_getCurrentMaxAdjustment(item), '$', 2)}`"
                                       v-model.number="item.adjustment">
                         </v-text-field>
                         <v-textarea
@@ -338,7 +339,7 @@
                           Cancel
                         </v-btn>
                         <v-btn color="primary" class="white--text"
-                               :disabled="!item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > item.remaining_value"
+                               :disabled="adjustmentDisabled(item)"
                                @click="addAdjustment(item)">
                           Add
                         </v-btn>
@@ -487,6 +488,7 @@
           {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
           {text: 'Commission Forfeited Paid to Date', value: 'commission_forfeited_paid_to_date', show: true},
           {text: 'Commission Forfeited by Closer', value: 'commission_forfeited_by_closer', show: true},
+          {text: 'Forfeited Amount', value: 'forfeited_amount', show: true},
           {text: 'Adjustment', value: 'commission_adjustments', width: 150, show: true},
           {text: 'Commission Pay', value: 'current_pay_commissions', show: true},
           {text: 'Remaining Value Commissions', value: 'remaining_value_commissions', show: true},
@@ -528,6 +530,16 @@
       this.getCurrentPayroll()
     },
     methods: {
+      _getCurrentMaxAdjustment(item){
+        const maxAdjustment = item.remaining_value_commissions - (item.current_pay_commissions < 0 ? 0 : item.current_pay_commissions) - item.commission_forfeited_by_closer - item.commission_forfeited_paid_to_date
+        return (maxAdjustment < 0) ? 0 : maxAdjustment
+      },
+
+      adjustmentDisabled(item){
+        const maxAdjustment = this._getCurrentMaxAdjustment(item)
+        return !item.adjustment || item.adjustment === 0 || !item.adjustmentNote || item.adjustment > maxAdjustment
+      },
+
       toggleSelectAll () {
         this.accountingData.forEach(ad => {
           ad.selected = this.selectAll
@@ -797,7 +809,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Accounting Review.csv';
-          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
           csvData += '\n';
 
           this.accountingData.forEach(p => {
@@ -825,6 +837,7 @@
                 p.commission_paid_to_date + ',' +
                 p.commission_forfeited_paid_to_date + ',' +
                 p.commission_forfeited_by_closer + ',' +
+                p.forfeited_amount + ',' +
                 p.commission_adjustments + ',' +
                 p.current_pay_commissions + ',' +
                 p.remaining_value_commissions + ',"' +

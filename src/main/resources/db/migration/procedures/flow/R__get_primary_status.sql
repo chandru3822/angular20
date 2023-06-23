@@ -139,7 +139,7 @@ BEGIN
             return true;
         else
             if fd_customer_main is not null and fd_customer_main is true then
-                raise notice 'i am here';
+          --      raise notice 'i am here';
                 return true;
             else
                 return false;
