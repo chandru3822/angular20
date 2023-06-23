@@ -79,10 +79,10 @@ public class UserService {
 
     List<User> results =
         sqlCache.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
-    Integer count = sqlCache.queryForObjectBySql(UserQuery.searchUserCount, params, Integer.class);
+//      sqlCache.queryForObjectBySql(UserQuery.searchUserCount, params, Integer.class);
 
     return new PageImpl<>(
-        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), 100000);
   }
 
   public void saveUserHomePage(Long homePageCompanyFeatureId) {

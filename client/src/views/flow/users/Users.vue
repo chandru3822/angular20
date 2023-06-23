@@ -1400,6 +1400,10 @@
 </script>
 
 <style lang="scss">
+  #users-container .v-data-footer__pagination {
+    display: none !important;
+  }
+
   #users-container .v-data-table__wrapper {
     height: calc(100vh - 290px);
     min-height: 300px;

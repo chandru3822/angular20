@@ -51,16 +51,16 @@ public class MessagingQuery {
                                          true           as outbound_message
                                   from flow.sms_queue q
                                            inner join projects p on q.search_to_phone = p.mobile
-                                  where error_message IS NULL
+                                  where q.recipient_type_id = 2
+                                     AND error_message IS NULL
                                      OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
                                       -- so we don't retry very very old texts
                                       AND created >= '2017-11-08')
-                                      AND q.recipient_type_id = 2
                                   group by p.project_id, message, recipient_type_id
                                   union all
                                 select p.project_id,
                                          body               as message,
-                                         1                  as recipient_type_id,
+                                         2                  as recipient_type_id,
                                          max(date_received) as last_message_sent,
                                          false              as outbound_message
                                   from flow.sms_reply sr
@@ -248,11 +248,11 @@ public class MessagingQuery {
                                          true           as outbound_message
                                   from flow.sms_queue q
                                            inner join users u on q.search_to_phone = u.mobile
-                                  where error_message IS NULL
+                                  where q.recipient_type_id = 1
+                                     AND error_message IS NULL
                                      OR (LOWER(error_message) IN ('api.twilio.com:443 failed to respond')
                                       -- so we don't retry very very old texts
                                       AND created >= '2017-11-08')
-                                      AND q.recipient_type_id = 1
                                   group by u.user_id, message, recipient_type_id
                                   union all
                                 select u.user_id,
