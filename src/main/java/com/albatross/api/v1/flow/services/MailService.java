@@ -86,7 +86,6 @@ public class MailService {
       if(cc != null) {
         List<String> ccs = Arrays.asList(cc.split("\\s*,\\s*"));
         for(String recipient : ccs){
-          System.out.println(recipient);
           msg.addRecipient(
                   Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
         }
@@ -185,13 +184,9 @@ public class MailService {
                   Message.RecipientType.TO,
                   new InternetAddress(StringUtils.trimWhitespace(message.getTo())));
               if(message.getCc() != null) {
-//                mimeMessage.addRecipient(
-//                  Message.RecipientType.CC,
-//                  new InternetAddress(StringUtils.trimWhitespace(message.getCc())));
 
                 List<String> ccs = Arrays.asList(message.getCc().split("\\s*,\\s*"));
                 for(String recipient : ccs){
-                  System.out.println(recipient);
                   mimeMessage.addRecipient(
                           Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
                 }
