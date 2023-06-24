@@ -68,8 +68,8 @@ public class MailService {
       Long sentByUserId,
       String cc) {
 
+    System.out.println("Made it here1");
     Session session = getSession();
-
     if (null == sentByEmail) {
       sentByEmail = getDefaultSenderEmailAddress();
     }
@@ -86,6 +86,7 @@ public class MailService {
       if(cc != null) {
         List<String> ccs = Arrays.asList(cc.split("\\s*,\\s*"));
         for(String recipient : ccs){
+          System.out.println(recipient);
           msg.addRecipient(
                   Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
         }
@@ -184,9 +185,16 @@ public class MailService {
                   Message.RecipientType.TO,
                   new InternetAddress(StringUtils.trimWhitespace(message.getTo())));
               if(message.getCc() != null) {
-                mimeMessage.addRecipient(
-                  Message.RecipientType.CC,
-                  new InternetAddress(StringUtils.trimWhitespace(message.getCc())));
+//                mimeMessage.addRecipient(
+//                  Message.RecipientType.CC,
+//                  new InternetAddress(StringUtils.trimWhitespace(message.getCc())));
+
+                List<String> ccs = Arrays.asList(message.getCc().split("\\s*,\\s*"));
+                for(String recipient : ccs){
+                  System.out.println(recipient);
+                  mimeMessage.addRecipient(
+                          Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+                }
               }
               mimeMessage.setSubject(message.getSubject());
 
