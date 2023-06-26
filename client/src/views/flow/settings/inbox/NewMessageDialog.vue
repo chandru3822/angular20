@@ -18,7 +18,7 @@
           :items="sortedProjects"
           :search-input.sync="projectQuery"
           multiple
-          attach
+          clearable
           item-text="firstName"
           item-value="id"
           :disabled="selectedUserIds.length > 0"
@@ -347,7 +347,14 @@ export default {
 
       // called when the user sends a message
       let params
-      let smsTeamId = this.teamsAssociatedToUser ? this.teamsAssociatedToUser[0].id : null
+      let smsTeamId = this.teamsAssociatedToUser.length > 0 ? this.teamsAssociatedToUser[0].id : null
+      if (!smsTeamId) {
+        this.snackbar = getSnackbar('ERROR', 'Error: No SMS Team found')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        return
+      }
+
       this.messageSuccess = true
 
       try {
@@ -403,7 +410,14 @@ export default {
       }
     },
     sendMessageAndAssign: async function () {
-      let smsTeamId = this.teamsAssociatedToUser ? this.teamsAssociatedToUser[0].id : null
+      let smsTeamId = this.teamsAssociatedToUser.length > 0 ? this.teamsAssociatedToUser[0].id : null
+      if (!smsTeamId) {
+        this.snackbar = getSnackbar('ERROR', 'Error: No SMS Team found')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        return
+      }
+
       let params = {
         id: smsTeamId,
         users: [{

@@ -1,3 +1,4 @@
+DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint, BIGINT[], bigint, bigint, DATE, DATE, bigint, bigint);
 DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint, BIGINT[], bigint, bigint, DATE, DATE, bigint, bigint,boolean);
 /*MILESTONE 1 175 MILESTONE 2 35*/
 CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id bigint,
