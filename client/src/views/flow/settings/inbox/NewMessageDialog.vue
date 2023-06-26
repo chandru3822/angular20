@@ -4,7 +4,7 @@
         v-model="showNewMessageDialog"
         @click:outside="exitDialogue"
         width="803">
-    <v-card class="pa-3">
+    <v-card class="px-6 pb-6 pt-3">
       <v-card-title class="pa-0 justify-space-between">
         <span class="title-large">Compose new SMS Message</span>
         <a class="close-modal-x pb-3" title="Close" @click="exitDialogue">×</a>
@@ -136,7 +136,7 @@
                         item-text="title"
                         item-value="id"
                         return-object
-                        @change="[message += selectedTemplate.message, menuOpen = false]">
+                        @change="[message += selectedTemplate.message, menuOpen = false, selectedTemplate = '']">
 
                 <template slot="item" slot-scope="data">
                   <!-- HTML that describes how select should render items when the select is open -->
@@ -577,7 +577,7 @@ export default {
 }
 
 .template-button-height {
-  height: 24px !important;
+  height: 36px !important;
   margin-top: 2px;
 }
 

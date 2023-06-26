@@ -84,6 +84,25 @@ BEGIN
   elsif p_unique_behavior_code = 'TOTAL_COMMISSIONS_TRIGGER' then
 
     if p_project_id is not null then
+
+      select id
+      into v_commission_plan_id
+      from brs.project_commission pc
+      where pc.project_id = p_project_id;
+
+      select v.id
+      into v_ppscfv_id
+      from flow.project_process_step pps
+             inner join flow.project_process_step_custom_field_value v
+                        on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
+      where pps.project_id = p_project_id
+        and pps.process_step_id = 175
+        and v.date_value is not null;
+
+      if (v_commission_plan_id is null) and v_ppscfv_id is not null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+
       select *
       into v_value
       from brs.get_total_commissions_amount(p_project_id);
@@ -92,6 +111,24 @@ BEGIN
   elsif p_unique_behavior_code = 'TOTAL_OVERRIDES_TRIGGER' then
 
     if p_project_id is not null then
+      select id
+      into v_override_plan_id
+      from brs.project_override po
+      where po.project_id = p_project_id;
+
+
+      select v.id
+      into v_ppscfv_id
+      from flow.project_process_step pps
+             inner join flow.project_process_step_custom_field_value v
+                        on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
+      where pps.project_id = p_project_id
+        and pps.process_step_id = 175
+        and v.date_value is not null;
+
+      if (v_override_plan_id is null) and v_ppscfv_id is not null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
       select *
       into v_value
       from brs.get_total_overrides_amount(p_project_id);
