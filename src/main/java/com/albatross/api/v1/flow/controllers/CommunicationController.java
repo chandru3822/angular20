@@ -40,8 +40,6 @@ public class CommunicationController {
   private final CommunicationService communicationService;
   private final ContactService contactService;
   private final ProjectService projectService;
-  private final ProjectProcessStepService projectProcessStepService;
-  private final ProjectProcessStepEventService projectProcessStepEventService;
   private final UserService userService;
   private final SecurityService securityService;
 
