@@ -427,7 +427,7 @@
                             item-text="title"
                             item-value="id"
                             return-object
-                            @change="[textMessage += selectedTemplate.message, menuOpen = false]">
+                            @change="[textMessage += selectedTemplate.message, menuOpen = false, selectedTemplate = '']">
 
                     <template slot="item" slot-scope="data">
                       <!-- HTML that describes how select should render items when the select is open -->
@@ -444,14 +444,15 @@
             <v-file-input
                 dense
                 outlined
+                multiple
                 hide-input
                 color="primary"
-                v-model="textFile"
+                v-model="textFiles"
                 @change="uploadTextAttachment"
-                @click:clear="[textFile = null, textMediaUrls = []]"
+                @click:clear="[textFiles = [], textMediaUrls = []]"
             />
           </div>
-          <span v-if="textFile">Attached {{ textFile.name }}</span>
+          <span v-if="textFiles.length > 0">Attached {{ attachmentsText }}</span>
 
             <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
               <v-btn
@@ -645,7 +646,7 @@
         emailAttachments: [],
         textMediaUrls: [],
         emailFile: null,
-        textFile: null,
+        textFiles: [],
         primaryPositionsOnly: true,
         source: null,
         allUsersLoading: false,
@@ -688,6 +689,14 @@
       disableSendText() {
           return !((this.textMessage.trim().length > 0 || this.textMediaUrls.length > 0) && this.usersSelected)
       },
+      attachmentsText() {
+        if (this.textFiles.length == 1) {
+          return this.textFiles[0].name
+        }
+        else if (this.textFiles.length > 1) {
+          return this.textFiles.length + ' files'
+        }
+      },
     },
     beforeRouteEnter(to, from, next) {
       //if coming to this page from the user details - use the previously used search
@@ -717,7 +726,7 @@
         this.textMediaUrls = []
         this.emailAttachments = []
         this.emailFile = null
-        this.textFile = null
+        this.textFiles = []
         this.msgDialog = false
         this.textMessage = ''
         this.selectedTemplate = ''
@@ -1276,14 +1285,18 @@
                   await postRequest(`/communication/sendTexts`, params)
               }
           }  catch (e) {
-              debugger
               console.error('*** ERROR ***', e)
               let message = e?.message ? 'Error Sending Message: ' + e.message :
-              e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
-              this.snackbar = getSnackbar('ERROR', message)
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              return
+                e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+              const matches = message.match(/"(.*?)"/);
+              if (matches && matches.length > 1) {
+                message = 'Error Sending Message: ' + matches[1]
+              }
+
+             this.snackbar = getSnackbar('ERROR', message)
+             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+             this.$store.commit(AppMutations.SET_LOADING, false)
+             return
           }
 
           let msg = 'Message sent'
@@ -1304,7 +1317,7 @@
           this.textMediaUrls = []
           this.emailAttachments = []
           this.emailFile = null
-          this.textFile = null
+          this.textFiles = []
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
       },
@@ -1315,24 +1328,26 @@
       uploadEmailAttachment: function (files) {
         this.emailAttachments = files
       },
-      uploadTextAttachment: async function (file) {
+      uploadTextAttachment: async function (files) {
         try {
-          if (!file){
+          if (!files){
             return
           }
 
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file,
-            attachmentTypeId: 3,
-            sourceId: 1,
-            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-            callback: async (newAttachment) => {
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              this.textMediaUrls = [...this.textMediaUrls, newAttachment.url]
-            }
-          })
+          for (let file of files) {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+            await this.$store.dispatch(Actions.FILE_UPLOAD, {
+              file,
+              attachmentTypeId: 3,
+              sourceId: 1,
+              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+              callback: async (newAttachment) => {
+                this.$store.commit(AppMutations.SET_LOADING, false)
+                this.textMediaUrls.push(newAttachment.url)
+              }
+            })
+          }
         } catch(e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
           logError(e)
