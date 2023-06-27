@@ -1521,5 +1521,14 @@
   .select-check {
     color: var(--v-primary-base) !important;
   }
+
+  .ellipse {
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 450px;
+  }
+
 </style>
 
