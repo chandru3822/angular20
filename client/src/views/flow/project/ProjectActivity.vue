@@ -93,25 +93,20 @@
               color="primary"
               class="d-inline-block one-hunned body-medium"
               style="opacity: 1 !important;"
-              id="focused-toggle"
             >
-
-
               <v-btn :color="toggleTimelineView === 0 ? 'primary' : 'white'"
-                     id="focused-toggle"
                      :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
-                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
-                     style="width: 50% !important;"
-              >
-                Timeline
-              </v-btn>
-              <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
-                     id="focused-toggle"
-                     :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
                      class="text-capitalize  fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
               >
                 Topic
+              </v-btn>
+              <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
+                     :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
+                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
+                     style="width: 50% !important;"
+              >
+                Timeline
               </v-btn>
             </v-btn-toggle>
           </div>
@@ -143,7 +138,7 @@
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
           <ActivitySection :contact-id="contactId" :user-id="userId"
-                           :timeline-view="toggleTimelineView === 0"
+                           :timeline-view="toggleTimelineView === 1"
                            :object-type-id="objectTypeId" :project-id="projectId"
                            :org-id="orgId" v-else-if="selectedOption === 1"></ActivitySection>
           <div v-else-if="selectedOption === 2">

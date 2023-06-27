@@ -3,10 +3,10 @@
       <div v-if="activities?.length === 0">
         No available notes or activities
       </div>
-      <v-card v-else v-for="(a, aIdx) in activities" class="mt-2 elevation-1"
+      <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 elevation-0 card"
               :class="{'pinned-card': a.pinned}">
-          <v-toolbar flat color="transparent">
-            <v-toolbar-title>
+          <v-toolbar flat color="transparent" dense class="toolbar-z-index-override-for-menu">
+            <v-toolbar-title class="body-medium">
               <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
               <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
@@ -14,18 +14,18 @@
                 <a @click="searchCallback('#' + ah.hashtag)">#{{ ah.hashtag }}</a>
               </span>
               <a v-if="a.linked" @click="goToPath(a)">
-                <v-icon color="primary">mdi-link</v-icon>
+                <v-icon small color="primary">mdi-link</v-icon>
                 {{a.linkLabel}}
               </a>
             </v-toolbar-title>
             <v-spacer></v-spacer>
-            <v-menu v-model="a.menuOpen" transition="scale-transition" offset-y left attach>
+            <v-menu v-model="a.menuOpen" transition="scale-transition" origin="top right" offset-x left attach>
               <template v-slot:activator="{ on }">
                 <v-btn text small color="primary" v-on="on">
                   <v-icon>mdi-dots-horizontal</v-icon>
                 </v-btn>
               </template>
-              <v-list dense class="pa-3">
+              <v-list dense class="py-1">
                 <v-list-item v-if="a.activityTypeId !== 1 && (userIsAdmin || a.createdById === userId)"
                              @click="editItem(a)">
                   <v-list-item-content>
@@ -40,14 +40,14 @@
                 <v-list-item v-if="a.activityTypeId !== 1 && (userIsAdmin || a.createdById === userId)"
                              @click="deleteActivity(a)">
                   <v-list-item-content>
-                    <v-list-item-title>Delete</v-list-item-title>
+                    <v-list-item-title class="error--text">Delete</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
             </v-menu>
           </v-toolbar>
 
-        <v-card-text>
+        <v-card-text class="py-0 default-text-color">
           <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
           <div class="text-formatting">
             <vue-clamp ellipsis="" autoresize :max-lines="5">{{ a.note }}
@@ -59,7 +59,7 @@
             </vue-clamp>
           </div>
         </v-card-text>
-        <v-card-actions style="display: inline-block">
+        <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
           {{ a.createdBy }}, {{ a.createdByPosition }} | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
           <span v-if="a.dateCreated !== a.dateModified">| Edited by {{ a.modifiedBy }}</span>
         </v-card-actions>
@@ -162,6 +162,11 @@ export default {
 <style scoped lang="scss">
 .pinned-card {
   background: #FB8C0010;
+}
+
+.card {
+  border-radius: 4px;
+  border: 1px solid var(--grey-lighten-2, #E0E0E0);
 }
 
 .test {
