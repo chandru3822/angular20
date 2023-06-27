@@ -96,9 +96,9 @@
         >
           <v-textarea class="body-medium" hide-details
                       auto-grow
-                      rows="4"
-                      background-color="grey lighten-4"
-                      filled v-model="editedActivity.note">
+                      rows="2"
+                      outlined
+                       v-model="editedActivity.note">
           </v-textarea>
 
           <template #no-result>
@@ -117,6 +117,7 @@
         </Mentionable>
         <v-autocomplete
           v-model="selectedTopics"
+          class="mt-3"
           :items="topics"
           multiple
           label="Topics"
@@ -127,18 +128,18 @@
           v-if="null != $route.params.processStepId
                 || null != $route.params.ppsEventId
                 || editedActivity.linked"
-          class="pt-5 ml-3"
+          class="ml-3"
           dense
           v-model="editedActivity.linked"
           @change="editedActivity.linkLabel = null"
           :label="getLinkLabel()"
         />
-        <div>
-          <v-btn text color="primary"
+        <div class="d-flex">
+          <v-btn text color="primary" class="text-capitalize"
                  @click="[addActivity = false, editedActivity = {}]">
             cancel
           </v-btn>
-          <v-btn color="primary"
+          <v-btn color="primary" class="text-capitalize flex-grow-1"
                  :loading="savingActivity"
                  @click="saveActivity(null == editedActivity.id)"
                  :disabled="!editedActivity.note">
@@ -464,7 +465,7 @@ export default {
 }
 
 .activity-body {
-
+  min-height: 400px;
 }
 
 .activity-footer {
