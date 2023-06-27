@@ -335,7 +335,7 @@
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
             <quill-editor
-                class="py-3"
+                class="py-3 rich-text-editor"
                 v-model="emailMessage"
                 @change="onEmailMessageChange($event)"
             />
@@ -426,8 +426,9 @@
                             :items="selectableTemplates"
                             item-text="title"
                             item-value="id"
+                            ref="templateSelect"
                             return-object
-                            @change="[textMessage += selectedTemplate.message, menuOpen = false, selectedTemplate = '']">
+                            @change="handleTemplateSelection">
 
                     <template slot="item" slot-scope="data">
                       <!-- HTML that describes how select should render items when the select is open -->
@@ -653,7 +654,7 @@
         companyId: this.$store.state.user.details.companyId,
         attachmentTypeId: 9,
         templateTeams: [],
-        selectedTemplate: '',
+        selectedTemplate: null,
         selectableTemplates: [],
         menuOpen: false
       }
@@ -722,6 +723,12 @@
       this.fetchTeamsForUser()
     },
     methods: {
+      handleTemplateSelection() {
+        this.textMessage += this.selectedTemplate.message
+        this.menuOpen = false
+        this.selectedTemplate = null
+        this.$refs.templateSelect.reset();
+      },
       cancelSendMessageDialog(){
         this.textMediaUrls = []
         this.emailAttachments = []
@@ -729,7 +736,6 @@
         this.textFiles = []
         this.msgDialog = false
         this.textMessage = ''
-        this.selectedTemplate = ''
       },
       async nextPage(){
         this.currentPage++;
@@ -1228,7 +1234,7 @@
       },
       async getSmsTeamTemplates() {
         try {
-          this.selectedTemplate = ''
+          this.selectedTemplate = null
           if (this.teamsAssociatedToUser.length < 1) {
             return
           }

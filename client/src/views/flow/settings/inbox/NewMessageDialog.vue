@@ -136,7 +136,8 @@
                         item-text="title"
                         item-value="id"
                         return-object
-                        @change="[message += selectedTemplate.message, menuOpen = false, selectedTemplate = '']">
+                        ref="templateSelect"
+                        @change="handleTemplateSelection">
 
                 <template slot="item" slot-scope="data">
                   <!-- HTML that describes how select should render items when the select is open -->
@@ -154,7 +155,7 @@
           hide-input
           multiple
           label="Upload file"
-          class="ma-0 mt-0"
+          class="ma-0 pt-1"
           @change="uploadTextAttachment"
           @click:clear="[uploadedFiles = []]"
         />
@@ -210,7 +211,7 @@ export default {
       uploadedFiles: [],
       message: '',
       templateTeams: [],
-      selectedTemplate: '',
+      selectedTemplate: null,
       selectableTemplates: [],
       selectedUserIds: [],
       projectQuery: null,
@@ -262,14 +263,24 @@ export default {
     }
   },
   methods: {
+    handleTemplateSelection() {
+      this.message += this.selectedTemplate.message
+      this.menuOpen = false
+      this.selectedTemplate = null
+      this.$refs.templateSelect.reset();
+    },
     exitDialogue(){
       this.selectedProjectIds = []
       this.availableProjects = []
       this.uploadedFiles = []
       this.message = ''
-      this.selectedTemplate = ''
       this.selectedUserIds = []
       this.projectQuery = null
+      let currentUserValues = this.availableUsers.filter(value => value.userId && value.userId === this.ownerUserId)
+      if (currentUserValues.length > 0) {
+        this.selectedUserIds = [this.ownerUserId]
+      }
+
       this.$emit('update:showNewMessageDialog', false)
     },
     getProjectDebounced(val) {
@@ -485,7 +496,7 @@ export default {
     },
     async getSmsTeamTemplates() {
       try {
-        this.selectedTemplate = ''
+        this.selectedTemplate = null
         if (this.teamsAssociatedToUser.length < 1) {
           return
         }
