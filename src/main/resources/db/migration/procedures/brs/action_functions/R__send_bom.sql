@@ -55,7 +55,6 @@ BEGIN
       and cfv.project_process_step_event_id = p_ppse_id
     into v_additional_details;
 
-
     select
         case when
             (select lov.name = 'Yes' from flow.custom_field_group_assignment cfga
@@ -104,7 +103,8 @@ BEGIN
     into v_installation_time_text;
 
 
-    select  CONCAT(street1, street2) from flow.project where id = p_project_id
+    select CONCAT(p.street1,  ' ', p.street2, ' ', p.city, ', ' , s.abbreviation, ' ', p.postal_code)
+    from flow.project p join flow.company_state cs on p.company_state_id = cs.id join flow.state s on cs.state_id = s.id where p.id = p_project_id
   into v_project_address;
 
   select
@@ -185,6 +185,11 @@ Additional Details: ', v_additional_details)
                                       to_email, processed, from_display_name, attachment_ids, cc_recipients)
         values(p_user_id, v_email_subject, concat(v_email_default_header, v_email_message, v_email_default_footer), v_email_sender_address,
                v_org_email, false, v_email_sender_name, v_matching_attachment_ids, v_cc_recipients);
+
+        insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id,
+               custom_field_group_assignment_id, date_value, created_by_id, modified_by_id)
+                values (p_ppse_id, 20930, now(), p_user_id, p_user_id);
+
         return true;
       else
         return false;

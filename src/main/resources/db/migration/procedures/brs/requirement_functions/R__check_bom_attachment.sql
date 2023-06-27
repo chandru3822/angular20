@@ -2,10 +2,8 @@
 --                                                      p_ppse_id bigint,
 --                                                      p_attachment_type_id bigint,
 --                                                      p_display_name_match_text varchar);
-CREATE OR REPLACE FUNCTION flow.check_bom_attachment(p_pps_id bigint,
-                                                                      p_ppse_id bigint,
-                                                                      p_attachment_type_id bigint,
-                                                                      p_display_name_match_text varchar)
+CREATE OR REPLACE FUNCTION brs.check_bom_attachment(p_pps_id bigint,
+                                                                      p_ppse_id bigint)
   returns boolean AS
 $BODY$
 declare
@@ -21,8 +19,7 @@ BEGIN
     where att.archived is false
       and ppsa.archived is false
       and ppsa.project_process_step_event_id = p_ppse_id
-      and att.attachment_type_id = p_attachment_type_id
-      and lower(att.display_name) like concat('%', lower(p_display_name_match_text),'%');
+      and att.attachment_type_id = 45;
   else
     select array_agg(att.id)::int[]
       into v_matching_attachment_ids
@@ -31,8 +28,7 @@ BEGIN
     where att.archived is false
       and ppsa.archived is false
       and ppsa.project_process_step_id = p_pps_id
-      and att.attachment_type_id = p_attachment_type_id
-      and lower(att.display_name) like concat('%', lower(p_display_name_match_text),'%');
+      and att.attachment_type_id = 45;
   end if;
 
   if array_length(v_matching_attachment_ids, 1) = 1 then
