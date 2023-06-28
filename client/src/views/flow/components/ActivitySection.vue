@@ -277,7 +277,7 @@ export default {
       let lowerSearch = this.search.toLowerCase()
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
-        || activity.createdByPosition.toLowerCase().includes(lowerSearch)
+        || activity.createdByPosition?.toLowerCase().includes(lowerSearch)
         || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
         || activity.activityHashtags.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
     },
@@ -465,7 +465,7 @@ export default {
 }
 
 .activity-body {
-  min-height: 400px;
+  min-height: 500px;
 }
 
 .activity-footer {
