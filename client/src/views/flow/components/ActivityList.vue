@@ -38,7 +38,7 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="a.activityTypeId !== 1 && (userIsAdmin || a.createdById === userId)"
-                             @click="deleteActivity(a)">
+                             @click="activityToDelete = a">
                   <v-list-item-content>
                     <v-list-item-title class="error--text">Delete</v-list-item-title>
                   </v-list-item-content>
@@ -62,8 +62,12 @@
         <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
           {{ a.createdBy }}, {{ a.createdByPosition }} | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
           <span v-if="a.dateCreated !== a.dateModified">| Edited by {{ a.modifiedBy }}</span>
+          <span v-if="a.pinned"> | Pinned by {{ a.pinnedBy }}</span>
         </v-card-actions>
       </v-card>
+    <ConfirmationDialog :open-dialog="activityToDelete" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
+      Are you sure you want to delete this activity?
+    </ConfirmationDialog>
     </div>
 </template>
 
@@ -94,6 +98,7 @@ export default {
       snackbar: {},
       editedIndex: null,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
+      activityToDelete: null
     }
   },
   watch: {
