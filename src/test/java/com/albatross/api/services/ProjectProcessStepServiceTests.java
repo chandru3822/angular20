@@ -2,6 +2,7 @@ package com.albatross.api.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
@@ -75,6 +76,8 @@ public class ProjectProcessStepServiceTests {
 
   CustomerPortalService customerPortalService = mock(CustomerPortalService.class);
 
+  BirdeyeService birdeyeService = mock(BirdeyeService.class);
+
   private ProjectProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
@@ -84,7 +87,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, pubSubService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

@@ -2,10 +2,10 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.convert.JsonCollectionDeserializer;
-import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
@@ -61,7 +61,6 @@ public class ProjectProcessStepEventService {
   private final CustomFieldValueService customFieldValueService;
   private final ProjectProcessStepService projectProcessStepService;
 
-  private final PubSubService pubSubService;
   private final ProcessStepEventService processStepEventService;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
   private final AttachmentService attachmentService;
@@ -73,8 +72,7 @@ public class ProjectProcessStepEventService {
   private final MarketoService marketoService;
   private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
-
-  private final ProjectService projectService;
+  private final BirdeyeService birdeyeService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -83,7 +81,7 @@ public class ProjectProcessStepEventService {
   private Boolean marketoEnabled;
 
   public Optional<ProjectProcessStepEvent> insertPpsEvent(
-      Long projectProcessStepId, Long processStepEventId) throws Exception {
+    Long projectProcessStepId, Long processStepEventId) throws Exception {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectProcessStepId", projectProcessStepId);
@@ -91,7 +89,7 @@ public class ProjectProcessStepEventService {
     params.put("createdById", user.getId());
 
     Long id =
-        sqlCache.updateBySqlReturningId(ProjectProcessStepEventQuery.insertEvent, params, "id").longValue();
+      sqlCache.updateBySqlReturningId(ProjectProcessStepEventQuery.insertEvent, params, "id").longValue();
     return getPpsEvent(projectProcessStepId, id);
   }
 
@@ -109,12 +107,12 @@ public class ProjectProcessStepEventService {
     params.put("ppseId", ppseId);
 
     return sqlCache.queryBySql(ProjectProcessStepEventQuery.getCancelledAssignedToPpsEvent,
-        params,
-        CompanyEventStatusType.class);
+      params,
+      CompanyEventStatusType.class);
   }
 
   public void setStatus(Long ppsId, Long projectProcessStepEventId, Long companyEventStatusTypeId)
-      throws Exception {
+    throws Exception {
     User user = securityService.getCurrentUser();
     Optional<ProjectProcessStepEvent> pps = getPpsEvent(ppsId, projectProcessStepEventId);
 
@@ -144,13 +142,13 @@ public class ProjectProcessStepEventService {
 
     //using ppsId ensures that they cannot modify the url and have a mismatch of ppsId vs event.project_process_step_id
     Optional<ProjectProcessStepEvent> result =
-        sqlCache.getBySql(ProjectProcessStepEventQuery.get,
-            params,
-            new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
+      sqlCache.getBySql(ProjectProcessStepEventQuery.get,
+        params,
+        new PpsEventMapper<>(ProjectProcessStepEvent.class, om));
     if (result.isPresent()) {
       ProjectProcessStepEvent event = result.get();
       event.setCustomFieldGroups(
-          customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT, ppsEventId));
+        customFieldValueService.getCustomFieldGroupsAndValues(ObjectType.EVENT, ppsEventId));
 
       if (null != event.getEventActions() && !event.getEventActions().isEmpty()) {
         // if there are event actions, then check if the pps status change can be performed here
@@ -160,14 +158,14 @@ public class ProjectProcessStepEventService {
 
           // get the requirements here - sames as humes, pass to canPermform
           List<Long> requirementIds =
-              Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
-                  .filter(step -> step.getProcessStepEventRequirementId() != null)
-                  .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
-                  .collect(Collectors.toList());
+            Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
+              .filter(step -> step.getProcessStepEventRequirementId() != null)
+              .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+              .collect(Collectors.toList());
 
           List<ProjectProcessStepRequirement> requirements =
-              projectProcessStepRequirementService.getByProjectProcessStepId(
-                  event.getProjectProcessStepId(), requirementIds, true);
+            projectProcessStepRequirementService.getByProjectProcessStepId(
+              event.getProjectProcessStepId(), requirementIds, true);
 
           action.setCanPerform(canPerformEventAction(event, action, requirements));
         }
@@ -178,9 +176,9 @@ public class ProjectProcessStepEventService {
           // get the requirements here - sames as humes, pass to canPermform
           List<Long> requirementIds =
             Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
-                   .filter(step -> step.getProcessStepEventRequirementId() != null)
-                   .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
-                   .collect(Collectors.toList());
+              .filter(step -> step.getProcessStepEventRequirementId() != null)
+              .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+              .collect(Collectors.toList());
 
           List<ProjectProcessStepRequirement> requirements =
             projectProcessStepRequirementService.getByProjectProcessStepId(
@@ -194,37 +192,37 @@ public class ProjectProcessStepEventService {
       position.setPositionId(user.getUserPositionId());
 
 
-      if(!result.get().getStartTimeReadOnlyAllow() && (result.get().getStartTimeWhiteListedPositions() == null || result.get().getStartTimeWhiteListedPositions().size() == 0)){
+      if (!result.get().getStartTimeReadOnlyAllow() && (result.get().getStartTimeWhiteListedPositions() == null || result.get().getStartTimeWhiteListedPositions().size() == 0)) {
         result.get().setStartTimeReadOnly(false);
       }
 
-      if(!result.get().getStartTimeHiddenAllow() && (result.get().getStartTimeHiddenWhiteListedPositions() == null || result.get().getStartTimeHiddenWhiteListedPositions().size() == 0)){
+      if (!result.get().getStartTimeHiddenAllow() && (result.get().getStartTimeHiddenWhiteListedPositions() == null || result.get().getStartTimeHiddenWhiteListedPositions().size() == 0)) {
         result.get().setStartTimeHidden(false);
       }
 
-      if(!result.get().getEndTimeReadOnlyAllow() && (result.get().getEndTimeWhiteListedPositions() == null || result.get().getEndTimeWhiteListedPositions().size() == 0)){
+      if (!result.get().getEndTimeReadOnlyAllow() && (result.get().getEndTimeWhiteListedPositions() == null || result.get().getEndTimeWhiteListedPositions().size() == 0)) {
         result.get().setEndTimeReadOnly(false);
       }
 
-      if(!result.get().getEndTimeHiddenAllow() && (result.get().getEndTimeHiddenWhiteListedPositions() == null || result.get().getEndTimeHiddenWhiteListedPositions().size() == 0)){
+      if (!result.get().getEndTimeHiddenAllow() && (result.get().getEndTimeHiddenWhiteListedPositions() == null || result.get().getEndTimeHiddenWhiteListedPositions().size() == 0)) {
         result.get().setEndTimeHidden(false);
       }
 
-      if(!result.get().getResourceReadOnlyAllow() && (result.get().getResourceWhiteListedPositions() == null || result.get().getResourceWhiteListedPositions().size() == 0)){
+      if (!result.get().getResourceReadOnlyAllow() && (result.get().getResourceWhiteListedPositions() == null || result.get().getResourceWhiteListedPositions().size() == 0)) {
         result.get().setResourceReadOnly(false);
       }
 
-      if(!result.get().getResourceHiddenAllow() && (result.get().getResourceHiddenWhiteListedPositions() == null || result.get().getResourceHiddenWhiteListedPositions().size() == 0)){
+      if (!result.get().getResourceHiddenAllow() && (result.get().getResourceHiddenWhiteListedPositions() == null || result.get().getResourceHiddenWhiteListedPositions().size() == 0)) {
         result.get().setResourceHidden(false);
       }
 
-      if(result.get().getReadonly() && !user.isSystemAdmin()) {
+      if (result.get().getReadonly() && !user.isSystemAdmin()) {
         boolean whiteListed = false;
         boolean allowFlag = result.get().getReadonlyAllow();
 
         //Checks if the user's position is in the whitelist
         for (int x = 0; x < result.get().getReadonlyWhiteListedPositions().size(); x++) {
-          for(int z = 0; z < user.getUserPositions().size(); z++) {
+          for (int z = 0; z < user.getUserPositions().size(); z++) {
             if (result.get().getReadonlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
               whiteListed = true;
             }
@@ -238,7 +236,7 @@ public class ProjectProcessStepEventService {
 
         result.get().getReadonlyWhiteListedPositions().clear();
         result.get().setReadonly(!whiteListed);
-          }
+      }
     } else {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Event Not Found", new Exception());
     }
@@ -246,33 +244,33 @@ public class ProjectProcessStepEventService {
   }
 
   public Boolean canPerformEventAction(
-      ProjectProcessStepEvent event,
-      ProcessStepEventAction action,
-      List<ProjectProcessStepRequirement> requirements)
-      throws Exception {
+    ProjectProcessStepEvent event,
+    ProcessStepEventAction action,
+    List<ProjectProcessStepRequirement> requirements)
+    throws Exception {
     // Allow actions to be triggered only once per PPS
     if (action.getAlreadyTriggered() && !action.getMultipleUses()) {
       return false;
     }
 
     // Only perform event actions on active project process steps
-      //if action has getShowOnCancelledCompletedProcessStep, the action may be performed on active events belonging to cancelled or completed process steps
+    //if action has getShowOnCancelledCompletedProcessStep, the action may be performed on active events belonging to cancelled or completed process steps
     if (!event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) &&
-            !(action.getShowOnCancelledCompletedProcessStep() != null && action.getShowOnCancelledCompletedProcessStep() &&
-                    (event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.CANCELLED.id) || event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.COMPLETE.id)) &&
-                    event.getEventStatusTypeId().equals(EventStatusType.ACTIVE.id))
+        !(action.getShowOnCancelledCompletedProcessStep() != null && action.getShowOnCancelledCompletedProcessStep() &&
+          (event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.CANCELLED.id) || event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.COMPLETE.id)) &&
+          event.getEventStatusTypeId().equals(EventStatusType.ACTIVE.id))
     ) {
       return false;
     }
 
     // Only perform event actions on active project process steps events
-      //if action has getShowOnCancelledCompletedEvents, then action may be performed on cancelled or completed events where the process step is active
+    //if action has getShowOnCancelledCompletedEvents, then action may be performed on cancelled or completed events where the process step is active
     if (!event
-        .getEventStatusTypeId()
-        .equals(com.albatross.api.v1.flow.enums.EventStatusType.ACTIVE.id) &&
-            !(action.getShowOnCancelledCompletedEvents() != null && action.getShowOnCancelledCompletedEvents() &&
-                    (event.getEventStatusTypeId().equals(com.albatross.api.v1.flow.enums.EventStatusType.CANCELLED.id) || event.getEventStatusTypeId().equals(EventStatusType.COMPLETE.id)) &&
-                    event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id))
+      .getEventStatusTypeId()
+      .equals(com.albatross.api.v1.flow.enums.EventStatusType.ACTIVE.id) &&
+        !(action.getShowOnCancelledCompletedEvents() != null && action.getShowOnCancelledCompletedEvents() &&
+          (event.getEventStatusTypeId().equals(com.albatross.api.v1.flow.enums.EventStatusType.CANCELLED.id) || event.getEventStatusTypeId().equals(EventStatusType.COMPLETE.id)) &&
+          event.getRootProjectProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id))
     ) {
       return false;
     }
@@ -287,12 +285,12 @@ public class ProjectProcessStepEventService {
       for (ProjectProcessStepRequirement r : requirements) {
         try {
           r.setFulfilled(
-              projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId(), event.getId()));
+            projectProcessStepService.isRequirementMet(r, event.getProjectProcessStepId(), event.getId()));
         } catch (Exception e) {
           log.error(
-              String.format(
-                  "PPSE: Exception while parsing date requirement value for process step event requirement ID: %s",
-                  r.getId()));
+            String.format(
+              "PPSE: Exception while parsing date requirement value for process step event requirement ID: %s",
+              r.getId()));
           throw e;
         }
       }
@@ -306,9 +304,9 @@ public class ProjectProcessStepEventService {
           logicString.append(" ").append(logicStep.getOperationCode()).append(" ");
         } else if (logicStep.getProcessStepEventRequirementId() != null) {
           Optional<ProjectProcessStepRequirement> requirement =
-              requirements.stream()
-                  .filter(r -> r.getId().equals(logicStep.getProcessStepEventRequirementId()))
-                  .findFirst();
+            requirements.stream()
+              .filter(r -> r.getId().equals(logicStep.getProcessStepEventRequirementId()))
+              .findFirst();
           requirement.ifPresent(r -> logicString.append(r.getFulfilled().toString()));
         }
       }
@@ -333,13 +331,13 @@ public class ProjectProcessStepEventService {
   }
 
   public Optional<ProjectProcessStepEvent> savePpsEventDetails(Long ppsId,
-      Long eventId, ProjectProcessStepEventController.SaveEventRequest saveEvent) throws Exception {
+                                                               Long eventId, ProjectProcessStepEventController.SaveEventRequest saveEvent) throws Exception {
     if (null != saveEvent.getStartTime()
         && null != saveEvent.getEndTime()
         && (saveEvent.getEndTime().before(saveEvent.getStartTime())
             || saveEvent.getEndTime().equals(saveEvent.getStartTime()))) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Start Time must be before End Time", new Exception());
+        HttpStatus.BAD_REQUEST, "Start Time must be before End Time", new Exception());
     } else {
       User currentUser = securityService.getCurrentUser();
 
@@ -360,10 +358,10 @@ public class ProjectProcessStepEventService {
       // once mobile updates then we can remove the else statement here
       if (null != saveEvent.getSaveVersion()) {
         int countUpdatedRows =
-            sqlCache.updateBySql(ProjectProcessStepEventQuery.savePpsEventDetails, params);
+          sqlCache.updateBySql(ProjectProcessStepEventQuery.savePpsEventDetails, params);
         if (countUpdatedRows == 0) {
           throw new ResponseStatusException(
-              HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());
+            HttpStatus.BAD_REQUEST, "Save Version Mismatch", new Exception());
         }
       } else {
         sqlCache.updateBySql(ProjectProcessStepEventQuery.savePpsEventDetailsNoVersion, params);
@@ -372,7 +370,7 @@ public class ProjectProcessStepEventService {
       if (null != saveEvent.getCustomFieldValues() && !saveEvent.getCustomFieldValues().isEmpty()) {
         // the fields sent in here are the dirty fields, save those
         customFieldValueService.updateCustomFieldValues(
-            saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT);
+          saveEvent.getCustomFieldValues(), eventId, ObjectType.EVENT);
       }
 
       return getPpsEvent(ppsId, eventId);
@@ -380,7 +378,7 @@ public class ProjectProcessStepEventService {
   }
 
   public Optional<ProcessStepEventAction> getPpsEventAction(Long ppsEventId, Long actionId)
-      throws Exception {
+    throws Exception {
     // the main different of this vs processStepEventService.getStepEventAction() is that this one
     // know which ppse it is running on
     // so we can get/check the value of "alreadyTriggered", but it can still share the same Mapper
@@ -389,21 +387,21 @@ public class ProjectProcessStepEventService {
     params.put("actionId", actionId);
 
     return sqlCache.getBySql(ProjectProcessStepEventQuery.getPpsEventAction,
-        params,
-        new ProcessStepEventService.ProcessStepEventActionMapper<>(
-            ProcessStepEventAction.class, om));
+      params,
+      new ProcessStepEventService.ProcessStepEventActionMapper<>(
+        ProcessStepEventAction.class, om));
   }
 
   @Transactional
   public PpseActionResult performStepEventAction(Long ppsId, Long ppsEventId, Long actionId) throws Exception {
     /*
-    **High level pseudo logic:**
+     **High level pseudo logic:**
 
-    * gather required data
-    * set the event to the desired status IF not already in that status
-    * set the process step to the desired status IF not already in that status
-    * do i need to perform auto triggers again if the PS status changed?  ...probably
-    */
+     * gather required data
+     * set the event to the desired status IF not already in that status
+     * set the process step to the desired status IF not already in that status
+     * do i need to perform auto triggers again if the PS status changed?  ...probably
+     */
 
     //get the action so the frontend doesn't have to pass in the big ass object
     Optional<ProcessStepEventAction> psEventAction = getPpsEventAction(ppsEventId, actionId);
@@ -412,10 +410,10 @@ public class ProjectProcessStepEventService {
       ProcessStepEventAction processStepEventAction = psEventAction.get();
 
       List<Long> requirementIds =
-          Objects.requireNonNull(processStepEventAction).getProcessStepEventLogicList().stream()
-              .filter(step -> step.getProcessStepEventRequirementId() != null)
-              .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
-              .collect(Collectors.toList());
+        Objects.requireNonNull(processStepEventAction).getProcessStepEventLogicList().stream()
+          .filter(step -> step.getProcessStepEventRequirementId() != null)
+          .map(ProcessStepEventLogic::getProcessStepEventRequirementId)
+          .collect(Collectors.toList());
 
       HashMap<String, Object> eventParams = new HashMap<>();
       eventParams.put("id", ppsEventId);
@@ -423,11 +421,11 @@ public class ProjectProcessStepEventService {
 
       if (event.isPresent()) {
         List<ProjectProcessStepRequirement> requirements =
-            projectProcessStepRequirementService.getByProjectProcessStepId(
-                event.get().getProjectProcessStepId(), requirementIds, true);
+          projectProcessStepRequirementService.getByProjectProcessStepId(
+            event.get().getProjectProcessStepId(), requirementIds, true);
 
         boolean canPerformAction =
-            canPerformEventAction(event.get(), processStepEventAction, requirements);
+          canPerformEventAction(event.get(), processStepEventAction, requirements);
 
         // double check if action can be run, if so, run it, otherwise throw an error
         if (canPerformAction) {
@@ -435,10 +433,10 @@ public class ProjectProcessStepEventService {
 
           HashMap<String, Object> params = new HashMap<>();
           params.put(
-              "companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
+            "companyEventStatusTypeId", processStepEventAction.getCompanyEventStatusTypeId());
           params.put(
-              "companyProcessStepStatusTypeId",
-              processStepEventAction.getCompanyProcessStepStatusTypeId());
+            "companyProcessStepStatusTypeId",
+            processStepEventAction.getCompanyProcessStepStatusTypeId());
           params.put("actionName", processStepEventAction.getActionName());
           params.put("userId", currentUser.getId());
           params.put("ppsId", ppsId);
@@ -447,14 +445,14 @@ public class ProjectProcessStepEventService {
           Optional<ProjectProcessStepEvent> ppse = this.getPpsEvent(ppsId, ppsEventId);
           if (ppse.isEmpty()) {
             throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
+              HttpStatus.BAD_REQUEST, "Project Process Step Event Not Found", new Exception());
           } else {
             // check if event is already in the desired status, then update the ppse status to the
             // desired status if not already in it
             if (null != processStepEventAction.getCompanyEventStatusTypeId()
                 && !ppse.get()
-                    .getCompanyEventStatusTypeId()
-                    .equals(processStepEventAction.getCompanyEventStatusTypeId())) {
+              .getCompanyEventStatusTypeId()
+              .equals(processStepEventAction.getCompanyEventStatusTypeId())) {
               sqlCache.updateBySql(ProjectProcessStepEventQuery.updateCompanyEventStatus, params);
             }
           }
@@ -467,16 +465,16 @@ public class ProjectProcessStepEventService {
             //if pps is not active, then dont allow this.
             if (!pps.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id)) {
               throw new ResponseStatusException(
-                  HttpStatus.BAD_REQUEST,
-                  "Cannot run this action. Process Step Status must be Active.",
-                  new Exception());
+                HttpStatus.BAD_REQUEST,
+                "Cannot run this action. Process Step Status must be Active.",
+                new Exception());
             }
             // update the pps status (if the new status is cancel, unset the primary flag)
             params.put(
-                "primaryFlag",
-                !processStepEventAction
-                    .getRootProcessStepStatusTypeId()
-                    .equals(ProcessStepStatusType.CANCELLED.id));
+              "primaryFlag",
+              !processStepEventAction
+                .getRootProcessStepStatusTypeId()
+                .equals(ProcessStepStatusType.CANCELLED.id));
             sqlCache.updateBySql(ProjectProcessStepEventQuery.updatePpsStatus, params);
 
             // if the new status was cancel, check for a single existence of this PPS type in
@@ -498,7 +496,7 @@ public class ProjectProcessStepEventService {
 
           List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
           //moved this out of the status check section so we could do it after child functions have been run
-          if(doAutoTriggers || ppseActionResult.getDidFunctionsRun()) {
+          if (doAutoTriggers || ppseActionResult.getDidFunctionsRun()) {
             actionResults.add(projectProcessStepService.performAutoTriggerActions(pps.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
           }
 
@@ -506,9 +504,9 @@ public class ProjectProcessStepEventService {
           if (processStepEventAction.getCompanyProcessStepStatusTypeId() != null) {
             //run auto triggers for PPSs which use the new PPS status
             List<ProjectProcessStep> steps = sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds, Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
-            for(ProjectProcessStep step : steps) {
+            for (ProjectProcessStep step : steps) {
               //only run if the referring PPS is active and not the parent PPS
-              if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
+              if (step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
                 actionResults.add(projectProcessStepService.performAutoTriggerActions(step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
               }
             }
@@ -521,10 +519,10 @@ public class ProjectProcessStepEventService {
 
               //run auto triggers for PPSs which use the new PPS status
               List<ProjectProcessStep> steps = sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds, Map.of("projectProcessStepIds", List.of(pps.getProjectProcessStepId())), ProjectProcessStep.class);
-              for(ProjectProcessStep step : steps) {
+              for (ProjectProcessStep step : steps) {
                 //only run if the referring PPS is active and not the parent PPS (which shouldn't happen since these are newly created PPSs)
                 //it's assumed the DB function that created this new ID put it in an active status/category
-                if(step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
+                if (step.getProcessStepStatusTypeId().equals(ProcessStepStatusType.ACTIVE.id) && !Objects.equals(pps.getProjectProcessStepId(), step.getProjectProcessStepId())) {
                   actionResults.add(projectProcessStepService.performAutoTriggerActions(newPpsId, securityService.getCurrentUserDetails()));
                 }
               }
@@ -541,7 +539,7 @@ public class ProjectProcessStepEventService {
           ppseActionResult.setProjectId(pps.getProjectId());
 
           //if the manually triggered action did not tell us to run project tag updates, then check if any of the auto triggered ones did.
-          if(!ppseActionResult.getShouldRunProjectTagUpdate()) {
+          if (!ppseActionResult.getShouldRunProjectTagUpdate()) {
             boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
             ppseActionResult.setShouldRunProjectTagUpdate(doTagUpdate);
           }
@@ -550,17 +548,17 @@ public class ProjectProcessStepEventService {
 //          return ResponseEntity.ok(getPpsEvent(ppsId, ppsEventId));
         } else {
           throw new ResponseStatusException(
-              HttpStatus.PRECONDITION_FAILED,
-              "The requirements for this event action were not met.",
-              new Exception());
+            HttpStatus.PRECONDITION_FAILED,
+            "The requirements for this event action were not met.",
+            new Exception());
         }
       } else {
         throw new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "This event could not be found.", new Exception());
+          HttpStatus.NOT_FOUND, "This event could not be found.", new Exception());
       }
     } else {
       throw new ResponseStatusException(
-          HttpStatus.NOT_FOUND, "This action could not be found.", new Exception());
+        HttpStatus.NOT_FOUND, "This action could not be found.", new Exception());
     }
   }
 
@@ -574,15 +572,14 @@ public class ProjectProcessStepEventService {
   }
 
   /**
-   *
    * @param actionId
    * @param ppsEventId
    * @param ppsId
    * @param processStepId
    * @param projectId
    * @return Map<String, Object> The returned map will have 2 keys:
-   *  didFunctionsRun: Boolean, true if any DB function was successfully ran, false otherwise
-   *  newChildPpsIds: List<Long>, List of all newly created PPS IDs
+   * didFunctionsRun: Boolean, true if any DB function was successfully ran, false otherwise
+   * newChildPpsIds: List<Long>, List of all newly created PPS IDs
    */
   public PpseActionResult performChildFunctions(Long actionId, Long ppsEventId, Long ppsId, Long processStepId, Long projectId) {
     PpseActionResult ppseActionResult = new PpseActionResult();
@@ -608,7 +605,7 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
             method.invoke(functionClass, childFunction, systemValues);
@@ -616,7 +613,7 @@ public class ProjectProcessStepEventService {
             // @TODO: Add company IDs here during onboarding
           }
         } else {
-          if(childFunction.getFunctionName().equals("flow.assign_tag_to_project")) {
+          if (childFunction.getFunctionName().equals("flow.assign_tag_to_project")) {
             doProjectTagUpdate.set(true);
           }
           String params = String.join(", ", projectProcessStepService.prepareFunctionParams(childFunction.getCompanyFunctionParams(), childFunction.getProjectId(), processStepId, ppsId, ppsEventId));
@@ -656,11 +653,11 @@ public class ProjectProcessStepEventService {
     // there is currently no where in the UI where event attachments are not viewed side by side
     // with ps attachments, so for now this actually returns both
     List<Attachment> attachments =
-        sqlCache.queryBySql(ProjectProcessStepEventQuery.getProjectProcessStepEventAttachments,
-            params,
-            Attachment.class);
+      sqlCache.queryBySql(ProjectProcessStepEventQuery.getProjectProcessStepEventAttachments,
+        params,
+        Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
-        attachments, storageBucket, null != isMobile ? isMobile : false);
+      attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   public void linkAttachment(Long projectProcessStepEventId, Long attachmentId, Boolean doLink) {
@@ -672,7 +669,7 @@ public class ProjectProcessStepEventService {
     params.put("companyId", currentUser.getCompanyId());
 
     String sql = ProjectProcessStepEventQuery.linkAttachment;
-    if(!doLink) {
+    if (!doLink) {
       sql = ProjectProcessStepEventQuery.unlinkAttachment;
     }
     sqlCache.updateBySql(sql, params);
@@ -681,8 +678,8 @@ public class ProjectProcessStepEventService {
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(
-      MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId, String displayName)
-      throws IOException {
+    MultipartFile file, Long projectProcessStepEventId, Long attachmentTypeId, String displayName)
+    throws IOException {
     User user = securityService.getCurrentUser();
 
     if (file.isEmpty()) {
@@ -694,21 +691,21 @@ public class ProjectProcessStepEventService {
     HashMap<String, Object> p2 = new HashMap<>();
     p2.put("sourceId", projectProcessStepEventId);
     Long companyId =
-        sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, p2, Long.class);
+      sqlCache.queryForObjectBySql(ProjectProcessStepEventQuery.getCompanyId, p2, Long.class);
 
     // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key =
-        String.format(
-            user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+      String.format(
+        user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
     metadata.setContentType(file.getContentType());
 
     PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+      new PutObjectRequest(
+        storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
     s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
@@ -770,9 +767,9 @@ public class ProjectProcessStepEventService {
     protected void initBeanWrapper(BeanWrapper bw) {
       TypeReference<List<ProcessStepEventAction>> eventActionsRef = new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "eventActions",
-          new JsonCollectionDeserializer(eventActionsRef, objectMapper));
+        List.class,
+        "eventActions",
+        new JsonCollectionDeserializer(eventActionsRef, objectMapper));
       bw.registerCustomEditor(
         List.class,
         "eventBanners",
@@ -781,65 +778,65 @@ public class ProjectProcessStepEventService {
       TypeReference<List<ProjectProcessStepEvent.Resource>> availableResourcesRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "availableResources",
-          new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
+        List.class,
+        "availableResources",
+        new JsonCollectionDeserializer(availableResourcesRef, objectMapper));
 
-        TypeReference<List<WhiteListedPosition>> eventHiddenWhiteListedPositionsRef =
+      TypeReference<List<WhiteListedPosition>> eventHiddenWhiteListedPositionsRef =
                 new TypeReference<>() {};
-        bw.registerCustomEditor(
-                List.class,
-                "eventHiddenWhiteListedPositions",
-                new JsonCollectionDeserializer(eventHiddenWhiteListedPositionsRef, objectMapper));
+      bw.registerCustomEditor(
+        List.class,
+        "eventHiddenWhiteListedPositions",
+        new JsonCollectionDeserializer(eventHiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> readonlyWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "readonlyWhiteListedPositions",
-          new JsonCollectionDeserializer(readonlyWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "readonlyWhiteListedPositions",
+        new JsonCollectionDeserializer(readonlyWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> startTimeWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "startTimeWhiteListedPositions",
-          new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "startTimeWhiteListedPositions",
+        new JsonCollectionDeserializer(startTimeWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> startTimeHiddenWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "startTimeHiddenWhiteListedPositions",
-          new JsonCollectionDeserializer(startTimeHiddenWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "startTimeHiddenWhiteListedPositions",
+        new JsonCollectionDeserializer(startTimeHiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> endTimeWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "endTimeWhiteListedPositions",
-          new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "endTimeWhiteListedPositions",
+        new JsonCollectionDeserializer(endTimeWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> endTimeHiddenWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "endTimeHiddenWhiteListedPositions",
-          new JsonCollectionDeserializer(endTimeHiddenWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "endTimeHiddenWhiteListedPositions",
+        new JsonCollectionDeserializer(endTimeHiddenWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> resourceWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "resourceWhiteListedPositions",
-          new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "resourceWhiteListedPositions",
+        new JsonCollectionDeserializer(resourceWhiteListedPositionsRef, objectMapper));
 
       TypeReference<List<WhiteListedPosition>> resourceHiddenWhiteListedPositionsRef =
           new TypeReference<>() {};
       bw.registerCustomEditor(
-          List.class,
-          "resourceHiddenWhiteListedPositions",
-          new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
+        List.class,
+        "resourceHiddenWhiteListedPositions",
+        new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
     }
   }
 }
