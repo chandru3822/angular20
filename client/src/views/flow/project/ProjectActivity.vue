@@ -18,7 +18,7 @@
                  class="d-inline-block clickable conversation-name-link"
                 :href="`/project/${projectId}/details`">
                 {{ messageProperties.projectName }}
-                <v-chip class="customer-chip" small>
+                <v-chip class="customer-chip" style="margin-left: 4px;" small>
                   <span >Customer</span>
                 </v-chip>
               </a>
@@ -28,7 +28,7 @@
                  class="d-inline-block clickable conversation-name-link"
                  :href="`/user/${userId}/details`">
                 {{ messageProperties.fullName }}
-                <v-chip class="internal-chip" small>
+                <v-chip class="internal-chip" style="margin-left: 4px;" small>
                   <span >Internal</span>
                 </v-chip>
               </a>
@@ -38,16 +38,17 @@
           </v-tooltip>
           <div v-else-if="!isSidebarCollapsed" >
             {{sidebarTitle}}
-            <v-chip v-if="messageProperties.projectName" class="customer-chip" small>
-              <span >Customer</span>
-            </v-chip>
-            <v-chip v-else class="internal-chip" small>
-              <span >Internal</span>
-            </v-chip>
+            <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+              <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
+                <span >Customer</span>
+              </v-chip>
+              <v-chip v-else class="internal-chip" style="margin-left: 4px;" small>
+                <span >Internal</span>
+              </v-chip>
+            </div>
           </div>
           <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
           <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
-
             <v-tooltip bottom small>
               <template v-slot:activator="{on, attrs}">
                 <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
