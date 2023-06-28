@@ -146,33 +146,12 @@ Coordinates: ', v_coords,
 Additional Details: ', v_additional_details)
     into v_email_message;
 
-  --todo: fix attachments
---   if(p_ppse_id is not null) then
---     select array_agg(att.id)::int[]
---       into v_matching_attachment_ids
---     from flow.project_process_step_event_attachment ppsa
---            inner join flow.attachment att on att.id = ppsa.attachment_id
---     where att.archived is false
---       and ppsa.archived is false
---       and ppsa.project_process_step_event_id = p_ppse_id
---       and att.attachment_type_id = p_attachment_type_id
---       and lower(att.display_name) like concat('%', lower(p_display_name_match_text),'%');
---   else
---     select array_agg(att.id)::int[]
---       into v_matching_attachment_ids
---     from flow.project_process_step_attachment ppsa
---            inner join flow.attachment att on att.id = ppsa.attachment_id
---     where att.archived is false
---       and ppsa.archived is false
---       and ppsa.project_process_step_id = p_pps_id
---       and att.attachment_type_id = p_attachment_type_id
---       and lower(att.display_name) like concat('%', lower(p_display_name_match_text),'%');
---   end if;
-
     select array_agg(a.id)::int[] from flow.project_process_step_event_attachment ea
     join flow.attachment a on ea.attachment_id = a.id
     where project_process_step_event_id = p_ppse_id
     and a.attachment_type_id = 45
+    and ea.archived = false
+    and a.archived = false
     into v_matching_attachment_ids;
 
 
