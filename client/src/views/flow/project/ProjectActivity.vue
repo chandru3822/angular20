@@ -12,7 +12,6 @@
 
           <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
             <template v-slot:activator="{on, attrs}">
-
               <a v-if="!isSidebarCollapsed && messageProperties.projectName"
                  v-bind="attrs" v-on="on"
                  class="d-inline-block clickable conversation-name-link"
