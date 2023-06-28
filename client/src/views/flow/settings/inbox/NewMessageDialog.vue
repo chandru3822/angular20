@@ -18,6 +18,7 @@
           :items="sortedProjects"
           :search-input.sync="projectQuery"
           multiple
+          cache-items
           clearable
           item-text="firstName"
           item-value="id"
@@ -50,7 +51,7 @@
             </v-chip>
             <span
               v-if="index === 1 && selectedProjectIds.length >= 3"
-            >{{ selectedProjectIds.length }} selected</span>
+            >{{ selectedProjectIds.length }} selected&nbsp;&nbsp;</span>
           </template>
         </v-autocomplete>
       </div>
