@@ -336,7 +336,7 @@ export default {
         if (this.assignAndSend) {
           this.snackbar = getSnackbar('SUCCESS', 'Message sent and conversation assigned')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          if (this.isInbox) {
+          if (this.isInbox && !this.$route.path.includes(this.inboxUrl)) {
             await this.$router.push({ path: this.inboxUrl })
           }
         }
