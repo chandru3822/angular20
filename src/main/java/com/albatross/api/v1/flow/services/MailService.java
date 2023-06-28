@@ -81,8 +81,13 @@ public class MailService {
 
       msg.setFrom(salesOperationsEmail);
       msg.setReplyTo(new Address[] {salesOperationsEmail});
-      msg.addRecipient(
-          Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(to)));
+      if(to != null){
+        List<String> tos = Arrays.asList(to.split("\\s*,\\s*"));
+        for(String recipient : tos){
+          msg.addRecipient(
+                  Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+        }
+      }
       if(cc != null) {
         List<String> ccs = Arrays.asList(cc.split("\\s*,\\s*"));
         for(String recipient : ccs){
@@ -180,9 +185,13 @@ public class MailService {
                       StringUtils.trimWhitespace(from), message.getFromDisplayName());
               mimeMessage.setFrom(fromAddress);
               mimeMessage.setReplyTo(new Address[] {fromAddress});
-              mimeMessage.addRecipient(
-                  Message.RecipientType.TO,
-                  new InternetAddress(StringUtils.trimWhitespace(message.getTo())));
+              if(message.getTo() != null){
+                List<String> tos = Arrays.asList(message.getTo().split("\\s*,\\s*"));
+                for(String recipient : tos){
+                  mimeMessage.addRecipient(
+                          Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+                }
+              }
               if(message.getCc() != null) {
 
                 List<String> ccs = Arrays.asList(message.getCc().split("\\s*,\\s*"));
