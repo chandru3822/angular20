@@ -364,7 +364,7 @@ export default {
     },
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
-    }, 500)
+    }, 800)
   },
   data() {
     return {
