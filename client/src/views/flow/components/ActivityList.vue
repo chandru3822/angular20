@@ -3,9 +3,9 @@
       <div v-if="activities?.length === 0">
         No available notes or activities
       </div>
-      <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 elevation-0 card"
+      <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 py-4 elevation-0 card"
               :class="{'pinned-card': a.pinned && highlightPinnedActivity}">
-          <v-toolbar flat color="transparent" dense class="toolbar-z-index-override-for-menu">
+          <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
             <v-toolbar-title class="body-medium">
               <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
               <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
@@ -51,10 +51,7 @@
           <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
           <div class="text-formatting">
             <vue-clamp ellipsis="" autoresize :max-lines="5">{{ a.note }}
-              <template #after="{ toggle, clamped }">
-                <button v-if="clamped === true" @click="toggle">
-                  ...see more
-                </button>
+              <template #after="{ toggle, clamped }"><button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
               </template>
             </vue-clamp>
           </div>
@@ -188,6 +185,11 @@ export default {
   display: block;
 }
 
+.see-more-btn {
+  color: var(--v-primary-base)!important;
+  font-weight: 600;
+}
+
 .uncategorized-text {
   font-size: 14px;
   color: var(--v-grey-lighten1);
@@ -202,4 +204,16 @@ export default {
 //}
 
 
+</style>
+<style lang="scss">
+#activity-card-title {
+  height: unset !important;
+  div {
+    height: unset !important;
+
+    .v-toolbar__title {
+      white-space: unset !important;
+    }
+  }
+}
 </style>
