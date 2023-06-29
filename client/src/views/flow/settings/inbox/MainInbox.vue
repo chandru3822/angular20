@@ -717,7 +717,7 @@ export default {
                 this.teamFilterOptions.push(team)
               }
 
-              if (!this.selectedTeamFilters.includes(team.id)) {
+              if (this.selectedTeamFilters && !this.selectedTeamFilters.includes(team.id)) {
                 this.selectedTeamFilters.push(team.id)
               }
 
@@ -759,7 +759,7 @@ export default {
           return 0
         })
 
-        if (!this.selectedOwnerFilters.includes(-1) && this.hasUnassignedNotifications) {
+        if (this.selectedOwnerFilters && !this.selectedOwnerFilters.includes(-1) && this.hasUnassignedNotifications) {
           this.selectedOwnerFilters.push(-1)
         }
         handleHidingGlobalLoader(this, status)
@@ -824,10 +824,10 @@ export default {
     }, 500)
   },
   watch: {
-    smsOwnershipEvents: debounce(function() {
-      this.fetchTeamsForUser()
-      this.reloadConversations()
-    }, 500),
+    smsOwnershipEvents: debounce(async function() {
+      await this.fetchTeamsForUser()
+      await this.reloadConversations()
+    }, 800),
     options: {
       handler() {
         if (!this.initialLoad) {

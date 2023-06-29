@@ -467,9 +467,11 @@ export default {
         const { data } = await getRequest(`/messaging/availableUsers/`)
         this.availableUsers = data
 
-        let currentUserValues = this.availableUsers.filter(value => value.userId && value.userId === this.ownerUserId)
-        if (currentUserValues.length > 0) {
-          this.selectedUserIds = [this.ownerUserId]
+        if (this.availableUsers) {
+          let currentUserValues = this.availableUsers.filter(value => value.userId && value.userId === this.ownerUserId)
+          if (currentUserValues.length > 0) {
+            this.selectedUserIds = [this.ownerUserId]
+          }
         }
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -483,8 +485,10 @@ export default {
         const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
-        for (let team of this.teamsAssociatedToUser){
-          this.templateTeams.push(team.id);
+        if (this.teamsAssociatedToUser && this.teamsAssociatedToUser.length > 0) {
+          for (let team of this.teamsAssociatedToUser){
+            this.templateTeams.push(team.id);
+          }
         }
         handleHidingGlobalLoader(this, status)
         await this.getSmsTeamTemplates();
@@ -498,7 +502,7 @@ export default {
     async getSmsTeamTemplates() {
       try {
         this.selectedTemplate = null
-        if (this.teamsAssociatedToUser.length < 1) {
+        if (!this.teamsAssociatedToUser || this.teamsAssociatedToUser.length < 1) {
           return
         }
 
