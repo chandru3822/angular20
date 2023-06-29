@@ -309,7 +309,8 @@ export default {
       userIdsInbox: [],
       userIdsSent: [],
       messageTypeFilter: 'All',
-      messageTypes: ['All', 'Internal', 'Customer']
+      messageTypes: ['All', 'Internal', 'Customer'],
+      isSmsOwnershipEventsRunning: false
     }
   },
   computed: {
@@ -825,8 +826,24 @@ export default {
   },
   watch: {
     smsOwnershipEvents: debounce(async function() {
-      await this.fetchTeamsForUser()
-      await this.reloadConversations()
+      if (this.isSmsOwnershipEventsRunning) {
+        // A previous execution is ongoing, ignore the current one
+        return;
+      }
+
+      this.isSmsOwnershipEventsRunning = true;
+
+      try {
+        await this.fetchTeamsForUser();
+        await this.reloadConversations();
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('ERROR', 'Error reloading conversations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.isSmsOwnershipEventsRunning = false;
+      }
     }, 800),
     options: {
       handler() {
