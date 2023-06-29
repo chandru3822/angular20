@@ -36,6 +36,17 @@
       </v-menu>
     </div>
     <div class="activity-body">
+      <div v-if="pinnedActivitiesOnly.length > 0" :class="{'pb-7': !timelineView}">
+        <ActivityList :activities="pinnedActivitiesOnly"
+                      :project-id="projectId"
+                      :contact-id="contactId"
+                      :user-id="userId"
+                      :org-id="orgId"
+                      :section-type="sectionType"
+                      :edit-callback="setEditedActivity"
+                      :search-callback="searchByClick"
+        />
+      </div>
       <div v-if="!timelineView">
         <div v-for="type in filteredTopics">
           {{ type.activityType }}
@@ -44,8 +55,8 @@
               <v-expansion-panel-header class="expansion-panel-header">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
-                    <span class="mr-2">#{{ h.hashtag }}</span>
-                    <span>{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
+                    <span class="mr-2 label-large">#{{ h.hashtag }}</span>
+                    <span class="body-medium">{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
                   </v-row>
                 </template>
@@ -59,6 +70,7 @@
                               :section-type="sectionType"
                               :edit-callback="setEditedActivity"
                               :search-callback="searchByClick"
+                              :highlightPinnedActivity="false"
                 ></ActivityList>
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -74,6 +86,7 @@
                     :section-type="sectionType"
                     :edit-callback="setEditedActivity"
                     :search-callback="searchByClick"
+                    :highlightPinnedActivity = false
       ></ActivityList>
     </div>
     <div class="activity-footer">
@@ -241,7 +254,11 @@ export default {
           && ((this.search == null || this.search === '') || this.activityContainsSearch(a))
           && shownActivityTypes.includes(a.activityTypeId)
 
-      }), ['pinned', 'dateCreated'], ['desc', this.sortDirection])
+      }), ['dateCreated'], [ this.sortDirection])
+    },
+    pinnedActivitiesOnly() {
+      return this.sortedFilteredActivities.filter(a => a.pinned)
+
     }
   },
   created() {

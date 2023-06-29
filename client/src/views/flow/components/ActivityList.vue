@@ -4,10 +4,10 @@
         No available notes or activities
       </div>
       <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 elevation-0 card"
-              :class="{'pinned-card': a.pinned}">
+              :class="{'pinned-card': a.pinned && highlightPinnedActivity}">
           <v-toolbar flat color="transparent" dense class="toolbar-z-index-override-for-menu">
             <v-toolbar-title class="body-medium">
-              <v-icon small color="#FB8C00" v-if="a.pinned" class="mr-2">mdi-pin</v-icon>
+              <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
               <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">,</span>
@@ -91,7 +91,11 @@ export default {
     projectId: Number,
     sectionType: String,
     editCallback: Function,
-    searchCallback: Function
+    searchCallback: Function,
+    highlightPinnedActivity: {
+      type: Boolean,
+      default: true,
+    }
   },
   data() {
     return {
@@ -165,13 +169,14 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
-.pinned-card {
-  background: #FB8C0010;
-}
-
 .card {
   border-radius: 4px;
   border: 1px solid var(--grey-lighten-2, #E0E0E0);
+}
+
+.pinned-card {
+  background: #FB8C0010;
+  border: 0px;
 }
 
 .test {
