@@ -57,7 +57,9 @@
           </div>
         </v-card-text>
         <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
-          {{ a.createdBy }}, {{ a.createdByPosition }} | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
+          <span class="clickable" @click="searchCallback(a.createdBy, a.createdById, 'user')">{{ a.createdBy }}</span>
+          <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, 'position')">, {{a.createdByPosition}}</span>
+          <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, 'team')">({{a.createdByPositionOrg}})</span> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
           <span v-if="a.dateCreated !== a.dateModified">| Edited by {{ a.modifiedBy }}</span>
           <span v-if="a.pinned"> | Pinned by {{ a.pinnedBy }}</span>
         </v-card-actions>

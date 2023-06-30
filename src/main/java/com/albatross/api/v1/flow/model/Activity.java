@@ -14,8 +14,8 @@ import java.util.List;
 @Setter
 public class Activity {
 
-  private Long id, createdById, modifiedById, activityTypeId, linkedPpsId, linkedPpseId, pinnedById;
-  private String note, createdBy, modifiedBy, createdByPosition, linkLabel, pinnedBy;
+  private Long id, createdById, modifiedById, createdByPositionOrgId, activityTypeId, linkedPpsId, linkedPpseId, pinnedById;
+  private String note, createdBy, modifiedBy, createdByPosition, createdByPositionOrg, linkLabel, pinnedBy;
   private Boolean archived, pinned, linked;
 
   private List<ActivityHashtag> activityHashtags;

@@ -6,7 +6,8 @@
         text
         label="Search"
         clearable
-        v-model="search"
+        @click:clear="clearSearch"
+        v-model="search.searchText"
       ></v-text-field>
       <v-btn text small color="primary" @click="changeSortDirection()">
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
@@ -200,7 +201,12 @@ export default {
   data() {
     return {
       snackbar: {},
-      search: this.$route.query.search != null ? this.$route.query.search : '',
+      search: {
+        searchText: this.$route.query.search != null ? this.$route.query.search : '',
+        userId: null,
+        position: null,
+        teamId: null
+      },
       linkLabel: '',
       users: [],
       addActivity: false,
@@ -290,13 +296,27 @@ export default {
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
     },
+
     activityContainsSearch(activity) {
-      let lowerSearch = this.search.toLowerCase()
+      if(this.search.userId){
+        return activity.createdById === this.search.userId
+      }
+      else if(this.search.position){
+        return activity.createdByPosition === this.search.position
+      }
+      else if(this.search.teamId){
+        return activity.createdByPositionOrgId === this.search.teamId
+      }
+      let lowerSearch = this.search.searchText?.toLowerCase()
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
         || activity.createdByPosition?.toLowerCase().includes(lowerSearch)
+        || activity.createdByPositionOrg?.toLowerCase().includes(lowerSearch)
+        || activity.modifiedBy?.toLowerCase().includes(lowerSearch)
+        || activity.pinnedBy?.toLowerCase().includes(lowerSearch)
         || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
         || activity.activityHashtags.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
+        || !lowerSearch
     },
     populateSelectedTopics(editedActivity) {
       //i can never figure out how to do this... when the list is like: topics = [{id: 1}] but the data coming back is like [{ id: 1723, topicId: 1}]
@@ -361,8 +381,35 @@ export default {
         this.topicsLoading = false
       }
     },
-    searchByClick(newSearch) {
-      this.search = newSearch
+    searchByClick(text, id, searchType){
+      switch (searchType){
+        case 'user':
+          this.search = {
+            searchText: `User: ${text}`,
+            userId: id
+          }
+        break;
+        case 'position':
+          this.search = {
+            searchText: `Position: ${text}`,
+            position: text
+          }
+          break;
+          case 'team':
+          this.search = {
+            searchText: `Team: ${text}`,
+            teamId: id
+          }
+          break;
+          default:
+            this.search = {
+              searchText: text
+            }
+      }
+
+    },
+    clearSearch(){
+      this.search={}
     },
     setEditedActivity(item) {
       this.editedActivity = cloneDeep(item)
