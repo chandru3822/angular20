@@ -57,9 +57,9 @@
           </div>
         </v-card-text>
         <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
-          <span class="clickable" @click="searchCallback(a.createdBy, a.createdById, 'user')">{{ a.createdBy }}</span>
-          <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, 'position')">, {{a.createdByPosition}}</span>
-          <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, 'team')">({{a.createdByPositionOrg}})</span> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
+          <span class="clickable" @click="searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)">{{ a.createdBy }}</span>
+          <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)">, {{a.createdByPosition}}</span>
+          <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, SearchTypeEnum.TEAM)">({{a.createdByPositionOrg}})</span> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
           <span v-if="a.dateCreated !== a.dateModified">| Edited by {{ a.modifiedBy }}</span>
           <span v-if="a.pinned"> | Pinned by {{ a.pinnedBy }}</span>
         </v-card-actions>
@@ -77,6 +77,7 @@ import Vue2Filters from "vue2-filters"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import VueClamp from 'vue-clamp'
+import {SearchTypeEnum} from "./ActivityListConstants";
 
 export default {
   name: 'ActivityList',
@@ -98,6 +99,7 @@ export default {
   },
   data() {
     return {
+      SearchTypeEnum,
       snackbar: {},
       editedIndex: null,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),

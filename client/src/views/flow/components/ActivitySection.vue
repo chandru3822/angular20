@@ -185,6 +185,7 @@ import ActivityList from "@/views/flow/components/ActivityList.vue";
 import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
 import {Mentionable} from 'vue-mention'
+import {SearchTypeEnum} from "./ActivityListConstants";
 
 export default {
   name: 'ActivitySection',
@@ -200,6 +201,7 @@ export default {
   },
   data() {
     return {
+      SearchTypeEnum,
       snackbar: {},
       search: {
         searchText: this.$route.query.search != null ? this.$route.query.search : '',
@@ -383,19 +385,19 @@ export default {
     },
     searchByClick(text, id, searchType){
       switch (searchType){
-        case 'user':
+        case SearchTypeEnum.USER:
           this.search = {
             searchText: `User: ${text}`,
             userId: id
           }
         break;
-        case 'position':
+        case SearchTypeEnum.POSITION:
           this.search = {
             searchText: `Position: ${text}`,
             position: text
           }
           break;
-          case 'team':
+          case SearchTypeEnum.TEAM:
           this.search = {
             searchText: `Team: ${text}`,
             teamId: id
