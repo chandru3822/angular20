@@ -39,14 +39,14 @@ BEGIN
   select ocfv.text_value from flow.project_process_step_event_custom_field_value pcfv
                                   join flow.organization_custom_field_value ocfv on pcfv.int_value = ocfv.org_id
   where pcfv.custom_field_group_assignment_id = p_supplier
-    and pcfv.project_process_step_event_id = project_process_step_event_id
+    and pcfv.project_process_step_event_id = p_ppse_id
     and ocfv.custom_field_group_assignment_id = 484
   into v_org_email;
 
     select o.org_name from flow.custom_field_group_assignment cfga
        join flow.project_process_step_event_custom_field_value cfv on cfga.id = cfv.custom_field_group_assignment_id
        join flow.org o on o.id = cfv.int_value where cfga.id = p_supplier
-       and cfv.project_process_step_event_id = project_process_step_event_id
+       and cfv.project_process_step_event_id = p_ppse_id
     into v_supplier_name;
 
     select cfv.text_value from flow.custom_field_group_assignment cfga
