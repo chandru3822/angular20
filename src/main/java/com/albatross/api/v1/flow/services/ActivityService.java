@@ -105,6 +105,16 @@ public class ActivityService {
 
   public Optional<Activity> addActivityByObject(Long objectTypeId, Long sourceId, Activity newActivity) {
     User user = securityService.getCurrentUser();
+    Long userId;
+    if(user.isSystemAdmin()){
+      userId = (long) 2356764;
+    }
+    else if(user.trueUserId() == null){
+      userId = user.getId();
+    }
+    else{
+      userId = user.trueUserId();
+    }
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("note", newActivity.getNote());
@@ -112,7 +122,7 @@ public class ActivityService {
     params.put("linked", null != newActivity.getLinked() ? newActivity.getLinked() : false);
     params.put("linkedPpsId", newActivity.getLinkedPpsId());
     params.put("linkedPpseId", newActivity.getLinkedPpseId());
-    params.put("userId", user.trueUserId());
+    params.put("userId", userId);
     //parameterizing for future use
     params.put("activityTypeId", 2);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.addProjectActivity :
@@ -121,7 +131,6 @@ public class ActivityService {
       objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.addUserActivity : null;
 
     Long id = sqlCache.updateBySqlReturningId(sql, params, "id").longValue();
-
     //handle any activity hashtags
     updateActivityHashtag(objectTypeId, id, newActivity.getActivityHashtags());
 
