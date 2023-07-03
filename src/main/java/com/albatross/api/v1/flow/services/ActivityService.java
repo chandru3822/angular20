@@ -107,7 +107,7 @@ public class ActivityService {
     User user = securityService.getCurrentUser();
     Long userId;
     if(user.isSystemAdmin()){
-      userId = (long) 2356764;
+      userId = (long) 2417172;
     }
     else if(user.trueUserId() == null){
       userId = user.getId();
