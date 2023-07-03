@@ -1,364 +1,310 @@
-DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint,BIGINT [],bigint,bigint,DATE,DATE,bigint,bigint);
+DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint, BIGINT[], bigint, bigint, DATE, DATE, bigint, bigint);
+DROP FUNCTION IF EXISTS brs.get_commission_account_details(bigint, BIGINT[], bigint, bigint, DATE, DATE, bigint, bigint,boolean);
 /*MILESTONE 1 175 MILESTONE 2 35*/
-CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id         bigint,
-                                                              p_project_ids         BIGINT [],
-                                                              p_contact_id   bigint,
-                                                              p_sales_rep          bigint,
-                                                              p_cancel_start_date  DATE,
-                                                              p_cancel_end_date    DATE,
-                                                              p_override_plan_id   bigint,
-                                                              p_commission_plan_id bigint)
-    RETURNS TABLE(
-                     project_id                                  bigint,
-                     customer_id                                 bigint,
-                     customer_name                               VARCHAR,
-                     system_size                                 NUMERIC(10,2),
-                     user_id                              bigint,
-                     employee_id                                 text,
-                     closer                                      TEXT,
-                     closer_is_terminated                        BOOLEAN,
-                     source_name                                 VARCHAR,
-                     cancelled_date                              DATE,
-                     installation_agreement_signed_date          DATE,
-                     final_design_signed_date                    DATE,
-                     fds_color                                   TEXT,
-                     asd_color                                   TEXT,
-                     scd_color                                   TEXT,
-                     pohi_color                                  TEXT,
-                     deposit_color                               TEXT,
-                     agreement_signed_date                       DATE,
-                     utility_bill_verified_date                  DATE,
-                     proof_of_howmeowners_insurance_required     character varying,
-                     proof_of_homeowners_insurance_obtained_date DATE,
-                     financier                                   character varying,
-                     first_cash_payment_paid_date                DATE,
-                     first_cash_payment_amount                   NUMERIC(10,2),
-                     total_system_price                          NUMERIC(10,2),
-                     percent_of_cash_deposit                     numeric(10,2),
-                     substantial_completion_date                 DATE,
-                     overrides_per_user                          JSON,
-                     override_plan                               TEXT,
-                     override_plan_status                        character VARYING,
-                     override_plan_id                            bigint,
-                     commission_plan                             TEXT,
-                     commission_plan_status                      character VARYING,
-                     commission_plan_id                          bigint,
-                     total_commissions                           NUMERIC(10,2),
-                     total_overrides                             NUMERIC(10,2),
-                     commission_earned                           NUMERIC(10,2),
-                     override_earned                             NUMERIC(10,2),
-                     commission_adjustments                      NUMERIC(10,2),
-                     override_adjustments                        NUMERIC(10,2),
-                     commission_paid_to_date                     NUMERIC(10,2),
-                     commission_forfeited_paid_to_date           NUMERIC(10,2),
-                     commission_forfeited_by_closer              NUMERIC(10,2),
-                     overrides_paid_to_date                      NUMERIC(10,2),
-                     current_pay_commissions                     NUMERIC(10,2),
-                     current_pay_overrides                       NUMERIC(10,2),
-                     remaining_value                             NUMERIC(10,2),
-                     remaining_value_commissions                 NUMERIC(10,2),
-                     remaining_value_overrides                   NUMERIC(10,2),
-                     project_total_value                            NUMERIC(10,2),
-                     current_pay                                 NUMERIC(10,2)
-                 )
-    LANGUAGE plpgsql
-AS $$
+CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id bigint,
+                                                               p_project_ids BIGINT[],
+                                                               p_contact_id bigint,
+                                                               p_sales_rep bigint,
+                                                               p_cancel_start_date DATE,
+                                                               p_cancel_end_date DATE,
+                                                               p_override_plan_id bigint,
+                                                               p_commission_plan_id bigint,
+                                                               p_query_overrides boolean default false)
+  RETURNS TABLE
+          (
+            project_id                                  bigint,
+            customer_id                                 bigint,
+            customer_name                               VARCHAR,
+            system_size                                 NUMERIC(10, 2),
+            user_id                                     bigint,
+            employee_id                                 text,
+            closer                                      character varying,
+            closer_is_terminated                        BOOLEAN,
+            source_name                                 VARCHAR,
+            cancelled_date                              DATE,
+            installation_agreement_signed_date          DATE,
+            final_design_signed_date                    DATE,
+            fds_color                                   TEXT,
+            asd_color                                   TEXT,
+            scd_color                                   TEXT,
+            pohi_color                                  TEXT,
+            deposit_color                               TEXT,
+            agreement_signed_date                       DATE,
+            utility_bill_verified_date                  DATE,
+            proof_of_howmeowners_insurance_required     character varying,
+            proof_of_homeowners_insurance_obtained_date DATE,
+            financier                                   character varying,
+            first_cash_payment_paid_date                DATE,
+            first_cash_payment_amount                   NUMERIC(10, 2),
+            total_system_price                          NUMERIC(10, 2),
+            percent_of_cash_deposit                     numeric(10, 2),
+            substantial_completion_date                 DATE,
+            overrides_per_user                          JSON,
+            override_plan                               TEXT,
+            override_plan_status                        TEXT,
+            override_plan_id                            bigint,
+            commission_plan                             TEXT,
+            commission_plan_status                      TEXT,
+            commission_plan_id                          bigint,
+            total_commissions                           NUMERIC(10, 2),
+            total_overrides                             NUMERIC(10, 2),
+            commission_earned                           NUMERIC(10, 2),
+            override_earned                             NUMERIC(10, 2),
+            commission_adjustments                      NUMERIC(10, 2),
+            override_adjustments                        NUMERIC(10, 2),
+            commission_paid_to_date                     NUMERIC(10, 2),
+            commission_forfeited_paid_to_date           NUMERIC(10, 2),
+            commission_forfeited_by_closer              NUMERIC(10, 2),
+            overrides_paid_to_date                      NUMERIC(10, 2),
+            current_pay_commissions                     NUMERIC(10, 2),
+            current_pay_overrides                       NUMERIC(10, 2),
+            remaining_value                             NUMERIC(10, 2),
+            remaining_value_commissions                 NUMERIC(10, 2),
+            remaining_value_overrides                   NUMERIC(10, 2),
+            project_total_value                         NUMERIC(10, 2),
+            amount_to_pay                               NUMERIC(10, 2),
+            forfeited_amount                            NUMERIC(10, 2),
+            current_pay                                 NUMERIC(10, 2)
+          )
+  LANGUAGE plpgsql
+AS
+$$
 DECLARE
-    v_is_show_all BOOLEAN :=
-            p_project_ids IS NULL AND p_contact_id IS NULL AND
-            p_sales_rep IS NULL AND
-            p_cancel_start_date IS NULL AND p_cancel_end_date IS NULL AND p_override_plan_id IS NULL AND
-            p_commission_plan_id IS NULL;
-    --select * from blueraven.get_commission_account_details('2018-07-20',null,null,null,null,null,null,null,null);
-    v_period_end_date date;
-    v_amounts numeric[] = '{0.00,-0.01,0.01}';
+  v_is_show_all     BOOLEAN   :=
+      p_project_ids IS NULL AND p_contact_id IS NULL AND
+      p_sales_rep IS NULL AND
+      p_cancel_start_date IS NULL AND p_cancel_end_date IS NULL AND p_override_plan_id IS NULL AND
+      p_commission_plan_id IS NULL;
+  --select * from blueraven.get_commission_account_details('2018-07-20',null,null,null,null,null,null,null,null);
+  v_period_end_date date;
+  v_amounts         numeric[] = '{0.00,-0.01,0.01}';
 BEGIN
 
-    select period_end
-    into v_period_end_date
-    from brs.payroll
-        where id = p_payroll_id;
+  select period_end
+  into v_period_end_date
+  from brs.payroll
+  where id = p_payroll_id;
 
-    create temp table milestone1 as (
-        select pps.project_id, min(process_step_complete_date) milestone_one_complete_date
-        from flow.project_process_step pps
-                 inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-                 inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-        where pps.process_step_id = 175
-        group by pps.project_id
-    );
-    create index milestone1_project_id on milestone1(project_id);
-    create index milestone1_milestone_one_complete_date on milestone1(milestone_one_complete_date);
-    create temp table milestone2 as (
-        select coalesce(pps.project_id,pd.project_id) as project_id, coalesce(min(process_step_complete_date),pd.substantial_completion_date)::date milestone_two_complete_date
-        from brs.project_details pd
-                 left join flow.project_process_step pps on pps.project_id = pd.project_id and pps.process_step_id = 3365
-                 left join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
-                 left join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id and psst.id = 2
-        group by pps.project_id,pd.project_id,pd.substantial_completion_date
 
-    );
-
-    create index milestone2_project_id on milestone2(project_id);
-    create index milestone2_milestone_two_complete_date on milestone2(milestone_two_complete_date);
-
-    RETURN QUERY
-      select *,coalesce(foo1.current_pay_commissions,0) + coalesce(foo1.current_pay_overrides,0) as current_pay
-        from (
-        SELECT foo.*,
-               (case when foo.cancelled_date is null then coalesce(current_pay.amount_to_pay,0) + coalesce(foo.commission_adjustments,0)
-                    else foo.commission_earned + coalesce(foo.commission_adjustments,0) - foo.commission_paid_to_date end)
-                                                                                      AS current_pay_commissions,
-               coalesce(foo.override_earned,0)
-                   - coalesce(foo.overrides_paid_to_date,0)                           AS current_pay_overrides,
-               case when foo.cancelled_date is not null then
-                        0::numeric ELSE
-                        coalesce(foo.total_commissions,0) end + case when foo.cancelled_date is not null THEN
-                                                                         0::numeric else coalesce(foo.total_overrides,0) end -
-               (coalesce(foo.commission_paid_to_date,0) +
-                coalesce(foo.overrides_paid_to_date,0))                            AS remaining_value,
-               case when foo.cancelled_date is not null
-                        then 0::numeric
-                    else coalesce(foo.total_commissions,0) - coalesce(foo.commission_paid_to_date,0) - coalesce(foo.commission_forfeited_paid_to_date,0)
-                   end                                                            AS remaining_value_commissions,
-               case when foo.cancelled_date is not null
-                        then 0::numeric
-                    else coalesce(foo.total_overrides,0) - coalesce(foo.overrides_paid_to_date,0)
-                   end                                                            AS remaining_value_overrides,
-               coalesce(foo.total_commissions,0) + coalesce(foo.total_overrides,0) AS project_total_value
-        FROM (
-                 SELECT p.id::bigint as project_id,
-                        c.id::bigint as customer_id,
-                        p.project_name,
-                        pd.system_size,
-                        u.id::bigint as closer_user_id,
-                        (select text_value
-                         from flow.user_custom_field_value ucfv
-                         where custom_field_group_assignment_id = 19176
-                           and ucfv.user_id = u.id ),
-                        u.first_name||' '||u.last_name                                  AS closer,
-                        (ust.user_status_type = 'Terminated')                           AS closer_is_terminated,
-                        pd.source_name::varchar as source_name,
-                        pd.cancelled_date as cancelled_date,
-                        pd.installation_agreement_signed_date as installation_agreement_signed_date,
-                        pd.final_design_signed_date as final_design_signed_date,
-                        CASE WHEN pd.final_design_signed_date IS NULL
-                                 THEN 'red' ELSE 'black' END                           AS fds_color,
-                        CASE WHEN pd.financial_agreement_signed_date IS NULL
-                                 THEN 'red' ELSE 'black' END                           AS asd_color,
-                        CASE WHEN pd.substantial_completion_date IS NULL
-                                 THEN 'red' ELSE 'black' END                           AS scd_color,
-                        CASE WHEN pd.proof_of_homeowners_insurance_required_name = 'YES'
-                            and pd.proof_of_homeowners_insurance_obtained_date is null
-                                 THEN 'red' ELSE 'black' END                           AS pohi_color,
-                        CASE WHEN pd.primary_financier_name = 'Cash' and
-                                  pd.first_cash_payment_paid_date is null
-                                 THEN 'red' ELSE 'black' END                           AS deposit_color,
-                        pd.financial_agreement_signed_date as agreement_signed_date,
-                        pd.utility_bill_verified_date as utility_bill_verified_date,
-                        pd.proof_of_homeowners_insurance_required_name::varchar as proof_of_howmeowners_insurance_required,
-                        pd.proof_of_homeowners_insurance_obtained_date as proof_of_homeowners_insurance_obtained_date,
-                        pd.primary_financier_name::varchar                                  AS financier,
-                        pd.first_cash_payment_paid_date as first_cash_payment_paid_date,
-                        pd.first_cash_payment_amount as first_cash_payment_amount,
-                        pd.total_system_price as total_system_price,
-                        case when pd.primary_financier_name = 'Cash' THEN
-                                 round(pd.first_cash_payment_amount::numeric/pd.total_system_price::numeric,2)
-                             else 0::numeric end as percent_of_cash_deposit,
-                        pd.substantial_completion_date as substantial_completion_date,
-                        (SELECT array_to_json(array_agg(row_to_json(_overrides_per_user))) AS overrides_per_user
-                         FROM ((SELECT p1.id AS project_id,
-                                       u.id,
-                                       u.first_name,
-                                       u.last_name,
-                                       coalesce(
-                                               round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end*opru.m1_allocation,2),
-                                               0)  total,
-                                       1 as milestone_id
-                                FROM flow.project p1
-                                         inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
-                                         inner join brs.project_override po on po.project_id = p1.id
-                                         inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
-                                         INNER JOIN brs.override_plan_receiving_user opru
-                                                    ON opru.override_plan_id = op.id
-                                         INNER JOIN flow.user u ON u.id = opru.user_id
-                                where p1.id = p.id)
-                               UNION
-                               (SELECT p1.id AS project_id,
-                                       u.id,
-                                       u.first_name,
-                                       u.last_name,
-                                       coalesce(
-                                               round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end *opru.m2_allocation,2),
-                                               0)  total,
-                                       2 as milestone_id
-                                FROM flow.project p1
-                                         inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
-                                         inner join brs.project_override po on po.project_id = p1.id
-                                         inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
-                                         INNER JOIN brs.override_plan_receiving_user opru
-                                                    ON opru.override_plan_id = op.id
-                                         INNER JOIN flow.user u ON u.id = opru.user_id
-                                where p1.id = p.id)) AS _overrides_per_user),
-                        (SELECT op.name AS override_plan
-                         FROM brs.override_plan op
-                                  inner join brs.project_override po on po.override_plan_id = op.id
-                         WHERE po.project_id = p.id and op.position_id = 1
-                        )                                                       AS override_plan,
-                        (SELECT ops.status_type AS override_plan_status
-                         FROM brs.override_plan op
-                                  inner join brs.project_override po on po.override_plan_id = op.id
-                                  inner join brs.override_plan_status ops on ops.id = op.status_id
-                         WHERE po.project_id = p.id and op.position_id = 1
-                        )                                                       AS override_plan_status,
-                        (SELECT op.id::bigint AS override_plan_id
-                         FROM brs.override_plan op
-                                  inner join brs.project_override po on po.override_plan_id = op.id
-                         WHERE po.project_id = p.id and op.position_id = 1
-                        )                                                       AS override_plan_id,
-                        (SELECT cp.name AS commission_plan
-                         FROM brs.commission_plan cp
-                                  inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                         WHERE pc.project_id = p.id and cp.position_id = 1
-                        )                                                       AS commission_plan,
-                        (SELECT cps.status_type AS commission_plan_status
-                         FROM brs.commission_plan cp
-                                  inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                                  inner join brs.commission_plan_status cps on cps.id = cp.status_id
-                         WHERE pc.project_id = p.id and cp.position_id = 1
-                        )                                                       AS commission_plan_status,
-                        (SELECT cp.id::bigint AS commission_plan_id
-                         FROM brs.commission_plan cp
-                                  inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                         WHERE pc.project_id = p.id and cp.position_id = 1
-                        )                                                       AS commission_plan_id,
-
-                        (SELECT coalesce(round(cp.total*case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end
-                                                   - case when cpsa.fee_type_id = 1 then coalesce(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end *cpsa.fee_amount, 0) else
-                                coalesce(cpsa.fee_amount, 0) end ,2),
-                                         0) total
-                         FROM flow.project p2
-                                  inner join brs.project_commission pc on pc.project_id = p2.id
-                                  inner join brs.commission_plan cp on pc.commission_plan_id = cp.id and cp.position_id = 1
-                                  left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.milestone_id = 2 and  cpsa.source_id = pd.source
-                         where p2.id = p.id) AS total_commissions,
-                        coalesce(
-                                (select case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * op2.total
-                                 from brs.override_plan op2
-                                          inner join brs.project_override po on op2.id = po.override_plan_id
-                                 where po.project_id = p.id and op2.position_id = 1),
-                                0)                                                          AS total_overrides,
-                        coalesce(
-                                (SELECT case when pd.cancelled_date is not null then
-                                                 0::NUMERIC
-                                             else coalesce(round(cpa.allocation*case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end - case when cpsa.milestone_id =1 then
-                                                                                                                             case when cpsa.fee_type_id = 1 then coalesce(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * cpsa.fee_amount,0)
-                                                                                                                                  else coalesce(cpsa.fee_amount,0) end
-                                                                                                                         else 0 end,2),
-                                                           0) end total
-                                 FROM flow.project p1
-                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
-                                          inner join brs.project_commission pc on pc.project_id = p1.id
-                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
-                                          inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 1
-                                          left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id  and cpsa.source_id = pd.source
-                                                and cpsa.milestone_id = 1
-                                 WHERE p1.id = p.id ),0) + coalesce(
-                                (SELECT case when pd.cancelled_date is not null THEN
-                                                 0::NUMERIC
-                                             else coalesce(round(cpa.allocation*case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end -case when cpsa.milestone_id =2 then
-                                                                                                                            case when cpsa.fee_type_id = 1 then coalesce(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * cpsa.fee_amount,0)
-                                                                                                                                 else coalesce(cpsa.fee_amount,0) end
-                                                                                                                        else 0 end,2),
-                                                           0) end total
-                                 FROM flow.project p1
-                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
-                                          inner join brs.project_commission pc on pc.project_id = p1.id
-                                          inner join brs.commission_plan cp on cp.id = pc.commission_plan_id and cp.position_id = 1
-                                          inner join brs.commission_plan_allocation cpa on cpa.commission_plan_id = cp.id and cpa.milestone_id = 2
-                                          left join brs.commission_plan_source_allocation cpsa on cpsa.commission_plan_id = cp.id and cpa.milestone_id = 2   and cpsa.source_id = pd.source
-                                 WHERE p1.id = p.id),0) AS commission_earned,
-                        coalesce(
-                                (SELECT case when pd.cancelled_date is not null then
-                                                 0::numeric
-                                             else coalesce(round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end *(select sum(m1_allocation)
-                                                                                                     from brs.override_plan_receiving_user opru
-                                                                                                     where opru.override_plan_id = op.id),2),0) end total
-                                 FROM flow.project p1
-                                          inner join milestone1 mop2 on mop2.project_id = p1.id and mop2.milestone_one_complete_date::date <= v_period_end_date
-                                          inner join brs.project_override po on po.project_id = p1.id
-                                          inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
-                                 WHERE p1.id = p.id),0) + coalesce(
-                                (SELECT case when pd.cancelled_date is not null then
-                                                 0::NUMERIC
-                                             else coalesce(round(case when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and pd.interest_rate = 2.99  then 0 else pd.system_size::numeric end * (select sum(m2_allocation)
-                                                                                                       from brs.override_plan_receiving_user opru
-                                                                                                       where opru.override_plan_id = op.id),2),0) end total
-                                 FROM flow.project p1
-                                          inner join milestone2 mtp2 on mtp2.project_id = p1.id and mtp2.milestone_two_complete_date::date <= v_period_end_date
-                                          inner join brs.project_override po on po.project_id = p1.id
-                                          inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
-                                 WHERE p1.id = p.id),0) AS override_earned,
-                        coalesce(brs.get_ledger_adjustment_current_totals( p_payroll_id,array[p.id],1),0) AS commission_adjustments,
-                        --TODO implement this at a later date.
-                        0::numeric AS override_adjustments,
-                        (SELECT coalesce(sum(amount), 0)
-                         FROM brs.project_commission_ledger dcl
-                         WHERE dcl.project_id = p.id::bigint
-                           AND dcl.ledger_type_id = 1
-                           and dcl.position_id = 1)
-                            AS commission_paid_to_date,
-                        coalesce((SELECT coalesce(sum(amount), 0)
-                         FROM brs.project_commission_ledger dcl
-                         WHERE dcl.project_id = p.id::bigint
-                           AND dcl.ledger_type_id = 7
-                           and dcl.position_id = 1),0)
-                          AS commission_forfeited_paid_to_date,
-                        coalesce(pd.commission_forfeited_by_closer,0) as commission_forfeited_by_closer,
-                        (
-                            SELECT coalesce(sum(dcl.paid_to_date), 0)
-                            FROM brs.project_commission_ledger dcl
-                            WHERE dcl.project_id = p.id  and
-                                    dcl.ledger_type_id = 3
-                              and dcl.position_id = 1
-
-                        ) AS overrides_paid_to_date
-
-                 FROM flow.project p
-                  --        inner join milestone1 mop on mop.project_id = p.id
-                          inner join brs.project_details pd on pd.project_id = p.id
-                          inner join flow.contact c on c.id = p.contact_id
-                          INNER JOIN flow.user u ON u.id = pd.closer_user_id
-                          inner join flow.company_user_status cus  on cus.user_id = u.id
-                          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
-                          left join brs.exclude_commission ec on ec.project_id = p.id
-                 WHERE  ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null)) and
-                        (ec.project_id is null) and
-                     CASE WHEN p_project_ids IS NOT NULL
-                              THEN p.id = ANY(p_project_ids) ELSE
-                         p.id in (select m1.project_id from milestone1 m1) END
-                   AND CASE WHEN p_contact_id IS NOT NULL
-                                THEN c.id = p_contact_id ELSE 1 = 1 END
-                   AND CASE WHEN p_sales_rep IS NOT NULL
-                                THEN p_sales_rep = u.id ELSE 1 = 1 END
-                   AND CASE WHEN p_cancel_start_date IS NOT NULL
-                                THEN pd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
-                            ELSE 1 = 1 END
-             ) AS foo
-          join lateral brs.get_current_pay(coalesce(foo.total_commissions,0),
-          coalesce(foo.commission_earned,0),
-          coalesce(foo.commission_paid_to_date,0),
-          coalesce(foo.commission_forfeited_by_closer,0),
-          coalesce(foo.commission_forfeited_paid_to_date,0)) as current_pay on true
-        ) as foo1
-      WHERE NOT (coalesce(foo1.current_pay_commissions,0) + coalesce(foo1.current_pay_overrides,0) = any(v_amounts))
-        AND CASE WHEN p_override_plan_id IS NOT NULL
-                   THEN foo1.override_plan_id = p_override_plan_id ELSE 1 = 1 END
-        AND CASE WHEN p_commission_plan_id IS NOT NULL
-                   THEN foo1.commission_plan_id = p_commission_plan_id
-                 ELSE 1 = 1 END
-      order by 3;
-    drop table milestone2;
-    drop table milestone1;
+  RETURN QUERY
+    select *, coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0) as current_pay
+    from (SELECT p.id::bigint                                                        as project_id,
+                 p.contact_id::bigint                                                as customer_id,
+                 p.project_name,
+                 fd.system_size,
+                 u.id::bigint                                                        as closer_user_id,
+                 (select text_value
+                  from flow.user_custom_field_value ucfv
+                  where custom_field_group_assignment_id = 19176
+                    and ucfv.user_id = u.id),
+                 pd.closer_name                                                      AS closer,
+                 (ust.user_status_type = 'Terminated')                               AS closer_is_terminated,
+                 fd.source_name::varchar                                             as source_name,
+                 fd.cancelled_date                                                   as cancelled_date,
+                 pd.installation_agreement_signed_date                               as installation_agreement_signed_date,
+                 pd.final_design_signed_date                                         as final_design_signed_date,
+                 CASE
+                   WHEN pd.final_design_signed_date IS NULL
+                     THEN 'red'
+                   ELSE 'black' END                                                  AS fds_color,
+                 CASE
+                   WHEN pd.financial_agreement_signed_date IS NULL
+                     THEN 'red'
+                   ELSE 'black' END                                                  AS asd_color,
+                 CASE
+                   WHEN fd.substantial_completion_date IS NULL
+                     THEN 'red'
+                   ELSE 'black' END                                                  AS scd_color,
+                 CASE
+                   WHEN pd.proof_of_homeowners_insurance_required_name = 'YES'
+                     and pd.proof_of_homeowners_insurance_obtained_date is null
+                     THEN 'red'
+                   ELSE 'black' END                                                  AS pohi_color,
+                 CASE
+                   WHEN fd.primary_financier_name = 'Cash' and
+                        pd.first_cash_payment_paid_date is null
+                     THEN 'red'
+                   ELSE 'black' END                                                  AS deposit_color,
+                 pd.financial_agreement_signed_date                                  as agreement_signed_date,
+                 pd.utility_bill_verified_date                                       as utility_bill_verified_date,
+                 pd.proof_of_homeowners_insurance_required_name::varchar             as proof_of_howmeowners_insurance_required,
+                 pd.proof_of_homeowners_insurance_obtained_date                      as proof_of_homeowners_insurance_obtained_date,
+                 pd.primary_financier_name::varchar                                  AS financier,
+                 pd.first_cash_payment_paid_date                                     as first_cash_payment_paid_date,
+                 pd.first_cash_payment_amount                                        as first_cash_payment_amount,
+                 pd.total_system_price                                               as total_system_price,
+                 case
+                   when fd.primary_financier_name = 'Cash' THEN
+                     round(pd.first_cash_payment_amount::numeric / pd.total_system_price::numeric, 2)
+                   else 0::numeric end                                               as percent_of_cash_deposit,
+                 fd.substantial_completion_date                                      as substantial_completion_date,
+                 case when p_query_overrides is true then
+                 (SELECT array_to_json(array_agg(row_to_json(_overrides_per_user))) AS overrides_per_user
+                  FROM ((SELECT p1.id AS project_id,
+                                u.id,
+                                u.first_name,
+                                u.last_name,
+                                coalesce(
+                                  round(case
+                                          when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
+                                               pd.interest_rate = 2.99 then 0
+                                          else pd.system_size::numeric end * opru.m1_allocation, 2),
+                                  0)     total,
+                                1     as milestone_id
+                         FROM flow.project p1
+                                inner join brs.project_override po on po.project_id = p1.id
+                                inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
+                                INNER JOIN brs.override_plan_receiving_user opru
+                                           ON opru.override_plan_id = op.id
+                                INNER JOIN flow.user u ON u.id = opru.user_id
+                         where p1.id = p.id
+                           and exists (select ppscfv.id
+                                       from flow.project_process_step pps
+                                              inner join flow.project_process_step_custom_field_value ppscfv
+                                                         on ppscfv.project_process_step_id = pps.id and
+                                                            ppscfv.custom_field_group_assignment_id = 1251
+                                       where pps.project_id = p1.id
+                                         and pps.process_step_id = 175
+                                         and ppscfv.date_value is not null))
+                        UNION
+                        (SELECT p1.id AS project_id,
+                                u.id,
+                                u.first_name,
+                                u.last_name,
+                                coalesce(
+                                  round(case
+                                          when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
+                                               pd.interest_rate = 2.99 then 0
+                                          else pd.system_size::numeric end * opru.m2_allocation, 2),
+                                  0)     total,
+                                2     as milestone_id
+                         FROM flow.project p1
+                                inner join brs.project_override po on po.project_id = p1.id
+                                inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
+                                INNER JOIN brs.override_plan_receiving_user opru
+                                           ON opru.override_plan_id = op.id
+                                INNER JOIN flow.user u ON u.id = opru.user_id
+                         where p1.id = p.id
+                           and exists (select ppscfv.id
+                                       from flow.project_process_step pps
+                                              inner join flow.project_process_step_custom_field_value ppscfv
+                                                         on ppscfv.project_process_step_id = pps.id and
+                                                            ppscfv.custom_field_group_assignment_id = 21009
+                                       where pps.project_id = p1.id
+                                         and pps.process_step_id = 3365
+                                         and ppscfv.date_value is not null))) AS _overrides_per_user) else null::json end,
+                 fd.override_plan                                                    AS override_plan,
+                 fd.override_plan_status                                             AS override_plan_status,
+                 fd.override_plan_id                                                 AS override_plan_id,
+                 fd.commission_plan                                                  AS commission_plan,
+                 fd.commission_plan_status                                           AS commission_plan_status,
+                 fd.commission_plan_id                                               AS commission_plan_id,
+                 coalesce(fd.total_commissions, 0)                                   AS total_commissions,
+                 coalesce(fd.total_overrides, 0)                                     AS total_overrides,
+                 coalesce(fd.commissions_earned_m1, 0) + case
+                                                           when fd.substantial_completion_date <= v_period_end_date then
+                                                             coalesce(fd.commissions_earned_m2, 0)
+                                                           else
+                                                             0::numeric end          AS commission_earned,
+                 coalesce(fd.overrides_earned_m1, 0) + case
+                                                         when fd.substantial_completion_date <= v_period_end_date then
+                                                           coalesce(fd.overrides_earned_m2, 0)
+                                                         else 0::numeric end         AS override_earned,
+                 coalesce(la.*,0)                                                         AS commission_adjustments,
+                 0::numeric                                                          AS override_adjustments,
+                 coalesce(fd.total_commissions_paid_to_date, 0)                      AS commission_paid_to_date,
+                 coalesce(fd.total_commissions_forfeited_paid_to_date, 0)            AS commission_forfeited_paid_to_date,
+                 coalesce(pd.commission_forfeited_by_closer, 0)                      as commission_forfeited_by_closer,
+                 coalesce(fd.total_overrides_paid_to_date, 0)                        AS overrides_paid_to_date,
+                 case
+                   when fd.cancelled_date is not null then
+                         coalesce(fd.commissions_earned_m1, 0) + case
+                                                                   when fd.substantial_completion_date <= v_period_end_date
+                                                                     then
+                                                                     coalesce(fd.commissions_earned_m2, 0)
+                                                                   else 0::numeric end
+                         + coalesce(la.*,0) - coalesce(fd.total_commissions_paid_to_date, 0)
+                   else
+                       coalesce(current_pay.amount_to_pay::numeric, 0) +
+                       coalesce(la.*,0) end                                               AS current_pay_commissions,
+                 coalesce(fd.overrides_earned_m1, 0) + case
+                                                         when fd.substantial_completion_date <= v_period_end_date then
+                                                           coalesce(fd.overrides_earned_m2, 0)
+                                                         else 0::numeric end
+                   -
+                 coalesce(fd.total_overrides_paid_to_date, 0)                        AS current_pay_overrides,
+                 case
+                   when fd.cancelled_date is not null then
+                     0::numeric
+                   ELSE
+                     coalesce(fd.total_commissions, 0) end + case
+                                                               when fd.cancelled_date is not null THEN
+                                                                 0::numeric
+                                                               else coalesce(fd.total_overrides, 0) end -
+                 (coalesce(fd.total_commissions_paid_to_date, 0) +
+                  coalesce(fd.total_overrides_paid_to_date, 0))                      AS remaining_value,
+                 case
+                   when fd.cancelled_date is not null
+                     then 0::numeric
+                   else coalesce(fd.total_commissions, 0) - coalesce(fd.total_commissions_paid_to_date, 0) -
+                        coalesce(fd.total_commissions_forfeited_paid_to_date, 0)
+                   end                                                               AS remaining_value_commissions,
+                 case
+                   when fd.cancelled_date is not null
+                     then 0::numeric
+                   else coalesce(fd.total_overrides, 0) - coalesce(fd.total_overrides_paid_to_date, 0)
+                   end                                                               AS remaining_value_overrides,
+                 coalesce(fd.total_commissions, 0) + coalesce(fd.total_overrides, 0) AS project_total_value,
+                 current_pay.amount_to_pay,
+                 current_pay.forfeited_amount
+          FROM flow.project p
+                 inner join brs.financial_details fd on fd.project_id = p.id
+                 inner join brs.project_details pd on pd.project_id = p.id
+                 INNER JOIN flow.user u ON u.id = pd.closer_user_id
+                 inner join flow.company_user_status cus on cus.user_id = u.id
+                 inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
+                 left join brs.exclude_commission ec on ec.project_id = p.id
+                 left join lateral brs.get_ledger_adjustment_current_totals(p_payroll_id, array [p.id], 1) la on true
+                 join lateral brs.get_current_pay(coalesce(fd.total_commissions, 0),
+                                                  coalesce(fd.commissions_earned_m1, 0) + case
+                                                                                            when fd.substantial_completion_date <= v_period_end_date
+                                                                                              then
+                                                                                              coalesce(fd.commissions_earned_m2, 0)
+                                                                                            else 0::numeric end,
+                                                  coalesce(fd.total_commissions_paid_to_date, 0),
+                                                  coalesce(pd.commission_forfeited_by_closer, 0),
+                                                  coalesce(fd.total_commissions_forfeited_paid_to_date, 0)) as current_pay
+                      on true
+          WHERE ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
+            and (ec.project_id is null)
+            and (fd.final_design_complete_date <= v_period_end_date or
+                 fd.substantial_completion_date <= v_period_end_date)
+            and CASE
+                  WHEN p_override_plan_id IS NOT NULL
+                    THEN fd.override_plan_id = p_override_plan_id
+                  ELSE 1 = 1 END
+            AND CASE
+                  WHEN p_commission_plan_id IS NOT NULL
+                    THEN fd.commission_plan_id = p_commission_plan_id
+                  ELSE 1 = 1 END
+            and CASE
+                  WHEN p_project_ids IS NOT NULL
+                    THEN p.id = ANY (p_project_ids)
+                  ELSE
+                    pd.final_design_complete_date is not null END
+            AND CASE
+                  WHEN p_contact_id IS NOT NULL
+                    THEN p.contact_id = p_contact_id
+                  ELSE 1 = 1 END
+            AND CASE
+                  WHEN p_sales_rep IS NOT NULL
+                    THEN p_sales_rep = u.id
+                  ELSE 1 = 1 END
+            AND CASE
+                  WHEN p_cancel_start_date IS NOT NULL
+                    THEN fd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
+                  ELSE 1 = 1 END
+          order by 3) as foo1
+    where (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not (coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0)) = any (v_amounts);
 END
 $$;

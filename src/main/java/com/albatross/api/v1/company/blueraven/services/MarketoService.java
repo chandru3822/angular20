@@ -210,7 +210,6 @@ public class MarketoService {
         Map<String, Object> lead = om.convertValue(project, HashMap.class);
         lead.remove("companyProjectStatusTypeId");
         lead.remove("projectStatusType");
-        lead.remove("doNotSolicitReview");
         return lead;
     }
 
@@ -240,19 +239,17 @@ public class MarketoService {
         List<Map<String, Object>> leads = new ArrayList<>();
 
         projects.forEach(p -> {
-            if (!p.getDoNotSolicitReview()) {
-                Map<String, Object> lead = projectToLead(p);
+          Map<String, Object> lead = projectToLead(p);
 
-                lead.put("projectStatus", p.getProjectStatusType());
+          lead.put("projectStatus", p.getProjectStatusType());
 
-                if (p.getCompanyProjectStatusTypeId() == 64) {
-                    lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
-                } else if (p.getCompanyProjectStatusTypeId() == 66) {
-                    lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
-                }
+          if (p.getCompanyProjectStatusTypeId() == 64) {
+              lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
+          } else if (p.getCompanyProjectStatusTypeId() == 66) {
+              lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+          }
 
-                leads.add(lead);
-            }
+          leads.add(lead);
         });
 
         List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);
@@ -288,11 +285,9 @@ public class MarketoService {
         List<Map<String, Object>> reactivatedLeads = new ArrayList<>();
 
         reactivatedProjects.forEach(p -> {
-            if (!p.getDoNotSolicitReview()) {
-                Map<String, Object> lead = projectToLead(p);
-                lead.put("projectStatus", p.getProjectStatusType());
-                reactivatedLeads.add(lead);
-            }
+          Map<String, Object> lead = projectToLead(p);
+          lead.put("projectStatus", p.getProjectStatusType());
+          reactivatedLeads.add(lead);
         });
 
         List<List<Map<String, Object>>> sizedReactivatedLeads = Lists.partition(reactivatedLeads, 300);

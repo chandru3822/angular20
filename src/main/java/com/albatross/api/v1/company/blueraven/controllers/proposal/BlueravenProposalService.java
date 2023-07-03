@@ -5,8 +5,8 @@ import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
@@ -203,7 +203,9 @@ public class BlueravenProposalService {
     final Proposal unlockedProposal = getUnlockedProposal(proposalId);
 
     Optional<CustomFieldValue> discountCfv = cfvs.stream()
-      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(DISCOUNT_AMOUNT_CFGA_ID)).findFirst();
+      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(DISCOUNT_AMOUNT_CFGA_ID))
+      .filter(cfv -> cfv.getNumericValue() != null)
+      .findFirst();
 
     discountCfv.ifPresent(customFieldValue -> validateProposalDiscount(customFieldValue.getNumericValue(), unlockedProposal));
 
@@ -221,7 +223,10 @@ public class BlueravenProposalService {
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
     //we divide the value in half because the user is only responsible for half, BRS will cover the other part
-    sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
+    int count = sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
+    if (count == 0) {
+      log.warn("Unable to update commission_forfeited_by_closer amount for projectId={}", projectId);
+    }
   }
 
   public Optional<Proposal> addProposal(Proposal proposal, @NonNull UserAccountDetails currentUser) {
@@ -311,7 +316,8 @@ public class BlueravenProposalService {
     Proposal unlockedProposal = getUnlockedProposal(proposalId);
 
     //check to see if the proposal has a discount amount added
-    Optional<CustomFieldValue> discountCfv = getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID);
+    Optional<CustomFieldValue> discountCfv = getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)
+      .filter(cfv -> cfv.getNumericValue() != null);
 
     if (discountCfv.isPresent()) {
       validateProposalDiscount(discountCfv.get().getNumericValue(), unlockedProposal);
@@ -329,7 +335,7 @@ public class BlueravenProposalService {
       .orElseThrow(() -> new InvalidStateApiException("System size is required for discount amount"));
 
     BigDecimal maxProposalDiscountAmount = proposal.getMaxDiscountAmount();
-    if (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.compareTo(maxProposalDiscountAmount) > 0) {
+    if (amount != null && (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.compareTo(maxProposalDiscountAmount) > 0)) {
       String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
       String errorMessage = "Proposal discount must be greater than $0 and less than max of %s".formatted(currencyFormat);
 

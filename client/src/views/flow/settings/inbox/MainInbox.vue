@@ -14,7 +14,7 @@
                                @joinConversation="joinConversation" />
       <v-toolbar prominent elevation="4" color="grey lighten-4" class="pb-4 sticky-toolbar">
         <v-toolbar-items class="px-2 pt-0 d-flex flex-column col-12">
-          <v-tabs class="inbox-tabs pa-0" background-color="var(--v-secondary-base)">
+          <v-tabs class="inbox-tabs pa-0" background-color="grey lighten-4">
             <v-tab :class="inboxNotificationCount > 0 ? 'inbox-tab-with-badge' : ''" text @click="showInbox = true; reloadConversations()">
               New
               <v-badge
@@ -62,7 +62,7 @@
                 <v-icon>filter_alt</v-icon>
               </template>
               <template v-slot:selection="{ item, index }">
-                <span class="d-flex justify-center" style="width: 100%;">
+                <span class="d-flex" style="width: 100%;">
                   {{ item }}
                 </span>
               </template>
@@ -210,11 +210,11 @@
                   <v-chip class="customer-chip ml-1" small  v-if="item.projectId">
                     <span >Customer</span>
                   </v-chip>
-                  <v-chip class="internal-chip ml-1" small v-else>
+                  <v-chip class="internal-chip" small v-else>
                     <span >Internal</span>
                   </v-chip>
                 </div>
-                <div v-if="item.messageHistory.length > 0" class="text-ellipses">{{ item.messageHistory[0].message }}
+                <div v-if="item.messageHistory.length > 0" class="text-ellipses mt-1">{{ item.messageHistory[0].message }}
                 </div>
               </v-col>
             </v-row>
@@ -282,7 +282,7 @@ export default {
       searchQuery: '',
       constants,
       userId: this.$store.state.user.details.id,
-      sortOldToNew: true,
+      sortOldToNew: false,
       ownerFilterOptions: [],
       selectedOwnerFilters: [],
       teamFilterOptions: [],
@@ -309,7 +309,8 @@ export default {
       userIdsInbox: [],
       userIdsSent: [],
       messageTypeFilter: 'All',
-      messageTypes: ['All', 'Internal', 'Customer']
+      messageTypes: ['All', 'Internal', 'Customer'],
+      isSmsOwnershipEventsRunning: false
     }
   },
   computed: {
@@ -717,7 +718,7 @@ export default {
                 this.teamFilterOptions.push(team)
               }
 
-              if (!this.selectedTeamFilters.includes(team.id)) {
+              if (this.selectedTeamFilters && !this.selectedTeamFilters.includes(team.id)) {
                 this.selectedTeamFilters.push(team.id)
               }
 
@@ -759,7 +760,7 @@ export default {
           return 0
         })
 
-        if (!this.selectedOwnerFilters.includes(-1) && this.hasUnassignedNotifications) {
+        if (this.selectedOwnerFilters && !this.selectedOwnerFilters.includes(-1) && this.hasUnassignedNotifications) {
           this.selectedOwnerFilters.push(-1)
         }
         handleHidingGlobalLoader(this, status)
@@ -824,10 +825,26 @@ export default {
     }, 500)
   },
   watch: {
-    smsOwnershipEvents: debounce(function() {
-      this.fetchTeamsForUser()
-      this.reloadConversations()
-    }, 500),
+    smsOwnershipEvents: debounce(async function() {
+      if (this.isSmsOwnershipEventsRunning) {
+        // A previous execution is ongoing, ignore the current one
+        return;
+      }
+
+      this.isSmsOwnershipEventsRunning = true;
+
+      try {
+        await this.fetchTeamsForUser();
+        await this.reloadConversations();
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.snackbar = getSnackbar('ERROR', 'Error reloading conversations')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.isSmsOwnershipEventsRunning = false;
+      }
+    }, 800),
     options: {
       handler() {
         if (!this.initialLoad) {
@@ -989,10 +1006,12 @@ conversation-search-no-teams {
 
 .internal-chip {
   background-color: #C8E6C9 !important;
+  height: 22px;
 }
 
 .customer-chip {
   background-color: #FECDD2 !important;
+  height: 22px;
 }
 
 .new-message-button {

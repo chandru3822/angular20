@@ -117,4 +117,9 @@ insert into flow.project_prod_stats_note(project_id, project_production_stats_ty
     where id = :noteId
     """;
 
+  public final static String insertNoteTimer = """
+    insert into flow.interaction_timer(user_id, project_id, start_timestamp, end_timestamp, timer_type, start_event, end_event)
+    values (:userId, :projectId, :startTimestamp, :endTimestamp, :timerType, :startEvent, :endEvent)
+    """;
+
 }

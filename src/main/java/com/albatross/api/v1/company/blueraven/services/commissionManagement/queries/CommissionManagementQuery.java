@@ -828,8 +828,7 @@ FROM (SELECT cp.id,
 
   //language=PostgreSQL
   public final static String assignProject = """
-    insert into brs.project_commission(project_id, commission_plan_id, date_created)
-    values (:projectId, :planId, now())
+    select brs.insert_commissions_on_project(:projectId::bigint, :planId::bigint, false)
     """;
 
   //language=PostgreSQL
@@ -837,6 +836,16 @@ FROM (SELECT cp.id,
     select id
     from brs.project_commission
     where project_id = :projectId
+    """;
+
+  //language=PostgreSQL
+  public final static String checkProjectOwnerOnPlan = """
+      select id
+      from brs.commission_plan_user opau
+      where opau.commission_plan_id = :planId
+      and opau.user_id = (
+          select closer_user_id from brs.project_details pd where pd.project_id = :projectId
+          )
     """;
 
   //language=PostgreSQL

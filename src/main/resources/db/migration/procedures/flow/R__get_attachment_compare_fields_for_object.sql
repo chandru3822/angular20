@@ -201,6 +201,8 @@ BEGIN
                                             pcfv.rich_text_value,
                                             cdt.has_list_values,
                                             cf.custom_field_sql_key,
+                                            cf.custom_field_sql,
+                                            cf.custom_field_sql_smartlist,
                                             cf.company_system_list_id,
                                             coalesce((SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                       FROM (select lov.id,
@@ -333,6 +335,8 @@ BEGIN
                                             ppscfv.rich_text_value,
                                             cdt.has_list_values,
                                             cf.custom_field_sql_key,
+                                            cf.custom_field_sql,
+                                            cf.custom_field_sql_smartlist,
                                             cf.company_system_list_id,
                                             coalesce((SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                       FROM (select lov.id,

@@ -313,6 +313,11 @@ const router = new Router({
               meta: {title: 'Albatross - Closer Dashboard'},
               component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserIncentive.vue')
             }, {
+              path: 'leaderboard',
+              name: 'closerLeaderboard',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserLeaderboard.vue')
+            }, {
               path: 'residuals',
               name: 'closerResiduals',
               meta: {title: 'Albatross - Closer Dashboard'},

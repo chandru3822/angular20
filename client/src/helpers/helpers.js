@@ -285,8 +285,6 @@ export function responseInterceptor({ response }) {
       return Promise.reject({ data: response?.data, status })
     }
   }
-
-  return Promise.reject({ data: response?.data, status: response?.status })
 }
 
 export function logError(e) {

@@ -12,7 +12,7 @@ DECLARE
     v_total_commissions NUMERIC(10, 2);
     v_total_overrides   NUMERIC(10, 2);
     v_position_id       bigint;
-    v_forfeited_amount numeric;
+v_forfeited_amount numeric;
 
 BEGIN
     insert into flow.company_function_log(function_name, parameters, run_by_id)
@@ -71,8 +71,14 @@ BEGIN
                                                            created_by,
                                                            created,
                                                            position_id)
-                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7, v_forfeited_amount, p_updated_by_id, now(), 1);
+                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7,v_forfeited_amount ,
+                        p_updated_by_id, now(),
+                          1);
+                  update brs.financial_details fd
+                  set total_commissions_forfeited_paid_to_date = coalesce(total_commissions_forfeited_paid_to_date,0) + v_forfeited_amount
+                  where project_id = d.project_id;
               end if;
+
 --                 v_total_commissions := (coalesce(d.commissions_earned, 0) +
 --                                         coalesce(d.commission_adjustment, 0) - coalesce(d.commission_paid_to_date, 0));
 
@@ -93,6 +99,14 @@ BEGIN
                             1);
                 END IF;
 
+              update brs.financial_details fd
+              set total_commissions_paid_to_date = ( SELECT coalesce(sum(amount), 0)
+                                                               FROM brs.project_commission_ledger pcl
+                                                               WHERE pcl.project_id = d.project_id
+                                                                 AND pcl.ledger_type_id = 1
+                                                                 and pcl.position_id = 1)
+              where project_id = d.project_id;
+
                 IF d.commission_adjustment IS NOT NULL
                 THEN
                     INSERT INTO brs.project_commission_ledger (payroll_id,
@@ -107,6 +121,13 @@ BEGIN
                             now(), 1);
                 END IF;
 
+              update brs.financial_details fd
+              set total_commissions_adjustments_paid_to_date = ( SELECT coalesce(sum(amount), 0)
+                                                               FROM brs.project_commission_ledger pcl
+                                                               WHERE pcl.project_id = d.project_id
+                                                                 AND pcl.ledger_type_id = 2
+                                                                 and pcl.position_id = 1)
+              where project_id = d.project_id;
 
                 IF d.override_adjustment IS NOT NULL
                 THEN
@@ -156,7 +177,7 @@ BEGIN
                            1
                     from t;
 
-                else
+                elsif d.current_pay_overrides > 0 then
 
                     WITH overrides AS (SELECT docs.user_id,
                                               dcs.project_id,
@@ -196,7 +217,13 @@ BEGIN
                     FROM overrides a;
 
                 end if;
-
+              update brs.financial_details fd
+              set total_overrides_paid_to_date = ( SELECT coalesce(sum(paid_to_date), 0)
+                                                                 FROM brs.project_commission_ledger pcl
+                                                                 WHERE pcl.project_id = d.project_id
+                                                                   AND pcl.ledger_type_id = 3
+                                                                   and pcl.position_id = 1)
+              where project_id = d.project_id;
 
             END LOOP;
 

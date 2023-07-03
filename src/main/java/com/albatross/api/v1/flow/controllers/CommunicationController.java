@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -37,11 +38,8 @@ import static java.util.function.Predicate.not;
 public class CommunicationController {
 
   private final CommunicationService communicationService;
-  private final SMSService smsService;
   private final ContactService contactService;
   private final ProjectService projectService;
-  private final ProjectProcessStepService projectProcessStepService;
-  private final ProjectProcessStepEventService projectProcessStepEventService;
   private final UserService userService;
   private final SecurityService securityService;
 
@@ -95,13 +93,21 @@ public class CommunicationController {
   }
 
   @PostMapping(value = "/sendTexts")
-  public Map<String, String> sendTexts(@RequestBody SendTextsRequest sendTexts) {
+  public Map<String, String> sendTexts(@RequestBody SendTextsRequest sendTexts)  {
     User currentUser = securityService.getCurrentUser();
 
     String groupId = UUID.randomUUID().toString();
     final List<User> users = userService.findByIds(sendTexts.getUserIDs());
-    communicationService.sendMassText(groupId, sendTexts, users, currentUser);
-    return Map.of("messageGroup", groupId);
+    Future<Void> future = communicationService.sendMassText(groupId, sendTexts, users, currentUser);
+    try {
+      future.get();
+      return Map.of("messageGroup", groupId);
+    } catch (Exception e) {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        e.getMessage(),
+        new Exception());
+    }
   }
 
   @ResponseStatus(HttpStatus.OK)
@@ -142,6 +148,7 @@ public class CommunicationController {
         from,
         "Blue Raven Sales Operation",
         currentUser.trueUserId(),
+        null,
         null);
 
     final Predicate<User> userStatusTypePredicate = u -> u.getUserStatusType() == null;
@@ -194,7 +201,8 @@ public class CommunicationController {
           getUnsubscribeURLForEmails(request),
           "SalesOps@blueravensolar.com",
           "Blue Raven Sales Operation",
-          user.trueUserId());
+          user.trueUserId(),
+        null);
 
     } finally {
       for (File temporaryFile : temporaryFiles.values()) {

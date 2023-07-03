@@ -515,5 +515,5 @@ public class ProposalQuery {
       and error_msg is null
     """;
   public static String updateProposalDiscountAmount = """
-    update brs.project_details set commission_forfeited_by_closer = :amount where id = :projectId""";
+    update brs.project_details set commission_forfeited_by_closer = :amount where project_id = :projectId""";
 }

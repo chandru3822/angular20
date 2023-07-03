@@ -12,8 +12,7 @@ public class OverrideManagementQuery {
 
   //language=PostgreSQL
   public final static String assignProject = """
-    insert into brs.project_override(project_id, override_plan_id, date_created)
-    values (:projectId, :planId, now())
+      select brs.insert_commissions_on_project(:projectId::bigint, :planId::bigint, true)
     """;
 
   //language=PostgreSQL
@@ -21,6 +20,15 @@ public class OverrideManagementQuery {
     select id
     from brs.project_override
     where project_id = :projectId
+    """;
+
+  public final static String checkProjectOwnerOnPlan = """
+      select id
+      from brs.override_plan_assigned_user opau
+      where opau.override_plan_id = :planId
+      and opau.user_id = (
+          select closer_user_id from brs.project_details pd where pd.project_id = :projectId
+          )
     """;
 
   //language=PostgreSQL

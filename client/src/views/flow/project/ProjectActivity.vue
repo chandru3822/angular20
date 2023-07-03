@@ -12,12 +12,14 @@
 
           <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
             <template v-slot:activator="{on, attrs}">
-
               <a v-if="!isSidebarCollapsed && messageProperties.projectName"
                  v-bind="attrs" v-on="on"
                  class="d-inline-block clickable conversation-name-link"
                 :href="`/project/${projectId}/details`">
                 {{ messageProperties.projectName }}
+                <v-chip class="customer-chip" style="margin-left: 4px;" small>
+                  <span >Customer</span>
+                </v-chip>
               </a>
 
               <a v-else
@@ -25,6 +27,9 @@
                  class="d-inline-block clickable conversation-name-link"
                  :href="`/user/${userId}/details`">
                 {{ messageProperties.fullName }}
+                <v-chip class="internal-chip" style="margin-left: 4px;" small>
+                  <span >Internal</span>
+                </v-chip>
               </a>
             </template>
             <span v-if="messageProperties.projectName" class="albatross-body-3">Go to project</span>
@@ -32,10 +37,17 @@
           </v-tooltip>
           <div v-else-if="!isSidebarCollapsed" >
             {{sidebarTitle}}
+            <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+              <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
+                <span >Customer</span>
+              </v-chip>
+              <v-chip v-else class="internal-chip" style="margin-left: 4px;" small>
+                <span >Internal</span>
+              </v-chip>
+            </div>
           </div>
           <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
           <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
-
             <v-tooltip bottom small>
               <template v-slot:activator="{on, attrs}">
                 <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
@@ -140,8 +152,8 @@
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
         >
           <v-col cols="4" class="px-0">
-            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
-                   :class="{'section-selected': selectedOption===0}">
+            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 0"
+                   :class="{'section-selected': selectedOption===0}" >
               <v-icon>mdi-forum-outline</v-icon>
             </v-btn>
           </v-col>
@@ -152,7 +164,7 @@
             </v-btn>
           </v-col>
           <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
+            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 2"
                    :class="{'section-selected': selectedOption===2}">
               <v-icon>mdi-folder-outline</v-icon>
             </v-btn>
@@ -309,6 +321,7 @@ import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHist
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
+import {endTimer} from "@/services/analyticsService";
 
 export default {
   name: 'ProjectActivity',
@@ -351,7 +364,7 @@ export default {
     },
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
-    }, 500)
+    }, 800)
   },
   data() {
     return {
@@ -581,6 +594,9 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching history')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
+    },
+    endNotesTimer(endEvent){
+      endTimer(endEvent);
     }
   }
 }
@@ -693,5 +709,15 @@ export default {
 
 #conversation-activity-container .fix-toggle-opacity:before {
   background-color: unset !important;
+}
+
+.internal-chip {
+  background-color: #C8E6C9 !important;
+  height: 22px;
+}
+
+.customer-chip {
+  background-color: #FECDD2 !important;
+  height: 22px;
 }
 </style>

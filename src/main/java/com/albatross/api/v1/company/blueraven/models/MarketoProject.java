@@ -70,7 +70,11 @@ public class MarketoProject {
                  finalDesignSignedDate,
                  finalDesignCompleteDate,
                  ahjFinalInspectionVerified,
-                 ptoVerified;
+                 ptoVerified,
+                 readyToSendInstallationReminderEmail,
+                 readyToSendFirstPermitUpdateEmail,
+                 readyToSendSecondPermitUpdateEmail,
+                 readyToSendThirdPermitUpdateEmail;
 
   private Boolean doNotSolicitReview;
 }

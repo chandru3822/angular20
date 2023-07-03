@@ -147,7 +147,7 @@
             v-model="selectedEvent.companyEventStatusTypeId"
             :items="companyEventStatuses"
             label="Event Status"
-            :disabled="!userCanManage || isEventReadonly"
+            :disabled="!userIsAdmin || isEventReadonly"
             item-text="eventStatusType"
             item-value="id"
             @input="[statusChanged = true, defaultValuesChanged = true]"

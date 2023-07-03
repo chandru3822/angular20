@@ -15,6 +15,7 @@ public class PositionQuery {
            p.use_slot_schedule,
            p.contact_owner,
            p.available_to_children,
+           p.sms_enabled,
            ot.org_level_id,
            ol.level
         from flow.position p

@@ -148,38 +148,38 @@ export default {
   },
   watch: {
     // whenever userImage changes, this function will run
-    '$route.params.projectId': function() {
+    '$route.params.projectId': async function() {
       this.projectId = parseInt(this.$route.params.projectId) | null
-      this.fetchContact()
-      this.fetchSmsData()
+      await this.fetchContact()
+      await this.fetchSmsData()
       this.templateTeams = []
       for (let team of this.$parent.$data.teamsAssociatedToUser){
         this.templateTeams.push(team.id);
       }
-      this.getTemplates()
+      await this.getTemplates()
     },
-    '$route.params.userId': function() {
+    '$route.params.userId': async function() {
       this.userId = parseInt(this.$route.params.userId) | null
-      this.fetchSmsData()
+      await this.fetchSmsData()
       this.templateTeams = []
       for (let team of this.$parent.$data.teamsAssociatedToUser){
         this.templateTeams.push(team.id);
       }
-      this.getTemplates()
+      await this.getTemplates()
     },
-    '$parent.$data.teamsAssociatedToUser': function() {
+    '$parent.$data.teamsAssociatedToUser': async function() {
       this.templateTeams = []
       for (let team of this.$parent.$data.teamsAssociatedToUser){
         this.templateTeams.push(team.id);
       }
-      this.getTemplates()
+      await this.getTemplates()
     },
     userAssigned: debounce(function() {
       this.toggleChatBox()
     }, 500),
-    smsOwnershipEvents: debounce(function() {
-      this.fetchSmsData()
-    }, 500)
+    smsOwnershipEvents: debounce(async function() {
+      await this.fetchSmsData()
+    }, 800)
   },
   methods: {
     toggleChatBox() {
@@ -364,7 +364,7 @@ export default {
     async getTemplates() {
       try {
         this.selectedTemplate = ''
-        if (this.templateTeams.length < 1) {
+        if (!this.templateTeams || this.templateTeams.length < 1) {
           return
         }
         const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
