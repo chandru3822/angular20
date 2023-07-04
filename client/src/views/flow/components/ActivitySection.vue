@@ -13,10 +13,10 @@
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
         <v-icon v-else>mdi-arrow-down</v-icon>
       </v-btn>
-      <v-menu v-model="filterMenuOpen" transition="scale-transition" offset-y left attach
+      <v-menu v-if="sectionType==='project'" v-model="filterMenuOpen" transition="scale-transition" offset-y left attach
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn text small color="primary" v-on="on">
+          <v-btn text small color="primary" v-on="on" :class="{'primary-lighten-9-bkgrd': filterAltered}">
             <v-icon>mdi-filter</v-icon>
           </v-btn>
         </template>
@@ -266,7 +266,9 @@ export default {
     },
     pinnedActivitiesOnly() {
       return this.sortedFilteredActivities.filter(a => a.pinned)
-
+    },
+    filterAltered(){
+      return !!(this.activityTypes.find(at => !at.show))
     }
   },
   created() {
@@ -412,6 +414,10 @@ export default {
     },
     clearSearch(){
       this.search={}
+      //clearing the search should also reset the filter to default, which is to show everything
+      for(let at of this.activityTypes){
+        at.show = true
+      }
     },
     setEditedActivity(item) {
       this.editedActivity = cloneDeep(item)
@@ -542,5 +548,9 @@ export default {
   z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
+}
+
+.primary-lighten-9-bkgrd {
+  background-color: var(--v-primary-lighten9);
 }
 </style>
