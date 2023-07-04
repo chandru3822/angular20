@@ -65,7 +65,7 @@
         </v-card-actions>
       </v-card>
     <ConfirmationDialog :open-dialog="activityToDelete" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
-      Are you sure you want to delete this activity?
+      You won’t be able to recover this note. Are you sure you want to delete it?
     </ConfirmationDialog>
     </div>
 </template>
