@@ -40,7 +40,10 @@ public class ActivityController {
   public void deleteProjectActivity(@PathVariable("id") Long activityId) {
     activityService.deleteActivityById(ObjectType.PROJECT.id, activityId);
   }
-
+  @PostMapping(value = "/{id}/pin/project", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void pinProjectActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
+    activityService.pinActivity(ObjectType.PROJECT.id, activityId, pinned);
+  }
   @PostMapping(value = "/project/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Activity> addProjectActivity(@PathVariable Long id, @RequestBody Activity activity) {
     return activityService.addActivityByObject(ObjectType.PROJECT.id, id, activity);
