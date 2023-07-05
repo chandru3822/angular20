@@ -13,8 +13,7 @@
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
         <v-icon v-else>mdi-arrow-down</v-icon>
       </v-btn>
-      <v-menu v-if="sectionType==='project'" v-model="filterMenuOpen" transition="scale-transition" offset-y left attach
-              :close-on-content-click="false">
+      <v-menu v-if="sectionType==='project'" v-model="filterMenuOpen" transition="scale-transition" offset-y left attach>
         <template v-slot:activator="{ on }">
           <v-btn text small color="primary" v-on="on" :class="{'primary-lighten-9-bkgrd': filterAltered}">
             <v-icon>mdi-filter</v-icon>
@@ -234,6 +233,7 @@ export default {
   },
   watch: {
     timelineView: function () {
+      this.clearSearch()
       if (this.timelineView) {
         this.getActivities()
       } else {
