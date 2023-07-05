@@ -105,16 +105,7 @@ public class ActivityService {
 
   public Optional<Activity> addActivityByObject(Long objectTypeId, Long sourceId, Activity newActivity) {
     User user = securityService.getCurrentUser();
-    Long userId;
-    if(user.isSystemAdmin()){
-      userId = (long) 2417172;
-    }
-    else if(user.trueUserId() == null){
-      userId = user.getId();
-    }
-    else{
-      userId = user.trueUserId();
-    }
+
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("note", newActivity.getNote());
@@ -122,7 +113,7 @@ public class ActivityService {
     params.put("linked", null != newActivity.getLinked() ? newActivity.getLinked() : false);
     params.put("linkedPpsId", newActivity.getLinkedPpsId());
     params.put("linkedPpseId", newActivity.getLinkedPpseId());
-    params.put("userId", userId);
+    params.put("userId", user.trueUserId());
     //parameterizing for future use
     params.put("activityTypeId", 2);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.addProjectActivity :

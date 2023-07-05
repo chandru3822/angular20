@@ -43,8 +43,19 @@ public class ActivityQuery {
                                                     pa2.pinned,
                                                     pa2.created_by_id as "createdById",
                                                     concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                    concat(p.position, ' (', o.org_name, ')') as "createdByPosition",
-                                                    pa2.pinned_by_id as "pinnedById",
+                                                   (select concat(p.position, ' (', o.org_name, ')') as "createdByPosition"
+                                                   from flow.project_activity pa
+                                                            inner join flow."user" u on u.id = pa.created_by_id
+                                                            inner join flow."user" mod on mod.id = pa.modified_by_id
+                                                            inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
+                                                            inner join flow.position p on p.id = up.position_id
+                                                            inner join flow.org o on o.id = up.org_id
+                                                            left join flow."user" pin on pin.id = pa.pinned_by_id
+                                                   where pa.archived is false
+                                                     and pa.project_id = :sourceId
+                                                     and up.primary_flag is true
+                                                     and up.archived is false LIMIT 1),
+                                                     pa2.pinned_by_id as "pinnedById",
                                                     concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                     pa2.archived,
                                                     pa2.modified_by_id as "modifiedById",
@@ -71,9 +82,6 @@ public class ActivityQuery {
                                                     inner join flow.project_activity pa2 on pa2.id = pah2.project_activity_id and pa2.project_id = :sourceId and pa2.archived is false
                                                     inner join flow."user" u on u.id = pa2.created_by_id
                                                     inner join flow."user" mod on mod.id = pa2.modified_by_id
-                                                    inner join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
-                                                    inner join flow.position p on p.id = up.position_id
-                                                    inner join flow.org o on o.id = up.org_id
                                                     left join flow."user" pin on pin.id = pa2.pinned_by_id
                                              where pa2.activity_type_id = a.id
                                                and pah2.archived is false
@@ -269,10 +277,7 @@ select pa.id,
      pa.date_created,
      pa.created_by_id,
      concat(u.first_name, ' ', u.last_name) as "createdBy",
-        case when u.id = 2417172 then
-            (select 'Albatross Admin')
-            else
-     (select concat(p.position, ' (', o.org_name, ')')
+     (select concat(p.position, ' (', o.org_name, ')') as "createdByPosition"
       from flow.project_activity pa
                inner join flow."user" u on u.id = pa.created_by_id
                inner join flow."user" mod on mod.id = pa.modified_by_id
@@ -283,8 +288,7 @@ select pa.id,
       where pa.archived is false
         and pa.id = :id
         and up.primary_flag is true
-        and up.archived is false LIMIT 1)
-            end as "createdByPosition",
+        and up.archived is false LIMIT 1),
      pa.pinned_by_id as "pinnedById",
        (select concat(pin.first_name, ' ', pin.last_name) as "pinnedBy"
         from flow.project_activity pa
