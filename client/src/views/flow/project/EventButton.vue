@@ -15,7 +15,7 @@
       </div>
       <div v-if="event.customFieldDisplayValue">
       <div>{{event.customFieldDisplayValue.fieldName}}:
-        <span v-if="event.customFieldDisplayValue.dateValue">{{ event.customFieldDisplayValue.dateValue | formatDate('timestamp', 'M/D/YY') }}</span>
+        <span v-if="event.customFieldDisplayValue.dateValue">{{ event.customFieldDisplayValue.dateValue | formatDate('date', 'M/D/YY') }}</span>
         <span v-if="event.customFieldDisplayValue.timestampValue">{{ event.customFieldDisplayValue.timestampValue | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
         <span v-if="event.customFieldDisplayValue.textValue" >{{ event.customFieldDisplayValue.textValue }}</span>
         <span v-if="event.customFieldDisplayValue.richTextValue" >{{ event.customFieldDisplayValue.richTextValue }}</span>
