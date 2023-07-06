@@ -625,7 +625,7 @@ public class ProjectService {
               moreParams.put("objectTypeId", 6); //6 is the event object type
               moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
               moreParams.put("primaryId", event.getId());
-              List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, CustomFieldValueDisplay.class);
+              List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
               event.setCustomFieldDisplayValue(cfvs.get(0));
           }
       }

@@ -5,7 +5,7 @@
   >
    {{ event.eventName }}
     <span class="ml-2" :class="getStatusClass(event.eventStatusTypeId)">{{event.eventStatusType}}</span> <br>
-    <div class="event-resource" v-if="event.resource || event.startTime">
+    <div class="event-resource" v-if="event.resource || event.startTime || event.customFieldDisplayValue">
       <span v-if="event.resource">{{ event.resource }}</span>
       <div v-if="event.startTime">
         {{ event.startTime | formatDate('timestamp', 'M/D/YY h:mm a')}}
@@ -15,7 +15,7 @@
       </div>
       <div v-if="event.customFieldDisplayValue">
       <div>{{event.customFieldDisplayValue.fieldName}}:
-        <span v-if="event.customFieldDisplayValue.dateValue">{{ event.customFieldDisplayValue.dateValue | formatDate('timestamp', 'M/D/YY') }}</span>
+        <span v-if="event.customFieldDisplayValue.dateValue">{{ event.customFieldDisplayValue.dateValue | formatDate('date', 'M/D/YY') }}</span>
         <span v-if="event.customFieldDisplayValue.timestampValue">{{ event.customFieldDisplayValue.timestampValue | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
         <span v-if="event.customFieldDisplayValue.textValue" >{{ event.customFieldDisplayValue.textValue }}</span>
         <span v-if="event.customFieldDisplayValue.richTextValue" >{{ event.customFieldDisplayValue.richTextValue }}</span>
