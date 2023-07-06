@@ -37,7 +37,7 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}, getEventResourceFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}, getResourceFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
             </v-btn>
           </v-toolbar-items>
@@ -118,6 +118,7 @@ import Vue2Filters from 'vue2-filters'
 
 import {getRequest, putRequest, postRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
 import debounce from "lodash.debounce";
+import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
@@ -169,11 +170,11 @@ export default {
     goToEvent(eventId) {
       this.$router.push({path: `/settings/event/${eventId}/components`})
     },
-    async getEventResourceFields() {
+    async getResourceFields() {
       if(this.addNew) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data} = await getRequest(`/customFieldGroup/getEventResourceFields`)
+          const {data} = await getEventResourceFields()
           this.eventResourceFields = data
           this.$store.commit(AppMutations.SET_LOADING, false)
         } catch (e) {
