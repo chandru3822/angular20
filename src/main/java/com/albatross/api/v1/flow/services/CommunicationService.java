@@ -4,6 +4,7 @@ import com.albatross.api.exception.ApiException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.enums.RecipientType;
+import com.albatross.api.v1.flow.enums.SmsPriority;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
@@ -213,7 +214,8 @@ public class CommunicationService {
           user,
           sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
           sendTexts.getMediaURLs(),
-          loggedInUser.trueUserId());
+          loggedInUser.trueUserId(),
+          users.size() > 10 ? SmsPriority.LARGE_GROUP.level : SmsPriority.SMALL_GROUP.level);
     }
     return new AsyncResult<>(null);
   }
@@ -224,7 +226,8 @@ public class CommunicationService {
       User user,
       String templateContent,
       List<URI> mediaURLs,
-      Long loggedInUserId) {
+      Long loggedInUserId,
+      Integer priority) {
     // dont try to send text if there is no phone number or the user doesnt have access
     if (null != user
         && user.getPhoneNumber() != null
@@ -246,7 +249,8 @@ public class CommunicationService {
             mediaURLs,
             RecipientType.USER,
             loggedInUserId,
-            null);
+            null,
+            priority);
       } catch (NumberParseException ex) {
         log.warn("TWILIO: Message not sent: Invalid phone number: {}", user.getPhoneNumber());
         throw new ResponseStatusException(
@@ -293,7 +297,8 @@ public class CommunicationService {
         mediaURLs,
         RecipientType.PROJECT,
         sentByUserId,
-        sentBySmsTeamId);
+        sentBySmsTeamId,
+        SmsPriority.PROJECT.level);
     } catch (Exception ex) {
       log.error("MESSAGING: Error queueing SMS ", ex);
     }
@@ -319,7 +324,8 @@ public class CommunicationService {
         mediaURLs,
         RecipientType.USER,
         sentByUserId,
-        sentBySmsTeamId);
+        sentBySmsTeamId,
+        SmsPriority.USER.level);
     } catch (Exception ex) {
       log.error("MESSAGING: Error queueing SMS ", ex);
     }
