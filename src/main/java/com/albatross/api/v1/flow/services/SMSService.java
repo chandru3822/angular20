@@ -118,7 +118,8 @@ public class SMSService {
     List<URI> mediaURLs,
     RecipientType recipientType,
     Long sentByUserId,
-    Long sentBySmsTeamId) {
+    Long sentBySmsTeamId,
+    Integer priority) {
 
     if(null != toPhone && !toPhone.isBlank()) {
       String queueInsert = SmsServiceQuery.insert;
@@ -134,6 +135,7 @@ public class SMSService {
       source.addValue("recipientTypeId", recipientType.ordinal());
       source.addValue("messageSentByUserId", sentByUserId);
       source.addValue("sentBySmsTeamId", sentBySmsTeamId);
+      source.addValue("priority", priority);
 
       if (mediaURLs != null && !mediaURLs.isEmpty()) {
 
