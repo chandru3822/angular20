@@ -1,5 +1,4 @@
 <template>
-<fragment>
 <v-data-table
   :loading="isDataLoading"
   :headers="headers"
@@ -28,22 +27,22 @@
       </td>
     </tr>
   </template>
+
+  <template #top>
+    <v-btn
+      v-if="isSystemAdmin"
+      fab
+      absolute
+      bottom
+      right
+      color="info"
+      class="mb-16"
+      @click="getQuery"
+    >
+      <v-icon>mdi-database-eye-outline</v-icon>
+    </v-btn>
+  </template>
 </v-data-table>
-
-<v-btn
-  v-if="isSystemAdmin"
-  fab
-  absolute
-  bottom
-  right
-  color="info"
-  class="mb-16"
-  @click="getQuery"
->
-  <v-icon>mdi-database-eye-outline</v-icon>
-</v-btn>
-
-</fragment>
 </template>
 
 <script setup>
@@ -52,7 +51,6 @@ import { computed, getCurrentInstance, watch } from 'vue'
 import { logError, postRequest, requestInterceptor, responseInterceptor, UUID } from '@/helpers/helpers'
 import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
-import { Fragment } from 'vue-frag'
 import axios from 'axios'
 import constants from '@/helpers/constants'
 

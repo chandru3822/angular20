@@ -1,5 +1,5 @@
 <template>
-<fragment>
+<span>
   <v-dialog
     v-model="openDialog"
     :width="450"
@@ -61,76 +61,77 @@
         </v-row>
 
         <v-list class="bordered rounded-lg">
-            <v-list-item>
-              <v-row>
-                <v-col
-                  cols="6"
-                  align-self="center"
-                  class="py-0"
-                >
-                  <span class="default-text-color">{{ smartlist.owner }}</span>
-                  <div class="position">
-                    {{ smartlist.ownerPosition }}
-                  </div>
-                </v-col>
+          <v-list-item>
+            <v-row>
+              <v-col
+                cols="6"
+                align-self="center"
+                class="py-0"
+              >
+                <span class="default-text-color">{{ smartlist.owner }}</span>
+                <div class="position">
+                  {{ smartlist.ownerPosition }}
+                </div>
+              </v-col>
 
-                <v-col
-                  cols="6"
-                  align-self="center"
-                  class="py-0"
-                >
-                  Owner
-                </v-col>
-              </v-row>
-            </v-list-item>
+              <v-col
+                cols="6"
+                align-self="center"
+                class="py-0"
+              >
+                Owner
+              </v-col>
+            </v-row>
+          </v-list-item>
 
-            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)" :key="UUID()">
-              <v-row>
-                <v-col
-                  cols="6"
-                  align-self="center"
-                  class="py-0"
-                >
-                  <span class="default-text-color">{{ accessLevel.name }}</span>
-                  <div
-                    v-if="accessLevel.isUser"
-                    class="position"
-                  >{{ accessLevel.position }}</div>
-                </v-col>
+          <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)" :key="UUID()">
+            <v-row>
+              <v-col
+                cols="6"
+                align-self="center"
+                class="py-0"
+              >
+                <span class="default-text-color">{{ accessLevel.name }}</span>
+                <div
+                  v-if="accessLevel.isUser"
+                  class="position"
+                >{{ accessLevel.position }}
+                </div>
+              </v-col>
 
-                <v-col
-                  cols="5"
-                  align-self="center"
-                  class="py-0"
+              <v-col
+                cols="5"
+                align-self="center"
+                class="py-0"
+              >
+                <v-select
+                  v-model="accessLevel.accessControlId"
+                  :items="accessLevels"
+                  :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+                  item-value="accessControlId"
+                  @input="[accessLevel.updated = true, accessLevel.deleted = false]"
                 >
-                  <v-select
-                    v-model="accessLevel.accessControlId"
-                    :items="accessLevels"
-                    :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
-                    item-value="accessControlId"
-                    @input="[accessLevel.updated = true, accessLevel.deleted = false]"
-                  >
-                    <template #append-item>
-                      <v-divider/>
-                      <v-list-item
-                        v-if="accessLevel.isUser"
-                        @click="confirmOwnershipChange(accessLevel)"
-                      >
-                        Transfer Ownership
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                </v-col>
+                  <template #append-item>
+                    <v-divider/>
+                    <v-list-item
+                      v-if="accessLevel.isUser"
+                      @click="confirmOwnershipChange(accessLevel)"
+                    >
+                      Transfer Ownership
+                    </v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
 
-                <v-col
-                  cols="1"
-                  align-self="center"
-                  class="pl-0"
-                >
-                  <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
-                </v-col>
-              </v-row>
-            </v-list-item>
+              <v-col
+                cols="1"
+                align-self="center"
+                class="pl-0"
+              >
+                <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
+              </v-col>
+            </v-row>
+          </v-list-item>
         </v-list>
 
       </v-card-text>
@@ -166,8 +167,8 @@
 
       <v-card-text>
         You will lose ownership and the following user will become the new Owner:
-        <br />
-        <br />
+        <br/>
+        <br/>
         <div class="new-owner-name">{{ `${newOwner.name} - ${newOwner.position}` }}</div>
       </v-card-text>
 
@@ -191,7 +192,7 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-</fragment>
+</span>
 </template>
 
 <script setup>
@@ -199,7 +200,6 @@
 import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
-import { Fragment } from 'vue-frag'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

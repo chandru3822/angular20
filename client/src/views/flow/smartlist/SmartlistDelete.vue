@@ -1,26 +1,24 @@
 <template>
-  <fragment>
-    <v-btn
-      @click.stop="showDialog = true"
-      :icon="!showText"
-      :text="showText"
-      class="pa-5"
-      :disabled="!smartlistId || disabled"
-    >
-      <v-icon>mdi-delete</v-icon>
-      <span v-if="showText">Delete</span>
-    </v-btn>
+<v-btn
+  @click.stop="showDialog = true"
+  :icon="!showText"
+  :text="showText"
+  class="pa-5"
+  :disabled="!smartlistId || disabled"
+>
+  <v-icon>mdi-delete</v-icon>
+  <span v-if="showText">Delete</span>
 
-    <ConfirmationDialog
-      v-if="showDialog"
-      :parent-close="true"
-      :open-dialog="showDialog"
-      @confirm="deleteSmartlist"
-      @close-dialog="showDialog = false"
-    >
-      Do you want to delete this smartlist?
-    </ConfirmationDialog>
-  </fragment>
+  <ConfirmationDialog
+    v-if="showDialog"
+    :parent-close="true"
+    :open-dialog="showDialog"
+    @confirm="deleteSmartlist"
+    @close-dialog="showDialog = false"
+  >
+    Do you want to delete this smartlist?
+  </ConfirmationDialog>
+</v-btn>
 </template>
 
 <script setup>
@@ -28,7 +26,6 @@ import { AppMutations } from '@/stores/AppStore'
 import { deleteRequest, getSnackbar, logError } from '@/helpers/helpers'
 import { getCurrentInstance, ref } from 'vue'
 import ConfirmationDialog from '@/components/ConfirmationDialog.vue'
-import { Fragment } from 'vue-frag'
 
 const props = defineProps({
   smartlistId: {

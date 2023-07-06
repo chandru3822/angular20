@@ -1,5 +1,4 @@
 <template>
-<fragment>
 <v-row class="no-gutters fill-height flex-column">
   <v-col
     v-if="canEdit"
@@ -81,42 +80,40 @@
       Remove All Columns
     </v-btn>
   </v-col>
+
+  <v-dialog
+    v-model="showDeleteDialog"
+    persistent
+    width="450"
+  >
+    <v-card>
+      <v-card-title>Clear All Columns</v-card-title>
+
+      <v-card-text>
+        Do you want to delete all columns?
+      </v-card-text>
+
+      <v-card-actions class="justify-end">
+        <v-btn
+          text
+          @click="showDeleteDialog = false"
+        >
+          Cancel
+        </v-btn>
+
+        <v-btn
+          color="primary"
+          @click="[showDeleteDialog = false, emit('cleared')]"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </v-row>
-
-<v-dialog
-  v-model="showDeleteDialog"
-  persistent
-  width="450"
->
-  <v-card>
-    <v-card-title>Clear All Columns</v-card-title>
-
-    <v-card-text>
-      Do you want to delete all columns?
-    </v-card-text>
-
-    <v-card-actions class="justify-end">
-      <v-btn
-        text
-        @click="showDeleteDialog = false"
-      >
-        Cancel
-      </v-btn>
-
-      <v-btn
-        color="primary"
-        @click="[showDeleteDialog = false, emit('cleared')]"
-      >
-        Save
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-</fragment>
 </template>
 
 <script setup>
-import { Fragment } from 'vue-frag'
 import draggable from 'vuedraggable'
 import { UUID } from '@/helpers/helpers'
 import { computed, nextTick, ref } from 'vue'
