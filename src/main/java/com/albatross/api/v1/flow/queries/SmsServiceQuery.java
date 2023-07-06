@@ -142,14 +142,14 @@ public class SmsServiceQuery {
   //language=PostgreSQL
   public final static String insert = """
     WITH sq AS (INSERT INTO flow.sms_queue (
-                                                      message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id,sms_team_id
+                           message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority
                 ) VALUES (
-                           :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId
+                           :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId, :priority
                          )
                 RETURNING id,user_id,contact_id, project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,
                   from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
-                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id)
+                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id, priority)
               SELECT sq.id,
                      sq.user_id,
                      sq.contact_id,
@@ -205,7 +205,7 @@ public class SmsServiceQuery {
                           created >= '2017-11-08'
                         )
                       )
-                ORDER BY sms.created ASC
+                ORDER BY sms.priority, sms.created ASC
                 LIMIT 10
                 FOR UPDATE SKIP LOCKED
         """;
