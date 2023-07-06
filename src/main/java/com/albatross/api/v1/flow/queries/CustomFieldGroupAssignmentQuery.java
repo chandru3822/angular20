@@ -439,11 +439,16 @@ public class CustomFieldGroupAssignmentQuery {
 
     //language=PostgreSQL
     public final static String clearDisplayOnSnippet = """
-        update flow.custom_field_group_assignment
-        set display_on_snippet = false,
-            date_modified = now(),
-            modified_by_id = :userId
-        where id != :cfgaId and display_on_snippet = true
+      update flow.custom_field_group_assignment
+      set display_on_snippet = false,
+        date_modified = now(),
+        modified_by_id = :userId
+      where id in (select id from flow.custom_field_group_assignment where display_on_snippet = true AND custom_field_group_id IN
+                    (select id from flow.custom_field_group where event_id =
+                      (select cfg.event_id from flow.custom_field_group cfg
+                        join flow.custom_field_group_assignment cfga
+                        on cfg.id = cfga.custom_field_group_id
+                        where cfga.id = :cfgaId)));
 """;
 
 
