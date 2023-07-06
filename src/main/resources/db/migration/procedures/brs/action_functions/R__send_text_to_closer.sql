@@ -73,6 +73,7 @@ BEGIN
   if (v_closer_position_id = 1 AND p_message_type_id = any (array [23]::bigint[])) then
     --populate the manager's name and phone number
     select up.user_id, u.first_name, u.phone_number
+      into v_manager_user_id, v_manager_first_name, v_manager_phone_number
     from flow.user_position up
            inner join flow.position p on up.position_id = p.id
            inner join flow."user" u on up.user_id = u.id
