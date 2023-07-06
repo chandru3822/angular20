@@ -1,5 +1,4 @@
 <template>
-<fragment>
 <v-container id="report-editor" class="fill-height align-start">
   <v-row class="align-content-start fill-height">
     <v-col cols="12">
@@ -203,98 +202,97 @@
       </v-row>
     </v-col>
   </v-row>
+
+  <v-dialog
+    v-model="showSaveDialog"
+    persistent
+    width="450"
+  >
+    <v-card>
+      <v-card-title>Save Smartlist</v-card-title>
+
+      <v-card-text>
+        Do you want to save this smartlist?
+      </v-card-text>
+
+      <v-card-actions class="justify-end">
+        <v-btn
+          text
+          @click="showSaveDialog = false"
+        >
+          Cancel
+        </v-btn>
+
+        <v-btn
+          color="primary"
+          @click="[showSaveDialog = false, save()]"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog
+    v-model="showUnsavedDialog"
+    persistent
+    width="450"
+  >
+    <v-card>
+      <v-card-title>Unsaved Work</v-card-title>
+
+      <v-card-text>
+        You have unsaved changes to your smartlist. Would you like to save changes before leaving?
+      </v-card-text>
+
+      <v-card-actions class="justify-end">
+        <v-btn
+          text
+          @click="unsavedPromiseResolve(false)"
+        >
+          Leave Without Saving
+        </v-btn>
+
+        <v-btn
+          color="primary"
+          @click="unsavedPromiseResolve(true)"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog
+    v-model="showDataViewDialog"
+    persistent
+    width="450"
+  >
+    <v-card>
+      <v-card-title>Confirm</v-card-title>
+
+      <v-card-text>
+        Toggling project details will reset your smartlist. Are you sure you want to continue?
+      </v-card-text>
+
+      <v-card-actions class="justify-end">
+        <v-btn
+          text
+          @click="[report.projectDetails = !report.projectDetails, showDataViewDialog = false]"
+        >
+          Cancel
+        </v-btn>
+
+        <v-btn
+          color="primary"
+          @click="[showDataViewDialog = false, toggleDataView()]"
+        >
+          Save
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
 </v-container>
-
-<v-dialog
-  v-model="showSaveDialog"
-  persistent
-  width="450"
->
-  <v-card>
-    <v-card-title>Save Smartlist</v-card-title>
-
-    <v-card-text>
-      Do you want to save this smartlist?
-    </v-card-text>
-
-    <v-card-actions class="justify-end">
-      <v-btn
-        text
-        @click="showSaveDialog = false"
-      >
-        Cancel
-      </v-btn>
-
-      <v-btn
-        color="primary"
-        @click="[showSaveDialog = false, save()]"
-      >
-        Save
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-
-<v-dialog
-  v-model="showUnsavedDialog"
-  persistent
-  width="450"
->
-  <v-card>
-    <v-card-title>Unsaved Work</v-card-title>
-
-    <v-card-text>
-      You have unsaved changes to your smartlist. Would you like to save changes before leaving?
-    </v-card-text>
-
-    <v-card-actions class="justify-end">
-      <v-btn
-        text
-        @click="unsavedPromiseResolve(false)"
-      >
-        Leave Without Saving
-      </v-btn>
-
-      <v-btn
-        color="primary"
-        @click="unsavedPromiseResolve(true)"
-      >
-        Save
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-
-<v-dialog
-  v-model="showDataViewDialog"
-  persistent
-  width="450"
->
-  <v-card>
-    <v-card-title>Confirm</v-card-title>
-
-    <v-card-text>
-      Toggling project details will reset your smartlist. Are you sure you want to continue?
-    </v-card-text>
-
-    <v-card-actions class="justify-end">
-      <v-btn
-        text
-        @click="[report.projectDetails = !report.projectDetails, showDataViewDialog = false]"
-      >
-        Cancel
-      </v-btn>
-
-      <v-btn
-        color="primary"
-        @click="[showDataViewDialog = false, toggleDataView()]"
-      >
-        Save
-      </v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog>
-</fragment>
 </template>
 
 <script setup>
@@ -309,7 +307,6 @@ import isEqual from 'lodash.isequal'
 import cloneDeep from 'lodash.clonedeep'
 import ReportViewer from '@/views/flow/smartlist/editor/ReportViewer.vue'
 import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router/composables'
-import { Fragment } from 'vue-frag'
 import Smartlist from '@/views/flow/smartlist/Smartlist'
 import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
