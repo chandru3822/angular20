@@ -561,7 +561,7 @@
                                 </v-icon>
                               </v-btn>
                             </template>
-                            <span>{{ fp.description }}</span>
+                            <pre class="app-pre-wrapper">{{ fp.description }}</pre>
                           </v-tooltip>
                           <div class="dynamic-field-container">
                             <v-text-field
@@ -636,7 +636,7 @@
                                       </v-icon>
                                     </v-btn>
                                   </template>
-                                  <span>{{ fp.description }}</span>
+                                  <pre class="app-pre-wrapper">{{ fp.description }}</pre>
                                 </v-tooltip>
                                 <div class="dynamic-field-container">
                                   <v-text-field
