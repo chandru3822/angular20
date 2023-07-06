@@ -73,14 +73,17 @@ BEGIN
   if (v_closer_position_id = 1 AND p_message_type_id = any (array [23]::bigint[])) then
     --populate the manager's name and phone number
     select up.user_id, u.first_name, u.phone_number
-    into v_manager_user_id, v_manager_first_name, v_manager_phone_number
     from flow.user_position up
+           inner join flow.position p on up.position_id = p.id
            inner join flow."user" u on up.user_id = u.id
-    where up.org_id = v_closer_org_id
+           INNER JOIN flow.company_user_status cus on cus.user_id = u.id
+           INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+    where up.org_id = 805
       and up.position_id = 2  --only look for closer managers per carlin
       and up.primary_flag is true
       and up.archived is false
       and up.start_date < now()
+      and ust.has_access is true
       and (up.end_date is null or up.end_date > now());
 
     v_do_manager_send = v_manager_phone_number is not null and trim(v_manager_phone_number) != '';
