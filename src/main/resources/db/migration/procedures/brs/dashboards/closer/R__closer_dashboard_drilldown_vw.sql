@@ -4,6 +4,7 @@ create or replace view brs.closer_dashboard_drilldown_vw as
 select pd.closer_name                 as owner_name,
        o.org_name                        office,
        pd.project_state_abbreviation     state,
+       pd.metro_area_name             as metro_area,
        pd.company_project_status_type as status_type,
        pd.contact_name                as customer_name,
        pd.contact_id,
