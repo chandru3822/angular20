@@ -19,6 +19,7 @@ declare
   v_system_size             text;
   v_installation_start_time text;
   v_project_name            text;
+  v_project_phone           text;
   v_closer_position_id      bigint; --this is so we can check if the closer is a closer, manager, district, etc
   v_do_manager_send         boolean default false;
   v_manager_user_id         bigint;
@@ -43,6 +44,7 @@ BEGIN
          pd.system_size::text,
          (pd.installation_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
          pd.project_name,
+         coalesce(pd.contact_mobile_phone, pd.contact_phone),
          up.position_id
   into v_closer_phone_number,
     v_closer_first_name,
@@ -57,6 +59,7 @@ BEGIN
     v_system_size,
     v_installation_start_time,
     v_project_name,
+    v_project_phone,
     v_closer_position_id
   from brs.project_details pd
          inner join flow."user" u on u.id = pd.closer_user_id
@@ -83,11 +86,6 @@ BEGIN
     v_do_manager_send = v_manager_phone_number is not null and trim(v_manager_phone_number) != '';
   end if;
 
-  raise notice 'm type ******** %', p_message_type_id;
-  raise notice 'closer position ******** %', v_closer_position_id;
-  raise notice 'do ******** %', v_do_manager_send;
-  raise notice 'number ******** %', v_manager_phone_number;
-
   if v_closer_phone_number is not null and trim(v_closer_phone_number) != '' then
     select case
              when p_message_type_id = 1 then
@@ -112,11 +110,11 @@ BEGIN
 
              when p_message_type_id = 5 then
                -- 5 = final design completed
-               concat('Hey ', v_closer_first_name, ', a final design has been completed for project ', v_contact_name)
+               concat('Hey ', v_closer_first_name, ', a final design has been completed for project ', p_project_id, ', ', v_contact_name)
 
              when p_message_type_id = 6 then
                -- 6 = final design sent
-               concat('Hey ', v_closer_first_name, ', a final design has been sent for project ', v_contact_name)
+               concat('Hey ', v_closer_first_name, ', a final design has been sent for project ', p_project_id, '. Please call them to review the final design: ', v_contact_name, ' (tel. ', v_project_phone, ')')
 
              when p_message_type_id = 7 then
                -- 7 = pre-qualified by Sunlight Financial
