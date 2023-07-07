@@ -111,7 +111,8 @@
                       auto-grow
                       rows="2"
                       outlined
-                       v-model="editedActivity.note">
+                      :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
+                      v-model="editedActivity.note">
           </v-textarea>
 
           <template #no-result>
@@ -143,6 +144,7 @@
                 || editedActivity.linked"
           class="ml-3"
           dense
+          :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
           v-model="editedActivity.linked"
           @change="editedActivity.linkLabel = null"
           :label="getLinkLabel()"
@@ -228,7 +230,8 @@ export default {
       activityTypes: [
         {id: 1, activityType: 'Activities', show: true},
         {id: 2, activityType: 'Notes', show: true},
-      ]
+      ],
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
     }
   },
   watch: {

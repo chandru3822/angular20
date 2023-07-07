@@ -26,7 +26,7 @@
                 </v-btn>
               </template>
               <v-list dense class="py-1">
-                <v-list-item v-if="a.activityTypeId !== 1 && (userIsAdmin || a.createdById === userId)"
+                <v-list-item v-if="a.activityTypeId !== 1"
                              @click="editItem(a)">
                   <v-list-item-content>
                     <v-list-item-title>Edit</v-list-item-title>
@@ -37,10 +37,11 @@
                     <v-list-item-title>{{ a.pinned ? 'Unpin' : 'Pin'}}</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
-                <v-list-item v-if="a.activityTypeId !== 1 && (userIsAdmin || a.createdById === userId)"
+                <v-list-item v-if="a.activityTypeId !== 1"
+                             :disabled="!(userIsAdmin || a.createdById === userId)"
                              @click="activityToDelete = a">
                   <v-list-item-content>
-                    <v-list-item-title class="error--text">Delete</v-list-item-title>
+                    <v-list-item-title class="error--text" :class="{'grey--text': !(userIsAdmin || a.createdById === userId)}">Delete</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
