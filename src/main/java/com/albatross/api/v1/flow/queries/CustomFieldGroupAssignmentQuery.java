@@ -203,18 +203,30 @@ public class CustomFieldGroupAssignmentQuery {
 
   //language=PostgreSQL
   public final static String getEventResourceFields = """
-    select cf.id,
-               cf.field_name as "fieldName"
-         from flow.custom_field cf
+      select cf.id,
+             cf.field_name as "fieldName",
+             sl.system_list_type_id
+      from flow.custom_field cf
                inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                left join flow.company_system_list csl on csl.id = cf.company_system_list_id
-         where cf.company_id = :companyId
-          and cf.archived is not true
-          and cdt.data_type_id = (select required_data_type_id
-           from flow.schedule_field_type
-           where field_code = 'EVENT_RESOURCE')
-          and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
-         order by cf.field_name
+               left join flow.system_list sl on csl.system_list_id = sl.id
+      where cf.company_id = :companyId
+        and cf.archived is not true
+        and cdt.data_type_id = (select required_data_type_id
+                                from flow.schedule_field_type
+                                where field_code = 'EVENT_RESOURCE')
+        and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
+        and case when :eventId::int is not null then
+          sl.system_list_type_id = (
+              select sl2.system_list_type_id
+              from flow.event e
+                  inner join flow.custom_field cf2 on e.resource_custom_field_id = cf2.id
+                  inner join flow.company_system_list csl2 on cf2.company_system_list_id = csl2.id
+                  inner join flow.system_list sl2 on csl2.system_list_id = sl2.id
+              where e.id = :eventId
+                         )
+        else 1=1 end
+        order by cf.field_name
        """;
 
   //language=PostgreSQL

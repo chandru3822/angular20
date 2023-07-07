@@ -2,165 +2,168 @@
   <v-container class="pt-0 px-0">
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
-        <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Default Event Fields</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items class="flex-display">
-            <div class="flex-display align-center">
-              <v-btn class="save-btn text-capitalize"
-                     @click="saveChangesToDefaultFields"
-                     color="primary"
-                     v-if="userCanEdit"
-              >Save Default Event Fields
-              </v-btn>
-            </div>
-          </v-toolbar-items>
-        </v-toolbar>
-        <v-card color="transparent">
-          <v-row class="mx-3" cols="12">
-            <!--Start Time White Listed Fields-->
-            <v-col cols="12" md="5" class="py-0">
-              <v-text-field
-                label="Start Time"
-                readonly disabled
-                single-line
-                hide-details
-              ></v-text-field>
-              <v-row class="flex-display">
-                <multi-select-group
-                  v-if="!eventLoading"
-                  background-color="primary lighten-9"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="event"
-                  :content="positions"
-                  :dropdownEnabled="event.startTimeReadOnly"
-                  :selectedContent="event.startTimeWhiteListedPositions"
-                  :title="'Read Only'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="event.startTimeReadOnlyAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="startTimeReadOnlySelectedEventListener"
-                  @allow-changed="startTimeReadOnlyAllowEventListener"
-                  @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
+        <v-form ref="defaultFieldForm">
+          <v-toolbar flat class="cfg-header-bar">
+            <v-toolbar-title class="app-title">Default Event Fields</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items class="flex-display">
+              <div class="flex-display align-center">
+                <v-btn class="save-btn text-capitalize"
+                       @click="saveChangesToDefaultFields"
+                       color="primary"
+                       v-if="userCanEdit"
+                >Save Default Event Fields
+                </v-btn>
+              </div>
+            </v-toolbar-items>
+          </v-toolbar>
+          <v-card color="transparent">
+            <v-row class="mx-3" cols="12">
+              <!--Start Time White Listed Fields-->
+              <v-col cols="12" md="5" class="py-0">
+                <v-text-field
+                  label="Start Time"
+                  readonly disabled
+                  single-line
+                  hide-details
+                ></v-text-field>
+                <v-row class="flex-display">
+                  <multi-select-group
+                    v-if="!eventLoading"
+                    background-color="primary lighten-9"
+                    :userCanEdit="userCanEdit"
+                    :returnObject="event"
+                    :content="positions"
+                    :dropdownEnabled="event.startTimeReadOnly"
+                    :selectedContent="event.startTimeWhiteListedPositions"
+                    :title="'Read Only'"
+                    :label="'Allowed Positions'"
+                    :alternateLabel = "'Denied Positions'"
+                    :allow="event.startTimeReadOnlyAllow"
+                    :contentLoading="positionsLoading"
+                    @selected-changed="startTimeReadOnlySelectedEventListener"
+                    @allow-changed="startTimeReadOnlyAllowEventListener"
+                    @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
 
 
-                <multi-select-group
-                  v-if="!eventLoading"
-                  background-color="primary lighten-9"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="event"
-                  :content="positions"
-                  :dropdownEnabled="event.startTimeHidden"
-                  :selectedContent="event.startTimeHiddenWhiteListedPositions"
-                  :title="'Hidden'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="event.startTimeHiddenAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="startTimeHiddenSelectedEventListener"
-                  @allow-changed="startTimeHiddenAllowEventListener"
-                  @checkbox-changed="startTimeHiddenCheckboxEventListener"></multi-select-group>
+                  <multi-select-group
+                    v-if="!eventLoading"
+                    background-color="primary lighten-9"
+                    :userCanEdit="userCanEdit"
+                    :returnObject="event"
+                    :content="positions"
+                    :dropdownEnabled="event.startTimeHidden"
+                    :selectedContent="event.startTimeHiddenWhiteListedPositions"
+                    :title="'Hidden'"
+                    :label="'Allowed Positions'"
+                    :alternateLabel = "'Denied Positions'"
+                    :allow="event.startTimeHiddenAllow"
+                    :contentLoading="positionsLoading"
+                    @selected-changed="startTimeHiddenSelectedEventListener"
+                    @allow-changed="startTimeHiddenAllowEventListener"
+                    @checkbox-changed="startTimeHiddenCheckboxEventListener"></multi-select-group>
 
-              </v-row>
-            </v-col>
-            <v-col style="height: 0" cols="0" md="1"></v-col>
-            <!--End Time White Listed Fields-->
-            <v-col cols="12" md="5" class="py-0">
-              <v-text-field
-                label="End Time"
-                readonly disabled
-                single-line
-                hide-details
-              ></v-text-field>
-              <v-row class="flex-display">
-                <multi-select-group
-                  v-if="!eventLoading"
-                  background-color="primary lighten-9"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="event"
-                  :content="positions"
-                  :dropdownEnabled="event.endTimeReadOnly"
-                  :selectedContent="event.endTimeWhiteListedPositions"
-                  :title="'Read Only'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="event.endTimeReadOnlyAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="endTimeReadOnlySelectedEventListener"
-                  @allow-changed="endTimeReadOnlyAllowEventListener"
-                  @checkbox-changed="endTimeReadOnlyCheckboxEventListener"></multi-select-group>
+                </v-row>
+              </v-col>
+              <v-col style="height: 0" cols="0" md="1"></v-col>
+              <!--End Time White Listed Fields-->
+              <v-col cols="12" md="5" class="py-0">
+                <v-text-field
+                  label="End Time"
+                  readonly disabled
+                  single-line
+                  hide-details
+                ></v-text-field>
+                <v-row class="flex-display">
+                  <multi-select-group
+                    v-if="!eventLoading"
+                    background-color="primary lighten-9"
+                    :userCanEdit="userCanEdit"
+                    :returnObject="event"
+                    :content="positions"
+                    :dropdownEnabled="event.endTimeReadOnly"
+                    :selectedContent="event.endTimeWhiteListedPositions"
+                    :title="'Read Only'"
+                    :label="'Allowed Positions'"
+                    :alternateLabel = "'Denied Positions'"
+                    :allow="event.endTimeReadOnlyAllow"
+                    :contentLoading="positionsLoading"
+                    @selected-changed="endTimeReadOnlySelectedEventListener"
+                    @allow-changed="endTimeReadOnlyAllowEventListener"
+                    @checkbox-changed="endTimeReadOnlyCheckboxEventListener"></multi-select-group>
 
-                <multi-select-group
-                  v-if="!eventLoading"
-                  background-color="primary lighten-9"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="event"
-                  :content="positions"
-                  :dropdownEnabled="event.endTimeHidden"
-                  :selectedContent="event.endTimeHiddenWhiteListedPositions"
-                  :title="'Hidden'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="event.endTimeHiddenAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="endTimeHiddenSelectedEventListener"
-                  @allow-changed="endTimeHiddenAllowEventListener"
-                  @checkbox-changed="endTimeHiddenCheckboxEventListener"></multi-select-group>
+                  <multi-select-group
+                    v-if="!eventLoading"
+                    background-color="primary lighten-9"
+                    :userCanEdit="userCanEdit"
+                    :returnObject="event"
+                    :content="positions"
+                    :dropdownEnabled="event.endTimeHidden"
+                    :selectedContent="event.endTimeHiddenWhiteListedPositions"
+                    :title="'Hidden'"
+                    :label="'Allowed Positions'"
+                    :alternateLabel = "'Denied Positions'"
+                    :allow="event.endTimeHiddenAllow"
+                    :contentLoading="positionsLoading"
+                    @selected-changed="endTimeHiddenSelectedEventListener"
+                    @allow-changed="endTimeHiddenAllowEventListener"
+                    @checkbox-changed="endTimeHiddenCheckboxEventListener"></multi-select-group>
 
-              </v-row>
-            </v-col>
-          </v-row>
-          <v-row class="mx-3">
-            <!--Resource Fields-->
-            <v-col cols="12" md="5">
-              <v-autocomplete
-                v-model="event.resourceCustomFieldId"
-                :items="eventResourceFields"
-                :disabled="!userCanEdit"
-                label="Resource"
-                @change="resourceFieldChanged = true"
-                item-text="fieldName"
-                item-value="id"
-              ></v-autocomplete>
-              <v-row class="flex-display">
-                <multi-select-group
-                  v-if="!eventLoading"
-                  background-color="primary lighten-9"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="event"
-                  :content="positions"
-                  :dropdownEnabled="event.resourceReadOnly"
-                  :selectedContent="event.resourceWhiteListedPositions"
-                  :title="'Read Only'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="event.resourceReadOnlyAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="resourceReadOnlySelectedEventListener"
-                  @allow-changed="resourceReadOnlyAllowEventListener"
-                  @checkbox-changed="resourceReadOnlyCheckboxEventListener"></multi-select-group>
+                </v-row>
+              </v-col>
+            </v-row>
+            <v-row class="mx-3">
+              <!--Resource Fields-->
+              <v-col cols="12" md="5">
+                <v-autocomplete
+                  v-model="event.resourceCustomFieldId"
+                  :items="eventResourceFields"
+                  :disabled="!userCanEdit"
+                  :rules="requiredRules"
+                  label="Resource"
+                  @change="resourceFieldChanged = true"
+                  item-text="fieldName"
+                  item-value="id"
+                ></v-autocomplete>
+                <v-row class="flex-display">
+                  <multi-select-group
+                    v-if="!eventLoading"
+                    background-color="primary lighten-9"
+                    :userCanEdit="userCanEdit"
+                    :returnObject="event"
+                    :content="positions"
+                    :dropdownEnabled="event.resourceReadOnly"
+                    :selectedContent="event.resourceWhiteListedPositions"
+                    :title="'Read Only'"
+                    :label="'Allowed Positions'"
+                    :alternateLabel = "'Denied Positions'"
+                    :allow="event.resourceReadOnlyAllow"
+                    :contentLoading="positionsLoading"
+                    @selected-changed="resourceReadOnlySelectedEventListener"
+                    @allow-changed="resourceReadOnlyAllowEventListener"
+                    @checkbox-changed="resourceReadOnlyCheckboxEventListener"></multi-select-group>
 
-                <multi-select-group
-                  v-if="!eventLoading"
-                  background-color="primary lighten-9"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="event"
-                  :content="positions"
-                  :dropdownEnabled="event.resourceHidden"
-                  :selectedContent="event.resourceHiddenWhiteListedPositions"
-                  :title="'Hidden'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="event.resourceHiddenAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="resourceHiddenSelectedEventListener"
-                  @allow-changed="resourceHiddenAllowEventListener"
-                  @checkbox-changed="resourceHiddenCheckboxEventListener"></multi-select-group>
-              </v-row>
-            </v-col>
-          </v-row>
-        </v-card>
+                  <multi-select-group
+                    v-if="!eventLoading"
+                    background-color="primary lighten-9"
+                    :userCanEdit="userCanEdit"
+                    :returnObject="event"
+                    :content="positions"
+                    :dropdownEnabled="event.resourceHidden"
+                    :selectedContent="event.resourceHiddenWhiteListedPositions"
+                    :title="'Hidden'"
+                    :label="'Allowed Positions'"
+                    :alternateLabel = "'Denied Positions'"
+                    :allow="event.resourceHiddenAllow"
+                    :contentLoading="positionsLoading"
+                    @selected-changed="resourceHiddenSelectedEventListener"
+                    @allow-changed="resourceHiddenAllowEventListener"
+                    @checkbox-changed="resourceHiddenCheckboxEventListener"></multi-select-group>
+                </v-row>
+              </v-col>
+            </v-row>
+          </v-card>
+        </v-form>
         <v-divider></v-divider>
         <v-toolbar flat class="cfg-header-bar">
           <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
@@ -495,6 +498,7 @@ import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
 import cloneDeep from 'lodash.clonedeep'
 import orderBy from "lodash.orderby"
+import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MultiSelectGroup from "../../../../components/MultiSelectGroup";
 
@@ -559,6 +563,7 @@ export default {
       constants,
       newGroup: {},
       event: {},
+      requiredRules: constants.BASIC_REQUIRED_RULE,
       newField: {},
       // selectedIndex is a dumb work around because `index` is not available in the `expanded-item` slot yet.
       selectedIndex: null,
@@ -568,7 +573,7 @@ export default {
       selectedGroupId: null,
       availableCustomFields: [],
       parent: {},
-      eventId: this.$route.params.id,
+      eventId: parseInt(this.$route.params.id),
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
@@ -618,15 +623,15 @@ export default {
     }
   },
   async created() {
-    this.getEventResourceFields()
+    this.getResourceFields()
     this.getPositions()
     await this.getEvent()
   },
   methods: {
-    async getEventResourceFields() {
+    async getResourceFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/customFieldGroup/getEventResourceFields`)
+        const {data} = await getEventResourceFields(this.eventId)
         this.eventResourceFields = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
@@ -763,42 +768,44 @@ export default {
       return 'check_box_outline_blank'
     },
     async saveChangesToDefaultFields() {
-      //save the read only and resource custom fields
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await postRequest(`/event/${this.eventId}/saveChangesToDefaultFields`, this.event)
-        if (this.event.startTimePositionsChanged || (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_READ_ONLY, (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0) ? [] : this.event.startTimeWhiteListedPositions)
-        }
-        if (this.event.startTimeHiddenPositionsChanged || (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_HIDDEN, (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.startTimeHiddenWhiteListedPositions)
-        }
-        if (this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
-
-          for (var i = 0; i < this.event.endTimeWhiteListedPositions.length; i++) {
-            this.event.endTimeWhiteListedPositions[i].allowFlag = true;
-            //Do something
+      if (this.$refs.defaultFieldForm.validate()) {
+        //save the read only and resource custom fields
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          await postRequest(`/event/${this.eventId}/saveChangesToDefaultFields`, this.event)
+          if (this.event.startTimePositionsChanged || (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0)) {
+            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_READ_ONLY, (!this.event.startTimeReadOnly && this.event.startTimeWhiteListedPositions?.length > 0) ? [] : this.event.startTimeWhiteListedPositions)
           }
+          if (this.event.startTimeHiddenPositionsChanged || (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0)) {
+            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_START_TIME_HIDDEN, (!this.event.startTimeHidden && this.event.startTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.startTimeHiddenWhiteListedPositions)
+          }
+          if (this.event.endTimePositionsChanged || (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0)) {
 
-          this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_READ_ONLY, (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0) ? [] : this.event.endTimeWhiteListedPositions)
+            for (var i = 0; i < this.event.endTimeWhiteListedPositions.length; i++) {
+              this.event.endTimeWhiteListedPositions[i].allowFlag = true;
+              //Do something
+            }
+
+            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_READ_ONLY, (!this.event.endTimeReadOnly && this.event.endTimeWhiteListedPositions?.length > 0) ? [] : this.event.endTimeWhiteListedPositions)
+          }
+          if (this.event.endTimeHiddenPositionsChanged || (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0)) {
+            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_HIDDEN, (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.endTimeHiddenWhiteListedPositions)
+          }
+          if (this.event.resourcePositionsChanged || (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0)) {
+            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_READ_ONLY, (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0) ? [] : this.event.resourceWhiteListedPositions)
+          }
+          if (this.event.resourceHiddenPositionsChanged || (!this.event.resourceHidden && this.event.resourceHiddenWhiteListedPositions?.length > 0)) {
+            this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_HIDDEN, (!this.event.resourceHidden && this.event.resourceHiddenWhiteListedPositions?.length > 0) ? [] : this.event.resourceHiddenWhiteListedPositions)
+          }
+          this.snackbar = getSnackbar('SUCCESS', 'Event Changes Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
-        if (this.event.endTimeHiddenPositionsChanged || (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_END_TIME_HIDDEN, (!this.event.endTimeHidden && this.event.endTimeHiddenWhiteListedPositions?.length > 0) ? [] : this.event.endTimeHiddenWhiteListedPositions)
-        }
-        if (this.event.resourcePositionsChanged || (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_READ_ONLY, (!this.event.resourceReadOnly && this.event.resourceWhiteListedPositions?.length > 0) ? [] : this.event.resourceWhiteListedPositions)
-        }
-        if (this.event.resourceHiddenPositionsChanged || (!this.event.resourceHidden && this.event.resourceHiddenWhiteListedPositions?.length > 0)) {
-          this.saveWhiteListedPositions(WhiteListTypeEnum.EVENT_RESOURCE_HIDDEN, (!this.event.resourceHidden && this.event.resourceHiddenWhiteListedPositions?.length > 0) ? [] : this.event.resourceHiddenWhiteListedPositions)
-        }
-        this.snackbar = getSnackbar('SUCCESS', 'Event Changes Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async saveWhiteListedPositions(whiteListTypeId, whiteListedPositions) {

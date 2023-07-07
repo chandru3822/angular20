@@ -254,11 +254,12 @@ public class CustomFieldGroupService {
       CustomFieldGroupAssignmentQuery.getCustomFieldsInGroup, params, CustomField.class);
   }
 
-  public List<CustomField> getEventResourceFields() {
+  public List<CustomField> getEventResourceFields(Long eventId) {
     User currentUser = securityService.getCurrentUser();
 
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("eventId", eventId);
 
     return sqlCache.queryBySql(
       CustomFieldGroupAssignmentQuery.getEventResourceFields, params, CustomField.class);

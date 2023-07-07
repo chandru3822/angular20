@@ -266,6 +266,13 @@ BEGIN
     from flow.contact c
     where c.id = p_value::bigint;
 
+  elsif p_unique_behavior_code = 'LIST_OF_VALUE_INT_ARRAY_TRIGGER' then
+    raise notice 'I got here %',p_value;
+    select string_agg(lov.name, ', ')
+    into v_value
+    from flow.list_of_value lov
+    where lov.id = any (p_value::bigint[]);
+
   elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or
         p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_BIGINT' then
 

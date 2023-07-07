@@ -99,8 +99,8 @@ public class CustomFieldGroupController {
   }
 
   @GetMapping(value = "/getEventResourceFields")
-  public List<CustomField> getEventResourceFields () {
-    return customFieldGroupService.getEventResourceFields();
+  public List<CustomField> getEventResourceFields (@RequestParam(required = false) Long eventId) {
+    return customFieldGroupService.getEventResourceFields(eventId);
   }
 
   @GetMapping(value = "/getAvailableCustomFields")

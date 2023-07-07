@@ -68,7 +68,6 @@ public class MailService {
       Long sentByUserId,
       String cc) {
 
-    System.out.println("Made it here1");
     Session session = getSession();
     if (null == sentByEmail) {
       sentByEmail = getDefaultSenderEmailAddress();
