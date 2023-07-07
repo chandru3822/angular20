@@ -861,7 +861,7 @@ public class MessagingService {
 
         // If there are no owners, add unassigned notifications if applicable
         if (ownerUsers.isEmpty()) {
-          ConversationMessageProperties cmp = getProject(userId, SystemSettings.BR_SYSTEM_USER.getId());
+          ConversationMessageProperties cmp = getUser(userId, SystemSettings.BR_SYSTEM_USER.getId());
           final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
           final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
           for (SmsTeam smsTeam: smsTeams) {
