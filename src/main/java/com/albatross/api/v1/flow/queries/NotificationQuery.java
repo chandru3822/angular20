@@ -29,6 +29,26 @@ public class NotificationQuery {
         """;
 
   //language=PostgreSQL
+  public final static String getUnreadProjectNotificationsByUser = """
+    select id, user_id, notification_topic_id, title, body, priority, metadata, message_read_tsz
+    from flow.notification
+    where message_read_tsz is null
+      and user_id = :userId
+      and (metadata->>'projectId') is not null
+    order by priority desc, date_created desc
+        """;
+
+  //language=PostgreSQL
+  public final static String getUnreadUserNotificationsByUser = """
+    select id, user_id, notification_topic_id, title, body, priority, metadata, message_read_tsz
+    from flow.notification
+    where message_read_tsz is null
+      and user_id = :userId
+      and (metadata->>'userId') is not null
+    order by priority desc, date_created desc
+        """;
+
+  //language=PostgreSQL
   public final static String getUnreadByUserCount = """
     select count(1) from flow.notification where message_read_tsz is null and user_id = :userId
         """;
