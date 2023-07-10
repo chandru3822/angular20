@@ -374,16 +374,19 @@ public class SMSService {
     Twilio.init(properties.getTwilioAccountSID(), properties.getTwilioAuthToken());
 
     PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
-    String twilioMessageServiceSID = getMessageServiceSID(recipientType);
-    String twilioPhoneNumber = recipientType == RecipientType.PROJECT ?
-      properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
-
     MessageCreator creator = null;
-    // prefer Message Service SID over phone number if available
-    if (StringUtils.hasText(twilioMessageServiceSID)) {
-      creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
-    } else if (StringUtils.hasText(twilioPhoneNumber)) {
-      creator = Message.creator(toPhoneNumber, new PhoneNumber(twilioPhoneNumber), messageText);
+    switch (recipientType) {
+      case PROJECT:
+        creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioPhoneNumber()), messageText);
+        break;
+      case USER:
+        creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioInternalPhoneNumber()), messageText);
+        break;
+      default:
+        String twilioMessageServiceSID = getMessageServiceSID(recipientType);
+        if (StringUtils.hasText(twilioMessageServiceSID)) {
+          creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
+        }
     }
 
     if (mediaURLs != null && !mediaURLs.isEmpty()) {
