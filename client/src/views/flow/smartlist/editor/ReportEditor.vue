@@ -64,6 +64,7 @@
             />
 
             <v-btn
+              id="reportEditor-save"
               text
               color="primary"
               :disabled="!hasUnsavedChanges || (isEditing && !canEdit)"
