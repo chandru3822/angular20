@@ -83,9 +83,9 @@ public class NoteService {
     Note fetchedNote = new Note();
     String tableName = isPpsWqtNote ? "project_process_step_process_step_work_queue_type_note" :
       isPpsEventWqtNote ? "pps_event_process_step_event_work_queue_type_note" :
-      isProjectProdStats ? "project_prod_stats_note" : null;
+        isProjectProdStats ? "project_prod_stats_note" : null;
 
-    if(tableName != null) {
+    if (tableName != null) {
       if (null != note.getId()) {
         noteId = note.getId();
         params.put("id", noteId);
@@ -176,25 +176,26 @@ public class NoteService {
                 "Albatross",
                 currentUser.trueUserId(),
                 null);
-          } else {
-            String groupId = UUID.randomUUID().toString();
-            String textMessage =
+            } else {
+              String groupId = UUID.randomUUID().toString();
+              String textMessage =
                 "You were mentioned in an Albatross note. Click here: "
-                    + link
-                    + " to open the "
-                    + locationOfNote
-                    + ".";
-            communicationService.queueTextMessages(
+                  + link
+                  + " to open the "
+                  + locationOfNote
+                  + ".";
+              communicationService.queueTextMessages(
                 groupId, mentionedUser, textMessage, null, currentUser.trueUserId(), SmsPriority.NOTE_MENTION.level);
+            }
+          } else {
+            log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
           }
-        } else {
-          log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
         }
+      } catch (IOException e) {
+        log.error("NOTE: Error sending user mention email", e);
       }
-    } catch (IOException e) {
-      log.error("NOTE: Error sending user mention email", e);
-    }
 
+    }
     return fetchedNote;
   }
 
