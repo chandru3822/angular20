@@ -1,7 +1,7 @@
 package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeSyncService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
@@ -47,7 +47,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   private final MarketoService marketoService;
 
-  private final BirdeyeSyncService birdeyeSyncService;
+  private final BirdEyeSyncService birdeyeSyncService;
+
   private final BlueravenProjectService blueravenProjectService;
 
   private final SecurityService securityService;
@@ -105,7 +106,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
       }
   }
 
-  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
+  @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
   public void syncBirdeyeResponses(){
     log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();

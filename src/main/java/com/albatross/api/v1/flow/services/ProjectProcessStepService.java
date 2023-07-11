@@ -8,7 +8,7 @@ import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
@@ -84,7 +84,7 @@ public class ProjectProcessStepService {
   private final MessagingService messagingService;
   private final UserPositionService userPositionService;
   private final CustomerPortalService customerPortalService;
-  private final BirdeyeService birdeyeService;
+  private final BirdEyeService birdeyeService;
   private final PubSubService pubSubService;
 
   @Value("${aws.storageBucket}")

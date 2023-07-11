@@ -1,8 +1,5 @@
-package com.albatross.api.v1.company.blueraven.controllers;
+package com.albatross.api.v1.company.blueraven.integration.birdeye;
 
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckInType;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 @RequestMapping(value = "/api/v1/company/blueraven/birdeye")
 @RequiredArgsConstructor
 public class BirdeyeReviewController {
-  private final BirdeyeService birdeye;
+  private final BirdEyeService birdeye;
 
   /**
    * Send (or re-send) an invite to a customer to review Blue Raven.
