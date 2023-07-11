@@ -90,7 +90,7 @@
         showLeaderboard: true,
         bookingsLoading: false,
         bookingData: [],
-        timezone: this.$store.state.user.details.timezone.value
+        timezone: this.$store.state.user.details?.timezone?.value
       }
     },
     computed: {
