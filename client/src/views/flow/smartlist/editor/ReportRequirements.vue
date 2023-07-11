@@ -180,7 +180,14 @@ const getValue = (requirement, isEditing = false) => {
   if (requirement.listOfValueId || requirement.customFieldSql || requirement.companySystemListId) {
     const idToUse = (requirement.customSqlOptionId) ? requirement.customSqlOptionId :
                     (requirement.systemListOptionId) ? requirement.systemListOptionId : requirement.listOfValueId
-    const match = requirement.availableListOfValues.find(i => i.id === idToUse)
+    let match
+
+    //honestly can't remember anymore when we use listOfValues as opposed to availableListOfValues, so check them both
+    if (requirement.availableListOfValues) {
+      match = requirement.availableListOfValues.find(i => i.id === idToUse)
+    } else if (requirement.listOfValues) {
+      match = requirement.listOfValues.find(i => i.id === idToUse)
+    }
     return match?.name
   }
 
