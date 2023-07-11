@@ -66,7 +66,6 @@
 </template>
 
 <script>
-  import moment from 'moment'
   import constants from '@/helpers/constants'
   import { handleHidingGlobalLoader, getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
@@ -85,38 +84,44 @@
         constants,
         currentUserId: this.$store.state.user.details.id,
         currentUserOrgId: null,
-        bookingDate: moment().subtract(1, 'd').format('YYYY-MM-DD'),
+        bookingDate: null,
+        test1: null,
+        test2: null,
         showLeaderboard: true,
-        bookingsLoading: true,
+        bookingsLoading: false,
         bookingData: [],
-        timezone: this.$store.state.user.details.timezone.value
+        timezone: this.$store.state.user.details?.timezone?.value
       }
     },
     computed: {
 
     },
-    watch: {},
     methods: {
       async loadBookingData () {
-        this.bookingsLoading = true
-        try {
-          const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
-              bookingDate: this.bookingDate
-            }},'blueraven')
-          this.bookingData = data
+        if(this.bookingDate != null) {
+          this.bookingsLoading = true
+          try {
+            const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
+                bookingDate: this.bookingDate
+              }},'blueraven', [])
+            this.bookingData = data
 
-          this.bookingsLoading = false
+            this.bookingsLoading = false
 
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving bookings')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.bookingsLoading = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', `Error retrieving bookings.`)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.bookingsLoading = false
+          }
         }
       },
     },
     async created () {
+      const now = new Date();
+      now.setDate(now.getDate() - 1);
+      this.bookingDate = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
       await this.loadBookingData()
     },
   }
