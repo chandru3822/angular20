@@ -55,12 +55,16 @@
               <v-expansion-panel-header class="expansion-panel-header">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
-                    <span class="mr-2 label-large">#{{ h.hashtag }}</span>
+                    <span v-if="h.hashtagId === -1" class="uncategorized label-large mr-2">[{{h.hashtag}}]</span>
+                    <span v-else class="mr-2 label-large">#{{ h.hashtag }}</span>
                     <span class="body-medium">{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
-                    <v-btn icon @click.native.stop="changeSortDirectionForTopic(h)">
+                    <v-btn v-if="open" icon color="primary" @click.native.stop="changeSortDirectionForTopic(h)">
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
                       <v-icon small v-else>mdi-arrow-down</v-icon>
+                    </v-btn>
+                    <v-btn v-if="open && h.hashtagId !== -1" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ]">
+                      + Add note
                     </v-btn>
                   </v-row>
                 </template>
@@ -562,6 +566,10 @@ export default {
   z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
+}
+
+.uncategorized {
+  color: var(--v-grey-darken2);
 }
 
 .primary-lighten-9-bkgrd {
