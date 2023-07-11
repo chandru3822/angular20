@@ -11,17 +11,17 @@ import java.io.InputStream;
 
 @Slf4j
 @RequiredArgsConstructor
-public class BirdeyeErrorDecoder implements ErrorDecoder {
+public class BirdEyeErrorDecoder implements ErrorDecoder {
 
   private final ObjectMapper objectMapper;
 
   @Override
   public Exception decode(String methodKey, Response response) {
     try (final InputStream inputStream = response.body().asInputStream()) {
-      final BirdeyeApiError birdeyeApiError = objectMapper.readValue(inputStream, BirdeyeApiError.class);
+      final BirdEyeApiError birdeyeApiError = objectMapper.readValue(inputStream, BirdEyeApiError.class);
       log.debug("[Birdeye API] error; errorCode={}, errorMessage={}", birdeyeApiError.getCode(), birdeyeApiError.getMessage());
 
-      return new BirdeyeApiException(birdeyeApiError.getMessage());
+      return new BirdEyeApiException(birdeyeApiError.getMessage());
     } catch (IOException e) {
 
       try (final InputStream errorInputStream = response.body().asInputStream()) {
@@ -31,6 +31,6 @@ public class BirdeyeErrorDecoder implements ErrorDecoder {
         throw new RuntimeException(ex);
       }
     }
-    return new BirdeyeApiException("Unhandled error while accessing Birdeye Api");
+    return new BirdEyeApiException("Unhandled error while accessing Birdeye Api");
   }
 }

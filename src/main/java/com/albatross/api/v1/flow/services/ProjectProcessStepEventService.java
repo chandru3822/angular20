@@ -5,7 +5,7 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
@@ -72,7 +72,7 @@ public class ProjectProcessStepEventService {
   private final MarketoService marketoService;
   private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
-  private final BirdeyeService birdeyeService;
+  private final BirdEyeService birdeyeService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;

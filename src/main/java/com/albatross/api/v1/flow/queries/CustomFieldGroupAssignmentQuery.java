@@ -174,13 +174,13 @@ public class CustomFieldGroupAssignmentQuery {
   //language=PostgreSQL
   public final static String getCustomFieldsInGroup = """
     select cfga.*,
-         cfg.group_name,
-          cf.field_name,
-              cf.company_data_type_id,
-              cf.date_created,
-              cf.created_by_id,
-              cf.modified_by_id,
-              cf.date_modified
+        cfg.group_name,
+        cf.field_name,
+        cf.company_data_type_id,
+        cf.date_created,
+        cf.created_by_id,
+        cf.modified_by_id,
+        cf.date_modified
        from flow.custom_field_group_assignment cfga
          inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
          inner join flow.custom_field cf on cf.id = cfga.custom_field_id

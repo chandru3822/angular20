@@ -1,9 +1,8 @@
 package com.albatross.api.v1.company.blueraven.integration.birdeye;
 
-import com.albatross.api.config.company.blueraven.BirdeyeProperties;
+import com.albatross.api.config.company.blueraven.BirdEyeProperties;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.models.*;
-import com.albatross.api.v1.company.blueraven.services.queries.BirdeyeQuery;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.CustomField;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
@@ -14,6 +13,7 @@ import com.albatross.api.v1.flow.services.ListOfValueService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -23,29 +23,31 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class BirdeyeSyncService {
+public class BirdEyeSyncService {
 
   private final ProjectProcessStepService projectProcessStepService;
-  private final BirdeyeProperties birdeyeProperties;
+  private final BirdEyeProperties birdeyeProperties;
   private final SqlCache sqlCache;
-  private final BirdeyeService birdeyeService;
+  private final BirdEyeService birdeyeService;
   private final CustomFieldGroupService customFieldGroupService;
   private final CustomFieldValueService customFieldValueService;
   private final ListOfValueService listOfValueService;
 
   public void syncSurveyResponses() {
     final String businessNumber = birdeyeProperties.getToplevelBusinessId();
-    final String surveyId = birdeyeProperties.getSurveyId();
-    final OffsetDateTime lastSyncDate = getLastSyncDate(businessNumber, BirdEyeSyncType.SURVEY, surveyId);
+    final List<BirdEyeSyncableSurvey> surveyIds = sqlCache.queryBySql(BirdEyeQuery.getSyncableSurveys, null, new BeanPropertyRowMapper<>(BirdEyeSyncableSurvey.class));
 
-    syncSurveyResponses(surveyId, businessNumber, lastSyncDate);
-
-    setLastSyncDate(businessNumber, BirdEyeSyncType.SURVEY, surveyId);
+    for (BirdEyeSyncableSurvey survey : surveyIds) {
+      final OffsetDateTime lastSyncDate = getLastSyncDate(businessNumber, BirdEyeSyncType.SURVEY, survey.getBirdeyeSurveyId());
+      syncSurveyResponses(survey.getBirdeyeSurveyId(), survey.getCustomFieldGroupId(), businessNumber, lastSyncDate);
+      setLastSyncDate(businessNumber, BirdEyeSyncType.SURVEY, survey.getBirdeyeSurveyId());
+    }
   }
 
   public void syncReviews() {
@@ -124,7 +126,7 @@ public class BirdeyeSyncService {
   }
 
   //quick and dirty implementation based on given timeline... we probably need to implement a proper queue or something for these
-  private void syncSurveyResponses(String surveyId, String businessNumber, OffsetDateTime lastSyncDate) {
+  private void syncSurveyResponses(String surveyId, Long customFieldGroupId, String businessNumber, OffsetDateTime lastSyncDate) {
 
     final BirdEyeSurvey survey = birdeyeService.getSurvey(surveyId, businessNumber);
 
@@ -134,8 +136,7 @@ public class BirdeyeSyncService {
       .flatMap(p -> p.getQuestions().stream())
       .collect(Collectors.toMap(BirdEyeSurveyPageQuestion::getTitle, b -> b));
 
-    final Long installationSurveyGroupId = birdeyeProperties.getSurveyGroupId();
-    final Map<String, CustomField> customFields = customFieldGroupService.getCustomFieldsInGroup(installationSurveyGroupId)
+    final Map<String, CustomField> customFields = customFieldGroupService.getCustomFieldsInGroup(customFieldGroupId)
       .stream()
       .collect(Collectors.toMap(CustomField::getFieldName, cf -> cf));
 
@@ -147,10 +148,11 @@ public class BirdeyeSyncService {
 
       try {
         final BirdEyeSurveyResponseWrapper wrapper = birdeyeService.getSurveyResponses(surveyId, businessNumber, lastSyncDate, pageSize, page);
-
         if (wrapper.getResponseList() != null && !wrapper.getResponseList().isEmpty()) {
           for (BirdEyeSurveyResponse surveyResponse : wrapper.getResponseList()) {
-            handleSurveyResponse(surveyResponse, businessNumber, questions, customFields);
+            //only send follow-up when the survey equals 29921
+            // (TODO: need a better way to handle this)
+            handleSurveyResponse(surveyResponse, businessNumber, questions, customFields, Objects.equals(surveyId, "29921"));
           }
         }
 
@@ -164,14 +166,13 @@ public class BirdeyeSyncService {
     }
   }
 
-
   private OffsetDateTime getLastSyncDate(String businessNumber, BirdEyeSyncType syncType, String syncKey) {
     Map<String, Object> params = Map.of(
       "businessId", businessNumber,
       "syncKey", syncKey,
       "syncType", syncType.getType()
     );
-    final List<OffsetDateTime> query = sqlCache.queryBySql(BirdeyeQuery.getLastSync, params, (rs, rowNum) -> {
+    final List<OffsetDateTime> query = sqlCache.queryBySql(BirdEyeQuery.getLastSync, params, (rs, rowNum) -> {
       final Timestamp timestamp = rs.getTimestamp(1);
       return timestamp != null ? OffsetDateTime.ofInstant(timestamp.toInstant(), ZoneId.of("UTC")) : null;
     });
@@ -179,7 +180,7 @@ public class BirdeyeSyncService {
   }
 
   private void setLastSyncDate(String businessNumber, BirdEyeSyncType type, String syncKey) {
-    sqlCache.updateBySql(BirdeyeQuery.setLastSync, Map.of(
+    sqlCache.updateBySql(BirdEyeQuery.setLastSync, Map.of(
       "businessId", businessNumber,
       "syncKey", syncKey,
       "syncType", type.getType(),
@@ -187,7 +188,7 @@ public class BirdeyeSyncService {
     ));
   }
 
-  private void handleSurveyResponse(BirdEyeSurveyResponse response, String businessNumber, Map<String, BirdEyeSurveyPageQuestion> questions, Map<String, CustomField> customFields) {
+  private void handleSurveyResponse(BirdEyeSurveyResponse response, String businessNumber, Map<String, BirdEyeSurveyPageQuestion> questions, Map<String, CustomField> customFields, boolean sendFollowUp) {
 
     try {
       final BirdEyeReviewInvitation invitation = birdeyeService.getInviteByCustomerId(response.getCustomerId(), response.getCustomerPhone(), businessNumber);
@@ -212,16 +213,17 @@ public class BirdeyeSyncService {
 
           customFieldValueService.updateCustomFieldValues(List.of(cfv), invitation.getProjectId(), ObjectType.PROJECT);
 
-          final BirdEyeSurveyPageQuestion surveyQuestion = questions.getOrDefault(answer.getQuestionTitle(), null);
-
-          //send out a review invite if the 1st question "Are you happy with your installation experience?" is "yes"
-          if (surveyQuestion != null && surveyQuestion.getOrder().equals(0) &&
-              answer.getAnswer() != null && answer.getAnswer().equalsIgnoreCase("yes")) {
-            try {
-              invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, BirdEyeCheckInType.REVIEW.getValue()));
-              birdeyeService.sendCheckIn(invitation);
-            } catch (Exception e) {
-              log.error("[BIRDEYE] Error sending review check in for surveyResponseId={}, customerId={}", response.getResponseId(), response.getCustomerId());
+          if (sendFollowUp) {
+            final BirdEyeSurveyPageQuestion surveyQuestion = questions.getOrDefault(answer.getQuestionTitle(), null);
+            //send out a review invite if the 1st question "Are you happy with your installation experience?" is "yes"
+            if (surveyQuestion != null && surveyQuestion.getOrder().equals(0) &&
+                answer.getAnswer() != null && answer.getAnswer().equalsIgnoreCase("yes")) {
+              try {
+                invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, BirdEyeCheckInType.REVIEW.getValue()));
+                birdeyeService.sendCheckIn(invitation);
+              } catch (Exception e) {
+                log.error("[BIRDEYE] Error sending review check in for surveyResponseId={}, customerId={}", response.getResponseId(), response.getCustomerId());
+              }
             }
           }
         }
