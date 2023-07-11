@@ -14,7 +14,10 @@
     <!-- BOOKING TABLES FIRST HEADER END -->
 
     <!-- BOOKING TABLES TOP ROW START -->
-    <div class="ranking-tables-section" v-if="showLeaderboard">
+    <div class="ranking-tables-section">
+      <div>Booking Date Stupid: {{ bookingDate }}</div>
+      <div>Test 1 Stupid: {{ test1 }}</div>
+      <div>Test 2 Stupid: {{ test2 }}</div>
       <!-- BOOKINGS START -->
       <div class="ranking-table">
         <div v-if="bookingsLoading" class="section-spinner">
@@ -86,6 +89,8 @@
         currentUserId: this.$store.state.user.details.id,
         currentUserOrgId: null,
         bookingDate: moment().subtract(1, 'd').format('YYYY-MM-DD'),
+        test1: null,
+        test2: null,
         showLeaderboard: true,
         bookingsLoading: true,
         bookingData: [],
@@ -111,6 +116,8 @@
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', `Error retrieving bookings JSON ${JSON.stringify(e)}`)
+          this.test1 = e
+          this.test2 = JSON.stringify(e)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.bookingsLoading = false
         }
