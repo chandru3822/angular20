@@ -305,4 +305,9 @@ public class ContactLeadController {
   public void updateContactCoreDigital(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/solarfunnels", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarFunnels(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
