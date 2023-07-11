@@ -110,7 +110,7 @@
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving bookings')
+          this.snackbar = getSnackbar('ERROR', `Error retrieving bookings: ${e}`)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.bookingsLoading = false
         }
