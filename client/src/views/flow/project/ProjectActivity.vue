@@ -12,12 +12,14 @@
 
           <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
             <template v-slot:activator="{on, attrs}">
-
               <a v-if="!isSidebarCollapsed && messageProperties.projectName"
                  v-bind="attrs" v-on="on"
                  class="d-inline-block clickable conversation-name-link"
                 :href="`/project/${projectId}/details`">
                 {{ messageProperties.projectName }}
+                <v-chip class="customer-chip" style="margin-left: 4px;" small>
+                  <span >Customer</span>
+                </v-chip>
               </a>
 
               <a v-else
@@ -25,6 +27,9 @@
                  class="d-inline-block clickable conversation-name-link"
                  :href="`/user/${userId}/details`">
                 {{ messageProperties.fullName }}
+                <v-chip class="internal-chip" style="margin-left: 4px;" small>
+                  <span >Internal</span>
+                </v-chip>
               </a>
             </template>
             <span v-if="messageProperties.projectName" class="albatross-body-3">Go to project</span>
@@ -32,10 +37,17 @@
           </v-tooltip>
           <div v-else-if="!isSidebarCollapsed" >
             {{sidebarTitle}}
+            <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+              <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
+                <span >Customer</span>
+              </v-chip>
+              <v-chip v-else class="internal-chip" style="margin-left: 4px;" small>
+                <span >Internal</span>
+              </v-chip>
+            </div>
           </div>
           <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
           <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
-
             <v-tooltip bottom small>
               <template v-slot:activator="{on, attrs}">
                 <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
@@ -379,7 +391,7 @@ export default {
     },
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
-    }, 500)
+    }, 800)
   },
   data() {
     return {
@@ -725,5 +737,15 @@ export default {
 
 #conversation-activity-container .fix-toggle-opacity:before {
   background-color: unset !important;
+}
+
+.internal-chip {
+  background-color: #C8E6C9 !important;
+  height: 22px;
+}
+
+.customer-chip {
+  background-color: #FECDD2 !important;
+  height: 22px;
 }
 </style>

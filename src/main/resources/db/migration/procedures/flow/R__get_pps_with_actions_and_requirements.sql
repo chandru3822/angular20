@@ -384,7 +384,7 @@ BEGIN
                         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                         inner join flow.project p on p.id = pps.project_id
                         inner join flow.company_process cp on cp.id = p.company_process_id
-                        left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id
+                        left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id and psp.archived is false
                         inner join flow."user" creator on creator.id = pps.created_by_id
          where pps.id = p_project_process_step_id and
                pps.archived is false and

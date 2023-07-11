@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.SmsPriority;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.NoteQuery;
@@ -82,9 +83,9 @@ public class NoteService {
     Note fetchedNote = new Note();
     String tableName = isPpsWqtNote ? "project_process_step_process_step_work_queue_type_note" :
       isPpsEventWqtNote ? "pps_event_process_step_event_work_queue_type_note" :
-      isProjectProdStats ? "project_prod_stats_note" : null;
+        isProjectProdStats ? "project_prod_stats_note" : null;
 
-    if(tableName != null) {
+    if (tableName != null) {
       if (null != note.getId()) {
         noteId = note.getId();
         params.put("id", noteId);
@@ -173,7 +174,8 @@ public class NoteService {
                 context,
                 "noreply@albatross.myblueraven.com",
                 "Albatross",
-                currentUser.trueUserId());
+                currentUser.trueUserId(),
+                null);
             } else {
               String groupId = UUID.randomUUID().toString();
               String textMessage =
@@ -183,7 +185,7 @@ public class NoteService {
                   + locationOfNote
                   + ".";
               communicationService.queueTextMessages(
-                groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
+                groupId, mentionedUser, textMessage, null, currentUser.trueUserId(), SmsPriority.NOTE_MENTION.level);
             }
           } else {
             log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
@@ -192,8 +194,8 @@ public class NoteService {
       } catch (IOException e) {
         log.error("NOTE: Error sending user mention email", e);
       }
-    }
 
+    }
     return fetchedNote;
   }
 

@@ -1,5 +1,6 @@
 drop FUNCTION if exists brs.insert_commissions_on_project(p_project_id bigint);
-CREATE OR REPLACE FUNCTION brs.insert_commissions_on_project(p_project_id bigint)
+drop FUNCTION if exists brs.insert_commissions_on_project(p_project_id bigint,bigint,boolean);
+CREATE OR REPLACE FUNCTION brs.insert_commissions_on_project(p_project_id bigint,p_id bigint default null,p_is_override boolean default false)
   RETURNS void
   LANGUAGE plpgsql
 AS
@@ -60,30 +61,40 @@ BEGIN
          inner join flow.contact c on c.id = p.contact_id
   where p.id = p_project_id;
 
-  select op.id,op.name,ops.status_type
+  select op.id, op.name, ops.status_type
   into v_override_plan_id,v_override_plan,v_override_status
   from brs.override_plan op
          left join brs.override_plan_status ops on ops.id = op.status_id
          inner join brs.override_plan_assigned_user opau
                     on opau.override_plan_id = op.id and opau.user_id = v_user_id
-  where v_start_date >= opau.start_date
-    and case
-          when opau.end_date is not null then
-            v_start_date <= opau.end_date
-          else 1 = 1 end
-    and op.position_id = 1;
+  where case
+          when p_is_override is true and p_id is not null then
+            op.id = p_id
+          when p_id is null then
+                v_start_date >= opau.start_date
+              and case
+                    when opau.end_date is not null then
+                      v_start_date <= opau.end_date
+                    else 1 = 1 end
+              and op.position_id = 1
+          end;
 
-  select cp.id,cp.name,cps.status_type
+  select cp.id, cp.name, cps.status_type
   into v_commission_plan_id,v_commission_plan,v_commission_status
   from brs.commission_plan cp
          inner join brs.commission_plan_user cpu on cpu.commission_plan_id = cp.id and cpu.user_id = v_user_id
          left join brs.commission_plan_status cps on cps.id = cp.status_id
-  where v_start_date >= cpu.start_date
-    and case
-          when cpu.end_date is not null then
-            v_start_date <= cpu.end_date
-          else 1 = 1 end
-    and cp.position_id = 1;
+  where case
+          when p_is_override is false and p_id is not null then
+            cp.id = p_id
+          when p_id is null then
+                v_start_date >= cpu.start_date
+              and case
+                    when cpu.end_date is not null then
+                      v_start_date <= cpu.end_date
+                    else 1 = 1 end
+              and cp.position_id = 1
+          end;
 
   if v_user_id is not null and v_commission_plan_id is not null and v_commission_plan_found < 1 then
     --delete from brs.project_commission where project_id = p_project_id;
@@ -179,6 +190,30 @@ BEGIN
             now(),
             99999999);
   end if;
+
+  with update_data as (
+  select  foo.project_id,
+          brs.get_commissions_earned(foo.project_id,'M1') as commission_earned_m1,
+          brs.get_overrides_earned(foo.project_id,'M1') as overrides_earned_m1,
+          brs.get_commissions_earned(foo.project_id,'M2') as commission_earned_m2,
+          brs.get_overrides_earned(foo.project_id,'M2') as overrides_earned_m2,
+          brs.get_total_commissions_amount(foo.project_id ) as total_commissions,
+          brs.get_total_overrides_amount(foo.project_id ) as total_overrides
+  from (
+         select pd.project_id
+         from brs.project_details pd
+         where pd.final_design_complete_date is not null
+          and project_id = p_project_id
+       ) as foo)
+    update brs.financial_details pd
+    set commissions_earned_m1 = ud.commission_earned_m1,
+        overrides_earned_m1 = ud.overrides_earned_m1,
+        commissions_earned_m2 = ud.commission_earned_m2,
+        overrides_earned_m2 = ud.overrides_earned_m2,
+        total_commissions = ud.total_commissions,
+        total_overrides = ud.total_overrides
+  from update_data ud
+  where ud.project_id = pd.project_id;
 
 
 END;

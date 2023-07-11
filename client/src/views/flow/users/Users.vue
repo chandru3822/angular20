@@ -261,7 +261,7 @@
 
     <v-dialog v-model="msgDialog" max-width="800px">
       <v-card>
-        <v-card-title class="text-h5 justify-space-between" primary-title>
+        <v-card-title class="body-large justify-space-between" primary-title>
             Send Bulk Emails/Texts
             <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
         </v-card-title>
@@ -335,7 +335,7 @@
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
             <quill-editor
-                class="py-3"
+                class="py-3 rich-text-editor"
                 v-model="emailMessage"
                 @change="onEmailMessageChange($event)"
             />
@@ -361,11 +361,11 @@
                 color="primary" class="white--text"
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
-                Send
+                Send Email
               </v-btn>
             </v-card-actions>
         </div>
-        <div v-else-if="messageTab == 2" style="height:374px;" class="pa-6">
+        <div v-else-if="messageTab == 2" class="pa-6">
             <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
             conversations, use Inbox to send messages. <br></span>
             <label class="mr-2">To:</label>
@@ -395,27 +395,14 @@
                   class="primary--text text-caption"
                 >{{ selectedUsers.length }} selected</span>
               </template>
-
-              <template #item="data">
-                <template>
-                  <v-list-item dense>
-                    <v-list-item-action>
-                      <v-checkbox @change="toggleSingleSelectAutocomplete(data.item)" :input-value="data.item.selected"></v-checkbox>
-                    </v-list-item-action>
-                    <v-list-item-title>
-                      <div @click="toggleSingleSelectAutocomplete(data.item)">{{ data.item.fullName }}</div>
-                    </v-list-item-title>
-                  </v-list-item>
-                </template>
-              </template>
             </v-autocomplete>
 
           <div class="flex-display justify-end">
             <v-textarea solo v-model="textMessage"
                         auto-grow
                         rows="4"
-                        placeholder="Enter message here" class="message-text-area py-3"></v-textarea>
-
+                        outlined
+                        placeholder="Enter message here" class="message-text-area py-1 pr-3"></v-textarea>
 
             <v-btn icon color="primary" class="white--text mt-1 templateButton">
               <v-tooltip bottom small>
@@ -427,7 +414,7 @@
                 <span class="albatross-body-3">Templates</span>
               </v-tooltip>
             </v-btn>
-            <v-menu top left offset-y activator=".templateButton" :close-on-content-click="false">
+            <v-menu v-model="menuOpen" top left offset-y activator=".templateButton" :close-on-content-click="false">
               <v-card class="template-dialog" width="295px">
                 <v-card-title>
                   <span class="albatross-header-4-new">Add Template</span>
@@ -439,8 +426,9 @@
                             :items="selectableTemplates"
                             item-text="title"
                             item-value="id"
+                            ref="templateSelect"
                             return-object
-                            @change="[textMessage = selectedTemplate.message]">
+                            @change="handleTemplateSelection">
 
                     <template slot="item" slot-scope="data">
                       <!-- HTML that describes how select should render items when the select is open -->
@@ -457,16 +445,17 @@
             <v-file-input
                 dense
                 outlined
+                multiple
                 hide-input
                 color="primary"
-                v-model="textFile"
+                v-model="textFiles"
                 @change="uploadTextAttachment"
-                @click:clear="[textFile = null, textMediaUrls = []]"
+                @click:clear="[textFiles = [], textMediaUrls = []]"
             />
           </div>
+          <span v-if="textFiles.length > 0">Attached {{ attachmentsText }}</span>
 
             <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
-              <span v-if="textFile">Attached {{ textFile.name }}</span>
               <v-btn
                 text color="primary"
                 @click="cancelSendMessageDialog">
@@ -476,7 +465,7 @@
                 color="primary" class="white--text"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
-                Send
+                Send SMS
               </v-btn>
             </v-card-actions>
         </div>
@@ -658,15 +647,16 @@
         emailAttachments: [],
         textMediaUrls: [],
         emailFile: null,
-        textFile: null,
+        textFiles: [],
         primaryPositionsOnly: true,
         source: null,
         allUsersLoading: false,
         companyId: this.$store.state.user.details.companyId,
         attachmentTypeId: 9,
         templateTeams: [],
-        selectedTemplate: '',
+        selectedTemplate: null,
         selectableTemplates: [],
+        menuOpen: false
       }
     },
     computed: {
@@ -698,8 +688,16 @@
           return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0 && this.usersSelected)
       },
       disableSendText() {
-          return !(this.textMessage.trim().length > 0 && this.usersSelected)
-      }
+          return !((this.textMessage.trim().length > 0 || this.textMediaUrls.length > 0) && this.usersSelected)
+      },
+      attachmentsText() {
+        if (this.textFiles.length == 1) {
+          return this.textFiles[0].name
+        }
+        else if (this.textFiles.length > 1) {
+          return this.textFiles.length + ' files'
+        }
+      },
     },
     beforeRouteEnter(to, from, next) {
       //if coming to this page from the user details - use the previously used search
@@ -725,12 +723,19 @@
       this.fetchTeamsForUser()
     },
     methods: {
+      handleTemplateSelection() {
+        this.textMessage += this.selectedTemplate.message
+        this.menuOpen = false
+        this.selectedTemplate = null
+        this.$refs.templateSelect.reset();
+      },
       cancelSendMessageDialog(){
         this.textMediaUrls = []
         this.emailAttachments = []
         this.emailFile = null
-        this.textFile = null
+        this.textFiles = []
         this.msgDialog = false
+        this.textMessage = ''
       },
       async nextPage(){
         this.currentPage++;
@@ -933,7 +938,6 @@
               primaryFlag: this.primaryPositionsOnly
             }
 
-            let length = this.allUsers.length;
             const {data, status} = await postRequest(`/user/search?page=${this.currentPage-1}&size=${this.usersPerPage}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
@@ -1230,7 +1234,7 @@
       },
       async getSmsTeamTemplates() {
         try {
-          this.selectedTemplate = ''
+          this.selectedTemplate = null
           if (this.teamsAssociatedToUser.length < 1) {
             return
           }
@@ -1265,46 +1269,63 @@
                   return postRequest(`/communication/sendEmails`, formData)
                 })()
                 requests.push(sendEmailFn)
+                await Promise.all(requests)
               }
 
               if (sendText) {
-                  const sendTextFn = postRequest(`/communication/sendTexts`, {
+                  if (this.textMessage && this.textMessage.length > 1599) {
+                    let textOverflowLength = this.textMessage.length - 1599;
+                    this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                    this.messageSuccess = false
+                    this.$store.commit(AppMutations.SET_LOADING, false)
+                    return;
+                  }
+
+                  let params = {
                     userIDs: userIds,
                     message: this.textMessage,
                     mediaURLs: this.textMediaUrls
-                  })
-                requests.push(sendTextFn)
+                  }
+
+                  await postRequest(`/communication/sendTexts`, params)
               }
-              await Promise.all(requests)
-
-              let msg = 'Message sent'
-              if (sendEmail && sendText){
-                msg = 'Both Email and Text messages were sent successfully'
-              } else if (sendEmail) {
-                  msg = 'Email messages were sent successfully'
-              }else{
-                msg = 'Text messages were sent successfully'
-              }
-
-              this.snackbar = getSnackbar('SUCCESS', msg)
-
-              this.msgDialog = false
-              this.emailSubject= ''
-              this.emailMessage= defaultEmailMessage
-              this.fromEmail = ''
-              this.textMessage= ''
-              this.textMediaUrls = []
-              this.emailAttachments = []
-              this.emailFile = null
-              this.textFile = null
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
           }  catch (e) {
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error sending content')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
+              let message = e?.message ? 'Error Sending Message: ' + e.message :
+                e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+              const matches = message.match(/"(.*?)"/);
+              if (matches && matches.length > 1) {
+                message = 'Error Sending Message: ' + matches[1]
+              }
+
+             this.snackbar = getSnackbar('ERROR', message)
+             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+             this.$store.commit(AppMutations.SET_LOADING, false)
+             return
           }
+
+          let msg = 'Message sent'
+          if (sendEmail && sendText){
+            msg = 'Both Email and Text messages were sent successfully'
+          } else if (sendEmail) {
+            msg = 'Email messages were sent successfully'
+          } else{
+            msg = 'Text messages were sent successfully'
+          }
+
+          this.snackbar = getSnackbar('SUCCESS', msg)
+          this.msgDialog = false
+          this.emailSubject= ''
+          this.emailMessage= defaultEmailMessage
+          this.fromEmail = ''
+          this.textMessage= ''
+          this.textMediaUrls = []
+          this.emailAttachments = []
+          this.emailFile = null
+          this.textFiles = []
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
       },
       onEmailMessageChange({ text }) {
           this.emailCharacterCount = text.trim().length;
@@ -1313,24 +1334,26 @@
       uploadEmailAttachment: function (files) {
         this.emailAttachments = files
       },
-      uploadTextAttachment: async function (file) {
+      uploadTextAttachment: async function (files) {
         try {
-          if (!file){
+          if (!files){
             return
           }
 
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file,
-            attachmentTypeId: 3,
-            sourceId: 1,
-            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-            callback: async (newAttachment) => {
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              this.textMediaUrls = [...this.textMediaUrls, newAttachment.url]
-            }
-          })
+          for (let file of files) {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+            await this.$store.dispatch(Actions.FILE_UPLOAD, {
+              file,
+              attachmentTypeId: 3,
+              sourceId: 1,
+              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+              callback: async (newAttachment) => {
+                this.$store.commit(AppMutations.SET_LOADING, false)
+                this.textMediaUrls.push(newAttachment.url)
+              }
+            })
+          }
         } catch(e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
           logError(e)
@@ -1398,6 +1421,10 @@
 </script>
 
 <style lang="scss">
+  #users-container .v-data-footer__pagination {
+    display: none !important;
+  }
+
   #users-container .v-data-table__wrapper {
     height: calc(100vh - 290px);
     min-height: 300px;
@@ -1490,5 +1517,18 @@
       font-weight: bolder;
     }
   }
+
+  .select-check {
+    color: var(--v-primary-base) !important;
+  }
+
+  .ellipse {
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 450px;
+  }
+
 </style>
 

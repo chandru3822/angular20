@@ -96,13 +96,6 @@ public class SMSService {
       SmsServiceQuery.exportAll, Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
   }
 
-  public Optional<SMSQueueItem> getSmsById(Long id) {
-    Map<String, Object> params = Map.of("id", id);
-
-    return sqlCache.getBySql(
-      SmsServiceQuery.fetch, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
-  }
-
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
     return sqlCache.queryBySql(
@@ -125,7 +118,8 @@ public class SMSService {
     List<URI> mediaURLs,
     RecipientType recipientType,
     Long sentByUserId,
-    Long sentBySmsTeamId) {
+    Long sentBySmsTeamId,
+    Integer priority) {
 
     if(null != toPhone && !toPhone.isBlank()) {
       String queueInsert = SmsServiceQuery.insert;
@@ -141,6 +135,7 @@ public class SMSService {
       source.addValue("recipientTypeId", recipientType.ordinal());
       source.addValue("messageSentByUserId", sentByUserId);
       source.addValue("sentBySmsTeamId", sentBySmsTeamId);
+      source.addValue("priority", priority);
 
       if (mediaURLs != null && !mediaURLs.isEmpty()) {
 
@@ -379,16 +374,19 @@ public class SMSService {
     Twilio.init(properties.getTwilioAccountSID(), properties.getTwilioAuthToken());
 
     PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
-    String twilioMessageServiceSID = getMessageServiceSID(recipientType);
-    String twilioPhoneNumber = recipientType == RecipientType.PROJECT ?
-      properties.getTwilioPhoneNumber() : properties.getTwilioInternalPhoneNumber();
-
     MessageCreator creator = null;
-    // prefer Message Service SID over phone number if available
-    if (StringUtils.hasText(twilioMessageServiceSID)) {
-      creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
-    } else if (StringUtils.hasText(twilioPhoneNumber)) {
-      creator = Message.creator(toPhoneNumber, new PhoneNumber(twilioPhoneNumber), messageText);
+    switch (recipientType) {
+      case PROJECT:
+        creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioPhoneNumber()), messageText);
+        break;
+      case USER:
+        creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioInternalPhoneNumber()), messageText);
+        break;
+      default:
+        String twilioMessageServiceSID = getMessageServiceSID(recipientType);
+        if (StringUtils.hasText(twilioMessageServiceSID)) {
+          creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
+        }
     }
 
     if (mediaURLs != null && !mediaURLs.isEmpty()) {
