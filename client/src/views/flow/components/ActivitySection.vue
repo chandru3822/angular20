@@ -58,6 +58,10 @@
                     <span class="mr-2 label-large">#{{ h.hashtag }}</span>
                     <span class="body-medium">{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+                    <v-btn icon @click.native.stop="changeSortDirectionForTopic(h)">
+                      <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
+                      <v-icon small v-else>mdi-arrow-down</v-icon>
+                    </v-btn>
                   </v-row>
                 </template>
               </v-expansion-panel-header>
@@ -251,6 +255,9 @@ export default {
       console.log('at',this.activityTopics)
       return this.activityTopics.filter(a => {
         console.log('randalogger',a.id)
+        for (let h of a.activityTypeHashtags){
+          h.sortDirection = 'asc'
+        }
         return shownActivityTypes.includes(a.id)
       })
     },
@@ -374,6 +381,10 @@ export default {
     },
     changeSortDirection() {
       this.sortDirection = this.sortDirection === 'desc' ? 'asc' : 'desc'
+    },
+    changeSortDirectionForTopic(hashtagObject) {
+      hashtagObject.sortDirection = hashtagObject.sortDirection === 'desc' ? 'asc' : 'desc'
+      hashtagObject.activities = orderBy(hashtagObject.activities, ['dateCreated'], [hashtagObject.sortDirection])
     },
     async getTopics() {
       this.topicsLoading = true
