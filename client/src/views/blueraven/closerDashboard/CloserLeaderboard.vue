@@ -102,7 +102,7 @@
         try {
           const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
               bookingDate: this.bookingDate
-            }},'blueraven')
+            }},'blueraven', [])
           this.bookingData = data
 
           this.bookingsLoading = false
@@ -110,7 +110,7 @@
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', `Error retrieving bookings: ${e.toString()}`)
+          this.snackbar = getSnackbar('ERROR', `Error retrieving bookings... ${e.data}, ${e.data?.message}, ${e.data?.status}`)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.bookingsLoading = false
         }
