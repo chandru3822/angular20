@@ -100,32 +100,38 @@
     computed: {
 
     },
-    watch: {},
+    watch: {
+      bookingDate: async function () {
+        await this.loadBookingData()
+      },
+    },
     methods: {
       async loadBookingData () {
-        this.bookingsLoading = true
-        try {
-          const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
-              bookingDate: this.bookingDate
-            }},'blueraven', [])
-          this.bookingData = data
+        if(this.bookingData !== null) {
+          this.bookingsLoading = true
+          try {
+            const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
+                bookingDate: this.bookingDate
+              }},'blueraven', [])
+            this.bookingData = data
 
-          this.bookingsLoading = false
+            this.bookingsLoading = false
 
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', `Error retrieving bookings JSON ${JSON.stringify(e)}`)
-          this.test1 = e
-          this.test2 = JSON.stringify(e)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.bookingsLoading = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', `Error retrieving bookings JSON ${JSON.stringify(e)}`)
+            this.test1 = e
+            this.test2 = JSON.stringify(e)
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.bookingsLoading = false
+          }
         }
       },
     },
-    async created () {
-      await this.loadBookingData()
-    },
+    // async created () {
+    //   await this.loadBookingData()
+    // },
   }
 </script>
 
