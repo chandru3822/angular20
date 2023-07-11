@@ -54,6 +54,7 @@
     "uuid": "^9.0.0",
     "vue": "^2.7.2",
     "vue-beautiful-chat": "^2.5.0",
+    "vue-clamp": "^0.4.1",
     "vue-frag": "^1.4.2",
     "vue-gtag": "^1.16.1",
     "vue-html2pdf": "^1.8.0",

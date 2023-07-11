@@ -19,6 +19,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -490,26 +491,32 @@ public class UserService {
     return "{\"result\":\"Success\"}";
   }
 
-  public List<User> getMentionableUsers() {
+  @Data
+  public static class MentionableUser {
+    private Long id;
+    private String firstName, lastName, fullName, value, email;
+  }
+
+  public List<MentionableUser> getMentionableUsers() {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
     params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
-    List<User> results =
-        sqlCache.queryBySql(UserQuery.mentionableUsers, params, new UserMapper<>(User.class, om));
+    List<MentionableUser> results =
+        sqlCache.queryBySql(UserQuery.mentionableUsers, params, MentionableUser.class);
 
-    List<Long> userIds = results.stream().map(User::getId).collect(Collectors.toList());
-    Map<Long, String> userImageUrls =
-        attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
-
-    for (User u : results) {
-      if (userImageUrls.get(u.getId()) != null) {
-        u.setAwsBucket(userImageUrls.get(u.getId()));
-        u.setTitle("Photo of " + u.getFullName() + ", a Blue Raven Solar employee");
-      } else {
-        u.setTitle("User photo placeholder");
-      }
-    }
+    //todo: come back to this but i dont think we need it
+//    List<Long> userIds = results.stream().map(User::getId).collect(Collectors.toList());
+//    Map<Long, String> userImageUrls =
+//        attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
+//    for (User u : results) {
+//      if (userImageUrls.get(u.getId()) != null) {
+//        u.setAwsBucket(userImageUrls.get(u.getId()));
+//        u.setTitle("Photo of " + u.getFullName() + ", a Blue Raven Solar employee");
+//      } else {
+//        u.setTitle("User photo placeholder");
+//      }
+//    }
 
     return results;
   }

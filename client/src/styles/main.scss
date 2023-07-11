@@ -79,6 +79,12 @@ $default-text: rgba(0,0,0,0.87);
 .toolbar-z-index-override {
   z-index: 200;
 }
+/* required to make autocomplete dropdowns not get covered up */
+//should be placed on toolbar containing a menu that needs to overlap items below it
+.toolbar-z-index-override-for-menu {
+  position: relative;
+  z-index: 8;
+}
 
 .app-toolbar {
   border-bottom: solid 1px rgba(0, 0, 0, 0.12) !important;

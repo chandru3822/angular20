@@ -708,47 +708,45 @@ public class SmartlistServicev1 {
                  coalesce((
                               SELECT array_to_json(array_agg(row_to_json(notes)))
                               FROM (
-                                       select n.id,
-                                              n.note,
-                                              n.archived,
-                                              n.parent_id as "parentId",
-                                              n.date_created as "dateCreated",
-                                              n.date_modified as "dateModified",
-                                              n.created_by_id as "createdById",
-                                              n.follow_up_date as "followUpDate",
+                                       select pn.id,
+                                              pn.note,
+                                              pn.archived,
+                                              pn.parent_id as "parentId",
+                                              pn.date_created as "dateCreated",
+                                              pn.date_modified as "dateModified",
+                                              pn.created_by_id as "createdById",
+                                              pn.follow_up_date as "followUpDate",
                                               concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                                              n.modified_by_id as "modifiedById",
+                                              pn.modified_by_id as "modifiedById",
                                               pn.project_process_step_id as "projectProcessStepId",
                                               pn.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
                                               coalesce((
                                                            SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                                            FROM (
-                                                                    select n2.id,
-                                                                           n2.note,
-                                                                           n2.archived,
-                                                                           n2.date_created as "dateCreated",
-                                                                           n2.date_modified as "dateModified",
-                                                                           n2.created_by_id as "createdById",
-                                                                           n2.follow_up_date as "followUpDate",
+                                                                    select pn2.id,
+                                                                           pn2.note,
+                                                                           pn2.archived,
+                                                                           pn2.date_created as "dateCreated",
+                                                                           pn2.date_modified as "dateModified",
+                                                                           pn2.created_by_id as "createdById",
+                                                                           pn2.follow_up_date as "followUpDate",
                                                                            concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                                                                           n2.modified_by_id as "modifiedById",
+                                                                           pn2.modified_by_id as "modifiedById",
                                                                            pn2.project_process_step_id as "projectProcessStepId",
                                                                            pn2.process_step_work_queue_type_id as "processStepWorkQueueTypeId"
-                                                                    from flow.note n2
-                                                                             inner join flow.project_process_step_process_step_work_queue_type_note pn2 on pn2.note_id = n2.id
-                                                                             inner join flow.user creator2 on creator2.id = n2.created_by_id
-                                                                    where n2.archived is not true
-                                                                      and n2.parent_id = n.id
-                                                                    order by n2.date_created
+                                                                    from flow.project_process_step_process_step_work_queue_type_note pn2
+                                                                             inner join flow.user creator2 on creator2.id = pn2.created_by_id
+                                                                    where pn2.archived is not true
+                                                                      and pn2.parent_id = pn.id
+                                                                    order by pn2.date_created
                                                                 ) childNotes), '[]') AS "childNotes"
-                                       from flow.note n
-                                                inner join flow.project_process_step_process_step_work_queue_type_note pn on pn.note_id = n.id
-                                                inner join flow.user creator on creator.id = n.created_by_id
-                                       where n.archived is not true
-                                         and n.parent_id is null
+                                       from flow.project_process_step_process_step_work_queue_type_note pn
+                                                inner join flow.user creator on creator.id = pn.created_by_id
+                                       where pn.archived is not true
+                                         and pn.parent_id is null
                                          and pn.project_process_step_id = flow.project_process_step.id
                                          and pn.process_step_work_queue_type_id = pswqt.id
-                                       order by n.date_created desc
+                                       order by pn.date_created desc
                                    ) notes), '[]')                                                                       as "Notes",
           """
       );
@@ -3761,49 +3759,47 @@ public class SmartlistServicev1 {
         coalesce((
           select array_to_json(array_agg(row_to_json(notes)))
           from (
-            select n.id,
-                   n.note,
-                   n.archived,
-                   n.parent_id as "parentId",
-                   n.date_created as "dateCreated",
-                   n.date_modified as "dateModified",
-                   n.created_by_id as "createdById",
-                   n.follow_up_date as "followUpDate",
+            select pn.id,
+                   pn.note,
+                   pn.archived,
+                   pn.parent_id as "parentId",
+                   pn.date_created as "dateCreated",
+                   pn.date_modified as "dateModified",
+                   pn.created_by_id as "createdById",
+                   pn.follow_up_date as "followUpDate",
                    concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                   n.modified_by_id as "modifiedById",
+                   pn.modified_by_id as "modifiedById",
                    pn.project_process_step_event_id as "projectProcessStepEventId",
                    pn.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
                    coalesce((
                      select array_to_json(array_agg(row_to_json(childNotes)))
                      from (
-                     select n2.id,
-                            n2.note,
-                            n2.archived,
-                            n2.date_created as "dateCreated",
-                            n2.date_modified as "dateModified",
-                            n2.created_by_id as "createdById",
-                            n2.follow_up_date as "followUpDate",
+                     select pn2.id,
+                            pn2.note,
+                            pn2.archived,
+                            pn2.date_created as "dateCreated",
+                            pn2.date_modified as "dateModified",
+                            pn2.created_by_id as "createdById",
+                            pn2.follow_up_date as "followUpDate",
                             concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                            n2.modified_by_id as "modifiedById",
+                            pn2.modified_by_id as "modifiedById",
                             pn2.project_process_step_event_id as "projectProcessStepEventId",
                             pn2.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId"
-                     from flow.note n2
-                     inner join flow.pps_event_process_step_event_work_queue_type_note pn2 on pn2.note_id = n2.id
-                     inner join flow.user creator2 on creator2.id = n2.created_by_id
-                     where n2.archived is not true and
-                           n2.parent_id = n.id
-                     order by n2.date_created
+                     from flow.pps_event_process_step_event_work_queue_type_note pn2
+                      inner join flow.user creator2 on creator2.id = pn2.created_by_id
+                     where pn2.archived is not true and
+                           pn2.parent_id = pn.id
+                     order by pn2.date_created
                    ) childNotes), '[]') as "childNotes"
-            from flow.note n
-            inner join flow.pps_event_process_step_event_work_queue_type_note pn on pn.note_id = n.id
-            inner join flow.user creator on creator.id = n.created_by_id
+            from flow.pps_event_process_step_event_work_queue_type_note pn
+            inner join flow.user creator on creator.id = pn.created_by_id
             inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = pn.process_step_event_work_queue_type_id
-            where n.archived is not true and
-                  n.parent_id is null and
+            where pn.archived is not true and
+                  pn.parent_id is null and
                   pn.project_process_step_event_id = flow.project_process_step_event.id and
                   psewqt.process_step_event_id = flow.process_step_event.id and
                   psewqt.work_queue_type_id = %s
-            order by n.date_created desc
+            order by pn.date_created desc
           ) notes), '[]') as "Notes",\040""".formatted(smartlist.getWorkQueueTypeId()));
     } else {
       //process step fields
@@ -4456,49 +4452,47 @@ public class SmartlistServicev1 {
             coalesce((
               select array_to_json(array_agg(row_to_json(notes)))
               from (
-                select n.id,
-                       n.note,
-                       n.archived,
-                       n.parent_id as "parentId",
-                       n.date_created as "dateCreated",
-                       n.date_modified as "dateModified",
-                       n.created_by_id as "createdById",
-                       n.follow_up_date as "followUpDate",
+                select pn.id,
+                       pn.note,
+                       pn.archived,
+                       pn.parent_id as "parentId",
+                       pn.date_created as "dateCreated",
+                       pn.date_modified as "dateModified",
+                       pn.created_by_id as "createdById",
+                       pn.follow_up_date as "followUpDate",
                        concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                       n.modified_by_id as "modifiedById",
+                       pn.modified_by_id as "modifiedById",
                        pn.project_process_step_event_id as "projectProcessStepEventId",
                        pn.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
                        coalesce((
                          select array_to_json(array_agg(row_to_json(childNotes)))
                          from (
-                         select n2.id,
-                                n2.note,
-                                n2.archived,
-                                n2.date_created as "dateCreated",
-                                n2.date_modified as "dateModified",
-                                n2.created_by_id as "createdById",
-                                n2.follow_up_date as "followUpDate",
+                         select pn2.id,
+                                pn2.note,
+                                pn2.archived,
+                                pn2.date_created as "dateCreated",
+                                pn2.date_modified as "dateModified",
+                                pn2.created_by_id as "createdById",
+                                pn2.follow_up_date as "followUpDate",
                                 concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                                n2.modified_by_id as "modifiedById",
+                                pn2.modified_by_id as "modifiedById",
                                 pn2.project_process_step_event_id as "projectProcessStepEventId",
                                 pn2.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId"
-                         from flow.note n2
-                         inner join flow.pps_event_process_step_event_work_queue_type_note pn2 on pn2.note_id = n2.id
-                         inner join flow.user creator2 on creator2.id = n2.created_by_id
-                         where n2.archived is not true and
-                               n2.parent_id = n.id
-                         order by n2.date_created
+                         from flow.pps_event_process_step_event_work_queue_type_note pn2
+                         inner join flow.user creator2 on creator2.id = pn2.created_by_id
+                         where pn2.archived is not true and
+                               pn2.parent_id = pn.id
+                         order by pn2.date_created
                        ) childNotes), '[]') as "childNotes"
-                from flow.note n
-                inner join flow.pps_event_process_step_event_work_queue_type_note pn on pn.note_id = n.id
-                inner join flow.user creator on creator.id = n.created_by_id
+                from flow.pps_event_process_step_event_work_queue_type_note pn
+                inner join flow.user creator on creator.id = pn.created_by_id
                 inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = pn.process_step_event_work_queue_type_id
-                where n.archived is not true and
-                      n.parent_id is null and
+                where pn.archived is not true and
+                      pn.parent_id is null and
                       pn.project_process_step_event_id = flow.project_process_step_event.id and
                       psewqt.process_step_event_id = flow.process_step_event.id and
                       psewqt.work_queue_type_id = %s
-                order by n.date_created desc
+                order by pn.date_created desc
               ) notes), '[]') as "Notes"
         """.formatted(workQueueTypeId));
     } else {
