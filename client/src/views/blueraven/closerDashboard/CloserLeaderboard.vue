@@ -100,17 +100,17 @@
       async loadBookingData () {
         this.bookingsLoading = true
         try {
-          const {data} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
+          const {data, status} = await getRequestWithParams('/closerDashboard/leaderboardBookings', { params: {
               bookingDate: this.bookingDate
             }},'blueraven', [])
-          // this.bookingData = data
+          this.bookingData = data
 
-          // this.bookingsLoading = false
+          this.bookingsLoading = false
 
-          // handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', `Error retrieving bookings... ${e.data}, ${e.data?.message}, ${e.data?.status}`)
+          this.snackbar = getSnackbar('ERROR', `Error retrieving bookings JSON ${JSON.stringify(e)}`)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.bookingsLoading = false
         }
