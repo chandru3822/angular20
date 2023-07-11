@@ -1,9 +1,6 @@
-<template>
+<template xmlns="http://www.w3.org/1999/html">
   <v-chip-group column class="team-chips">
-    <div class="d-flex flex-column mt-3">
-    <span v-if="!readOnly" class="albatross-body-3 mt-n2 mb-2 members-span">Members</span>
-      <div class="d-flex">
-      <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap">
+    <span v-for="(team, index) in smsTeamOwners" class="d-flex flex-wrap">
         <v-chip v-if="team.users.length === 0"
                 label
                 :close="teamNamesAssociatedToUser.includes(team.teamName) && userCanView"
@@ -120,8 +117,6 @@
         </template>
         <AddTeamDropdown :sms-team-owners="smsTeamOwners" :project-id="projectId" :owner-user-id="userId" @closeTeamAdded="teamAdded()"></AddTeamDropdown>
       </v-menu>
-      </div>
-    </div>
   </v-chip-group>
 </template>
 
@@ -342,10 +337,5 @@ export default {
 
 .remove-dialog-option-info {
   color: var(--v-grey-darken1);
-}
-
-.members-span {
-  height: 12px;
-  display: inline-block
 }
 </style>

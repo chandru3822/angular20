@@ -4,11 +4,16 @@ import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckInType;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
+import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepActionChildFunction;
+import com.albatross.api.v1.flow.queries.ContactQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.ProcessStepCfvQuery;
 import com.albatross.api.v1.flow.services.ListOfValueService;
@@ -50,6 +55,8 @@ public class BrsProcessStepActionFunctionService {
   private final CustomerPortalService customerPortalService;
 
   private final ListOfValueService listOfValueService;
+
+  private final BirdeyeService birdeyeService;
 
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
   public Boolean marketoEnabled;
@@ -524,5 +531,32 @@ public class BrsProcessStepActionFunctionService {
     } catch (Exception e) {
       throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
+  }
+
+  public void sendBirdEyeCheckIn(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+    final Long companyId = Long.parseLong(systemValues.get("companyId").toString());
+
+    Map<String, Object> params = Map.of("projectId", projectId, "parentCompanyId", companyId, "isParent", false, "companyId", companyId);
+    Contact contact = sqlCache.getBySql(ContactQuery.getByProjectId, params, Contact.class)
+      .orElseThrow(() -> new RuntimeException(formatErrorMessage(func, "Unable to find contact")));
+
+    BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
+    invitation.setCustomerEmail(contact.getEmail());
+    invitation.setCustomerName(contact.getFullName());
+    invitation.setCustomerPhone(contact.getPhone());
+    invitation.setSendSms(true);
+    invitation.setProjectId(projectId);
+
+    String fieldTypeValue = func.getActionParamDynamicValues().stream()
+      .filter(p -> p.getParameterName().contains("Check-In Type"))
+      .map(ActionParamDynamicValue::getDynamicValue)
+      .filter(Objects::nonNull)
+      .findFirst()
+      .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
+
+    invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
+
+    birdeyeService.sendCheckIn(invitation);
   }
 }

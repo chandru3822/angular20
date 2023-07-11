@@ -5,6 +5,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.SmsPriority;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.NoteQuery;
@@ -173,25 +174,25 @@ public class NoteService {
                 context,
                 "noreply@albatross.myblueraven.com",
                 "Albatross",
-                currentUser.trueUserId());
-            } else {
-              String groupId = UUID.randomUUID().toString();
-              String textMessage =
-                "You were mentioned in an Albatross note. Click here: "
-                  + link
-                  + " to open the "
-                  + locationOfNote
-                  + ".";
-              communicationService.queueTextMessages(
-                groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
-            }
+                currentUser.trueUserId(),
+                null);
           } else {
-            log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
+            String groupId = UUID.randomUUID().toString();
+            String textMessage =
+                "You were mentioned in an Albatross note. Click here: "
+                    + link
+                    + " to open the "
+                    + locationOfNote
+                    + ".";
+            communicationService.queueTextMessages(
+                groupId, mentionedUser, textMessage, null, currentUser.trueUserId(), SmsPriority.NOTE_MENTION.level);
           }
+        } else {
+          log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
         }
-      } catch (IOException e) {
-        log.error("NOTE: Error sending user mention email", e);
       }
+    } catch (IOException e) {
+      log.error("NOTE: Error sending user mention email", e);
     }
 
     return fetchedNote;

@@ -1,7 +1,7 @@
 package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeSyncService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
@@ -47,7 +47,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   private final MarketoService marketoService;
 
-  private final BirdeyeService birdeyeService;
+  private final BirdeyeSyncService birdeyeSyncService;
   private final BlueravenProjectService blueravenProjectService;
 
   private final SecurityService securityService;
@@ -110,7 +110,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
 
-    birdeyeService.syncSurveyResponses();
+    birdeyeSyncService.syncSurveyResponses();
     log.debug("*** CRON: end sync surveys from BirdEye ***");
   }
 
@@ -121,7 +121,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     Instant startTime = Instant.now();
     setBlueravenSystemUser();
 
-    birdeyeService.syncReviews();
+    birdeyeSyncService.syncReviews();
     Duration duration = Duration.between(startTime, Instant.now());
     log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
   }

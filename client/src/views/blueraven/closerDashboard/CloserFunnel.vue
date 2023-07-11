@@ -640,6 +640,7 @@
                   <td>{{ item.owner_name || '' }}</td>
                   <td>{{ item.office || '' }}</td>
                   <td>{{ item.state || '' }}</td>
+                  <td>{{ item.metro_area || '' }}</td>
                   <td>{{ item.status_type || '' }}</td>
                   <td class="customer-name">{{ item.customer_name || '' }}</td>
                   <td>
@@ -918,6 +919,7 @@ export default {
       {text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false}, // 1
       {text: 'Office', value: 'office', show: true, width: 75, optional: false}, // 2
       {text: 'State', value: 'state', show: true, width: 75, optional: false}, // 3 -- new
+      {text: 'Metro', value: 'metro_area', show: true, width: 75, optional: false}, // 3 -- new
       {text: 'Status', value: 'status_type', show: true, width: 75, optional: false}, // 4 -- new
       {text: 'Name', value: 'customer_name', show: true, width: 90, optional: false}, // 5
       {text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false}, // 6

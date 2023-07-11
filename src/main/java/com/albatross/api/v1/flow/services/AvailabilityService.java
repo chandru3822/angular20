@@ -850,7 +850,8 @@ public class AvailabilityService {
               context,
               "SalesOps@blueravensolar.com",
               "Blue Raven Sales Operation",
-              user.trueUserId());
+              user.trueUserId(),
+              null);
           }
 
           if (marketoEnabled) {

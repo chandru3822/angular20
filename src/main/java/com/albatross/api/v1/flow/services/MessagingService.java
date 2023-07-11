@@ -354,7 +354,7 @@ public class MessagingService {
         for (SmsTeam smsTeam: unassignedSmsTeams) {
           List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
           for (User user: usersToNotify) {
-            List<Notification> notifications = notificationService.getUserNotifications(user.getId());
+            List<Notification> notifications = notificationService.getProjectNotificationsForUser(user.getId());
             List<Long> notificationIds = notifications.stream()
                                                        .filter(n -> (new Long ((Integer) n.getMetadata().get("projectId"))).equals(projectId))
                                                       .map(Notification::getId).toList();
@@ -503,7 +503,7 @@ public class MessagingService {
         for (SmsTeam smsTeam: unassignedSmsTeams) {
           List<User> usersToNotify = smsTeam.getUnassignedNotificationUsers();
           for (User user: usersToNotify) {
-            List<Notification> notifications = notificationService.getUserNotifications(user.getId());
+            List<Notification> notifications = notificationService.getUserNotificationsForUser(user.getId());
             List<Long> notificationIds = notifications.stream()
               .filter(n -> (new Long ((Integer) n.getMetadata().get("userId"))).equals(userId))
               .map(Notification::getId).toList();
@@ -861,7 +861,7 @@ public class MessagingService {
 
         // If there are no owners, add unassigned notifications if applicable
         if (ownerUsers.isEmpty()) {
-          ConversationMessageProperties cmp = getProject(userId, SystemSettings.BR_SYSTEM_USER.getId());
+          ConversationMessageProperties cmp = getUser(userId, SystemSettings.BR_SYSTEM_USER.getId());
           final List<Long> teamIds = cmp.getSmsTeamOwners().stream().map(SmsTeam::getId).toList();
           final List<SmsTeam> smsTeams = getTeamsUnassignedNotificationUsers(teamIds);
           for (SmsTeam smsTeam: smsTeams) {

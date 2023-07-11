@@ -19,6 +19,7 @@ public class EmailMessage {
   private Boolean processed;
   private Long id;
   private List<Long> attachmentIds;
+  private String cc;
 
 
 }

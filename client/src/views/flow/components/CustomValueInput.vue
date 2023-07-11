@@ -534,7 +534,10 @@ export default {
   height: auto !important;
   width: 100%;
   color: rgba(0,0,0,0.87); //default-text-color
-  font-size: 0.875rem; //albatross-body-2
+  font-size: 1rem; //body-large
+  font-weight: 400;
+  font-family: lato;
+  line-height: 1.6;
 }
 
 .rich-text-editor-readonly .ql-toolbar {

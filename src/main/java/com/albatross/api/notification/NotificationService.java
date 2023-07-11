@@ -208,6 +208,18 @@ public class NotificationService {
       NotificationQuery.getUnreadByUser, params, new NotificationMapper(this.objectMapper));
   }
 
+  public List<Notification> getProjectNotificationsForUser(@NonNull Long userId) {
+    final Map<String, Object> params = Map.of("userId", userId);
+    return sqlCache.queryBySql(
+      NotificationQuery.getUnreadProjectNotificationsByUser, params, new NotificationMapper(this.objectMapper));
+  }
+
+  public List<Notification> getUserNotificationsForUser(@NonNull Long userId) {
+    final Map<String, Object> params = Map.of("userId", userId);
+    return sqlCache.queryBySql(
+      NotificationQuery.getUnreadUserNotificationsByUser, params, new NotificationMapper(this.objectMapper));
+  }
+
   @Async
   public void sendUserCatchupNotifications(
       Subscriber subscriber, @NonNull Long userId, @NonNull Long afterId) {
