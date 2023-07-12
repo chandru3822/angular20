@@ -6,7 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckInType;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
@@ -56,7 +56,7 @@ public class BrsProcessStepActionFunctionService {
 
   private final ListOfValueService listOfValueService;
 
-  private final BirdeyeService birdeyeService;
+  private final BirdEyeService birdeyeService;
 
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
   public Boolean marketoEnabled;
@@ -541,13 +541,6 @@ public class BrsProcessStepActionFunctionService {
     Contact contact = sqlCache.getBySql(ContactQuery.getByProjectId, params, Contact.class)
       .orElseThrow(() -> new RuntimeException(formatErrorMessage(func, "Unable to find contact")));
 
-    BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
-    invitation.setCustomerEmail(contact.getEmail());
-    invitation.setCustomerName(contact.getFullName());
-    invitation.setCustomerPhone(contact.getPhone());
-    invitation.setSendSms(true);
-    invitation.setProjectId(projectId);
-
     String fieldTypeValue = func.getActionParamDynamicValues().stream()
       .filter(p -> p.getParameterName().contains("Check-In Type"))
       .map(ActionParamDynamicValue::getDynamicValue)
@@ -555,8 +548,18 @@ public class BrsProcessStepActionFunctionService {
       .findFirst()
       .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
 
+    BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
+    invitation.setCustomerEmail(contact.getEmail());
+    invitation.setCustomerName(contact.getFullName());
+    invitation.setCustomerPhone(contact.getPhone());
+    invitation.setSendSms(true);
+    invitation.setProjectId(projectId);
     invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
 
-    birdeyeService.sendCheckIn(invitation);
+    try {
+      birdeyeService.sendCheckIn(invitation);
+    } catch (Exception e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
   }
 }

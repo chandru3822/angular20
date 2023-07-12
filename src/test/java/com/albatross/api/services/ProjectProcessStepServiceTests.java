@@ -2,7 +2,7 @@ package com.albatross.api.services;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.pubsub.PubSubService;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
@@ -76,7 +76,7 @@ public class ProjectProcessStepServiceTests {
 
   CustomerPortalService customerPortalService = mock(CustomerPortalService.class);
 
-  BirdeyeService birdeyeService = mock(BirdeyeService.class);
+  BirdEyeService birdeyeService = mock(BirdEyeService.class);
 
   private ProjectProcessStepAction action;
 

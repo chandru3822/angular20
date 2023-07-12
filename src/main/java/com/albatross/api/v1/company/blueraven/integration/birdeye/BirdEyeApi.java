@@ -10,7 +10,6 @@ import feign.jackson.JacksonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.optionals.OptionalDecoder;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,7 +35,7 @@ public interface BirdEyeApi {
 //      })
       .encoder(new JacksonEncoder(objectMapper))
       .decoder(new OptionalDecoder(new JacksonDecoder(objectMapper)))
-      .errorDecoder(new BirdeyeErrorDecoder(objectMapper))
+      .errorDecoder(new BirdEyeErrorDecoder(objectMapper))
       .requestInterceptor(requestTemplate -> requestTemplate.query("api_key", apiKey))
       .target(BirdEyeApi.class, "https://api.birdeye.com");
   }

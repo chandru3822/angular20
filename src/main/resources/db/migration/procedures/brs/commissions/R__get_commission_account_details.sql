@@ -305,6 +305,8 @@ BEGIN
                     THEN fd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
                   ELSE 1 = 1 END
           order by 3) as foo1
-    where (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not (coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0)) = any (v_amounts);
+    where CASE
+            WHEN p_project_ids IS NOT NULL
+              THEN foo1.project_id = ANY (p_project_ids) else (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not (coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0)) = any (v_amounts) end;
 END
 $$;

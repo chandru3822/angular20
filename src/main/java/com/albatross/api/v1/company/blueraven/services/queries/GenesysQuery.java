@@ -169,7 +169,7 @@ public class GenesysQuery {
              left join future_events fe on p.id = fe.project_id
     where pd.first_appointment_pitched is not null
       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-                  'US/Mountain') :: date between current_date - 180 and current_date - 10)
+                  'US/Mountain') :: date between current_date - 180 and current_date - 30)
       and lst.name not in ('Cold', 'Unqualified', 'Do Not Call')
       and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
       and ls.name not in ('Closer Gen', 'Referrals')
