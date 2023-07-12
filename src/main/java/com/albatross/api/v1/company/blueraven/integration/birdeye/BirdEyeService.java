@@ -108,17 +108,13 @@ public class BirdEyeService {
         invitation.getAdditionalParams().forEach(request::additionalParam);
       }
 
-      if (Domain.PROD.equals(birdeyeProperties.getServerDomain())) {
-        request
-          .phone(birdeyeProperties.getTestPhone())
-          .emailId(birdeyeProperties.getTestEmail());
+      if (invitation.getSendSms() != null && invitation.getSendSms()) {
+        String phone = birdeyeProperties.getServerDomain().equals(Domain.PROD) ? invitation.getCustomerPhone() : birdeyeProperties.getTestPhone();
+        request.smsEnabled(1).phone(phone);
       } else {
-        request
-          .phone(invitation.getCustomerPhone())
-          .emailId(invitation.getCustomerEmail());
+        String email = birdeyeProperties.getServerDomain().equals(Domain.PROD) ? invitation.getCustomerEmail() : birdeyeProperties.getTestEmail();
+        request.smsEnabled(0).emailId(email);
       }
-
-      request.smsEnabled(invitation.getSendSms() != null && invitation.getSendSms() ? 1 : 0);
 
       if (birdeyeProperties.getSendInvitesForReal()) {
         log.debug("[BIRDEYE] Sending review invitation to customer on projectId={}", invitation.getProjectId());
