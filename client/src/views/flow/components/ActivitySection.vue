@@ -7,7 +7,7 @@
         label="Search"
         clearable
         @click:clear="clearSearch"
-        v-model="search.searchText"
+        v-model="searchText"
       ></v-text-field>
       <v-btn text small color="primary" @click="changeSortDirection()">
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
@@ -47,7 +47,7 @@
                       :search-callback="searchByClick"
         />
       </div>
-      <div v-if="!timelineView">
+      <div v-if="!timelineView && !searchView">
         <div v-for="type in filteredTopics">
           {{ type.activityType }}
           <v-expansion-panels accordion multiple flat class=".rounded-0">
@@ -206,18 +206,20 @@ export default {
     userId: Number,
     projectId: Number,
     objectTypeId: Number,
-    timelineView: Boolean
+    timelineView: Boolean,
+    searchViewCallback: Function
   },
   data() {
     return {
       SearchTypeEnum,
       snackbar: {},
+      searchText: this.$route.query.search != null ? this.$route.query.search : '',
       search: {
-        searchText: this.$route.query.search != null ? this.$route.query.search : '',
         userId: null,
         position: null,
         teamId: null
       },
+      searchView: false,
       linkLabel: '',
       users: [],
       addActivity: false,
@@ -250,6 +252,16 @@ export default {
       } else {
         this.getActivityTopics()
       }
+    },
+    searchText: function(){
+      if(this.searchText && this.searchText !== ''){
+        this.searchView = true
+      }
+    },
+
+    searchView: function() {
+      this.searchViewCallback(this.searchView)
+
     }
   },
   computed: {
@@ -325,7 +337,7 @@ export default {
       else if(this.search.teamId){
         return activity.createdByPositionOrgId === this.search.teamId
       }
-      let lowerSearch = this.search.searchText?.toLowerCase()
+      let lowerSearch = this.searchText?.toLowerCase()
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
         || activity.createdByPosition?.toLowerCase().includes(lowerSearch)
@@ -406,29 +418,21 @@ export default {
     searchByClick(text, id, searchType){
       switch (searchType){
         case SearchTypeEnum.USER:
-          this.search = {
-            searchText: `User: ${text}`,
-            userId: id
-          }
-        break;
-        case SearchTypeEnum.POSITION:
-          this.search = {
-            searchText: `Position: ${text}`,
-            position: text
-          }
+          this.searchText= `User: ${text}`
+          this.search.userId = id
           break;
-          case SearchTypeEnum.TEAM:
-          this.search = {
-            searchText: `Team: ${text}`,
-            teamId: id
-          }
+        case SearchTypeEnum.POSITION:
+          this.searchText = `Position: ${text}`
+          this.search.position = text
+          break;
+        case SearchTypeEnum.TEAM:
+          this.searchText = `Team: ${text}`,
+          this.search.teamId = id
           break;
           default:
-            this.search = {
-              searchText: text
-            }
+            this.searchText = text
       }
-
+      this.searchView = true
     },
     clearSearch(){
       this.search={}
@@ -436,6 +440,7 @@ export default {
       for(let at of this.activityTypes){
         at.show = true
       }
+      this.searchView = false
     },
     setEditedActivity(item) {
       this.editedActivity = cloneDeep(item)
