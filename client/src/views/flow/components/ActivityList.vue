@@ -52,7 +52,9 @@
           <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
           <div class="text-formatting">
             <vue-clamp ellipsis="" autoresize :max-lines="5">{{ a.note }}
-              <template #after="{ toggle, clamped }"><button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
+              <template #after="{ toggle, clamped, expanded }">
+                <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
+                <button v-if="expanded" @click="toggle" class="see-more-btn"> (see less)</button>
               </template>
             </vue-clamp>
           </div>
