@@ -41,7 +41,7 @@ public class BirdEyeService {
     sqlCache.queryBySql(BirdEyeQuery.saveReviewInviteSentValue, params, String.class);
   }
 
-  public BirdEyeSurvey getSurvey(String surveyId, String businessNumber) {
+  public BirdEyeSurvey getSurvey(@NonNull String surveyId, @NonNull String businessNumber) {
     return this.birdeyeApi.getSurvey(surveyId, businessNumber);
   }
 
