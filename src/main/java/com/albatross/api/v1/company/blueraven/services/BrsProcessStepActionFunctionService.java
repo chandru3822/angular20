@@ -534,36 +534,37 @@ public class BrsProcessStepActionFunctionService {
   }
 
   public void sendBirdEyeCheckIn(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-    final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-    final Long companyId = Long.parseLong(systemValues.get("companyId").toString());
-
-    Map<String, Object> params = Map.of("projectId", projectId, "parentCompanyId", companyId, "isParent", false, "companyId", companyId);
-    Contact contact = sqlCache.getBySql(ContactQuery.getByProjectId, params, Contact.class)
-      .orElseThrow(() -> new RuntimeException(formatErrorMessage(func, "Unable to find contact")));
-
-    String fieldTypeValue = func.getActionParamDynamicValues().stream()
-      .filter(p -> p.getParameterName().contains("Check-In Type"))
-      .map(ActionParamDynamicValue::getDynamicValue)
-      .filter(Objects::nonNull)
-      .findFirst()
-      .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
-
-    BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
-    invitation.setProjectId(projectId);
-    invitation.setCustomerEmail(contact.getEmail());
-    invitation.setCustomerName(contact.getFullName());
-    invitation.setSendSms(true);
-    invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
-
-    if (contact.getMobile() != null && !contact.getMobile().trim().equals("")) {
-      invitation.setCustomerPhone(contact.getMobile());
-    } else if (contact.getPhone() != null && !contact.getPhone().trim().equals("")) {
-      invitation.setCustomerPhone(contact.getPhone());
-    } else {
-      throw new RuntimeException(formatErrorMessage(func, "Unable to find phone number"));
-    }
-
     try {
+
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      final Long companyId = Long.parseLong(systemValues.get("companyId").toString());
+
+      Map<String, Object> params = Map.of("projectId", projectId, "parentCompanyId", companyId, "isParent", false, "companyId", companyId);
+      Contact contact = sqlCache.getBySql(ContactQuery.getByProjectId, params, Contact.class)
+        .orElseThrow(() -> new RuntimeException(formatErrorMessage(func, "Unable to find contact")));
+
+      String fieldTypeValue = func.getActionParamDynamicValues().stream()
+        .filter(p -> p.getParameterName().contains("Check-In Type"))
+        .map(ActionParamDynamicValue::getDynamicValue)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
+
+      BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
+      invitation.setProjectId(projectId);
+      invitation.setCustomerEmail(contact.getEmail());
+      invitation.setCustomerName(contact.getFullName());
+      invitation.setSendSms(true);
+      invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
+
+      if (contact.getMobile() != null && !contact.getMobile().trim().equals("")) {
+        invitation.setCustomerPhone(contact.getMobile());
+      } else if (contact.getPhone() != null && !contact.getPhone().trim().equals("")) {
+        invitation.setCustomerPhone(contact.getPhone());
+      } else {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find phone number"));
+      }
+
       birdeyeService.sendCheckIn(invitation);
     } catch (Exception e) {
       log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
