@@ -566,6 +566,7 @@ public class BrsProcessStepActionFunctionService {
     try {
       birdeyeService.sendCheckIn(invitation);
     } catch (Exception e) {
+      log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
       throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
   }
