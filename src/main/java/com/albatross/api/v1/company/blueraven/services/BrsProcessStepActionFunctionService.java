@@ -549,12 +549,19 @@ public class BrsProcessStepActionFunctionService {
       .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
 
     BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
+    invitation.setProjectId(projectId);
     invitation.setCustomerEmail(contact.getEmail());
     invitation.setCustomerName(contact.getFullName());
-    invitation.setCustomerPhone(contact.getPhone());
     invitation.setSendSms(true);
-    invitation.setProjectId(projectId);
     invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
+
+    if (contact.getMobile() != null && !contact.getMobile().trim().equals("")) {
+      invitation.setCustomerPhone(contact.getMobile());
+    } else if (contact.getPhone() != null && !contact.getPhone().trim().equals("")) {
+      invitation.setCustomerPhone(contact.getPhone());
+    } else {
+      throw new RuntimeException(formatErrorMessage(func, "Unable to find phone number"));
+    }
 
     try {
       birdeyeService.sendCheckIn(invitation);
