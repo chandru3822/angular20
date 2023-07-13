@@ -109,7 +109,6 @@
               <v-btn :color="toggleTimelineView === 0 ? 'primary' : 'white'"
                      :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
                      class="text-capitalize my-4 fix-toggle-opacity body-medium"
-                     :disabled="noteSearchView"
                      style="width: 50% !important;"
               >
                 Timeline
@@ -117,7 +116,6 @@
               <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
                      :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
                      class="text-capitalize  fix-toggle-opacity body-medium"
-                     :disabled="noteSearchView"
                      style="width: 50% !important;"
               >
                 Topic
@@ -154,7 +152,7 @@
           <ActivitySection :contact-id="contactId" :user-id="userId"
                            :timeline-view="toggleTimelineView === 0"
                            :object-type-id="objectTypeId" :project-id="projectId"
-                           :org-id="orgId" v-else-if="selectedOption === 1" :searchViewCallback="toggleNoteSearchView"></ActivitySection>
+                           :org-id="orgId" v-else-if="selectedOption === 1"></ActivitySection>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                  :user-id="userId"
@@ -419,7 +417,6 @@ export default {
       toggleFocused: 0,
       toggleFocusedXs: 0,
       toggleTimelineView: 0,
-      noteSearchView: false
     }
   },
   created() {
@@ -625,10 +622,6 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error fetching history')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
-    },
-
-    toggleNoteSearchView(searchEvent){
-      this.noteSearchView = searchEvent
     },
     endNotesTimer(endEvent){
       endTimer(endEvent);

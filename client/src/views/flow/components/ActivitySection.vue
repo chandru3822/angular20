@@ -47,7 +47,7 @@
                       :search-callback="searchByClick"
         />
       </div>
-      <div v-if="!timelineView && !searchView">
+      <div v-if="!timelineView">
         <div v-for="type in filteredTopics">
           {{ type.activityType }}
           <v-expansion-panels accordion multiple flat class=".rounded-0">
@@ -207,7 +207,6 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
-    searchViewCallback: Function
   },
   data() {
     return {
@@ -219,7 +218,6 @@ export default {
         position: null,
         teamId: null
       },
-      searchView: false,
       linkLabel: '',
       users: [],
       addActivity: false,
@@ -252,17 +250,8 @@ export default {
       } else {
         this.getActivityTopics()
       }
-    },
-    searchText: function(){
-      if(this.searchText && this.searchText !== ''){
-        this.searchView = true
-      }
-    },
-
-    searchView: function() {
-      this.searchViewCallback(this.searchView)
-
     }
+
   },
   computed: {
     filteredTopics() {
@@ -344,6 +333,8 @@ export default {
         || activity.createdByPositionOrg?.toLowerCase().includes(lowerSearch)
         || activity.modifiedBy?.toLowerCase().includes(lowerSearch)
         || activity.pinnedBy?.toLowerCase().includes(lowerSearch)
+        || activity.linkedPpsId?.toString().includes(lowerSearch)
+        || activity.linkedPpseId?.toString().includes(lowerSearch)
         || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
         || activity.activityHashtags.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
         || !lowerSearch
@@ -432,7 +423,6 @@ export default {
           default:
             this.searchText = text
       }
-      this.searchView = true
     },
     clearSearch(){
       this.search={}
@@ -440,7 +430,6 @@ export default {
       for(let at of this.activityTypes){
         at.show = true
       }
-      this.searchView = false
     },
     setEditedActivity(item) {
       this.editedActivity = cloneDeep(item)
