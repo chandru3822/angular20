@@ -378,6 +378,12 @@ export default {
       try {
         this.addNew = false
         const {status} = await deleteRequest(`/processes/processStepProcess/${id}`)
+        this.process.processStepProcesses = this.process.processStepProcesses.filter(psp => {
+          return psp.id !== id
+        })
+          // this.orgLevels.filter(ol => {
+          // return ol.id !== level.id
+        // })
         this.snackbar = getSnackbar('SUCCESS', 'Step Deleted from Process')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -387,8 +393,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-      this.processStepToDelete.archived = true
-      this.processStepToDelete = null
     },
     async getPositions() {
       try {
