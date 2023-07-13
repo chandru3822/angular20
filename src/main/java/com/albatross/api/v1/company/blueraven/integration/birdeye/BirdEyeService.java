@@ -41,7 +41,7 @@ public class BirdEyeService {
     sqlCache.queryBySql(BirdEyeQuery.saveReviewInviteSentValue, params, String.class);
   }
 
-  public BirdEyeSurvey getSurvey(String surveyId, String businessNumber) {
+  public BirdEyeSurvey getSurvey(@NonNull String surveyId, @NonNull String businessNumber) {
     return this.birdeyeApi.getSurvey(surveyId, businessNumber);
   }
 
@@ -108,17 +108,13 @@ public class BirdEyeService {
         invitation.getAdditionalParams().forEach(request::additionalParam);
       }
 
-      if (Domain.PROD.equals(birdeyeProperties.getServerDomain())) {
-        request
-          .phone(birdeyeProperties.getTestPhone())
-          .emailId(birdeyeProperties.getTestEmail());
+      if (invitation.getSendSms() != null && invitation.getSendSms()) {
+        String phone = birdeyeProperties.getServerDomain().equals(Domain.PROD) ? invitation.getCustomerPhone() : birdeyeProperties.getTestPhone();
+        request.smsEnabled(1).phone(phone);
       } else {
-        request
-          .phone(invitation.getCustomerPhone())
-          .emailId(invitation.getCustomerEmail());
+        String email = birdeyeProperties.getServerDomain().equals(Domain.PROD) ? invitation.getCustomerEmail() : birdeyeProperties.getTestEmail();
+        request.smsEnabled(0).emailId(email);
       }
-
-      request.smsEnabled(invitation.getSendSms() != null && invitation.getSendSms() ? 1 : 0);
 
       if (birdeyeProperties.getSendInvitesForReal()) {
         log.debug("[BIRDEYE] Sending review invitation to customer on projectId={}", invitation.getProjectId());
@@ -158,8 +154,18 @@ public class BirdEyeService {
     fallbackInfo.setOrgEmail("support@blueravensolar.com");
     fallbackInfo.setBirdeyeBusinessId(birdeyeProperties.getFallbackBusinessId());
 
-    return sqlCache.getBySql(BirdEyeQuery.getOrgInfo, params, new BeanPropertyRowMapper<>(BirdEyeOrgInfo.class))
+    BirdEyeOrgInfo orgInfo = sqlCache.getBySql(BirdEyeQuery.getOrgInfo, params, new BeanPropertyRowMapper<>(BirdEyeOrgInfo.class))
       .orElse(fallbackInfo);
+
+    if (orgInfo.getOrgEmail() == null){
+      orgInfo.setOrgEmail("support@blueravensolar.com");
+    }
+
+    if (orgInfo.getBirdeyeBusinessId() == null){
+      orgInfo.setBirdeyeBusinessId(birdeyeProperties.getFallbackBusinessId());
+    }
+
+    return orgInfo;
   }
 
   private void saveBirdEyeCustomerId(int invitationId, String custId) {

@@ -17,20 +17,30 @@ public class BirdEyeErrorDecoder implements ErrorDecoder {
 
   @Override
   public Exception decode(String methodKey, Response response) {
-    try (final InputStream inputStream = response.body().asInputStream()) {
-      final BirdEyeApiError birdeyeApiError = objectMapper.readValue(inputStream, BirdEyeApiError.class);
-      log.debug("[Birdeye API] error; errorCode={}, errorMessage={}", birdeyeApiError.getCode(), birdeyeApiError.getMessage());
+    int status = response.status();
+    String contentType = response.headers().get("Content-Type").stream().findFirst().orElse("");
 
-      return new BirdEyeApiException(birdeyeApiError.getMessage());
-    } catch (IOException e) {
+    //apparently the API is not returning a json response sometimes
+    if (contentType.contains("application/json")) {
+      try (final InputStream inputStream = response.body().asInputStream()) {
+        final BirdEyeApiError birdeyeApiError = objectMapper.readValue(inputStream, BirdEyeApiError.class);
+        log.debug("[BirdEye API] error; errorCode={}, errorMessage={}", birdeyeApiError.getCode(), birdeyeApiError.getMessage());
 
-      try (final InputStream errorInputStream = response.body().asInputStream()) {
-        final String body = new String(errorInputStream.readAllBytes());
-        log.debug("[Birdeye API] Unable to parse json response; body={}", body);
-      } catch (IOException ex) {
-        throw new RuntimeException(ex);
+        return new BirdEyeApiException(birdeyeApiError.getMessage());
+      } catch (IOException e) {
+        try (final InputStream errorInputStream = response.body().asInputStream()) {
+          final String body = new String(errorInputStream.readAllBytes());
+          log.error("[BirdEye API] Unable to parse json response; body={}", body);
+        } catch (IOException ex) {
+          log.error("[BirdEye API] Unable to parse json response", ex);
+        }
       }
     }
-    return new BirdEyeApiException("Unhandled error while accessing Birdeye Api");
+
+    if (status == 404) {
+      return new BirdEyeApiException("Requested resource not found");
+    }
+
+    return new BirdEyeApiException("Unhandled error while accessing BirdEye Api");
   }
 }
