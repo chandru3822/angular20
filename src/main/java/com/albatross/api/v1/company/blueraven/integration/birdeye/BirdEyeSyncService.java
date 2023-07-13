@@ -127,26 +127,25 @@ public class BirdEyeSyncService {
 
   //quick and dirty implementation based on given timeline... we probably need to implement a proper queue or something for these
   private void syncSurveyResponses(String surveyId, Long customFieldGroupId, String businessNumber, OffsetDateTime lastSyncDate) {
+    try {
+      final BirdEyeSurvey survey = birdeyeService.getSurvey(surveyId, businessNumber);
 
-    final BirdEyeSurvey survey = birdeyeService.getSurvey(surveyId, businessNumber);
+      // create a map based on the text of the question since we don't have any other way to tie it back
+      final Map<String, BirdEyeSurveyPageQuestion> questions = survey.getPages().stream()
+        .filter(p -> !p.getQuestions().isEmpty())
+        .flatMap(p -> p.getQuestions().stream())
+        .collect(Collectors.toMap(BirdEyeSurveyPageQuestion::getTitle, b -> b));
 
-    // create a map based on the text of the question since we don't have any other way to tie it back
-    final Map<String, BirdEyeSurveyPageQuestion> questions = survey.getPages().stream()
-      .filter(p -> !p.getQuestions().isEmpty())
-      .flatMap(p -> p.getQuestions().stream())
-      .collect(Collectors.toMap(BirdEyeSurveyPageQuestion::getTitle, b -> b));
+      final Map<String, CustomField> customFields = customFieldGroupService.getCustomFieldsInGroup(customFieldGroupId)
+        .stream()
+        .collect(Collectors.toMap(CustomField::getFieldName, cf -> cf));
 
-    final Map<String, CustomField> customFields = customFieldGroupService.getCustomFieldsInGroup(customFieldGroupId)
-      .stream()
-      .collect(Collectors.toMap(CustomField::getFieldName, cf -> cf));
+      boolean hasMoreSurveys = true;
+      int pageSize = 25;
+      int page = 0;
 
-    boolean hasMoreSurveys = true;
-    int pageSize = 25;
-    int page = 0;
+      while (hasMoreSurveys) {
 
-    while (hasMoreSurveys) {
-
-      try {
         final BirdEyeSurveyResponseWrapper wrapper = birdeyeService.getSurveyResponses(surveyId, businessNumber, lastSyncDate, pageSize, page);
         if (wrapper.getResponseList() != null && !wrapper.getResponseList().isEmpty()) {
           for (BirdEyeSurveyResponse surveyResponse : wrapper.getResponseList()) {
@@ -159,10 +158,9 @@ public class BirdEyeSyncService {
         //get all those surveys
         page++;
         hasMoreSurveys = wrapper.getHasNext();
-
-      } catch (Exception e) {
-        log.error("[BIRDEYE] Error while syncing survey responses, error={}", e.getMessage());
       }
+    } catch (Exception e) {
+      log.error("[BIRDEYE] Error while syncing survey responses, error={}", e.getMessage());
     }
   }
 

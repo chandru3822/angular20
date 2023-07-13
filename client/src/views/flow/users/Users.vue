@@ -1242,7 +1242,6 @@
           const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
           this.selectableTemplates = data
         } catch (e) {
-          console.log('ccc')
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
