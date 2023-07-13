@@ -381,9 +381,6 @@ export default {
         this.process.processStepProcesses = this.process.processStepProcesses.filter(psp => {
           return psp.id !== id
         })
-          // this.orgLevels.filter(ol => {
-          // return ol.id !== level.id
-        // })
         this.snackbar = getSnackbar('SUCCESS', 'Step Deleted from Process')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
