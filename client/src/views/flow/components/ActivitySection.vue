@@ -57,7 +57,7 @@
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
                     <span v-if="h.hashtagId === -1" class="uncategorized label-large mr-2">[{{h.hashtag}}]</span>
                     <span v-else class="mr-2 label-large">#{{ h.hashtag }}</span>
-                    <span class="body-medium">{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
+                    <span class="body-medium">{{ countSortedFilteredActivities(h.activities) }} {{ type.activityType.toLowerCase() }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
                     <v-btn v-if="open" icon color="primary" @click.native.stop="changeSortDirectionForTopic(h)">
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
@@ -70,7 +70,7 @@
                 </template>
               </v-expansion-panel-header>
               <v-expansion-panel-content>
-                <ActivityList :activities="h.activities"
+                <ActivityList :activities="sortAndFilterActivities(h.activities)"
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
@@ -315,7 +315,22 @@ export default {
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
     },
+    sortAndFilterActivities(activities){
+      return orderBy(activities.filter(a => {
+        //filter out archived
+        //if search is not empty then filter that stuff here too
+        //and ensure the activityTypeId is selected in the filter
+        let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
 
+        return !a.archived
+            && (((this.search == null || this.search === {}) && (this.searchText == null || this.searchText === '')) || this.activityContainsSearch(a))
+            && shownActivityTypes.includes(a.activityTypeId)
+
+      }), ['dateCreated'], [ this.sortDirection])
+    },
+    countSortedFilteredActivities(activities){
+      return this.sortAndFilterActivities(activities).length
+    },
     activityContainsSearch(activity) {
       if(this.search.userId){
         return activity.createdById === this.search.userId
@@ -336,7 +351,7 @@ export default {
         || activity.linkedPpsId?.toString().includes(lowerSearch)
         || activity.linkedPpseId?.toString().includes(lowerSearch)
         || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
-        || activity.activityHashtags.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
+        || activity.activityHashtags?.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
         || !lowerSearch
     },
     populateSelectedTopics(editedActivity) {
