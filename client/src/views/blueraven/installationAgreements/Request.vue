@@ -47,10 +47,11 @@
               </v-col>
               <v-col>
                 <v-select attach label="Proposal Number"
-                          v-model="requestItem.proposalNbr"
+                          v-model="selectedProposal"
+                          return-object
                           :items="requestItem.proposalNbrs"
                           item-text="proposalNbr"
-                          item-value="proposalNbr"
+                          @change="handleProposalSelection"
                 />
                 <v-checkbox label="Send English Installation Agreement"
                             class="default-text-color"
@@ -124,6 +125,7 @@ export default {
         sunpowerUrlExists: false,
         projectId: ''
       },
+      selectedProposal: null,
       currentEmail: '',
       editEmail: false
     }
@@ -181,12 +183,16 @@ export default {
     setSearchQuery(query){
       this.searchQuery=query
     },
+    handleProposalSelection() {
+      this.requestItem.proposalNbr = this.selectedProposal.proposalNbr
+      this.requestItem.sunpowerUrlExists = this.selectedProposal.sunpowerUrlExists
+    },
     async openRequest(it) {
       this.requestItem.customer_name = it.customer_name
       this.requestItem.email = it.email
       this.currentEmail = it.email
       this.requestItem.projectId = it.project_id
-      this.requestItem.sunpowerUrlExists = it.sunpower_url_exists
+      this.requestItem.sunpowerUrlExists = false
 
       // get proposal numbers
       try {

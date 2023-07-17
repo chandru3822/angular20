@@ -147,7 +147,7 @@ public class ProcessQuery {
   public final static String insertDenyListPosition = """
     insert into flow.deny_list_position(position_id, company_process_id, created_by_id, date_created, modified_by_id, date_modified, deny_list_type_id)
     select :positionId, :companyProcessId,  :userId, now(), :userId, now(), :denyListTypeId
-    where not exists ( select id 
+    where not exists ( select id
                         from flow.deny_list_position
                         where company_process_id = :companyProcessId
                             and position_id = :positionId
@@ -209,6 +209,7 @@ public class ProcessQuery {
       where ps.archived is not true
         and ps.company_id = :companyId
         and ps.non_admin_add is true
+        and psp.archived is false
         and psp.company_process_id = :companyProcessId
       order by ps.process_step_name
     """;

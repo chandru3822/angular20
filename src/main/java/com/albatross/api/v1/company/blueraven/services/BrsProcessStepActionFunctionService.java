@@ -6,7 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapDocumentStatus;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckInType;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.albatross.api.v1.flow.model.ActionParamDynamicValue;
@@ -56,7 +56,7 @@ public class BrsProcessStepActionFunctionService {
 
   private final ListOfValueService listOfValueService;
 
-  private final BirdeyeService birdeyeService;
+  private final BirdEyeService birdeyeService;
 
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
   public Boolean marketoEnabled;
@@ -534,29 +534,41 @@ public class BrsProcessStepActionFunctionService {
   }
 
   public void sendBirdEyeCheckIn(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
-    final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-    final Long companyId = Long.parseLong(systemValues.get("companyId").toString());
+    try {
 
-    Map<String, Object> params = Map.of("projectId", projectId, "parentCompanyId", companyId, "isParent", false, "companyId", companyId);
-    Contact contact = sqlCache.getBySql(ContactQuery.getByProjectId, params, Contact.class)
-      .orElseThrow(() -> new RuntimeException(formatErrorMessage(func, "Unable to find contact")));
+      final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+      final Long companyId = Long.parseLong(systemValues.get("companyId").toString());
 
-    BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
-    invitation.setCustomerEmail(contact.getEmail());
-    invitation.setCustomerName(contact.getFullName());
-    invitation.setCustomerPhone(contact.getPhone());
-    invitation.setSendSms(true);
-    invitation.setProjectId(projectId);
+      Map<String, Object> params = Map.of("projectId", projectId, "parentCompanyId", companyId, "isParent", false, "companyId", companyId);
+      Contact contact = sqlCache.getBySql(ContactQuery.getByProjectId, params, Contact.class)
+        .orElseThrow(() -> new RuntimeException(formatErrorMessage(func, "Unable to find contact")));
 
-    String fieldTypeValue = func.getActionParamDynamicValues().stream()
-      .filter(p -> p.getParameterName().contains("Check-In Type"))
-      .map(ActionParamDynamicValue::getDynamicValue)
-      .filter(Objects::nonNull)
-      .findFirst()
-      .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
+      String fieldTypeValue = func.getActionParamDynamicValues().stream()
+        .filter(p -> p.getParameterName().contains("Check-In Type"))
+        .map(ActionParamDynamicValue::getDynamicValue)
+        .filter(Objects::nonNull)
+        .findFirst()
+        .orElse(BirdEyeCheckInType.SITE_SURVEY.getValue());
 
-    invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
+      BirdEyeReviewInvitation invitation = new BirdEyeReviewInvitation();
+      invitation.setProjectId(projectId);
+      invitation.setCustomerEmail(contact.getEmail());
+      invitation.setCustomerName(contact.getFullName());
+      invitation.setSendSms(true);
+      invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, fieldTypeValue));
 
-    birdeyeService.sendCheckIn(invitation);
+      if (contact.getMobile() != null && !contact.getMobile().trim().equals("")) {
+        invitation.setCustomerPhone(contact.getMobile());
+      } else if (contact.getPhone() != null && !contact.getPhone().trim().equals("")) {
+        invitation.setCustomerPhone(contact.getPhone());
+      } else {
+        throw new RuntimeException(formatErrorMessage(func, "Unable to find phone number"));
+      }
+
+      birdeyeService.sendCheckIn(invitation);
+    } catch (Exception e) {
+      log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+    }
   }
 }
