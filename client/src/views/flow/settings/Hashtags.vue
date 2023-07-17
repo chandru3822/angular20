@@ -10,7 +10,8 @@
                    @click="[addNew = !addNew, newTag = {}]"
                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add Topic' }}</span>
+              <span v-else-if="!addNew"><v-icon>mdi-plus</v-icon>Add Topic</span>
+              <span v-else>Cancel</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -29,12 +30,16 @@
                               label="Add Topic Hashtag">
                 </v-text-field>
               </div>
+              <v-btn text color="primary" class="mt-4"
+                     @click="[addNew = !addNew, newTag = {}]">
+                <span>Cancel</span>
+              </v-btn>
               <v-btn color="primary" class="mt-4" :disabled="!newTag.hashtag || !formValid"
                      @click="saveTag(newTag, true)">Save
               </v-btn>
             </v-form>
           </v-card>
-          <div v-else>
+          <div>
             <v-data-table
               :headers="headers"
               :items="filteredHashtags"
@@ -78,7 +83,7 @@
                   </td>
                   <td class="text-right">
                     <v-btn text color="primary" v-if="selectedTagId === item.id" :disabled="!item.hashtag"
-                           @click="validateExisting(item)">
+                           @click="tagToSave=item; showSaveDialog = true">
                       <v-icon>save</v-icon>
                     </v-btn>
                     <v-icon v-else-if="item.hashtagTypeId !== 1" color="primary" @click="selectedTagId = item.id">
@@ -118,6 +123,11 @@
 
             </v-data-table>
           </div>
+          <ConfirmationDialog :open-dialog="showSaveDialog" @confirm="validateExisting(tagToSave)" @close-dialog="closeSaveDialog">
+            This action will edit the topic in pre-existing notes that are using the original topic hashtag. Are you sure you want to edit the topic?
+            <template v-slot:title>Confirm</template>
+            <template v-slot:yes>Save Changes</template>
+          </ConfirmationDialog>
           <ConfirmationDialog :open-dialog="!!tagToDelete" @confirm="deleteTag" @close-dialog="tagToDelete=null">
             Are you sure you want to delete this hashtag: <strong>{{ tagToDeleteValue }}</strong>?
           </ConfirmationDialog>
@@ -156,12 +166,14 @@ export default {
       constants,
       tags: [],
       addNew: false,
+      showSaveDialog: false,
       tagMaxChars: 255,
       newTag: {},
       selectedTagId: null,
       userId: this.$store.state.user.details.id,
       companyId: this.$store.state.user.details.companyId,
       tagToDelete: null,
+      tagToSave: null,
       headers: [
         {text: 'Hashtag', value: 'hashtag', show: true},
         {text: 'Type', value: 'hashtagType', show: true},
@@ -250,7 +262,11 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    }
+    },
+    closeSaveDialog() {
+      this.showSaveDialog = false;
+      this.tagToSave = null;
+    },
   },
   async created() {
     this.getTags()

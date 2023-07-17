@@ -7,7 +7,7 @@
         label="Search"
         clearable
         @click:clear="clearSearch"
-        v-model="search.searchText"
+        v-model="searchText"
       ></v-text-field>
       <v-btn text small color="primary" @click="changeSortDirection()">
         <v-icon v-if="sortDirection === 'desc'">mdi-arrow-up</v-icon>
@@ -55,18 +55,22 @@
               <v-expansion-panel-header class="expansion-panel-header">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
-                    <span class="mr-2 label-large">#{{ h.hashtag }}</span>
-                    <span class="body-medium">{{ h.activityCount }} {{ type.activityType.toLowerCase() }} |
+                    <span v-if="h.hashtagId === -1" class="uncategorized label-large mr-2">[{{h.hashtag}}]</span>
+                    <span v-else class="mr-2 label-large">#{{ h.hashtag }}</span>
+                    <span class="body-medium">{{ countSortedFilteredActivities(h.activities) }} {{ type.activityType.toLowerCase() }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
-                    <v-btn icon @click.native.stop="changeSortDirectionForTopic(h)">
+                    <v-btn v-if="open" icon color="primary" @click.native.stop="changeSortDirectionForTopic(h)">
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
                       <v-icon small v-else>mdi-arrow-down</v-icon>
+                    </v-btn>
+                    <v-btn v-if="open && h.hashtagId !== -1" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ]">
+                      + Add note
                     </v-btn>
                   </v-row>
                 </template>
               </v-expansion-panel-header>
               <v-expansion-panel-content>
-                <ActivityList :activities="h.activities"
+                <ActivityList :activities="sortAndFilterActivities(h.activities)"
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
@@ -133,10 +137,13 @@
             </div>
           </template>
         </Mentionable>
+        <div v-if="editedActivity.createdById !== userId && !userIsAdmin && !addActivity" class="pt-2">
+          Existing topics: {{this.previouslySelectedTopicNames}}
+        </div>
         <v-autocomplete
           v-model="selectedTopics"
           class="mt-3"
-          :items="topics"
+          :items="topics.filter(t => {return !this.previouslySelectedTopics.find(pst => pst.id === t.id)})"
           multiple
           label="Topics"
           return-object
@@ -202,14 +209,14 @@ export default {
     userId: Number,
     projectId: Number,
     objectTypeId: Number,
-    timelineView: Boolean
+    timelineView: Boolean,
   },
   data() {
     return {
       SearchTypeEnum,
       snackbar: {},
+      searchText: this.$route.query.search != null ? this.$route.query.search : '',
       search: {
-        searchText: this.$route.query.search != null ? this.$route.query.search : '',
         userId: null,
         position: null,
         teamId: null
@@ -222,6 +229,7 @@ export default {
       editedIndex: null,
       activityTopics: [],
       selectedTopics: [],
+      previouslySelectedTopics: [],
       topics: [],
       activities: [],
       topicsLoading: false,
@@ -247,6 +255,7 @@ export default {
         this.getActivityTopics()
       }
     }
+
   },
   computed: {
     filteredTopics() {
@@ -279,6 +288,12 @@ export default {
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
+    },
+    previouslySelectedTopicNames(){
+      const topicNamesList = this.previouslySelectedTopics.map(t => {
+        return '#' + t.hashtag
+      })
+      return topicNamesList.join(', ')
     }
   },
   created() {
@@ -310,7 +325,22 @@ export default {
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
     },
+    sortAndFilterActivities(activities){
+      return orderBy(activities.filter(a => {
+        //filter out archived
+        //if search is not empty then filter that stuff here too
+        //and ensure the activityTypeId is selected in the filter
+        let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
 
+        return !a.archived
+            && (((this.search == null || this.search === {}) && (this.searchText == null || this.searchText === '')) || this.activityContainsSearch(a))
+            && shownActivityTypes.includes(a.activityTypeId)
+
+      }), ['dateCreated'], [ this.sortDirection])
+    },
+    countSortedFilteredActivities(activities){
+      return this.sortAndFilterActivities(activities).length
+    },
     activityContainsSearch(activity) {
       if(this.search.userId){
         return activity.createdById === this.search.userId
@@ -321,15 +351,17 @@ export default {
       else if(this.search.teamId){
         return activity.createdByPositionOrgId === this.search.teamId
       }
-      let lowerSearch = this.search.searchText?.toLowerCase()
+      let lowerSearch = this.searchText?.toLowerCase()
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
         || activity.createdByPosition?.toLowerCase().includes(lowerSearch)
         || activity.createdByPositionOrg?.toLowerCase().includes(lowerSearch)
         || activity.modifiedBy?.toLowerCase().includes(lowerSearch)
         || activity.pinnedBy?.toLowerCase().includes(lowerSearch)
+        || activity.linkedPpsId?.toString().includes(lowerSearch)
+        || activity.linkedPpseId?.toString().includes(lowerSearch)
         || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
-        || activity.activityHashtags.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
+        || activity.activityHashtags?.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
         || !lowerSearch
     },
     populateSelectedTopics(editedActivity) {
@@ -341,6 +373,7 @@ export default {
       } else {
         this.selectedTopics = []
       }
+      this.previouslySelectedTopics = cloneDeep(this.selectedTopics)
     },
     getActivityTopics: async function () {
       if (this.primaryId && this.sectionType) {
@@ -402,29 +435,20 @@ export default {
     searchByClick(text, id, searchType){
       switch (searchType){
         case SearchTypeEnum.USER:
-          this.search = {
-            searchText: `User: ${text}`,
-            userId: id
-          }
-        break;
-        case SearchTypeEnum.POSITION:
-          this.search = {
-            searchText: `Position: ${text}`,
-            position: text
-          }
+          this.searchText= `User: ${text}`
+          this.search.userId = id
           break;
-          case SearchTypeEnum.TEAM:
-          this.search = {
-            searchText: `Team: ${text}`,
-            teamId: id
-          }
+        case SearchTypeEnum.POSITION:
+          this.searchText = `Position: ${text}`
+          this.search.position = text
+          break;
+        case SearchTypeEnum.TEAM:
+          this.searchText = `Team: ${text}`,
+          this.search.teamId = id
           break;
           default:
-            this.search = {
-              searchText: text
-            }
+            this.searchText = text
       }
-
     },
     clearSearch(){
       this.search={}
@@ -562,6 +586,10 @@ export default {
   z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
+}
+
+.uncategorized {
+  color: var(--v-grey-darken2);
 }
 
 .primary-lighten-9-bkgrd {

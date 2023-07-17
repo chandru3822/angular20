@@ -416,7 +416,7 @@ export default {
       conversationIsLoading: true,
       toggleFocused: 0,
       toggleFocusedXs: 0,
-      toggleTimelineView: 0
+      toggleTimelineView: 0,
     }
   },
   created() {
