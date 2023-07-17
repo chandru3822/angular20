@@ -52,6 +52,9 @@ public class PropertiesConfiguration {
   @Value("${twilio.phoneNumber:}")
   String twilioPhoneNumber;
 
+  @Value("${twilio.internalPhoneNumber:}")
+  String twilioInternalPhoneNumber;
+
   @Value("${twilio.accountSID}")
   String twilioAccountSID;
 

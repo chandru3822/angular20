@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -66,6 +67,9 @@ public class ScheduledConfig implements SchedulingConfigurer {
 
   @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
   private boolean closeProjectConversations;
+
+  @Value(value = "${app.cron.closeUserConversations.enabled:false}")
+  private boolean closeUserConversations;
 
   @Value(value = "${app.cron.runDataViewMaintenance.enabled:false}")
   private boolean doViewMaintenance;
@@ -134,8 +138,20 @@ public class ScheduledConfig implements SchedulingConfigurer {
     if (closeProjectConversations) {
       setCronUser();
       log.info("*** CRON: start close SMS project conversations ***");
-      messagingService.closeStaleProjects(SystemSettings.CRON_USER.getId());
+      messagingService.closeStaleProjectConversations(SystemSettings.CRON_USER.getId());
       log.info("*** CRON: end close SMS project conversations ***");
+    }
+  }
+
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  // zone = "America/Denver")
+  public void closeUserConversations() {
+    if (closeUserConversations) {
+      setCronUser();
+      log.info("*** CRON: start close SMS user conversations ***");
+      messagingService.closeStaleUserConversations(SystemSettings.CRON_USER.getId());
+      log.info("*** CRON: end close SMS user conversations ***");
     }
   }
 
@@ -198,6 +214,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     user.setId(cronUser.getId());
     user.setCompanyId(cronUser.getCompanyId());
     user.setHighestCompanyId(cronUser.getCompanyId());
+    user.setUserPositions(new ArrayList<>());
     user.setHighestParentCompanyId(cronUser.getCompanyId());
 
     final UserAccountDetails uad = new UserAccountDetails(user, List.of());

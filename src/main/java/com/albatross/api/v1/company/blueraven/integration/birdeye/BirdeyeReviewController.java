@@ -1,12 +1,14 @@
-package com.albatross.api.v1.company.blueraven.controllers;
+package com.albatross.api.v1.company.blueraven.integration.birdeye;
 
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckInType;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -14,7 +16,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 @RequestMapping(value = "/api/v1/company/blueraven/birdeye")
 @RequiredArgsConstructor
 public class BirdeyeReviewController {
-  private final BirdeyeService birdeye;
+  private final BirdEyeService birdeye;
 
   /**
    * Send (or re-send) an invite to a customer to review Blue Raven.
@@ -34,7 +36,9 @@ public class BirdeyeReviewController {
         "Customer email must be specified if sendSms is not set.");
     }
     try {
-      birdeye.sendCheckIn(invitation, BirdEyeCheckInType.SURVEY);
+      invitation.setAdditionalParams(Map.of(BirdEyeReviewInvitation.FIELD_TYPE_ID, BirdEyeCheckInType.SURVEY.getValue()));
+
+      birdeye.sendCheckIn(invitation);
       birdeye.saveCfgaValue(invitation.getProjectId());
       return ResponseEntity.ok(new BirdEyeResponse("Invite sent."));
     } catch (Exception e) {

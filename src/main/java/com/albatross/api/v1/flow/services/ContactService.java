@@ -138,37 +138,36 @@ public class ContactService {
       contact.get().getOwner().setPresignedUrl(presignedUrl);
 
 
-      boolean ownerWhiteListed = false;
-      boolean ownerAllowFlag = contact.get().getOwnerReadOnlyAllow();
+      if(contact.get().getOwnerReadOnly()) {
+        boolean ownerWhiteListed = false;
+        boolean ownerAllowFlag = contact.get().getOwnerReadOnlyAllow();
+        boolean breakLoop = false;
+        //Checks if the user's position is in the whitelist
+        for (int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
+          if(!breakLoop) {
+            for (int z = 0; z < user.getUserPositions().size(); z++) {
+               if (contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                ownerWhiteListed = true;
+              }
 
-      //Checks if the user's position is in the whitelist
-      for(int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
-        if(contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-          ownerWhiteListed = true;
-        }
-      }
-
-      //If the flag is set to deny, flip the whitelist to be a deny list
-      if(!ownerAllowFlag){
-        ownerWhiteListed = !ownerWhiteListed;
-      }
-
-      //Position was not in the whitelist and flag was set to Deny. Add the position to the list for mobile
-      if(ownerWhiteListed && !ownerAllowFlag){
-        WhiteListedPosition position = new WhiteListedPosition();
-        position.setPositionId(user.getUserPositionId());
-        contact.get().getOwnerReadOnlyWhiteListedPositions().add(position);
-      }
-      //Position was in the whitelist and flag was set to Deny. Remove the position from the list for mobile
-      else if(!ownerWhiteListed && !ownerAllowFlag){
-        for(int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++){
-          if(contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId() == user.getUserPositionId()){
-            contact.get().getOwnerReadOnlyWhiteListedPositions().remove(x);
-            x--;
+//              Re-enable Below when BR wants to handle multiple position stuff
+//              else if (!ownerAllowFlag) {
+//                ownerWhiteListed = false;
+//                breakLoop = true;
+//                break;
+//              }
+            }
           }
         }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!ownerAllowFlag) {
+          ownerWhiteListed = !ownerWhiteListed;
+        }
+
+        contact.get().getOwnerReadOnlyWhiteListedPositions().clear();
+        contact.get().setOwnerReadOnly(!ownerWhiteListed);
       }
-      contact.get().setOwnerReadOnly(!ownerWhiteListed);
     }
 
     return contact.orElse(null);

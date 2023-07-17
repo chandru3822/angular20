@@ -1,5 +1,13 @@
 <template>
   <v-container id="positions-container">
+    <!--    modal for leaving with unsaved fields -->
+    <confirmation-dialog :open-dialog="unsavedFieldsModal" @close-dialog="unsavedFieldsModal = false"
+                         @confirm="[navigationOverride = true, goToPath(toPath)]">
+      You have unsaved fields. Are you sure you want to continue without saving?
+      <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Don't Save</template>
+    </confirmation-dialog>
+
     <v-row class="fill-height" align="center" justify="start">
       <v-col class="shrink" cols="12">
         <v-toolbar color="white" class="elevation-1">
@@ -25,6 +33,7 @@
                         required
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
+                        @input="setFieldsDirty"
                         label="Position Name">
           </v-text-field>
           <v-autocomplete
@@ -44,10 +53,15 @@
                 label="Organization Type"
                 item-text="orgType"
                 item-value="id"
+                @change="setFieldsDirty"
             ></v-autocomplete>
             <div class="mb-3">
+              <label>Enable 2-way SMS:</label>
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsEnabled" @change="setFieldsDirty">
+            </div>
+            <div class="mb-3">
               <label>Show in Scheduling Tool:</label>
-              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable">
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.schedulable" @change="setFieldsDirty">
   <!--            removing from UI for now since we dont know how to handle the schedule data if they change this manually -->
   <!--            <div class="ml-5" v-if="position.schedulable">-->
   <!--              <label>Use Slot Schedules:</label>-->
@@ -56,23 +70,23 @@
             </div>
             <div class="mb-3">
               <label>Can Schedule Round Robins:</label>
-              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.scheduler">
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.scheduler" @change="setFieldsDirty">
             </div>
             <div class="mb-3">
               <label>Can Own Contacts:</label>
-              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner">
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.contactOwner" @change="setFieldsDirty">
             </div>
             <div class="mb-3">
               <label>Can Own Projects:</label>
-              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner">
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.projectOwner" @change="setFieldsDirty">
             </div>
             <div class="mb-3">
               <label>Can Own SMS Tickets:</label>
-              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner">
+              <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner" @change="setFieldsDirty">
             </div>
             <div v-if="$store.getters.isParent(parentId)">
               <label>Make Available in Children</label>
-              <input type="checkbox" class="ml-3" v-model="position.availableToChildren">
+              <input type="checkbox" class="ml-3" v-model="position.availableToChildren" @change="setFieldsDirty">
             </div>
           </div>
           <div v-show="!positionId && clonePositionId">
@@ -99,7 +113,8 @@
             <AccessControl v-if="positionLoaded"
                            :key="accessControlKey"
                            :user-can-edit="userCanEditAccessControl"
-                           :companyFeatures="getCompanyFeatures()" :callback="this.companyFeatureCallback"></AccessControl>
+                           :companyFeatures="getCompanyFeatures()" :callback="this.companyFeatureCallback"
+                           :dirtyFieldsCallback="this.setFieldsDirty"></AccessControl>
           </div>
         </v-card>
 
@@ -146,7 +161,11 @@
         headers: [
           { text: 'Feature', value: 'featureName', show: true },
         ],
-        accessControlKey: 0
+        accessControlKey: 0,
+        unsavedFieldsModal: false,
+        navigationOverride: false,
+        toPath: null,
+        dirtyFields: false
       }
     },
     created () {
@@ -157,6 +176,18 @@
         this.getPositions()
       }
       this.getOrgTypes()
+    },
+    beforeRouteLeave(to, from, next) {
+      // called when the route that renders this component is about to
+      // be navigated away from.
+      // has access to `this` component instance.
+      if (this.navigationOverride || !this.dirtyFields) {
+        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+        next()
+      } else {
+        this.toPath = to.path
+        this.unsavedFieldsModal = true
+      }
     },
     methods: {
       getCompanyFeatures() {
@@ -191,6 +222,7 @@
             // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
             // this.$router.push({name: 'position', params: {id: this.positionId}})
             handleHidingGlobalLoader(this, status)
+            this.dirtyFields = false
           } else {
             if (this.clonePositionId) {
               const {data, status} = await postRequest('/position/clone/' + this.clonePositionId, this.position)
@@ -198,6 +230,7 @@
               this.clonePositionId = ''
               this.$router.push({name: 'position', params: {id: this.positionId}})
               handleHidingGlobalLoader(this, status)
+              this.dirtyFields = false
               window.location.reload()
             }
             else {
@@ -205,6 +238,7 @@
               this.positionId = data.id
               this.$router.push({name: 'position', params: {id: this.positionId}})
               handleHidingGlobalLoader(this, status)
+              this.dirtyFields = false
             }
           }
         } catch (e) {
@@ -245,6 +279,17 @@
       companyFeatureCallback (newValue) {
         this.position.companyFeatures = newValue
       },
+      setFieldsDirty() {
+        this.dirtyFields = true;
+      },
+      goToPath(path, targetBlank) {
+        if (targetBlank) {
+          let routerData = this.$router.resolve({path})
+          window.open(routerData.href, '_blank')
+        } else {
+          this.$router.push(path)
+        }
+      }
     }
   }
 </script>

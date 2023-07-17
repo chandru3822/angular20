@@ -45,17 +45,6 @@ public class MarketoQuery {
 
   //language=PostgreSQL
   public final static String projectsToRemove = """
-    -- projects marked 'do not solicit review' in the past 24 hours
-    select p.id
-    from flow.project p
-    inner join flow.company_process cp on p.company_process_id = cp.id
-    left join flow.project_custom_field_value pcfv on p.id = pcfv.project_id
-    where pcfv.custom_field_group_assignment_id = 21067 and
-          pcfv.boolean_value = true and
-          pcfv.date_modified >= (now() - interval '24 hours') and
-          cp.company_id = 3 and
-          cp.process_id = 1
-    union
     -- projects cancelled in the past 24 hours (and still cancelled)
     select p.id
     from flow.project p
@@ -113,14 +102,12 @@ public class MarketoQuery {
 
   //language=PostgreSQL
   public final static String getProject = """
-    select p.id,
-           p.contact_id,
-           p.project_name,
+    select p.id as "projectId",
            p.company_project_status_type_id,
            cpst.project_status_type,
            c.first_name,
            c.last_name,
-           c.street1,
+           c.street1 as "address",
            s.state,
            co.country,
            p.postal_code,
@@ -146,6 +133,38 @@ public class MarketoQuery {
              where pcfv.project_id = p.id and
                    pcfv.custom_field_group_assignment_id = 21067
            ), false) "doNotSolicitReview",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25827
+           ) "readyToSendInstallationReminderEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25824
+           ) "readyToSendFirstPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25825
+           ) "readyToSendSecondPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25826
+           ) "readyToSendThirdPermitUpdateEmail",
            pd.installation_start_time,
            pd.energized_date,
            pd.final_design_signed_date "finalDesignApprovedDate",
@@ -153,7 +172,50 @@ public class MarketoQuery {
            pd.closer_appointment_start "closerAppointmentStartTime",
            pd.ahj_inspection_start_time "inspectionStartTime",
            pd.substantial_completion_date,
-           pd.ahj_final_inspection_verified "inspectionPassedDate"
+           pd.ahj_final_inspection_verified "inspectionPassedDate",
+           pd.complete_date_booking,
+           pd.final_design_sent_to_homeowner_date,
+           pd.permit_pack_submittal_start_time,
+           pd.permit_approved_date,
+           pd.hoa_approval_needed_name,
+           pd.hoa_request_for_approval_submitted_date,
+           pd.hoa_approval_received_date,
+           pd.ac_compressor_relocation_required_name "acCompressorRelocationRequired",
+           pd.ac_compressor_relocation_start_time,
+           pd.ac_compressor_relocation_verified_date,
+           pd.main_panel_upgrade_required_in_house_name "mainPanelUpgradeRequiredInHouse",
+           pd.in_house_mpu_start_time,
+           pd.in_house_mpu_verified_date,
+           pd.main_panel_upgrade_required_outsource_name,
+           pd.outsource_mpu_start_time,
+           pd.outsource_mpu_verified_date,
+           pd.reroof_required_name,
+           pd.reroof_start_time,
+           pd.reroof_verified_date,
+           pd.structural_upgrade_required_name,
+           pd.structural_upgrade_start_time,
+           pd.structural_upgrade_verified_date,
+           pd.tree_trim_required_name,
+           pd.tree_trimming_start_time,
+           pd.tree_trimming_verified_date,
+           pd.trenching_required_name,
+           pd.trenching_start_time,
+           pd.trenching_verified_date,
+           pd.interconnection_application_signed_date,
+           pd.interconnection_application_submitted_to_utility_date,
+           pd.interconnection_application_approved_date,
+           pd.installation_ready_to_schedule_date,
+           pd.ahj_inspection_scheduled_date,
+           pd.ahj_inspection_approval_submitted_to_utility_date,
+           pd.utility_meter_set_date,
+           pd.utility_meter_ordered_date,
+           pd.site_survey_scheduled_date,
+           pd.final_design_created_timestamp,
+           pd.final_design_signed_date,
+           pd.final_design_complete_date,
+           pd.ahj_final_inspection_verified,
+           pd.pto_verified,
+           pd.substantial_completion_date
     from flow.project p
     inner join flow.contact c on c.id = p.contact_id
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
@@ -170,14 +232,12 @@ public class MarketoQuery {
 
   //language=PostgreSQL
   public final static String getProjects = """
-    select p.id,
-           p.contact_id,
-           p.project_name,
+    select p.id as "projectId",
            p.company_project_status_type_id,
            cpst.project_status_type,
            c.first_name,
            c.last_name,
-           c.street1,
+           c.street1 as "address",
            s.state,
            co.country,
            p.postal_code,
@@ -203,6 +263,38 @@ public class MarketoQuery {
              where pcfv.project_id = p.id and
                    pcfv.custom_field_group_assignment_id = 21067
            ), false) "doNotSolicitReview",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25827
+           ) "readyToSendInstallationReminderEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25824
+           ) "readyToSendFirstPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25825
+           ) "readyToSendSecondPermitUpdateEmail",
+           (
+             select ppscfv.boolean_value
+             from flow.project_process_step_custom_field_value ppscfv
+                  inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             where pps.project_id = p.id and
+                   pps.main is true and
+                   ppscfv.custom_field_group_assignment_id = 25826
+           ) "readyToSendThirdPermitUpdateEmail",
            pd.installation_start_time,
            pd.energized_date,
            pd.final_design_signed_date "finalDesignApprovedDate",
@@ -210,7 +302,50 @@ public class MarketoQuery {
            pd.closer_appointment_start "closerAppointmentStartTime",
            pd.ahj_inspection_start_time "inspectionStartTime",
            pd.substantial_completion_date,
-           pd.ahj_final_inspection_verified "inspectionPassedDate"
+           pd.ahj_final_inspection_verified "inspectionPassedDate",
+           pd.complete_date_booking,
+           pd.final_design_sent_to_homeowner_date,
+           pd.permit_pack_submittal_start_time,
+           pd.permit_approved_date,
+           pd.hoa_approval_needed_name,
+           pd.hoa_request_for_approval_submitted_date,
+           pd.hoa_approval_received_date,
+           pd.ac_compressor_relocation_required_name "acCompressorRelocationRequired",
+           pd.ac_compressor_relocation_start_time,
+           pd.ac_compressor_relocation_verified_date,
+           pd.main_panel_upgrade_required_in_house_name "mainPanelUpgradeRequiredInHouse",
+           pd.in_house_mpu_start_time,
+           pd.in_house_mpu_verified_date,
+           pd.main_panel_upgrade_required_outsource_name,
+           pd.outsource_mpu_start_time,
+           pd.outsource_mpu_verified_date,
+           pd.reroof_required_name,
+           pd.reroof_start_time,
+           pd.reroof_verified_date,
+           pd.structural_upgrade_required_name,
+           pd.structural_upgrade_start_time,
+           pd.structural_upgrade_verified_date,
+           pd.tree_trim_required_name,
+           pd.tree_trimming_start_time,
+           pd.tree_trimming_verified_date,
+           pd.trenching_required_name,
+           pd.trenching_start_time,
+           pd.trenching_verified_date,
+           pd.interconnection_application_signed_date,
+           pd.interconnection_application_submitted_to_utility_date,
+           pd.interconnection_application_approved_date,
+           pd.installation_ready_to_schedule_date,
+           pd.ahj_inspection_scheduled_date,
+           pd.ahj_inspection_approval_submitted_to_utility_date,
+           pd.utility_meter_set_date,
+           pd.utility_meter_ordered_date,
+           pd.site_survey_scheduled_date,
+           pd.final_design_created_timestamp,
+           pd.final_design_signed_date,
+           pd.final_design_complete_date,
+           pd.ahj_final_inspection_verified,
+           pd.pto_verified,
+           pd.substantial_completion_date
     from flow.project p
     inner join flow.contact c on c.id = p.contact_id
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id

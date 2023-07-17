@@ -3,7 +3,9 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.MessagingController;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.MessageTemplateQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,20 +13,33 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('SMS_INBOX')")
 @RequiredArgsConstructor
 public class MessageTemplateService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final ObjectMapper om;
+
+  public List<Project> getAvailableProjects(String query) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("searchQuery", query);
+    List<Project> results = sqlCache.queryBySql(MessageTemplateQuery.getAvailableProjects, params, Project.class);
+
+    return results;
+  }
+
+  public List<MessagingController.MessageRecipient> getAvailableUsers() {
+    HashMap<String, Object> params = new HashMap<>();
+    List<MessagingController.MessageRecipient> results = sqlCache.queryBySql(MessageTemplateQuery.getAvailableUsers, params, MessagingController.MessageRecipient.class);
+
+    return results;
+  }
 
   public List<com.albatross.api.v1.flow.model.MessageTemplate> getTemplates() {
     HashMap<String, Object> params = new HashMap<>();

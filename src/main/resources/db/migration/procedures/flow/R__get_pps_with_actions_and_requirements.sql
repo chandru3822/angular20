@@ -335,7 +335,14 @@ BEGIN
                                       case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource,
                                       ppse.modified_by_id as "modifiedById",
                                       pse.event_id as "eventId",
-                                      e.event_name as "eventName"
+                                      e.event_name as "eventName",
+                                      (select cfga.id
+                                       from flow.project_process_step_event_custom_field_value ppsecfv
+	                                            inner join flow.custom_field_group_assignment cfga
+	                                                       on ppsecfv.custom_field_group_assignment_id = cfga.id
+		                                                       and cfga.archived is false and cfga.display_on_snippet is true
+	                                            inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+                                       where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValueGroupAssignmentId"
                                FROM flow.project_process_step_event ppse
                                     inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
                                     inner join flow.event e on pse.event_id = e.id
@@ -348,13 +355,27 @@ BEGIN
                                     left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
                                WHERE ppse.project_process_step_id = pps.id
                                  and ppse.archived is not true
-								and case when e.hidden and p_systemAdmin is false
+								and case when e.hidden and e.hidden_allow and p_systemAdmin is false
 								then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
 									where wlp2.event_id = pse.event_id
 									and wlp2.white_list_type_id = 17
 									and wlp2.archived is not true
 									and wlp2.position_id = any(p_userPositions) limit 1
 								)
+                 when e.hidden and not e.hidden_allow and p_systemAdmin is false
+                   then case when ( select wlp2.event_id from flow.white_listed_position wlp2
+                                    where wlp2.event_id = pse.event_id
+                                      and wlp2.white_list_type_id = 17
+                                      and wlp2.archived is not true
+                                    limit 1
+                 ) is null then true
+                             else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                                   where wlp2.event_id = pse.event_id
+                                                     and wlp2.white_list_type_id = 17
+                                                     and not wlp2.position_id = any(p_userPositions)
+                                                     and wlp2.archived is not true
+                                                   limit 1
+                             ) end
 								else 1=1 end
                               order by ppse.start_time, ppse.end_time, resource, e.event_name
                              ) events), '[]') AS "projectProcessStepEvents"
@@ -363,7 +384,7 @@ BEGIN
                         inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
                         inner join flow.project p on p.id = pps.project_id
                         inner join flow.company_process cp on cp.id = p.company_process_id
-                        left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id
+                        left join flow.process_step_process psp on psp.process_step_id = pps.process_step_id and psp.company_process_id = cp.id and psp.archived is false
                         inner join flow."user" creator on creator.id = pps.created_by_id
          where pps.id = p_project_process_step_id and
                pps.archived is false and

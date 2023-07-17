@@ -3,34 +3,6 @@ package com.albatross.api.v1.flow.queries;
 public class SmsServiceQuery {
 
   //language=PostgreSQL
-  public final static String fetch = """
-    SELECT
-                  sms.id,
-                  sms.user_id,
-                  u.first_name,
-                  u.last_name,
-                  u.email,
-                  sms.message,
-                  array_to_json(sms.media_urls) AS media_urls,
-                  sms.recipient_type_id,
-                  sms.error_message,
-                  sms.message_group,
-                  sms.message_sid,
-                  sms.message_status,
-                  sms.from_phone,
-                  sms.to_phone,
-                  sms.twilio_created,
-                  sms.twilio_sent,
-                  sms.twilio_delivered,
-                  sms.created,
-                  sms.updated
-                FROM flow.sms_queue sms
-                  INNER JOIN flow.user u
-                    ON sms.user_id = u.id
-                WHERE sms.id = :id
-        """;
-
-  //language=PostgreSQL
   public final static String fetchByProjectId = """
     SELECT sms.message,
            array_to_json(sms.media_urls) AS media_urls,
@@ -51,6 +23,7 @@ public class SmsServiceQuery {
                  -- so we don't retry very very old texts
               created >= '2017-11-08'
                  ))
+        AND sms.recipient_type_id = 2
     UNION ALL
     SELECT body          as message,
            array_to_json(media_urls),
@@ -62,6 +35,42 @@ public class SmsServiceQuery {
     from flow.sms_reply sr
              inner join flow.contact c on c.search_phones = sr.search_from_phone and c.archived is false
              inner join flow.project p on c.id = p.contact_id and p.id = :projectId and p.archived is false
+        where sr.to_phone = '+18014480212'
+    ORDER BY created ASC
+        """;
+
+  //language=PostgreSQL
+  public final static String fetchByUserId = """
+    SELECT sms.message,
+           array_to_json(sms.media_urls) AS media_urls,
+           created,
+           sms.from_phone,
+           sms.recipient_type_id,
+           sms.message_sent_by_user_id   as user_id,
+           case
+               when u.first_name is not null or u.last_name is not null then concat(u.first_name, ' ', u.last_name::text)
+               end                       as full_name
+    FROM flow.sms_queue sms
+             inner join flow.user u on sms.message_sent_by_user_id = u.id
+        AND (error_message IS NULL OR
+             (LOWER(error_message) IN
+              ('api.twilio.com:443 failed to respond') AND
+                 -- so we don't retry very very old texts
+              created >= '2017-11-08'
+                 ))
+        AND sms.search_to_phone = (select u2.search_phone from flow.user u2 where u2.id = :userId)
+        AND sms.recipient_type_id = 1
+    UNION ALL
+    SELECT body          as message,
+           array_to_json(media_urls),
+           date_received as created,
+           from_phone,
+           1             as recipient_type_id,
+           null::bigint     as user_id,
+           null::text    as full_name
+    from flow.sms_reply sr
+    where sr.search_from_phone = (select u3.search_phone from flow.user u3 where u3.id = :userId)
+          AND sr.to_phone = '+18014480029'
     ORDER BY created ASC
         """;
 
@@ -133,14 +142,14 @@ public class SmsServiceQuery {
   //language=PostgreSQL
   public final static String insert = """
     WITH sq AS (INSERT INTO flow.sms_queue (
-                                                      message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id,sms_team_id
+                           message_group,user_id,contact_id, project_id, message,media_urls,to_phone,recipient_type_id,message_sent_by_user_id,sms_team_id, priority
                 ) VALUES (
-                           :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId
+                           :messageGroup,:userId,:contactId, :projectId,:message,:mediaUrls,:toPhone,:recipientTypeId,:messageSentByUserId,:sentBySmsTeamId, :priority
                          )
                 RETURNING id,user_id,contact_id, project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,
                   from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
-                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id)
+                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id, priority)
               SELECT sq.id,
                      sq.user_id,
                      sq.contact_id,
@@ -196,7 +205,7 @@ public class SmsServiceQuery {
                           created >= '2017-11-08'
                         )
                       )
-                ORDER BY sms.created ASC
+                ORDER BY sms.priority, sms.created ASC
                 LIMIT 10
                 FOR UPDATE SKIP LOCKED
         """;
@@ -269,6 +278,13 @@ public class SmsServiceQuery {
       inner join flow.contact c on p.contact_id = c.id
      where c.search_phones = :from
      and p.archived is false
+     """;
+
+  //language=PostgreSQL
+  public final static String getUsers = """
+    select u.id from flow.user u
+     where u.search_phone = :from
+     and u.archived is false
      """;
 
   //language=PostgreSQL

@@ -1,9 +1,10 @@
 package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdeyeService;
+import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -39,11 +40,16 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
   private Boolean marketoEnabled;
 
+  @Value(value = "${app.cron.blueraven.processMetroPostalCodes.enabled:false}")
+  private Boolean processMetroPostalCodes;
+
   private final GenesysService genesysService;
 
   private final MarketoService marketoService;
 
-  private final BirdeyeService birdeyeService;
+  private final BirdEyeSyncService birdeyeSyncService;
+
+  private final BlueravenProjectService blueravenProjectService;
 
   private final SecurityService securityService;
 
@@ -80,6 +86,16 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     }
   }
 
+  //    every  day at 11 pm - mtn
+  @Scheduled(cron = "0 0 5 * * *", zone = "UTC")
+  public void updateProjectMetroAreaPostalCodes() {
+    if (processMetroPostalCodes) {
+      log.info("*** CRON: start processing Metro Area Postal Codes ***");
+      blueravenProjectService.processMetroAreaPostalCodes();
+      log.info("*** CRON: end processing Metro Area Postal Codes ***");
+    }
+  }
+
   // daily at 1:15 mountain time
    @Scheduled(cron = "0 15 7 * * *", zone = "UTC")
   public void pushProjectsToMarketo() {
@@ -95,7 +111,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
 
-    birdeyeService.syncSurveyResponses();
+    birdeyeSyncService.syncSurveyResponses();
     log.debug("*** CRON: end sync surveys from BirdEye ***");
   }
 
@@ -106,7 +122,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     Instant startTime = Instant.now();
     setBlueravenSystemUser();
 
-    birdeyeService.syncReviews();
+    birdeyeSyncService.syncReviews();
     Duration duration = Duration.between(startTime, Instant.now());
     log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
   }

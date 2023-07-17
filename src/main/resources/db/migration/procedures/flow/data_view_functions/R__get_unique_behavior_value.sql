@@ -1,16 +1,140 @@
 drop function if exists flow.get_unique_behavior_value(p_unique_behavior_code text, p_value text,
+                                                       p_project_id bigint,
                                                        p_id bigint,
                                                        p_type varchar);
 CREATE OR REPLACE FUNCTION flow.get_unique_behavior_value(p_unique_behavior_code text, p_value text,
+                                                          p_project_id bigint,
                                                           p_id bigint default 0::bigint,
                                                           p_type varchar default null)
   RETURNS text AS
 $BODY$
 DECLARE
-  v_value text;
+  v_value              text;
+  v_commission_plan_id bigint;
+  v_override_plan_id   bigint;
+  v_ppscfv_id          bigint;
 BEGIN
+  if p_unique_behavior_code in ('COMMISSION_EARNED_M1_TRIGGER', 'COMMISSION_EARNED_M2_TRIGGER') then
 
-  if p_value is null then
+    if p_project_id is not null then
+      select id
+      into v_commission_plan_id
+      from brs.project_commission pc
+      where pc.project_id = p_project_id;
+
+      select v.id
+      into v_ppscfv_id
+      from flow.project_process_step pps
+             inner join flow.project_process_step_custom_field_value v
+                        on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
+      where pps.project_id = p_project_id
+        and pps.process_step_id = 175
+        and v.date_value is not null;
+
+      if v_commission_plan_id is null and v_ppscfv_id is not null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+
+      if v_ppscfv_id is not null then
+        if p_unique_behavior_code = 'COMMISSION_EARNED_M1_TRIGGER' then
+          select *
+          into v_value
+          from brs.get_commissions_earned(p_project_id, 'M1');
+        else
+          select *
+          into v_value
+          from brs.get_commissions_earned(p_project_id, 'M2');
+        end if;
+      end if;
+    end if;
+
+  elsif p_unique_behavior_code in ('OVERRIDES_EARNED_M1_TRIGGER', 'OVERRIDES_EARNED_M2_TRIGGER') then
+
+    if p_project_id is not null then
+      select id
+      into v_override_plan_id
+      from brs.project_override po
+      where po.project_id = p_project_id;
+
+      select v.id
+      into v_ppscfv_id
+      from flow.project_process_step pps
+             inner join flow.project_process_step_custom_field_value v
+                        on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
+      where pps.project_id = p_project_id
+        and pps.process_step_id = 175
+        and v.date_value is not null;
+
+      if v_override_plan_id is null and v_ppscfv_id is not null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+
+      if v_ppscfv_id is not null then
+        if p_unique_behavior_code = 'OVERRIDES_EARNED_M1_TRIGGER' then
+          select *
+          into v_value
+          from brs.get_overrides_earned(p_project_id, 'M1');
+        else
+          select *
+          into v_value
+          from brs.get_overrides_earned(p_project_id, 'M2');
+        end if;
+      end if;
+    end if;
+  elsif p_unique_behavior_code = 'TOTAL_COMMISSIONS_TRIGGER' then
+
+    if p_project_id is not null then
+
+      select id
+      into v_commission_plan_id
+      from brs.project_commission pc
+      where pc.project_id = p_project_id;
+
+      select v.id
+      into v_ppscfv_id
+      from flow.project_process_step pps
+             inner join flow.project_process_step_custom_field_value v
+                        on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
+      where pps.project_id = p_project_id
+        and pps.process_step_id = 175
+        and v.date_value is not null;
+
+      if (v_commission_plan_id is null) and v_ppscfv_id is not null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+
+      select *
+      into v_value
+      from brs.get_total_commissions_amount(p_project_id);
+    end if;
+
+  elsif p_unique_behavior_code = 'TOTAL_OVERRIDES_TRIGGER' then
+
+    if p_project_id is not null then
+      select id
+      into v_override_plan_id
+      from brs.project_override po
+      where po.project_id = p_project_id;
+
+
+      select v.id
+      into v_ppscfv_id
+      from flow.project_process_step pps
+             inner join flow.project_process_step_custom_field_value v
+                        on v.project_process_step_id = pps.id and v.custom_field_group_assignment_id = 1251
+      where pps.project_id = p_project_id
+        and pps.process_step_id = 175
+        and v.date_value is not null;
+
+      if (v_override_plan_id is null) and v_ppscfv_id is not null then
+        perform from brs.insert_commissions_on_project(p_project_id);
+      end if;
+      select *
+      into v_value
+      from brs.get_total_overrides_amount(p_project_id);
+    end if;
+
+  elsif p_value is null then
     v_value = null;
   elsif p_unique_behavior_code = 'EVENT_RESOURCE_TRIGGER' then
 
@@ -20,7 +144,9 @@ BEGIN
            inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
            inner join flow.event e on pse.event_id = e.id
            inner join flow.custom_field cf on e.resource_custom_field_id = cf.id
-           inner join lateral  (select * from flow.get_system_list_option_value(cf.company_system_list_id, p_value::bigint)) t on true
+           inner join lateral (select *
+                               from flow.get_system_list_option_value(cf.company_system_list_id, p_value::bigint)) t
+                      on true
     where ppse.id = p_id;
 
   elsif p_unique_behavior_code = 'STATE_FIELD_TRIGGER' then
@@ -59,14 +185,14 @@ BEGIN
     select ps.process_step_name
     into v_value
     from flow.process_step_event pse
-        inner join flow.process_step ps on pse.process_step_id = ps.id
+           inner join flow.process_step ps on pse.process_step_id = ps.id
     where pse.id = p_value::bigint;
 
   elsif p_unique_behavior_code = 'CONVERT_TIMESTAMP_TO_DATE_TRIGGER' then
     if p_value is null then
       select 'null' into v_value;
     else
-      select ((p_value::timestamp at time zone 'UTC') at time zone  'US/Mountain')::date
+      select ((p_value::timestamp at time zone 'UTC') at time zone 'US/Mountain')::date
       into v_value;
     end if;
 
@@ -140,7 +266,15 @@ BEGIN
     from flow.contact c
     where c.id = p_value::bigint;
 
-  elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_BIGINT' then
+  elsif p_unique_behavior_code = 'LIST_OF_VALUE_INT_ARRAY_TRIGGER' then
+    raise notice 'I got here %',p_value;
+    select string_agg(lov.name, ', ')
+    into v_value
+    from flow.list_of_value lov
+    where lov.id = any (p_value::bigint[]);
+
+  elsif p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER' or
+        p_unique_behavior_code = 'DEFAULT_CFGA_TRIGGER_BIGINT' then
 
     if p_type = 'PROCESS_STEP' then
 
@@ -196,7 +330,7 @@ BEGIN
 
   end if;
   return v_value;
-END ;
+END;
 $BODY$
   LANGUAGE plpgsql VOLATILE
                    COST 100;

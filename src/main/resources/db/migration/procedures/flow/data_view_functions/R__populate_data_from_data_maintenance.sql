@@ -55,9 +55,7 @@ BEGIN
       and dvfc2.process_step_event_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-        else dvfcd.company_process_ids_added is false end
+      and dvfcd.company_process_ids_added is false
     loop
       v_in_contact = v_in_contact + 1;
       if z.object_type = 'contact' and (v_sql = '') IS NOT FALSE then
@@ -87,7 +85,7 @@ BEGIN
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$uc.$$ || x.field_to_update)::character varying);
           v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, c.$$
-                    || z.column_name || $$::text, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
+                    || z.column_name || $$::text,0::bigint, c.id,$$|| quote_literal('CONTACT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -126,9 +124,7 @@ BEGIN
       and dvfc2.process_step_event_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and dvfcd.company_process_ids_added is false
     loop
       v_in_project = v_in_project + 1;
       if z.object_type = 'project' and (v_sql = '') IS NOT FALSE then
@@ -158,7 +154,7 @@ BEGIN
           v_text_array_alias_columns =
             array_append(v_text_array_alias_columns, ($$up.$$ || x.field_to_update)::character varying);
           v_sql = v_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, p.$$ || z.column_name ||
-                  $$::text, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
+                  $$::text,0::bigint, p.id,$$|| quote_literal('PROJECT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -202,9 +198,7 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and dvfcd.company_process_ids_added is false
     loop
       v_in_ppscfv = v_in_ppscfv + 1;
       call flow.generate_sql_for_ppscfv(z,
@@ -246,9 +240,7 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and  dvfcd.company_process_ids_added is false
     loop
       v_in_project_details = v_in_project_details + 1;
       call flow.generate_sql_for_pcfv(z,
@@ -291,9 +283,7 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and  dvfcd.company_process_ids_added is false
     loop
       v_in_contact_details = v_in_contact_details + 1;
       call flow.generate_sql_for_ccfv(z,
@@ -337,9 +327,7 @@ BEGIN
       and dvfc2.default_field_id is null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and  dvfcd.company_process_ids_added is false
     loop
       v_in_event_details = v_in_event_details + 1;
       call flow.generate_sql_for_event_details(z,
@@ -377,9 +365,7 @@ BEGIN
       and dvfc2.process_step_event_id is not null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and dvfcd.company_process_ids_added is false
     loop
       v_in_event = v_in_event + 1;
       call flow.generate_sql_for_event(z,
@@ -417,9 +403,7 @@ BEGIN
       and dvfc2.process_step_id is not null
       and processed is false
       and dvfc2.data_view_id = p_data_view_id
-      and case when p_company_process_ids is not null then
-                 dvfcd.company_process_ids_added is true
-               else dvfcd.company_process_ids_added is false end
+      and dvfcd.company_process_ids_added is false
     loop
 
       v_in_pps = v_in_pps + 1;

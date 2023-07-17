@@ -25,6 +25,7 @@ declare
   v_where_clause_condition_ids                    text;
   v_pps_cfga_ids                                  bigint[];
   v_ppse_cfga_ids                                 bigint[];
+  x                                               record;
 BEGIN
   select replace(p_where_clause_condition_ids, $$'$$, '')
   into v_where_clause_condition_ids;
@@ -98,26 +99,35 @@ BEGIN
     if v_pps_value is not null then
       select flow.get_prepared_value(v_pps_dt_id, v_pps_value)
       into v_prepared_value;
+      for x in select distinct c.schema_name, dv.view_name
+               from flow.data_view dv
+                      inner join flow.company c on c.id = dv.company_id
+                      inner join flow.data_view_field_config d on d.data_view_id = dv.id and
+                                                                  d.update_first_value_only_id =
+                                                                  p_update_first_value_only_id
+               order by dv.view_name
+        loop
 
-      if p_secondary_field_to_update is null and p_secondary_value is null then
-        v_sql = $$update brs.project_details pd
+          if p_secondary_field_to_update is null and p_secondary_value is null then
+            v_sql = $$update $$ || x.schema_name || $$.$$ || x.view_name || $$
               set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
-                 where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-      else
-        v_sql = $$update brs.project_details pd
+                    p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
+                 where project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+          else
+            v_sql = $$update $$ || x.schema_name || $$.$$ || x.view_name || $$
               set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
-                p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
-                 where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-      end if;
-      begin
-        execute v_sql;
-      exception
-        when others then
-          insert into flow.trigger_error(project_process_step_custom_value_id, error)
-          values (v_pps_id, SQLERRM);
-      end;
+                    p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
+                    p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
+                 where project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+          end if;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_custom_value_id, error)
+              values (v_pps_id, SQLERRM);
+          end;
+        end loop;
     end if;
   elsif v_project_process_step_event_custom_field_value is true then
     select distinct on (project_id) project_id,
@@ -165,27 +175,35 @@ BEGIN
     if v_ppse_value is not null then
       select flow.get_prepared_value(v_ppse_dt_id, v_ppse_value)
       into v_prepared_value;
+      for x in select distinct c.schema_name, dv.view_name
+               from flow.data_view dv
+                      inner join flow.company c on c.id = dv.company_id
+                      inner join flow.data_view_field_config d on d.data_view_id = dv.id and
+                                                                  d.update_first_value_only_id =
+                                                                  p_update_first_value_only_id
+               order by dv.view_name
+        loop
 
-
-      if p_secondary_field_to_update is null and p_secondary_value is null then
-        v_sql = $$update brs.project_details pd
+          if p_secondary_field_to_update is null and p_secondary_value is null then
+            v_sql = $$update $$ || x.schema_name || $$.$$ || x.view_name || $$
             set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
-               where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-      else
-        v_sql = $$update brs.project_details pd
+                    p_update_first_value_only_id || $$ = $$ || v_pps_id || $$
+               where project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+          else
+            v_sql = $$update $$ || x.schema_name || $$.$$ || x.view_name || $$
             set $$ || p_field_to_update || $$ = $$ || v_prepared_value || $$,$$ ||
-                p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
-                p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
-               where pd.project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
-      end if;
-      begin
-        execute v_sql;
-      exception
-        when others then
-          insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
-          values (v_pps_id, SQLERRM);
-      end;
+                    p_update_first_value_only_id || $$ = $$ || v_pps_id || $$,$$ ||
+                    p_secondary_field_to_update || $$ = $$ || p_secondary_value || $$
+               where project_id = any($$ || p_where_clause_condition_ids::text || $$);$$;
+          end if;
+          begin
+            execute v_sql;
+          exception
+            when others then
+              insert into flow.trigger_error(project_process_step_event_custom_field_value_id, error)
+              values (v_pps_id, SQLERRM);
+          end;
+        end loop;
     end if;
   end if;
 END

@@ -4,7 +4,10 @@ import lombok.Getter;
 
 public enum BirdEyeCheckInType {
   REVIEW("Review"),
-  SURVEY("Survey");
+  SURVEY("Survey"),
+  SITE_SURVEY("Site Survey");
+
+
 
   @Getter
   private String value;

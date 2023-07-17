@@ -5,10 +5,8 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.NotificationType;
 import com.albatross.api.v1.flow.enums.ObjectType;
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.Note;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.UserPosition;
+import com.albatross.api.v1.flow.enums.SmsPriority;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.NoteQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -192,7 +190,8 @@ public class NoteService {
                 context,
                 "noreply@albatross.myblueraven.com",
                 "Albatross",
-                currentUser.trueUserId());
+                currentUser.trueUserId(),
+                null);
           } else {
             String groupId = UUID.randomUUID().toString();
             String textMessage =
@@ -202,7 +201,7 @@ public class NoteService {
                     + locationOfNote
                     + ".";
             communicationService.queueTextMessages(
-                groupId, mentionedUser, textMessage, null, currentUser.trueUserId());
+                groupId, mentionedUser, textMessage, null, currentUser.trueUserId(), SmsPriority.NOTE_MENTION.level);
           }
         } else {
           log.warn("NOTE: Unable to find user account associated to email={}", emailAddress);
@@ -222,6 +221,19 @@ public class NoteService {
 
     params.put("modifiedById", currentUser.trueUserId());
     sqlCache.updateBySql(NoteQuery.deleteNote, params);
+  }
+
+  public void saveNoteTimer(InteractionTimer noteTimer){
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", currentUser.trueUserId());
+    params.put("projectId", noteTimer.getProjectId());
+    params.put("startTimestamp", noteTimer.getStartTimestamp());
+    params.put("endTimestamp", noteTimer.getEndTimestamp());
+    params.put("startEvent", noteTimer.getStartEvent());
+    params.put("endEvent", noteTimer.getEndEvent());
+    params.put("timerType", noteTimer.getTimerType());
+    sqlCache.updateBySql(NoteQuery.insertNoteTimer, params);
   }
 
   public static class NoteMapper<T> extends BeanPropertyRowMapper<T> {

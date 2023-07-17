@@ -40,7 +40,7 @@ public class ProjectQuery {
 
   //language=PostgreSQL
   public final static String getProjectsInGeoArea = """
-SELECT p.id,
+SELECT     p.id,
            p.project_name,
            cpst.project_status_type,
            p.latitude,
@@ -72,113 +72,23 @@ SELECT p.id,
 
   //language=PostgreSQL
   public final static String getProjectsInGeoAreaDownline = """
-SELECT limited_projects.id,
-           limited_projects.project_name,
-           limited_projects.city,
-           limited_projects.state_abbreviation as state,
-           limited_projects.project_status_type,
-           limited_projects.latitude,
-           limited_projects.longitude,
-           limited_projects.postal_code,
-           limited_projects.street1
-
-        FROM (
-               with project_ids as (
-                   with positions as (
-                       select up.org_id as parent_org_id,up.user_id as user_id
-                       from flow.user_position up
-                       where (up.end_date is null or up.end_date > now())
-                             -- judson had me change this: up.primary_flag is true
-                         and up.archived is not true
-                         and user_id = :currentUserId
-                   ),
-                        org_ids as (
-                            select t.id
-                            from positions p
-                                     join lateral flow.org_hierarchy_filter_down_search(array [p.parent_org_id]) as t
-                                          on true),
-                   all_positions as(
-                          select array_agg(up4.id) as user_position_ids
-                          from flow.user_position up4
-                          inner join positions p4 on p4.user_id = up4.user_id
-                       )
-                   select array_agg(project_ids) as project_ids
-                   from (
-                   select distinct p.id as project_ids
-                   from org_ids o
-                            inner join flow.user_position up2 on up2.org_id = o.id
-                          inner join flow.project p on p.user_position_id = up2.id
-                   where p.archived is not true
-                   union
-                   select distinct p.id as project_ids
-                   from org_ids o
-                            inner join flow.user_position up2 on up2.org_id = o.id
-                            inner join flow.contact c on c.owner_user_position_id = up2.id
-                            inner join flow.project p on p.contact_id = c.id
-                   where p.archived is not true
-                   union
-                   select  distinct p3.id as project_ids
-                   from all_positions p5
-                            inner join flow.contact c on c.owner_user_position_id = any(p5.user_position_ids)
-                            inner join flow.project p3 on p3.contact_id = c.id
-                   where p3.archived is not true
-
-                  union
-                      select  distinct p3.id as project_ids
-                       from all_positions p5
-                        inner join flow.project p3 on p3.user_position_id = any(p5.user_position_ids)
-                      where p3.archived is not true
-                       )as foo)
-               select p.id,
-                      p.project_name,
-                      p.contact_id,
-                      p.date_created,
-                      p.street1,
-                      p.street2,
-                      p.city,
-                      s.state,
-                      s.abbreviation           as state_abbreviation,
-                      p.postal_code            as postal_code,
-                      cp.status_type_id,
-                      st.status_type,
-                      p.company_project_status_type_id,
-                      cpst.project_status_type,
-                      pr.process_name,
-                      (select row_to_json(contact1)
-                       from (
-                                select c.id,
-                                       c.phone,
-                                       c.mobile
-                            ) contact1)::jsonb as contact,
-                      cpst.project_status_type_id,
-                      cpst.color as company_project_status_type_color,
-                      p.latitude,
-                      p.longitude,
-                      p.company_state_id
-               from flow.project p
-                        inner join project_ids pi on p.id = any (pi.project_ids)
-                        inner join flow.company_process cp on cp.id = p.company_process_id
-                        inner join flow.process pr on pr.id = cp.process_id
-                        inner join flow.status_type st on st.id = cp.status_type_id
-                        inner join flow.company_project_status_type cpst
-                                   on cpst.id = p.company_project_status_type_id
-                        inner join flow.contact c on c.id = p.contact_id
-                        left join flow.company_state cs on cs.id = p.company_state_id
-                        left join flow.state s on s.id = cs.state_id
-               where
-                 case
-                   when :isParent then cp.company_id = any
-                                       (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-                   else cp.company_id = :companyId
-                 end
-                 and p.archived is not true
-                 and case when array_length(ARRAY[ :companyProjectStatusTypeIds ]::bigint[], 1) > 0 then p.company_project_status_type_id  = any( array[ :companyProjectStatusTypeIds ]::bigint[] ) else 1=1 end
-                 and st_makepoint(p.longitude, p.latitude)
-                   && ST_MakeEnvelope (
-                                      :upperBoundLongitude, :upperBoundLatitude,
-                                      :lowerBoundLongitude, :lowerBoundLatitude,
-                                      4326)
-           ) as limited_projects
+select id,
+       project_name,
+       city,
+       state,
+       project_status_type,
+       latitude,
+       longitude,
+       postalcode as postal_code,
+       street1
+from flow.density_projects_with_down_line(:companyId::bigint,
+                                          :currentUserId::bigint,
+                                          :isParent,
+                                          ARRAY [ :companyProjectStatusTypeIds ]::bigint[],
+                                          :upperBoundLatitude::numeric,
+                                          :upperBoundLongitude::numeric,
+                                          :lowerBoundLatitude::numeric,
+                                          :lowerBoundLongitude::numeric)
     """;
 
   //language=PostgreSQL
@@ -333,7 +243,8 @@ select
                      pos.position,
                      u.phone_number as "phoneNumber",
                      up.id as "userPositionId",
-                     ust.has_access as "hasAccess"
+                     ust.has_access as "hasAccess",
+                     pos.sms_enabled as "hasSmsAccess"
                   FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position pos on pos.id = up.position_id
@@ -501,16 +412,16 @@ select
              wqt.work_queue_type,
              wq_cat.work_queue_category,
              (coalesce(wqc.date_exited_queue::date, now()::date) - wqc.date_entered_queue::date) as days_in_queue
-          from flow.work_queue_cycle wqc
-          inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id
-          inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
-          inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst  on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
-          inner join flow.process_step_work_queue_type pswqt on pswqt.id = pswqtpsst.process_step_work_queue_type_id
-          inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
-          inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
-          where pps.project_id = :projectId
-          union all
-          select wqc.date_entered_queue,
+      from flow.work_queue_cycle wqc
+               inner join flow.project_process_step pps on pps.id = wqc.project_process_step_id and pps.archived is false
+               inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
+               inner join flow.process_step_work_queue_type_process_step_status_type pswqtpsst  on pswqtpsst.id = wqc.process_step_work_queue_type_process_step_status_type_id
+               inner join flow.process_step_work_queue_type pswqt on pswqt.id = pswqtpsst.process_step_work_queue_type_id
+               inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
+               inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
+      where pps.project_id = :projectId
+      union all
+      select wqc.date_entered_queue,
              wqc.date_exited_queue,
              psewqt.work_queue_type_id,
              e.event_name,
@@ -519,18 +430,18 @@ select
              wqt.work_queue_type,
              wq_cat.work_queue_category,
              (coalesce(wqc.date_exited_queue::date, now()::date) - wqc.date_entered_queue::date) as days_in_queue
-          from flow.work_queue_cycle wqc
-             inner join flow.project_process_step_event ppse on ppse.id = wqc.project_process_step_event_id
-             inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
-             inner join flow.event e on e.id = pse.event_id
-             inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id
-             inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
-             inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
-             inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
-             inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
-             inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
-          where pps.project_id = :projectId
-          order by date_exited_queue desc nulls first, date_entered_queue desc
+      from flow.work_queue_cycle wqc
+               inner join flow.project_process_step_event ppse on ppse.id = wqc.project_process_step_event_id and ppse.archived is false
+               inner join flow.process_step_event pse on pse.id = ppse.process_step_event_id
+               inner join flow.event e on e.id = pse.event_id
+               inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id and pps.archived is false
+               inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
+               inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
+               inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+               inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
+               inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
+      where pps.project_id = :projectId
+      order by date_exited_queue desc nulls first, date_entered_queue desc
     """;
 
   //language=PostgreSQL
@@ -553,6 +464,13 @@ select
         e.event_name,
         e.hidden as eventHidden,
         e.hidden_allow as eventHiddenAllow,
+        (select cfga.id
+            from flow.project_process_step_event_custom_field_value ppsecfv
+               inner join flow.custom_field_group_assignment cfga
+                 on ppsecfv.custom_field_group_assignment_id = cfga.id
+                  and cfga.archived is false and cfga.display_on_snippet is true
+               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+            where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValueGroupAssignmentId",
         ppse.resource_id,
         cest.event_status_type_id,
         cest.id as company_event_status_type_id,
@@ -597,12 +515,19 @@ select
                                                and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
             )
             when e.hidden and :systemAdmin::boolean is false and not e.hidden_allow
-                       then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+            --case when below is empty, then true else do below
+                      then case when ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
                                                and wlp2.archived is not true
                                          limit 1
-            )
+            ) is null then true
+                       else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                         limit 1
+            ) end
                    else 1=1 end
       order by ppse.start_time nulls last, ppse.end_time nulls last, ppse.id
     """;

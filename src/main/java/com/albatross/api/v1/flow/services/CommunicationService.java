@@ -1,8 +1,10 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.exception.ApiException;
+import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
 import com.albatross.api.v1.flow.enums.RecipientType;
+import com.albatross.api.v1.flow.enums.SmsPriority;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
@@ -42,6 +44,7 @@ public class CommunicationService {
   private final UserService userService;
   private final MailService mailService;
   private final SMSService smsService;
+  private final SecurityService securityService;
   private final ProjectService projectService;
 
   @Async
@@ -53,7 +56,8 @@ public class CommunicationService {
       URL emailUnsubscribeURL,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
     for (Long userID : userIDs) {
       Optional<User> user = userService.getUser(userID, false);
       // do not send email if they do not have access to the system
@@ -67,7 +71,8 @@ public class CommunicationService {
             emailUnsubscribeURL,
             sentByEmail,
             sentByName,
-            sentByUserId);
+            sentByUserId,
+             cc);
       }
     }
     return new AsyncResult<>(null);
@@ -83,7 +88,8 @@ public class CommunicationService {
       URL emailUnsubscribeURL,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
     // don't send email if user does not have access to the system
     if (user != null && user.getUserStatusType() != null && user.getHasAccess()) {
 
@@ -94,7 +100,7 @@ public class CommunicationService {
 
         final String template = renderTemplate(templateContent, contextMap);
         mailService.sendMessage(
-            emailAddress, subject, template, attachments, sentByEmail, sentByName, sentByUserId);
+            emailAddress, subject, template, attachments, sentByEmail, sentByName, sentByUserId, cc);
 
       } catch (Exception ex) {
         log.error("EMAIL: ERROR: Error sending email to address={}", emailAddress, ex);
@@ -111,11 +117,12 @@ public class CommunicationService {
       Map<String, Object> context,
       String sentByEmail,
       String sentByName,
-      Long sentByUserId) {
+      Long sentByUserId,
+      String cc) {
     try {
       final String renderTemplate = renderTemplate(template, context);
       mailService.sendMessage(
-          email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId);
+          email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId, cc);
     } catch (Exception e) {
       log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
     }
@@ -131,7 +138,8 @@ public class CommunicationService {
       String sentByEmail,
       String sentByName,
       Long sentByUserId,
-      List<Long> attachmentIds)
+      List<Long> attachmentIds,
+      String cc)
       throws Exception {
 
     try {
@@ -166,7 +174,8 @@ public class CommunicationService {
                           sentByUserId,
                           true,
                           null,
-                          attachmentIds);
+                          attachmentIds,
+                          cc);
                     } catch (Exception e) {
                       log.error(
                           "EMAIL: ERROR: Generating template. template={}, address={}",
@@ -196,7 +205,7 @@ public class CommunicationService {
   }
 
   @Async
-  public void sendMassText(
+  public Future<Void> sendMassText (
       String groupId, SendTextsRequest sendTexts, List<User> users, User loggedInUser) {
 
     for (User user : users) {
@@ -205,8 +214,10 @@ public class CommunicationService {
           user,
           sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
           sendTexts.getMediaURLs(),
-          loggedInUser.trueUserId());
+          loggedInUser.trueUserId(),
+          users.size() > 10 ? SmsPriority.LARGE_GROUP.level : SmsPriority.SMALL_GROUP.level);
     }
+    return new AsyncResult<>(null);
   }
 
   @Async
@@ -215,10 +226,12 @@ public class CommunicationService {
       User user,
       String templateContent,
       List<URI> mediaURLs,
-      Long loggedInUserId) {
+      Long loggedInUserId,
+      Integer priority) {
     // dont try to send text if there is no phone number or the user doesnt have access
     if (null != user
         && user.getPhoneNumber() != null
+        && !user.getPhoneNumber().isEmpty()
         && user.getUserStatusType() != null
         && user.getHasAccess()) {
       try {
@@ -236,9 +249,29 @@ public class CommunicationService {
             mediaURLs,
             RecipientType.USER,
             loggedInUserId,
-            null);
-      } catch (Exception ex) {
-        log.error("MESSAGING: Error queueing SMS ", ex);
+            null,
+            priority);
+      } catch (NumberParseException ex) {
+        log.warn("TWILIO: Message not sent: Invalid phone number: {}", user.getPhoneNumber());
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid phone number: " + user.getPhoneNumber(), new Exception());
+      } catch (InvalidReferenceException ire) {
+        Pattern invalidParameter = Pattern.compile("([$]\\S+)");
+        Matcher m = invalidParameter.matcher(ire.getMessage());
+        if (m.find()) {
+          String invalidParamName = m.group(1);
+          throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST,
+            "Invalid parameter " + invalidParamName + " ",
+            new Exception());
+        } else {
+          throw new ResponseStatusException(
+            HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
+        }
+      } catch (Exception e) {
+        log.error("MESSAGING: Error queueing SMS message ", e);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
       }
     }
   }
@@ -264,7 +297,35 @@ public class CommunicationService {
         mediaURLs,
         RecipientType.PROJECT,
         sentByUserId,
-        sentBySmsTeamId);
+        sentBySmsTeamId,
+        SmsPriority.PROJECT.level);
+    } catch (Exception ex) {
+      log.error("MESSAGING: Error queueing SMS ", ex);
+    }
+  }
+
+  @Async
+  public void queueTextMessagesForUser (
+    String messageGroupId,
+    Long recipientUserId,
+    String toPhone,
+    String template,
+    List<URI> mediaURLs,
+    Long sentByUserId,
+    Long sentBySmsTeamId) {
+    try {
+      smsService.queueMessage(
+        messageGroupId,
+        recipientUserId,
+        null,
+        null,
+        toPhone,
+        template,
+        mediaURLs,
+        RecipientType.USER,
+        sentByUserId,
+        sentBySmsTeamId,
+        SmsPriority.USER.level);
     } catch (Exception ex) {
       log.error("MESSAGING: Error queueing SMS ", ex);
     }
@@ -347,6 +408,56 @@ public class CommunicationService {
         throw new ResponseStatusException(
           HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
       }
+  }
+
+  public Map<String, Object> sendTextsForUser(User recipientUser, String message, List<URI> mediaURLs, Long smsTeamId) {
+    User currentUser = securityService.getCurrentUser();
+    String groupId = UUID.randomUUID().toString();
+    String phoneNumber = recipientUser.getPhoneNumber();
+    try {
+      String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+
+      Map<String, Object> contextMap =
+        Map.of(
+          "user",
+          recipientUser);
+
+      String template =
+        renderTemplate(
+          message == null ? "" : message, contextMap);
+
+      queueTextMessagesForUser(
+        groupId,
+        recipientUser.getId(),
+        safePhone,
+        template,
+        mediaURLs,
+        currentUser.getId(),
+        smsTeamId);
+
+      return Map.of("messageGroup", groupId);
+    } catch (NumberParseException ex) {
+      log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+    } catch (InvalidReferenceException ire) {
+      Pattern invalidParameter = Pattern.compile("([$]\\S+)");
+      Matcher m = invalidParameter.matcher(ire.getMessage());
+      if (m.find()) {
+        String invalidParamName = m.group(1);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Invalid parameter " + invalidParamName + " ",
+          new Exception());
+      } else {
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
+      }
+    } catch (Exception e) {
+      log.error("MESSAGING: Error queueing SMS message ", e);
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
+    }
   }
 
   private CommunicationController.ProjectDetails getProjectTemplateFields(Long projectId, String projectTimeZone) {

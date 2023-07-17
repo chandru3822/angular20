@@ -4,15 +4,23 @@ AS
 $BODY$
 declare
   x         record;
+  y         record;
   v_records integer[];
   v_count   integer default 0;
+  v_sql text;
 BEGIN
   delete
   from flow.data_view_update dvu
   where generated_update is null;
-
-  ALTER TABLE brs.project_details
-    SET (autovacuum_enabled = false);
+  for y in  select dv.view_name,c.schema_name
+            from flow.data_view dv
+                   inner join flow.company c on c.id = dv.company_id
+  loop
+      v_sql = null;
+      v_sql = $$ALTER TABLE $$ ||y.schema_name||$$.$$||y.view_name||$$
+        SET (autovacuum_enabled = false);$$;
+      execute v_sql;
+  end loop;
 
   for x in select *
            from flow.data_view_update
@@ -34,8 +42,16 @@ BEGIN
 
   ALTER SEQUENCE flow.data_view_update_id_seq RESTART WITH 1;
 
-  ALTER TABLE brs.project_details
-    SET (autovacuum_enabled = true);
+  for y in  select dv.view_name,c.schema_name
+            from flow.data_view dv
+                   inner join flow.company c on c.id = dv.company_id
+    loop
+      v_sql = null;
+      v_sql = $$ALTER TABLE $$ ||y.schema_name||$$.$$||y.view_name||$$
+        SET (autovacuum_enabled = true);$$;
+      execute v_sql;
+    end loop;
+
 END
 $BODY$
   LANGUAGE plpgsql;

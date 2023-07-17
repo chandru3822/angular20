@@ -183,10 +183,12 @@ begin
                     from (select p.contact_name, fds_nq.project_id
                           from brs.get_residual_qualified_lifetime_fds(u.id,v_period_end,v_grace_period_end) as fds_nq
                                  inner join brs.project_details p on p.project_id = fds_nq.project_id) as total_qualifying_fdc_to_date1) as total_qualifying_fdc_to_date,
-            (select count(1)
+            (select sum(count)::bigint
+            from (
+            (select count(1) count
             from (
               (select count(1), project_id from brs.get_current_residual_clawbacks(u.id) group by project_id)) as foo
-            group by foo.project_id) as cancelled_fdc_during_period,
+            group by foo.project_id)) as foo1)::bigint as cancelled_fdc_during_period,
               coalesce (v_lifetime_fds, 0) as residual_qualified_fdc
 
             from flow.user u
@@ -314,10 +316,12 @@ begin
                                                urpst.user_residual_project_snapshot_code = 'LIFETIME_QUALIFIED_FDS'
                           where urs.user_id = p_closer_user_id
                             and urs.id = v_has_current_snapshot_id) as total_qualifying_fdc_to_date1) as total_qualifying_fdc_to_date,
-            (select count(1)
+              (select sum(count)::bigint
+              from (
+              (select count(1) as count
             from (
               (select count(1), project_id from brs.get_user_residual_project_snapshot_by_type(urs2.residual_id, urs2.user_id, 4) group by project_id)) as foo
-            group by foo.project_id) as cancelled_fdc_during_period,
+            group by foo.project_id))as foo1)::bigint as cancelled_fdc_during_period,
               coalesce (v_lifetime_fds, 0) as residual_qualified_fdc,
               v_no_previous_month_message as v_no_previous_month_message
             from brs.user_residual_snapshot urs2

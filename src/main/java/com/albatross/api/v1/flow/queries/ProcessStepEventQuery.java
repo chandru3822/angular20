@@ -14,6 +14,7 @@ public class ProcessStepEventQuery {
            pse.archived,
            e.event_name,
            e.hidden as eventHidden,
+           e.hidden_allow as eventHiddenAllow,
            pse.display_order,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(psea)))
@@ -85,13 +86,26 @@ public class ProcessStepEventQuery {
     where pse.process_step_id = :processStepId
       and e.resource_custom_field_id is not null
       and pse.archived is not true
-      and case when e.hidden and :systemAdmin::boolean is false
+      and case when e.hidden and e.hidden_allow and :systemAdmin::boolean is false
                        then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
                                                and wlp2.archived is not true
                                                and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
             )
+           when e.hidden and not e.hidden_allow and :systemAdmin::boolean  is false
+             then case when ( select wlp2.event_id from flow.white_listed_position wlp2
+                              where wlp2.event_id = pse.event_id
+                                and wlp2.white_list_type_id = 17
+                                and wlp2.archived is not true
+                              limit 1
+           ) is null then true
+                       else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                             limit 1
+                       ) end
                    else 1=1 end
       order by pse.display_order
         """;

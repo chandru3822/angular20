@@ -101,7 +101,9 @@ select c.id,
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      p.position,
                      up.id as "userPositionId",
-                     ust.has_access as "hasAccess"
+                     ust.has_access as "hasAccess",
+                     p.sms_enabled as "hasSmsAccess",
+                     p.active as "isActive"
                   FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position p on p.id = up.position_id

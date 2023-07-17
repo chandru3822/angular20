@@ -56,6 +56,7 @@
           :ripple="false"
           @change="callback(field)"
           :class="customClass"
+          :hint="hint"
         />
 
         <v-text-field
@@ -70,6 +71,7 @@
           :filled="filledStyle"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           type="number"
           v-model.number="field.numericValue"
           @change="callback(field)"
@@ -132,6 +134,7 @@
           :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           item-value="id"
           item-text="name"
           @input="handleInput"
@@ -165,6 +168,7 @@
           :rules="rules"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           item-value="id"
           item-text="name"
           @input="handleInput"
@@ -195,6 +199,7 @@
           :items="getListOfValues()"
           :label="getFieldName()"
           :hide-details="hideDetails"
+          :hint="hint"
           :rules="rules"
           placeholder=" "
           item-value="id"
@@ -228,6 +233,7 @@
           :disabled="readonly"
           :class="[customClass, {'error--text': readonly}]"
           :rules="rules"
+          :hint="hint"
           placeholder=" "
           item-value="id"
           item-text="name"
@@ -336,6 +342,10 @@ export default {
     },
     listOfValueFilter: {
       type: Function,
+      required: false
+    },
+    hint: {
+      type: String,
       required: false
     },
     minDate: String,
@@ -524,7 +534,10 @@ export default {
   height: auto !important;
   width: 100%;
   color: rgba(0,0,0,0.87); //default-text-color
-  font-size: 0.875rem; //albatross-body-2
+  font-size: 1rem; //body-large
+  font-weight: 400;
+  font-family: lato;
+  line-height: 1.6;
 }
 
 .rich-text-editor-readonly .ql-toolbar {

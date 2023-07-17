@@ -26,7 +26,7 @@ BEGIN
 
         FOR d IN
             SELECT (brs.get_commission_account_details(
-                    p_payroll_id, p.selected_project_ids, NULL, NULL, NULL, NULL, NULL, NULL)).*
+                    p_payroll_id, p.selected_project_ids, NULL, NULL, NULL, NULL, NULL, NULL,true)).*
             FROM brs.payroll p
             WHERE p.id = p_payroll_id
 
@@ -67,7 +67,8 @@ BEGIN
                                                              project_total_value,
                                                              updated,
                                                              commission_forfeited_by_closer,
-                                                             commission_forfeited_paid_to_date)
+                                                             commission_forfeited_paid_to_date,
+                                                             forfeited_amount)
 
                 VALUES (p_payroll_id,
                         d.project_id,
@@ -105,7 +106,8 @@ BEGIN
                         coalesce(d.project_total_value, 0),
                         now(),
                         d.commission_forfeited_by_closer,
-                        d.commission_forfeited_paid_to_date)
+                        d.commission_forfeited_paid_to_date,
+                        d.forfeited_amount)
                 ON CONFLICT (payroll_id,project_id) DO NOTHING
                 RETURNING id INTO v_snapshot_id;
 

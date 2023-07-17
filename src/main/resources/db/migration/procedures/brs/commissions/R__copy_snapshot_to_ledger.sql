@@ -12,6 +12,7 @@ DECLARE
     v_total_commissions NUMERIC(10, 2);
     v_total_overrides   NUMERIC(10, 2);
     v_position_id       bigint;
+v_forfeited_amount numeric;
 
 BEGIN
     insert into flow.company_function_log(function_name, parameters, run_by_id)
@@ -39,7 +40,8 @@ BEGIN
                    s.overrides_paid_to_date,
                    s.commission_forfeited_paid_to_date,
                    s.commission_forfeited_by_closer,
-                   s.cancelled
+                   s.cancelled,
+                   s.total_commissions
             FROM brs.project_commission_snapshot s
             WHERE payroll_id = p_payroll_id
             LOOP
@@ -50,8 +52,17 @@ BEGIN
                 where ledger_type_id = 7 and
                       project_id = d.project_id;
               end if;
-              if coalesce(d.commissions_earned,0) > 0 and coalesce(d.commission_paid_to_date,0) < 1 and
-                 coalesce(d.commission_forfeited_by_closer,0) > 0 and coalesce(d.commissions_earned,0) > coalesce(d.current_pay_commissions,0) then
+
+              v_forfeited_amount = 0.00::numeric;
+              select forfeited_amount
+              from brs.get_current_pay(coalesce(d.total_commissions, 0),
+                                       coalesce(d.commissions_earned, 0),
+                                       coalesce(d.commission_paid_to_date, 0),
+                                       coalesce(d.commission_forfeited_by_closer, 0),
+                                       coalesce(d.commission_forfeited_paid_to_date, 0))
+              into v_forfeited_amount;
+
+              if coalesce(v_forfeited_amount, 0) > 0 then
                 INSERT INTO brs.project_commission_ledger (payroll_id,
                                                            project_id,
                                                            user_id,
@@ -60,20 +71,12 @@ BEGIN
                                                            created_by,
                                                            created,
                                                            position_id)
-                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7, coalesce(d.commissions_earned,0) - coalesce(d.current_pay_commissions,0), p_updated_by_id, now(),
-                        1);
-              elsif coalesce(d.commissions_earned,0) > 0 and coalesce(d.commission_paid_to_date,0) > 0 and
-                    coalesce(d.commission_forfeited_by_closer,0) > 0  then
-                INSERT INTO brs.project_commission_ledger (payroll_id,
-                                                           project_id,
-                                                           user_id,
-                                                           ledger_type_id,
-                                                           amount,
-                                                           created_by,
-                                                           created,
-                                                           position_id)
-                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7, coalesce(d.commission_forfeited_by_closer,0) - coalesce(d.commission_forfeited_paid_to_date,0), p_updated_by_id, now(),
-                        1);
+                VALUES (p_payroll_id, d.project_id, d.sales_rep_id, 7,v_forfeited_amount ,
+                        p_updated_by_id, now(),
+                          1);
+                  update brs.financial_details fd
+                  set total_commissions_forfeited_paid_to_date = coalesce(total_commissions_forfeited_paid_to_date,0) + v_forfeited_amount
+                  where project_id = d.project_id;
               end if;
 
 --                 v_total_commissions := (coalesce(d.commissions_earned, 0) +
@@ -96,6 +99,14 @@ BEGIN
                             1);
                 END IF;
 
+              update brs.financial_details fd
+              set total_commissions_paid_to_date = ( SELECT coalesce(sum(amount), 0)
+                                                               FROM brs.project_commission_ledger pcl
+                                                               WHERE pcl.project_id = d.project_id
+                                                                 AND pcl.ledger_type_id = 1
+                                                                 and pcl.position_id = 1)
+              where project_id = d.project_id;
+
                 IF d.commission_adjustment IS NOT NULL
                 THEN
                     INSERT INTO brs.project_commission_ledger (payroll_id,
@@ -110,6 +121,13 @@ BEGIN
                             now(), 1);
                 END IF;
 
+              update brs.financial_details fd
+              set total_commissions_adjustments_paid_to_date = ( SELECT coalesce(sum(amount), 0)
+                                                               FROM brs.project_commission_ledger pcl
+                                                               WHERE pcl.project_id = d.project_id
+                                                                 AND pcl.ledger_type_id = 2
+                                                                 and pcl.position_id = 1)
+              where project_id = d.project_id;
 
                 IF d.override_adjustment IS NOT NULL
                 THEN
@@ -159,7 +177,7 @@ BEGIN
                            1
                     from t;
 
-                else
+                elsif d.current_pay_overrides > 0 then
 
                     WITH overrides AS (SELECT docs.user_id,
                                               dcs.project_id,
@@ -199,7 +217,13 @@ BEGIN
                     FROM overrides a;
 
                 end if;
-
+              update brs.financial_details fd
+              set total_overrides_paid_to_date = ( SELECT coalesce(sum(paid_to_date), 0)
+                                                                 FROM brs.project_commission_ledger pcl
+                                                                 WHERE pcl.project_id = d.project_id
+                                                                   AND pcl.ledger_type_id = 3
+                                                                   and pcl.position_id = 1)
+              where project_id = d.project_id;
 
             END LOOP;
 

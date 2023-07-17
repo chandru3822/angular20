@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.Contact;
 import com.albatross.api.v1.flow.model.SendTextsRequest;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.*;
 import com.google.common.collect.Maps;
 import lombok.Data;
@@ -23,10 +24,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.Future;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -39,11 +38,8 @@ import static java.util.function.Predicate.not;
 public class CommunicationController {
 
   private final CommunicationService communicationService;
-  private final SMSService smsService;
   private final ContactService contactService;
   private final ProjectService projectService;
-  private final ProjectProcessStepService projectProcessStepService;
-  private final ProjectProcessStepEventService projectProcessStepEventService;
   private final UserService userService;
   private final SecurityService securityService;
 
@@ -56,7 +52,18 @@ public class CommunicationController {
   public Map<String, Object> sendTextsForProject(
       @PathVariable Long projectId, @RequestBody SendTextsRequest sendTexts) {
     User user = securityService.getCurrentUser();
-    Long contactId = sendTexts.getUserIDs().get(0);
+
+    Long contactId = 0L;
+    if (sendTexts.getUserIDs() == null || sendTexts.getUserIDs().isEmpty()) {
+      Optional<Project> project = projectService.getProject(projectId);
+      if (project.isPresent()) {
+        contactId = project.get().getContactId();
+      }
+    }
+    else {
+      contactId = sendTexts.getUserIDs().get(0);
+    }
+
     Contact contact = contactService.getContact(contactId);
     log.debug("TWILIO: attempting text for contact ID: {}", contactId);
     if (null != contact) {
@@ -69,14 +76,38 @@ public class CommunicationController {
     }
   }
 
+  @PostMapping(value = "/sendTextsForUser/{userId}")
+  public Map<String, Object> sendTextsForUser(
+    @PathVariable Long userId, @RequestBody SendTextsRequest sendTexts) {
+    Optional<User> recipientUser = userService.getUser(userId, false);
+    log.debug("TWILIO: attempting text for user ID: {}", userId);
+
+    if (recipientUser.isPresent()) {
+      return communicationService.sendTextsForUser(recipientUser.get(), sendTexts.getMessage(), sendTexts.getMediaURLs(), sendTexts.getSmsTeamId());
+    } else {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        "Could not find user for user id: " + userId,
+        new Exception());
+    }
+  }
+
   @PostMapping(value = "/sendTexts")
-  public Map<String, String> sendTexts(@RequestBody SendTextsRequest sendTexts) {
+  public Map<String, String> sendTexts(@RequestBody SendTextsRequest sendTexts)  {
     User currentUser = securityService.getCurrentUser();
 
     String groupId = UUID.randomUUID().toString();
     final List<User> users = userService.findByIds(sendTexts.getUserIDs());
-    communicationService.sendMassText(groupId, sendTexts, users, currentUser);
-    return Map.of("messageGroup", groupId);
+    Future<Void> future = communicationService.sendMassText(groupId, sendTexts, users, currentUser);
+    try {
+      future.get();
+      return Map.of("messageGroup", groupId);
+    } catch (Exception e) {
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST,
+        e.getMessage(),
+        new Exception());
+    }
   }
 
   @ResponseStatus(HttpStatus.OK)
@@ -117,6 +148,7 @@ public class CommunicationController {
         from,
         "Blue Raven Sales Operation",
         currentUser.trueUserId(),
+        null,
         null);
 
     final Predicate<User> userStatusTypePredicate = u -> u.getUserStatusType() == null;
@@ -169,7 +201,8 @@ public class CommunicationController {
           getUnsubscribeURLForEmails(request),
           "SalesOps@blueravensolar.com",
           "Blue Raven Sales Operation",
-          user.trueUserId());
+          user.trueUserId(),
+        null);
 
     } finally {
       for (File temporaryFile : temporaryFiles.values()) {

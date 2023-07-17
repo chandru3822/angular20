@@ -4321,7 +4321,8 @@ public class SmartlistServicev1 {
       join += " inner join flow.event_status_type on flow.event_status_type.id = flow.company_event_status_type.event_status_type_id ";
 
       if (workQueueTypeId != null) {
-        join += " left join flow.process_step_event_work_queue_type on flow.process_step_event_work_queue_type.process_step_event_id = flow.process_step_event.id and flow.process_step_event_work_queue_type.work_queue_type_id = " + workQueueTypeId + " ";
+        join += " inner join flow.process_step_event_work_queue_type on flow.process_step_event_work_queue_type.process_step_event_id = flow.process_step_event.id and flow.process_step_event_work_queue_type.work_queue_type_id = " + workQueueTypeId + " ";
+        join += " inner join flow.process_step_event_work_queue_type_event_status_type on flow.process_step_event_work_queue_type_event_status_type.process_step_event_work_queue_type_id = flow.process_step_event_work_queue_type.id and flow.process_step_event_work_queue_type_event_status_type.id = wqc.process_step_event_work_queue_type_event_status_type_id";
       }
     }
 

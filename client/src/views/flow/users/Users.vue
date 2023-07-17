@@ -261,27 +261,29 @@
 
     <v-dialog v-model="msgDialog" max-width="800px">
       <v-card>
-        <v-card-title class="text-h5" primary-title>
+        <v-card-title class="body-large justify-space-between" primary-title>
             Send Bulk Emails/Texts
+            <a class="close-modal-x pb-3" title="Close" @click="cancelSendMessageDialog">×</a>
         </v-card-title>
           <v-toolbar-items>
-        <v-tabs color="secondary" background-color="primary" slot="extension" dark slider-color="secondary">
+        <v-tabs color="primary" slot="extension" slider-color="primary" class="message-tabs">
             <v-tab @click="messageTab = 1">
               Emails
             </v-tab>
             <v-tab @click="messageTab = 2">
-              Texts
+              SMS
             </v-tab>
         </v-tabs>
           </v-toolbar-items>
         <v-divider></v-divider>
-        <div v-if="messageTab == 1"  class="pa-5">
+        <div v-if="messageTab == 1"  class="pa-6">
+          <label class="mr-2">To:</label>
           <v-autocomplete
             v-model="selectedUsers"
             :items="allUsers"
             multiple
             clearable
-            label="To"
+            label="Select user(s)"
             item-text="fullName"
             item-value="id"
             height="35px"
@@ -318,18 +320,22 @@
             </template>
           </v-autocomplete>
 
-          <v-select attach
-                    label="From"
+          <div class="mb-3 flex-display">
+            <label class="mt-5 mr-2">From:</label>
+            <v-select attach
+                      label="Select email"
                       v-model="fromEmail"
                       :items="fromEmails"
                       item-text="email"
                       item-value="email"
+                      class="select-email"
             />
+          </div>
 
             <v-text-field v-model="emailSubject" label="Subject"></v-text-field>
             <b>Message </b><span class="count-span pl-2">Characters: {{this.emailCharacterCount}}  Words: {{this.emailWordCount}}</span>
             <quill-editor
-                class="py-3"
+                class="py-3 rich-text-editor"
                 v-model="emailMessage"
                 @change="onEmailMessageChange($event)"
             />
@@ -345,34 +351,29 @@
                 style="width: 255px"
             />
 
-            <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
-            <v-card-actions class="flex-display justify-end px-4 pt-0">
+            <v-card-actions class="flex-display justify-end pt-0 px-0">
               <v-btn
                 text color="primary"
                 @click="cancelSendMessageDialog">
                 Cancel
               </v-btn>
               <v-btn
-                color="primary" class="white--text mr-2 "
+                color="primary" class="white--text"
                 :disabled="this.disableSendEmail"
                 @click="sendMessage(true, false)">
-                Send Emails Only
-              </v-btn>
-              <v-btn
-                color="primary" class="white--text"
-                :disabled="this.disableSendEmail || this.disableSendText"
-                @click="sendMessage(true, true)">
-                Send Both
+                Send Email
               </v-btn>
             </v-card-actions>
         </div>
-        <div v-else-if="messageTab == 2" style="height:700px;" class="pa-5">
+        <div v-else-if="messageTab == 2" class="pa-6">
+            <span>You will not be assigned to bulk conversations sent from this screen. If you wish to stay on top of
+            conversations, use Inbox to send messages. <br></span>
+            <label class="mr-2">To:</label>
             <v-autocomplete
               v-model="selectedUsers"
               :items="allUsers"
               multiple
               clearable
-              label="To"
               item-text="fullName"
               item-value="id"
               height="35px"
@@ -394,62 +395,82 @@
                   class="primary--text text-caption"
                 >{{ selectedUsers.length }} selected</span>
               </template>
-
-              <template #item="data">
-                <template>
-                  <v-list-item dense>
-                    <v-list-item-action>
-                      <v-checkbox @change="toggleSingleSelectAutocomplete(data.item)" :input-value="data.item.selected"></v-checkbox>
-                    </v-list-item-action>
-                    <v-list-item-title>
-                      <div @click="toggleSingleSelectAutocomplete(data.item)">{{ data.item.fullName }}</div>
-                    </v-list-item-title>
-                  </v-list-item>
-                </template>
-              </template>
             </v-autocomplete>
-            <span class="count-span flex-display">Characters: {{this.textCharacterCount}} (153 Character limit)</span>
 
+          <div class="flex-display justify-end">
             <v-textarea solo v-model="textMessage"
                         auto-grow
-                        rows="7"
-                        placeholder="Enter your message..." class="py-3"></v-textarea>
+                        rows="4"
+                        outlined
+                        placeholder="Enter message here" class="message-text-area py-1 pr-3"></v-textarea>
+
+            <v-btn icon color="primary" class="white--text mt-1 templateButton">
+              <v-tooltip bottom small>
+                <template v-slot:activator="{on, attrs}">
+                  <v-icon @click="" v-bind="attrs" v-on="on">
+                    article
+                  </v-icon>
+                </template>
+                <span class="albatross-body-3">Templates</span>
+              </v-tooltip>
+            </v-btn>
+            <v-menu v-model="menuOpen" top left offset-y activator=".templateButton" :close-on-content-click="false">
+              <v-card class="template-dialog" width="295px">
+                <v-card-title>
+                  <span class="albatross-header-4-new">Add Template</span>
+                </v-card-title>
+                <v-card-text>
+                  <v-select label="Template"
+                            class="template-selector pt-1"
+                            v-model="selectedTemplate"
+                            :items="selectableTemplates"
+                            item-text="title"
+                            item-value="id"
+                            ref="templateSelect"
+                            return-object
+                            @change="handleTemplateSelection">
+
+                    <template slot="item" slot-scope="data">
+                      <!-- HTML that describes how select should render items when the select is open -->
+                      <div class="ellipse">
+                        <h4 class="template-title">{{ data.item.title }}<br /></h4>
+                        <span class="template-message">{{ data.item.message }}</span>
+                      </div>
+                    </template>
+                  </v-select>
+                </v-card-text>
+              </v-card>
+            </v-menu>
 
             <v-file-input
                 dense
                 outlined
+                multiple
+                hide-input
                 color="primary"
-                label="Upload image"
-                v-model="textFile"
+                v-model="textFiles"
                 @change="uploadTextAttachment"
-                @click:clear="[textFile = null, textMediaUrls = []]"
-                style="width: 245px"
+                @click:clear="[textFiles = [], textMediaUrls = []]"
             />
+          </div>
+          <span v-if="textFiles.length > 0">Attached {{ attachmentsText }}</span>
 
-            <span class="flex-display justify-end pa-4 pt-0">{{this.usersSelected}} user(s) selected</span>
-            <v-card-actions class="flex-display justify-end px-4 pt-0">
+            <v-card-actions class="flex-display justify-end px-0 pt-0 ml-2">
               <v-btn
                 text color="primary"
                 @click="cancelSendMessageDialog">
                 Cancel
               </v-btn>
               <v-btn
-                color="primary" class="white--text mr-2"
+                color="primary" class="white--text"
                 :disabled="this.disableSendText"
                 @click="sendMessage(false, true)">
-                Send Text Only
-              </v-btn>
-              <v-btn
-                color="primary" class="white--text"
-                :disabled="this.disableSendEmail || this.disableSendText"
-                @click="sendMessage(true, true)">
-                Send Both
+                Send SMS
               </v-btn>
             </v-card-actions>
         </div>
       </v-card>
     </v-dialog>
-
   </v-container>
   <v-container  v-else>
     <v-btn small text color="primary" @click="toggleImages()">
@@ -626,12 +647,16 @@
         emailAttachments: [],
         textMediaUrls: [],
         emailFile: null,
-        textFile: null,
+        textFiles: [],
         primaryPositionsOnly: true,
         source: null,
         allUsersLoading: false,
         companyId: this.$store.state.user.details.companyId,
         attachmentTypeId: 9,
+        templateTeams: [],
+        selectedTemplate: null,
+        selectableTemplates: [],
+        menuOpen: false
       }
     },
     computed: {
@@ -663,8 +688,16 @@
           return !(this.fromEmail.trim().length > 0 && this.emailSubject.trim().length > 0 && this.emailMessage.trim().length > 0 && this.usersSelected)
       },
       disableSendText() {
-          return !(this.textMessage.trim().length > 0 && this.usersSelected)
-      }
+          return !((this.textMessage.trim().length > 0 || this.textMediaUrls.length > 0) && this.usersSelected)
+      },
+      attachmentsText() {
+        if (this.textFiles.length == 1) {
+          return this.textFiles[0].name
+        }
+        else if (this.textFiles.length > 1) {
+          return this.textFiles.length + ' files'
+        }
+      },
     },
     beforeRouteEnter(to, from, next) {
       //if coming to this page from the user details - use the previously used search
@@ -687,14 +720,22 @@
       this.getPositions()
       this.getOrgFilters(true)
       this.getEmailSenders()
+      this.fetchTeamsForUser()
     },
     methods: {
+      handleTemplateSelection() {
+        this.textMessage += this.selectedTemplate.message
+        this.menuOpen = false
+        this.selectedTemplate = null
+        this.$refs.templateSelect.reset();
+      },
       cancelSendMessageDialog(){
         this.textMediaUrls = []
         this.emailAttachments = []
         this.emailFile = null
-        this.textFile = null
+        this.textFiles = []
         this.msgDialog = false
+        this.textMessage = ''
       },
       async nextPage(){
         this.currentPage++;
@@ -897,7 +938,6 @@
               primaryFlag: this.primaryPositionsOnly
             }
 
-            let length = this.allUsers.length;
             const {data, status} = await postRequest(`/user/search?page=${this.currentPage-1}&size=${this.usersPerPage}`, params, null, [], {
               source: this.source,
               cancelToken: this.source.token
@@ -1174,6 +1214,39 @@
           return false;
         }
       },
+      async fetchTeamsForUser() {
+        try {
+          this.conversationIsLoading = true
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+          this.teamsAssociatedToUser = data
+          for (let team of this.teamsAssociatedToUser){
+            this.templateTeams.push(team.id);
+          }
+          handleHidingGlobalLoader(this, status)
+          await this.getSmsTeamTemplates();
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error fetching SMS Teams')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.conversationIsLoading = false
+        }
+      },
+      async getSmsTeamTemplates() {
+        try {
+          this.selectedTemplate = null
+          if (this.teamsAssociatedToUser.length < 1) {
+            return
+          }
+
+          const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
+          this.selectableTemplates = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
       async sendMessage(sendEmail, sendText) {
           try {
               this.$store.commit(AppMutations.SET_LOADING, true)
@@ -1195,46 +1268,63 @@
                   return postRequest(`/communication/sendEmails`, formData)
                 })()
                 requests.push(sendEmailFn)
+                await Promise.all(requests)
               }
 
               if (sendText) {
-                  const sendTextFn = postRequest(`/communication/sendTexts`, {
+                  if (this.textMessage && this.textMessage.length > 1599) {
+                    let textOverflowLength = this.textMessage.length - 1599;
+                    this.snackbar = getSnackbar('ERROR', 'Message exceeds the 1600 character limit by ' + textOverflowLength + ' characters. ')
+                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                    this.messageSuccess = false
+                    this.$store.commit(AppMutations.SET_LOADING, false)
+                    return;
+                  }
+
+                  let params = {
                     userIDs: userIds,
                     message: this.textMessage,
                     mediaURLs: this.textMediaUrls
-                  })
-                requests.push(sendTextFn)
+                  }
+
+                  await postRequest(`/communication/sendTexts`, params)
               }
-              await Promise.all(requests)
-
-              let msg = 'Message sent'
-              if (sendEmail && sendText){
-                msg = 'Both Email and Text messages were sent successfully'
-              } else if (sendEmail) {
-                  msg = 'Email messages were sent successfully'
-              }else{
-                msg = 'Text messages were sent successfully'
-              }
-
-              this.snackbar = getSnackbar('SUCCESS', msg)
-
-              this.msgDialog = false
-              this.emailSubject= ''
-              this.emailMessage= defaultEmailMessage
-              this.fromEmail = ''
-              this.textMessage= ''
-              this.textMediaUrls = []
-              this.emailAttachments = []
-              this.emailFile = null
-              this.textFile = null
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
           }  catch (e) {
               console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error sending content')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
+              let message = e?.message ? 'Error Sending Message: ' + e.message :
+                e?.data?.message ? 'Error Sending Message: ' + e.data.message : 'Error Sending Message'
+              const matches = message.match(/"(.*?)"/);
+              if (matches && matches.length > 1) {
+                message = 'Error Sending Message: ' + matches[1]
+              }
+
+             this.snackbar = getSnackbar('ERROR', message)
+             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+             this.$store.commit(AppMutations.SET_LOADING, false)
+             return
           }
+
+          let msg = 'Message sent'
+          if (sendEmail && sendText){
+            msg = 'Both Email and Text messages were sent successfully'
+          } else if (sendEmail) {
+            msg = 'Email messages were sent successfully'
+          } else{
+            msg = 'Text messages were sent successfully'
+          }
+
+          this.snackbar = getSnackbar('SUCCESS', msg)
+          this.msgDialog = false
+          this.emailSubject= ''
+          this.emailMessage= defaultEmailMessage
+          this.fromEmail = ''
+          this.textMessage= ''
+          this.textMediaUrls = []
+          this.emailAttachments = []
+          this.emailFile = null
+          this.textFiles = []
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
       },
       onEmailMessageChange({ text }) {
           this.emailCharacterCount = text.trim().length;
@@ -1243,24 +1333,26 @@
       uploadEmailAttachment: function (files) {
         this.emailAttachments = files
       },
-      uploadTextAttachment: async function (file) {
+      uploadTextAttachment: async function (files) {
         try {
-          if (!file){
+          if (!files){
             return
           }
 
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
-          await this.$store.dispatch(Actions.FILE_UPLOAD, {
-            file,
-            attachmentTypeId: 3,
-            sourceId: 1,
-            displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-            callback: async (newAttachment) => {
-              this.$store.commit(AppMutations.SET_LOADING, false)
-              this.textMediaUrls = [...this.textMediaUrls, newAttachment.url]
-            }
-          })
+          for (let file of files) {
+            this.$store.commit(AppMutations.SET_LOADING, true)
+            // @TODO: The actions needs to change when genericising this component. Writing this line made me feel dirty
+            await this.$store.dispatch(Actions.FILE_UPLOAD, {
+              file,
+              attachmentTypeId: 3,
+              sourceId: 1,
+              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+              callback: async (newAttachment) => {
+                this.$store.commit(AppMutations.SET_LOADING, false)
+                this.textMediaUrls.push(newAttachment.url)
+              }
+            })
+          }
         } catch(e) {
           this.$store.commit(AppMutations.SET_LOADING, false)
           logError(e)
@@ -1328,6 +1420,10 @@
 </script>
 
 <style lang="scss">
+  #users-container .v-data-footer__pagination {
+    display: none !important;
+  }
+
   #users-container .v-data-table__wrapper {
     height: calc(100vh - 290px);
     min-height: 300px;
@@ -1396,6 +1492,41 @@
   }
   .user-images-filter-select .v-input__append-inner {
     margin-top: 5px !important;
+  }
+  .select-email {
+    max-width: 60%;
+  }
+
+  .template-dialog {
+    max-width: 500px;
+  }
+
+  .message-text-area {
+    width: 100%;
+  }
+
+  .message-tabs {
+    margin-left: 24px;
+  }
+
+  .close-modal-x {
+    font-size: 30px;
+
+    &:hover {
+      font-weight: bolder;
+    }
+  }
+
+  .select-check {
+    color: var(--v-primary-base) !important;
+  }
+
+  .ellipse {
+    white-space: nowrap;
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 450px;
   }
 
 </style>

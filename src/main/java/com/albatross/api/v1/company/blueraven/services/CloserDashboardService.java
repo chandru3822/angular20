@@ -19,10 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -432,5 +429,14 @@ public class CloserDashboardService {
     parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public List<LeaderboardBooking> getLeaderboardBookings(String bookingDate) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("bookingDate", bookingDate);
+
+
+    List<LeaderboardBooking> results = sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
+    return results;
   }
 }

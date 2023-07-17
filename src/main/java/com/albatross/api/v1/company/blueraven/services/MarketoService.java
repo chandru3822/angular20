@@ -207,18 +207,9 @@ public class MarketoService {
     }
 
     public Map<String, Object> projectToLead(MarketoProject project) {
-        Map<String, Object> lead = new HashMap<>();
-        lead.put("projectId", project.getId());
-        lead.put("firstName", project.getFirstName());
-        lead.put("lastName", project.getLastName());
-        lead.put("address", project.getStreet1());
-        lead.put("state", project.getState());
-        lead.put("country", project.getCountry());
-        lead.put("postalCode", project.getPostalCode());
-        lead.put("phone", project.getPhone());
-        lead.put("email", project.getEmail());
-        lead.put("leadSource", project.getLeadSource());
-        lead.put("leadStatus", project.getLeadStatus());
+        Map<String, Object> lead = om.convertValue(project, HashMap.class);
+        lead.remove("companyProjectStatusTypeId");
+        lead.remove("projectStatusType");
         return lead;
     }
 
@@ -248,19 +239,17 @@ public class MarketoService {
         List<Map<String, Object>> leads = new ArrayList<>();
 
         projects.forEach(p -> {
-            if (!p.getDoNotSolicitReview()) {
-                Map<String, Object> lead = projectToLead(p);
+          Map<String, Object> lead = projectToLead(p);
 
-                lead.put("projectStatus", p.getProjectStatusType());
+          lead.put("projectStatus", p.getProjectStatusType());
 
-                if (p.getCompanyProjectStatusTypeId() == 64) {
-                    lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
-                } else if (p.getCompanyProjectStatusTypeId() == 66) {
-                    lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
-                }
+          if (p.getCompanyProjectStatusTypeId() == 64) {
+              lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
+          } else if (p.getCompanyProjectStatusTypeId() == 66) {
+              lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
+          }
 
-                leads.add(lead);
-            }
+          leads.add(lead);
         });
 
         List<List<Map<String, Object>>> sizedLeads = Lists.partition(leads, 300);
@@ -296,21 +285,9 @@ public class MarketoService {
         List<Map<String, Object>> reactivatedLeads = new ArrayList<>();
 
         reactivatedProjects.forEach(p -> {
-            if (!p.getDoNotSolicitReview()) {
-                Map<String, Object> lead = projectToLead(p);
-
-                //fill all marketo fields with current values
-                lead.put("projectStatus", p.getProjectStatusType());
-                lead.put("closerAppointmentStartTime", formatDateTime(p.getCloserAppointmentStartTime()));
-                lead.put("installationStartTime", formatDateTime(p.getInstallationStartTime()));
-                lead.put("substantialCompletionDate", p.getSubstantialCompletionDate());
-                lead.put("inspectionStartTime", formatDateTime(p.getInspectionStartTime()));
-                lead.put("inspectionPassedDate", p.getInspectionPassedDate());
-                lead.put("energizedDate", p.getEnergizedDate());
-                lead.put("finalDesignApprovedDate", p.getFinalDesignApprovedDate());
-
-                reactivatedLeads.add(lead);
-            }
+          Map<String, Object> lead = projectToLead(p);
+          lead.put("projectStatus", p.getProjectStatusType());
+          reactivatedLeads.add(lead);
         });
 
         List<List<Map<String, Object>>> sizedReactivatedLeads = Lists.partition(reactivatedLeads, 300);
