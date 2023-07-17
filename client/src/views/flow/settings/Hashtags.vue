@@ -83,7 +83,7 @@
                   </td>
                   <td class="text-right">
                     <v-btn text color="primary" v-if="selectedTagId === item.id" :disabled="!item.hashtag"
-                           @click="showSaveDialog = true">
+                           @click="tagToSave=item; showSaveDialog = true">
                       <v-icon>save</v-icon>
                     </v-btn>
                     <v-icon v-else-if="item.hashtagTypeId !== 1" color="primary" @click="selectedTagId = item.id">
@@ -123,7 +123,7 @@
 
             </v-data-table>
           </div>
-          <ConfirmationDialog :open-dialog="showSaveDialog" @confirm="validateExisting(item)" @close-dialog="closeSaveDialog">
+          <ConfirmationDialog :open-dialog="showSaveDialog" @confirm="validateExisting(tagToSave)" @close-dialog="closeSaveDialog">
             This action will edit the topic in pre-existing notes that are using the original topic hashtag. Are you sure you want to edit the topic?
             <template v-slot:title>Confirm</template>
             <template v-slot:yes>Save Changes</template>
@@ -173,6 +173,7 @@ export default {
       userId: this.$store.state.user.details.id,
       companyId: this.$store.state.user.details.companyId,
       tagToDelete: null,
+      tagToSave: null,
       headers: [
         {text: 'Hashtag', value: 'hashtag', show: true},
         {text: 'Type', value: 'hashtagType', show: true},
@@ -263,7 +264,8 @@ export default {
       }
     },
     closeSaveDialog() {
-      this.showSaveDialog = false
+      this.showSaveDialog = false;
+      this.tagToSave = null;
     },
   },
   async created() {
