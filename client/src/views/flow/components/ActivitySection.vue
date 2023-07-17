@@ -137,10 +137,13 @@
             </div>
           </template>
         </Mentionable>
+        <div v-if="editedActivity.createdById !== userId && !userIsAdmin && !addActivity" class="pt-2">
+          Existing topics: {{this.previouslySelectedTopicNames}}
+        </div>
         <v-autocomplete
           v-model="selectedTopics"
           class="mt-3"
-          :items="topics"
+          :items="topics.filter(t => {return !this.previouslySelectedTopics.find(pst => pst.id === t.id)})"
           multiple
           label="Topics"
           return-object
@@ -226,6 +229,7 @@ export default {
       editedIndex: null,
       activityTopics: [],
       selectedTopics: [],
+      previouslySelectedTopics: [],
       topics: [],
       activities: [],
       topicsLoading: false,
@@ -284,6 +288,12 @@ export default {
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
+    },
+    previouslySelectedTopicNames(){
+      const topicNamesList = this.previouslySelectedTopics.map(t => {
+        return '#' + t.hashtag
+      })
+      return topicNamesList.join(', ')
     }
   },
   created() {
@@ -363,6 +373,7 @@ export default {
       } else {
         this.selectedTopics = []
       }
+      this.previouslySelectedTopics = cloneDeep(this.selectedTopics)
     },
     getActivityTopics: async function () {
       if (this.primaryId && this.sectionType) {
