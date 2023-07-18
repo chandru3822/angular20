@@ -61,10 +61,9 @@ const extractFieldData = (field) => {
   if (field.hasListValues) {
     if (field.allowMultiple) {
       objVal.intArrayValue = field.intArrayValue
-      const newVals = field.listOfValues
+      objVal.value = field.listOfValues
         ?.filter((lov) => field.intArrayValue.includes(lov.id))
         ?.map((lov) => lov.name)
-      objVal.value = newVals
     } else {
       objVal.intValue = field.intValue
       objVal.value = field.listOfValues.find(
@@ -73,8 +72,10 @@ const extractFieldData = (field) => {
     }
   } else {
     objVal.value = field[DATA_TYPES[field.dataType]]
+    if (typeof objVal.value === 'string' && objVal.value?.trim() === '') {
+      objVal.value = null
+    }
   }
-
   return {id: field.id, value: objVal}
 }
 

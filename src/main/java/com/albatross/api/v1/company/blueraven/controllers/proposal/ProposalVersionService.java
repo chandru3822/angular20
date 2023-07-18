@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalToolQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -129,33 +131,69 @@ public class ProposalVersionService {
     return getProposalCustomFieldValues(versionId, objectCode);
   }
 
+  private boolean isCustomFieldEmpty(JsonNode jsonNode) {
+    if (jsonNode.has("value")) {
+      JsonNode value = jsonNode.get("value");
+      return value.isNull() || ((value.isNumber() || value.isTextual()) && !StringUtils.hasLength(value.asText()));
+    }
+
+    return false;
+  }
+
   @Transactional
   public Optional<ProposalCustomValuesRow> updateCustomFieldValue(
     Long versionId, String objectCode, ProposalCustomGroup group) {
 
+    ProposalVersion proposalVersion = getProposalVersion(versionId).orElseThrow(() -> new ApiException("Invalid proposal version"));
+    if (proposalVersion.isPrimaryVersion()) {
+      throw new ApiException("Unable to edit a published proposal config");
+    }
+
     final var currentUser = securityService.getCurrentUser();
     var rowId = group.rowId() != null ? group.rowId() : UUID.randomUUID();
 
+    final var removedItems = group.values().stream()
+      .filter(proposalCustomFieldValue -> isCustomFieldEmpty(proposalCustomFieldValue.value()))
+      .map(
+        proposalCustomFieldValue ->
+        {
+          HashMap<String, Object> values = new HashMap<>();
+          values.put("proposalVersionId", versionId);
+          values.put("groupUUID", rowId);
+          values.put("objectCode", objectCode);
+          values.put("fieldId", proposalCustomFieldValue.id());
+
+          return values;
+        }
+      )
+      .toList();
+
+    if (!removedItems.isEmpty()) {
+      sqlCache.updateBatchBySql(ProposalToolQuery.deleteEmptyCustomFieldValues, removedItems);
+    }
+
     final var params =
       group.values().stream()
+        .filter(proposalCustomFieldValue -> !isCustomFieldEmpty(proposalCustomFieldValue.value()))
         .map(
           proposalCustomFieldValue ->
-            Map.of(
-              "proposalVersionId",
-              versionId,
-              "groupUUID",
-              rowId,
-              "objectCode",
-              objectCode,
-              "value",
-              proposalCustomFieldValue.value().toString(),
-              "fieldId",
-              proposalCustomFieldValue.id(),
-              "currentUserId",
-              currentUser.getId()))
+          {
+            HashMap<String, Object> values = new HashMap<>();
+            values.put("proposalVersionId", versionId);
+            values.put("groupUUID", rowId);
+            values.put("objectCode", objectCode);
+            values.put("currentUserId", currentUser.getId());
+            values.put("value", proposalCustomFieldValue.value().toString());
+            values.put("fieldId", proposalCustomFieldValue.id());
+
+            return values;
+          }
+        )
         .toList();
 
-    sqlCache.updateBatchBySql(ProposalToolQuery.insertCustomValue, params);
+    if (!params.isEmpty()) {
+      sqlCache.updateBatchBySql(ProposalToolQuery.insertCustomValue, params);
+    }
 
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, rowId);
   }
@@ -267,7 +305,7 @@ public class ProposalVersionService {
     return query.stream().map(getMapper(objectMapper)).filter(Objects::nonNull).toList();
   }
 
-//  TODO: cacheable
+  //  TODO: cacheable
   public List<Long> getProposalValuesByFieldId(@NonNull Long versionId, @NonNull Long fieldId) {
     return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldId,
       Map.of("versionId", versionId, "fieldId", fieldId), new SingleColumnRowMapper<>(Long.class));
