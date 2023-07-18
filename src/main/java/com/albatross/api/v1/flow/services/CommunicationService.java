@@ -227,7 +227,7 @@ public class CommunicationService {
       String templateContent,
       List<URI> mediaURLs,
       Long loggedInUserId,
-      Integer priority) {
+      Integer priorityLevel) {
     // dont try to send text if there is no phone number or the user doesnt have access
     if (null != user
         && user.getPhoneNumber() != null
@@ -250,7 +250,7 @@ public class CommunicationService {
             RecipientType.USER,
             loggedInUserId,
             null,
-            priority);
+          priorityLevel);
       } catch (NumberParseException ex) {
         log.warn("TWILIO: Message not sent: Invalid phone number: {}", user.getPhoneNumber());
         throw new ResponseStatusException(
