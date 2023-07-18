@@ -144,10 +144,10 @@ public class ProposalVersionService {
   public Optional<ProposalCustomValuesRow> updateCustomFieldValue(
     Long versionId, String objectCode, ProposalCustomGroup group) {
 
-    ProposalVersion proposalVersion = getProposalVersion(versionId).orElseThrow(() -> new ApiException("Invalid proposal version"));
-    if (proposalVersion.isPrimaryVersion()) {
-      throw new ApiException("Unable to edit a published proposal config");
-    }
+    getProposalVersion(versionId)
+      .filter(pv -> ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
+      .orElseThrow(
+        () -> new RuntimeException("Proposal version not found or not eligible for edits"));
 
     final var currentUser = securityService.getCurrentUser();
     var rowId = group.rowId() != null ? group.rowId() : UUID.randomUUID();
