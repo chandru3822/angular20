@@ -1,7 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.exception.ApiException;
-import freemarker.template.TemplateException;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,26 +25,26 @@ public class ProposalPreviewController {
   @PostMapping(value = "/{templateId}", produces = MediaType.APPLICATION_PDF_VALUE)
   public ResponseEntity<StreamingResponseBody> getProposalPreview(
     @PathVariable Long templateId,
-      @RequestParam(value = "inline", defaultValue = "false") boolean inline,
-      final HttpServletResponse response) {
+    @RequestParam(value = "inline", defaultValue = "false") boolean inline,
+    final HttpServletResponse response) {
 
     final String contentDisposition =
-        String.format("%s; filename=\"preview.pdf\"", inline ? "inline" : "attachment");
+      String.format("%s; filename=\"preview.pdf\"", inline ? "inline" : "attachment");
 
     response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
     response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
 
     final StreamingResponseBody responseBody =
-        outputStream -> {
-          try {
-            final var pdf = proposalTemplateService.generatePdf(templateId, new HashMap<>(), true);
-            response.addHeader(HttpHeaders.CONTENT_LENGTH, pdf.getContentLength().toString());
-            IOUtils.copy(pdf.getInputStream(), outputStream);
-          } catch (Exception e) {
-            log.error("[Proposal] Error generating preview PDF", e);
-            throw new ApiException("Error generating preview");
-          }
-        };
+      outputStream -> {
+        try {
+          final var pdf = proposalTemplateService.generatePdf(templateId, new HashMap<>(), true);
+          response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(pdf.contentLength()));
+          IOUtils.copy(pdf.getInputStream(), outputStream);
+        } catch (Exception e) {
+          log.error("[Proposal] Error generating preview PDF", e);
+          throw new ApiException("Error generating preview");
+        }
+      };
     return ResponseEntity.ok(responseBody);
   }
 }
