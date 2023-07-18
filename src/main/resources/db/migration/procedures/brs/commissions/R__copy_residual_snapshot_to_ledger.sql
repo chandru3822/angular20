@@ -50,7 +50,7 @@ BEGIN
            where urs.current_clawbacks_in_period > 0
           and urs.residual_id = p_residual_id
     loop
-
+      v_clawback_id = null;
       select rc.id
       into v_clawback_id
       from brs.residual_clawback rc
@@ -59,7 +59,9 @@ BEGIN
 
       if v_clawback_id is not null then
         update brs.residual_clawback c
-        set clawback_due     = coalesce(c.clawback_due,0) + coalesce(d.current_clawbacks_in_period,0)
+        set clawback_due     = coalesce(c.clawback_due,0) + coalesce(d.current_clawbacks_in_period,0),
+            modified_by_id =  p_updated_by_id ,
+            date_modified = now()
         where user_id = d.user_id;
       else
         insert into brs.residual_clawback(user_id, clawback_due, applied_clawback, date_created, created_by_id,
@@ -88,7 +90,7 @@ BEGIN
       elsif d.paid_in_period is true and coalesce(d.earned_residual,0) = 0 and
             coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and
             d.adjustment_override >= d.clawback then
-        v_amount = d.adjustment_override - d.clawback;
+        v_amount = d.clawback;
         --adjustments that have clawbacks but not no residuals were earned and adjustments are less than the clawback
       elsif d.paid_in_period is true and coalesce(d.earned_residual,0) = 0 and
             coalesce(d.adjustment_override,0) > 0 and coalesce(d.clawback,0) > 0 and

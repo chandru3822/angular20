@@ -8,61 +8,50 @@ begin
 
   case
     when p_position_id = 1 then SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-                                FROM (with all_closer_users as (select distinct pd.closer_user_id as user_id
-                                                                from brs.payroll pay
-                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                       inner join brs.project_details pd on pd.project_id = p.id
-                                                                where current is true
-                                                                  and pay.position_id = 1),
-                                           no_commission_users as (select distinct opru.user_id as user_id
-                                                                   from brs.payroll pay
-                                                                          inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                          inner join brs.project_details pd
-                                                                                     on pd.project_id = p.id --and pd.closer_user_id = 2294153
-                                                                          inner join brs.financial_details f on f.project_id = pd.project_id
-                                                                          inner join brs.override_plan_receiving_user opru
-                                                                                     on opru.override_plan_id = f.override_plan_id
-                                                                   where current is true
-                                                                     and pay.position_id = 1
-                                                                   except
-                                                                   select distinct pd.closer_user_id as user_id
-                                                                   from brs.payroll pay
-                                                                          inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                          inner join brs.project_details pd on pd.project_id = p.id
-                                                                   where current is true
-                                                                     and pay.position_id = 1)
+                                FROM (with no_commission_users as materialized (select distinct opru.user_id as user_id
+                                                                                from brs.payroll pay
+                                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
+                                                                                       inner join brs.project_details pd
+                                                                                                  on pd.project_id = p.id --and pd.closer_user_id = 2294153
+                                                                                       inner join brs.financial_details f on f.project_id = pd.project_id
+                                                                                       inner join brs.override_plan_receiving_user opru
+                                                                                                  on opru.override_plan_id = f.override_plan_id
+                                                                                where current is true
+                                                                                  and pay.position_id = 1
+                                                                                union
+                                                                                select distinct l.user_id as user_id
+                                                                                from brs.payroll pay
+                                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
+                                                                                       inner join brs.project_details pd on pd.project_id = p.id
+                                                                                       inner join brs.project_commission_ledger l
+                                                                                                  on l.project_id =
+                                                                                                     pd.project_id
+                                                                                                    and
+                                                                                                     l.ledger_type_id =
+                                                                                                     3
+                                                                                where current is true
+                                                                                  and pay.position_id = 1
+                                                                                except
+                                                                                select distinct pd.closer_user_id as user_id
+                                                                                from brs.payroll pay
+                                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
+                                                                                       inner join brs.project_details pd on pd.project_id = p.id
+                                                                                where current is true
+                                                                                  and pay.position_id = 1)
                                       select *,
                                              foo5.total_commission + foo5.total_overrides +
                                              foo5.commission_adjustments as current_pay
-                                      from (SELECT d.closer_user_id,
-                                                   d.closer_name                                       AS closer_user,
-                                                   coalesce(sum(fd.commissions_earned_m1 + case
-                                                                                             when fd.substantial_completion_date <= p2.period_end
-                                                                                               then
-                                                                                               coalesce(fd.commissions_earned_m2, 0)
-                                                                                             else
-                                                                                               0::numeric end), 0) -
-                                                   coalesce(sum(fd.total_commissions_paid_to_date), 0) AS total_commission,
+                                      from (select closer_user_id,
+                                                   closer_name,
+                                                   total_commission current_pay,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
-                                                                          overrides_earned1 -
-                                                                          foo.total_allocation as total1
+                                                                          case
+                                                                            when foo.m1_allocation is not null
+                                                                              then overrides_earned1 - total_allocation
+                                                                            else 0 - total_allocation end as total1
                                                                    from (select fd.project_id,
-                                                                                fd.override_plan,
-                                                                                fd.total_overrides,
-                                                                                fd.system_size,
-                                                                                fd.overrides_earned_m1 + case
-                                                                                                           when fd.substantial_completion_date <= p.period_end
-                                                                                                             then
-                                                                                                             coalesce(fd.commissions_earned_m2, 0)
-                                                                                                           else
-                                                                                                             0::numeric end,
-                                                                                fd.total_overrides_paid_to_date,
                                                                                 opru.m1_allocation,
-                                                                                opru.m2_allocation,
-                                                                                op.total,
-                                                                                fd.substantial_completion_date,
-                                                                                pd.cancelled_date,
                                                                                 case
                                                                                   when pd.cancelled_date is not null
                                                                                     then
@@ -72,47 +61,56 @@ begin
                                                                                     (opru.m1_allocation + opru.m2_allocation) * fd.system_size
                                                                                   else
                                                                                     opru.m1_allocation * fd.system_size
-                                                                                  end                              overrides_earned1,
-                                                                                coalesce(sum(pcl.paid_to_date), 0) total_allocation
+                                                                                  end       overrides_earned1,
+                                                                                coalesce((select sum(pcl1.paid_to_date)
+                                                                                          from brs.project_commission_ledger pcl1
+                                                                                          where pcl1.project_id = fd.project_id
+                                                                                            and pcl1.user_id = pd.closer_user_id
+                                                                                            and pcl1.ledger_type_id = 3),
+                                                                                         0) total_allocation
                                                                          from brs.payroll p
                                                                                 inner join brs.project_details pd on pd.project_id = any (p.selected_project_ids)
                                                                                 inner join brs.financial_details fd on fd.project_id = pd.project_id
-                                                                                inner join brs.override_plan op on op.id = fd.override_plan_id
-                                                                                inner join brs.override_plan_receiving_user opru
-                                                                                           on opru.override_plan_id =
-                                                                                              op.id and
-                                                                                              opru.user_id =
-                                                                                              d.closer_user_id
-                                                                                left join brs.project_commission_ledger pcl
-                                                                                          on pcl.user_id = opru.user_id and pd.project_id = pcl.project_id
+                                                                                left join brs.override_plan op on op.id = fd.override_plan_id
+                                                                                left join brs.override_plan_receiving_user opru
+                                                                                          on opru.override_plan_id =
+                                                                                             op.id and
+                                                                                             opru.user_id =
+                                                                                             foo1.closer_user_id
                                                                          where p.current is true
-                                                                         group by fd.system_size, fd.project_id,
-                                                                                  fd.override_plan, fd.total_overrides,
-                                                                                  fd.overrides_earned_m1 + case
-                                                                                                             when fd.substantial_completion_date <= p.period_end
-                                                                                                               then
-                                                                                                               coalesce(fd.commissions_earned_m2, 0)
-                                                                                                             else
-                                                                                                               0::numeric end,
-                                                                                  fd.total_overrides_paid_to_date,
-                                                                                  opru.m1_allocation,
-                                                                                  opru.m2_allocation, op.total,
+                                                                           and pd.closer_user_id = foo1.closer_user_id
+                                                                         group by fd.project_id, opru.m1_allocation,
+                                                                                  pd.cancelled_date,
                                                                                   fd.substantial_completion_date,
-                                                                                  opru.override_plan_id,
-                                                                                  pd.cancelled_date) as foo) as foo1),
-                                                            0)                                         AS total_overrides,
+                                                                                  opru.m2_allocation, fd.system_size,
+                                                                                  pd.closer_user_id) as foo) as foo1),
+                                                            0)   AS total_overrides,
+
                                                    (coalesce((select sum(amount)
                                                               from brs.payroll_adjustment pa
-                                                              where d.closer_user_id = pa.user_id
+                                                              where foo1.closer_user_id = pa.user_id
                                                                 and pa.payroll_id = p2.id
                                                               group by pa.user_id),
-                                                             0))                                       AS commission_adjustments
-                                            FROM all_closer_users acu
-                                                   inner join brs.project_details d on closer_user_id = acu.user_id
-                                                   inner join brs.payroll p2
-                                                              on d.project_id = any (p2.selected_project_ids) and p2.current is true
-                                                   inner join brs.financial_details fd on fd.project_id = d.project_id
-                                            GROUP BY d.closer_user_id, p2.id, d.closer_name) as foo5
+                                                             0)) AS commission_adjustments
+                                            from (SELECT d.closer_user_id,
+                                                         d.closer_name             AS closer_user,
+                                                         current_pay.amount_to_pay AS total_commission
+                                                  FROM brs.project_details d
+                                                         inner join brs.payroll p2
+                                                                    on d.project_id = any (p2.selected_project_ids) and  p2.current is true
+                                                         inner join brs.financial_details fd on fd.project_id = d.project_id
+                                                         left join lateral brs.get_current_pay(
+                                                    coalesce(fd.total_commissions, 0),
+                                                    coalesce(fd.commissions_earned_m1, 0) + case
+                                                                                              when fd.substantial_completion_date <= p2.period_end
+                                                                                                then
+                                                                                                coalesce(fd.commissions_earned_m2, 0)
+                                                                                              else 0::numeric end,
+                                                    coalesce(fd.total_commissions_paid_to_date, 0),
+                                                    coalesce(d.commission_forfeited_by_closer, 0),
+                                                    coalesce(fd.total_commissions_forfeited_paid_to_date, 0)) as current_pay
+                                                                   on true
+                                                  group by d.closer_user_id, closer_name) as foo1) as foo5
                                       union
                                       select *,
                                              foo5.total_commission + foo5.total_overrides +
@@ -122,24 +120,12 @@ begin
                                                    0::numeric                             AS total_commission,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
-                                                                          overrides_earned1 -
-                                                                          foo.total_allocation as total1
+                                                                          case
+                                                                            when foo.m1_allocation is not null
+                                                                              then overrides_earned1 - foo.total_allocation
+                                                                            else 0 - total_allocation end as total1
                                                                    from (select fd.project_id,
-                                                                                fd.override_plan,
-                                                                                fd.total_overrides,
-                                                                                fd.system_size,
-                                                                                fd.overrides_earned_m1 + case
-                                                                                                           when fd.substantial_completion_date <= p.period_end
-                                                                                                             then
-                                                                                                             coalesce(fd.commissions_earned_m2, 0)
-                                                                                                           else
-                                                                                                             0::numeric end,
-                                                                                fd.total_overrides_paid_to_date,
                                                                                 opru.m1_allocation,
-                                                                                opru.m2_allocation,
-                                                                                op.total,
-                                                                                fd.substantial_completion_date,
-                                                                                pd.cancelled_date,
                                                                                 case
                                                                                   when pd.cancelled_date is not null
                                                                                     then
@@ -149,39 +135,34 @@ begin
                                                                                     (opru.m1_allocation + opru.m2_allocation) * fd.system_size
                                                                                   else
                                                                                     opru.m1_allocation * fd.system_size
-                                                                                  end                              overrides_earned1,
-                                                                                coalesce(sum(pcl.paid_to_date), 0) total_allocation
+                                                                                  end       overrides_earned1,
+                                                                                coalesce((select sum(pcl1.paid_to_date)
+                                                                                          from brs.project_commission_ledger pcl1
+                                                                                          where pcl1.project_id = fd.project_id
+                                                                                            and pcl1.user_id = ncu.user_id
+                                                                                            and pcl1.ledger_type_id = 3),
+                                                                                         0) total_allocation
                                                                          from brs.payroll p
                                                                                 inner join brs.project_details pd on pd.project_id = any (p.selected_project_ids)
                                                                                 inner join brs.financial_details fd on fd.project_id = pd.project_id
-                                                                                inner join brs.override_plan op on op.id = fd.override_plan_id
-                                                                                inner join brs.override_plan_receiving_user opru
-                                                                                           on opru.override_plan_id =
-                                                                                              op.id and
-                                                                                              opru.user_id = ncu.user_id
-                                                                                left join brs.project_commission_ledger pcl
-                                                                                          on pcl.user_id = opru.user_id and pd.project_id = pcl.project_id
+                                                                                left join brs.override_plan op on op.id = fd.override_plan_id
+                                                                                left join brs.override_plan_receiving_user opru
+                                                                                          on opru.override_plan_id =
+                                                                                             op.id and
+                                                                                             opru.user_id = ncu.user_id
                                                                          where p.current is true
                                                                          group by fd.system_size, fd.project_id,
-                                                                                  fd.override_plan, fd.total_overrides,
-                                                                                  fd.overrides_earned_m1 + case
-                                                                                                             when fd.substantial_completion_date <= p.period_end
-                                                                                                               then
-                                                                                                               coalesce(fd.commissions_earned_m2, 0)
-                                                                                                             else
-                                                                                                               0::numeric end,
-                                                                                  fd.total_overrides_paid_to_date,
                                                                                   opru.m1_allocation,
-                                                                                  opru.m2_allocation, op.total,
-                                                                                  fd.substantial_completion_date,
-                                                                                  opru.override_plan_id,
-                                                                                  pd.cancelled_date) as foo) as foo1),
+                                                                                  opru.m2_allocation,
+                                                                                  pd.cancelled_date,
+                                                                                  fd.substantial_completion_date) as foo) as foo1),
                                                             0)                            AS total_overrides,
 
                                                    0::numeric                             AS commission_adjustments
                                             FROM no_commission_users ncu
                                                    inner join flow.user u on u.id = ncu.user_id
-                                            GROUP BY ncu.user_id, u.first_name, u.last_name) as foo5) AS sub_rows
+                                            GROUP BY ncu.user_id, u.first_name, u.last_name) as foo5)
+                                       AS sub_rows
                                 into v_json;
                                 return v_json;
 ----This section is for setters
