@@ -200,7 +200,19 @@ select ps.id,
                                                          cfg1.group_name as "groupName",
                                                          ps.process_step_name as "processStepName",
                                                          ot.object_type as "objectType",
-                                                         '[]' as whiteListedPositions,
+                                                         coalesce((
+                                                         		                     SELECT array_to_json(array_agg(row_to_json(links)))
+                                                         		                     FROM (
+                                                         			                          SELECT wlp.id,
+                                                         			                                 wlp.position_id as "positionId",
+                                                         			                                 wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                         			                                 wlp.created_by_id as "createdById",
+                                                         			                                 wlp.modified_by_id as "modifiedById",
+                                                         			                                 wlp.archived
+                                                         			                          FROM flow.white_listed_position wlp
+                                                         			                          WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                         				                        AND wlp.white_list_type_id = 1
+                                                         				                        AND wlp.archived is not true) links), '[]') AS "whiteListedPositions",
                                                          coalesce((
                                                                     SELECT array_to_json(array_agg(row_to_json(wlp)))
                                                                     FROM (

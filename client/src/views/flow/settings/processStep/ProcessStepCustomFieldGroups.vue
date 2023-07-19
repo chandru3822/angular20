@@ -305,7 +305,7 @@
                                        @change="saveUseParentData(cf)"
                                        :readonly="!userCanEdit" :disabled="!userCanEdit">
                               </div>
-                              <v-row>
+                              <v-row v-if="cf.edit">
                               <v-col cols="6">
                               <v-card flat :color="localCustomFieldGroups.indexOf(item) % 2 ? undefined : 'primary lighten-9'" class="square-card">
                                 <v-card-text v-if="cf.systemReadonly" class="mt-2">
