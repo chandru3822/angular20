@@ -154,9 +154,6 @@ Additional Details: ', v_additional_details)
     and a.archived = false
     into v_matching_attachment_ids;
 
-
-
-
 --   if array_length(v_matching_attachment_ids, 1) > 0 then
     if(true) then
       if(v_org_email is not null and v_email_sender_address is not null) then
@@ -164,6 +161,9 @@ Additional Details: ', v_additional_details)
                                       to_email, processed, from_display_name, attachment_ids, cc_recipients)
         values(p_user_id, v_email_subject, concat(v_email_default_header, v_email_message, v_email_default_footer), v_email_sender_address,
                v_org_email, false, v_email_sender_name, v_matching_attachment_ids, v_cc_recipients);
+
+        delete from flow.project_process_step_event_custom_field_value where custom_field_group_assignment_id = 20930
+        and project_process_step_event_id = p_ppse_id;
 
         insert into flow.project_process_step_event_custom_field_value(project_process_step_event_id,
                custom_field_group_assignment_id, date_value, created_by_id, modified_by_id)
