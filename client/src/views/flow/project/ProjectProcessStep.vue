@@ -276,7 +276,7 @@
           v-for="(cfg, index) in customFieldGroups"
           :key="index"
         >
-          <v-toolbar color="transparent" class="elevation-0 cfg-name-toolbar" dense>
+          <v-toolbar v-if="cfg.customFieldValues && cfg.customFieldValues.length > 0" color="transparent" class="elevation-0 cfg-name-toolbar" dense>
             <v-toolbar-title>
               <!--  @TODO: @humes, once schedule tool is ready, have this link go to a more specific location in the schedule tool-->
               <v-btn small text v-if="cfg.eventId && $store.getters.userHasFeature('SCHEDULE')"
