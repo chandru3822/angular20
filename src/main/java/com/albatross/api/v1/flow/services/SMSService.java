@@ -375,15 +375,18 @@ public class SMSService {
 
     PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
     MessageCreator creator = null;
+    String twilioMessageServiceSID = getMessageServiceSID(recipientType);
+
     switch (recipientType) {
       case PROJECT:
         creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioPhoneNumber()), messageText);
+        creator.setMessagingServiceSid(twilioMessageServiceSID);
         break;
       case USER:
         creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioInternalPhoneNumber()), messageText);
+        creator.setMessagingServiceSid(twilioMessageServiceSID);
         break;
       default:
-        String twilioMessageServiceSID = getMessageServiceSID(recipientType);
         if (StringUtils.hasText(twilioMessageServiceSID)) {
           creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
         }
