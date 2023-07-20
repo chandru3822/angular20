@@ -246,7 +246,7 @@
                                             :alternateLabel = "'Denied Positions'"
                                             :allow="cf.customFieldGroupAssignmentReadOnlyAllow"
                                             :contentLoading="positionsLoading"
-                                            background-color="primary lighten-9"
+                                            background-color="transparent"
                                             @selected-changed="cf.whiteListedPositions = $event; cf.positionsChanged = true"
                                             @allow-changed="cf.customFieldGroupAssignmentReadOnlyAllow = ($event === 0); cf.positionsChanged = true"
                                             @checkbox-changed="cf.customFieldGroupAssignmentReadOnly = $event; cf.positionsChanged = true"></multi-select-group>
@@ -260,7 +260,7 @@
                                     </v-card>
                                   </v-col>
                                   <v-col cols="6">
-                                    <v-card flat :color="localCustomFieldGroups.indexOf(item) % 2 ? undefined : 'primary lighten-9'" class="square-card">
+                                    <v-card flat :color="localCustomFieldGroups.indexOf(item) % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                       <!--                                      <v-card-title style="height: 40px" class="py-0">-->
                                       <!--                                        Hidden-->
                                       <!--                                        <v-checkbox type="checkbox" class="ml-2"-->
@@ -280,7 +280,7 @@
                                             :alternateLabel = "'Denied Positions'"
                                             :allow="cf.customFieldGroupAssignmentHiddenAllow"
                                             :contentLoading="positionsLoading"
-                                            background-color="primary lighten-9"
+                                            background-color="transparent"
                                             @selected-changed="cf.hiddenWhiteListedPositions = $event; cf.hiddenPositionsChanged = true"
                                             @allow-changed="cf.customFieldGroupAssignmentHiddenAllow = ($event === 0); cf.hiddenPositionsChanged = true"
                                             @checkbox-changed="cf.customFieldGroupAssignmentHidden = $event; cf.hiddenPositionsChanged = true"></multi-select-group>
@@ -327,7 +327,7 @@
                                           :alternateLabel = "'Denied Positions'"
                                           :allow="cf.customFieldGroupAssignmentHiddenAllow"
                                           :contentLoading="positionsLoading"
-                                          background-color="primary lighten-9"
+                                          background-color="transparent"
                                           @selected-changed="cf.hiddenWhiteListedPositions = $event; cf.hiddenPositionsChanged = true"
                                           @allow-changed="cf.customFieldGroupAssignmentHiddenAllow = ($event === 0); cf.hiddenPositionsChanged = true"
                                           @checkbox-changed="cf.customFieldGroupAssignmentHidden = $event; cf.hiddenPositionsChanged = true"></multi-select-group>
