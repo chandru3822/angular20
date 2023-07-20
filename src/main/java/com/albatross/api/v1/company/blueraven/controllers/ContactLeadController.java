@@ -310,4 +310,19 @@ public class ContactLeadController {
   public void updateContactSolarFunnels(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/juicedleads", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactJuicedLeads(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/consumeraffairs", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactConsumerAffairs(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/atleads", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAtLeads(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
