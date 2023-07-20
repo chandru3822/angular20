@@ -75,7 +75,8 @@ public class BrsProcessStepActionFunctionService {
     var inverterMap = Map.of("IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
       "IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters",
       "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
-      "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters");
+      "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters",
+      "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters");
     return inverterMap.getOrDefault(inverter, null);
   }
 
