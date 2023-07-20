@@ -222,10 +222,10 @@ public class BlueravenProposalController {
 
     final StreamingResponseBody responseBody = outputStream -> {
       try {
-        proposalService.generateProposalPDF(proposalId, templateId, false)
+        proposalService.generateProposalPDF(proposalId, templateId)
           .ifPresent(result -> {
             try {
-              response.addHeader(HttpHeaders.CONTENT_LENGTH, result.getContentLength().toString());
+              response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf( result.contentLength()));
               IOUtils.copy(result.getInputStream(), outputStream);
             } catch (IOException e) {
               throw new ApiException(e);

@@ -213,7 +213,7 @@ BEGIN
 
     --insert the sms queue record for the closer's message
     insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
-                               message_sent_by_user_id, priority)
+                               message_sent_by_user_id, priority_level)
     values (v_closer_user_id,
             v_text_message_string,
             (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1,
@@ -222,7 +222,7 @@ BEGIN
     --insert the sms queue record for the manager's message
     if (v_do_manager_send is true) then
       insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
-                                 message_sent_by_user_id, priority)
+                                 message_sent_by_user_id, priority_level)
       values (v_manager_user_id,
               v_text_message_string,
               (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_manager_phone_number, now(), 1,

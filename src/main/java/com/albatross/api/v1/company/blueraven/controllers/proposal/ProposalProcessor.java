@@ -8,10 +8,12 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -45,23 +47,28 @@ public class ProposalProcessor {
         log.info("[Proposal] Generating final PDF for proposalId={}", proposal.getId());
 
         try {
-          proposalService.generateProposalPDF(proposal.getId(), 1L, true)
-            .ifPresent(baos -> {
+          proposalService.generateProposalPDF(proposal.getId(), 1L)
+            .ifPresent(resource -> {
               log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
-              projectService.addAttachment(
-                proposal.getProjectId(),
-                PROPOSAL_ATTACHMENT_TYPE,
-                baos.getContentLength(),
-                baos.getContentType(),
-                String.format("%s.pdf", proposal.getDisplayName()),
-                baos.getInputStream(),
-                proposal.getDisplayName());
+              try {
+                projectService.addAttachment(
+                  proposal.getProjectId(),
+                  PROPOSAL_ATTACHMENT_TYPE,
+                  resource.contentLength(),
+                  MediaType.APPLICATION_PDF_VALUE,
+                  String.format("%s.pdf", proposal.getDisplayName()),
+                  resource.getInputStream(),
+                  proposal.getDisplayName());
 
-              log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
-              proposalService.setProposalAsProcessed(proposal.getId());
+                log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
+                proposalService.setProposalAsProcessed(proposal.getId());
 
-              count.getAndIncrement();
+                count.getAndIncrement();
+
+              } catch (IOException e) {
+                throw new RuntimeException(e);
+              }
             });
         } catch (Exception e) {
           log.error("[Proposal] Error processing final PDF for proposalId={}", proposal.getId(), e);
