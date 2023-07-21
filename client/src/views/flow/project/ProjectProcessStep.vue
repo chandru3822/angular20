@@ -130,6 +130,14 @@
                               @change="updateOwner"
                               attach
               >
+                <template v-slot:prepend>
+                  <v-tooltip top small>
+                    <template v-slot:activator="{on, attrs}">
+                      <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
+                    </template>
+                    <span class="albatross-body-3">Select Me</span>
+                  </v-tooltip>
+                </template>
               </v-autocomplete>
             </div>
             <div>
@@ -690,6 +698,14 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    selectSelf() {
+      let currentUserId = this.$store.state.user.details.id
+      let currentUserOwner = this.availableOwners.find(o => o.userId === currentUserId)
+      if(!!currentUserOwner) {
+        this.processStep.owner = currentUserOwner
+        this.updateOwner()
       }
     },
     async updateMain(pps) {
