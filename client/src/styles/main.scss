@@ -44,6 +44,10 @@ $default-text: rgba(0,0,0,0.87);
   color: $default-text !important;
 }
 
+.strike-thru {
+  text-decoration: line-through;
+}
+
 .anchor {
   color: var(--v-anchor-base) !important;
 } //this ought to work automatically with vuetify, but it doesn't
