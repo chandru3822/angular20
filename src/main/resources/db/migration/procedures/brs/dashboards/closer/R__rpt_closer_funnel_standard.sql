@@ -33,6 +33,7 @@ BEGIN
                         --this subset has to have everything in it that you might need later (prevents from having to query project_details table more than once)
                         with project_data as (
                           select credit_decision_date,
+                                 credit_check_name,
                                  installation_agreement_signed_date,
                                  site_survey_verified_date,
                                  final_design_sent_to_homeowner_date,
@@ -78,8 +79,11 @@ BEGIN
                                 where
                                   --date checks (same as `date between start and end AND date is not null) ..i think
                                   case
-                                    when f.id in (9, 3)
-                                      then credit_decision_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
+                                    when f.id in (9) then credit_decision_date :: DATE =
+                                                          (now() at time zone 'US/Mountain') :: DATE
+                                    when f.id in (3) then
+                                      credit_decision_date :: DATE = (now() at time zone 'US/Mountain') :: DATE
+                                      and credit_check_name = 'Pass'
                                     when f.id in (4) then installation_agreement_signed_date :: DATE =
                                                           (now() at time zone 'US/Mountain') :: DATE
                                     when f.id in (5) then site_survey_verified_date :: DATE =
@@ -102,9 +106,13 @@ BEGIN
                                 where
                                   --date checks (same as `date between start and end AND date is not null) ..i think
                                   case
-                                    when f.id in (9, 3) then (coalesce(
+                                    when f.id in (9) then (coalesce(
                                       credit_decision_date :: DATE between ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and (now() at time zone 'US/Mountain') :: DATE,
                                       false))
+                                    when f.id in (3) then (coalesce(
+                                      credit_decision_date :: DATE between ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and (now() at time zone 'US/Mountain') :: DATE,
+                                      false))
+                                      and credit_check_name = 'Pass'
                                     when f.id in (4) then (coalesce(
                                       installation_agreement_signed_date :: DATE between ((date_trunc('week', now() at time zone 'US/Mountain')) :: DATE) and (now() at time zone 'US/Mountain') :: DATE,
                                       false))
@@ -131,9 +139,13 @@ BEGIN
                                 where
                                   --date checks (same as `date between start and end AND date is not null) ..i think
                                   case
-                                    when f.id in (9, 3) then (coalesce(
+                                    when f.id in (9) then (coalesce(
                                       credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date,
                                       false))
+                                    when f.id in (3) then (coalesce(
+                                      credit_decision_date :: DATE between p_custom_start_date and p_custom_end_date,
+                                      false))
+                                      and credit_check_name = 'Pass'
                                     when f.id in (4) then (coalesce(
                                       installation_agreement_signed_date :: DATE between p_custom_start_date and p_custom_end_date,
                                       false))
