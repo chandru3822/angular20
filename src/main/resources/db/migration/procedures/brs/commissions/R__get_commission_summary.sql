@@ -42,8 +42,8 @@ begin
                                              foo5.total_commission + foo5.total_overrides +
                                              foo5.commission_adjustments as current_pay
                                       from (select closer_user_id,
-                                                   closer_name,
-                                                   total_commission current_pay,
+                                                   closer_user,
+                                                   total_commission total_commission,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
                                                                           case
@@ -89,12 +89,13 @@ begin
                                                    (coalesce((select sum(amount)
                                                               from brs.payroll_adjustment pa
                                                               where foo1.closer_user_id = pa.user_id
-                                                                and pa.payroll_id = p2.id
+                                                                and pa.payroll_id = foo1.payroll_id
                                                               group by pa.user_id),
                                                              0)) AS commission_adjustments
                                             from (SELECT d.closer_user_id,
                                                          d.closer_name             AS closer_user,
-                                                         current_pay.amount_to_pay AS total_commission
+                                                         current_pay.amount_to_pay AS total_commission,
+                                                         p2.id as payroll_id
                                                   FROM brs.project_details d
                                                          inner join brs.payroll p2
                                                                     on d.project_id = any (p2.selected_project_ids) and  p2.current is true
@@ -108,9 +109,7 @@ begin
                                                                                               else 0::numeric end,
                                                     coalesce(fd.total_commissions_paid_to_date, 0),
                                                     coalesce(d.commission_forfeited_by_closer, 0),
-                                                    coalesce(fd.total_commissions_forfeited_paid_to_date, 0)) as current_pay
-                                                                   on true
-                                                  group by d.closer_user_id, closer_name) as foo1) as foo5
+                                                    coalesce(fd.total_commissions_forfeited_paid_to_date, 0)) as current_pay on true) as foo1) as foo5
                                       union
                                       select *,
                                              foo5.total_commission + foo5.total_overrides +

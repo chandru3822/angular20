@@ -146,6 +146,7 @@ BEGIN
                                 u.last_name,
                                 coalesce(
                                   round(case
+                                          when pd.cancelled_date is not null then 0::numeric
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
                                           else pd.system_size::numeric end * opru.m1_allocation, 2),
@@ -174,7 +175,7 @@ BEGIN
                                 u.first_name,
                                 u.last_name,
                                 coalesce(
-                                  round(case
+                                  round(case when pd.cancelled_date is not null then 0::numeric
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
                                           else pd.system_size::numeric end * opru.m2_allocation, 2),
