@@ -117,6 +117,7 @@
         >
           <v-textarea class="body-medium" hide-details
                       auto-grow
+                      autofocus
                       rows="2"
                       outlined
                       :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
