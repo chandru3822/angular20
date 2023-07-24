@@ -117,6 +117,7 @@
         >
           <v-textarea class="body-medium" hide-details
                       auto-grow
+                      autofocus
                       rows="2"
                       outlined
                       :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
@@ -137,7 +138,7 @@
             </div>
           </template>
         </Mentionable>
-        <div v-if="editedActivity.createdById !== userId && !userIsAdmin && !addActivity" class="pt-2">
+        <div v-if="editedActivity.createdById !== userId && !addActivity && this.previouslySelectedTopics?.length > 0" class="pt-2">
           Existing topics: {{this.previouslySelectedTopicNames}}
         </div>
         <v-autocomplete
@@ -607,5 +608,10 @@ export default {
 
 .primary-lighten-9-bkgrd {
   background-color: var(--v-primary-lighten9);
+}
+
+.dim:hover {
+  color: var(--v-primary-base);
+  font-weight: bold;
 }
 </style>
