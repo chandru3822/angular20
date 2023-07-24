@@ -138,7 +138,7 @@
             </div>
           </template>
         </Mentionable>
-        <div v-if="editedActivity.createdById !== userId && !userIsAdmin && !addActivity" class="pt-2">
+        <div v-if="editedActivity.createdById !== userId && !addActivity && this.previouslySelectedTopics?.length > 0" class="pt-2">
           Existing topics: {{this.previouslySelectedTopicNames}}
         </div>
         <v-autocomplete
