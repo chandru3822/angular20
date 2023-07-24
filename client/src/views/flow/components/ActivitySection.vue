@@ -609,4 +609,9 @@ export default {
 .primary-lighten-9-bkgrd {
   background-color: var(--v-primary-lighten9);
 }
+
+.dim:hover {
+  color: var(--v-primary-base);
+  font-weight: bold;
+}
 </style>
