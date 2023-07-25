@@ -37,7 +37,8 @@
     </div>
     <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
       <div v-if="pinnedActivitiesOnly.length > 0" :class="{'pb-7': !timelineView}">
-        <ActivityList :activities="pinnedActivitiesOnly"
+        <ActivityList v-if=!savingActivity
+                      :activities="pinnedActivitiesOnly"
                       :project-id="projectId"
                       :contact-id="contactId"
                       :user-id="userId"
@@ -287,7 +288,8 @@ export default {
       }), ['dateCreated'], [ this.sortDirection])
     },
     pinnedActivitiesOnly() {
-      return this.sortedFilteredActivities.filter(a => a.pinned)
+      const sortedFilteredActivitiesCopy = cloneDeep(this.sortedFilteredActivities)
+      return sortedFilteredActivitiesCopy.filter(a => a.pinned)
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
