@@ -4,6 +4,7 @@ import com.albatross.api.config.AppProperties;
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
+import com.albatross.api.pdf.PdfService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalTemplateBlockMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalTemplateMapper;
@@ -25,19 +26,12 @@ import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Flux;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -71,17 +65,20 @@ public class ProposalTemplateService {
   private final freemarker.template.Configuration freemarkerConfiguration;
   private final com.jayway.jsonpath.Configuration jsonPathConfiguration;
   private final ScriptEngine engine;
+  private final PdfService pdfService;
 
 
   public ProposalTemplateService(
     @Autowired SqlCache sqlCache,
     @Autowired ObjectMapper objectMapper,
+    @Autowired PdfService pdfService,
     @Autowired AppProperties appProperties,
     @Autowired freemarker.template.Configuration freemarkerConfiguration) {
     this.sqlCache = sqlCache;
     this.objectMapper = objectMapper;
     this.appProperties = appProperties;
     this.freemarkerConfiguration = freemarkerConfiguration;
+    this.pdfService = pdfService;
 
     this.jsonPathConfiguration =
       com.jayway.jsonpath.Configuration.builder()
@@ -363,45 +360,14 @@ public class ProposalTemplateService {
   }
 
 
-  public ContentAwareByteArrayOutputStream generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {
+  public Resource generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {
     final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT, isDebug);
     return generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle());
   }
 
-  private ContentAwareByteArrayOutputStream generatePdf(List<ProposalTemplateBlock> blocks, Object theme) throws IOException, TemplateException {
-
-    final ContentAwareByteArrayOutputStream outputStream = new ContentAwareByteArrayOutputStream();
-
+  private Resource generatePdf(List<ProposalTemplateBlock> blocks, Object theme) throws IOException, TemplateException {
     final String generatedHtml = generateHtml(blocks, theme);
-
-    final Flux<DataBuffer> pdf = WebClient.create()
-      .post()
-      .uri(appProperties.getHtmlToPdfApi())
-      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-      .accept(MediaType.APPLICATION_PDF)
-      .body(BodyInserters.fromFormData("html", generatedHtml))
-      .exchangeToFlux(response -> {
-
-        response.headers().header(HttpHeaders.CONTENT_LENGTH).stream()
-          .findFirst()
-          .map(Long::valueOf)
-          .ifPresent(outputStream::setContentLength);
-
-        response.headers().header(HttpHeaders.CONTENT_TYPE).stream()
-          .findFirst()
-          .ifPresent(outputStream::setContentType);
-
-        if (response.statusCode() == HttpStatus.OK) {
-          return response.bodyToFlux(DataBuffer.class);
-        }
-        return Flux.empty();
-      })
-      .doOnError((e) -> {
-        log.error("[PDF] Error processing PDF, error={}", e.getMessage());
-      });
-
-    DataBufferUtils.write(pdf, outputStream).blockLast();
-    return outputStream;
+    return pdfService.convert(generatedHtml);
   }
 
   private String generateHtml(List<ProposalTemplateBlock> blocks, Object theme) throws TemplateException, IOException {

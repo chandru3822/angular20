@@ -26,6 +26,7 @@ declare
   v_manager_first_name      text;
   v_manager_phone_number    text;
   v_text_message_string     text;
+  v_closer_has_access       boolean;
 BEGIN
 
   -- get the closers phone number
@@ -45,7 +46,8 @@ BEGIN
          (pd.installation_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
          pd.project_name,
          coalesce(pd.contact_mobile_phone, pd.contact_phone),
-         up.position_id
+         up.position_id,
+         ust.has_access
   into v_closer_phone_number,
     v_closer_first_name,
     v_closer_user_id,
@@ -60,13 +62,16 @@ BEGIN
     v_installation_start_time,
     v_project_name,
     v_project_phone,
-    v_closer_position_id
+    v_closer_position_id,
+    v_closer_has_access
   from brs.project_details pd
          inner join flow."user" u on u.id = pd.closer_user_id
          inner join flow.user_position up on up.id = pd.closer_user_position_id
          inner join flow.org o on o.id = up.org_id
          inner join flow.company_timezone ct on ct.id = o.company_timezone_id
          inner join flow.timezone t on t.id = ct.timezone_id
+         left JOIN flow.company_user_status cus on cus.user_id = u.id
+         left JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = pd.company_id
   where pd.project_id = p_project_id;
 
   --check if the assigned closer is a `closer` and that the message type should send to manager
@@ -90,7 +95,7 @@ BEGIN
     v_do_manager_send = v_manager_phone_number is not null and trim(v_manager_phone_number) != '';
   end if;
 
-  if v_closer_phone_number is not null and trim(v_closer_phone_number) != '' then
+  if v_closer_has_access is true and v_closer_phone_number is not null and trim(v_closer_phone_number) != '' then
     select case
              when p_message_type_id = 1 then
                -- 1 = appt scheduled
@@ -212,17 +217,19 @@ BEGIN
     into v_text_message_string;
 
     --insert the sms queue record for the closer's message
-    insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
-                               message_sent_by_user_id, priority)
-    values (v_closer_user_id,
-            v_text_message_string,
-            (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1,
-            p_current_user_id, 2);
+    if(v_text_message_string is not null) then
+      insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
+                                 message_sent_by_user_id, priority_level)
+      values (v_closer_user_id,
+              v_text_message_string,
+              (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1,
+              p_current_user_id, 2);
+    end if;
 
     --insert the sms queue record for the manager's message
     if (v_do_manager_send is true) then
       insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
-                                 message_sent_by_user_id, priority)
+                                 message_sent_by_user_id, priority_level)
       values (v_manager_user_id,
               v_text_message_string,
               (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_manager_phone_number, now(), 1,
