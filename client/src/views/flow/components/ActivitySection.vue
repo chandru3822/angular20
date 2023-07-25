@@ -70,7 +70,8 @@
                 </template>
               </v-expansion-panel-header>
               <v-expansion-panel-content>
-                <ActivityList :activities="sortAndFilterActivities(h.activities)"
+                <ActivityList v-if="!savingActivity"
+                              :activities="sortAndFilterActivities(h.activities)"
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
@@ -85,7 +86,7 @@
           </v-expansion-panels>
         </div>
       </div>
-      <ActivityList v-else
+      <ActivityList v-else-if="!savingActivity"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
                     :contact-id="contactId"
@@ -542,6 +543,7 @@ export default {
         this.sortedFilteredActivities[editedIndex] = data
         console.log('data', this.sortedFilteredActivities[editedIndex])
 
+        this.getActivityTopics();
         this.editedActivity = {}
         this.editedIndex = null
         this.savingActivity = false
