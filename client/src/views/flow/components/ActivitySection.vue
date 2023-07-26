@@ -117,7 +117,7 @@
           offset="6"
           insert-space
         >
-          <v-textarea class="body-medium" hide-details
+          <v-textarea class="body-large" hide-details
                       auto-grow
                       autofocus
                       rows="2"
