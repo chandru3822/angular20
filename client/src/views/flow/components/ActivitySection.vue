@@ -152,6 +152,7 @@
           class="mt-3"
           :items="editedActivity.createdById !== currentUserId && !addActivity && this.previouslySelectedTopics?.length > 0 ? topics.filter(t => {return !this.previouslySelectedTopics.find(pst => pst.id === t.id)}) : topics"
           multiple
+          hide-details
           label="Topics"
           return-object
           item-text="hashtag"
@@ -160,7 +161,6 @@
           v-if="null != $route.params.processStepId
                 || null != $route.params.ppsEventId
                 || editedActivity.linked"
-          class="ml-3"
           dense
           :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
           v-model="editedActivity.linked"
@@ -594,6 +594,7 @@ export default {
   margin-left: -20px;
   margin-right: -20px;
   max-width: unset !important;
+  border-color: var(--v-grey-darken1);
 }
 
 .activity-body {
