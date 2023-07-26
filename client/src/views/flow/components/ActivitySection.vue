@@ -106,7 +106,7 @@
              v-if="!addActivity && null == editedActivity.id"
              :loading="topicsLoading"
              @click="[addActivity = true, selectedTopics = [] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
-        <v-icon>mdi-plus</v-icon>
+        <v-icon small>mdi-plus</v-icon>
         Add note
       </v-btn>
       <div v-else>
