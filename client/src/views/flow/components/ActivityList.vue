@@ -4,7 +4,7 @@
         No available notes or activities
       </div>
       <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 pt-3 pb-2 elevation-0 card"
-              :class="{'pinned-card': a.pinned && highlightPinnedActivity}">
+              :class="{'pinned-card': a.pinned && highlightPinnedActivity, 'activity-card':a.activityTypeId === 1}">
           <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
             <v-toolbar-title class="body-medium">
               <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
@@ -25,7 +25,7 @@
                   <v-icon>mdi-dots-horizontal</v-icon>
                 </v-btn>
               </template>
-              <v-list dense class="py-1">
+              <v-list dense class="py-1 body-large">
                 <v-list-item v-if="a.activityTypeId !== 1"
                              @click="editItem(a)">
                   <v-list-item-content>
@@ -178,10 +178,17 @@ export default {
   border: 1px solid var(--grey-lighten-2, #E0E0E0);
 }
 
-.pinned-card {
+
+.activity-card {
+  background: var(--v-grey-lighten4);
+  border: 0px
+}
+
+.pinned-card, .activity-card.pinned-card {
   background: #FB8C0010;
   border: 0px;
 }
+
 
 .test {
   white-space: pre;
@@ -199,7 +206,7 @@ export default {
 
 .uncategorized-text {
   font-size: 14px;
-  color: var(--v-grey-lighten1);
+  color: var(--v-grey-darken2);
 }
 
 //.blah {
