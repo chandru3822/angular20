@@ -37,7 +37,8 @@
     </div>
     <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
       <div v-if="pinnedActivitiesOnly.length > 0" :class="{'pb-7': !timelineView}">
-        <ActivityList :activities="pinnedActivitiesOnly"
+        <ActivityList v-if=!savingActivity
+                      :activities="pinnedActivitiesOnly"
                       :project-id="projectId"
                       :contact-id="contactId"
                       :user-id="userId"
@@ -70,7 +71,8 @@
                 </template>
               </v-expansion-panel-header>
               <v-expansion-panel-content>
-                <ActivityList :activities="sortAndFilterActivities(h.activities)"
+                <ActivityList v-if="!savingActivity"
+                              :activities="sortAndFilterActivities(h.activities)"
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
@@ -85,7 +87,7 @@
           </v-expansion-panels>
         </div>
       </div>
-      <ActivityList v-else
+      <ActivityList v-else-if="!savingActivity"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
                     :contact-id="contactId"
@@ -286,7 +288,8 @@ export default {
       }), ['dateCreated'], [ this.sortDirection])
     },
     pinnedActivitiesOnly() {
-      return this.sortedFilteredActivities.filter(a => a.pinned)
+      const sortedFilteredActivitiesCopy = cloneDeep(this.sortedFilteredActivities)
+      return sortedFilteredActivitiesCopy.filter(a => a.pinned)
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
@@ -542,6 +545,7 @@ export default {
         this.sortedFilteredActivities[editedIndex] = data
         console.log('data', this.sortedFilteredActivities[editedIndex])
 
+        this.getActivityTopics();
         this.editedActivity = {}
         this.editedIndex = null
         this.savingActivity = false
