@@ -3,17 +3,17 @@
       <div v-if="activities?.length === 0">
         No available notes or activities
       </div>
-      <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 py-4 elevation-0 card"
+      <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 pt-3 pb-2 elevation-0 card"
               :class="{'pinned-card': a.pinned && highlightPinnedActivity}">
           <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
             <v-toolbar-title class="body-medium">
               <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
               <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
-                <span v-if="idx !== 0">,</span>
+                <span v-if="idx !== 0">, </span>
                 <a @click="searchCallback('#' + ah.hashtag)">#{{ ah.hashtag }}</a>
               </span>
-              <a v-if="a.linked" @click="goToPath(a)">
+              <a v-if="a.linked" @click="goToPath(a)" class="pl-3">
                 <v-icon small color="primary">mdi-link</v-icon>
                 {{a.linkLabel}}
               </a>
@@ -54,7 +54,7 @@
             <vue-clamp ellipsis="" autoresize :max-lines="5">{{ a.note }}
               <template #after="{ toggle, clamped, expanded }">
                 <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
-                <button v-if="expanded" @click="toggle" class="see-more-btn"> (see less)</button>
+                <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
               </template>
             </vue-clamp>
           </div>
