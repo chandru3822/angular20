@@ -122,7 +122,7 @@
                       autofocus
                       rows="2"
                       outlined
-                      :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
+                      :disabled="editedActivity.createdById !== currentUserId && !userIsAdmin && !addActivity"
                       v-model="editedActivity.note">
           </v-textarea>
 
@@ -140,13 +140,13 @@
             </div>
           </template>
         </Mentionable>
-        <div v-if="editedActivity.createdById !== userId && !addActivity && this.previouslySelectedTopics?.length > 0" class="pt-2">
+        <div v-if="editedActivity.createdById !== currentUserId && !addActivity && this.previouslySelectedTopics?.length > 0" class="pt-2">
           Existing topics: {{this.previouslySelectedTopicNames}}
         </div>
         <v-autocomplete
           v-model="selectedTopics"
           class="mt-3"
-          :items="topics.filter(t => {return !this.previouslySelectedTopics.find(pst => pst.id === t.id)})"
+          :items="editedActivity.createdById !== currentUserId && !addActivity && this.previouslySelectedTopics?.length > 0 ? topics.filter(t => {return !this.previouslySelectedTopics.find(pst => pst.id === t.id)}) : topics"
           multiple
           label="Topics"
           return-object
@@ -247,7 +247,8 @@ export default {
         {id: 1, activityType: 'Activities', show: true},
         {id: 2, activityType: 'Notes', show: true},
       ],
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN')
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
+      currentUserId:this.$store.state.user.details.id,
     }
   },
   watch: {
