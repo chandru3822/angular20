@@ -102,7 +102,7 @@
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
       <v-btn outlined color="primary"
-             class="one-hunned"
+             class="one-hunned text-capitalize"
              v-if="!addActivity && null == editedActivity.id"
              :loading="topicsLoading"
              @click="[addActivity = true, selectedTopics = [] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
