@@ -77,7 +77,7 @@ DECLARE
       p_commission_plan_id IS NULL;
   --select * from blueraven.get_commission_account_details('2018-07-20',null,null,null,null,null,null,null,null);
   v_period_end_date date;
-  v_amounts         numeric[] = '{0.00,-0.01,0.01}';
+  v_amounts         numeric[] = '{.03}';
 BEGIN
 
   select period_end
@@ -327,6 +327,6 @@ BEGIN
           order by 3) as foo1
     where CASE
             WHEN p_project_ids IS NOT NULL
-              THEN foo1.project_id = ANY (p_project_ids) else (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not (coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0)) = any (v_amounts) end;
+              THEN foo1.project_id = ANY (p_project_ids) else (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not abs((coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0))) < any (v_amounts) end;
 END
 $$;
