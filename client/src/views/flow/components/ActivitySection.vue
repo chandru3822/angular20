@@ -46,6 +46,7 @@
                       :section-type="sectionType"
                       :edit-callback="setEditedActivity"
                       :search-callback="searchByClick"
+                      @reload="getActivities"
         />
       </div>
       <div v-if="!timelineView">
@@ -81,6 +82,7 @@
                               :edit-callback="setEditedActivity"
                               :search-callback="searchByClick"
                               :highlightPinnedActivity="false"
+                              @reload="getActivities"
                 ></ActivityList>
               </v-expansion-panel-content>
             </v-expansion-panel>
@@ -97,6 +99,7 @@
                     :edit-callback="setEditedActivity"
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
+                    @reload="getActivities"
       ></ActivityList>
     </div>
     <div class="activity-footer">
@@ -266,10 +269,7 @@ export default {
   computed: {
     filteredTopics() {
       let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
-      console.log('randalogger',shownActivityTypes)
-      console.log('at',this.activityTopics)
       return this.activityTopics.filter(a => {
-        console.log('randalogger',a.id)
         for (let h of a.activityTypeHashtags){
           h.sortDirection = 'asc'
         }
@@ -503,6 +503,7 @@ export default {
           //add to bottom of list
           this.activities.push(data)
         }
+        this.getActivityTopics();
         this.addActivity = false
         this.editedActivity = {}
         this.savingActivity = false
@@ -543,9 +544,10 @@ export default {
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
         //todo: handle this
         let editedIndex = this.sortedFilteredActivities.findIndex(a => a.id === this.editedActivity.id)
-        console.log('randaLogger', editedIndex)
+        let pinnedEditedIndex = this.pinnedActivitiesOnly.findIndex(a => a.id === this.editedActivity.id)
         this.sortedFilteredActivities[editedIndex] = data
-        console.log('data', this.sortedFilteredActivities[editedIndex])
+        this.pinnedActivitiesOnly[pinnedEditedIndex] = data
+
 
         this.getActivityTopics();
         this.editedActivity = {}
