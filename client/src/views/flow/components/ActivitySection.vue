@@ -502,6 +502,7 @@ export default {
           //add to bottom of list
           this.activities.push(data)
         }
+        this.getActivityTopics();
         this.addActivity = false
         this.editedActivity = {}
         this.savingActivity = false

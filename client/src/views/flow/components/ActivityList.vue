@@ -67,7 +67,7 @@
           <span v-if="a.pinned"> | Pinned by {{ a.pinnedBy }}</span>
         </v-card-actions>
       </v-card>
-    <ConfirmationDialog :open-dialog="activityToDelete" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
+    <ConfirmationDialog :open-dialog="activityToDelete != null" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
       You won’t be able to recover this note. Are you sure you want to delete it?
     </ConfirmationDialog>
     </div>
@@ -143,7 +143,6 @@ export default {
         }
         await postRequestWithRequestParams(`/activity/${activity.id}/pin/${this.sectionType}`, null, params)
         let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
-        //todo: handle sending this back up
         this.$emit('reload');
         this.snackbar = getSnackbar('SUCCESS', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
