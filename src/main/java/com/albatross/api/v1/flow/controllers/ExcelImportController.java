@@ -15,6 +15,7 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PGobject;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,11 +23,16 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -37,6 +43,7 @@ import static org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR;
 // @TODO: This class should probably be in brs and not flow
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping(value = "/api/v1/excel")
 @RequiredArgsConstructor
@@ -187,23 +194,17 @@ public class ExcelImportController {
 
   // design stuff
   @GetMapping(value = "/design/excelId", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Long getUniqueIdForDesignExcel(
-    HttpServletResponse res, @RequestHeader Map<String, String> headers) {
+  public Long getUniqueIdForDesignExcel(@RequestHeader Map<String, String> headers) {
     debugPrintHeaders(headers);
     return jdbc.queryForObject(ExcelImportQuery.designSqlId, Map.of(), Long.class);
   }
 
   @PostMapping(value = "/design/import", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<?> designImport(HttpServletRequest req, @RequestBody Design design) {
+  public ResponseEntity<ImportResponse> designImport(HttpServletRequest req, @RequestBody Design design) {
     log.debug("EXCEL_IMPORT: Attempting Excel Design Log");
 
     Assert.notNull(design, "Design Required");
     User user = security.getCurrentUser();
-    //    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    //    Optional<String> username = Optional.ofNullable(auth.getPrincipal().toString());
-    //    User user = username.map(security::getUser)
-    //      .orElseThrow(() -> new IllegalArgumentException("Unknown user passed in: " +
-    // username.get()));
 
     Assert.hasText(design.getSource(), "Source is required; must have text");
     String source =
@@ -264,13 +265,48 @@ public class ExcelImportController {
 
       log.debug("EXCEL_IMPORT: Created Excel Design Log id={}", designLogId.get().getId());
 
-      return ResponseEntity.status(HttpStatus.CREATED).body(designLogId.get());
+      return ResponseEntity.status(HttpStatus.CREATED).body(new ImportResponse(designLogId.get().getDesignId()));
     } else {
       log.error("EXCEL_IMPORT: Received Invalid Project ID: {}", design.getProjectId());
       // if no project found within BR corporate hierarchy return 404
       throw new ResponseStatusException(
         HttpStatus.NOT_FOUND, "Project ID Not Found.", new Exception());
     }
+  }
+
+  @PostMapping(value = "/permit/import", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<ImportResponse> permitPackImport(HttpServletRequest req, @RequestBody @Valid @NotNull PermitPack permitPack) {
+
+    User user = security.getCurrentUser();
+    String remoteAddr = req.getRemoteAddr();
+
+    log.debug("EXCEL_IMPORT: Attempting Excel Permit Pack Log from user={} at IP={}", user.getEmail(), remoteAddr);
+
+    Long blueRavenCorporateCompanyId = 3L;
+
+    Boolean projectExists =
+      projectService.projectExistsInHierarchy(
+        permitPack.projectId, blueRavenCorporateCompanyId);
+
+    if (!projectExists) {
+      log.error("EXCEL_IMPORT: Received Invalid Project ID: {}", permitPack.projectId);
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Project ID Not Found.");
+    }
+
+    String source =
+      String.format("%s – %s – %s", user.getEmail(), permitPack.source, remoteAddr);
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", permitPack.projectId);
+    params.put("source", source);
+    params.put("designLogId", permitPack.designLogId);
+    params.put("permitPackDate", permitPack.permitPackDate);
+    params.put("design", getPGobject(permitPack.design));
+    params.put("bom", getPGobject(permitPack.bom));
+
+    int id = cache.updateBySqlReturningId(ExcelImportQuery.permitInsert, params, "permit_pack_log_nbr").intValue();
+
+    return ResponseEntity.status(HttpStatus.CREATED).body(new ImportResponse(id));
   }
 
   @GetMapping(value = "/designs/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -281,6 +317,23 @@ public class ExcelImportController {
       String msg = "EXCEL_IMPORT: Failed to get design summary for design " + designId;
       log.error(msg, e);
       return ResponseEntity.status(500).body(msg);
+    }
+  }
+
+  private PGobject getPGobject(Object original) {
+
+    if (original == null) {
+      return null;
+    }
+
+    try {
+      final PGobject pGobject = new PGobject();
+      pGobject.setType("jsonb");
+      pGobject.setValue(om.writeValueAsString(original));
+      return pGobject;
+    } catch (Exception e) {
+      log.warn("Error creating PGObject for obj={}, msg={}", original, e.getMessage());
+      throw new RuntimeException("Error creating object");
     }
   }
 
@@ -305,6 +358,17 @@ public class ExcelImportController {
     private Map<String, Object> design;
     private List<Map<String, Object>> bom;
     private Map<String, Object> originalBom;
+  }
+
+  public record ImportResponse(@NotNull Integer id) {
+  }
+
+  public record PermitPack(@NotNull Long projectId,
+                           Long designLogId,
+                           @NotBlank String source,
+                           Date permitPackDate,
+                           @NotEmpty Map<String, Object> design,
+                           @Size List<Map<String, Object>> bom) {
   }
 
   @Data
