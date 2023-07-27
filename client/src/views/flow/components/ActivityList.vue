@@ -144,6 +144,7 @@ export default {
         await postRequestWithRequestParams(`/activity/${activity.id}/pin/${this.sectionType}`, null, params)
         let msg = activity.pinned ? 'Note Pinned' : 'Note Unpinned'
         //todo: handle sending this back up
+        this.$emit('reload');
         this.snackbar = getSnackbar('SUCCESS', msg)
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
