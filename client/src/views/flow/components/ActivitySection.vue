@@ -151,6 +151,7 @@
           hide-details
           label="Topics"
           return-object
+          menu-props="closeOnContentClick"
           item-text="hashtag"
         ></v-autocomplete>
         <v-checkbox
@@ -163,7 +164,7 @@
           @change="editedActivity.linkLabel = null"
           :label="getLinkLabel()"
         />
-        <div class="d-flex">
+        <div class="d-flex" :class="{'mt-6': !$route.params.processStepId && !$route.params.ppsEventId && !editedActivity.linked}">
           <v-btn text color="primary" class="text-capitalize"
                  @click="[addActivity = false, editedActivity = {}]">
             cancel
