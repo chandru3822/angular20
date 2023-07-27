@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
+import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ScheduleQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,6 +80,16 @@ public class ScheduleService {
     params.put("parentCompanyId", user.getHighestParentCompanyId());
     params.put("isParent", isParent);
     List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getEvents, params, ScheduleEvent.class);
+    for(ScheduleEvent event : results) {
+        if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+            HashMap<String, Object> moreParams = new HashMap<>();
+            moreParams.put("objectTypeId", 6); //6 is the event object type
+            moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+            moreParams.put("primaryId", event.getProjectProcessStepEventId());
+            List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+            event.setCustomFieldDisplayValue(cfvs.get(0));
+        }
+    }
     return results;
   }
 
