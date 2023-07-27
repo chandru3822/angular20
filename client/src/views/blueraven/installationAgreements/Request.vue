@@ -41,7 +41,7 @@
                 <v-btn color="primary" raised @click="openLoanApp()" class="white--text">
                   <span>Finance Application</span>
                 </v-btn>
-                <v-btn :disabled="!requestItem.proposalNbr" v-if="requestItem.sunpowerUrlExists" color="primary" raised @click="updateSunpowerApp()" class="white--text mt-5">
+                <v-btn :disabled="!requestItem.proposalNbr" v-if="requestItem.sunpowerProposal" color="primary" raised @click="updateSunpowerApp()" class="white--text mt-5">
                   <span>Update / Renew Spwr Quote</span>
                 </v-btn>
               </v-col>
@@ -122,7 +122,6 @@ export default {
         sendLoanDocs: true,
         sendInstallationAgreement: false,
         isSpanish: false,
-        sunpowerUrlExists: false,
         projectId: ''
       },
       selectedProposal: null,
@@ -185,14 +184,16 @@ export default {
     },
     handleProposalSelection() {
       this.requestItem.proposalNbr = this.selectedProposal.proposalNbr
-      this.requestItem.sunpowerUrlExists = this.selectedProposal.sunpowerUrlExists
+      if (this.selectedProposal.loanType) {
+        this.requestItem.sunpowerProposal = this.selectedProposal.loanType.includes('SunPower')
+      }
     },
     async openRequest(it) {
       this.requestItem.customer_name = it.customer_name
       this.requestItem.email = it.email
       this.currentEmail = it.email
       this.requestItem.projectId = it.project_id
-      this.requestItem.sunpowerUrlExists = false
+      this.requestItem.sunpowerProposal = false
 
       // get proposal numbers
       try {

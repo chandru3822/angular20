@@ -68,8 +68,7 @@ public class InstallAgreementQuery {
   //language=PostgreSQL
   public final static String getProposalNumbers = """
     select proposal_nbr,
-           loan_type,
-           (plh.sunpower_url is not null) as sunpower_url_exists
+           loan_type
     from brs.proposal_log_history plh
     inner join flow.project p on p.id::text = plh.project_id::text
     where p.id = :projectId
