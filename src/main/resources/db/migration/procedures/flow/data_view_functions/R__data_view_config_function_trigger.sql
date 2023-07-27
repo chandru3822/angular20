@@ -168,7 +168,7 @@ BEGIN
     into v_count
     from flow.user_position up
     where up.user_id = new.modified_by_id
-      and up.position_id = 1
+      and up.position_id in (1,2)
       and up.archived is false
       and up.primary_flag is true
       and up.end_date is null
@@ -180,7 +180,7 @@ BEGIN
     );
 
     if v_count > 0 then
-      raise exception 'You do not have rights to update the Lead Source for this Contact. (B)';
+      raise exception 'You do not have rights to update the Lead Source for this Contact. Please contact Carlin Johnson if you see this error message.';
     end if;
   end if;
 
