@@ -50,6 +50,7 @@
         />
       </div>
       <div v-if="!timelineView">
+        <div v-if="sortedFilteredActivities?.length === 0">No available notes or activities</div>
         <div v-for="type in filteredTopics">
           {{ type.activityType }}
           <div class="pl-5" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
