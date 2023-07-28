@@ -231,7 +231,6 @@ where id in (select pvcfv.id
 
   //language=PostgreSQL
   public final static String resetCustomFieldGroup = """
-
     delete
     from brs.proposal_version_custom_field_group pvcfg
         using
@@ -291,8 +290,9 @@ where id in (select pvcfv.id
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
                                                                 and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id)
-    select (value -> 'intValue')::int
+                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
+    select  distinct unnest(array_remove(array [(value -> 'intValue')::int], null) ||
+              array((select jsonb_array_elements_text(value -> 'intArrayValue')))::int[])
     from version_values;
     """;
 }
