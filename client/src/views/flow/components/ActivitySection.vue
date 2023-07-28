@@ -66,7 +66,7 @@
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
                       <v-icon small v-else>mdi-arrow-down</v-icon>
                     </v-btn>
-                    <v-btn v-if="open && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0)" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
+                    <v-btn v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0)" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
                       + Add note
                     </v-btn>
                   </v-row>
