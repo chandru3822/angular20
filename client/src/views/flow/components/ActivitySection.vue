@@ -504,7 +504,7 @@ export default {
           note: this.editedActivity.note,
           linked: this.editedActivity.linked,
           linkedPpseId: this.editedActivity.linkedPpseId,
-          linkedPpsId:  isNaN(this.editedActivity.linkedPpseId) ? this.editedActivity.linkedPpsId : null,
+          linkedPpsId:  this.editedActivity.linkedPpsId,
           activityHashtags
         }
         const {data, status} = await postRequest(`/activity/${this.sectionType}/${this.primaryId}`, params)
