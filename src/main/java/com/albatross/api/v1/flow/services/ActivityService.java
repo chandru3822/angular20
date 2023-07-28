@@ -124,7 +124,7 @@ public class ActivityService {
 
     Long id = sqlCache.updateBySqlReturningId(sql, params, "id").longValue();
     //handle any activity hashtags
-    updateActivityHashtag(objectTypeId, id, newActivity.getActivityHashtags());
+    updateActivityHashtag(objectTypeId, id, newActivity.getActivityHashtags(), true);
 
     Optional<Activity> savedActivity = getOneActivity(objectTypeId, id);
 
@@ -132,7 +132,6 @@ public class ActivityService {
     if(savedActivity.isPresent() && (objectTypeId.equals(ObjectType.PROJECT.id) || objectTypeId.equals(ObjectType.CONTACT.id))) {
       notifyMentionedUsers(savedActivity.get(), objectTypeId, sourceId);
     }
-
     return savedActivity;
   }
 
@@ -239,12 +238,12 @@ public class ActivityService {
     sqlCache.updateBySql(sql, params);
 
     //handle any activity hashtags
-    updateActivityHashtag(objectTypeId, activityId, activity.getActivityHashtags());
+    updateActivityHashtag(objectTypeId, activityId, activity.getActivityHashtags(), false);
 
     return getOneActivity(objectTypeId, activityId);
   }
 
-  public List<ActivityHashtag> updateActivityHashtag(Long objectTypeId, Long activityId, List<ActivityHashtag> activityHashtags) {
+  public List<ActivityHashtag> updateActivityHashtag(Long objectTypeId, Long activityId, List<ActivityHashtag> activityHashtags, Boolean newActivity) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -272,11 +271,13 @@ public class ActivityService {
         }
       }
       //because at least one hashtag was changed, we set the "modified by id" on the activity because that is how BR wants it to work
-      String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.setProjectActivityModified :
-        objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.setContactActivityModified :
-        objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.setOrgActivityModified :
-        objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.setUserActivityModified : null;
-      sqlCache.updateBySql(sql, params);
+      if(!newActivity) {
+        String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.setProjectActivityModified :
+          objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.setContactActivityModified :
+            objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.setOrgActivityModified :
+              objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.setUserActivityModified : null;
+        sqlCache.updateBySql(sql, params);
+      }
     }
 
     return getActivityHashtags(objectTypeId, activityId);

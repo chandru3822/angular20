@@ -152,8 +152,8 @@
           <ActivitySection :contact-id="contactId" :user-id="userId"
                            :timeline-view="toggleTimelineView === 0"
                            :object-type-id="objectTypeId" :project-id="projectId"
-                           :org-id="orgId" v-else-if="selectedOption === 1"></ActivitySection>
-          <div v-else-if="selectedOption === 2">
+                           :org-id="orgId" v-show="selectedOption === 1"></ActivitySection>
+          <div v-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                  :user-id="userId"
                                  :object-type-id="objectTypeId"
