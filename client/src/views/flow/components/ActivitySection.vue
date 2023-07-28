@@ -475,11 +475,16 @@ export default {
       this.populateSelectedTopics(item)
     },
     linkEditedActivity(){
-      this.editedActivity.linkLabel = null
-      this.editedActivity.linkedPpseId = parseInt(this.$route.params.ppsEventId)
-      //this has to populate even when the linked item is an event or else we can't re-load the link path correctly
-      this.editedActivity.linkedPpsId = parseInt(this.$route.params.processStepId)
-      this.editedActivity.linkLabel = this.$store.state.project.linkLabel
+      if(this.editedActivity.linked) {
+        this.editedActivity.linkedPpseId = parseInt(this.$route.params.ppsEventId)
+        //this has to populate even when the linked item is an event or else we can't re-load the link path correctly
+        this.editedActivity.linkedPpsId = parseInt(this.$route.params.processStepId)
+        this.editedActivity.linkLabel = this.$store.state.project.linkLabel
+      } else {
+        this.editedActivity.linkLabel = null
+        this.editedActivity.linkedPpseId = null
+        this.editedActivity.linkedPpsId = null
+      }
     },
     saveActivity(isNew) {
       if (isNew) {
@@ -499,7 +504,7 @@ export default {
           note: this.editedActivity.note,
           linked: this.editedActivity.linked,
           linkedPpseId: this.editedActivity.linkedPpseId,
-          linkedPpsId:  null == this.$route.params.ppsEventId ? this.editedActivity.linkedPpsId : null,
+          linkedPpsId:  isNaN(this.editedActivity.linkedPpseId) ? this.editedActivity.linkedPpsId : null,
           activityHashtags
         }
         const {data, status} = await postRequest(`/activity/${this.sectionType}/${this.primaryId}`, params)
@@ -544,9 +549,9 @@ export default {
           note: this.editedActivity.note,
           activityHashtags: this.editedActivity?.activityHashtags || [],
           linked: this.editedActivity.linked,
-          linkedPpseId: this.editedActivity.linked ? parseInt(this.$route.params.ppsEventId) : null,
+          linkedPpseId: this.editedActivity.linked ? this.editedActivity.linkedPpseId : null,
           //this has to populate even when the linked item is an event or else we can't re-load the link path correctly
-          linkedPpsId: this.editedActivity.linked ? parseInt(this.$route.params.processStepId) : null,
+          linkedPpsId: this.editedActivity.linked ? this.editedActivity.linkedPpsId : null,
         }
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
         //todo: handle this
