@@ -50,6 +50,7 @@
         />
       </div>
       <div v-if="!timelineView">
+        <div v-if="sortedFilteredActivities?.length === 0">No available notes or activities</div>
         <div v-for="type in filteredTopics">
           {{ type.activityType }}
           <v-expansion-panels accordion multiple flat class=".rounded-0">
