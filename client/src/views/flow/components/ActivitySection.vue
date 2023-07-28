@@ -74,7 +74,7 @@
               </v-expansion-panel-header>
               <v-expansion-panel-content>
                 <ActivityList v-if="!savingActivity"
-                              :activities="sortAndFilterActivities(h.activities)"
+                              :activities="sortAndFilterActivities(h.activities, h.sortDirection)"
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
@@ -272,7 +272,9 @@ export default {
       let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
       return this.activityTopics.filter(a => {
         for (let h of a.activityTypeHashtags){
-          h.sortDirection = 'asc'
+          if(h.sortDirection === undefined){
+            h.sortDirection = 'desc'
+          }
         }
         return shownActivityTypes.includes(a.id)
       })
@@ -339,7 +341,7 @@ export default {
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
     },
-    sortAndFilterActivities(activities){
+    sortAndFilterActivities(activities, sortDirection){
       return orderBy(activities.filter(a => {
         //filter out archived
         //if search is not empty then filter that stuff here too
@@ -350,10 +352,10 @@ export default {
             && (((this.search == null || this.search === {}) && (this.searchText == null || this.searchText === '')) || this.activityContainsSearch(a))
             && shownActivityTypes.includes(a.activityTypeId)
 
-      }), ['dateCreated'], [ this.sortDirection])
+      }), ['dateCreated'], [ sortDirection])
     },
     countSortedFilteredActivities(activities){
-      return this.sortAndFilterActivities(activities).length
+      return this.sortAndFilterActivities(activities, this.sortDirection).length
     },
     activityContainsSearch(activity) {
       if(this.search.userId){
