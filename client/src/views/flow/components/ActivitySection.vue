@@ -52,7 +52,8 @@
       <div v-if="!timelineView">
         <div v-for="type in filteredTopics">
           {{ type.activityType }}
-          <v-expansion-panels accordion multiple flat class=".rounded-0">
+          <div class="pl-5" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
+          <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
             <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header">
                 <template v-slot:default="{ open }">

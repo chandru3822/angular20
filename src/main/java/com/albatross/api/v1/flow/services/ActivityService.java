@@ -26,6 +26,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -51,7 +52,12 @@ public class ActivityService {
       objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getActivityTopicsByOrg :
       objectTypeId.equals(ObjectType.USER.id) ? UserActivityQuery.getActivityTopicsByUser : null;
 
-    return sqlCache.queryBySql(sql, params, new ActivityTypeMapper<>(ActivityType.class, om));
+    List<ActivityType> activityTypes = sqlCache.queryBySql(sql, params, new ActivityTypeMapper<>(ActivityType.class, om));
+    for(ActivityType at : activityTypes) {
+      //filter out any zero counts. should only be for 'uncategorized' cuz it would be too time consuming to count them in sql for a case statement
+      at.setActivityTypeHashtags(at.getActivityTypeHashtags().stream().filter(ath -> ath.getActivities().size() > 0).collect(Collectors.toList()));
+    }
+    return activityTypes;
   }
 
   public List<Activity> getActivitiesByObject(Long objectTypeId, Long sourceId) {
