@@ -61,7 +61,7 @@
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
                     <span v-if="h.hashtagId === -1" class="uncategorized label-large mr-2">[{{h.hashtag}}]</span>
                     <span v-else class="mr-2 label-large">#{{ h.hashtag }}</span>
-                    <span class="body-medium">{{ countSortedFilteredActivities(h.activities) }} {{ type.activityType.toLowerCase() }} |
+                    <span class="body-medium">{{countedCategoryLabel(h.activities, type.id) }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
                     <v-btn v-if="open" icon color="primary" @click.native.stop="changeSortDirectionForTopic(h)">
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
@@ -250,8 +250,8 @@ export default {
       filterMenuOpen: false,
       //should probably load this but hardcoding for now
       activityTypes: [
-        {id: 1, activityType: 'Activities', show: true},
-        {id: 2, activityType: 'Notes', show: true},
+        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: true},
+        {id: 2, activityType: 'Notes', activityTypeSingularLabel: 'Note', show: true},
       ],
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       currentUserId:this.$store.state.user.details.id,
@@ -271,7 +271,7 @@ export default {
   computed: {
     filteredTopics() {
       let shownActivityTypes = this.activityTypes.filter(at => at.show).map(at => at.id)
-      return this.activityTopics.filter(a => {
+      let result = this.activityTopics.filter(a => {
         for (let h of a.activityTypeHashtags){
           if(h.sortDirection === undefined){
             h.sortDirection = 'desc'
@@ -279,6 +279,7 @@ export default {
         }
         return shownActivityTypes.includes(a.id)
       })
+      return result
     },
     sortedFilteredActivities() {
       return orderBy(this.activities.filter(a => {
@@ -357,6 +358,11 @@ export default {
     },
     countSortedFilteredActivities(activities){
       return this.sortAndFilterActivities(activities, this.sortDirection).length
+    },
+    countedCategoryLabel(activities, activityTypeId){
+      const activityCount = this.countSortedFilteredActivities(activities)
+      const typeLabel = activityCount === 1 ? this.activityTypes.find(t => t.id === activityTypeId).activityTypeSingularLabel : this.activityTypes.find(t => t.id === activityTypeId).activityType
+      return `${activityCount} ${typeLabel.toLowerCase()}`
     },
     activityContainsSearch(activity) {
       if(this.search.userId){
