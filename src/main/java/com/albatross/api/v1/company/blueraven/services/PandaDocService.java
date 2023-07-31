@@ -985,7 +985,7 @@ public class PandaDocService {
 
   private HttpResponse request(String method, String url, InputStream body) throws Exception {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", String.format("Bearer %s", "96425d801744dcdc07c0e2842753e926a3475761"));
+    headers.put("Authorization", String.format("Bearer %s", pandaDoc.getAccessToken()));
     headers.put("Content-Type", "application/json");
 
     url = "https://api.pandadoc.com/public/v1" + url;
