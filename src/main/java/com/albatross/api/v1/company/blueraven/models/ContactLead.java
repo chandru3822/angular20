@@ -39,6 +39,6 @@ public class ContactLead {
       vendorId,
       referralGenerationRepresentative,
       gclid;
-  private Long creditScore, leadLevel;
+  private Long creditScore, leadLevel, ownerUserPositionId;
   private BigDecimal householdIncome, electricMonthly, leadPrice;
 }

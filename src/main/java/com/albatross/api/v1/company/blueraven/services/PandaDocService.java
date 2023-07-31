@@ -133,7 +133,7 @@ public class PandaDocService {
 
   public JSONArray findTemplatesByName(String name) throws Exception {
     log.debug("PANDADOC: looking for template name='{}'", name);
-    String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
+    String url = "/templates?count=100&q=" + URLEncoder.encode(name, "UTF-8");
     HttpResponse resp = GET(url);
     JSONObject out = resp.getJSON();
     return out.getJSONArray("results");
@@ -985,7 +985,7 @@ public class PandaDocService {
 
   private HttpResponse request(String method, String url, InputStream body) throws Exception {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", String.format("Bearer %s", pandaDoc.getAccessToken()));
+    headers.put("Authorization", String.format("Bearer %s", "96425d801744dcdc07c0e2842753e926a3475761"));
     headers.put("Content-Type", "application/json");
 
     url = "https://api.pandadoc.com/public/v1" + url;
