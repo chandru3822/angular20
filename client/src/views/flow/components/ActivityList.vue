@@ -11,7 +11,7 @@
               <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">, </span>
-                <a @click="searchCallback('#' + ah.hashtag)">#{{ ah.hashtag }}</a>
+                <a @click="searchCallback('#' + ah.hashtag)" :inner-html.prop="'#' + ah.hashtag | searchHighlight(query)"></a>
               </span>
               <a v-if="a.linked" @click="goToPath(a)" class="pl-3">
                 <v-icon small color="primary">mdi-link</v-icon>
@@ -51,7 +51,7 @@
         <v-card-text class="py-0 default-text-color">
           <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->
           <div class="text-formatting">
-            <vue-clamp ellipsis="" autoresize :max-lines="5">{{ a.note }}
+            <vue-clamp ellipsis="" autoresize :max-lines="5" :inner-html.prop="a.note | searchHighlight(query)">
               <template #after="{ toggle, clamped, expanded }">
                 <button v-if="clamped === true" @click="toggle" class="see-more-btn">...see more</button>
                 <button v-if="expanded" @click="toggle" class="see-more-btn"> see less</button>
@@ -60,11 +60,11 @@
           </div>
         </v-card-text>
         <v-card-actions style="display: inline-block" class="body-medium grey--text text--darken-2 px-4">
-          <span class="clickable" @click="searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)">{{ a.createdBy }}</span>
-          <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)">, {{a.createdByPosition}}</span>
-          <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, SearchTypeEnum.TEAM)">({{a.createdByPositionOrg}})</span> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
-          <span v-if="a.dateCreated !== a.dateModified">| Edited by {{ a.modifiedBy }}</span>
-          <span v-if="a.pinned"> | Pinned by {{ a.pinnedBy }}</span>
+          <span class="clickable" @click="searchCallback(a.createdBy, a.createdById, SearchTypeEnum.USER)" :inner-html.prop="a.createdBy | searchHighlight(query)"/>
+          <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)" :inner-html.prop="', ' + a.createdByPosition | searchHighlight(query)"/>
+          <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, SearchTypeEnum.TEAM)" :inner-html.prop="`(${a.createdByPositionOrg})` | searchHighlight(query)"/> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
+          <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="`| Edited by ${ a.modifiedBy }` | searchHighlight(query)"/>
+          <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
         </v-card-actions>
       </v-card>
     <ConfirmationDialog :open-dialog="activityToDelete != null" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
@@ -98,7 +98,8 @@ export default {
     highlightPinnedActivity: {
       type: Boolean,
       default: true,
-    }
+    },
+    query: String
   },
   data() {
     return {
@@ -106,10 +107,13 @@ export default {
       snackbar: {},
       editedIndex: null,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
-      activityToDelete: null
+      activityToDelete: null,
     }
   },
-  watch: {
+  filters: {
+    searchHighlight: function(value, query){
+      return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-1">${v}</span>`)
+    }
   },
   computed: {
 

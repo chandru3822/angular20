@@ -36,7 +36,7 @@
       </v-menu>
     </div>
     <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
-      <div v-if="pinnedActivitiesOnly.length > 0" :class="{'pb-7': !timelineView}">
+      <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
                       :project-id="projectId"
@@ -84,6 +84,7 @@
                               :edit-callback="setEditedActivity"
                               :search-callback="searchByClick"
                               :highlightPinnedActivity="false"
+                              :query="queryText"
                               @reload="getActivities"
                 ></ActivityList>
               </v-expansion-panel-content>
@@ -101,6 +102,7 @@
                     :edit-callback="setEditedActivity"
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
+                    :query="queryText"
                     @reload="getActivities"
       ></ActivityList>
     </div>
@@ -231,6 +233,7 @@ export default {
         position: null,
         teamId: null
       },
+      queryText: '',
       linkLabel: '',
       users: [],
       addActivity: false,
@@ -268,6 +271,9 @@ export default {
     },
     searchText: function () {
       this.$emit('scrollToTop')
+      if(!this.search.userId && !this.search.position && !this.search.teamId) {
+        this.queryText = this.searchText()
+      }
     },
   },
   computed: {
@@ -474,6 +480,7 @@ export default {
           default:
             this.searchText = text
       }
+      this.queryText = text
     },
     clearSearch(){
       this.search={}
