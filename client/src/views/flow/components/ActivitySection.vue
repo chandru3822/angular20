@@ -272,7 +272,7 @@ export default {
     searchText: function () {
       this.$emit('scrollToTop')
       if(!this.search.userId && !this.search.position && !this.search.teamId) {
-        this.queryText = this.searchText()
+        this.queryText = this.searchText
       }
     },
   },
