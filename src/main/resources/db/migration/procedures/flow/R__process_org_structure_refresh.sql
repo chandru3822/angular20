@@ -26,7 +26,7 @@ BEGIN
 --     end loop;
 
 
-  for x in select c3.id,
+  for x in select  distinct c3.id,
                   (select array_agg(distinct org_id)
                    from flow.user_position u
                    where u.id = any (c3.owner_position_ids)) as org_ids
@@ -44,7 +44,7 @@ BEGIN
       where x.id = c2.id;
       commit;
     end loop;
-
+    delete from flow.org_structure_refresh o;
 END
 $BODY$
   LANGUAGE plpgsql;

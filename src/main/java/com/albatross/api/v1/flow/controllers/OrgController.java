@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.UserSearch;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.org.OrgFilter;
 import com.albatross.api.v1.flow.services.OrgService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -92,14 +93,22 @@ public class OrgController {
     return orgService.getOrgCalendarsForUser(userId);
   }
 
-  @PostMapping(value = "/user/calendar")
-  public UserOrgAccess saveOrgCalendarToUser(@RequestBody UserOrgAccess userOrgAccess) {
-    return orgService.saveOrgCalendarToUser(userOrgAccess);
+
+  @GetMapping(value = "/user/{userId}/calendar/access")
+  public Boolean userHasFullCalendarAccess(@PathVariable Long userId) {
+    return orgService.userHasFullCalendarAccess(userId);
   }
 
-  @DeleteMapping(value = "/user/calendar/{id}")
-  public void deleteOrgCalendarFromUser(@PathVariable Long id) {
-    orgService.deleteOrgCalendarFromUser(id);
+  @Data
+  public static class UserOrgAccessRequest {
+    private Long userId;
+    private List<UserOrgAccess> userOrgAccess;
+    private boolean fullCalendarAccess;
+  }
+
+  @PostMapping(value = "/user/calendar")
+  public List<Org> saveOrgCalendarsAccess(@RequestBody UserOrgAccessRequest request) {
+    return orgService.saveOrgCalendarsAccess(request);
   }
 
   @GetMapping(value = "/{orgId}/attachments")
