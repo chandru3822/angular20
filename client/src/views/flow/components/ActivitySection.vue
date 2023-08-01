@@ -1,5 +1,5 @@
 <template>
-  <v-container class="px-5">
+  <v-container class="px-5 pb-0">
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
