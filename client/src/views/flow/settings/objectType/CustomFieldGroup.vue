@@ -348,39 +348,6 @@
                               <v-row>
                                 <v-col cols="6">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
-                                    test
-                                    <v-card-text v-if="cf.systemReadonly" class="mt-2">
-                                      System Readonly Cannot Change
-                                    </v-card-text>
-                                    <v-card-text v-else>
-                                      <multi-select-group
-                                          v-if="!positionsLoading"
-                                          background-color="transparent"
-                                          :userCanEdit="userCanEdit"
-                                          :returnObject="cf"
-                                          :content="positions"
-                                          :dropdownEnabled="cf.customFieldGroupAssignmentReadOnly"
-                                          :selectedContent="cf.whiteListedPositions"
-                                          :title="'Read Only'"
-                                          :label="'Allowed Positions'"
-                                          :alternateLabel = "'Denied Positions'"
-                                          :allow="cf.customFieldGroupAssignmentReadOnlyAllow"
-                                          :contentLoading="positionsLoading"
-                                          @selected-changed="cfgaReadOnlySelectedEventListener"
-                                          @allow-changed="cfgaReadOnlyAllowEventListener"
-                                          @checkbox-changed="cfgaReadOnlyCheckboxEventListener"></multi-select-group>
-
-                                      <br/>
-                                      <v-btn color="primary" dark class="d-inline-block white--text"
-                                             @click="saveReadOnlyAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Read Only
-                                      </v-btn>
-                                    </v-card-text>
-                                  </v-card>
-                                </v-col>
-                                <v-col cols="6">
-                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                     <v-card-text>
                                       <multi-select-group
                                           v-if="!positionsLoading"
