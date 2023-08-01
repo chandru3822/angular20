@@ -438,8 +438,8 @@ select
                inner join flow.event e on e.id = pse.event_id
                inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id and pps.archived is false
                inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
-               inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
-               inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+               inner join flow.process_step_event_work_queue_type_event_status_type psewqtest on psewqtest.id = wqc.process_step_event_work_queue_type_event_status_type_id
+               inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtest.process_step_event_work_queue_type_id
                inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
                inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
       where pps.project_id = :projectId
