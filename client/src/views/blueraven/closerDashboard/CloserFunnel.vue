@@ -779,6 +779,7 @@ import constants from '@/helpers/constants'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
+import { saveAs } from 'file-saver'
 import {
   getCloserAreas,
   getCloserRegions,
@@ -1144,7 +1145,7 @@ export default {
           return csv += `${h.text},`
         }
       })
-      csv = `${csv.slice(0, -1)}\n`
+      csv += `\n`
 
       this.funnelDrilldownData.forEach(o => {
 
@@ -1158,7 +1159,7 @@ export default {
             }
           }
         })
-        csv = `${csv.slice(0, -1)}\n`
+        csv += `\n`
       })
 
       const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
