@@ -39,12 +39,23 @@
               </v-btn>
             </v-form>
           </v-card>
-          <div>
+          <v-card class="square-card">
+            <v-card-title class="pt-0">
+              <v-text-field
+                  v-model="search"
+                  prepend-inner-icon="search"
+                  label="Search"
+                  single-line
+                  hide-details
+                  clearable
+              ></v-text-field>
+            </v-card-title>
             <v-data-table
               :headers="headers"
               :items="filteredHashtags"
               :fixed-header="true"
               :items-per-page="-1"
+              :search="search"
               :mobile-breakpoint="0"
               hide-default-footer
               class="elevation-1 org-type-table"
@@ -122,7 +133,7 @@
               </template>
 
             </v-data-table>
-          </div>
+          </v-card>
           <ConfirmationDialog :open-dialog="showSaveDialog" @confirm="validateExisting(tagToSave)" @close-dialog="closeSaveDialog">
             This action will edit the topic in pre-existing notes that are using the original topic hashtag. Are you sure you want to edit the topic?
             <template v-slot:title>Confirm</template>
@@ -187,7 +198,8 @@ export default {
         v => /^(?!.*--).*$/.test(v) || 'Hashtag cannot have 2 consecutive hyphens',
 
       ],
-      formValid: false
+      formValid: false,
+      search: '',
     }
   },
   computed: {
