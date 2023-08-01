@@ -595,6 +595,11 @@
         <v-card id="funnel-drilldown">
           <v-card-title class="mb-1">
             <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" class="mr-4 mb-2"
+                   @click="exportDrilldownCsv()">
+              Export
+            </v-btn>
             <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
           </v-card-title>
           <v-divider></v-divider>
@@ -927,66 +932,66 @@ export default {
       {text: 'Source', value: 'source_name', show: true, width: 85, optional: false}, // 8
       {text: 'System Size', value: 'system_size', show: true, width: 110, optional: false}, // 9
       {text: 'Financier', value: 'financier', show: true, width: 95, optional: false}, // 10
-      {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false}, // 11
-      {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false}, // 12
-      {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true}, // 13
+      {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 11
+      {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 12
+      {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 13
       {text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true}, // 14
-      {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true}, // 15
+      {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 15
       {text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true}, // 16
       {
         text: 'Installation Agreement Signed Date',
         value: 'installation_agreement_signed_date',
         show: false,
         width: 235,
-        optional: true
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
       }, // 17
       {
         text: 'Site Survey Verified Date',
         value: 'site_survey_verified_date',
         show: false,
         width: 160,
-        optional: true
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
       }, // 18
-      {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true}, // 19
+      {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 19
       {
         text: 'FD Sent to Homeowner Date',
         value: 'final_design_sent_to_homeowner_date',
         show: false,
         width: 200,
-        optional: true
+        optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'
       }, // 20
-      {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true}, // 21
+      {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 21
       {
         text: 'Proof of HOI Obtained Date',
         value: 'proof_of_homeowners_insurance_obtained_date',
         show: false,
         width: 200,
-        optional: true
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
       }, // 22
       {
         text: 'Utility Bill Verified Date',
         value: 'utility_bill_verified_date',
         show: false,
         width: 175,
-        optional: true
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
       }, // 23
       {
         text: 'Financial Agreement Signed',
         value: 'financial_agreement_signed_date',
         show: false,
         width: 195,
-        optional: true
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
       }, // 24
-      {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true}, // 25
-      {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true}, // 26
+      {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 25
+      {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 26
       {
         text: 'Substantial Completion Date',
         value: 'substantial_completion_date',
         show: false,
         width: 175,
-        optional: true
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
       }, // 27
-      {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true}, // 28
+      {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY h:mm a'}, // 28
     ]},
     windowInnerWidth() {
       return window.innerWidth
@@ -1131,6 +1136,34 @@ export default {
     }
   },
   methods: {
+    exportDrilldownCsv() {
+      let csv = ''
+
+      this.visibleFunnelDrilldownHeaders().forEach(h => {
+        if(h.text !== '') {
+          return csv += `${h.text},`
+        }
+      })
+      csv = `${csv.slice(0, -1)}\n`
+
+      this.funnelDrilldownData.forEach(o => {
+
+        this.visibleFunnelDrilldownHeaders().forEach(h => {
+          if(h.text !== '') {
+            if(h.dateType !== null && h.dateType !== undefined) {
+              //if it is a date it needs to be formatted here
+              csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : this.$filters.formatDate(o[h.value], h.dateType, h.dateFormat)}`+'",'
+            } else {
+              csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}`+'",'
+            }
+          }
+        })
+        csv = `${csv.slice(0, -1)}\n`
+      })
+
+      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+      saveAs(blob, `${this.funnelDrilldownTitle}.csv`)
+    },
     visibleFunnelDrilldownHeaders() {
       return this.funnelDrilldownHeaders.filter(header => header.show === true)
     },
