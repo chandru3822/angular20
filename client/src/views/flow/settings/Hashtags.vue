@@ -129,7 +129,7 @@
             <template v-slot:yes>Save Changes</template>
           </ConfirmationDialog>
           <ConfirmationDialog :open-dialog="!!tagToDelete" @confirm="deleteTag" @close-dialog="tagToDelete=null">
-            Are you sure you want to delete this hashtag: <strong>{{ tagToDeleteValue }}</strong>?
+            Are you sure you want to delete this topic: <strong>#{{ tagToDeleteValue }}</strong>?
           </ConfirmationDialog>
         </v-container>
       </v-col>
