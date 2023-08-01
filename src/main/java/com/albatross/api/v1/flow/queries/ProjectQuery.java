@@ -420,6 +420,8 @@ select
                inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
                inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
       where pps.project_id = :projectId
+          and wqt.archived is false
+          and pswqt.archived is false
       union all
       select wqc.date_entered_queue,
              wqc.date_exited_queue,
@@ -441,6 +443,8 @@ select
                inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
                inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
       where pps.project_id = :projectId
+          and wqt.archived is false
+          and psewqt.archived is false
       order by date_exited_queue desc nulls first, date_entered_queue desc
     """;
 
