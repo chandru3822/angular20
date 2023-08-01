@@ -51,17 +51,17 @@
       </div>
       <div v-if="!timelineView">
         <div v-if="sortedFilteredActivities?.length === 0">No available notes or activities</div>
-        <div v-for="type in filteredTopics">
+        <div v-for="type in filteredTopics" class="title-medium">
           {{ type.activityType }}
           <div class="pl-5" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
           <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
             <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
-              <v-expansion-panel-header class="expansion-panel-header">
+              <v-expansion-panel-header class="expansion-panel-header px-0">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
-                    <span v-if="h.hashtagId === -1" class="uncategorized label-large mr-2">[{{h.hashtag}}]</span>
-                    <span v-else class="mr-2 label-large">#{{ h.hashtag }}</span>
-                    <span class="body-medium">{{countedCategoryLabel(h.activities, type.id) }} |
+                    <span v-if="h.hashtagId === -1" class="uncategorized body-large mr-2" :class="{'label-large': open}">[{{h.hashtag}}]</span>
+                    <span v-else class="mr-2" :class="{'body-large': !open, 'label-large': open}">#{{ h.hashtag }}</span>
+                    <span class="body-medium grey--text darken-2">{{countedCategoryLabel(h.activities, type.id) }} |
             last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
                     <v-btn v-if="open" icon color="primary" @click.native.stop="changeSortDirectionForTopic(h)">
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
