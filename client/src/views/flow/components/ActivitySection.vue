@@ -1,5 +1,5 @@
 <template>
-  <v-container class="px-5 pb-0">
+  <v-container class="px-5 py-0">
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -265,8 +265,10 @@ export default {
       } else {
         this.getActivityTopics()
       }
-    }
-
+    },
+    searchText: function () {
+      this.$emit('scrollToTop')
+    },
   },
   computed: {
     filteredTopics() {
