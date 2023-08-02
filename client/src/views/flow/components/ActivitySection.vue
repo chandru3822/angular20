@@ -135,16 +135,11 @@
           </v-textarea>
 
           <template #no-result>
-            <div class="dim">
               No result
-            </div>
           </template>
-
           <template #item-@="{ item }">
             <div class="user">
-                <span class="dim">
                   ({{ item.value }})
-                </span>
             </div>
           </template>
         </Mentionable>
@@ -649,14 +644,14 @@ export default {
 .primary-lighten-9-bkgrd {
   background-color: var(--v-primary-lighten9);
 }
-
-.dim:hover {
-  color: var(--v-primary-base);
-  font-weight: bold;
-}
-
 .filterCheckbox:hover {
   background-color: var(--v-grey-lighten4) !important;
 }
 
+</style>
+<style lang="scss">
+.mention-selected {
+  color: var(--v-primary-base);
+  font-weight: bold;
+}
 </style>
