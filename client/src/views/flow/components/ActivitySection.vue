@@ -533,6 +533,7 @@ export default {
         this.addActivity = false
         this.editedActivity = {}
         this.savingActivity = false
+        this.$emit('scrollToTop')
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
