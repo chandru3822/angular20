@@ -61,8 +61,11 @@ public class ActivityService {
   }
 
   public List<Activity> getActivitiesByObject(Long objectTypeId, Long sourceId) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
+    params.put("companyId", user.getCompanyId());
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivities :
       objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivities :
       objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getOrgActivities :
