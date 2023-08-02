@@ -38,10 +38,10 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="a.activityTypeId !== 1"
-                             :disabled="!(userIsAdmin || a.createdById === userId)"
+                             :disabled="a.createdById !== userId"
                              @click="activityToDelete = a">
                   <v-list-item-content>
-                    <v-list-item-title class="error--text" :class="{'grey--text': !(userIsAdmin || a.createdById === userId)}">Delete</v-list-item-title>
+                    <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== userId}">Delete</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>

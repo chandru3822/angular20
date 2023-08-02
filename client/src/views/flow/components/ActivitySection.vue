@@ -130,7 +130,7 @@
                       autofocus
                       rows="2"
                       outlined
-                      :disabled="editedActivity.createdById !== currentUserId && !userIsAdmin && !addActivity"
+                      :disabled="editedActivity.createdById !== currentUserId && !addActivity"
                       v-model="editedActivity.note">
           </v-textarea>
 
@@ -167,7 +167,7 @@
                 || null != $route.params.ppsEventId
                 || editedActivity.linked"
           dense
-          :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
+          :disabled="editedActivity.createdById !== userId && !addActivity"
           v-model="editedActivity.linked"
           @change="linkEditedActivity"
           :label="getLinkLabel()"
