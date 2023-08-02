@@ -100,9 +100,9 @@ public class ProjectProcessStepEventService {
       actParams.put("activityId", SystemActivity.EVENT_CREATED.id);
       actParams.put("objectTypeId", ObjectType.PROJECT.id);
       actParams.put("sourceId", result.get().getProjectId());
-      actParams.put("userId", result.get().getProjectId());
+      actParams.put("userId", user.trueUserId());
       actParams.put("ppsId", projectProcessStepId);
-      actParams.put("ppseId", user.trueUserId());
+      actParams.put("ppseId", processStepEventId);
       actParams.put("oldStatusId", null);
       actParams.put("newStatusId", null);
       sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
