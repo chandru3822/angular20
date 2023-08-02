@@ -377,6 +377,7 @@ public class SmartlistQuery {
     select
       sac.id,
       sac.smartlist_id,
+      up.user_id,
       sac.org_id,
       sac.user_position_id,
       sac.user_position_id is not null as "isUser",
@@ -468,9 +469,11 @@ public class SmartlistQuery {
     select case when count(1) > 0 then false else true end
     from flow.smartlist s
     inner join flow.company_object_type cot on cot.id = s.company_object_type_id
-    where lower(s.name) = lower(:name::text) and
-    cot.company_id = :companyId and
-    s.archived is not true
+    where
+      s.name = :name::text and
+      cot.company_id = :companyId and
+      s.archived is not true and
+      s.work_queue_type_id is null
   """;
 
   //language=PostgreSQL
@@ -511,5 +514,320 @@ public class SmartlistQuery {
       sm.smartlist_id = :smartlistId and
       cot.company_id = :companyId
     order by sm.date_created desc
+  """;
+
+  //language=PostgreSQL
+  public final static String getAvailableFields = """
+    -- system fields
+    select
+      sf.id as "smartlistFieldId",
+      sf.smartlist_system_list_id as "smartlistSystemListId",
+      cot.object_type_id,
+      null as "customFieldGroupAssignmentId",
+      sf.name as "name",
+      null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
+      null as "CompanySystemListId",
+      '[]' as "systemListOptionIds",
+      null as "processStepId",
+      null as "processStepName",
+      null as "eventId",
+      null as "eventName",
+      null as "processStepEventId",
+      cdt.data_type_id as "dataTypeId",
+      case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
+      cdt.allow_multiple as "allowMultiple",
+      case when sf.smartlist_system_list_id is null then '[]' else
+        (select to_jsonb(array_agg(row_to_json(rows))) from (
+          select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
+        ) rows)
+      end as "listOfValues"
+    from flow.smartlist_field sf
+    inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+    inner join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
+    where
+      cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
+      cot.company_id = :companyId and
+      cot.archived is not true
+    union
+    -- custom fields
+    select
+      null as "smartlistFieldId",
+      null as "smartlistSystemListId",
+      cot.object_type_id,
+      cfga.id as "customFieldGroupAssignmentId",
+      cf.field_name as "name",
+      cf.custom_field_sql_key as "customFieldSqlKey",
+      cf.custom_field_sql as "customFieldSql",
+      cf.custom_field_sql_smartlist as "customFieldSqlSmartlist",
+      cf.company_system_list_id as "companySystemListId",
+      to_jsonb(cf.system_list_option_ids) as "systemListOptionIds",
+      case when cot.object_type_id = 6 then ps2.id else ps.id end as "processStepId",
+      case when cot.object_type_id = 6 then ps2.process_step_name else ps.process_step_name end as "processStepName",
+      e.id as "eventId",
+      e.event_name as "eventName",
+      pse.id as "processStepEventId",
+      cdt.data_type_id as "dataTypeId",
+      cdt.has_list_values as "hasListValues",
+      cdt.allow_multiple as "allowMultiple",
+      coalesce((
+        select to_jsonb(array_agg(row_to_json(rows))) from (
+          select
+            lv.id,
+            lv.name,
+            lv.parent_id as "parentId",
+            lv.date_created as "dateCreated",
+            lv.date_modified as "dateModified",
+            lv.created_by_id as "createdById",
+            lv.modified_by_id as "modifiedById",
+            lv.display_order as "displayOrder",
+            lv.archived
+          from flow.list_of_value lv
+          where
+            lv.parent_id = cf.list_of_value_id and
+            lv.archived is not true
+          order by
+            case when cf.sort_list_values_alphabetically is true  then lv.name end,
+            case when cf.sort_list_values_alphabetically is false then lv.display_order end
+      ) rows), '[]') AS "listOfValues"
+    from flow.custom_field_group_assignment cfga
+    inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    left join flow.process_step ps on ps.id = cfg.process_step_id
+    left join flow.event e on e.id = cfg.event_id
+    left join flow.process_step_event pse on e.id = pse.event_id
+    left join flow.process_step ps2 on pse.process_step_id = ps2.id
+    inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    where
+      cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
+      cot.company_id = :companyId and
+      cdt.data_type_id != 12 and
+      cfga.ancillary_custom_field_group_assignment_id is null and
+      cfga.archived is not true and
+      cfg.archived is not true
+    union
+    -- PSs with CFGs but only ancillary fields
+    select
+      null as "smartlistFieldId",
+      null as "smartlistSystemListId",
+      cot.object_type_id,
+      null as "customFieldGroupAssignmentId",
+      null as "name",
+      null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
+      null as "companySystemListId",
+      null as "systemListOptionIds",
+      ps.id as "processStepId",
+      ps.process_step_name as "processStepName",
+      null as "eventId",
+      null as "eventName",
+      null as "processStepEventId",
+      null as "dataTypeId",
+      null as "hasListValues",
+      null as "allowMultiple",
+      null as "listOfValues"
+    from flow.process_step ps
+    inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
+    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_group_id = cfg.id
+    inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
+    where
+      cfg.archived is not true and
+      ps.archived is not true and
+      cfga.archived is not true and
+      cfga.ancillary_custom_field_group_assignment_id is not null and
+      cot.company_id = :companyId and
+      cot.object_type_id = 4 and
+      -- include these results only if we're fetching process steps
+      true = case when 4 = any(array[ :objectTypeIds ]::bigint[])then true else false end and
+      not exists (
+        select distinct(ps1.id)
+        from  flow.custom_field_group_assignment cfga1
+        inner join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
+        inner join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
+        inner join flow.process_step ps1 on ps1.id = cfg1.process_step_id
+        where 
+          cot1.object_type_id = cot.object_type_id and
+          cot1.company_id = :companyId and
+          cfga1.ancillary_custom_field_group_assignment_id is null and
+          cfga1.archived is not true and
+          cfg1.archived is not true and
+          ps1.id = ps.id
+      )
+    union
+    -- PSs without CFGs
+    select
+      null as "smartlistFieldId",
+      null as "smartlistSystemListId",
+      4 as "objectTypeId",
+      null as "customFieldGroupAssignmentId",
+      null as "name",
+      null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
+      null as "companySystemListId",
+      null as "systemListOptionIds",
+      ps.id as "processStepId",
+      ps.process_step_name as "processStepName",
+      null as "eventId",
+      null as "eventName",
+      null as "processStepEventId",
+      null as "dataTypeId",
+      null as "hasListValues",
+      null as "allowMultiple",
+      null as "listOfValues"
+    from flow.process_step ps
+    inner join flow.process_step_process psp on ps.id = psp.process_step_id
+    left join flow.custom_field_group cfg on ps.id = cfg.process_step_id
+    where 
+      ps.archived is not true and
+      ps.company_id = :companyId and
+      -- include these results only if we're fetching process steps
+      true = case when 4 = any(array[ :objectTypeIds ]::bigint[]) then true else false end and
+      cfg.id is null
+    union
+    -- events without CFGs
+    select
+      null as "smartlistFieldId",
+      null as "smartlistSystemListId",
+      6 as "objectTypeId",
+      null as "customFieldGroupAssignmentId",
+      null as "name",
+      null as "customFieldSqlKey",
+      null as "customFieldSql",
+      null as "customFieldSqlSmartlist",
+      null as "companySystemListId",
+      null as "systemListOptionIds",
+      null as "processStepId",
+      null as "processStepName",
+      e.id as "eventId",
+      e.event_name as "eventName",
+      pse.id as "processStepEventId",
+      null as "dataTypeId",
+      null as "hasListValues",
+      null as "allowMultiple",
+      null as "listOfValues"
+    from flow.event e
+    inner join flow.process_step_event pse on e.id = pse.event_id
+    left join flow.custom_field_group cfg on cfg.event_id = e.id
+    where
+      pse.archived is not true and
+      e.archived is not true and
+      e.company_id = :companyId and
+      -- include these results only if we're fetching events
+      true = case when 6 = any(array[ :objectTypeIds ]::bigint[]) then true else false end and
+      cfg.id is null
+    order by
+      name,
+      "eventName",
+      "processStepName"
+  """;
+
+  //language=PostgreSQL
+  public final static String addField = """
+    insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
+    
+    returning id
+  """;
+
+  //language=PostgreSQL
+  public final static String deleteField = """
+    update flow.smartlist_field_assignment
+    set
+      archived = true,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :id
+  """;
+
+  //language=PostgreSQL
+  public final static String updateDisplayOrder = """
+    update flow.smartlist_field_assignment
+    set
+      display_order = :displayOrder,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :id
+  """;
+
+  //language=PostgreSQL
+  public final static String addRequirement = """
+    insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
+    values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
+    returning id
+  """;
+
+  //language=PostgreSQL
+  public final static String updateRequirement = """
+    update flow.smartlist_requirement
+    set
+      operator_type_id = :operatorTypeId,
+      requirement_value = :requirementValue,
+      secondary_requirement_value = :secondaryRequirementValue,
+      data_type_requirement_id = :dataTypeRequirementId,
+      list_of_value_id = :listOfValueId,
+      list_of_value_ids = array[ :listOfValueIds ]::bigint[],
+      system_list_option_id = :systemListOptionId,
+      custom_sql_option_id = :customSqlOptionId,
+      modified_by_id = :modifiedById,
+      date_modified = now(),
+      project_details_column = :projectDetailsColumn
+    where id = :id
+  """;
+
+  //language=PostgreSQL
+  public final static String deleteRequirement = """
+    update flow.smartlist_requirement
+    set
+      archived = true,
+      modified_by_id = :userId,
+      date_modified = now()
+    where id = :id
+  """;
+
+  //language=PostgreSQL
+  public final static String getSmartlistFieldsByIds = """
+    select
+      sf.id as "smartlistFieldId",
+      sf.smartlist_system_list_id,
+      cot.object_type_id,
+      sf.name,
+      cdt.data_type_id as "dataTypeId",
+      case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
+      cdt.allow_multiple,
+      sf.reference_table,
+      sf.reference_column,
+      sf.join_table,
+      sf.join_column
+    from flow.smartlist_field sf
+    inner join flow.company_object_type cot on cot.id = sf.company_object_type_id
+    inner join flow.company_data_type cdt on cdt.id = sf.company_data_type_id
+    where
+      cot.company_id = :companyId and
+      sf.id = any(array[ :ids ]::bigint[])
+  """;
+
+  //language=PostgreSQL
+  public final static String clearFieldsAndRequirements = """
+    update flow.smartlist_field_assignment
+    set
+      archived = true,
+      date_modified = now(),
+      modified_by_id = :userId
+    where
+      smartlist_id = :smartlistId and
+      archived is not true;
+
+    update flow.smartlist_requirement
+    set
+      archived = true,
+      date_modified = now(),
+      modified_by_id = :userId
+    where
+      smartlist_id = :smartlistId and
+      archived is not true
   """;
 }

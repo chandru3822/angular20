@@ -1,7 +1,7 @@
 <template>
 <v-row>
   <v-col cols="12" class="py-0">
-    <v-card flat class="square-card pb-3 px-3" color="white">
+    <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
       <v-text-field
         v-model="search"
         prepend-inner-icon="mdi-magnify"
@@ -137,7 +137,7 @@ import SmartlistShare from '@/views/flow/smartlist/SmartlistShare.vue'
 import constants from '@/helpers/constants'
 
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 
@@ -182,7 +182,7 @@ const getSmartlists = async () => {
 
 let editSmartlist = (smartlist) => {
   if(userCanEdit) {
-    router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})
+    router.push({name: 'reportEditor', params: {reportId: smartlist.id}})
   }
 }
 

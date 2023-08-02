@@ -317,3 +317,7 @@ export function jsonToCsv(data) {
 
   return csvData.join('')
 }
+
+export function UUID() {
+  return crypto.randomUUID()
+}
