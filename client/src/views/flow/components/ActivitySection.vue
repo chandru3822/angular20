@@ -20,7 +20,7 @@
           </v-btn>
         </template>
         <v-list dense class="">
-          <v-list-item v-for="at in activityTypes">
+          <v-list-item class="filterCheckbox" v-for="at in activityTypes">
             <v-list-item-content>
               <v-list-item-title>
                 <v-checkbox
@@ -28,6 +28,7 @@
                   hide-details
                   v-model="at.show"
                   :label="at.activityType"
+                  :ripple="false"
                 />
               </v-list-item-title>
             </v-list-item-content>
@@ -262,7 +263,6 @@ export default {
   },
   watch: {
     timelineView: function () {
-      this.clearSearch()
       if (this.timelineView) {
         this.getActivities()
       } else {
@@ -654,4 +654,9 @@ export default {
   color: var(--v-primary-base);
   font-weight: bold;
 }
+
+.filterCheckbox:hover {
+  background-color: var(--v-grey-lighten4) !important;
+}
+
 </style>
