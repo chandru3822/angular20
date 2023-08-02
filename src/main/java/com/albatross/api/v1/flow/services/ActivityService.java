@@ -45,8 +45,11 @@ public class ActivityService {
   private String homeUrl;
 
   public List<ActivityType> getActivityTopicsByObject(Long objectTypeId, Long sourceId) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("sourceId", sourceId);
+    params.put("companyId", user.getCompanyId());
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getActivityTopicsByProject :
       objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getActivityTopicsByContact :
       objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getActivityTopicsByOrg :
@@ -89,8 +92,11 @@ public class ActivityService {
   }
 
   public Optional<Activity> getOneActivity(Long objectTypeId, Long activityId) {
+    User user = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", activityId);
+    params.put("companyId", user.getCompanyId());
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.getProjectActivity :
             objectTypeId.equals(ObjectType.CONTACT.id) ? ContactActivityQuery.getContactActivity :
             objectTypeId.equals(ObjectType.ORGANIZATION.id) ? OrgActivityQuery.getOrgActivity :
