@@ -486,6 +486,29 @@ const router = new Router({
                   return accessDenied()
                 }
               },
+            },{
+              path: 'supplier',
+              name: 'supplier',
+              meta: {title: 'Albatross - Suppliers'},
+              component: () => {
+                if (store.getters.userHasFeature('SUPPLIERS')) {
+                  return import (/* webpackChunkName: "featDbSuppliers" */ './views/blueraven/featDB/suppliers/Suppliers.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'supplier/:supplierId/details',
+              name: 'supplierDetails',
+              meta: {title: 'Databases - Supplier'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('SUPPLIERS')) {
+                  return import (/* webpackChunkName: "featDbSupplierDetails" */ './views/blueraven/featDB/suppliers/SupplierDetails.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }
           ]
         },
