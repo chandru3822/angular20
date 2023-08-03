@@ -1,6 +1,6 @@
 <template>
   <div>
-      <div v-if="activities?.length === 0">
+      <div v-if="activities?.length === 0" class="body-large">
         No available notes or activities
       </div>
       <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 pt-3 pb-2 elevation-0 card"
@@ -38,10 +38,10 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="a.activityTypeId !== 1"
-                             :disabled="a.createdById !== userId"
+                             :disabled="a.createdById !== currentUserId"
                              @click="activityToDelete = a">
                   <v-list-item-content>
-                    <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== userId}">Delete</v-list-item-title>
+                    <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== currentUserId}">Delete</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -92,6 +92,7 @@ export default {
     contactId: Number,
     orgId: Number,
     userId: Number,
+    currentUserId: Number,
     projectId: Number,
     sectionType: String,
     editCallback: Function,

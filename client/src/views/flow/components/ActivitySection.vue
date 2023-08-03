@@ -43,6 +43,7 @@
                       :project-id="projectId"
                       :contact-id="contactId"
                       :user-id="userId"
+                      :current-user-id="currentUserId"
                       :org-id="orgId"
                       :section-type="sectionType"
                       :edit-callback="setEditedActivity"
@@ -51,10 +52,11 @@
         />
       </div>
       <div v-if="!timelineView">
-        <div v-if="sortedFilteredActivities?.length === 0">No available notes or activities</div>
-        <div v-for="type in filteredTopics" class="title-medium">
-          {{ type.activityType }}
-          <div class="pl-5" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
+        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
+        <div v-else>
+        <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
+          <span>{{ type.activityType }}</span>
+          <div class="pt-4 body-large" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
           <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
             <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header px-0">
@@ -80,6 +82,7 @@
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
+                              :current-user-id="currentUserId"
                               :org-id="orgId"
                               :section-type="sectionType"
                               :edit-callback="setEditedActivity"
@@ -92,12 +95,14 @@
             </v-expansion-panel>
           </v-expansion-panels>
         </div>
+        </div>
       </div>
       <ActivityList v-else-if="!savingActivity"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
                     :contact-id="contactId"
                     :user-id="userId"
+                    :current-user-id="currentUserId"
                     :org-id="orgId"
                     :section-type="sectionType"
                     :edit-callback="setEditedActivity"
@@ -162,7 +167,7 @@
                 || null != $route.params.ppsEventId
                 || editedActivity.linked"
           dense
-          :disabled="editedActivity.createdById !== userId && !addActivity"
+          :disabled="editedActivity.createdById !== currentUserId && !addActivity"
           v-model="editedActivity.linked"
           @change="linkEditedActivity"
           :label="getLinkLabel()"
@@ -636,6 +641,10 @@ export default {
   z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
+}
+
+.title-medium:last-of-type {
+  padding-top:16px;
 }
 
 .uncategorized {
