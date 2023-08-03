@@ -114,7 +114,7 @@ export default {
   },
   filters: {
     searchHighlight: function(value, query){
-      return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-1">${v}</span>`)
+      return value.replace(new RegExp(query, "ig"),(v) => `<span class="grey lighten-2">${v}</span>`)
     }
   },
   computed: {
