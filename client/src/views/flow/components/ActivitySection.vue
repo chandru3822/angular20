@@ -52,10 +52,11 @@
         />
       </div>
       <div v-if="!timelineView">
-        <div v-if="sortedFilteredActivities?.length === 0">No available notes or activities</div>
+        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
+        <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
           <span>{{ type.activityType }}</span>
-          <div class="pl-5" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
+          <div class="pt-4 body-large" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
           <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
             <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header px-0">
@@ -93,6 +94,7 @@
               </v-expansion-panel-content>
             </v-expansion-panel>
           </v-expansion-panels>
+        </div>
         </div>
       </div>
       <ActivityList v-else-if="!savingActivity"

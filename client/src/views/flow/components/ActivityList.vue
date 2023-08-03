@@ -1,6 +1,6 @@
 <template>
   <div>
-      <div v-if="activities?.length === 0">
+      <div v-if="activities?.length === 0" class="body-large">
         No available notes or activities
       </div>
       <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 pt-3 pb-2 elevation-0 card"
