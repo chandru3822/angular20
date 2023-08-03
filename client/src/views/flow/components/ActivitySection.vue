@@ -53,8 +53,8 @@
       </div>
       <div v-if="!timelineView">
         <div v-if="sortedFilteredActivities?.length === 0">No available notes or activities</div>
-        <div v-for="type in filteredTopics" class="title-medium">
-          {{ type.activityType }}
+        <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
+          <span>{{ type.activityType }}</span>
           <div class="pl-5" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
           <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
             <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
@@ -639,6 +639,10 @@ export default {
   z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
+}
+
+.title-medium:last-of-type {
+  padding-top:16px;
 }
 
 .uncategorized {
