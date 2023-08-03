@@ -130,21 +130,16 @@
                       autofocus
                       rows="2"
                       outlined
-                      :disabled="editedActivity.createdById !== currentUserId && !userIsAdmin && !addActivity"
+                      :disabled="editedActivity.createdById !== currentUserId && !addActivity"
                       v-model="editedActivity.note">
           </v-textarea>
 
           <template #no-result>
-            <div class="dim">
               No result
-            </div>
           </template>
-
           <template #item-@="{ item }">
             <div class="user">
-                <span class="dim">
                   ({{ item.value }})
-                </span>
             </div>
           </template>
         </Mentionable>
@@ -167,7 +162,7 @@
                 || null != $route.params.ppsEventId
                 || editedActivity.linked"
           dense
-          :disabled="editedActivity.createdById !== userId && !userIsAdmin && !addActivity"
+          :disabled="editedActivity.createdById !== userId && !addActivity"
           v-model="editedActivity.linked"
           @change="linkEditedActivity"
           :label="getLinkLabel()"
@@ -538,6 +533,7 @@ export default {
         this.addActivity = false
         this.editedActivity = {}
         this.savingActivity = false
+        this.$emit('scrollToTop')
         this.snackbar = getSnackbar('SUCCESS', 'Note Added')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } catch (e) {
@@ -649,14 +645,14 @@ export default {
 .primary-lighten-9-bkgrd {
   background-color: var(--v-primary-lighten9);
 }
-
-.dim:hover {
-  color: var(--v-primary-base);
-  font-weight: bold;
-}
-
 .filterCheckbox:hover {
   background-color: var(--v-grey-lighten4) !important;
 }
 
+</style>
+<style lang="scss">
+.mention-selected {
+  color: var(--v-primary-base);
+  font-weight: bold;
+}
 </style>
