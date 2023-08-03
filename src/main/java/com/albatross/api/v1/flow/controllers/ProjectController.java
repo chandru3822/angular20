@@ -1,5 +1,7 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.company.blueraven.models.MarketoProject;
+import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.DensitySearch;
 import com.albatross.api.v1.flow.model.Owner;
@@ -23,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -32,6 +35,7 @@ public class ProjectController {
 
   private final ProjectService projectService;
   private final MessagingService messagingService;
+  private final MarketoService marketoService;
 
   @GetMapping
   public ResponseEntity<List<Project>> getProjectsForProcess(@PathVariable Long processId) {
@@ -220,6 +224,20 @@ public class ProjectController {
     String report = projectService.generateReport(query);
     return new ResponseEntity<>(
       report, (report == null) ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectId}/pushToMarketo")
+  public ResponseEntity<Void> pushProjectToMarketo(@PathVariable Long projectId) {
+    MarketoProject project = marketoService.getProject(projectId);
+
+    if (project == null) {
+      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    Map<String, Object> lead = marketoService.projectToLead(project);
+    marketoService.pushData(List.of(lead));
+
+    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Data
