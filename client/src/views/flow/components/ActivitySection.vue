@@ -43,6 +43,7 @@
                       :project-id="projectId"
                       :contact-id="contactId"
                       :user-id="userId"
+                      :current-user-id="currentUserId"
                       :org-id="orgId"
                       :section-type="sectionType"
                       :edit-callback="setEditedActivity"
@@ -80,6 +81,7 @@
                               :project-id="projectId"
                               :contact-id="contactId"
                               :user-id="userId"
+                              :current-user-id="currentUserId"
                               :org-id="orgId"
                               :section-type="sectionType"
                               :edit-callback="setEditedActivity"
@@ -98,6 +100,7 @@
                     :project-id="projectId"
                     :contact-id="contactId"
                     :user-id="userId"
+                    :current-user-id="currentUserId"
                     :org-id="orgId"
                     :section-type="sectionType"
                     :edit-callback="setEditedActivity"
@@ -162,7 +165,7 @@
                 || null != $route.params.ppsEventId
                 || editedActivity.linked"
           dense
-          :disabled="editedActivity.createdById !== userId && !addActivity"
+          :disabled="editedActivity.createdById !== currentUserId && !addActivity"
           v-model="editedActivity.linked"
           @change="linkEditedActivity"
           :label="getLinkLabel()"

@@ -38,10 +38,10 @@
                   </v-list-item-content>
                 </v-list-item>
                 <v-list-item v-if="a.activityTypeId !== 1"
-                             :disabled="a.createdById !== userId"
+                             :disabled="a.createdById !== currentUserId"
                              @click="activityToDelete = a">
                   <v-list-item-content>
-                    <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== userId}">Delete</v-list-item-title>
+                    <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== currentUserId}">Delete</v-list-item-title>
                   </v-list-item-content>
                 </v-list-item>
               </v-list>
@@ -92,6 +92,7 @@ export default {
     contactId: Number,
     orgId: Number,
     userId: Number,
+    currentUserId: Number,
     projectId: Number,
     sectionType: String,
     editCallback: Function,
