@@ -58,7 +58,7 @@
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
           <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
           <div class="pt-4 body-large" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
-          <v-expansion-panels v-else v-model="topicsOpened" accordion multiple flat class=".rounded-0"><!--Topic # header-->
+          <v-expansion-panels v-else accordion multiple flat class=".rounded-0"><!--Topic # header-->
             <v-expansion-panel v-for="h in orderBy(searchfilteredActivityTypeHashtags(type.activityTypeHashtags), 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header px-0">
                 <template v-slot:default="{ open }">
