@@ -22,6 +22,12 @@ export const FEAT_DB_TABS = [
     path: '/database/hoa',
     pathMatches: ['/hoa'],
     display: true
+  },
+  {
+    label: 'Suppliers',
+    path: '/database/supplier',
+    pathMatches: ['/supplier'],
+    display: true
   }
 ]
 

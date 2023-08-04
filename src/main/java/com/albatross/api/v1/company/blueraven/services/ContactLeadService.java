@@ -52,13 +52,20 @@ public class ContactLeadService {
     params.put("email", cl.getEmail());
     params.put("companyId", 3);
     params.put("createdById", currentUser.trueUserId());
-    UserPosition userPrimaryPosition =
+
+    if (cl.getOwnerUserPositionId() != null) {
+      params.put("ownerUserPositionId", cl.getOwnerUserPositionId());
+    }
+    else {
+      UserPosition userPrimaryPosition =
         userPositionService.getUserPrimaryPosition(currentUser.getId(), 3L);
-    params.put(
+      params.put(
         "ownerUserPositionId",
         null == userPrimaryPosition || null == userPrimaryPosition.getId()
-            ? null
-            : userPrimaryPosition.getId());
+          ? null
+          : userPrimaryPosition.getId());
+    }
+
     params.put("contactTypeId", ContactType.LEAD.id);
 
     try {

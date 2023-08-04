@@ -52,11 +52,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URI;
 import java.text.NumberFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.util.function.Predicate.not;
 
 @Slf4j
 @Service
@@ -184,7 +183,10 @@ public class BlueravenProposalService {
                         .filter(cfv -> cfv.getCustomFieldId() != null)
                         .forEach(cfv -> {
                             if (cfv.getHasListValues()) {
-                                List<Long> filteredIds = proposalVersionService.getProposalValuesByFieldId(proposal.getProposalVersionId(), cfv.getCustomFieldId());
+                                List<Long> filteredIds = proposalVersionService.getProposalValuesByFieldId(proposal.getProposalVersionId(), cfv.getCustomFieldId())
+                                  .stream()
+                                  .filter(not(Objects::isNull))
+                                  .toList();
                                 // only filter if we get some results back... otherwise, we are assuming not filtering is required
                                 if (!filteredIds.isEmpty()) {
                                     List<ListOfValue> listOfValues = cfv.getListOfValues().stream().filter(v -> filteredIds.contains(v.getId())).toList();

@@ -595,6 +595,11 @@
         <v-card id="funnel-drilldown">
           <v-card-title class="mb-1">
             <span id="funnel-drilldown-title">{{ funnelDrilldownTitle }}</span>
+            <v-spacer></v-spacer>
+            <v-btn color="primary" class="mr-4 mb-2"
+                   @click="exportDrilldownCsv()">
+              Export
+            </v-btn>
             <a class="close-modal-x pb-3" title="Close" @click="closeFunnelDrilldownDialog">×</a>
           </v-card-title>
           <v-divider></v-divider>
@@ -663,64 +668,64 @@
                   <td :class="item.financier_class">{{ item.financier || '' }}</td>
                   <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                   <td>{{ item.cancelled_date | formatDate('date', 'MM/DD/YYYY') }}</td>
-                  <td v-if="funnelDrilldownHeaders[13].show">
+                  <td v-if="funnelDrilldownHeaders[14].show">
                     {{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}
                   </td>
-                  <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[14].show">
+                  <td :class="item.appointment_outcome_class" v-if="funnelDrilldownHeaders[15].show">
                     {{ item.appointment_outcome || '' }}
                   </td>
-                  <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[15].show">
+                  <td :class="item.credit_decision_date_class" v-if="funnelDrilldownHeaders[16].show">
                     {{ item.credit_decision_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
-                  <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[16].show">
+                  <td :class="item.credit_check_class" v-if="funnelDrilldownHeaders[17].show">
                     {{ item.credit_check || '' }}
                   </td>
                   <td :class="item.installation_agreement_signed_date_class"
-                      v-if="funnelDrilldownHeaders[17].show">
+                      v-if="funnelDrilldownHeaders[18].show">
                     {{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.site_survey_verified_date_class"
-                      v-if="funnelDrilldownHeaders[18].show">
+                      v-if="funnelDrilldownHeaders[19].show">
                     {{ item.site_survey_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.site_survey_completed_date_class"
-                      v-if="funnelDrilldownHeaders[19].show">
+                      v-if="funnelDrilldownHeaders[20].show">
                     {{ item.site_survey_completed_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.final_design_sent_to_homeowner_date_class"
-                      v-if="funnelDrilldownHeaders[20].show">
+                      v-if="funnelDrilldownHeaders[21].show">
                     {{ item.final_design_sent_to_homeowner_date | formatDate('timestamp', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.final_design_signed_date_class"
-                      v-if="funnelDrilldownHeaders[21].show">
+                      v-if="funnelDrilldownHeaders[22].show">
                     {{ item.final_design_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.proof_of_homeowners_insurance_obtained_date_class"
-                      v-if="funnelDrilldownHeaders[22].show">
+                      v-if="funnelDrilldownHeaders[23].show">
                     {{ item.proof_of_homeowners_insurance_obtained_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.utility_bill_verified_date_class"
-                      v-if="funnelDrilldownHeaders[23].show">
+                      v-if="funnelDrilldownHeaders[24].show">
                     {{ item.utility_bill_verified_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.financial_agreement_signed_date_class"
-                      v-if="funnelDrilldownHeaders[24].show">
+                      v-if="funnelDrilldownHeaders[25].show">
                     {{ item.financial_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.cash_down_payment_class"
-                      v-if="funnelDrilldownHeaders[25].show">
+                      v-if="funnelDrilldownHeaders[26].show">
                     {{ item.cash_down_payment | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.final_design_complete_date_class"
-                      v-if="funnelDrilldownHeaders[26].show">
+                      v-if="funnelDrilldownHeaders[27].show">
                     {{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.substantial_completion_date_class"
-                      v-if="funnelDrilldownHeaders[27].show">
+                      v-if="funnelDrilldownHeaders[28].show">
                     {{ item.substantial_completion_date | formatDate('date', 'MM/DD/YYYY') }}
                   </td>
                   <td :class="item.checked_in_time_date_class"
-                      v-if="funnelDrilldownHeaders[28].show">
+                      v-if="funnelDrilldownHeaders[29].show">
                     {{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}
                   </td>
                 </tr>
@@ -774,6 +779,7 @@ import constants from '@/helpers/constants'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import SpinnerInline from '@/components/SpinnerInline'
+import { saveAs } from 'file-saver'
 import {
   getCloserAreas,
   getCloserRegions,
@@ -918,75 +924,75 @@ export default {
       {text: '', value: '', show: true, sortable: false, width: 25, optional: false}, // 0
       {text: 'Owner', value: 'owner_name', show: true, width: 90, optional: false}, // 1
       {text: 'Office', value: 'office', show: true, width: 75, optional: false}, // 2
-      {text: 'State', value: 'state', show: true, width: 75, optional: false}, // 3 -- new
-      {text: 'Metro', value: 'metro_area', show: true, width: 75, optional: false}, // 3 -- new
-      {text: 'Status', value: 'status_type', show: true, width: 75, optional: false}, // 4 -- new
-      {text: 'Name', value: 'customer_name', show: true, width: 90, optional: false}, // 5
-      {text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false}, // 6
-      {text: 'Event ID', value: 'project_process_step_event_id', show: this.selectedFunnel.funnel_type_id === 1, width: 85, optional: false}, // 7
-      {text: 'Source', value: 'source_name', show: true, width: 85, optional: false}, // 8
-      {text: 'System Size', value: 'system_size', show: true, width: 110, optional: false}, // 9
-      {text: 'Financier', value: 'financier', show: true, width: 95, optional: false}, // 10
-      {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false}, // 11
-      {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false}, // 12
-      {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true}, // 13
-      {text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true}, // 14
-      {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true}, // 15
-      {text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true}, // 16
+      {text: 'State', value: 'state', show: true, width: 75, optional: false}, // 3
+      {text: 'Metro', value: 'metro_area', show: true, width: 75, optional: false}, // 4
+      {text: 'Status', value: 'status_type', show: true, width: 75, optional: false}, // 5
+      {text: 'Name', value: 'customer_name', show: true, width: 90, optional: false}, // 6
+      {text: 'Project ID', value: 'project_id', show: true, width: 85, optional: false}, // 7
+      {text: 'Event ID', value: 'project_process_step_event_id', show: this.selectedFunnel.funnel_type_id === 1, width: 85, optional: false}, // 8
+      {text: 'Source', value: 'source_name', show: true, width: 85, optional: false}, // 9
+      {text: 'System Size', value: 'system_size', show: true, width: 110, optional: false}, // 10
+      {text: 'Financier', value: 'financier', show: true, width: 95, optional: false}, // 11
+      {text: 'Appointment Date', value: 'appointment_date', show: true, width: 145, optional: false, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 12
+      {text: 'Cancelled Date', value: 'cancelled_date', show: true, width: 130, optional: false, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 13
+      {text: 'Date Created', value: 'date_created', show: false, width: 115, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 14
+      {text: 'Appointment Outcome', value: 'appointment_outcome', show: false, width: 170, optional: true}, // 15
+      {text: 'Credit Decision Date', value: 'credit_decision_date', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 16
+      {text: 'Credit Check', value: 'credit_check', show: false, width: 115, optional: true}, // 17
       {
         text: 'Installation Agreement Signed Date',
         value: 'installation_agreement_signed_date',
         show: false,
         width: 235,
-        optional: true
-      }, // 17
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
+      }, // 18
       {
         text: 'Site Survey Verified Date',
         value: 'site_survey_verified_date',
         show: false,
         width: 160,
-        optional: true
-      }, // 18
-      {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true}, // 19
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
+      }, // 19
+      {text: 'Site Survey Date', value: 'site_survey_completed_date', show: false, width: 155, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'}, // 20
       {
         text: 'FD Sent to Homeowner Date',
         value: 'final_design_sent_to_homeowner_date',
         show: false,
         width: 200,
-        optional: true
-      }, // 20
-      {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true}, // 21
+        optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY'
+      }, // 21
+      {text: 'Final Design Approved', value: 'final_design_signed_date', show: false, width: 165, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 22
       {
         text: 'Proof of HOI Obtained Date',
         value: 'proof_of_homeowners_insurance_obtained_date',
         show: false,
         width: 200,
-        optional: true
-      }, // 22
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
+      }, // 23
       {
         text: 'Utility Bill Verified Date',
         value: 'utility_bill_verified_date',
         show: false,
         width: 175,
-        optional: true
-      }, // 23
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
+      }, // 24
       {
         text: 'Financial Agreement Signed',
         value: 'financial_agreement_signed_date',
         show: false,
         width: 195,
-        optional: true
-      }, // 24
-      {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true}, // 25
-      {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true}, // 26
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
+      }, // 25
+      {text: 'Cash Down Payment', value: 'cash_down_payment', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 26
+      {text: 'Final Design Completed', value: 'final_design_complete_date', show: false, width: 160, optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'}, // 27
       {
         text: 'Substantial Completion Date',
         value: 'substantial_completion_date',
         show: false,
         width: 175,
-        optional: true
-      }, // 27
-      {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true}, // 28
+        optional: true, dateType: 'date', dateFormat: 'MM/DD/YYYY'
+      }, // 28
+      {text: 'Checked In Time', value: 'checked_in_time', show: false, width: 160, optional: true, dateType: 'timestamp', dateFormat: 'MM/DD/YYYY h:mm a'}, // 29
     ]},
     windowInnerWidth() {
       return window.innerWidth
@@ -1131,6 +1137,34 @@ export default {
     }
   },
   methods: {
+    exportDrilldownCsv() {
+      let csv = ''
+
+      this.visibleFunnelDrilldownHeaders().forEach(h => {
+        if(h.text !== '') {
+          return csv += `${h.text},`
+        }
+      })
+      csv += `\n`
+
+      this.funnelDrilldownData.forEach(o => {
+
+        this.visibleFunnelDrilldownHeaders().forEach(h => {
+          if(h.text !== '') {
+            if(h.dateType !== null && h.dateType !== undefined) {
+              //if it is a date it needs to be formatted here
+              csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : this.$filters.formatDate(o[h.value], h.dateType, h.dateFormat)}`+'",'
+            } else {
+              csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}`+'",'
+            }
+          }
+        })
+        csv += `\n`
+      })
+
+      const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+      saveAs(blob, `${this.funnelDrilldownTitle}.csv`)
+    },
     visibleFunnelDrilldownHeaders() {
       return this.funnelDrilldownHeaders.filter(header => header.show === true)
     },
@@ -1838,7 +1872,7 @@ export default {
         case 13: // Self-gen appointments created
         case 10: // Total Appointments Created
         case 26: // Missing source
-          this.funnelDrilldownHeaders[12].show = true // date_created
+          this.funnelDrilldownHeaders[14].show = true // date_created
           break
 
         // Appointments to FDC Pipeline
@@ -1856,41 +1890,41 @@ export default {
         case 23: // Yet to occur
         case 11: // Pitched
           // this.funnelDrilldownHeaders[14].show = true // appointment_outcome
-          this.funnelDrilldownHeaders[14].show = true // appointment_outcome
-          this.funnelDrilldownHeaders[28].show = isCheckedInColumn // check_in_time
+          this.funnelDrilldownHeaders[15].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[29].show = isCheckedInColumn // check_in_time
           break
         case 9: // Credits run
-          this.funnelDrilldownHeaders[14].show = true // appointment_outcome
-          this.funnelDrilldownHeaders[15].show = true // credit_decision_date
+          this.funnelDrilldownHeaders[15].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[16].show = true // credit_decision_date
           break
         case 3: // Credits passed
-          this.funnelDrilldownHeaders[14].show = true // appointment_outcome
-          this.funnelDrilldownHeaders[15].show = true // credit_decision_date
-          this.funnelDrilldownHeaders[16].show = true // credit_check
+          this.funnelDrilldownHeaders[15].show = true // appointment_outcome
+          this.funnelDrilldownHeaders[16].show = true // credit_decision_date
+          this.funnelDrilldownHeaders[17].show = true // credit_check
           break
         case 4: // Bookings Complete
-          this.funnelDrilldownHeaders[17].show = true // installation_agreement_signed_date
-          this.funnelDrilldownHeaders[19].show = true // site_survey_completed_date
+          this.funnelDrilldownHeaders[18].show = true // installation_agreement_signed_date
+          this.funnelDrilldownHeaders[20].show = true // site_survey_completed_date
           break
         case 5: // Site Surveys Verified
-          this.funnelDrilldownHeaders[18].show = true // site_survey_verified_date
+          this.funnelDrilldownHeaders[19].show = true // site_survey_verified_date
           break
         case 6: // Final Designs sent to Homeowner
-          this.funnelDrilldownHeaders[20].show = true // final_design_sent_to_homeowner_date
-          this.funnelDrilldownHeaders[21].show = true // final_design_signed_date
+          this.funnelDrilldownHeaders[21].show = true // final_design_sent_to_homeowner_date
+          this.funnelDrilldownHeaders[22].show = true // final_design_signed_date
           break
         case 7: // Final Designs Approved
-          this.funnelDrilldownHeaders[21].show = true // final_design_signed_date
-          this.funnelDrilldownHeaders[24].show = true // financial_agreement_signed_date
-          this.funnelDrilldownHeaders[22].show = true // proof_of_homeowners_insurance_obtained_date
-          this.funnelDrilldownHeaders[25].show = true // cash_down_payment
-          this.funnelDrilldownHeaders[23].show = true // utility_bill_verified_date
+          this.funnelDrilldownHeaders[22].show = true // final_design_signed_date
+          this.funnelDrilldownHeaders[25].show = true // financial_agreement_signed_date
+          this.funnelDrilldownHeaders[23].show = true // proof_of_homeowners_insurance_obtained_date
+          this.funnelDrilldownHeaders[26].show = true // cash_down_payment
+          this.funnelDrilldownHeaders[24].show = true // utility_bill_verified_date
           break
         case 21: // Final Designs Completed
-          this.funnelDrilldownHeaders[26].show = true // final_design_complete_date
+          this.funnelDrilldownHeaders[27].show = true // final_design_complete_date
           break
         case 8: // Installations Completed
-          this.funnelDrilldownHeaders[27].show = true // substantial_completion_date
+          this.funnelDrilldownHeaders[28].show = true // substantial_completion_date
           break
       }
 

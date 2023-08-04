@@ -491,6 +491,5 @@ public class InstallAgreementService {
   public static class ProposalInfo {
     private Long proposalNbr;
     private String loanType;
-    private Boolean sunpowerUrlExists;
   }
 }

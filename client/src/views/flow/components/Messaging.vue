@@ -80,7 +80,10 @@ export default {
   name: 'Messaging',
   created() {
     if (this.projectId) {
-      this.fetchContact()
+      this.fetchProjectData()
+    }
+    else if (this.userId) {
+      this.fetchUserData()
     }
     this.fetchSmsData()
   },
@@ -150,22 +153,11 @@ export default {
     // whenever userImage changes, this function will run
     '$route.params.projectId': async function() {
       this.projectId = parseInt(this.$route.params.projectId) | null
-      await this.fetchContact()
-      await this.fetchSmsData()
-      this.templateTeams = []
-      for (let team of this.$parent.$data.teamsAssociatedToUser){
-        this.templateTeams.push(team.id);
-      }
-      await this.getTemplates()
+      await this.fetchProjectData()
     },
     '$route.params.userId': async function() {
       this.userId = parseInt(this.$route.params.userId) | null
-      await this.fetchSmsData()
-      this.templateTeams = []
-      for (let team of this.$parent.$data.teamsAssociatedToUser){
-        this.templateTeams.push(team.id);
-      }
-      await this.getTemplates()
+      await this.fetchUserData()
     },
     '$parent.$data.teamsAssociatedToUser': async function() {
       this.templateTeams = []
@@ -385,6 +377,23 @@ export default {
         this.templateTeams = []
       }
       this.showTemplateDialog = false
+    },
+    async fetchProjectData() {
+      await this.fetchContact()
+      await this.fetchSmsData()
+      this.templateTeams = []
+      for (let team of this.$parent.$data.teamsAssociatedToUser){
+        this.templateTeams.push(team.id);
+      }
+      await this.getTemplates()
+    },
+    async fetchUserData() {
+      await this.fetchSmsData()
+      this.templateTeams = []
+      for (let team of this.$parent.$data.teamsAssociatedToUser){
+        this.templateTeams.push(team.id);
+      }
+      await this.getTemplates()
     }
   }
 }
