@@ -97,9 +97,6 @@ declare
   v_twenty_five_year_savings_low_payment_115_offset    numeric;
   v_federal_tax_incentive_rate                         numeric;
   v_federal_unit_type_id                               bigint;
-  v_federal_tax_incentive_amount_100                   numeric;
-  v_federal_tax_incentive_amount_85                    numeric;
-  v_federal_tax_incentive_amount_115                   numeric;
   v_federal_tax_incentive_amount_100_cash              numeric;
   v_federal_tax_incentive_amount_85_cash               numeric;
   v_federal_tax_incentive_amount_115_cash              numeric;
@@ -131,6 +128,7 @@ BEGIN
                                                               and proposal_version_id <= pcpv.proposal_version_id)
                           order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
        grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
+                                                  'object_code', object_code,
                                                   'fields',
                                                   array_to_json(array_agg(jsonb_strip_nulls(
                                                       jsonb_build_object('fieldId', vv.field_id,
@@ -139,7 +137,7 @@ BEGIN
                                  ) as row
                         from version_values vv
                                inner join brs.custom_field cf on cf.id = vv.field_id
-                        group by proposal_group_uuid)
+                        group by proposal_group_uuid,object_code)
   select row ->> 'object_code' as object_code, *
   from grouped_rows;
 
@@ -191,7 +189,7 @@ BEGIN
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric    as federal_tax_incentive_rate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::numeric as federal_unit_type_id
-  into v_federal_tax_incentive_rate,v_federal_unit_type_id
+   into v_federal_tax_incentive_rate,v_federal_unit_type_id
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
@@ -199,22 +197,10 @@ BEGIN
     "intValue": 453
   }'));
 
+  raise notice 'v_cash_price_for_100_percent_offset %',v_cash_price_for_100_percent_offset;
+  raise notice 'v_federal_tax_incentive_rate %',v_federal_tax_incentive_rate;
+  raise notice 'v_federal_tax_incentive_amount_100_cash %',v_federal_tax_incentive_amount_100_cash;
 
-  if v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
-    v_federal_tax_incentive_amount_100 = v_federal_tax_incentive_rate * v_system_size_kw_100_percent_offset * 1000;
-    v_federal_tax_incentive_amount_85 = v_federal_tax_incentive_rate * v_system_size_kw_85_percent_offset * 1000;
-    v_federal_tax_incentive_amount_115 = v_federal_tax_incentive_rate * v_system_size_kw_115_percent_offset * 1000;
-  elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 then
-    v_federal_tax_incentive_amount_100_cash = v_cash_price_for_100_percent_offset * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_85_cash = v_cash_price_for_85_percent_offset * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_115_cash = v_cash_price_for_115_percent_offset * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_100_low_dealer_fee = v_month_pmt_100_offset_low_dealer_fee * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_85_low_dealer_fee = v_month_pmt_85_offset_low_dealer_fee * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_115_low_dealer_fee = v_month_pmt_115_offset_low_dealer_fee * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_100_low_mon_pay = v_total_system_cost_100_offset_low_month_pmt * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_85_low_mon_pay = v_total_system_cost_85_offset_low_month_pmt * v_federal_tax_incentive_rate;
-    v_federal_tax_incentive_amount_115_low_mon_pay = v_total_system_cost_115_offset_low_month_pmt * v_federal_tax_incentive_rate;
-  end if;
 
   v_monthly_usage_kwh = p_average_monthly_bill / v_utility_rate_kwh;
   v_annual_usage_kwh = v_monthly_usage_kwh * 12;
@@ -285,104 +271,107 @@ BEGIN
     v_annual_usage_kwh,
     25);
 
-  v_monthly_cash_payment = v_cash_price_for_100_percent_offset / 12 / 25;
-  raise notice 'v_monthly_cash_payment 100 offset %',v_monthly_cash_payment;
+
+  v_federal_tax_incentive_amount_100_cash = v_cash_price_for_100_percent_offset * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_85_cash = v_cash_price_for_85_percent_offset * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_115_cash = v_cash_price_for_115_percent_offset * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_100_low_dealer_fee =
+      v_total_system_cost_100_offset_low_dealer_fee * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_85_low_dealer_fee =
+      v_total_system_cost_85_offset_low_dealer_fee * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_115_low_dealer_fee =
+      v_total_system_cost_115_offset_low_dealer_fee * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_100_low_mon_pay =
+      v_total_system_cost_100_offset_low_month_pmt * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_85_low_mon_pay =
+      v_total_system_cost_85_offset_low_month_pmt * v_federal_tax_incentive_rate;
+  v_federal_tax_incentive_amount_115_low_mon_pay =
+      v_total_system_cost_115_offset_low_month_pmt * v_federal_tax_incentive_rate;
+  raise notice 'v_total_cost_25_years %',v_total_cost_25_years;
+  raise notice 'v_remaining_mon_electric_bill_25_year_average_100 %',v_remaining_mon_electric_bill_25_year_average_100;
+  raise notice 'v_cash_price_for_100_percent_offset %',v_cash_price_for_100_percent_offset;
+  raise notice 'v_federal_tax_incentive_amount_100_cash %',v_federal_tax_incentive_amount_100_cash;
+
 
   v_twenty_five_year_savings_cash_100_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_100 +
-                               ((v_monthly_cash_payment * 12 * 25) / 300) * 300);
-
-  v_monthly_cash_payment = 0.00::numeric;
-
-
-  v_monthly_cash_payment = v_cash_price_for_85_percent_offset / 12 / 25;
-  raise notice 'v_monthly_cash_payment 85 offset %',v_monthly_cash_payment;
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_100 * 12 *25) +
+                               v_cash_price_for_100_percent_offset) + v_federal_tax_incentive_amount_100_cash;
 
   v_twenty_five_year_savings_cash_85_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_85 +
-                               ((v_monthly_cash_payment * 12 * 25) / 300) * 300);
-
-  v_monthly_cash_payment = 0.00::numeric;
-
-
-  v_monthly_cash_payment = v_cash_price_for_115_percent_offset / 12 / 25;
-  raise notice 'v_monthly_cash_payment 115 offset %',v_monthly_cash_payment;
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_85  * 12 *25) +
+                               v_cash_price_for_85_percent_offset) + v_federal_tax_incentive_amount_85_cash;
 
   v_twenty_five_year_savings_cash_115_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_115 +
-                               ((v_monthly_cash_payment * 12 * 25) / 300) * 300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_115 * 12 * 25) +
+                               v_cash_price_for_115_percent_offset) + v_federal_tax_incentive_amount_115_cash;
 
   v_twenty_five_year_savings_low_dealer_fee_100_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_100 +
-                               ((v_month_pmt_100_offset_low_dealer_fee * 12 * v_term_low_dealer_fee_option) / 300) *
-                               300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_100 * 12 * 25) +
+                               v_total_system_cost_100_offset_low_dealer_fee ) + v_federal_tax_incentive_amount_100_low_dealer_fee;
 
   v_twenty_five_year_savings_low_dealer_fee_85_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_85 +
-                               ((v_month_pmt_85_offset_low_month_pmt * 12 * v_term_low_dealer_fee_option) / 300) * 300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_85 * 12 * 25) +
+                               v_total_system_cost_85_offset_low_dealer_fee) + v_federal_tax_incentive_amount_85_low_dealer_fee;
 
   v_twenty_five_year_savings_low_dealer_fee_115_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_115 +
-                               ((v_month_pmt_115_offset_low_dealer_fee * 12 * v_term_low_dealer_fee_option) / 300) *
-                               300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_115 * 12 * 25) +
+                               v_total_system_cost_115_offset_low_dealer_fee ) + v_federal_tax_incentive_amount_115_low_dealer_fee;
 
   v_twenty_five_year_savings_low_payment_100_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_100 +
-                               ((v_month_pmt_100_offset_low_month_pmt * 12 * v_term_low_monthly_option) / 300) *
-                               300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_100  * 12 * 25) +
+                               v_total_system_cost_100_offset_low_month_pmt) + v_federal_tax_incentive_amount_100_low_mon_pay;
 
   v_twenty_five_year_savings_low_payment_85_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_85 +
-                               ((v_month_pmt_85_offset_low_month_pmt * 12 * v_term_low_monthly_option) / 300) * 300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_85 * 12 * 25) +
+                               v_total_system_cost_85_offset_low_month_pmt) + v_federal_tax_incentive_amount_85_low_mon_pay;
 
   v_twenty_five_year_savings_low_payment_115_offset =
-      v_total_cost_25_years - (v_remaining_mon_electric_bill_25_year_average_115 +
-                               ((v_month_pmt_115_offset_low_month_pmt * 12 * v_term_low_monthly_option) / 300) *
-                               300);
+      v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_115 * 12 * 25) +
+                               v_total_system_cost_115_offset_low_month_pmt ) + v_federal_tax_incentive_amount_115_low_mon_pay;
 
 
   return query
     select v_average_production_factor,
            v_utility_rate_kwh,
-           round(v_monthly_usage_kwh, 2),
-           round(v_annual_usage_kwh, 2),
-           round(v_system_size_kw_100_percent_offset, 2),
-           round(v_system_size_kw_85_percent_offset, 2),
-           round(v_system_size_kw_115_percent_offset, 2),
-           round(v_cash_price_for_100_percent_offset, 2),
-           round(v_cash_price_for_85_percent_offset, 2),
-           round(v_cash_price_for_115_percent_offset, 2),
+           round(v_monthly_usage_kwh),
+           round(v_annual_usage_kwh),
+           round(v_system_size_kw_100_percent_offset),
+           round(v_system_size_kw_85_percent_offset),
+           round(v_system_size_kw_115_percent_offset),
+           round(v_cash_price_for_100_percent_offset),
+           round(v_cash_price_for_85_percent_offset),
+           round(v_cash_price_for_115_percent_offset),
            v_init_pmt_factor_10_year_low_dealer_fee,
            v_init_pmt_factor_25_year_low_payment,
            v_dealer_fee_10_year_low_dealer_fee,
            v_dealer_fee_25_year_low_payment,
-           round(v_month_pmt_100_offset_low_dealer_fee, 2),
-           round(v_month_pmt_85_offset_low_dealer_fee, 2),
-           round(v_month_pmt_115_offset_low_dealer_fee, 2),
-           round(v_total_system_cost_100_offset_low_dealer_fee, 2),
-           round(v_total_system_cost_85_offset_low_dealer_fee, 2),
-           round(v_total_system_cost_115_offset_low_dealer_fee, 2),
-           round(v_month_pmt_100_offset_low_month_pmt, 2),
-           round(v_month_pmt_85_offset_low_month_pmt, 2),
-           round(v_month_pmt_115_offset_low_month_pmt, 2),
-           round(v_total_system_cost_100_offset_low_month_pmt, 2),
-           round(v_total_system_cost_85_offset_low_month_pmt, 2),
-           round(v_total_system_cost_115_offset_low_month_pmt, 2),
+           round(v_month_pmt_100_offset_low_dealer_fee),
+           round(v_month_pmt_85_offset_low_dealer_fee),
+           round(v_month_pmt_115_offset_low_dealer_fee),
+           round(v_total_system_cost_100_offset_low_dealer_fee),
+           round(v_total_system_cost_85_offset_low_dealer_fee),
+           round(v_total_system_cost_115_offset_low_dealer_fee),
+           round(v_month_pmt_100_offset_low_month_pmt),
+           round(v_month_pmt_85_offset_low_month_pmt),
+           round(v_month_pmt_115_offset_low_month_pmt),
+           round(v_total_system_cost_100_offset_low_month_pmt),
+           round(v_total_system_cost_85_offset_low_month_pmt),
+           round(v_total_system_cost_115_offset_low_month_pmt),
            v_apr_low_dealer_fee_option,
            v_term_low_dealer_fee_option,
            v_apr_low_monthly_option,
            v_term_low_monthly_option,
            v_utility_cost_escalator,
-           round(v_twenty_five_year_savings_cash_100_offset, 2),
-           round(v_twenty_five_year_savings_cash_85_offset, 2),
-           round(v_twenty_five_year_savings_cash_115_offset, 2),
-           round(v_twenty_five_year_savings_low_dealer_fee_100_offset, 2),
-           round(v_twenty_five_year_savings_low_dealer_fee_85_offset, 2),
-           round(v_twenty_five_year_savings_low_dealer_fee_115_offset, 2),
-           round(v_twenty_five_year_savings_low_payment_100_offset, 2),
-           round(v_twenty_five_year_savings_low_payment_85_offset, 2),
-           round(v_twenty_five_year_savings_low_payment_115_offset, 2);
-
+           round(v_twenty_five_year_savings_cash_100_offset,2),
+           round(v_twenty_five_year_savings_cash_85_offset),
+           round(v_twenty_five_year_savings_cash_115_offset),
+           round(v_twenty_five_year_savings_low_dealer_fee_100_offset),
+           round(v_twenty_five_year_savings_low_dealer_fee_85_offset),
+           round(v_twenty_five_year_savings_low_dealer_fee_115_offset),
+           round(v_twenty_five_year_savings_low_payment_100_offset),
+           round(v_twenty_five_year_savings_low_payment_85_offset),
+           round(v_twenty_five_year_savings_low_payment_115_offset);
+drop table if exists proposal_value;
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE
