@@ -51,14 +51,15 @@
                       @reload="getActivities"
         />
       </div>
+<!--Topic View-->
       <div v-if="!timelineView">
         <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
         <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
-          <span>{{ type.activityType }}</span>
+          <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
           <div class="pt-4 body-large" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
-          <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
-            <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
+          <v-expansion-panels v-else v-model="topicsOpened" accordion multiple flat class=".rounded-0"><!--Topic # header-->
+            <v-expansion-panel v-for="h in orderBy(searchfilteredActivityTypeHashtags(type.activityTypeHashtags), 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header px-0">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
@@ -97,6 +98,7 @@
         </div>
         </div>
       </div>
+<!--Timeline View-->
       <ActivityList v-else-if="!savingActivity"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
@@ -366,6 +368,14 @@ export default {
     },
     countSortedFilteredActivities(activities){
       return this.sortAndFilterActivities(activities, this.sortDirection).length
+    },
+    searchfilteredActivityTypeHashtags(activityTypeHashtags){
+      // hide the topic header if there are no search result matches in it
+      return activityTypeHashtags.filter(h =>{
+        const activityCount = this.countSortedFilteredActivities(h.activities)
+        return activityCount > 0
+      })
+
     },
     countedCategoryLabel(activities, activityTypeId){
       const activityCount = this.countSortedFilteredActivities(activities)
