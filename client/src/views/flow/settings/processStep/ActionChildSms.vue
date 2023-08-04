@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-toolbar flat color="transparent">
-      <v-toolbar-title class="app-title">
+      <v-toolbar-title class="title-large">
         SMS Messages
       </v-toolbar-title>
       <v-spacer></v-spacer>
