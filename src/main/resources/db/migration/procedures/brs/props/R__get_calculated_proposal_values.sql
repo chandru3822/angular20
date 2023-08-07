@@ -1,5 +1,5 @@
 drop function if exists brs.get_calculated_proposal_values(bigint, boolean, bigint);
-drop type if exists brs.calculated_proposal_value;
+drop type if exists brs.calculated_proposal_value cascade;
 
 create type brs.calculated_proposal_value as
 (
@@ -62,8 +62,6 @@ create type brs.calculated_proposal_value as
   led_light_bulbs                                  bigint,
   smart_thermostat                                 bigint,
   total_ee_reduction                               numeric,
-  panel_warranty                                   bigint,
-  inverter_warranty                                bigint,
   down_payment_amount                              varchar,
   version_id                                       bigint,
   project_process_step_id                          bigint,
@@ -231,7 +229,7 @@ create type brs.excluded_proposal_value as
   site_survey_items                              text
 );
 
-CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values1(
+CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id bigint,
   p_insert_prop_log_history boolean default false,
   p_run_by_id bigint default 99999999
@@ -314,8 +312,6 @@ declare
   v_loan_term                                        numeric;
   v_total_ee_reduction                               numeric;
   v_assumed_payment_by_month_18                      numeric;
-  v_panel_warranty                                   bigint;
-  v_inverter_warranty                                bigint;
   v_inverter_efficiency                              numeric;
   v_initial_payment_factor                           numeric;
   v_col_springs_rebate                               numeric;
@@ -419,6 +415,16 @@ declare
   v_unit_type_id_smart_thermostat                    bigint;
   v_unit_type_id_led                                 bigint;
   v_misc_adders_array bigint[];
+  v_panel_unit_type_id   bigint;
+  v_panel_adder_amount numeric;
+  v_panel_states bigint[];
+  v_inverter_unit_type_id   bigint;
+  v_inverter_adder_amount numeric;
+  v_small_system_size_adder_amount numeric;
+  v_small_system_size_adder numeric;
+  v_small_system_size_unit_type_id bigint;
+  v_small_system_size_value numeric;
+
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -458,8 +464,7 @@ BEGIN
            when prop.revision_number = 0 then ''
            else ' (' || prop.revision_number::varchar || ')' end
            || ' - ' || prop.proposal_nbr || '.pdf' as display_name,
-         pcfv17.int_value,
-         pcfv18.int_array_value
+         pcfv17.int_value
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -493,8 +498,7 @@ BEGIN
     v_total_square_footage,
     v_proposal_nbr,
     v_display_name,
-    v_financial_product_id,
-    v_misc_adders_array
+    v_financial_product_id
   from brs.proposal prop
          inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
@@ -532,8 +536,6 @@ BEGIN
                                                              pcfv16.custom_field_group_assignment_id = 389
          left join brs.proposal_custom_field_value pcfv17 on prop.id = pcfv17.proposal_id and
                                                              pcfv17.custom_field_group_assignment_id = 155
-         left join brs.proposal_custom_field_value pcfv18 on prop.id = pcfv18.proposal_id and
-                                                             pcfv18.custom_field_group_assignment_id = 146
   where prop.id = p_proposal_id;
 
   select string_agg(lov.name, ',')
@@ -562,7 +564,8 @@ BEGIN
          lov1.name,
          ppscfv11.text_value,
          pd.unapproved_zip_code_adder,
-         ppscfv12.int_array_value
+         ppscfv12.int_array_value,
+         ppscfv13.int_array_value
   into
     v_estimated_annual_energy_consumption_kwh,
     v_first_year_production_estimate,
@@ -581,7 +584,8 @@ BEGIN
     v_inverter_brand,
     v_aurora_design_id,
     v_unapproved_zip_code_adder,
-    v_site_survey_time_adders
+    v_site_survey_time_adders,
+    v_misc_adders_array
   from flow.project_process_step pps
          inner join flow.project p on pps.project_id = p.id
          inner join flow.company_state cs on p.company_state_id = cs.id
@@ -627,6 +631,10 @@ BEGIN
                    on ppscfv12.project_process_step_id = pps.id and
                       ppscfv12.custom_field_group_assignment_id =
                       25023
+         left join flow.project_process_step_custom_field_value ppscfv13
+                   on ppscfv13.project_process_step_id = pps.id and
+                      ppscfv13.custom_field_group_assignment_id =
+                      25981
   where pps.id = v_project_process_step_id;
 
   create temp table proposal_value as (with version_values
@@ -684,6 +692,26 @@ BEGIN
   raise notice 'v_trenching_cost = % ',v_trenching_cost;
   raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
 
+  v_small_system_size_adder_amount = 0.00::numeric;
+
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as small_system_size_adder,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 132)') ->> 'value')::numeric as small_system_size_value,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as small_system_size_unit_type_id
+  into v_small_system_size_adder,v_small_system_size_value,v_small_system_size_unit_type_id
+  from proposal_value pv
+  where object_code = 'PROPOSAL_SMALL_SYSTEM_ADDERS';
+
+
+  if v_system_size < v_small_system_size_value then
+    select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_SMALL_SYSTEM_ADDERS',
+                                       v_small_system_size_adder::numeric, v_small_system_size_unit_type_id::bigint,
+                                       0::numeric,
+                                       null,
+                                       null)
+    into v_small_system_size_adder_amount;
+  end if;
+
+  raise notice 'v_small_system_size_adder_amount = % ',v_small_system_size_adder_amount;
 
   with t as (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'value')            as adder_name,
                     (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
@@ -851,7 +879,7 @@ BEGIN
   raise notice 'v_cash_price_storage = %',v_cash_price_storage;
 
 
-  v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption; --TODO
+  v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
   v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used, 0);
   v_after_net_metering = v_sent_to_grid * v_net_metring_rate;
   v_adjusted_annual_production = coalesce(v_instantly_used, 0) + coalesce(v_after_net_metering, 0);
@@ -862,7 +890,6 @@ BEGIN
   raise notice 'v_sent_to_grid = % ',v_sent_to_grid;
   raise notice 'v_after_net_metering = % ',v_after_net_metering;
   raise notice 'v_adjusted_annual_production = % ',v_adjusted_annual_production;
-
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as smart_thermostat_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 145)') ->> 'value')::numeric   as energy_efficiency_reduction_thermostat,
@@ -879,11 +906,12 @@ BEGIN
   raise notice 'v_smart_thermostat_value = % ',v_smart_thermostat_value;
   raise notice 'v_energy_efficiency_reduction_thermostat = % ',v_energy_efficiency_reduction_thermostat;
 
---todo as judson
-  if v_unit_type_id_smart_thermostat = 460 then
-    v_smart_thermostat_value = v_smart_thermostat_value * v_system_size * 1000;
-  end if;
-
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_EQUIPMENT_ADDERS',
+                                     v_smart_thermostat_value::numeric, v_unit_type_id_smart_thermostat::bigint,
+                                     0::numeric,
+                                     null,
+                                     null)
+  into v_smart_thermostat_value;
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as led_light_bulbs_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 145)') ->> 'value')::numeric   as energy_efficiency_reduction_light_bulbs,
@@ -898,19 +926,22 @@ BEGIN
     "intValue": 537
   }');
 
-
-  --todo as judson
-  if v_unit_type_id_smart_thermostat = 460 then
-    v_led_light_bulbs_value = v_led_light_bulbs_value * v_system_size * 1000;
-  end if;
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_EQUIPMENT_ADDERS',
+                                     v_led_light_bulbs_value::numeric, v_unit_type_id_led::bigint,
+                                     0::numeric,
+                                     null,
+                                     null)
+  into v_led_light_bulbs_value;
 
   raise notice 'v_led_light_bulbs_value = % ',v_led_light_bulbs_value;
   raise notice 'v_energy_efficiency_reduction_light_bulbs = % ',v_energy_efficiency_reduction_light_bulbs;
 
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 136)') ->> 'value')::numeric as panel_degradation_factor,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_id,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_amount,
+         ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 341)') -> 'intArrayValue')))::bigint[] as states
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 143)') ->> 'value')::bigint  as panel_warranty,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 136)') ->> 'value')::numeric as panel_degradation_factor
-  into v_panel_warranty,v_panel_degradation_factor
+  into v_panel_degradation_factor,v_panel_unit_type_id,v_panel_adder_amount,v_panel_states
   from proposal_value pv
   where object_code = 'PROPOSAL_PANEL_DETAIL'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
@@ -919,26 +950,22 @@ BEGIN
                            jsonb_build_object('targetFieldId', 139, 'value', v_panel_watts)));
 
   raise notice 'v_panel_degradation_factor = %',v_panel_degradation_factor;
-  raise notice 'v_panel_warranty = % ',v_panel_warranty;
-  --TODO ask judson
+  raise notice 'v_panel_unit_type_id = %',v_panel_unit_type_id;
+  raise notice 'v_panel_adder_amount = %',v_panel_adder_amount;
+  raise notice 'v_panel_states = %',v_panel_states;
 
---   select value::bigint
---   into v_panel_warranty
---   from proposal_value
---   where field_id = 143
---     and object_code = 'PROPOSAL_PANEL_DETAIL';
-
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 143)') ->> 'value')::bigint  as inverter_warranty,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 142)') ->> 'value')::numeric as inverter_efficiency
-  into v_inverter_warranty,v_inverter_efficiency
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 142)') ->> 'value')::numeric as inverter_efficiency,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_id,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_amount
+  into v_inverter_efficiency,v_inverter_unit_type_id,v_inverter_adder_amount
   from proposal_value pv
   where object_code = 'PROPOSAL_INVERTER_DETAILS'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
                            jsonb_build_object('targetFieldId', 131, 'intValue', v_inverter_brand_id)));
 
-  raise notice 'v_inverter_warranty = % ',v_inverter_warranty;
   raise notice 'v_inverter_efficiency = %',v_inverter_efficiency;
+  raise notice 'v_inverter_unit_type_id = %',v_inverter_unit_type_id;
+  raise notice 'v_inverter_adder_amount = %',v_inverter_adder_amount;
 
   raise notice 'v_utility_company_id = % ',v_utility_company_id;
 --call first formula
@@ -960,7 +987,7 @@ BEGIN
 
   raise notice 'v_points_off_south_production_factor = %',v_points_off_south_production_factor;
   v_price_change_per_production_point = coalesce(v_funding_range, 0) / v_production_factor_range;
-  --TODO
+
   raise notice 'v_price_change_per_production_point = %',v_price_change_per_production_point;
 
   v_calculated_price_adjustment = v_price_change_per_production_point * v_points_off_south_production_factor;
@@ -993,13 +1020,18 @@ BEGIN
 
   raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
 
- -- v_equipment_panel_adder = brs.get_equipment_amount_by_type(v_system_size, 'PROPOSAL_PANEL_DETAIL', v_state_id);
+
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_PANEL_DETAIL', v_panel_adder_amount::numeric,
+                                     v_panel_unit_type_id::bigint,  0::numeric, v_panel_states, v_state_id)
+  into v_equipment_panel_adder;
  -- raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
 
- -- v_equipment_inverter_adder = brs.get_equipment_amount_by_type(v_system_size, 'PROPOSAL_INVERTER_DETAILS');
+   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_INVERTER_DETAILS',v_inverter_adder_amount::numeric,
+    v_inverter_unit_type_id::bigint, 0::numeric,null,null)
+  into v_equipment_inverter_adder;
  -- raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
 
-  v_misc_adders = brs.get_misc_adder_amount1(v_system_size,v_misc_adders_array);
+  v_misc_adders = brs.get_misc_adder_amount(v_system_size,v_misc_adders_array);
   raise notice 'v_misc_adders = %',v_misc_adders;
 
 
@@ -1020,7 +1052,7 @@ BEGIN
         ((coalesce(v_initial_system_cost, 0) + coalesce(v_equipment_storage_adder, 0) +
           coalesce(v_unapproved_zip_code_adder, 0) +
           coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-          coalesce(v_misc_adders, 0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+          coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
           coalesce(v_main_panel_upgrade_cost, 0)::numeric +
           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
@@ -1032,7 +1064,7 @@ BEGIN
         ((coalesce(v_initial_system_cost, 0) + coalesce(v_equipment_storage_adder, 0) +
           coalesce(v_unapproved_zip_code_adder, 0) +
           coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-          coalesce(v_misc_adders, 0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+          coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
           coalesce(v_main_panel_upgrade_cost, 0)::numeric +
           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
@@ -1064,7 +1096,7 @@ BEGIN
                                        coalesce(v_tree_trimming_cost, 0)::numeric +
                                        coalesce(v_trenching_cost, 0)::numeric +
                                        coalesce(v_ac_unit_relocation_cost, 0)::numeric +
-                                       coalesce(v_misc_adders, 0) + coalesce(v_promotion_cost, 0) +
+                                       coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_promotion_cost, 0) +
                                        coalesce(v_zone_adder, 0));
   raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
 
@@ -1086,7 +1118,6 @@ BEGIN
 
   v_state_rebate_amount = 0.00::numeric;
 
-
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as state_rebate_amount,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_state_rebate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as state_rebate_cap_amount,
@@ -1106,7 +1137,6 @@ BEGIN
   raise notice 'v_unit_type_state_rebate***************************** = % ',v_unit_type_state_rebate;
   raise notice 'v_state_rebate_cap_amount***************************** = % ',v_state_rebate_cap_amount;
   raise notice 'v_state_rebate_cap_percent_of_total***************************** = % ',v_state_rebate_cap_percent_of_total;
-
 
   v_utility_rebate_amount = 0.00::numeric;
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as utility_rebate_amount,
@@ -1194,12 +1224,12 @@ BEGIN
     raise notice 'v_ill_srec_rebate_amount = %',v_ill_srec_rebate_amount;
   end if;
 
-
-  if v_unit_type_utility_rebate = 460 then
-    v_utility_rebate_amount = v_utility_rebate_amount * v_system_size * 1000;
-  elsif v_unit_type_utility_rebate = 458 then
-    v_utility_rebate_amount = (coalesce(v_total_system_cost_before_rebates, 0)) * coalesce(v_utility_rebate_amount, 0);
-  end if;
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
+                                     v_utility_rebate_amount::numeric, v_unit_type_utility_rebate::bigint,
+                                     (coalesce(v_total_system_cost_before_rebates, 0)),
+                                     null,
+                                     null)
+  into v_utility_rebate_amount;
 
   if v_utility_rebate_cap_amount is not null then
     v_utility_rebate_amount = least(v_utility_rebate_amount::numeric, v_utility_rebate_cap_amount::numeric);
@@ -1272,15 +1302,13 @@ BEGIN
      coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0));
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
-  if v_unit_type_state_rebate = 460 then
-    v_state_rebate_amount = v_state_rebate_amount * v_system_size * 1000;
-  elsif v_unit_type_state_rebate = 458 then
-    v_state_rebate_amount = v_state_rebate_amount * v_total_system_cost_before_rebates;
-  elsif v_unit_type_state_rebate = 459 then
-    v_state_rebate_amount = v_state_rebate_amount;
-  elsif v_unit_type_state_rebate = 539 then
-    v_state_rebate_amount = coalesce(v_state_rebate_amount, 0) * v_first_year_production_estimate;
-  end if;
+
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
+                                     v_state_rebate_amount::numeric, v_unit_type_state_rebate::bigint,
+                                     (coalesce(v_total_system_cost_before_rebates, 0)),
+                                     null,
+                                     null)
+  into v_state_rebate_amount;
 
   if v_state_rebate_cap_amount is not null then
     v_state_rebate_amount = least(v_state_rebate_amount::numeric, v_state_rebate_cap_amount::numeric);
@@ -1314,11 +1342,11 @@ BEGIN
   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
   v_required_down_payment =
-    greatest((coalesce(v_misc_adders, 0) + coalesce(v_other_adder_and_discount_amount, 0) +
+    greatest(((coalesce(v_small_system_size_adder_amount,0) + coalesce(v_other_adder_and_discount_amount, 0) +
               coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_unapproved_zip_code_adder, 0) +
               coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
               coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
-              coalesce(v_ac_unit_relocation_cost, 0)::numeric) - (v_total_system_cost * v_non_solar_cap), 0);
+              coalesce(v_ac_unit_relocation_cost, 0)::numeric)/(1-v_dealer_fee)) - (v_total_system_cost * v_non_solar_cap), 0);
 
 
   if v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
@@ -1405,8 +1433,8 @@ BEGIN
 
   v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
                                               ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
-                                                v_loan_term) / 342)
-    + (v_down_payment_amount / 342);
+                                                v_loan_term) / 300)
+    + (v_down_payment_amount / 300);
   raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
 
   v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
@@ -1598,7 +1626,7 @@ BEGIN
             v_equipment_panel_adder * (v_system_size * 1000),
             (coalesce(v_equipment_storage_adder, 0) + coalesce(v_unapproved_zip_code_adder, 0) +
              coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-             coalesce(v_misc_adders, 0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+             coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
              coalesce(v_main_panel_upgrade_cost, 0)::numeric +
              coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
              coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
@@ -1713,8 +1741,6 @@ BEGIN
            v_led_light_bulbs,
            v_smart_thermostat,
            round(v_total_ee_reduction, 0),
-           v_panel_warranty,
-           v_inverter_warranty,
            cast(round(v_down_payment_amount, 2) as money)::varchar,
            v_version_id,
            v_project_process_step_id,

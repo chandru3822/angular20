@@ -1,5 +1,5 @@
 drop function if exists brs.get_misc_adder_amount(p_system_size numeric, p_adders bigint[]);
-CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount1(p_system_size numeric, p_adders bigint[]) returns numeric
+CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount(p_system_size numeric, p_adders bigint[]) returns numeric
 AS
 $BODY$
 declare
@@ -10,13 +10,15 @@ BEGIN
   for x in
     select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::integer as unit_type_id,
            (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as adder_amount,
+           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 329)') ->> 'value')::boolean   as default_value,
   (SELECT ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 126)') ->>
                                                  'intArrayValue')::jsonb)))::bigint[] as adder_id
 
   from proposal_value
   where object_code = 'PROPOSAL_MISC_ADDERS'
+
   loop
-    if x.adder_id && p_adders then
+    if x.adder_id && p_adders or (x.default_value is not null and x.default_value is true) then
       if x.unit_type_id = 459 then
         v_amount = coalesce(v_amount, 0) + x.adder_amount;
       elsif x.unit_type_id = 460 then
