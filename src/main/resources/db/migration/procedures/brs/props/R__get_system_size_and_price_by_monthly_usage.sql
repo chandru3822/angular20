@@ -1,7 +1,10 @@
 drop function if exists brs.get_system_size_and_price_by_monthly_usage(p_state_id bigint,
                                                                        p_average_monthly_bill numeric,
                                                                        p_utility_id integer);
-CREATE OR REPLACE FUNCTION brs.get_system_size_and_price_by_monthly_usage(p_state_id bigint,
+drop function if exists brs.get_system_size_and_price_by_monthly_usage(p_state_abbrev text,
+                                                                       p_average_monthly_bill numeric,
+                                                                       p_utility_id integer);
+CREATE OR REPLACE FUNCTION brs.get_system_size_and_price_by_monthly_usage(p_state_abbrev text,
                                                                           p_average_monthly_bill numeric,
                                                                           p_utility_id integer)
   returns table
@@ -111,7 +114,8 @@ BEGIN
   select sapf.average_production_factor
   into v_average_production_factor
   from brs.state_average_production_factor sapf
-  where sapf.state_id = p_state_id;
+  inner join flow.state s on s.abbreviation = p_state_abbrev
+  where sapf.state_id = s.id;
 
   create table proposal_value as
   with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
