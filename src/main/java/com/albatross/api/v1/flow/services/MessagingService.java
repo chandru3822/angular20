@@ -1216,7 +1216,7 @@ public class MessagingService {
 
     List<Long> userIds;
 
-    if (userId != null) {
+    if (ownerUserId != null) {
       updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForUser, params);
       userIds = List.of(userId);
 
