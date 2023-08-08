@@ -506,10 +506,6 @@ export default {
     },
     clearSearch(){
       this.search={}
-      //clearing the search should also reset the filter to default, which is to show everything
-      for(let at of this.activityTypes){
-        at.show = true
-      }
     },
     setEditedActivity(item) {
       this.editedActivity = cloneDeep(item)
