@@ -1218,7 +1218,7 @@ public class MessagingService {
 
     if (ownerUserId != null) {
       updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForUser, params);
-      userIds = List.of(userId);
+      userIds = List.of(ownerUserId);
 
       Notification notification =
         new Notification()
@@ -1226,11 +1226,11 @@ public class MessagingService {
           .setTitle("Notification read")
           .setBody("")
           .setPriority(1)
-          .setUserId(userId);
+          .setUserId(ownerUserId);
 
       pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
 
-      log.debug("[Messaging] Marked {} records as read for user={}", updatedRecords, userId);
+      log.debug("[Messaging] Marked {} records as read for user={}", updatedRecords, ownerUserId);
     } else if (smsTeamId != null) {
       updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForTeam, params);
 
