@@ -8,7 +8,7 @@
           <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
             <v-toolbar-title class="body-medium">
               <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
-              <span class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0">[uncategorized]</span>
+              <a @click="searchCallback('uncategorized', -1, SearchTypeEnum.TAG)" class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0" :inner-html.prop="'[uncategorized]' | searchHighlight(query)"></a>
               <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">, </span>
                 <a @click="searchCallback('#' + ah.hashtag)" :inner-html.prop="'#' + ah.hashtag | searchHighlight(query)"></a>

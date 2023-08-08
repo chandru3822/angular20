@@ -51,21 +51,22 @@
                       @reload="getActivities"
         />
       </div>
+<!--Topic View-->
       <div v-if="!timelineView">
         <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
         <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
-          <span>{{ type.activityType }}</span>
+          <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
           <div class="pt-4 body-large" v-if="!type.activityTypeHashtags || type.activityTypeHashtags.length === 0">No results found</div>
-          <v-expansion-panels v-else accordion multiple flat class=".rounded-0">
-            <v-expansion-panel v-for="h in orderBy(type.activityTypeHashtags, 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
+          <v-expansion-panels v-else accordion multiple flat class=".rounded-0"><!--Topic # header-->
+            <v-expansion-panel v-for="h in orderBy(searchfilteredActivityTypeHashtags(type.activityTypeHashtags), 'lastUpdated', (sortDirection === 'asc' ? 1 : -1))" :key="h.hashtagId">
               <v-expansion-panel-header class="expansion-panel-header px-0">
                 <template v-slot:default="{ open }">
                   <v-row no-gutters class="align-center" :class="{'bold' : open}">
                     <span v-if="h.hashtagId === -1" class="uncategorized body-large mr-2" :class="{'label-large': open}">[{{h.hashtag}}]</span>
                     <span v-else class="mr-2" :class="{'body-large': !open, 'label-large': open}">#{{ h.hashtag }}</span>
-                    <span class="body-medium grey--text darken-2">{{countedCategoryLabel(h.activities, type.id) }} |
-            last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span>
+                    <span class="body-medium grey--text darken-2">{{countedCategoryLabel(h.activities, type.id) }}
+                      <span v-if="!searchText || searchText === ''"> | last updated: {{ h.lastUpdated | formatDate('timestamp', 'M/D/YY h:mm a') }}</span></span>
                     <v-btn v-if="open" icon color="primary" @click.native.stop="changeSortDirectionForTopic(h)">
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
                       <v-icon small v-else>mdi-arrow-down</v-icon>
@@ -97,6 +98,7 @@
         </div>
         </div>
       </div>
+<!--Timeline View-->
       <ActivityList v-else-if="!savingActivity"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
@@ -232,7 +234,8 @@ export default {
       search: {
         userId: null,
         position: null,
-        teamId: null
+        teamId: null,
+        categoryId: null,
       },
       queryText: '',
       linkLabel: '',
@@ -271,8 +274,9 @@ export default {
     },
     searchText: function () {
       this.$emit('scrollToTop')
-      if(!this.search.userId && !this.search.position && !this.search.teamId) {
-        this.queryText = this.searchText
+      if(!this.search.userId && !this.search.position && !this.search.teamId && this.search.categoryId !== -1) {
+        let cleanQueryText = this.searchText?.replace('[','\\[')
+        this.queryText = cleanQueryText?.replace(']','\\]')
       }
     },
   },
@@ -367,6 +371,14 @@ export default {
     countSortedFilteredActivities(activities){
       return this.sortAndFilterActivities(activities, this.sortDirection).length
     },
+    searchfilteredActivityTypeHashtags(activityTypeHashtags){
+      // hide the topic header if there are no search result matches in it
+      return activityTypeHashtags.filter(h =>{
+        const activityCount = this.countSortedFilteredActivities(h.activities)
+        return activityCount > 0
+      })
+
+    },
     countedCategoryLabel(activities, activityTypeId){
       const activityCount = this.countSortedFilteredActivities(activities)
       const typeLabel = activityCount === 1 ? this.activityTypes.find(t => t.id === activityTypeId).activityTypeSingularLabel : this.activityTypes.find(t => t.id === activityTypeId).activityType
@@ -382,6 +394,9 @@ export default {
       else if(this.search.teamId){
         return activity.createdByPositionOrgId === this.search.teamId
       }
+      else if(this.search.categoryId === -1){
+        return activity.activityHashtags?.length === 0
+      }
       let lowerSearch = this.searchText?.toLowerCase()
       return activity.note.toLowerCase().includes(lowerSearch)
         || activity.createdBy.toLowerCase().includes(lowerSearch)
@@ -391,7 +406,7 @@ export default {
         || activity.pinnedBy?.toLowerCase().includes(lowerSearch)
         || activity.linkedPpsId?.toString().includes(lowerSearch)
         || activity.linkedPpseId?.toString().includes(lowerSearch)
-        || (activity.activityHashtags?.length === 0 && '[uncategorized]'.includes(lowerSearch))
+        || ((!activity.activityHashtags || activity.activityHashtags?.length === 0) && '[uncategorized]'.includes(lowerSearch))
         || activity.activityHashtags?.find(ah => ('#' + ah.hashtag.toLowerCase()).includes(lowerSearch))?.id != null
         || !lowerSearch
     },
@@ -474,8 +489,15 @@ export default {
           this.search.position = text
           break;
         case SearchTypeEnum.TEAM:
-          this.searchText = `Team: ${text}`,
+          this.searchText = `Team: ${text}`
           this.search.teamId = id
+          break;
+        case SearchTypeEnum.TAG:
+          if(id === -1){
+            this.searchText = `[${text}]`
+          } else {
+            this.searchText = text
+          }
           break;
           default:
             this.searchText = text
@@ -484,10 +506,6 @@ export default {
     },
     clearSearch(){
       this.search={}
-      //clearing the search should also reset the filter to default, which is to show everything
-      for(let at of this.activityTypes){
-        at.show = true
-      }
     },
     setEditedActivity(item) {
       this.editedActivity = cloneDeep(item)
