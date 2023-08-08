@@ -623,7 +623,6 @@ public class MessagingService {
   public void removeUserTeam(Long userId, Long smsTeamId, Long modifiedByUserId) {
 
     ConversationMessageProperties cmp = getUser(userId, modifiedByUserId);
-    // Insert the SMS team to associate it with the project
     sqlCache.updateBySql(MessagingQuery.removeUserTeam, Map.of("userId", userId, "smsTeamId", smsTeamId));
     sqlCache.updateBySql(MessagingQuery.removeUserTeamOwners, Map.of("ownerUserId", userId, "smsTeamId", smsTeamId));
 
@@ -1232,21 +1231,23 @@ public class MessagingService {
 
       log.debug("[Messaging] Marked {} records as read for user={}", updatedRecords, ownerUserId);
     } else if (smsTeamId != null) {
-      updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForTeam, params);
-
       userIds =
         sqlCache.queryBySql(
           MessagingQuery.findUserByForUserTeam, params, new SingleColumnRowMapper<>(Long.class));
 
-      Notification notification =
-        new Notification()
-          .setTopic(NotificationTopic.SMS_REPLY)
-          .setTitle("Notification read")
-          .setBody("")
-          .setPriority(1)
-          .setUserId(userId);
+      updatedRecords = sqlCache.updateBySql(MessagingQuery.markUserSmsAsReadForTeam, params);
 
-      pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
+      for (Long removedUserId: userIds) {
+        Notification notification =
+          new Notification()
+            .setTopic(NotificationTopic.SMS_REPLY)
+            .setTitle("Notification read")
+            .setBody("")
+            .setPriority(1)
+            .setUserId(removedUserId);
+
+        pubSubService.publish(EventChannel.NOTIFICATION, NotificationEventMessage.from(notification));
+      }
 
       log.debug(
         "[Messaging] Marked {} records as read for smsTeamId={}", updatedRecords, smsTeamId);
