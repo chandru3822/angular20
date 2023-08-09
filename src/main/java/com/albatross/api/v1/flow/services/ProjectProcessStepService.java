@@ -13,6 +13,8 @@ import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunct
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.SystemActivity;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
@@ -363,6 +365,17 @@ public class ProjectProcessStepService {
       if (deletingStep.getMain()) {
         throw new RuntimeException("Can not delete a primary process step. Must designate another primary step first");
       }
+
+      HashMap<String, Object> actParams = new HashMap<>();
+      actParams.put("activityId", SystemActivity.EVENT_DELETED.id);
+      actParams.put("objectTypeId", ObjectType.PROJECT.id);
+      actParams.put("userId", securityService.getCurrentUser().trueUserId());
+      actParams.put("sourceId", null);
+      actParams.put("ppsId", projectProcessStepId);
+      actParams.put("ppseId", null);
+      actParams.put("oldStatusId", null);
+      actParams.put("newStatusId", null);
+      sqlCache.queryBySql(ActivityQuery.addSystemActivityWithoutProjectId, actParams, String.class);
 
       sqlCache.queryBySql(ProjectProcessStepQuery.delete, Map.of("projectProcessStepId", projectProcessStepId,
         "currentUserId", securityService.getCurrentUser().trueUserId()), String.class);

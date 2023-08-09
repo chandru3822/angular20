@@ -22,7 +22,9 @@ DECLARE
     v_new_company_status character varying;
     v_new_root_status character varying;
     v_do_insert boolean default true;
+    v_prepend_msg text;
     v_append_msg text;
+    v_activity_name text;
 BEGIN
   --determines if the company has the selected activity enabled
   select ca.id, ca.note, ca.root_change_only
@@ -50,6 +52,11 @@ BEGIN
                inner join flow.event_status_type est on cest.event_status_type_id = est.id
         where cest.id = p_new_status_id;
 
+        select event_name from flow.event where id =
+          (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+          into v_activity_name;
+
+        v_prepend_msg = concat(v_activity_name, ' ');
         v_append_msg = concat(' from ', v_old_company_status, ' (', v_old_root_status, ') to ', v_new_company_status, ' (', v_new_root_status, ')');
 
         --if the activity is for ROOT only event status change, then we need to compare those instead
@@ -75,6 +82,11 @@ BEGIN
                inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
         where cpsst.id = p_new_status_id;
 
+        select process_step_name from flow.process_step where id =
+        (select process_step_id from flow.project_process_step where id = p_pps_id)
+        into v_activity_name;
+
+        v_prepend_msg = concat(v_activity_name, ' ');
         v_append_msg = concat(' from ', v_old_company_status, ' (', v_old_root_status, ') to ', v_new_company_status, ' (', v_new_root_status, ')');
 
         --if the activity is for ROOT only event status change, then we need to compare those instead
@@ -100,6 +112,7 @@ BEGIN
                inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
         where cpst.id = p_new_status_id;
 
+        v_prepend_msg = concat(' ');
         v_append_msg = concat(' from ', v_old_company_status, ' (', v_old_root_status, ') to ', v_new_company_status, ' (', v_new_root_status, ')');
 
         --if the activity is for ROOT only event status change, then we need to compare those instead
@@ -108,10 +121,70 @@ BEGIN
         end if;
       end if;
 
+      if p_activity_id = 9 then
+        select cpst.project_status_type,
+               cpst.project_status_type_id,
+               pst.project_status_type
+        into v_old_company_status, v_old_root_status_id, v_old_root_status
+        from flow.company_project_status_type cpst
+               inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+        where cpst.id = p_old_status_id;
+        select cpst.project_status_type,
+               cpst.project_status_type_id,
+               pst.project_status_type
+        into v_new_company_status, v_new_root_status_id, v_new_root_status
+        from flow.company_project_status_type cpst
+               inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+        where cpst.id = p_new_status_id;
+
+        select process_step_name from flow.process_step where id =
+                                                              (select process_step_id from flow.project_process_step where id = p_pps_id)
+        into v_activity_name;
+
+        v_prepend_msg = concat(v_activity_name, ' ');
+        v_append_msg = '';
+
+        --if the activity is for ROOT only event status change, then we need to compare those instead
+        if v_root_change_only is true then
+          v_do_insert = (v_old_root_status_id != v_new_root_status_id);
+        end if;
+      end if;
+
+      if p_activity_id = 10 then
+        select cpst.project_status_type,
+               cpst.project_status_type_id,
+               pst.project_status_type
+        into v_old_company_status, v_old_root_status_id, v_old_root_status
+        from flow.company_project_status_type cpst
+               inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+        where cpst.id = p_old_status_id;
+        select cpst.project_status_type,
+               cpst.project_status_type_id,
+               pst.project_status_type
+        into v_new_company_status, v_new_root_status_id, v_new_root_status
+        from flow.company_project_status_type cpst
+               inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+        where cpst.id = p_new_status_id;
+
+        select event_name from flow.event where id =
+        (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+        into v_activity_name;
+
+        v_prepend_msg = concat(v_activity_name, ' ');
+        v_append_msg = '';
+
+        --if the activity is for ROOT only event status change, then we need to compare those instead
+        if v_root_change_only is true then
+          v_do_insert = (v_old_root_status_id != v_new_root_status_id);
+        end if;
+      end if;
+
+
+
       if v_do_insert is true then
         --pps wont be null if event is null so we can use that for linked
         insert into flow.project_activity(project_id, note, created_by_id, modified_by_id, activity_type_id, linked, linked_pps_id, linked_ppse_id)
-        values (p_source_id, concat(v_company_activity_note, v_append_msg), p_user_id, p_user_id, 1, (p_pps_id is not null), p_pps_id, p_ppse_id)
+        values (p_source_id, concat(v_prepend_msg, v_company_activity_note, v_append_msg), p_user_id, p_user_id, 1, (p_pps_id is not null), p_pps_id, p_ppse_id)
         returning id into v_new_id;
 
         --add any necessary hashtags to the system activity

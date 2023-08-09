@@ -117,6 +117,17 @@ public class ProjectProcessStepEventService {
     params.put("ppseId", ppseId);
     params.put("userId", user.trueUserId());
 
+    HashMap<String, Object> actParams = new HashMap<>();
+    actParams.put("activityId", SystemActivity.EVENT_DELETED.id);
+    actParams.put("objectTypeId", ObjectType.PROJECT.id);
+    actParams.put("userId", user.trueUserId());
+    actParams.put("sourceId", null);
+    actParams.put("ppsId", null);
+    actParams.put("ppseId", ppseId);
+    actParams.put("oldStatusId", null);
+    actParams.put("newStatusId", null);
+    sqlCache.queryBySql(ActivityQuery.addSystemEventActivityWithoutPpsId, actParams, String.class);
+
     sqlCache.updateBySql(ProjectProcessStepEventQuery.delete, params);
   }
 
