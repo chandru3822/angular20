@@ -576,6 +576,9 @@ export default {
       //handle hashtags that didn't exist there were added
       this.selectedTopics.forEach(st => {
         if (!this.editedActivity?.activityHashtags?.some(ah => ah.hashtagId === st.id)) {
+          if(!this.editedActivity?.activityHashtags){
+            this.editedActivity.activityHashtags = []
+          }
           this.editedActivity?.activityHashtags.push(
             {'hashtagId': st.id}
           )
