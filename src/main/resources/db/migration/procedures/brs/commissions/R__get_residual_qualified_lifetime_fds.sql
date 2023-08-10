@@ -51,6 +51,8 @@ begin
                                when pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1::numeric
                                  then
                                  case
+                                   when pd.third_party_financing is true then
+                                     pd.first_cash_payment_paid_date
                                    when (pd.project_state_id = 28 and
                                          pd.first_cash_payment_amount >= 1000.00) then
                                      pd.first_cash_payment_paid_date
@@ -80,6 +82,8 @@ begin
       and case
             when pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1.00::numeric then
               case
+                when pd.third_party_financing is true then
+                  pd.first_cash_payment_paid_date is not null
                 when (pd.project_state_id = 28 and
                       pd.first_cash_payment_amount >= 1000.00) then
                   pd.first_cash_payment_paid_date is not null
@@ -97,6 +101,8 @@ begin
                                 when pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1::numeric
                                   then
                                   case
+                                    when pd.third_party_financing is true then
+                                      pd.first_cash_payment_paid_date
                                     when (pd.project_state_id = 28 and
                                           pd.first_cash_payment_amount >= 1000.00) then
                                       pd.first_cash_payment_paid_date
