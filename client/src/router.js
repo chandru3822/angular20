@@ -320,6 +320,7 @@ const router = new Router({
             }, {
               path: 'residuals',
               name: 'closerResiduals',
+              props: { isAdmin: false },
               meta: {title: 'Albatross - Closer Dashboard'},
               component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
             }
@@ -1598,6 +1599,12 @@ const router = new Router({
               path: 'residuals',
               meta: {title: 'Albatross - Commissions'},
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Residuals.vue'),
+            }, {
+              path: 'closerResiduals',
+              name: 'closerResidualsAdmin',
+              props: { isAdmin: true },
+              meta: {title: 'Albatross - Commissions'},
+              component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
             }, {
               path: 'residualSearch',
               meta: {title: 'Albatross - Commissions'},

@@ -90,6 +90,10 @@
           path: '/commissionManagement/residuals',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
+          label: 'Closer Residuals',
+          path: '/commissionManagement/closerResiduals',
+          display: this.$store.getters.userHasFeature('COMMISSIONS')
+        }, {
           label: 'Residual Search',
           path: `/commissionManagement/residualSearch`,
           display: this.$store.getters.userHasFeature('COMMISSIONS')
