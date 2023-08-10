@@ -41,15 +41,23 @@ public class CloserDashboardService {
         .get(0);
   }
 
-  public String getCloserResiduals(String residualDate) {
+  public String getCloserResiduals(String residualDate, Long userId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", null != userId ? userId : user.getId());
     params.put("residualDate", residualDate);
 
     return sqlCache
              .getBySql(CloserDashboardQuery.getCloserResiduals, params, new SingleColumnRowMapper<>(String.class))
              .orElse("{}");
+  }
+
+
+  public List<User> getClosers(Boolean showInactive) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("showInactive", showInactive);
+
+    return sqlCache.queryBySql(CloserDashboardQuery.getClosers, params, User.class);
   }
 
   public String finalDesignsCompletedDrilldown(int quarter) {

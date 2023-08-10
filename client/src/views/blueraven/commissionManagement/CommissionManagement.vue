@@ -88,6 +88,10 @@
         }, {
           label: 'Residuals',
           path: '/commissionManagement/residuals',
+          display: this.$store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')
+        }, {
+          label: 'Closer Residuals',
+          path: '/commissionManagement/closerResiduals',
           display: this.$store.getters.userHasFeature('COMMISSIONS')
         }, {
           label: 'Residual Search',
