@@ -44,7 +44,7 @@
             <SmartlistCopy
               :smartlist="report"
               :show-text="true"
-              :disabled="!canView || !hasAddAccess"
+              :disabled="!hasAddAccess || (!canView && !report?.public)"
               @copied="copied"
             />
 
