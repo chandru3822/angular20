@@ -268,7 +268,7 @@
           //we do this temp so that we only send up the values that need to be saved
           let tempCompanyFeatures = this.userCompanyFeatures?.filter(cf => cf.dirty)
           const {data, status} = await putRequest(`/feature/user/${this.userId}`, tempCompanyFeatures)
-          this.userCompanyFeatures = data
+          this.userCompanyFeatures = data.filter(d => !d.hidden)
           this.accessControlKey++
           handleHidingGlobalLoader(this, status)
           this.dirtyFields = false

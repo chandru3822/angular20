@@ -487,6 +487,10 @@ a.chatLink {
 
 .sc-message {
   width: 100%;
+
+  a.chatLink {
+    color: black;
+  }
 }
 
 .sc-message--avatar {
