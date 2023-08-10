@@ -605,6 +605,10 @@ export default {
         this.getActivityTopics();
         this.editedActivity = {}
         this.editedIndex = null
+        if(!this.timelineView){
+          //only reset the scroll if we're editing in the topics view
+          this.$emit('scrollToTop')
+        }
         this.savingActivity = false
         this.snackbar = getSnackbar('SUCCESS', 'Note Edited')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
