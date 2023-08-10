@@ -4,7 +4,7 @@
     <v-card class="square-card">
       <v-data-table
         :headers="headers"
-        :items="steps"
+        :items="sortedSteps"
         :fixed-header="true"
         :items-per-page="-1"
         id="qa-process-step-table"
@@ -39,12 +39,18 @@
 </template>
 
 <script>
+import orderBy from 'lodash.orderby'
 export default {
   name: 'ActiveProjectProcessStepSnippet',
   props: {
     projectId: Number,
     steps: Array,
     contactId: Number
+  },
+  computed: {
+    sortedSteps() {
+      return orderBy(this.steps, 'projectProcessStepId', 'desc')
+    }
   },
   data () {
     return {

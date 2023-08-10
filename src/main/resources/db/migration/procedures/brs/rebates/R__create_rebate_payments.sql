@@ -19,6 +19,7 @@ DECLARE
   v_financial_agreement_signed_date        date;
   v_substantial_completion_date            date;
   v_proof_of_homeowners_insurance_required integer;
+v_fast_track_approval_override boolean;
 BEGIN
 
   select (min(date_created) at time zone 'US/Mountain')::date
@@ -60,21 +61,23 @@ BEGIN
          installation_agreement_signed_date,
          financial_agreement_signed_date,
          substantial_completion_date,
-         proof_of_homeowners_insurance_required
+         proof_of_homeowners_insurance_required,
+         pd.fast_track_approval_override
   into v_product,
     v_installation_agreement_signed_date,
     v_financial_agreement_signed_date,
     v_substantial_completion_date,
-    v_proof_of_homeowners_insurance_required
+    v_proof_of_homeowners_insurance_required,
+    v_fast_track_approval_override
   from brs.project_details pd
   where pd.project_id = p_project_id;
 
   if v_product = 293 and v_substantial_completion_date is not null and
-     v_financial_agreement_signed_date <= (v_installation_agreement_signed_date + 3)::date and
+     ((v_financial_agreement_signed_date <= (v_installation_agreement_signed_date + 3)::date and
      v_utility_bill_uploaded_date <= (v_installation_agreement_signed_date + 3)::date and
      (v_proof_of_homeowners_insurance_required = 305 and
       v_hoi_uploaded_date <= (v_installation_agreement_signed_date + 3)::date
-       or (v_proof_of_homeowners_insurance_required = 306)) then
+       or (v_proof_of_homeowners_insurance_required = 306))) or (v_fast_track_approval_override is true)) then
     p_number_of_promotion_payments = 1;
   end if;
 
