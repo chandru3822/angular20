@@ -344,6 +344,39 @@
                           </div>
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                            <div class="text-left mt-3" v-if="cf.edit">
+                              <v-row>
+                                <v-col cols="6">
+                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
+                                    <v-card-text>
+                                      <multi-select-group
+                                          v-if="!positionsLoading"
+                                          background-color="transparent"
+                                          :userCanEdit="userCanEdit"
+                                          :returnObject="cf"
+                                          :content="positions"
+                                          :dropdownEnabled="cf.customFieldGroupAssignmentHidden"
+                                          :selectedContent="cf.hiddenWhiteListedPositions"
+                                          :title="'Hidden'"
+                                          :label="'Allowed Positions'"
+                                          :alternateLabel = "'Denied Positions'"
+                                          :allow="cf.customFieldGroupAssignmentHiddenAllow"
+                                          :contentLoading="positionsLoading"
+                                          @selected-changed="cfgaHiddenSelectedEventListener"
+                                          @allow-changed="cfgaHiddenAllowEventListener"
+                                          @checkbox-changed="cfgaHiddenCheckboxEventListener"></multi-select-group>
+                                      <br/>
+                                      <v-btn color="primary" dark class="white--text d-inline-block"
+                                             @click="saveHiddenAndWhiteList(cf)">
+                                        <v-icon class="mr-2">save</v-icon>
+                                        Save Hidden
+                                      </v-btn>
+                                    </v-card-text>
+                                  </v-card>
+                                </v-col>
+                              </v-row>
+                            </div>
+
                           </div>
                           <div class="text-left" v-if="!cf.edit && !cf.ancillaryCustomFieldGroupAssignmentId">
                             <div>
@@ -387,7 +420,7 @@
 
                         </v-menu>
                         <v-btn text small color="primary" v-else></v-btn>
-                        <v-btn text color="primary" small v-if="userCanEdit && cf.ancillaryCustomFieldGroupAssignmentId == null && cf.dataViewFieldConfigId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
+                        <v-btn text color="primary" small v-if="userCanEdit && cf.dataViewFieldConfigId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>

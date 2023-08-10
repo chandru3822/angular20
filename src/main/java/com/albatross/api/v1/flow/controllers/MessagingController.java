@@ -156,7 +156,7 @@ public class MessagingController {
   }
 
   @PutMapping(value = "/removeOwner/user/{userId}")
-  public void removeProjectOwner(
+  public void removeUserOwner(
     @PathVariable Long userId,
     @RequestBody UserMessageOwner owner,
     @AuthenticationPrincipal UserAccountDetails details) {

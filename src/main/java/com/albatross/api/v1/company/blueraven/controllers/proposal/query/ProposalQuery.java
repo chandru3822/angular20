@@ -57,7 +57,8 @@ public class ProposalQuery {
                                   p.installation_agreement_sent_tsz is not null as "installationAgreementSent"
                            from brs.proposal p
                            where p.archived is not true
-                             and p.project_process_step_id = pps.id) rows), '[]') AS proposals,
+                             and p.project_process_step_id = pps.id
+                        order by p.date_created desc) rows), '[]') AS proposals,
            coalesce((select array_to_json(array_agg(rows))
                      from (SELECT a.id,
                                   a.uuid,
@@ -90,6 +91,7 @@ public class ProposalQuery {
       and p.id = :projectId
       and p.archived is false
       and cpsst.process_step_status_type_id = 2
+    order by pps.date_modified desc
     """;
 
   //language=PostgreSQL

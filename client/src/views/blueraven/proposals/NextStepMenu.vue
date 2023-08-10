@@ -16,7 +16,14 @@
       </template>
 
       <v-card class="pa-2">
-
+        <v-alert color="red" type="error" v-if="requiredFields.length > 0">
+          This proposal is not valid. Please set the required configurations to proceed with next steps.
+          <ul>
+            <li v-for="field in requiredFields">
+              {{field}}
+            </li>
+          </ul>
+        </v-alert>
         <v-list>
           <v-list-item three-line>
             <v-list-item-content>
@@ -27,9 +34,9 @@
 
               <v-btn
                 class="text-capitalize mt-1"
-                :color="!proposal.locked ? 'primary' : ''"
-                :disabled="proposal.locked"
-                :dark="!proposal.locked"
+                :color="requiredFields.length === 0 && !proposal.locked ? 'primary' : ''"
+                :disabled="requiredFields.length > 0 || proposal.locked"
+                :dark="requiredFields.length===0 && !proposal.locked"
                 @click="lockProposal"
               >
                 <v-icon v-if="!proposal.locked">mdi-lock-open</v-icon>
@@ -63,17 +70,17 @@
                       :disabled="!proposal.locked"
                       v-model="valid"
               >
-                <v-text-field label="Email" v-model="docs.email" :rules="rules" required readonly disabled />
+                <v-text-field label="Email" v-model="docs.email" :rules="rules" required readonly disabled/>
 
                 <v-radio-group v-model="docs.language" required column :rules="rules">
-                  <v-radio label="English" value="english" />
-                  <v-radio label="Spanish" value="spanish" />
+                  <v-radio label="English" value="english"/>
+                  <v-radio label="Spanish" value="spanish"/>
                 </v-radio-group>
 
                 <v-text-field label="Proposal #"
                               :value="proposal.proposalNbr"
                               :rules="rules"
-                              required readonly disabled />
+                              required readonly disabled/>
               </v-form>
 
               <stateful-btn
@@ -105,14 +112,14 @@
       <v-container>
         <p>Is <strong>{{ proposal.email }}</strong> the correct email address?</p>
         <v-radio-group v-model="confirmEmail.isCorrectEmail">
-          <v-radio label="Yes" :value="true" @click="confirmEmail.emailAddress= ''" />
-          <v-radio label="No" :value="false" />
+          <v-radio label="Yes" :value="true" @click="confirmEmail.emailAddress= ''"/>
+          <v-radio label="No" :value="false"/>
         </v-radio-group>
 
         <v-text-field v-if="confirmEmail.isCorrectEmail !== undefined && confirmEmail.isCorrectEmail === false"
                       v-model="confirmEmail.emailAddress"
                       placeholder="Enter correct email address"
-                      :disabled="confirmEmail.isCorrectEmail" />
+                      :disabled="confirmEmail.isCorrectEmail"/>
       </v-container>
 
       <template #actions="{ok, cancel}">
@@ -123,7 +130,7 @@
         >
           Cancel
         </v-btn>
-        <v-spacer />
+        <v-spacer/>
 
         <v-btn
           color="primary"
@@ -141,15 +148,16 @@
 <script>
 import StatefulBtn from '@/views/blueraven/proposals/StatefulBtn'
 import ConfirmDialog from '@/views/blueraven/proposals/ConfirmDialog'
-import { getRequest, logError, postRequest, putRequest } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
+import {getRequest, logError, postRequest, putRequest} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+
 const DOCS_MESSAGE = {
-  'FINANCE_DOCS': { key: 'financeDocsSent', message: 'Finance docs request submitted' },
-  'INSTALLATION_AGREEMENT': { key: 'installationAgreementSent', message: 'Installation agreement request submitted' }
+  'FINANCE_DOCS': {key: 'financeDocsSent', message: 'Finance docs request submitted'},
+  'INSTALLATION_AGREEMENT': {key: 'installationAgreementSent', message: 'Installation agreement request submitted'}
 }
 
 export default {
-  components: { StatefulBtn, ConfirmDialog },
+  components: {StatefulBtn, ConfirmDialog},
   props: {
     disabled: {
       type: Boolean,
@@ -192,6 +200,41 @@ export default {
         return true
       }
       return this.confirmEmail.emailAddress.trim().length > 0 && /.+@.+[.].+/.test(this.confirmEmail.emailAddress)
+    },
+    requiredFields() {
+      return this.proposal
+        ?.customFieldGroups
+        ?.flatMap(cfg => {
+          return cfg.customFieldValues
+        })
+        ?.filter(field => {
+          return field.required
+        })
+        ?.filter(field => {
+          switch (field.dataTypeId) {
+            case 1:
+              return field.dateValue == null
+            case 2:
+              return field.timestampValue == null
+            case 3:
+              return field.booleanValue == null
+            case 4:
+              return field.numericValue == null
+            case 5:
+            case 12:
+              return field.textValue == null
+            case 6:
+            case 8:
+            case 9:
+              return field.intValue == null
+            case 7:
+            case 10:
+              return field.intArrayValue == null || field.intArrayValue.length === 0
+            case 13:
+              return field.richTextValue == null
+          }
+        })
+        .map(field=>field.fieldName)
     }
   },
   methods: {
@@ -200,15 +243,15 @@ export default {
       // if (this.proposal.creditCheckSubmitted) {
       //   return
       // }
-      if(!this.proposal.creditCheckSubmitted) {
+      if (!this.proposal.creditCheckSubmitted) {
         //only do this if it wasn't already done on the first submit
         this.menu = false
-        const { ok, value } = await this.$refs.confirmEmail.open()
+        const {ok, value} = await this.$refs.confirmEmail.open()
         if (!ok) {
           return
         }
         if (value.email?.trim().length > 0 && value.updated) {
-          const body = { email: value.email }
+          const body = {email: value.email}
           try {
             await putRequest(`/install-agreement/updateEmailAddress/${this.proposal.projectId}`, body, 'blueraven')
           } catch (e) {
@@ -219,13 +262,13 @@ export default {
       }
 
       try {
-        const { status, data } = await getRequest(`/proposal/${this.proposal.id}/loanApplication`, 'blueraven')
+        const {status, data} = await getRequest(`/proposal/${this.proposal.id}/loanApplication`, 'blueraven')
         if (status !== 200) {
           this.$snackbar('ERROR', data?.message || 'Error creating credit application')
           return
         }
 
-        this.$emit('update', { ...this.proposal, creditCheckSubmitted: true })
+        this.$emit('update', {...this.proposal, creditCheckSubmitted: true})
 
         if (data && data !== 'Quote Updated') {
           open(data, '_blank')
@@ -235,13 +278,13 @@ export default {
       }
     },
     async lockProposal() {
-      if (this.proposal.locked) {
+      if (this.proposal.locked || this.requiredFields.length > 0) {
         return
       }
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { data } = await postRequest(`/proposal/${this.proposal.id}/lock`, {}, 'blueraven')
+        const {data} = await postRequest(`/proposal/${this.proposal.id}/lock`, {}, 'blueraven')
         this.$snackbar('SUCCESS', 'Proposal locked')
         this.$emit('update', data)
       } catch (e) {
@@ -258,17 +301,17 @@ export default {
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { data = {} } = await postRequest(`/proposal/${this.proposal.id}/sendDocs`,
+        const {data = {}} = await postRequest(`/proposal/${this.proposal.id}/sendDocs`,
           {
             docType,
             isSpanish: this.docs.language === 'spanish'
           }, 'blueraven')
 
-        const { success, message } = data
+        const {success, message} = data
         if (success) {
           const msg = DOCS_MESSAGE[docType]
           this.$snackbar('SUCCESS', msg.message)
-          this.$emit('update', { ...this.proposal, [msg.key]: true })
+          this.$emit('update', {...this.proposal, [msg.key]: true})
         } else {
           this.$snackbar('ERROR', message)
         }

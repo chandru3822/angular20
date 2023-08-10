@@ -181,6 +181,8 @@
               res = await postRequest(`/featDb/utility/${this.itemId}/contacts`, this.contact, 'blueraven')
             } else if (this.itemType === 'hoa') {
               res = await postRequest(`/featDb/hoa/${this.itemId}/contacts`, this.contact, 'blueraven')
+            } else if (this.itemType === 'supplier') {
+              res = await postRequest(`/featDb/supplier/${this.itemId}/contacts`, this.contact, 'blueraven')
             } else {
               res = await postRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts`, this.contact, 'blueraven')
             }
@@ -201,6 +203,8 @@
               res = await putRequest(`/featDb/utility/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             } else if (this.itemType === 'hoa') {
               res = await putRequest(`/featDb/hoa/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
+            } else if (this.itemType === 'supplier') {
+              res = await putRequest(`/featDb/supplier/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             } else {
               res = await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}`, this.contact, 'blueraven')
             }
@@ -232,6 +236,8 @@
             await putRequest(`/featDb/utility/contacts/${this.contact.id}/archive`, null, 'blueraven')
           } else if (this.itemType === 'hoa') {
             await putRequest(`/featDb/hoa/contacts/${this.contact.id}/archive`, null, 'blueraven')
+          } else if (this.itemType === 'supplier') {
+            await putRequest(`/featDb/supplier/contacts/${this.contact.id}/archive`, null, 'blueraven')
           } else {
             await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/contacts/${this.contact.id}/archive`, null, 'blueraven')
           }

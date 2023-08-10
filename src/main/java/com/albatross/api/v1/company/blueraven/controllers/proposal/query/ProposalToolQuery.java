@@ -190,6 +190,28 @@ public class ProposalToolQuery {
             modified_by_id = excluded.modified_by_id
      """;
 
+  public final static String deleteEmptyCustomFieldValues = """
+delete
+from brs.proposal_version_custom_field_value
+where id in (select pvcfv.id
+             from brs.proposal_version_custom_field_value pvcfv
+                      inner join brs.proposal_version_custom_field_group pvcfg
+                                 on pvcfv.proposal_version_custom_field_group_id = pvcfg.id
+                      inner join brs.custom_field_group_assignment cfga
+                                 on pvcfv.custom_field_group_assignment_id = cfga.id
+                      inner join brs.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                      inner join brs.custom_field cf on cfga.custom_field_id = cf.id
+                      inner join brs.object_type ot on cfg.object_type_id = ot.id
+                      inner join brs.proposal_version pv on pvcfg.proposal_version_id = pv.id
+                 and pv.proposal_version_status_id = 1 -- DRAFT
+             where pvcfg.proposal_group_uuid = :groupUUID
+               and pvcfg.proposal_version_id = :proposalVersionId
+               and ot.object_code = :objectCode
+               and cf.archived is false
+               and cfga.archived is false
+               and cf.id = :fieldId)
+    """;
+
   //language=PostgreSQL
   public final static String archiveCustomFieldGroup = """
     insert into brs.proposal_version_custom_field_group
@@ -209,7 +231,6 @@ public class ProposalToolQuery {
 
   //language=PostgreSQL
   public final static String resetCustomFieldGroup = """
-
     delete
     from brs.proposal_version_custom_field_group pvcfg
         using
@@ -269,8 +290,9 @@ public class ProposalToolQuery {
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
                                                                 and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id)
-    select (value -> 'intValue')::int
+                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
+    select  distinct unnest(array_remove(array [(value -> 'intValue')::int], null) ||
+              array((select jsonb_array_elements_text(value -> 'intArrayValue')))::int[])
     from version_values;
     """;
 }

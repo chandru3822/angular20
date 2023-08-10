@@ -835,7 +835,6 @@ export default {
       }
     },
     async saveCfToDisplayOnSnippet(){
-      debugger;
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await putRequest(`/customFieldGroup/saveDisplayOnSnippet/${this.cfToDisplayOnSnippet.customFieldGroupAssignmentId}`)

@@ -24,8 +24,8 @@ public class ProjectProcessStepEventQuery {
 
   //language=PostgreSQL
   public final static String insertEvent = """
-    insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, company_event_status_type_id, created_by_id, save_version)
-        values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById, 1)
+    insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, company_event_status_type_id, created_by_id, save_version, modified_by_id)
+        values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById, 1, :createdById)
   """;
 
   //language=PostgreSQL

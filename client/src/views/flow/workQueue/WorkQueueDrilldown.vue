@@ -458,7 +458,8 @@ export default {
               if ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
                   || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b)))))) {
                 //todo: keep an eye on if Date.parse returns false for regular numbers and such
-                return new Date(a) - new Date(b)
+                //note: firefox doesn't support date formats with hyphens. only with /
+                return new Date(a.replace(/-/g, '/')) - new Date(b.replace(/-/g, '/'))
               } else {
                 //otherwise sort normally
                 if (typeof a === 'number' || typeof b === 'number') {

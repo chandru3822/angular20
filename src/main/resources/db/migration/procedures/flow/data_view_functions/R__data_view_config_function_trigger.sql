@@ -81,7 +81,29 @@ CREATE TRIGGER contact_details_trg
   after update
   ON flow.contact
   FOR EACH ROW
-  --  when (new.temp_geo_attempted is false)
+--     when (
+--   coalesce(new.email,'') != coalesce(old.email,'') or
+--   coalesce(new.phone,'') != coalesce(old.phone,'') or
+--   coalesce(new.mobile,'') != coalesce(old.mobile,'') or
+--   coalesce(new.first_name,'') != coalesce(old.first_name,'') or
+--   coalesce(new.last_name,'') != coalesce(old.last_name,'') or
+--   coalesce(new.street1,'') != coalesce(old.street1,'') or
+--   coalesce(new.street2,'') != coalesce(old.street2,'') or
+--   coalesce(new.city,'') != coalesce(old.city,'') or
+--   coalesce(new.postal_code,'') != coalesce(old.postal_code,'') or
+--   coalesce(new.prospect_status,'') != coalesce(old.prospect_status,'') or
+--   coalesce(new.owner_user_position_id,0) != coalesce(old.owner_user_position_id,0) or
+--   coalesce(new.contact_type_id,0) != coalesce(old.contact_type_id,0) or
+--   coalesce(new.company_state_id,0) != coalesce(old.company_state_id,0) or
+--   coalesce(new.mailing_company_state_id,0) != coalesce(old.mailing_company_state_id,0) or
+--   coalesce(new.company_country_id,0) != coalesce(old.company_country_id,0) or
+--   coalesce(new.longitude,0) != coalesce(old.longitude,0) or
+--   coalesce(new.latitude,0) != coalesce(old.latitude,0) or
+--   coalesce(new.mailing_street1,'') != coalesce(old.mailing_street1,'') or
+--   coalesce(new.mailing_street2,'') != coalesce(old.mailing_street2,'') or
+--   coalesce(new.mailing_city,'') != coalesce(old.mailing_city,'') or
+--   coalesce(new.mailing_postal_code,'') != coalesce(old.mailing_postal_code,'') or
+--   coalesce(new.title,'') != coalesce(old.title,'') )
 EXECUTE PROCEDURE flow.contact_details();
 
 drop function if exists flow.update_contact_custom_field_value_details() cascade;
@@ -161,20 +183,28 @@ BEGIN
         end loop;
     end loop;
 
--- --TODO what to do here
---   if (TG_OP = 'UPDATE') THEN
---
---     select count(1)
---     into v_count
---     from flow.user_position up
---            inner join flow.white_listed_position wlp on wlp.position_id = up.position_id and wlp.archived is false
---     where up.user_id = new.modified_by_id
---       and up.end_date is null
---       and wlp.custom_field_group_assignment_id = 395;
---     if new.custom_field_group_assignment_id = 395 and old.int_value != new.int_value and v_count < 1 then
---       raise exception 'You do not have rights to update the Lead Source for this Contact. (B)';
---     end if;
---   end if;
+-- --TODO take this out again after we figure out how closers are changing this field.
+  if (TG_OP = 'UPDATE' and new.custom_field_group_assignment_id = 395 and old.int_value is not null and old.int_value != new.int_value) THEN
+
+    select count(1)
+    into v_count
+    from flow.user_position up
+    where up.user_id = new.modified_by_id
+      and up.position_id in (1,2)
+      and up.archived is false
+      and up.primary_flag is true
+      and up.end_date is null
+      and 1 = ( select count(1)
+                from flow.user_position up2
+                where up2.user_id = up.user_id
+                  and up2.archived is false
+                  and up2.end_date is null
+    );
+
+    if v_count > 0 then
+      raise exception 'You do not have rights to update the Lead Source for this Contact. Please contact Carlin Johnson if you see this error message.';
+    end if;
+  end if;
 
   RETURN NULL;
 END

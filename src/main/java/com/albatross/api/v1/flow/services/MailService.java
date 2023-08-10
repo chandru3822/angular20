@@ -223,7 +223,7 @@ public class MailService {
 
                   if(a.isPresent() && a.get().getS3Key() != null) {
                     MimeBodyPart attachmentPart = new MimeBodyPart();
-                    attachmentPart.setFileName(a.get().getDisplayName());
+                    attachmentPart.setFileName(a.get().getFilename());
                     S3Object s3Object = attachmentService.getS3ObjectByAttachment(a.get());
                     byte[] byteArray = IOUtils.toByteArray(s3Object.getObjectContent());
                     DataSource source = new ByteArrayDataSource(byteArray,a.get().getContentType());

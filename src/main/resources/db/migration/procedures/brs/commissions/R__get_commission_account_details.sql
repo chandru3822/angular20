@@ -77,7 +77,7 @@ DECLARE
       p_commission_plan_id IS NULL;
   --select * from blueraven.get_commission_account_details('2018-07-20',null,null,null,null,null,null,null,null);
   v_period_end_date date;
-  v_amounts         numeric[] = '{0.00,-0.01,0.01}';
+  v_amounts         numeric[] = '{.03}';
 BEGIN
 
   select period_end
@@ -146,14 +146,15 @@ BEGIN
                                 u.last_name,
                                 coalesce(
                                   round(case
+                                          when pd.cancelled_date is not null then 0::numeric
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
                                           else pd.system_size::numeric end * opru.m1_allocation, 2),
                                   0)     total,
                                 1     as milestone_id
                          FROM flow.project p1
-                                inner join brs.project_override po on po.project_id = p1.id
-                                inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
+                               inner join brs.financial_details f on f.project_id = p1.id
+                                inner join brs.override_plan op on op.id = f.override_plan_id and op.position_id = 1
                                 INNER JOIN brs.override_plan_receiving_user opru
                                            ON opru.override_plan_id = op.id
                                 INNER JOIN flow.user u ON u.id = opru.user_id
@@ -165,22 +166,24 @@ BEGIN
                                                             ppscfv.custom_field_group_assignment_id = 1251
                                        where pps.project_id = p1.id
                                          and pps.process_step_id = 175
-                                         and ppscfv.date_value is not null))
+                                         and ppscfv.date_value is not null
+                                         and ppscfv.date_value <= v_period_end_date
+                                       ))
                         UNION
                         (SELECT p1.id AS project_id,
                                 u.id,
                                 u.first_name,
                                 u.last_name,
                                 coalesce(
-                                  round(case
+                                  round(case when pd.cancelled_date is not null then 0::numeric
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
                                           else pd.system_size::numeric end * opru.m2_allocation, 2),
                                   0)     total,
                                 2     as milestone_id
                          FROM flow.project p1
-                                inner join brs.project_override po on po.project_id = p1.id
-                                inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 1
+                                inner join brs.financial_details d on d.project_id = p1.id
+                                inner join brs.override_plan op on op.id = d.override_plan_id and op.position_id = 1
                                 INNER JOIN brs.override_plan_receiving_user opru
                                            ON opru.override_plan_id = op.id
                                 INNER JOIN flow.user u ON u.id = opru.user_id
@@ -192,7 +195,24 @@ BEGIN
                                                             ppscfv.custom_field_group_assignment_id = 21009
                                        where pps.project_id = p1.id
                                          and pps.process_step_id = 3365
-                                         and ppscfv.date_value is not null))) AS _overrides_per_user) else null::json end,
+                                         and ppscfv.date_value is not null
+                                        and ppscfv.date_value <= v_period_end_date
+                                       ))
+                        union
+                        (select pcl.project_id AS project_id,
+                                u2.id,
+                                u2.first_name,
+                                u2.last_name,
+                                0.00::numeric,
+                                2 as milestone_id
+                         from brs.project_commission_ledger pcl
+                                inner join flow."user" u2 on u2.id = pcl.user_id
+                         where pcl.project_id = fd.project_id and pcl.ledger_type_id = 3 and
+                           not exists (select fd1.id
+                                       from brs.financial_details fd1
+                                              inner join brs.override_plan_receiving_user o on o.override_plan_id = fd1.override_plan_id and
+                                                                                               o.user_id = pcl.user_id
+                                       where fd1.project_id = fd.project_id))) AS _overrides_per_user) else null::json end,
                  fd.override_plan                                                    AS override_plan,
                  fd.override_plan_status                                             AS override_plan_status,
                  fd.override_plan_id                                                 AS override_plan_id,
@@ -307,6 +327,6 @@ BEGIN
           order by 3) as foo1
     where CASE
             WHEN p_project_ids IS NOT NULL
-              THEN foo1.project_id = ANY (p_project_ids) else (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not (coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0)) = any (v_amounts) end;
+              THEN foo1.project_id = ANY (p_project_ids) else (foo1.amount_to_pay = 0 and foo1.forfeited_amount > 0) or  not abs((coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0))) < any (v_amounts) end;
 END
 $$;
