@@ -675,6 +675,9 @@ export default {
 .primary-lighten-9-bkgrd {
   background-color: var(--v-primary-lighten9);
 }
+.filterCheckbox div {
+  align-self: flex-end;
+}
 .filterCheckbox:hover {
   background-color: var(--v-grey-lighten4) !important;
 }
