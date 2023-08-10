@@ -16,6 +16,7 @@ declare
   v_contact_state           text;
   v_appt_start_time         text;
   v_appt_end_time           text;
+  v_site_survey_start_time  text;
   v_system_size             text;
   v_installation_start_time text;
   v_project_name            text;
@@ -36,14 +37,15 @@ BEGIN
          u.first_name,
          u.id,
          o.id,
-         (closer_appointment_start at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
-         (closer_appointment_end at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
+         to_char(((closer_appointment_start at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text), 'MM/DD/YYYY HH:MI am'),
+         to_char(((closer_appointment_end at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text), 'MM/DD/YYYY HH:MI am'),
+         to_char(((pd.site_survey_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text), 'MM/DD/YYYY HH:MI am'),
          pd.contact_name,
          pd.project_street1,
          pd.project_city,
          pd.project_state_abbreviation,
          pd.system_size::text,
-         (pd.installation_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text,
+         to_char(((pd.installation_start_time at time zone 'UTC') at time zone coalesce(pd.project_time_zone, t.timezone)::text), 'MM/DD/YYYY HH:MI am'),
          pd.project_name,
          coalesce(pd.contact_mobile_phone, pd.contact_phone),
          up.position_id,
@@ -54,6 +56,7 @@ BEGIN
     v_closer_org_id,
     v_appt_start_time,
     v_appt_end_time,
+    v_site_survey_start_time,
     v_contact_name,
     v_contact_street,
     v_contact_city,
@@ -210,9 +213,17 @@ BEGIN
                       ' has requested to cancel. You have 10 days from today to contact Retentions about the project to receive commission. Please call Retentions at (385) 200-3940 for help reactivating.')
 
              when p_message_type_id = 23 and v_do_manager_send is false then
-               -- 22 = project cancelled - fix for commissions (means BR wanted to send to manager but we didn't find the right match for the manager according to BR rules)
+               -- 23 = project cancelled - dont include manager
                concat('Hi ', v_closer_first_name, ', ', v_project_name, ' ', p_project_id,
                       ' has requested to cancel. You have 10 days from today to contact Retentions about the project to receive commission. Please call Retentions at (385) 200-3940 for help reactivating.')
+
+             when p_message_type_id = 24 then
+               -- 24 = site survey no show
+               concat('Hi ', v_closer_first_name, '. The site survey for ', v_project_name, ' ', p_project_id, ', originally scheduled for ', v_site_survey_start_time, ' has been marked as a no-show. We will attempt to get a new site survey on the calendar.')
+
+             when p_message_type_id = 25 then
+               -- 25 = site survey rescheduled
+               concat('Hi ', v_closer_first_name, ', ', v_project_name, ' ', p_project_id, ' has been rescheduled, and is now scheduled for ', v_site_survey_start_time)
              end
     into v_text_message_string;
 

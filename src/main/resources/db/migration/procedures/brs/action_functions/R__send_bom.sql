@@ -22,7 +22,6 @@ declare
   v_project_address text;
   v_resource_name text;
   v_coords text;
-  v_state_abbr varchar;
   v_supplier_name varchar;
   v_next_day_text text;
   v_installation_time_text text;
@@ -67,11 +66,6 @@ BEGIN
     select (select project_name from flow.project where id = p_project_id)
   into v_project_name;
 
-  select s.abbreviation
-  from flow.project p join flow.company_state cs on p.company_state_id = cs.id
-      join flow.state s on s.id = cs.state_id where p.id = p_project_id
-    into v_state_abbr;
-
     select '<!doctype html>
           <html xmlns="http://www.w3.org/1999/xhtml">
           <head>
@@ -86,8 +80,8 @@ BEGIN
          </html>'
   into v_email_default_footer;
 
-  select CONCAT(v_state_abbr, ' ', v_supplier_name, ', PO# ',  p_project_id)
-    into v_email_subject;
+  select CONCAT(v_supplier_name, ', PO# ',  p_project_id)
+  into v_email_subject;
 
   select 'supplychain@blueravensolar.com, installation.operations@blueravensolar.com'
     into v_cc_recipients;

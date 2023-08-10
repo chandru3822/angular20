@@ -120,10 +120,10 @@ BEGIN
       then
         --add the new pps
         insert into flow.project_process_step_event(project_process_step_id, process_step_event_id,
-                                                    company_event_status_type_id, created_by_id, save_version)
+                                                    company_event_status_type_id, created_by_id, save_version, modified_by_id)
         values (v_pps_id, v_process_step_event_id, (select initial_company_event_status_type_id
                                                     from flow.process_step_event
-                                                    where id = v_process_step_event_id), p_current_user_id, 1)
+                                                    where id = v_process_step_event_id), p_current_user_id, 1, p_current_user_id)
         returning id into v_new_pps_event_id;
 
         if (v_new_pps_event_id is not null)

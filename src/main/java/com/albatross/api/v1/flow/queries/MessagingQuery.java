@@ -795,8 +795,9 @@ public class MessagingQuery {
     select distinct user_id
     from flow.notification
     where notification_topic_id = :notificationTopicId
-      and (metadata -> 'userId')::bigint = :ownerUserId
+      and (metadata -> 'userId')::bigint = :userId
       and (metadata -> 'smsTeamId')::bigint = :smsTeamId
+      and message_read_tsz is null
         """;
 
   //language=PostgreSQL
