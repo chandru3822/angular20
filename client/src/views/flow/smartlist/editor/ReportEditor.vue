@@ -25,8 +25,8 @@
                 hide-details="true"
                 ref="reportNameField"
                 class="report-name"
-                @blur="isEditingReportName = false"
-                @keydown.enter.esc="[isEditingReportName = false, reportNameField.blur()]"
+                @blur="toggleEditingReportName"
+                @keydown.enter.esc="reportNameField.blur"
               />
               <span
                 v-show="!isEditingReportName"
@@ -629,6 +629,12 @@ const toggleDataView = async () => {
     snackbar('ERROR', 'Unable to update project details setting')
   } finally {
     store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const toggleEditingReportName = () => {
+  if (isEditing.value) {
+    isEditingReportName.value = !isEditingReportName.value
   }
 }
 
