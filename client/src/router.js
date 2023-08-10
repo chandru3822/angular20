@@ -1604,7 +1604,14 @@ const router = new Router({
               name: 'closerResidualsAdmin',
               props: { isAdmin: true },
               meta: {title: 'Albatross - Commissions'},
-              component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
+              // component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }, {
               path: 'residualSearch',
               meta: {title: 'Albatross - Commissions'},
