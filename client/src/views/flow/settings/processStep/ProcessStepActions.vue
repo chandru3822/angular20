@@ -5,7 +5,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="action-header-bar">
-          <v-toolbar-title class="app-title">Actions</v-toolbar-title>
+          <v-toolbar-title class="title-large">Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
@@ -237,7 +237,7 @@
                     <div v-if="item.actionTypeId === 1">
                       <v-divider></v-divider>
                       <v-toolbar flat color="transparent">
-                        <v-toolbar-title class="app-title">
+                        <v-toolbar-title class="title-large">
                           Child Links
                         </v-toolbar-title>
                         <v-spacer></v-spacer>
@@ -352,7 +352,7 @@
                 <div v-if="item.actionTypeId === 2">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
+                    <v-toolbar-title class="title-large">
                       Child Process Steps
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -516,7 +516,7 @@
                 <div v-if="item.actionTypeId === 2">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
+                    <v-toolbar-title class="title-large">
                       Child Functions
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -762,7 +762,7 @@
                 </div>
                 <v-divider class="mt-2"></v-divider>
                 <v-toolbar flat dense color="transparent">
-                  <v-toolbar-title class="app-title">
+                  <v-toolbar-title class="title-large">
                     Current Logic
                     <v-dialog
                       v-if="item.processStepLogicList && item.processStepLogicList.length > 0 && !item.logicListChanged"
@@ -844,7 +844,7 @@
                   </v-btn>
                 </v-card>
                 <v-toolbar flat dense color="transparent">
-                  <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
+                  <v-toolbar-title class="title-large">Available Operations</v-toolbar-title>
                 </v-toolbar>
                 <v-card flat class="text-left px-3" color="transparent">
                   <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="(ot, index) in operationTypes" :key="index"
@@ -859,7 +859,7 @@
                   </v-btn>
                 </v-card>
                 <v-toolbar flat dense color="transparent">
-                  <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
+                  <v-toolbar-title class="title-large">Requirements</v-toolbar-title>
                 </v-toolbar>
                 <v-card flat class="text-left mb-4 px-3" color="transparent">
                   <v-tooltip top max-width="300px"

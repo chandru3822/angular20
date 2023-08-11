@@ -99,7 +99,7 @@
       <ProcessStepRequirements :callback="populateRequirements" :event-requirements="true"></ProcessStepRequirements>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Event Actions</v-toolbar-title>
+          <v-toolbar-title class="title-large">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
@@ -312,7 +312,7 @@
                 <div v-if="action.actionTypeId === 1">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
+                    <v-toolbar-title class="title-large">
                       Child Links
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -398,7 +398,7 @@
                 <div v-if="action.actionTypeId === 2">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
+                    <v-toolbar-title class="title-large">
                       Child Functions
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -658,7 +658,7 @@
               </div>
               <v-divider></v-divider>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">
+                <v-toolbar-title class="title-large">
                   Current Logic
                   <v-dialog
                     v-if="action.processStepEventLogicList && action.processStepEventLogicList.length > 0 && !action.logicListChanged"
@@ -739,7 +739,7 @@
                 </v-btn>
               </v-card>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
+                <v-toolbar-title class="title-large">Available Operations</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left px-3" color="transparent">
                 <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="(ot, index) in operationTypes" :key="index"
@@ -754,7 +754,7 @@
                 </v-btn>
               </v-card>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
+                <v-toolbar-title class="title-large">Requirements</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left mb-4 px-3" color="transparent">
                 <v-tooltip top max-width="300px"
@@ -784,7 +784,7 @@
               </v-btn>
 
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">Event Custom Fields</v-toolbar-title>
+                <v-toolbar-title class="title-large">Event Custom Fields</v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 :headers="eventActionFieldHeaders"
