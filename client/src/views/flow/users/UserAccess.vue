@@ -53,12 +53,26 @@
                             return-object
                             multiple
                             autocomplete="off"
-                            attach
-            />
+                            attach>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip small v-if="index < 21 && userOrgCalendars.length < 21"
+                        close @click:close="userOrgCalendars.splice(index, 1)">
+                  <span>{{ item.orgName }}</span>
+                </v-chip>
+                <span v-else-if="index === 20"
+                  class="primary--text text-caption">
+                  {{ userOrgCalendars.length }} calendars selected
+                </span>
+              </template>
+            </v-autocomplete>
             <v-checkbox
               class="pt-2 mb-4"
               v-model="userHasFullAccess"
               label="Grant User Access to All Calendars"
+              @change="userOrgCalendars = []"
             />
             <v-btn text color="primary" @click="[addCalendar = !addCalendar]">Cancel</v-btn>
             <v-btn color="primary"
