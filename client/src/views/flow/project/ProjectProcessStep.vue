@@ -9,7 +9,7 @@
     <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
-        <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, dirtyCfvs = [], goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
+        <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
           <template v-slot:title>Confirm</template>
           You have unsaved fields. Are you sure you want to continue without saving?
           <template v-slot:yes>Continue and Discard Changes</template>
@@ -418,7 +418,6 @@ export default {
     }
   },
   beforeRouteUpdate(to, from, next) {
-    debugger
     // called when the route that renders this component is about to be updated via router-view update
     if (this.navigationOverride || this.dirtyCfvs.length === 0) {
       //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
@@ -432,7 +431,6 @@ export default {
   },
   beforeRouteLeave(to, from, next) {
     // called when the route that renders this component is about to be navigated away from.
-    debugger
     if (this.navigationOverride || this.dirtyCfvs.length === 0) {
       //set overide to false before navigation or else the confirmation dialog doesn't work if the next screen is also a pps
       this.navigationOverride = false
@@ -489,6 +487,7 @@ export default {
     goToPath(path, query) {
       //reset these values so the next screen works if also a pps
       this.unsavedFieldsModal = false
+      this.dirtyCfvs = []
       this.$router.push({path, query})
     },
     async getAvailableStatuses() {

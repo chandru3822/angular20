@@ -154,7 +154,11 @@
         </v-form>
       </div>
     </div>
-
+    <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
+      <template v-slot:title>Confirm</template>
+      You have unsaved fields. Are you sure you want to continue without saving?
+      <template v-slot:yes>Continue and Discard Changes</template>
+    </ConfirmationDialog>
   </div>
 </template>
 
@@ -177,10 +181,12 @@ import AttachmentCoversheetModal from '@/views/flow/components/AttachmentCoversh
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
 import {Actions} from "@/store";
 import constants from "@/helpers/constants";
+import ConfirmationDialog from "../../../components/ConfirmationDialog.vue";
 
 export default {
   name: 'ProjectDetails',
   components: {
+    ConfirmationDialog,
     SpinnerInline,
     CustomValueInput,
     AttachmentsFolderList,
@@ -207,6 +213,9 @@ export default {
       fileToUpload: null,
       showCoversheetModal: false,
       snackbar: {},
+      unsavedFieldsModal: false,
+      toPath: null,
+      query: {},
       isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
       // windowWidth: window.innerWidth,
@@ -242,7 +251,24 @@ export default {
       })
     }
   },
-
+  beforeRouteUpdate(to, from, next){
+    if(this.dirtyCfvs.length === 0){
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
+  beforeRouteLeave(to, from, next){
+    if(this.dirtyCfvs.length === 0){
+      next()
+    } else {
+      this.toPath = to.path
+      this.query = to.query
+      this.unsavedFieldsModal = true
+    }
+  },
   methods: {
     async loadProjectTypes() {
       const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, {
@@ -447,6 +473,12 @@ export default {
       //if you cancel the coversheet the file-input files prop is not getting reset. do manually here
       //could not get it to reset using the vue $ref stuff. but this way with getElementById does work
       document.getElementById(`menuFileInput${attachmentTypeId}`).value = null
+    },
+    goToPath(path, query) {
+      //reset these values so the next screen works if also a pps
+      this.unsavedFieldsModal = false
+      this.dirtyCfvs = []
+      this.$router.push({path, query})
     },
   }
 }
