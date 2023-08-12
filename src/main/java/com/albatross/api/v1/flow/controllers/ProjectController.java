@@ -175,6 +175,12 @@ public class ProjectController {
     return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId, excludeAttachments), HttpStatus.OK);
   }
 
+  @GetMapping(value = "/companyStatus/{id}")
+  public Optional<ProjectStatusType> getCompanyProjectStatusById(
+    @PathVariable Long id) {
+    return projectService.getOneCompanyProjectStatusType(id);
+  }
+
   @GetMapping(value = "/statusesForWqt")
   public ResponseEntity<List<WorkQueueTypeProjectStatus>> getStatusesForWqt() {
     return new ResponseEntity<>(projectService.getStatusesForWqt(), HttpStatus.OK);
