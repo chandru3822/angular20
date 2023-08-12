@@ -826,6 +826,7 @@ select
         cpst.id,
         cpst.project_status_type,
         cpst.display_order,
+        cpst.description,
         cpst.is_default,
         cpst.color,
         pst.id as "projectStatusTypeId",
@@ -842,6 +843,7 @@ select
     select
         cpst.id,
         cpst.project_status_type,
+        cpst.description,
         cpst.display_order,
         cpst.is_default,
         pst.id as "projectStatusTypeId",
@@ -869,6 +871,7 @@ select
     set project_status_type = :projectStatusType,
         modified_by_id = :currentUserId,
         display_order = :displayOrder,
+        description = :description,
         color = :color,
         date_modified = now()
     where id = :id
