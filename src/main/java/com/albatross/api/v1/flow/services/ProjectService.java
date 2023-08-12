@@ -743,6 +743,7 @@ public class ProjectService {
     params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
     params.put("projectStatusType", status.getProjectStatusType());
     params.put("color", status.getColor());
+    params.put("description", status.getDescription());
     params.put("companyId", currentUser.getCompanyId());
     Long id;
 

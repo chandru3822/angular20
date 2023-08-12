@@ -13,7 +13,7 @@
           <v-toolbar-items>
             <v-btn text
                    :disabled="!status.projectStatusType || !status.projectStatusTypeId"
-                   @click="saveType(status, false)">Save
+                   @click="saveType(status)">Save
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -33,6 +33,13 @@
             label="Select a Category"
             item-text="projectStatusType"
             attach></v-autocomplete>
+          <v-textarea
+            label="Description"
+            outlined
+            auto-grow
+            v-model="status.description"
+          ></v-textarea>
+
           <div v-if="!status.isDefault" class="mb-3">
             <v-dialog
               v-model="status.setInitialConfirm"
@@ -239,21 +246,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveType(type, isNew) {
+    async saveType(type) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await putRequest(`/project/companyStatus`, type)
-
-        if (isNew) {
-          // add it to the records already on the screen
-          this.statusTypes.push(data)
-          this.statusTypes = orderBy(this.statusTypes, [s => s.projectStatusType.toLowerCase()])
-
-          // reset the new process fields
-          this.addNew = false
-          this.newType = {}
-        }
-        this.selectedStatusTypeId = null
         this.snackbar = getSnackbar('SUCCESS', 'Project Status Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
