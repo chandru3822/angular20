@@ -811,31 +811,41 @@
                 </v-toolbar>
                 <v-card flat class="text-left px-3" color="transparent">
                   <div v-if="logicStringToggle">
-                    <div v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')"
+                    <draggable v-if="userCanEdit" v-model="item.processStepLogicList"
+                               group="processStepLogicList" @start="drag=true" @end="drag=false"
+                               @change="actionLogicOrderChanged(item)">
+                      <div v-for="(l, index) in filterBy(item.processStepLogicList, false, 'archived')"
 
-                         :style="{'margin-left': getLogicMargin(l, item, index)}"
-                         :key="index">
-                      <v-btn small class="ml-1 mr-1 mt-1"
-                             :disabled="!userCanEdit"
-                             @click="[l.archived = true, item.logicListChanged = true]">
-                        {{ getLogicButtonText(l) }}
-                      </v-btn>
-                    </div>
-                  </div>
-                  <div v-else>
-                    <v-tooltip top max-width="300px"
-                               v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
-                               :key="idx">
-                      <template v-slot:activator="{ on:tooltip }">
+                           :style="{'margin-left': getLogicMargin(l, item, index)}"
+                           :key="index">
                         <v-btn small class="ml-1 mr-1 mt-1"
-                               v-on="{ ...tooltip }"
                                :disabled="!userCanEdit"
                                @click="[l.archived = true, item.logicListChanged = true]">
-                          {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
+                          {{ getLogicButtonText(l) }}
                         </v-btn>
-                      </template>
-                      <span>{{ getLogicButtonText(l) }}</span>
-                    </v-tooltip>
+                      </div>
+                    </draggable>
+                  </div>
+                  <div v-else>
+                    <draggable v-if="userCanEdit" v-model="item.processStepLogicList"
+                               group="processStepLogicList" @start="drag=true" @end="drag=false"
+                               @change="actionLogicOrderChanged(item)">
+                      <span v-for="(l, idx) in filterBy(item.processStepLogicList, false, 'archived')"
+                           :key="idx">
+                        <v-tooltip top max-width="300px"
+                                   >
+                          <template v-slot:activator="{ on:tooltip }">
+                            <v-btn small class="ml-1 mr-1 mt-1"
+                                   v-on="{ ...tooltip }"
+                                   :disabled="!userCanEdit"
+                                   @click="[l.archived = true, item.logicListChanged = true]">
+                              {{ l.processStepRequirementId ? l.requirementNbr : l.operationType }}
+                            </v-btn>
+                          </template>
+                          <span>{{ getLogicButtonText(l) }}</span>
+                        </v-tooltip>
+                      </span>
+                    </draggable>
                   </div>
                   <v-btn small class="ml-1 mr-1 mt-1" v-if="item.alwaysEnabled"
                          :disabled="!userCanEdit"
@@ -870,7 +880,7 @@
                              small class="ml-1 mr-1 mt-1 primary--text"
                              :disabled="!userCanEdit"
                              v-on="{ ...tooltip }"
-                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString })]">
+                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList.length - 1].sqlOrder + 1) }), actionLogicOrderChanged(item)]">
                         {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
                       </v-btn>
                     </template>
@@ -944,6 +954,7 @@
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
 import cloneDeep from 'lodash.clonedeep'
+import draggable from 'vuedraggable'
 import {getCompanyProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {
   getActiveAssignedToProcessStep,
@@ -970,7 +981,8 @@ export default {
   components: {
     ActionChildSms,
     ConfirmationDialog,
-    ProcessStepRequirements
+    ProcessStepRequirements,
+    draggable
   },
 
   mounted() {
@@ -1006,6 +1018,7 @@ export default {
       expandRequirements: true,
       expandActions: true,
       deleteError: false,
+      dragging: false,
       actionsUsingLogic: [],
       invalidRequirement: true,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
@@ -1104,14 +1117,18 @@ export default {
       invalidTypeCombos: [
         '1,2', // open and close paren next to each other
         '2,1', // close then open paren next to each other -- right, this isn't valid? `(8)(17)`
+        '2,0', // close paren then requirement next to it
         '0,0', // two requirements right next to each other
-        '0,1', //requirement then open paren next to each other like 1 (3)
+        '0,1', // requirement then open paren next to each other like 1 (3)
         '3,4', // AND OR next to each other
         '1,3', // open paren then AND
         '1,4', // open paren then OR
         '5,2', // not then close paren
         '5,3', // not then and
         '5,4', // not then or
+        '4,2', // OR then close parent
+        '5,2', // NOT then close parent
+        '3,2', // AND then close parent
         '3,3', // and and
         '4,4', // or or
         '5,5', // not not
@@ -1132,6 +1149,16 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    actionLogicOrderChanged(item) {
+      item.processStepLogicList = item.processStepLogicList.filter(psl => !psl.archived)
+      item.processStepLogicList.forEach((f, idx) => {
+        let order = idx + 1
+        if (f.sqlOrder !== order) {
+          f.sqlOrder = order
+        }
+      })
+      item.logicListChanged = true
+    },
     changeBooleanValue(e, fp) {
       this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
     },
