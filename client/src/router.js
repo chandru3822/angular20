@@ -1057,6 +1057,16 @@ const router = new Router({
                 }
               },
             }, {
+              path: 'projectStatus/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/ProjectStatus.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
               path: 'project',
               name: 'ProjectSettings',
               meta: {title: 'Albatross - Settings'},
