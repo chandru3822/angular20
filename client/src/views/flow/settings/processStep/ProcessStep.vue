@@ -8,7 +8,7 @@
         </v-btn>
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
-            <span class="page-title" v-if="!editName">{{ processStep.processStepName }}</span>
+            <span class="headline-small" v-if="!editName">{{ processStep.processStepName }}</span>
             <v-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
@@ -166,10 +166,6 @@
 .name-container {
   background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
-}
-.page-title {
-  font-size: 18px;
-  font-weight: 200;
 }
 
 .tabs-bar {

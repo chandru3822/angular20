@@ -7,6 +7,10 @@ export async function getCompanyProjectStatusTypes(projectId, excludeAttachments
     params }, null, [])
 }
 
+export async function getCompanyProjectStatusType(id) {
+  return await getRequest(`/project/companyStatus/${id}`, null, {})
+}
+
 export async function getProjectStatusTypes() {
   //these are at the root level
   return await getRequest(`/project/status`)

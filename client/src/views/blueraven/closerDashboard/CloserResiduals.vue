@@ -29,6 +29,17 @@
           </v-toolbar>
       </v-col>
     </v-row>
+    <v-card class="square-card pa-5 mb-3" v-if="isAdmin">
+      <v-autocomplete v-model="selectedUserId"
+                      :items="users"
+                      label="Please select a user"
+                      item-text="fullName"
+                      item-value="id"
+                      hide-details
+                      attach
+                      @change="loadResidualData()"
+      ></v-autocomplete>
+    </v-card>
     <div   v-if="!dataLoading && residualData && residualData.user_id">
       <v-row>
         <v-col cols="12" md="4">
@@ -224,14 +235,14 @@
     </v-card>
     </div>
     <v-card class="square-card pa-5" v-else-if="!dataLoading">
-      You are not assigned to a residual plan.  Please contact an administrator.
+      {{ notAssignedMessage }}
     </v-card>
   </v-container>
 </template>
 
 <script>
   import constants from '@/helpers/constants'
-  import { getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import { getRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
   import { AppMutations } from '@/stores/AppStore'
   import SpinnerInline from '@/components/SpinnerInline'
   import moment from 'moment'
@@ -241,16 +252,30 @@
     components: {
       SpinnerInline,
     },
-    computed: {},
+    props: {
+      isAdmin: Boolean
+    },
+    computed: {
+      notAssignedMessage() {
+        return this.isAdmin && this.selectedUserId === null ? 'You must select a user'
+          : this.isAdmin ? 'This user is not assigned to a residual plan. Please contact an administrator.'
+          : 'You are not assigned to a residual plan.  Please contact an administrator.'
+      }
+    },
     watch: {
     },
     created () {
       this.loadResidualData()
+      if(this.isAdmin) {
+        this.loadUsers()
+      }
     },
     data () {
       return {
         snackbar: {},
         constants,
+        users: [],
+        selectedUserId: null,
         currentUserId: this.$store.state.user.details.id,
         residualData: {},
         totalQualifyingSearch: '',
@@ -258,6 +283,7 @@
         maxDate: moment().format('YYYY-MM'),
         currentMonth: moment().startOf('month').format('YYYY-MM'),
         viewingDataFor: moment().startOf('month').format('YYYY-MM'),
+        usersLoading: true,
         dataLoading: true,
         totalQualifyingFdcHeaders: [
           {text: 'Contact Name', value: 'contact_name', show: true},
@@ -316,23 +342,39 @@
       goToProject(projectId) {
         this.$router.push(`/project/${projectId}`)
       },
-      async loadResidualData () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.dataLoading = true
+      async loadUsers () {
+        this.usersLoading = true
         try {
-          this.viewingDataFor = this.viewingDataFor === '' ? this.currentMonth : this.viewingDataFor
-          let params = {
-            residualDate: moment(this.viewingDataFor).format('YYYY-MM-DD')
-          }
-          const {data} = await getRequestWithParams('/closerDashboard/residuals', {params}, 'blueraven')
-          this.residualData = data
-          this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const {data} = await getRequest('/closerDashboard/closers', 'blueraven')
+          this.users = data
         } catch (e) {
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving residual data')
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving users')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.usersLoading = false
+        }
+      },
+      async loadResidualData () {
+        if((this.isAdmin && this.selectedUserId != null) || !this.isAdmin) {
+          this.$store.commit(AppMutations.SET_LOADING, true)
+          this.dataLoading = true
+          try {
+            this.viewingDataFor = this.viewingDataFor === '' ? this.currentMonth : this.viewingDataFor
+            let params = {
+              residualDate: moment(this.viewingDataFor).format('YYYY-MM-DD')
+            }
+            let url = this.isAdmin ? `/closerDashboard/residuals/${this.selectedUserId}` : '/closerDashboard/residuals'
+            const {data} = await getRequestWithParams(url, {params}, 'blueraven')
+            this.residualData = data
+            this.dataLoading = false
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          } catch (e) {
+            this.snackbar = getSnackbar('ERROR', 'Error retrieving residual data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.dataLoading = false
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        } else {
           this.dataLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
 

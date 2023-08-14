@@ -1,6 +1,5 @@
-drop function if exists brs.reset_financial_details();
-CREATE OR REPLACE FUNCTION brs.reset_financial_details()
-  RETURNS void AS
+drop procedure if exists brs.reset_financial_details();
+CREATE OR REPLACE procedure brs.reset_financial_details() AS
 $BODY$
 declare
   x record;
@@ -90,6 +89,4 @@ BEGIN
 
 END;
 $BODY$
-  LANGUAGE plpgsql
-  VOLATILE
-  COST 100;
+  LANGUAGE plpgsql;

@@ -1,36 +1,15 @@
 <template>
   <v-container id="work-queue-types-container">
-    <v-dialog width="700"
-              v-model="deleteError"
-    >
-      <v-card>
-        <v-card-title class="text-h5 grey lighten-2 error--text">
-          Error Deleting Work Queue Type
-        </v-card-title>
-
-        <v-card-text class="pt-5">
-          <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
-            <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
-            <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
-              <strong>{{ a.processStepName }}</strong>
-            </div>
-          </div>
-        </v-card-text>
-
-        <v-card-actions>
-          <v-spacer></v-spacer>
-
-          <v-btn
-            color="primary"
-            dark
-            class="white--text"
-            @click="deleteError = false"
-          >
-            OK
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <ConfirmationDialog :openDialog="deleteError" @cancel="deleteError = false" hideConfirm>
+      <template v-slot:title><span class="error-text">Error Deleting Work Queue Type</span></template>
+      <div v-if="cannotDeleteReasons && cannotDeleteReasons.length > 0" class="mb-5">
+        <div class="mb-3">* This work queue type is being used by Process Steps or Process Step Events.  You must remove those before deleting this work queue type.</div>
+        <div v-for="a in cannotDeleteReasons" :key="a.id" class="ml-5">
+          <strong>{{ a.processStepName }}</strong>
+        </div>
+      </div>
+      <template v-slot:no>Close</template>
+    </ConfirmationDialog>
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar toolbar-z-index-override">
@@ -131,7 +110,7 @@
         </v-container>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!workQueueToDelete" @confirm="[workQueueToDelete.archived = true, deleteType(workQueueToDelete)]" @close-dialog="workQueueToDelete=null">
+    <ConfirmationDialog :open-dialog="!!workQueueToDelete" @confirm="deleteType(workQueueToDelete)" @close-dialog="workQueueToDelete=null">
       Are you sure you want to delete this work queue type: <strong>{{workQueueToDeleteType}}</strong>
 
     </ConfirmationDialog>
@@ -261,6 +240,7 @@
           const {status} = await putRequest(`/workQueueType/delete/${item.id}`)
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Type')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          item.archived = true
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
