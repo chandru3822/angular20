@@ -1,36 +1,15 @@
 <template>
   <v-container class="pt-0">
     <v-row class="settings-container" :class="{'d-inline-block': isMobile}">
-      <v-col cols="12" md="3" class="text-left pa-0">
-        <v-menu data-app
-                v-if="isMobile"
-                offset-y
-                attach
-                v-model="menuOpen"
-                min-width="100%"
-                class="account-menu"
-                :close-on-content-click="false">
-          <template v-slot:activator="{ on }">
-            <v-toolbar
-              color="white"
-              v-on="on"
-              class="label-large"
-              style="z-index: 1"
-            >
-              {{ title }}
-              <v-spacer></v-spacer>
-              <v-btn text>
-                <v-icon>expand_more</v-icon>
-              </v-btn>
-            </v-toolbar>
-          </template>
-          <SettingsMenu class="pa-3" :title="title" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
-        </v-menu>
-        <v-card class=" left-menu square-card" v-else>
-          <SettingsMenu class="px-5 py-2 settings-container"></SettingsMenu>
+      <v-col class="text-left pa-0" :class="{'collapse-left':leftCollapsed, 'col-md-3': !leftCollapsed}">
+        <v-card class=" left-menu square-card d-flex justify-space-between">
+          <SettingsMenu class="px-5 py-2 settings-container" :class="{'hidden': leftCollapsed}"></SettingsMenu>
+          <v-btn small text color="primary" @click="collapseMenu" class="py-6">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
         </v-card>
       </v-col>
-      <v-col cols="12" md="9" class="px-4 pt-0 main-section">
+      <v-col class="px-4 pt-0 main-section" :class="{'main-section-left-collapsed': leftCollapsed, 'col-md-9': !leftCollapsed}">
         <router-view/>
       </v-col>
     </v-row>
@@ -60,6 +39,7 @@ export default {
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       parentId: this.$store.state.user.details.parentCompanyId,
+      leftCollapsed: false
 
     }
   },
@@ -249,6 +229,9 @@ export default {
       } else {
         this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
       }
+    },
+    collapseMenu (){
+      this.leftCollapsed = !this.leftCollapsed
     }
   },
   created () {
@@ -282,12 +265,26 @@ a {
   height: 100%;
   max-height: 100%;
 }
+.collapse-left {
+  max-width: 72px;
+  padding-left:0;
+  div.left-menu {
+    justify-content: center !important;
+  }
+}
+.hidden {
+  display: none;
+}
 
 .main-section {
   height: 100vh;
   background-color: #fff;
   max-height: 100%;
   overflow: auto;
+  .main-section-left-collapsed {
+    width: calc(100% - 72px);
+  }
+
 }
 
 

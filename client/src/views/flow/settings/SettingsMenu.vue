@@ -1,5 +1,5 @@
 <template>
-  <v-list :dense="$vuetify.breakpoint.smAndUp" class="left-menu">
+  <v-list :dense="$vuetify.breakpoint.smAndUp" color="transparent" class="">
     <template v-for="(item, index) in filterBy(items, true, 'show')">
       <h3 class="label-large" v-if="item.header">{{item.header}}</h3>
       <v-list-item
