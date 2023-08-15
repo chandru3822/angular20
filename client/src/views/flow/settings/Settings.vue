@@ -1,15 +1,39 @@
 <template>
   <v-container class="pt-0">
     <v-row class="settings-container" :class="{'d-inline-block': isMobile}">
-      <v-col class="text-left pa-0" :class="{'collapse-left':leftCollapsed, 'col-md-3': !leftCollapsed}">
-        <v-card class=" left-menu square-card d-flex justify-space-between">
+      <v-col class="text-left pa-0" :class="{'collapse-left':leftCollapsed && !isMobile, 'col-md-3': !leftCollapsed}">
+        <v-menu data-app
+                v-if="isMobile"
+                offset-y
+                attach
+                v-model="menuOpen"
+                min-width="100%"
+                class="account-menu"
+                :close-on-content-click="false">
+          <template v-slot:activator="{ on }">
+            <v-toolbar
+                color="white"
+                v-on="on"
+                class="label-large"
+                style="z-index: 1"
+            >
+              {{ title }}
+              <v-spacer></v-spacer>
+              <v-btn text>
+                <v-icon>expand_more</v-icon>
+              </v-btn>
+            </v-toolbar>
+          </template>
+          <SettingsMenu class="pa-3" :title="title" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
+        </v-menu>
+        <v-card v-else class=" left-menu square-card d-flex justify-space-between">
           <SettingsMenu class="px-5 py-2 settings-container" :class="{'hidden': leftCollapsed}"></SettingsMenu>
           <v-btn small text color="primary" @click="collapseMenu" class="py-6">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </v-card>
       </v-col>
-      <v-col class="px-4 pt-0 main-section" :class="{'main-section-left-collapsed': leftCollapsed, 'col-md-9': !leftCollapsed}">
+      <v-col class="px-4 pt-0 main-section" :class="{'main-section-left-collapsed': leftCollapsed, 'col-12 col-md-9': !leftCollapsed}">
         <router-view/>
       </v-col>
     </v-row>
@@ -236,6 +260,7 @@ export default {
   },
   created () {
     this.getCompanyObjectTypes()
+    this.setTitle()
   }
 }
 </script>
@@ -282,7 +307,7 @@ a {
   max-height: 100%;
   overflow: auto;
   .main-section-left-collapsed {
-    width: calc(100% - 72px);
+    max-width: calc(100% - 72px) !important;
   }
 
 }
