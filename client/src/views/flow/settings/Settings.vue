@@ -47,6 +47,7 @@ import Vue2Filters from 'vue2-filters'
 import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import SettingsMenu from "./SettingsMenu";
+import {UserMutations} from "../../../stores/UserStore";
 
 export default {
   name: 'Settings',
@@ -63,13 +64,15 @@ export default {
       companyObjectTypes: [],
       companyId: this.$store.state.user.details.companyId,
       parentId: this.$store.state.user.details.parentCompanyId,
-      leftCollapsed: false
 
     }
   },
   computed: {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
+    },
+    leftCollapsed(){
+      return this.$store.state.user.settingsMenuCollapsed
     },
     items() { return [
       {
@@ -255,7 +258,7 @@ export default {
       }
     },
     collapseMenu (){
-      this.leftCollapsed = !this.leftCollapsed
+      this.$store.commit(UserMutations.SETTINGS_MENU_COLLAPSE)
     }
   },
   created () {
