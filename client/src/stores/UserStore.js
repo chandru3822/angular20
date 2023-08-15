@@ -16,7 +16,8 @@ export const UserMutations = {
   SET_DETAILS: 'setDetails',
   SET_USER_IMAGE: 'setUserImage',
   SET_COMPANIES: 'setCompanies',
-  RESET_STATE: 'resetState'
+  RESET_STATE: 'resetState',
+  SETTINGS_MENU_COLLAPSE:'settingsMenuCollapse'
 }
 
 export const UserStore = {
@@ -24,7 +25,8 @@ export const UserStore = {
     authorized: false,
     jwt: null,
     loginError: null,
-    details: null
+    details: null,
+    settingsMenuCollapsed: false
   },
   mutations: {
     [UserMutations.SET_JWT]: (state, jwt) => (state.jwt = jwt),
@@ -33,13 +35,15 @@ export const UserStore = {
     [UserMutations.SET_DETAILS]: (state, details) => (state.details = details),
     [UserMutations.SET_USER_IMAGE]: (state, image) => (state.userImage = image),
     [UserMutations.SET_COMPANIES]: (state, companies) => (state.companies = companies),
+    [UserMutations.SETTINGS_MENU_COLLAPSE]: (state) => (state.settingsMenuCollapsed = !state.settingsMenuCollapsed),
     [UserMutations.RESET_STATE]: (state) => (Object.assign(state, {
       authorized: false,
       jwt: null,
       loginError: null,
       details: {},
       userImage: {},
-      companies: []
+      companies: [],
+      settingsMenuCollapsed: false
     })),
   },
   actions: {

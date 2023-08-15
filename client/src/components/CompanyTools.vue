@@ -6,7 +6,7 @@
           class="account-menu"
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
-      <v-btn class="account-menu-button"
+      <v-btn class="account-menu-button label-medium px-1"
              :color="headerColor"
              dark
              v-on="on"
