@@ -2,23 +2,7 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/projectStatuses'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
-
-        <v-toolbar flat class="app-toolbar">
-          <span class="headline-small">Edit Status Type</span>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn text
-                   :disabled="!status.projectStatusType || !status.projectStatusTypeId"
-                   @click="saveType(status)">Save
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-
-        <div class="pa-5">
+        <div class="px-5">
           <v-text-field v-model="status.projectStatusType"
                         label="Status Type"
                         :readonly="!userCanEdit"
@@ -39,6 +23,11 @@
             auto-grow
             v-model="status.description"
           ></v-textarea>
+
+          <v-checkbox label="Use as Milestone"
+                      class="default-text-color"
+                      v-model="status.isMilestone"
+          />
 
           <div v-if="!status.isDefault" class="mb-3">
             <v-dialog
@@ -102,17 +91,16 @@
               <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
             </form>
           </div>
-          <div>
-            <label>Status Color</label>
-            <v-color-picker class="my-3"
-                            v-model="status.color"
-                            :canvas-height="colorOptions.height"
-                            :width="colorOptions.width"
-                            :mode="colorOptions.mode"
-                            :hide-mode-switch="colorOptions.hideModeSwitch">
-            </v-color-picker>
-          </div>
         </div>
+
+        <v-btn v-if="userCanEdit"
+               :disabled="!status.projectStatusType || !status.projectStatusTypeId"
+               color="primary"
+               class="d-inline-block mt-5"
+               @click="saveType(status)">
+          <v-icon class="mr-2">save</v-icon>
+          Save
+        </v-btn>
       </v-col>
 
     </v-row>
@@ -132,10 +120,10 @@ import orderBy from 'lodash.orderby'
 import {getCompanyProjectStatusType, getProjectStatusTypes} from '@/services/projectStatusTypeService'
 import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 export default {
-  name: 'ProjectStatuses',
+  name: 'ProjectStatusComponents',
   mixins: [Vue2Filters.mixin],
   components: {
     ConfirmationDialog,

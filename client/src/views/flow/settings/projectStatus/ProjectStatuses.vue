@@ -98,14 +98,6 @@
                 <img v-if="item.icon && item.icon.presignedUrl"
                      class="status-icon-grid" :src="item.icon.presignedUrl">
               </td>
-              <td class="text-left">
-                <v-avatar
-                  :tile="false"
-                  :size="30"
-                  :color="item.color"
-                  class="account-img clickable bordered">
-                </v-avatar>
-              </td>
               <td class="text-right">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
@@ -115,7 +107,7 @@
                   <span>Project Status ID: {{item.id}}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
-                <v-btn small text color="primary" :to="`/settings/projectStatus/${item.id}`">
+                <v-btn small text color="primary" :to="`/settings/projectStatus/${item.id}/components`">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
@@ -152,7 +144,7 @@
   import {getCompanyProjectStatusTypes, getProjectStatusTypes} from '@/services/projectStatusTypeService'
   import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
   export default {
     name: 'ProjectStatuses',
@@ -174,7 +166,6 @@
           {text: 'Status', value: 'rootProjectStatusType', show: true},
           {text: 'Initial', value: 'initial', show: true},
           {text: 'Icon', value: 'icon', show: true},
-          {text: 'Color', value: 'color', show: true},
           {text: '', value: 'icons', show: true},
         ],
         addNew: false,
