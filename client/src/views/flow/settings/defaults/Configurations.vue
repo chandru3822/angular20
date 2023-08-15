@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Configurations</v-toolbar-title>
+          <v-toolbar-title class="title-large">Configurations</v-toolbar-title>
         </v-toolbar>
 
         <div class="ma-3">
@@ -11,12 +11,12 @@
         </div>
 
         <v-data-table
+            id="defaults-config-table"
           :headers="headers"
           :items="configurationValues"
           :items-per-page="-1"
-          :mobile-breakpoint="0"
           hide-default-footer
-          class="elevation-1 fix-column-width-bug square-card"
+          class="elevation-1 square-card table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No Configuration Values</span>
@@ -26,35 +26,31 @@
             <span class="default-text-color">No Configuration Values</span>
           </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">
-                {{item.name}}
-              </td>
-              <td class="text-left">
+          <template #item.value="{ item, index }">
                 <v-text-field text
+                              style="overflow-wrap: anywhere"
                               type="text"
                               v-if="index === editIndex"
                               label="Value"
                               v-model="item.value">
                 </v-text-field>
-                <div v-else>
+                <div v-else style="overflow-wrap: anywhere">
                   {{ item.value }}
                 </div>
-              </td>
-              <td>
-                <v-btn small text color="primary" @click="editIndex = index" v-if="index !== editIndex">
+          </template>
+              <template #item.icons = "{item, index}">
+                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = index" v-if="index !== editIndex">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
+                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="saveConfigurationValue(item)" v-if="index === editIndex">
                   <v-icon>save</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" @click="editIndex = null" v-if="index === editIndex">
+                <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="editIndex = null" v-if="index === editIndex && $vuetify.breakpoint.smAndDown">
+                  <v-icon>close</v-icon>
+                </v-btn><v-btn small text color="primary" @click="editIndex = null" v-else-if="index === editIndex">
                   cancel
                 </v-btn>
-              </td>
-            </tr>
-          </template>
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -77,7 +73,7 @@ export default {
       headers: [
         {text: 'Name', value: 'name', show: true},
         {text: 'Value', value: 'value', show: true},
-        {text: null, value: 'icons', show: true}
+        {text: null, value: 'icons', show: true, sortable: false}
       ],
       configurationValues: [],
       companyId: this.$store.state.user.details.companyId,
@@ -118,3 +114,9 @@ export default {
   },
 }
 </script>
+<style lang="scss">
+//keeps the arrow icon on the sort chip (mobile dropdown) from having a light blue background
+#defaults-config-table > div > table > thead > tr > th > div > div > div > div > div.v-select__slot > div.v-select__selections > span > span > div {
+  background-color: inherit !important;
+}
+</style>

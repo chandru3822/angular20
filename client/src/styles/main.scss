@@ -285,7 +285,8 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 }
 
 .fix-column-width-bug table {
-  table-layout: fixed;
+    table-layout: fixed;
+
 }
 
 // this is for input fields in column headers
@@ -357,7 +358,9 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .text-wrap {
   white-space: normal !important;
 }
-
+.auto-overflow {
+  overflow: auto;
+}
 .app-pre-wrapper {
   white-space: pre-line;
   font-family: 'Lato', sans-serif;
@@ -594,8 +597,11 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
 .title-large{
   font-family: lato;
   font-weight: 400;
+  line-height: 1.75rem;
   font-size: 1.25rem;
-  line-height: 1.4;
+  @media (min-width: 960px) {
+    line-height: 1.4;
+  }
 }
 
 .title-medium{
@@ -605,42 +611,65 @@ div.v-input.read-filter.albatross-body-2.theme--light.v-input--selection-control
   line-height: 1.5;
 }
 
-.label-large{
+.label-large {
   font-family: lato;
   font-weight: 600;
+  line-height: 1.563rem;
   font-size: 1rem;
-  line-height: 1.6;
+  @media (min-width: 960px) {
+    line-height: 1.6;
+  }
 }
 
-.label-medium{
+.label-medium, .v-btn.v-size--default.label-medium{
   font-family: lato;
   font-weight: 600;
+  line-height: 1.375rem;
   font-size: .875rem;
-  line-height: 1.6;
+  @media (min-width: 960px) {
+    line-height: 1.6;
+  }
 }
 
 
 .label-small, div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   font-family: lato;
   font-weight: 600;
+  line-height: 1.188rem;
   font-size: .75rem;
-  line-height: 1.6;
+  @media (min-width: 960px) {
+    line-height: 1.6;
+  }
 }
 
 .body-large, .body-large .v-select__selection, .body-large .v-label, .body-large input,
 .body-large .v-list-item__content, .v-list-item__title, textarea {
   font-family: lato;
   font-weight: 400;
+  line-height: 1.563rem;
   font-size: 1rem;
-  line-height: 1.6;
+  @media (min-width: 960px) {
+    line-height: 1.6;  }
+}
+.body-large label.v-label.v-label--active.theme--light {
+  @media(max-width: 960px) {
+    line-height: 1.563;
+  }
 }
 
-.body-medium, tr, .v-snack__content, #focused-toggle, .body-medium textarea, .body-medium span.v-btn__content {
+//mobile
+.body-medium, tr, .v-snack__content, #focused-toggle, .body-medium textarea, .body-medium span.v-btn__content, .v-list--dense .v-list-item .v-list-item__title.body-medium {
   font-family: lato;
   font-weight: 400;
+  line-height: 1.563rem;
   font-size: .875rem;
-  line-height: 1.6;
+  @media (min-width: 960px) {
+    //not mobile
+    line-height: 1.6;
+  }
 }
+
+
 
 .body-small, .body-large .v-messages__message, .body-large label.v-label.v-label--active.theme--light, .body-large.v-select__selection {
   font-family: lato;
