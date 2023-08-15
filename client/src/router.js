@@ -1051,7 +1051,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/ProjectStatuses.vue')
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatuses.vue')
                 } else {
                   return accessDenied()
                 }
@@ -1061,11 +1061,22 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/ProjectStatus.vue')
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatus.vue')
                 } else {
                   return accessDenied()
                 }
               },
+              children: [
+                {
+                  path: 'components',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatusComponents.vue'),
+                }, {
+                  path: 'fields',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatusFields.vue'),
+                },
+              ]
             }, {
               path: 'project',
               name: 'ProjectSettings',
@@ -1152,7 +1163,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/SmsTeam.vue')
+                  return import (/* webpackChunkName: "smsTeams" */ './views/flow/settings/SmsTeam.vue')
                 } else {
                   return accessDenied()
                 }
