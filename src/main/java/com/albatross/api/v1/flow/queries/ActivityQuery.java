@@ -43,7 +43,9 @@ public class ActivityQuery {
                                                     pa2.pinned,
                                                     pa2.created_by_id as "createdById",
                                                     concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                    case when ups.user_position_id is not null then concat(ups.position, ' (', ups.org_name, ')') end as "createdByPosition",
+                                                    case when ups.user_position_id is not null then ups.position end as "createdByPosition", 
+                                                    case when ups.user_position_id is not null then ups.org_name end as "createdByPositionOrg", 
+                                                    case when ups.user_position_id is not null then ups.org_id end as "createdByPositionOrgId",
                                                      pa2.pinned_by_id as "pinnedById",
                                                     concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                     pa2.archived,
@@ -384,5 +386,13 @@ public class ActivityQuery {
   //language=PostgreSQL
   public final static String addSystemActivity = """
     select from flow.add_system_activity(:activityId, :objectTypeId, :sourceId, :userId, :ppsId, :ppseId, :oldStatusId, :newStatusId);
+  """;
+
+  public final static String addSystemEventActivityWithoutPpsId = """
+    select from flow.add_system_activity(:activityId, :objectTypeId, (select project_id from flow.project_process_step where id = (select project_process_step_id from flow.project_process_step_event where id = :ppseId)), :userId, (select project_process_step_id from flow.project_process_step_event where id = :ppseId), :ppseId, :oldStatusId, :newStatusId);
+  """;
+
+  public final static String addSystemActivityWithoutProjectId = """
+    select from flow.add_system_activity(:activityId, :objectTypeId, (select project_id from flow.project_process_step where id = :ppsId), :userId, :ppsId, :ppseId, :oldStatusId, :newStatusId);
   """;
 }

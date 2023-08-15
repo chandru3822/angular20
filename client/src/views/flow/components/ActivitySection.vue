@@ -605,6 +605,10 @@ export default {
         this.getActivityTopics();
         this.editedActivity = {}
         this.editedIndex = null
+        if(!this.timelineView){
+          //only reset the scroll if we're editing in the topics view
+          this.$emit('scrollToTop')
+        }
         this.savingActivity = false
         this.snackbar = getSnackbar('SUCCESS', 'Note Edited')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -674,6 +678,9 @@ export default {
 
 .primary-lighten-9-bkgrd {
   background-color: var(--v-primary-lighten9);
+}
+.filterCheckbox div {
+  align-self: flex-end;
 }
 .filterCheckbox:hover {
   background-color: var(--v-grey-lighten4) !important;
