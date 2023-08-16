@@ -6,15 +6,14 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
-import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
-import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
+import com.albatross.api.v1.flow.queries.ProjectStatusQuery;
 import com.albatross.api.v1.flow.services.mapbox.MapboxApiService;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
@@ -37,7 +36,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -61,6 +59,8 @@ public class ProjectService {
   private final SqlCache sqlCache;
 
   private final SecurityService securityService;
+
+  private final ProjectStatusService projectStatusService;
 
   private final AttachmentService attachmentService;
 
@@ -267,6 +267,24 @@ public class ProjectService {
     return proj.isPresent();
   }
 
+  public List<ProjectStatusField> getStatusFieldsByProject(Long projectId) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("projectId", projectId);
+
+    List<ProjectStatusField> results = sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
+
+    //include the attachment for the status logo here
+    for(ProjectStatusField field : results) {
+        Attachment a = attachmentService.getOneBySourceIdAndType(field.getId(), 463L);
+        field.setIcon(null != a && null != a.getId() ? a : new Attachment());
+    }
+
+    return results;
+  }
+
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 
@@ -412,7 +430,7 @@ public class ProjectService {
     if (null != contactId && null != processId) {
       // Get active company project status type so new projects can have an active status
       CompanyProjectStatusType companyStatusType =
-          this.getDefaultCompanyProjectStatusType(contact.getCompanyId());
+          projectStatusService.getDefaultCompanyProjectStatusType(contact.getCompanyId());
       Long companyStatusTypeId = (companyStatusType != null) ? companyStatusType.getId() : null;
 
       HashMap<String, Object> params = new HashMap<>();
@@ -555,32 +573,6 @@ public class ProjectService {
     return attachmentService.findById(attachmentId);
   }
 
-  public Optional<Project> updateStatus(Long projectId, Long companyProjectStatusTypeId) {
-    User currentUser = securityService.getCurrentUser();
-
-    sqlCache.updateBySql(
-      ProjectQuery.updateStatus,
-        Map.of("projectId", projectId,
-          "companyProjectStatusTypeId", companyProjectStatusTypeId,
-          "userId", currentUser.trueUserId()));
-    return getStatus(projectId);
-  }
-
-  public Optional<Project> getStatus(Long projectId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectId);
-    return sqlCache.getBySql(ProjectQuery.getStatusDetails, params, Project.class);
-  }
-
-  private CompanyProjectStatusType getDefaultCompanyProjectStatusType(Long companyId) {
-    return sqlCache
-        .getBySql(
-          ProjectQuery.getDefaultProjectStatusTypeByCompanyId,
-            Map.of("companyId", companyId),
-            CompanyProjectStatusType.class)
-        .orElse(null);
-  }
-
   public List<ProjectProcessStep> getProcessStepsByProjectId(Long projectId, Long statusTypeId) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
@@ -674,125 +666,6 @@ public class ProjectService {
       .orElse(null);
   }
 
-  public List<WorkQueueTypeProjectStatus> getStatusesForWqt() {
-    User user = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
-    return sqlCache.queryBySql(ProjectQuery.getStatusesForWqt, params, WorkQueueTypeProjectStatus.class);
-  }
-
-  public List<ProjectStatusType> getCompanyProjectStatuses(Long projectId, Boolean excludeAttachments) {
-    User currentUser = securityService.getCurrentUser();
-    Long companyId = currentUser.getCompanyId();
-
-    if (null != projectId) {
-      // had to change this so that a parent looking at a child project could still see project statuses
-      HashMap<String, Object> params = new HashMap<>();
-      params.put("projectId", projectId);
-      companyId = sqlCache.queryForObjectBySql(ProjectQuery.getCompanyId, params, Long.class);
-    }
-
-    // NOTE: this returns COMPANY project statuses...as it should. but don't let it confuse you
-    List<ProjectStatusType> results =
-        sqlCache.queryBySql(
-          ProjectQuery.getCompanyStatuses,
-            ImmutableMap.of("companyId", companyId),
-            ProjectStatusType.class);
-
-    //this is slow, and we usually don't need it.  only load if necessary. note: mobile uses these so had to be handle with optional param so they wouldnt have to do new build
-    if(null == excludeAttachments || !excludeAttachments) {
-      for (ProjectStatusType c : results) {
-        //set the icon for the status
-        Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 463L);
-        c.setIcon(null != a && null != a.getId() ? a : new Attachment());
-      }
-    }
-
-    return results;
-  }
-
-  public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
-    Optional<ProjectStatusType> result =
-        sqlCache.getBySql(
-          ProjectQuery.getOneCompanyStatus, ImmutableMap.of("id", id), ProjectStatusType.class);
-
-    if (result.isPresent()) {
-      Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);
-      result.get().setIcon(null != a && null != a.getId() ? a : new Attachment());
-    }
-
-    return result;
-  }
-
-  public void saveInitialProjectStatusType(Long companyProjectStatusTypeId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", companyProjectStatusTypeId);
-    params.put("companyId", currentUser.getCompanyId());
-    params.put("modifiedById", currentUser.trueUserId());
-
-    sqlCache.updateBySql(ProjectQuery.saveInitialProjectStatusType, params);
-  }
-
-  public Optional<ProjectStatusType> saveCompanyProjectStatus(ProjectStatusType status) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.trueUserId());
-    params.put("rootProjectStatusTypeId", status.getProjectStatusTypeId());
-    params.put("projectStatusType", status.getProjectStatusType());
-    params.put("color", status.getColor());
-    params.put("description", status.getDescription());
-    params.put("companyId", currentUser.getCompanyId());
-    Long id;
-
-    if (null != status.getId()) {
-      id = status.getId();
-      params.put("id", id);
-      params.put("displayOrder", status.getDisplayOrder());
-      sqlCache.updateBySql(ProjectQuery.updateCompanyStatus, params);
-    } else {
-      id = sqlCache.updateBySqlReturningId(ProjectQuery.insertCompanyStatus, params, "id").longValue();
-    }
-
-    // handle attachment
-
-    return getOneCompanyProjectStatusType(id);
-  }
-
-  public void saveCompanyProjectStatuses(List<ProjectStatusType> statuses) {
-    for (ProjectStatusType s : statuses) {
-      saveCompanyProjectStatus(s);
-    }
-  }
-
-  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(Long id) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", currentUser.trueUserId());
-    params.put("id", id);
-    params.put("companyProjectStatusTypeId", id);
-
-    Boolean statusInUseByProjects = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByProjects, params, Boolean.class);
-    Boolean statusInUseByActions = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByActions, params, Boolean.class);
-    Boolean statusInUseByEventRequirements = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByPseRequirements, params, Boolean.class);
-    Boolean statusInUseByProcessStepRequirements = sqlCache.queryForObjectBySql(ProjectQuery.getStatusInUseByPsRequirements, params, Boolean.class);
-
-    if (!statusInUseByProjects && !statusInUseByActions && !statusInUseByEventRequirements && !statusInUseByProcessStepRequirements) {
-      sqlCache.updateBySql(ProjectQuery.deleteCompanyStatus, params);
-      return ResponseEntity.ok().build();
-    }
-    else {
-      ProjectController.CannotDeleteProjectStatus cannotDelete = new ProjectController.CannotDeleteProjectStatus();
-      cannotDelete.setStatusInUseByProjects(statusInUseByProjects);
-      cannotDelete.setStatusInUseByActions(statusInUseByActions);
-      cannotDelete.setStatusInUseByEventRequirements(statusInUseByEventRequirements);
-      cannotDelete.setStatusInUseByProcessStepRequirements(statusInUseByProcessStepRequirements);
-      return ResponseEntity.badRequest().body(cannotDelete);
-    }
-  }
-
   public Optional<String> getInstallationScopeOfWork(Long projectId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
@@ -805,8 +678,21 @@ public class ProjectService {
         new SingleColumnRowMapper<>(String.class));
   }
 
-  public List<ProjectStatusType> getProjectStatuses() {
-    return sqlCache.queryBySql(ProjectQuery.getStatuses, Collections.emptyMap(), ProjectStatusType.class);
+  public Optional<Project> updateStatus(Long projectId, Long companyProjectStatusTypeId) {
+    User currentUser = securityService.getCurrentUser();
+
+    sqlCache.updateBySql(
+      ProjectStatusQuery.updateStatus,
+      Map.of("projectId", projectId,
+        "companyProjectStatusTypeId", companyProjectStatusTypeId,
+        "userId", currentUser.trueUserId()));
+    return getStatus(projectId);
+  }
+
+  public Optional<Project> getStatus(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    return sqlCache.getBySql(ProjectStatusQuery.getStatusDetails, params, Project.class);
   }
 
   public String generateReport(String query) {
@@ -879,5 +765,26 @@ public class ProjectService {
 
     }
   }
+
+
+    private static class ProjectStatusFieldMapper<T> extends BeanPropertyRowMapper<T> {
+      public final ObjectMapper objectMapper;
+
+      public ProjectStatusFieldMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+        super(mappedClass);
+        this.objectMapper = objectMapper;
+      }
+
+      @Override
+      protected void initBeanWrapper(BeanWrapper bw) {
+        TypeReference<List<ProjectStatusField.AssignedField>> assignedFieldsRef =
+          new TypeReference<>() {};
+        bw.registerCustomEditor(
+          List.class,
+          "assignedFields",
+          new JsonCollectionDeserializer(assignedFieldsRef, objectMapper));
+
+      }
+    }
 
 }
