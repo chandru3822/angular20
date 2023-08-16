@@ -1,5 +1,5 @@
 alter table flow.sms_queue
-add column if not exists priority integer default 5 not null;
+add column if not exists priority_level integer default 5 not null;
 
 -- 1 - project and contacts
 -- 2 - direct user stuff john is doing

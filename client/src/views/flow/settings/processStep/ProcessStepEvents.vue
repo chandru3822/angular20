@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="req-header-bar">
-          <v-toolbar-title class="app-title">Events</v-toolbar-title>
+          <v-toolbar-title class="title-large">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="[addNewEvent = !addNewEvent, getAvailableEvents()]" text color="primary" v-if="userCanAdd">

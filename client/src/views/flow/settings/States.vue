@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container id="states-settings">
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
@@ -33,15 +33,15 @@
           <v-btn text color="primary" @click="[addNew = !addNew, selectedState = {}]">Cancel</v-btn>
         </v-card>
         <v-data-table
+            id="states-settings-table"
             :headers="headers"
             :items="filterStates"
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
-            :mobile-breakpoint="0"
             :expanded.sync="expanded"
             hide-default-footer
-            class="elevation-1 org-type-table"
+            class="elevation-1 org-type-table table-striped"
         >
           <template #no-data>
             <span class="default-text-color">NO DATA HERE!</span>
@@ -71,22 +71,15 @@
               </v-btn>
             </td>
           </template>
-
-          <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': filterStates.indexOf(item) % 2}">
-              <td class="text-left">{{ item.state }}</td>
-              <td class="text-left">{{ item.abbreviation }}</td>
-              <td class="text-left">
-                <input type="checkbox" v-model="item.active" disabled readonly>
-              </td>
-              <td>
-                <v-btn small text color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" v-if="userCanDelete" @click="stateToDelete=item"><v-icon>delete</v-icon></v-btn>
-              </td>
-            </tr>
+          <template #item.active="{ item }">
+            <input type="checkbox" v-model="item.active" disabled readonly>
+          </template>
+          <template #item.icons="{ item}">
+            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
+              <v-icon>edit</v-icon>
+            </v-btn>
+            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="stateToDelete=item"><v-icon>delete</v-icon></v-btn>
           </template>
 
         </v-data-table>
@@ -223,3 +216,32 @@
     }
   }
 </script>
+<style scoped lang="scss">
+@media (max-width: 960px) {
+  //increase the size of checkbox on mobile
+  input[type='checkbox'] {
+    width: 25px;
+    height: 25px;
+  }
+
+}
+</style>
+<style lang="scss">
+//keeps the arrow icon on the sort chip (mobile dropdown) from having a light blue background
+#states-settings-table > div > table > thead > tr > th > div > div > div > div > div.v-select__slot > div.v-select__selections > span > span > div {
+  background-color: inherit !important;
+}
+
+
+@media (max-width: 960px) {
+  @import "@/styles/main.scss"; //yes this import has to be inside the media query b/c you can't @extend across media-queries ¯\_(ツ)_/¯
+  //increase state name size on mobile so it looks better
+  #states-settings-table > div > table > tbody > tr > td:nth-child(1) > div.v-data-table__mobile-row__cell {
+    @extend .body-large;
+  }
+
+  #states-settings {
+    margin-bottom: 24px;
+  }
+}
+</style>

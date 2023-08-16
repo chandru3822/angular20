@@ -38,6 +38,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.IOException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -215,17 +217,18 @@ public class BlueravenProposalController {
       .orElseThrow(() -> new NotFoundException("Proposal not found"));
 
     final String contentDisposition = String.format(
-      "%s; filename=\"proposal_%s.pdf\"", inline ? "inline" : "attachment", proposal.getProposalNbr());
+      "%s; filename=\"proposal_%s_%s.pdf\"", inline ? "inline" : "attachment", proposal.getProposalNbr(), OffsetDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmssSSSS")));
 
+    response.addHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
     response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
     response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
 
     final StreamingResponseBody responseBody = outputStream -> {
       try {
-        proposalService.generateProposalPDF(proposalId, templateId, false)
+        proposalService.generateProposalPDF(proposalId, templateId)
           .ifPresent(result -> {
             try {
-              response.addHeader(HttpHeaders.CONTENT_LENGTH, result.getContentLength().toString());
+              response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(result.contentLength()));
               IOUtils.copy(result.getInputStream(), outputStream);
             } catch (IOException e) {
               throw new ApiException(e);

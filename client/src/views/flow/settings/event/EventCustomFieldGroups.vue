@@ -4,7 +4,7 @@
       <v-col cols="12" class="pt-0 px-0">
         <v-form ref="defaultFieldForm">
           <v-toolbar flat class="cfg-header-bar">
-            <v-toolbar-title class="app-title">Default Event Fields</v-toolbar-title>
+            <v-toolbar-title class="title-large">Default Event Fields</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items class="flex-display">
               <div class="flex-display align-center">
@@ -166,7 +166,7 @@
         </v-form>
         <v-divider></v-divider>
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
@@ -835,7 +835,6 @@ export default {
       }
     },
     async saveCfToDisplayOnSnippet(){
-      debugger;
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await putRequest(`/customFieldGroup/saveDisplayOnSnippet/${this.cfToDisplayOnSnippet.customFieldGroupAssignmentId}`)

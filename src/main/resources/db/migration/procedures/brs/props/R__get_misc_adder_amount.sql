@@ -1,39 +1,33 @@
-drop function if exists brs.get_misc_adder_amount(p_system_size numeric);
-CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount(p_system_size numeric) returns numeric
+drop function if exists brs.get_misc_adder_amount(p_system_size numeric, p_adders bigint[]);
+CREATE OR REPLACE FUNCTION brs.get_misc_adder_amount(p_system_size numeric, p_adders bigint[]) returns numeric
 AS
 $BODY$
 declare
-  v_unit_type_id bigint;
-  v_amount       numeric;
-  v_adder_amount numeric;
+  v_amount       numeric = 0;
   x              record;
 BEGIN
 
   for x in
-    select proposal_group_uuid
-    from proposal_value
-    where field_id = 126
-    loop
-      select int_value
-      into v_unit_type_id
-      from proposal_value pv
-      where pv.proposal_group_uuid = x.proposal_group_uuid
-        and pv.field_id = 97;
+    select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::integer as unit_type_id,
+           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as adder_amount,
+           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 329)') ->> 'value')::boolean   as default_value,
+  (SELECT ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 126)') ->>
+                                                 'intArrayValue')::jsonb)))::bigint[] as adder_id
 
-      select value::numeric
-      into v_adder_amount
-      from proposal_value pv
-      where pv.proposal_group_uuid = x.proposal_group_uuid
-        and pv.field_id = 119;
+  from proposal_value
+  where object_code = 'PROPOSAL_MISC_ADDERS'
 
-      if v_unit_type_id = 459 then
-        v_amount = coalesce(v_amount, 0) + v_adder_amount;
-      elsif v_unit_type_id = 460 then
-        v_amount = coalesce(v_amount, 0) + v_adder_amount * p_system_size * 1000;
-      elsif v_unit_type_id = 458 then
+  loop
+    if x.adder_id && p_adders or (x.default_value is not null and x.default_value is true) then
+      if x.unit_type_id = 459 then
+        v_amount = coalesce(v_amount, 0) + x.adder_amount;
+      elsif x.unit_type_id = 460 then
+        v_amount = coalesce(v_amount, 0) + x.adder_amount * p_system_size * 1000;
+      elsif x.unit_type_id = 458 then
         --percent of total  total_system_cost*rebate_amount
       end if;
-    end loop;
+    end if;
+  end loop;
 
   return coalesce(v_amount, 0);
 END

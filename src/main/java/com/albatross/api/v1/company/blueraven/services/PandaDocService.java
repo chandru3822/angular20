@@ -133,7 +133,7 @@ public class PandaDocService {
 
   public JSONArray findTemplatesByName(String name) throws Exception {
     log.debug("PANDADOC: looking for template name='{}'", name);
-    String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
+    String url = "/templates?count=100&q=" + URLEncoder.encode(name, "UTF-8");
     HttpResponse resp = GET(url);
     JSONObject out = resp.getJSON();
     return out.getJSONArray("results");

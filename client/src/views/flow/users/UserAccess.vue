@@ -34,27 +34,54 @@
           Org Calendar Access
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]"
-                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">
-              <v-icon>add</v-icon>
-              Add Org Calendar
-            </v-btn>
+<!--            <v-btn text @click="[addCalendar = !addCalendar, selectedCalendar = {}]"-->
+<!--                   color="primary" v-if="$store.getters.userHasFeatureAccessLevel('USERS', 'EDIT')">-->
+<!--              <v-icon class="mr-3">edit</v-icon>-->
+<!--              Change Org Calendar(s)-->
+<!--            </v-btn>-->
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="addCalendar" class="square-card text-left pa-5 elevation-1">
-          <v-autocomplete v-model="selectedCalendar"
-                          :items="availableCalendarOrgs"
-                          label="New Org Calendar"
-                          item-text="orgName"
-                          item-value="id"
-                          return-object
-                          autocomplete="off"
-                          @input="saveUserOrgCalendars"
-                          attach
-          />
-          <v-btn text color="primary" @click="[addCalendar = !addCalendar, selectedCalendar = {}]">Cancel</v-btn>
+        <v-card class="square-card text-left pa-5 elevation-1">
+          <SpinnerInline v-if="calendarAccessLoading" :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
+          <div v-else>
+            <v-autocomplete v-model="userOrgCalendars"
+                            v-if="!userHasFullAccess"
+                            :items="orgCalendars"
+                            label="Selected Org Calendar(s)"
+                            item-text="orgName"
+                            item-value="orgId"
+                            return-object
+                            multiple
+                            autocomplete="off"
+                            attach>
+              <template
+                slot="selection"
+                slot-scope="{ item, index }"
+              >
+                <v-chip small v-if="index < 21 && userOrgCalendars.length < 21"
+                        close @click:close="userOrgCalendars.splice(index, 1)">
+                  <span>{{ item.orgName }}</span>
+                </v-chip>
+                <span v-else-if="index === 20"
+                  class="primary--text text-caption">
+                  {{ userOrgCalendars.length }} calendars selected
+                </span>
+              </template>
+            </v-autocomplete>
+            <v-checkbox
+              class="pt-2 mb-4"
+              v-model="userHasFullAccess"
+              label="Grant User Access to All Calendars"
+              @change="userOrgCalendars = []"
+            />
+            <v-btn text color="primary" @click="[addCalendar = !addCalendar]">Cancel</v-btn>
+            <v-btn color="primary"
+                   :disabled="!userHasFullAccess && userOrgCalendars.length === 0"
+                   @click="[addCalendar = !addCalendar, saveUserOrgCalendars()]">Save</v-btn>
+          </div>
         </v-card>
         <v-data-table
+          v-if="false"
           :headers="headers"
           :items="filterUserOrgAccess()"
           :fixed-header="true"
@@ -74,18 +101,18 @@
           <template #item="{ item, index }">
             <tr :class="{ 'shaded-row': index % 2 }">
               <td class="text-left">{{ item.orgName }}</td>
-              <td class="text-right">
-                <v-btn small text color="primary" class="clickable" @click="[showDeleteDialog=true, itemToDelete=item]"><v-icon>delete</v-icon></v-btn>
-              </td>
+<!--              <td class="text-right">-->
+<!--                <v-btn small text color="primary" class="clickable" @click="[showDeleteDialog=true, itemToDelete=item]"><v-icon>delete</v-icon></v-btn>-->
+<!--              </td>-->
             </tr>
           </template>
 
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteOrgCalendarFromUser(itemToDelete)" @close-dialog="closeDeleteDialog">
-      Are you sure you want to delete <strong>{{itemToDeleteOrgName}}</strong> from this user?
-    </ConfirmationDialog>
+<!--    <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteOrgCalendarFromUser(itemToDelete)" @close-dialog="closeDeleteDialog">-->
+<!--      Are you sure you want to delete <strong>{{itemToDeleteOrgName}}</strong> from this user?-->
+<!--    </ConfirmationDialog>-->
   </v-container>
 </template>
 
@@ -103,23 +130,16 @@
     getRequestWithParams
   } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import SpinnerInline from '@/components/SpinnerInline'
 
   export default {
     name: 'UserAccess',
     components: {
       ConfirmationDialog,
-
+      SpinnerInline,
       AccessControl
     },
     computed: {
-      availableCalendarOrgs () {
-        return this.orgCalendars.filter(oc => {
-          return this.userOrgCalendars.find(uoc => uoc.orgId === oc.id && !uoc.archived) == null
-        })
-      },
-      itemToDeleteOrgName () {
-        return this.itemToDelete ? this.itemToDelete.orgName : ""
-      }
     },
     data() {
       return {
@@ -130,7 +150,8 @@
         features: [],
         orgCalendars: [],
         userOrgCalendars: [],
-        selectedCalendar: {},
+        calendarAccessLoading: true,
+        userHasFullAccess: false,
         userAccessLoaded: false,
         userCompanyFeatures: [],
         headers: [
@@ -148,8 +169,8 @@
     },
     created () {
       this.getUserCompanyFeatures()
+      this.getUserOrgAccessLevel()
       this.getAllOrgCalendars()
-      this.getUserOrgCalendars()
     },
     beforeRouteLeave(to, from, next) {
       // called when the route that renders this component is about to
@@ -178,17 +199,47 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getUserOrgAccessLevel() {
+        try {
+          const {data, status} = await getRequest(`/org/user/${this.userId}/calendar/access`)
+          this.userHasFullAccess = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Access Level')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+      async getAllOrgCalendars() {
+        try {
+          const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
+            params: {
+              isSchedulingTool: true
+            }
+          })
+          this.orgCalendars = data
+          this.orgCalendars.forEach(o => {
+            o.orgId = o.id
+          })
+          await this.getUserOrgCalendars()
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Calendars')
+        }
+      },
       async getUserOrgCalendars() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/org/user/${this.userId}/calendars`)
           this.userOrgCalendars = data
-          handleHidingGlobalLoader(this, status)
+          this.calendarAccessLoading = false
+          //
+          // this.userOrgCalendars.forEach((uoc, idx) => {
+          //   this.userOrgCalendars[idx] = this.orgCalendars.find(oc => oc.id === uoc.orgId)
+          // })
+
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Calendars')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async saveUserOrgCalendars() {
@@ -196,11 +247,12 @@
         try {
           let params = {
             userId: this.userId,
-            orgId: this.selectedCalendar.id
+            userOrgAccess: this.userOrgCalendars || [],
+            fullCalendarAccess: this.userHasFullAccess
           }
           const {data, status} = await postRequest(`/org/user/calendar`, params)
-          this.userOrgCalendars.push(data)
-          this.selectedCalendar = {}
+          // this.userOrgCalendars.push(data)
+          //todo: update the save here
           this.addCalendar = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -224,29 +276,13 @@
         }
         this.closeDeleteDialog()
       },
-      async getAllOrgCalendars() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequestWithParams(`/org/getSchedulingOrgs`, {
-            params: {
-              isSchedulingTool: true
-            }
-          })
-          this.orgCalendars = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Calendars')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       async saveUserAccess() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           //we do this temp so that we only send up the values that need to be saved
           let tempCompanyFeatures = this.userCompanyFeatures?.filter(cf => cf.dirty)
           const {data, status} = await putRequest(`/feature/user/${this.userId}`, tempCompanyFeatures)
-          this.userCompanyFeatures = data
+          this.userCompanyFeatures = data.filter(d => !d.hidden)
           this.accessControlKey++
           handleHidingGlobalLoader(this, status)
           this.dirtyFields = false

@@ -136,6 +136,7 @@ select oat.id,
          o.org_name,
          o.parent_org_id,
          o.org_type_id,
+         o.id as org_id, --dont take this out mobile needs it
          o.active_flag,
          o.schedulable,
          o.available_to_children,
@@ -302,9 +303,32 @@ select oat.id,
     """;
 
   //language=PostgreSQL
-  public final static String saveOrgCalendarToUser = """
-    insert into flow.user_org_access(org_id, user_id, created_by_id, date_created, modified_by_id, date_modified)
-          values (:orgId, :userId, :createdById, now(), :createdById, now())
+  public final static String saveOrgCalendarsToUser = """
+      insert into flow.user_org_access(org_id, user_id, date_created, date_modified, created_by_id, modified_by_id, archived)
+      (select x, :userId, now(), now(), :currentUserId, :currentUserId, false
+      from unnest( array[ :orgIdsSentIn ]::bigint[] ) x)
+      on conflict do nothing;
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteArchivedUserOrgAccess = """
+    update flow.user_org_access
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :currentUserId
+    where user_id = :userId
+     and org_id != any(array[ :orgIdsSentIn ]::bigint[])
+     and archived is false
+    """;
+
+  //language=PostgreSQL
+  public final static String saveUserFullCalendarAccess = """
+      update flow.user_company
+      set full_calendar_access = :fullCalendarAccess,
+          date_modified = now(),
+          modified_by_id = :currentUserId
+      where user_id = :userId
+        and company_id = :companyId
     """;
 
   //language=PostgreSQL
@@ -378,26 +402,29 @@ select oat.id,
     """;
 
   //language=PostgreSQL
-  public final static String getOneOrgCalendarAccess = """
+  public final static String getOrgCalendarsForUserWithFullAccess = """
       select uoa.id,
              o.org_name,
              o.company_timezone_id,
+             o.id as org_id,
              uoa.user_id,
              uoa.org_id,
              uoa.archived
       from flow.user_org_access uoa
                inner join flow.org o on o.id = uoa.org_id
-      where uoa.id = :id
+      where uoa.user_id = :userId
+          and uoa.archived is not true
+          and o.archived is not true
+          and (o.company_id = :companyId OR o.available_to_children is true)
+      order by o.org_name
     """;
 
-
-  //language=PostgreSQL
-  public final static String deleteOrgCalendarFromUser = """
-      update flow.user_org_access
-        set archived = true,
-            date_modified = now(),
-            modified_by_id = :modifiedById
-      where id = :id
+  public final static String getOrgCalendarsAccessLevelForUser = """
+    select uc.full_calendar_access
+    from flow.user_company uc
+    where uc.user_id = :userId
+      and uc.archived is not true
+      and uc.company_id = :companyId
     """;
 
   //language=PostgreSQL

@@ -1,15 +1,19 @@
 <template>
   <v-container>
     <v-toolbar flat class="app-toolbar">
-      <v-toolbar-title class="app-title">Proposal Versions</v-toolbar-title>
+      <v-toolbar-title class="title-large">Proposal Versions</v-toolbar-title>
       <v-spacer />
       <v-toolbar-items>
-        <v-btn text color="primary" :to="{'name' : 'proposalDesigner'}">
+        <v-btn class="toolbar-btn-text" text color="primary" :to="{'name' : 'proposalDesigner'}">
           <span>Designer</span>
+        </v-btn>
+        <v-btn class="toolbar-btn-icon" icon large color="primary" :to="{'name' : 'proposalDesigner'}">
+          <v-icon>edit</v-icon>
         </v-btn>
       </v-toolbar-items>
       <v-toolbar-items v-if="canCreateVersion">
-        <v-btn text color="primary" @click="create">Create New Version</v-btn>
+        <v-btn class="toolbar-btn-text" text color="primary" @click="create">Create New Version</v-btn>
+        <v-btn class="toolbar-btn-icon" icon large color="primary" @click="create"><v-icon>mdi-plus</v-icon></v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider />
@@ -18,7 +22,8 @@
         No proposals available.
       </div>
       <v-card v-if="versions.length" class="square-card">
-        <v-data-table :headers="headers"
+        <v-data-table id="proposal-version-table"
+            :headers="headers"
                       :items="versions"
                       :options.sync="options"
                       :server-items-length="totalVersions"
@@ -70,7 +75,7 @@ export default {
         { text: 'modified by', value: 'modifiedBy', sortable: false }
       ],
       footerProps: {
-        'items-per-page-options': [5, 10, 20, 50, 100]
+        'items-per-page-options': [5, 10, 20, 50, 100],
       },
       totalVersions: -1,
       versions: []
@@ -143,5 +148,47 @@ export default {
 
 tr:nth-of-type(even) {
   @extend .shaded-row;
+}
+
+.toolbar-btn-text {
+  @media (max-width: 960px) {
+    display: none;
+  }
+}.toolbar-btn-icon {
+  @media (min-width: 961px) {
+    display: none;
+  }
+}
+</style>
+<style lang="scss">
+@media (max-width: 770px) {
+  #proposal-version-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
 }
 </style>

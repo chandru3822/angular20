@@ -100,7 +100,7 @@ import {getRequest, logError} from '@/helpers/helpers'
 import TableActiveProjectProcessStepSnippet from '@/views/flow/project/TableActiveProjectProcessStepSnippet'
 import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
-
+import orderBy from 'lodash.orderby'
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 
 export default {
@@ -139,7 +139,7 @@ export default {
       return names.map(processStepName => {
         return {
           processStepName,
-          processSteps: this.processSteps.filter(step => step.processStepName === processStepName)
+          processSteps: orderBy(this.processSteps.filter(step => step.processStepName === processStepName), 'projectProcessStepId', 'desc')
         }
       })
     }

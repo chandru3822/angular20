@@ -37,7 +37,7 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="req-header-bar">
-          <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
+          <v-toolbar-title class="title-large">Requirements</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text color="primary" v-if="userCanAdd">

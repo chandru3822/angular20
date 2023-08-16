@@ -420,6 +420,8 @@ select
                inner join flow.work_queue_type wqt on wqt.id = pswqt.work_queue_type_id
                inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
       where pps.project_id = :projectId
+          and wqt.archived is false
+          and pswqt.archived is false
       union all
       select wqc.date_entered_queue,
              wqc.date_exited_queue,
@@ -436,11 +438,13 @@ select
                inner join flow.event e on e.id = pse.event_id
                inner join flow.project_process_step pps on pps.id = ppse.project_process_step_id and pps.archived is false
                inner join flow.process_step ps on ps.id = pps.process_step_id and ps.company_id = :companyId
-               inner join flow.process_step_event_work_queue_type_process_step_status_type psewqtpsst  on psewqtpsst.id = wqc.process_step_event_work_queue_type_event_status_type_id
-               inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtpsst.process_step_event_work_queue_type_id
+               inner join flow.process_step_event_work_queue_type_event_status_type psewqtest on psewqtest.id = wqc.process_step_event_work_queue_type_event_status_type_id
+               inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = psewqtest.process_step_event_work_queue_type_id
                inner join flow.work_queue_type wqt on wqt.id = psewqt.work_queue_type_id
                inner join flow.work_queue_category wq_cat on wq_cat.id = wqt.work_queue_category_id
       where pps.project_id = :projectId
+          and wqt.archived is false
+          and psewqt.archived is false
       order by date_exited_queue desc nulls first, date_entered_queue desc
     """;
 
@@ -737,262 +741,6 @@ select * from flow.get_project_available_owners(:companyId::bigint, :parentCompa
     """;
 
   //language=PostgreSQL
-  public final static String getDefaultProjectStatusTypeByCompanyId = """
-    select
-      id,
-      project_status_type_id,
-      project_status_type,
-      archived,
-      date_created,
-      date_modified,
-      created_by_id,
-      modified_by_id,
-      company_id
-    from flow.company_project_status_type cpst
-    where company_id = :companyId
-      and is_default is true
-      and archived is not true
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatusesForWqt = """
-select
-        null::bigint as id,
-        'Category' as header,
-        null::bigint as "projectStatusTypeId",
-        null::bigint as "companyProjectStatusTypeId",
-        false as archived,
-        null::text as "uniqueText",
-        null::text as "group",
-        false as is_root,
-        null::text as project_status_type,
-        null::text as root_project_status_type,
-        0 as display_sort
-      union all
-      select
-        null::bigint as id,
-        null::text as header,
-        pst.id as "projectStatusTypeId",
-        null::bigint as "companyProjectStatusTypeId",
-        pst.archived,
-        concat(pst.project_status_type, 'PST')::text as "uniqueText",
-        'Category' as "group",
-        true as is_root,
-        pst.project_status_type,
-        pst.project_status_type as root_project_status_type,
-        1 as display_sort
-      from flow.project_status_type pst
-      where pst.archived is not true
-      union all
-      select
-        null::bigint as id,
-        'Project Status' as header,
-        null::bigint as "projectStatusTypeId",
-        null::bigint as "companyProjectStatusTypeId",
-        false as archived,
-        null::text as "uniqueText",
-        null::text as "group",
-        false as is_root,
-        null::text as project_status_type,
-        null::text as root_project_status_type,
-        2 as display_sort
-      union all
-      select
-        null::bigint as id,
-        null::text as header,
-        pst.id as "projectStatusTypeId",
-        cpst.id as "companyProjectStatusTypeId",
-        cpst.archived,
-        concat(cpst.project_status_type, 'CPST')::text as "uniqueText",
-        'Process Step' as "group",
-        false as is_root,
-        cpst.project_status_type,
-        pst.project_status_type as root_project_status_type,
-        3 as display_sort
-      from flow.company_project_status_type cpst
-             inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-      where cpst.company_id = :companyId
-        and cpst.archived is not true
-      order by display_sort, root_project_status_type, project_status_type
-    """;
-
-  //language=PostgreSQL
-  public final static String getCompanyStatuses = """
-    select
-        cpst.id,
-        cpst.project_status_type,
-        cpst.display_order,
-        cpst.is_default,
-        cpst.color,
-        pst.id as "projectStatusTypeId",
-        cpst.archived,
-        pst.project_status_type as "rootProjectStatusType"
-    from flow.company_project_status_type cpst
-    inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-    where cpst.company_id = :companyId and cpst.archived is not true
-    order by cpst.display_order
-    """;
-
-  //language=PostgreSQL
-  public final static String getOneCompanyStatus = """
-    select
-        cpst.id,
-        cpst.project_status_type,
-        cpst.display_order,
-        cpst.is_default,
-        pst.id as "projectStatusTypeId",
-        cpst.archived,
-        pst.project_status_type as "rootProjectStatusType"
-    from flow.company_project_status_type cpst
-    inner join flow.project_status_type pst on pst.id = cpst.project_status_type_id
-    where cpst.id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatuses = """
-    select
-        pst.id,
-        pst.project_status_type,
-        pst.archived
-    from flow.project_status_type pst
-    where pst.archived is not true
-    order by pst.project_status_type
-    """;
-
-  //language=PostgreSQL
-  public final static String updateCompanyStatus = """
-    update flow.company_project_status_type
-    set project_status_type = :projectStatusType,
-        modified_by_id = :currentUserId,
-        display_order = :displayOrder,
-        color = :color,
-        date_modified = now()
-    where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatusInUseByProjects = """
-    select count(1) > 0
-    from flow.project p
-    where company_project_status_type_id = :companyProjectStatusTypeId
-    and p.archived is false
-    limit 1
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatusInUseByActions = """
-    select count(1) > 0
-    from flow.process_step_action psa
-           inner join flow.process_step ps on ps.id = psa.process_step_id
-    where psa.archived is not true and ps.archived is not true
-      and psa.company_project_status_type_id = :companyProjectStatusTypeId
-    limit 1
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatusInUseByPseRequirements = """
-    select count(1) > 0
-    from flow.process_step_event_requirement pser
-           inner join flow.process_step_event pse on pser.process_step_event_id = pse.id
-           inner join flow.process_step ps on pse.process_step_id = ps.id
-           inner join flow.event e on pse.event_id = e.id
-    where pser.archived is false and pse.archived is false and pser.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (pser.list_of_value_ids)
-    limit 1
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatusInUseByPsRequirements = """
-    select count(1) > 0
-    from flow.process_step_requirement psr
-           inner join flow.process_step ps on psr.process_step_id = ps.id
-    where psr.archived is false and psr.process_step_requirement_type_id = 9 and :companyProjectStatusTypeId = any (psr.list_of_value_ids)
-    limit 1
-    """;
-
-  //language=PostgreSQL
-  public final static String getPsaWithStatusInUse = """
-select psa.action_name, ps.process_step_name
-      from flow.process_step_action_logic psl
-        inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
-        inner join flow.process_step ps on ps.id = psa.process_step_id
-      where psa.company_project_status_type_id = :companyProjectStatusTypeId
-        and psl.archived is not true
-        and psa.archived is not true
-      group by psa.action_name, ps.process_step_name
-    """;
-
-  //language=PostgreSQL
-  public final static String getEventReqWithStatusInUse = """
-      select psa.action_name, ps.process_step_name
-      from flow.process_step_action_logic psl
-        inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
-        inner join flow.process_step ps on ps.id = psa.process_step_id
-      where psa.company_project_status_type_id = :companyProjectStatusTypeId
-        and psl.archived is not true
-        and psa.archived is not true
-      group by psa.action_name, ps.process_step_name
-    """;
-
-  //language=PostgreSQL
-  public final static String getActionReqWithStatusInUse = """
- select psa.action_name, ps.process_step_name
-      from flow.process_step_action_logic psl
-        inner join flow.process_step_action psa on psa.id = psl.process_step_action_id
-        inner join flow.process_step ps on ps.id = psa.process_step_id
-      where psa.company_project_status_type_id = :companyProjectStatusTypeId
-        and psl.archived is not true
-        and psa.archived is not true
-      group by psa.action_name, ps.process_step_name
-    """;
-
-  //language=PostgreSQL
-  public final static String deleteCompanyStatus = """
-    update flow.company_project_status_type
-    set archived = true,
-        modified_by_id = :currentUserId,
-        date_modified = now()
-    where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String saveInitialProjectStatusType = """
-update flow.company_project_status_type
-      set is_default = false, date_modified = now()
-      where company_id = :companyId;
-      update flow.company_project_status_type
-      set is_default = true, date_modified = now()
-      where id = :id
-    """;
-
-  //language=PostgreSQL
-  public final static String insertCompanyStatus = """
-insert into flow.company_project_status_type(project_status_type_id, project_status_type, company_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-    values (:rootProjectStatusTypeId, :projectStatusType, :companyId, (select coalesce(max(display_order) + 1, 0) from flow.company_project_status_type where company_id = :companyId and archived is not true), :currentUserId, now(), :currentUserId, now())
-    """;
-
-  //language=PostgreSQL
-  public final static String updateStatus = """
-    update flow.project
-    set company_project_status_type_id = :companyProjectStatusTypeId,
-        date_modified = now(),
-        modified_by_id = :userId
-    where id = :projectId
-    """;
-
-  //language=PostgreSQL
-  public final static String getStatusDetails = """
-     select p.id,
-            p.company_project_status_type_id as "companyProjectStatusTypeId",
-            cpst.project_status_type         as "projectStatusType",
-            cpst.project_status_type_id      as "projectStatusTypeId",
-            pst.project_status_type          as "rootProjectStatusType"
-     from flow.project p
-            inner join flow.company_project_status_type cpst on p.company_project_status_type_id = cpst.id
-            inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
-     where p.id = :projectId
-    """;
-
-  //language=PostgreSQL
   public final static String updateGeoLocation = """
     update flow.project
       set latitude = :latitude,
@@ -1110,5 +858,56 @@ where contact_id = :contactId
           and oat.company_id = :companyId
     """;
 
-
+  public final static String getStatusFieldsByProject = """
+    with fields as (select cpsfa.id,
+                           cpsfa.company_project_status_type_id,
+                           coalesce(dvcfc.display_name, dvfc.display_name) as field_name,
+                           case
+                               when dvcfc.id is not null then ubt.return_data_type_id
+                               when dvfc.id is not null and def.data_type_id is not null then def.data_type_id
+                               when dvfc.id is not null and def.data_type_id is null
+                                   then (select f.company_data_type_id
+                                         from flow.custom_field_group_assignment c
+                                                  inner join flow.custom_field f on f.id = c.custom_field_id
+                                                  inner join flow.company_data_type t on t.id = f.company_data_type_id
+                                         where c.id = dvfc.custom_field_group_assignment_id)
+                               end                                                      as data_type_id,
+                           case
+                               when cpsfa.data_view_child_field_config_id is not null then
+                                   (select flow.get_value_for_data_view_child_field(cpsfa.data_view_child_field_config_id,
+                                                                                    :projectId))::text
+                               else (select flow.get_value_for_data_view_field(cpsfa.data_view_field_config_id,
+                                                                               :projectId)) end::text as field_value
+                    from flow.company_project_status_field_assignment cpsfa
+                             inner join flow.company_project_status_type cpst
+                                        on cpsfa.company_project_status_type_id = cpst.id
+                             left join flow.data_view_field_config dvfc on cpsfa.data_view_field_config_id = dvfc.id
+                             left join flow.data_view_child_field_config dvcfc
+                                       on cpsfa.data_view_child_field_config_id = dvcfc.id
+                             left join flow.default_field def on def.id = dvfc.default_field_id
+                             left join flow.unique_behavior_type ubt on ubt.id = dvcfc.unique_behavior_type_id
+                    where cpsfa.archived is false
+                      and cpst.company_id = :companyId)
+    select cpst.id,
+           cpst.project_status_type_id,
+           cpst.project_status_type,
+           cpst.company_id,
+           cpst.display_order,
+           cpst.description,
+           cpst.is_milestone,
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(assignedFields)))
+                        FROM (
+                                 SELECT id,
+                                        data_type_id as "dataTypeId",
+                                        field_name as "fieldName",
+                                        field_value as "fieldValue"
+                                 FROM fields f
+                                 WHERE f.company_project_status_type_id = cpst.id) assignedFields), '[]') AS "assignedFields"
+    from flow.company_project_status_type cpst
+    where cpst.archived is false
+      and cpst.is_milestone is true
+      and cpst.company_id = :companyId
+    order by cpst.display_order;
+    """;
 }

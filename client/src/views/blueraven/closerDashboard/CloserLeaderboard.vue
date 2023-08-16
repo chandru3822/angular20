@@ -120,7 +120,9 @@
     },
     async created () {
       const now = new Date();
-      now.setDate(now.getDate() - 1);
+      //if it is monday, default to saturday
+      let dayOffset = now.getDay() === 1 ? 2 : 1
+      now.setDate(now.getDate() - dayOffset);
       this.bookingDate = new Intl.DateTimeFormat('en-CA', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(now)
       await this.loadBookingData()
     },

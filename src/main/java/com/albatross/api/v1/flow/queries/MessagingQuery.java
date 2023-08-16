@@ -741,6 +741,7 @@ public class MessagingQuery {
       and user_id = :userId
       and (metadata->>'projectId')::bigint = :projectId
       and (metadata->>'smsTeamId')::bigint = :smsTeamId
+      and message_read_tsz is null
     """;
 
   //language=PostgreSQL
@@ -752,6 +753,7 @@ public class MessagingQuery {
     where notification_topic_id = :notificationTopicId
       and (metadata->'projectId')::bigint = :projectId
       and (metadata->'smsTeamId')::bigint = :smsTeamId
+      and message_read_tsz is null
     """;
 
   //language=PostgreSQL
@@ -761,9 +763,10 @@ public class MessagingQuery {
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and user_id = :userId
-      and (metadata->>'userId')::bigint = :ownerUserId
+      and user_id = :ownerUserId
+      and (metadata->>'userId')::bigint = :userId
       and (metadata->>'smsTeamId')::bigint = :smsTeamId
+      and message_read_tsz is null
     """;
 
   //language=PostgreSQL
@@ -773,8 +776,9 @@ public class MessagingQuery {
         date_modified  = now(),
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
-      and (metadata->'userId')::bigint = :ownerUserId
+      and (metadata->'userId')::bigint = :userId
       and (metadata->'smsTeamId')::bigint = :smsTeamId
+      and message_read_tsz is null
     """;
 
   //language=PostgreSQL
@@ -791,8 +795,9 @@ public class MessagingQuery {
     select distinct user_id
     from flow.notification
     where notification_topic_id = :notificationTopicId
-      and (metadata -> 'userId')::bigint = :ownerUserId
+      and (metadata -> 'userId')::bigint = :userId
       and (metadata -> 'smsTeamId')::bigint = :smsTeamId
+      and message_read_tsz is null
         """;
 
   //language=PostgreSQL
@@ -803,6 +808,7 @@ public class MessagingQuery {
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
       and (metadata->'projectId')::bigint = :projectId
+      and message_read_tsz is null
     """;
 
   //language=PostgreSQL
@@ -813,6 +819,7 @@ public class MessagingQuery {
         modified_by_id = :modifiedById
     where notification_topic_id = :notificationTopicId
       and (metadata->'userId')::bigint = :ownerUserId
+      and message_read_tsz is null
     """;
 
   //language=PostgreSQL
