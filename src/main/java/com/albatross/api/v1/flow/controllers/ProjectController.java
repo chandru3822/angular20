@@ -74,6 +74,11 @@ public class ProjectController {
     return projectService.getProject(projectId);
   }
 
+  @GetMapping(value = "/{projectId}/statusFields")
+  public List<ProjectStatusField> getStatusFieldsByProject(@PathVariable Long projectId) {
+    return projectService.getStatusFieldsByProject(projectId);
+  }
+
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(
     @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
