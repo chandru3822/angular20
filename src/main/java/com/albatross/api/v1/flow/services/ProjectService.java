@@ -6,12 +6,10 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.controllers.CommunicationController;
-import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
-import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
@@ -38,7 +36,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -268,6 +265,18 @@ public class ProjectService {
     params.put("projectId", projectId);
     Optional<Project> proj = sqlCache.getBySql(ProjectQuery.exists, params, Project.class);
     return proj.isPresent();
+  }
+
+  public List<ProjectStatusField> getStatusFieldsByProject(Long projectId) {
+    User user = securityService.getCurrentUser();
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("projectId", projectId);
+
+    List<ProjectStatusField> results = sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
+
+    return results;
   }
 
   public Optional<Project> getProject(Long projectId) {
@@ -750,5 +759,26 @@ public class ProjectService {
 
     }
   }
+
+
+    private static class ProjectStatusFieldMapper<T> extends BeanPropertyRowMapper<T> {
+      public final ObjectMapper objectMapper;
+
+      public ProjectStatusFieldMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+        super(mappedClass);
+        this.objectMapper = objectMapper;
+      }
+
+      @Override
+      protected void initBeanWrapper(BeanWrapper bw) {
+        TypeReference<List<ProjectStatusField.AssignedField>> assignedFieldsRef =
+          new TypeReference<>() {};
+        bw.registerCustomEditor(
+          List.class,
+          "assignedFields",
+          new JsonCollectionDeserializer(assignedFieldsRef, objectMapper));
+
+      }
+    }
 
 }

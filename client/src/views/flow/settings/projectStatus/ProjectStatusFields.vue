@@ -230,7 +230,7 @@ export default {
           dataViewFieldConfigId: !this.selectedDataViewField.dataViewChildFieldConfigId ? this.selectedDataViewField.dataViewFieldConfigId : null,
           dataViewChildFieldConfigId: this.selectedDataViewField.dataViewChildFieldConfigId
         }
-        const {data, status} = await postRequest(`/projectStatus/company/${this.statusId}`, params)
+        const {data, status} = await postRequest(`/projectStatus/company/${this.statusId}/field`, params)
         this.assignedFields.push(data)
         this.selectedDataViewField = {}
         this.addNew = false
@@ -245,7 +245,7 @@ export default {
     async loadFields() {
       this.fieldsLoading = true
       try {
-        const {data} = await getRequest(`/projectStatus/company/${this.statusId}`, null, [])
+        const {data} = await getRequest(`/projectStatus/company/${this.statusId}/fields`, null, [])
         this.assignedFields = data
         this.fieldsLoading = false
       } catch (e) {

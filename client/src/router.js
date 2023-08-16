@@ -1407,7 +1407,17 @@ const router = new Router({
                   return accessDenied()
                 }
               }
-            },
+            }, {
+            path: 'dontGoHereRandaSaid',
+            // path: 'tracker',
+            component: () => {
+              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'GARBAGE')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/StatusTracker.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          }
           ]
         },        {
           name: 'projectAdmin',

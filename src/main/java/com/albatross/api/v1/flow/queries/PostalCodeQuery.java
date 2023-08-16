@@ -313,7 +313,7 @@ public class PostalCodeQuery {
         where pczu.user_id = :userId
           and pczu.archived is not true
           and pcz.company_id = :companyId
-          and pc.postal_code = :postalCode
+          and pc.postal_code = left(:postalCode, 5)
         """;
 
   //language=PostgreSQL

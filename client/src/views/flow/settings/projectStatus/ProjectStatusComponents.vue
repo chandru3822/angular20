@@ -20,6 +20,7 @@
           <v-textarea
             label="Description"
             outlined
+            hide-details
             auto-grow
             v-model="status.description"
           ></v-textarea>
@@ -68,29 +69,44 @@
               </v-card>
             </v-dialog>
           </div>
-          <div class="my-2" v-if="status.icon && status.icon.id != null">
-            <label>Status Type Icon</label>
-            <div class="flex-display ma-2">
-              <img class="status-icon" :src="status.icon.presignedUrl">
-              <v-btn x-small text color="primary" @click="deleteAttachment(status)">
-                <v-icon>close</v-icon>
-              </v-btn>
+
+          <v-card class="fifty-cent">
+            <v-text-field v-model="status.iconTag"
+                          label="Material Icon Tag"
+                          hide-details
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+            ></v-text-field>
+            <div class="mt-3">
+              Preview: <v-icon v-if="status.iconTag">{{status.iconTag}}</v-icon>
             </div>
-          </div>
-          <div class="my-2" v-else>
-            <label>Status Type Icon</label>
-            <form enctype="multipart/form-data" novalidate>
-              <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable"
-                :disabled="savingTypeLogo"
-                @change="uploadFile(status, $event.target.files, attachmentTypeId, status.id, 1048576)"
-                name="avatar"
-              >
-              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
-            </form>
-          </div>
+          </v-card>
+
+          <v-card class="fifty-cent mt-5">
+            <div class="my-2" v-if="status.icon && status.icon.id != null">
+              <label>Status Type Icon <br>(Obsolete, only used on mobile until Status Tracker release)</label>
+              <div class="flex-display ma-2">
+                <img class="status-icon" :src="status.icon.presignedUrl">
+                <v-btn x-small text color="primary" @click="deleteAttachment(status)">
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </div>
+            </div>
+            <div class="my-2" v-else>
+              <label>Status Type Icon<br>(Obsolete, only used on mobile until Status Tracker release)</label>
+              <form enctype="multipart/form-data" novalidate>
+                <input
+                  type="file"
+                  :accept="acceptedFileTypes"
+                  class="file-input clickable"
+                  :disabled="savingTypeLogo"
+                  @change="uploadFile(status, $event.target.files, attachmentTypeId, status.id, 1048576)"
+                  name="avatar"
+                >
+                <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
+              </form>
+            </div>
+          </v-card>
         </div>
 
         <v-btn v-if="userCanEdit"
@@ -237,7 +253,7 @@ export default {
     async saveType(type) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/project/companyStatus`, type)
+        const {data, status} = await putRequest(`/projectStatus/company`, type)
         this.snackbar = getSnackbar('SUCCESS', 'Project Status Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
@@ -251,7 +267,7 @@ export default {
     async setAsInitial(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/project/companyStatus/initial/${item.id}`,)
+        const {status} = await putRequest(`/projectStatus/company/initial/${item.id}`,)
         item.isDefault = true
         this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -282,5 +298,10 @@ export default {
   margin-top: 5px;
   max-width: 40px;
   height: auto;
+}
+
+.fifty-cent {
+  width: 50%;
+  padding: 15px 20px;
 }
 </style>

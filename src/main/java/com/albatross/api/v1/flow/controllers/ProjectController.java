@@ -74,6 +74,11 @@ public class ProjectController {
     return projectService.getProject(projectId);
   }
 
+  @GetMapping(value = "/{projectId}/statusFields")
+  public List<ProjectStatusField> getStatusFieldsByProject(@PathVariable Long projectId) {
+    return projectService.getStatusFieldsByProject(projectId);
+  }
+
   @DeleteMapping(value = "/{projectId}")
   public void deleteProject(
     @PathVariable Long projectId, @AuthenticationPrincipal UserAccountDetails details) {
@@ -183,39 +188,7 @@ public class ProjectController {
     @PathVariable Long id) {
     return projectStatusService.getOneCompanyProjectStatusType(id);
   }
-
-  @GetMapping(value = "/statusesForWqt")
-  public ResponseEntity<List<WorkQueueTypeProjectStatus>> getStatusesForWqt() {
-    return new ResponseEntity<>(projectStatusService.getStatusesForWqt(), HttpStatus.OK);
-  }
-
-  @PutMapping(value = "/companyStatus/initial/{id}")
-  public void saveInitialProjectStatusType(@PathVariable Long id) {
-    projectStatusService.saveInitialProjectStatusType(id);
-  }
-
-  @PutMapping(value = "/companyStatus")
-  public ResponseEntity<Optional<ProjectStatusType>> saveCompanyProjectStatus(
-    @RequestBody ProjectStatusType status) {
-    return new ResponseEntity<>(projectStatusService.saveCompanyProjectStatus(status), HttpStatus.OK);
-  }
-
-  @PutMapping(value = "/companyStatuses")
-  public void saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
-    projectStatusService.saveCompanyProjectStatuses(statuses);
-  }
-
-  @DeleteMapping(value = "/companyStatus/{id}")
-  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(
-    @PathVariable Long id) {
-    return projectStatusService.deleteCompanyProjectStatus(id);
-  }
-
-  @GetMapping(value = "/status")
-  public ResponseEntity<List<ProjectStatusType>> getProjectStatuses() {
-    return new ResponseEntity<>(projectStatusService.getProjectStatuses(), HttpStatus.OK);
-  }
-
+// end company project status type stuff
 
   @PostMapping(value = "/{projectId}/status")
   public Optional<Project> updateProjectStatus(
@@ -248,12 +221,6 @@ public class ProjectController {
     marketoService.pushData(List.of(lead));
 
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-  }
-
-  @Data
-  public static class CannotDeleteProjectStatus {
-    private Boolean statusInUseByProjects, statusInUseByActions,
-      statusInUseByEventRequirements, statusInUseByProcessStepRequirements;
   }
 
   @Data
