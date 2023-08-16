@@ -892,6 +892,7 @@ where contact_id = :contactId
            cpst.project_status_type_id,
            cpst.project_status_type,
            cpst.company_id,
+           cpst.icon_tag,
            cpst.display_order,
            cpst.description,
            cpst.is_milestone,

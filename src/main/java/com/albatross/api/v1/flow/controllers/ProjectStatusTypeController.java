@@ -58,4 +58,42 @@ public class ProjectStatusTypeController {
     projectStatusService.archiveField(fieldId);
   }
 
+  @PutMapping(value = "/company/initial/{id}")
+  public void saveInitialProjectStatusType(@PathVariable Long id) {
+    projectStatusService.saveInitialProjectStatusType(id);
+  }
+
+  @PutMapping(value = "/company")
+  public ResponseEntity<Optional<ProjectStatusType>> saveCompanyProjectStatus(
+    @RequestBody ProjectStatusType status) {
+    return new ResponseEntity<>(projectStatusService.saveCompanyProjectStatus(status), HttpStatus.OK);
+  }
+
+  @PutMapping(value = "/companyStatuses")
+  public void saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
+    projectStatusService.saveCompanyProjectStatuses(statuses);
+  }
+
+  @GetMapping(value = "/wqt")
+  public ResponseEntity<List<WorkQueueTypeProjectStatus>> getStatusesForWqt() {
+    return new ResponseEntity<>(projectStatusService.getStatusesForWqt(), HttpStatus.OK);
+  }
+
+
+  @GetMapping(value = "")
+  public ResponseEntity<List<ProjectStatusType>> getProjectStatuses() {
+    return new ResponseEntity<>(projectStatusService.getProjectStatuses(), HttpStatus.OK);
+  }
+
+  @DeleteMapping(value = "/companyStatus/{id}")
+  public ResponseEntity<ProjectStatusTypeController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(
+    @PathVariable Long id) {
+    return projectStatusService.deleteCompanyProjectStatus(id);
+  }
+
+  @Data
+  public static class CannotDeleteProjectStatus {
+    private Boolean statusInUseByProjects, statusInUseByActions,
+      statusInUseByEventRequirements, statusInUseByProcessStepRequirements;
+  }
 }

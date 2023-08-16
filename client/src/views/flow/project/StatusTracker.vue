@@ -6,17 +6,21 @@
       </div>
       <div v-else>
         Status: {{currentStatus.projectStatusType}}
-        <div v-for="milestone in statusFields" class="mb-3">
+        <div v-for="(milestone, idx) in statusFields" class="mb-3">
           <div class="flex-display flex-align-items-center">
+            <v-btn fab x-small :outlined="idx > 1" :color="idx > 1 ? 'grey' : 'green'" elevation="0">
+
+              <v-icon v-if="milestone.iconTag" :color="idx > 1 ? 'blue' : 'white'">{{milestone.iconTag}}</v-icon>
+              <v-icon v-else :color="idx > 1 ? 'grey' : 'white'">blank</v-icon>
+            </v-btn>
             <v-avatar :tile="false"
                       :size="35"
-                      color="grey lighten-4"
+                      :color="getMilestoneColor(milestone)"
                       class="account-img"
+
             >
-              <img v-if="milestone.icon && milestone.icon.presignedUrl"
-                   class="status-icon-grid" :src="milestone.icon.presignedUrl">
-  <!--            todo: get a placeholder image here-->
-              <img name="accountImg" v-else src="../../../assets/flow/user_img_placeholder.png">
+              <v-icon v-if="milestone.iconTag" color="white">{{milestone.iconTag}}</v-icon>
+              <v-icon v-else color="white">blank</v-icon>
             </v-avatar>
             <span class="ml-2" :class="{'active-status': milestone.id === currentStatus.companyProjectStatusTypeId}">{{milestone.projectStatusType}}</span>
             <v-spacer></v-spacer>
@@ -82,6 +86,14 @@ export default {
   },
   computed: {},
   methods: {
+    getMilestoneColor(milestone) {
+      //todo: this color check should work like this:
+      // IF the current project status is one of the milestones, that one should be blue
+      // Every milestone BEFORE ^^ that one should be green.
+
+      //IF the current project status is NOT one of the milestones then only show as green if every field in that section has a value.
+      return 'green'
+    },
     async getCurrentStatus() {
       this.fieldsLoading = true
       try {

@@ -276,12 +276,6 @@ public class ProjectService {
 
     List<ProjectStatusField> results = sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
 
-    //include the attachment for the status logo here
-    for(ProjectStatusField field : results) {
-        Attachment a = attachmentService.getOneBySourceIdAndType(field.getId(), 463L);
-        field.setIcon(null != a && null != a.getId() ? a : new Attachment());
-    }
-
     return results;
   }
 

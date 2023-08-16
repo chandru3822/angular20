@@ -13,7 +13,7 @@ export async function getCompanyProjectStatusType(id) {
 
 export async function getProjectStatusTypes() {
   //these are at the root level
-  return await getRequest(`/project/status`)
+  return await getRequest(`/projectStatus`)
 }
 
 export function getStatusColorClass(rootTypeId) {
