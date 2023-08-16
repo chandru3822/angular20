@@ -136,6 +136,7 @@ select oat.id,
          o.org_name,
          o.parent_org_id,
          o.org_type_id,
+         o.id as org_id, --dont take this out mobile needs it
          o.active_flag,
          o.schedulable,
          o.available_to_children,

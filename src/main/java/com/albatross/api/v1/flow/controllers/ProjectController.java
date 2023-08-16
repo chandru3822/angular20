@@ -12,6 +12,7 @@ import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEven
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.ProjectService;
+import com.albatross.api.v1.flow.services.ProjectStatusService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,7 @@ import java.util.Optional;
 public class ProjectController {
 
   private final ProjectService projectService;
+  private final ProjectStatusService projectStatusService;
   private final MessagingService messagingService;
   private final MarketoService marketoService;
 
@@ -70,6 +72,11 @@ public class ProjectController {
   @GetMapping(value = "/{projectId}")
   public Optional<Project> getProject(@PathVariable Long projectId) {
     return projectService.getProject(projectId);
+  }
+
+  @GetMapping(value = "/{projectId}/statusFields")
+  public List<ProjectStatusField> getStatusFieldsByProject(@PathVariable Long projectId) {
+    return projectService.getStatusFieldsByProject(projectId);
   }
 
   @DeleteMapping(value = "/{projectId}")
@@ -167,45 +174,53 @@ public class ProjectController {
       projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
-  // status stuff
+  // status stuff - i cant move these to their own controller because mobile uses some of them and i dont want to find out which ones right now.
+  // but i did make a controller for new stuff
   @GetMapping(value = "/companyStatus")
   public ResponseEntity<List<ProjectStatusType>> getCompanyProjectStatuses(
     @RequestParam(required = false) Long projectId,
     @RequestParam(required = false) Boolean excludeAttachments) {
-    return new ResponseEntity<>(projectService.getCompanyProjectStatuses(projectId, excludeAttachments), HttpStatus.OK);
+    return new ResponseEntity<>(projectStatusService.getCompanyProjectStatuses(projectId, excludeAttachments), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/companyStatus/{id}")
+  public Optional<ProjectStatusType> getCompanyProjectStatusById(
+    @PathVariable Long id) {
+    return projectStatusService.getOneCompanyProjectStatusType(id);
   }
 
   @GetMapping(value = "/statusesForWqt")
   public ResponseEntity<List<WorkQueueTypeProjectStatus>> getStatusesForWqt() {
-    return new ResponseEntity<>(projectService.getStatusesForWqt(), HttpStatus.OK);
+    return new ResponseEntity<>(projectStatusService.getStatusesForWqt(), HttpStatus.OK);
   }
 
   @PutMapping(value = "/companyStatus/initial/{id}")
   public void saveInitialProjectStatusType(@PathVariable Long id) {
-    projectService.saveInitialProjectStatusType(id);
+    projectStatusService.saveInitialProjectStatusType(id);
   }
 
   @PutMapping(value = "/companyStatus")
   public ResponseEntity<Optional<ProjectStatusType>> saveCompanyProjectStatus(
     @RequestBody ProjectStatusType status) {
-    return new ResponseEntity<>(projectService.saveCompanyProjectStatus(status), HttpStatus.OK);
+    return new ResponseEntity<>(projectStatusService.saveCompanyProjectStatus(status), HttpStatus.OK);
   }
 
   @PutMapping(value = "/companyStatuses")
   public void saveCompanyProjectStatuses(@RequestBody List<ProjectStatusType> statuses) {
-    projectService.saveCompanyProjectStatuses(statuses);
+    projectStatusService.saveCompanyProjectStatuses(statuses);
   }
 
   @DeleteMapping(value = "/companyStatus/{id}")
   public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(
     @PathVariable Long id) {
-    return projectService.deleteCompanyProjectStatus(id);
+    return projectStatusService.deleteCompanyProjectStatus(id);
   }
 
   @GetMapping(value = "/status")
   public ResponseEntity<List<ProjectStatusType>> getProjectStatuses() {
-    return new ResponseEntity<>(projectService.getProjectStatuses(), HttpStatus.OK);
+    return new ResponseEntity<>(projectStatusService.getProjectStatuses(), HttpStatus.OK);
   }
+
 
   @PostMapping(value = "/{projectId}/status")
   public Optional<Project> updateProjectStatus(

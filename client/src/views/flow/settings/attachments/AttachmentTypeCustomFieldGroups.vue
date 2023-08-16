@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">

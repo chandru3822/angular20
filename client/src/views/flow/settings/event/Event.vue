@@ -7,7 +7,7 @@
           <span>Back</span>
         </v-btn>
         <v-toolbar flat class="app-toolbar">
-          <span class="page-title" v-if="!editName">{{ event.eventName }}</span>
+          <span class="headline-small" v-if="!editName">{{ event.eventName }}</span>
           <v-text-field v-else color="primary"
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
@@ -133,11 +133,6 @@ export default {
 .name-container {
   background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
-}
-
-.page-title {
-  font-size: 18px;
-  font-weight: 200;
 }
 
 .tabs-bar {

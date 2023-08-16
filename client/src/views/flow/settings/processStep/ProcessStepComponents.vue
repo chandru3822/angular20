@@ -56,7 +56,7 @@
         <v-row>
           <v-col cols="12" class="pt-0 px-0">
             <v-toolbar flat class="wqt-header-bar">
-              <v-toolbar-title class="app-title">Process Step Status Types</v-toolbar-title>
+              <v-toolbar-title class="title-large">Process Step Status Types</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn text color="primary"
@@ -131,7 +131,7 @@
         <v-row>
           <v-col cols="12" class="mt-1 pa-0">
             <v-toolbar flat class="link-header-bar">
-              <v-toolbar-title class="app-title">Links</v-toolbar-title>
+              <v-toolbar-title class="title-large">Links</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn text color="primary" @click="getLinksForProcessStep" v-if="userCanAdd">
@@ -179,7 +179,7 @@
         <v-row>
           <v-col cols="12" class="pa-0 mt-4">
             <v-toolbar flat class="access-header-bar">
-              <v-toolbar-title class="app-title">Process Step Access Control</v-toolbar-title>
+              <v-toolbar-title class="title-large">Process Step Access Control</v-toolbar-title>
             </v-toolbar>
             <v-card flat color="rowShadeCustom" class="square-card mt-2">
               <v-card-text>

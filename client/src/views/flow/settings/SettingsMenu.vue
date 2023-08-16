@@ -1,43 +1,34 @@
 <template>
-  <v-container class="pt-0">
-    <v-row class="settings-container" :class="{'d-inline-block': isMobile}">
-      <v-col class="text-left pa-0" :class="{'collapse-left':leftCollapsed && !isMobile, 'col-md-3': !leftCollapsed}">
-        <v-menu data-app
-                v-if="isMobile"
-                offset-y
-                attach
-                v-model="menuOpen"
-                min-width="100%"
-                class="account-menu"
-                :close-on-content-click="false">
-          <template v-slot:activator="{ on }">
-            <v-toolbar
-                color="white"
-                v-on="on"
-                class="label-large"
-                style="z-index: 1"
-            >
-              {{ title }}
-              <v-spacer></v-spacer>
-              <v-btn text>
-                <v-icon>expand_more</v-icon>
-              </v-btn>
-            </v-toolbar>
-          </template>
-          <SettingsMenu class="pa-3" :title="title" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
-        </v-menu>
-        <v-card v-else class=" left-menu square-card d-flex justify-space-between">
-          <SettingsMenu class="px-5 py-2 settings-container" :class="{'hidden': leftCollapsed}"></SettingsMenu>
-          <v-btn small text color="primary" @click="collapseMenu" class="py-6">
-            <v-icon>mdi-menu</v-icon>
-          </v-btn>
-        </v-card>
-      </v-col>
-      <v-col class="px-4 pt-0 main-section" :class="{'main-section-left-collapsed': leftCollapsed, 'col-12 col-md-9': !leftCollapsed}">
-        <router-view/>
-      </v-col>
-    </v-row>
-  </v-container>
+  <v-list :dense="$vuetify.breakpoint.smAndUp" :color="$vuetify.breakpoint.smAndDown ? 'grey lighten-4' : 'transparent'" :class="{'left-menu' : $vuetify.breakpoint.smAndDown}">
+    <template v-for="(item, index) in filterBy(items, true, 'show')">
+      <h3 class="label-large" v-if="item.header">{{item.header}}</h3>
+      <v-list-item
+          v-else
+          :key="item.title"
+          @click="selectMenuItem(item.title)"
+          :to="item.path"
+          class="dense-setting-row"
+          :class="{'shaded-row': item.pathMatch && item.pathMatchExclude ? $route.path.includes(`${item.pathMatch}`) && !$route.path.includes(item.pathMatchExclude)
+                                          : item.pathMatch ? $route.path.includes(`${item.pathMatch}`) : $route.path === item.path}"
+      >
+        <v-list-item-content>
+          <v-list-item-title class="body-medium">{{item.title}}</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+    </template>
+    <v-list-item :dense="$vuetify.breakpoint.smAndDown" v-for="o in filterBy(companyObjectTypes, (cot) => { return [1,3,4,5].includes(cot.flowTypeId) })" :key="o.id"
+                 :to="{ path: o.flowTypeId === 3 ? `/settings/project/customFieldGroups?companyObjectTypeId=${o.id}` :
+                                      o.flowTypeId === 4 ? `/settings/events` :
+                                      o.flowTypeId === 5 ? `/settings/attachments` : `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}`}"
+                 @click="selectMenuItem(o.objectType)"
+                 class="dense-setting-row"
+                 :class="{'shaded-row': $route.path === `/settings/objectType/${o.id}/customFieldGroups?objectType=${o.objectType}` || ($route.query && $route.query.companyObjectTypeId && parseInt($route.query.companyObjectTypeId) === o.id)}">
+      <v-list-item-content>
+        <v-list-item-title class="body-medium">{{o.objectType}}</v-list-item-title>
+      </v-list-item-content>
+    </v-list-item>
+  </v-list>
+
 </template>
 
 <script>
@@ -46,34 +37,20 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
-import SettingsMenu from "./SettingsMenu";
-import {UserMutations} from "../../../stores/UserStore";
-
 export default {
-  name: 'Settings',
-  components: {SettingsMenu},
-  mixins: [Vue2Filters.mixin],
-
-  data () {
+  name: "SettingsMenu",
+  props: {
+    title: String
+  },
+  data(){
     return {
-      snackbar: {},
-      menuOpen: false,
       constants,
-      title: null,
       hasSettingsAccess: this.$store.getters.userHasFeature('SETTINGS'),
       companyObjectTypes: [],
-      companyId: this.$store.state.user.details.companyId,
-      parentId: this.$store.state.user.details.parentCompanyId,
-
     }
   },
+  mixins: [Vue2Filters.mixin],
   computed: {
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-    leftCollapsed(){
-      return this.$store.state.user.settingsMenuCollapsed
-    },
     items() { return [
       {
         header: 'Preferences',
@@ -164,10 +141,6 @@ export default {
         title: 'Message Templates',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/hashtags',
-        title: 'Topic Hashtags',
-        show: this.hasSettingsAccess
-      }, {
         header: 'Configurations',
         show: this.hasSettingsAccess
       }, {
@@ -232,6 +205,7 @@ export default {
         try {
           const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
           this.companyObjectTypes = data
+
           this.setTitle()
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -243,77 +217,25 @@ export default {
       }
     },
     setTitle (title) {
-      //title passed in on item click
-      if(title){
-        this.title = title
-      }
-      // this determines the title if the page is refreshed
-      else if( this.$route.path.includes('/settings/customFieldGroup') || this.$route.path.includes('/customFieldGroups')) {
-        if(this.companyObjectTypes.length > 0) {
-          const match = this.companyObjectTypes.find(ot => ot.id.toString() === this.$route.params.id)
-          this.title = match?.objectType
-        }
-      } else {
-        this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
-      }
+      this.$emit('updateTitle', title)
     },
-    collapseMenu (){
-      this.$store.commit(UserMutations.SETTINGS_MENU_COLLAPSE)
+    selectMenuItem(title){
+      this.setTitle(title)
+      this.$emit('closeMenu')
+
     }
   },
   created () {
     this.getCompanyObjectTypes()
-    this.setTitle()
   }
 }
 </script>
 
-<style scoped lang="scss">
-.settings-container {
-  height: calc(100vh - 50px);
-  max-width: 100vw;
-  @media (max-width: 960px) {
-    width: 100vw;
+<style lang="scss" scoped>
+@media (min-width: 960px) {
+  .dense-setting-row {
+    height: 30px !important;
+    min-height: 30px !important;
   }
 }
-
-a {
-  text-decoration: none;
-}
-
-.left-menu {
-  max-height: calc(100vh - 50px);
-  height: calc(100vh - 50px);
-  overflow: auto;
-  background-color: var(--v-grey-lighten4);
-}
-
-.left-column {
-  background-color: var(--v-grey-lighten4);
-  height: 100%;
-  max-height: 100%;
-}
-.collapse-left {
-  max-width: 72px;
-  padding-left:0;
-  div.left-menu {
-    justify-content: center !important;
-  }
-}
-.hidden {
-  display: none;
-}
-
-.main-section {
-  height: 100vh;
-  background-color: #fff;
-  max-height: 100%;
-  overflow: auto;
-  .main-section-left-collapsed {
-    max-width: calc(100% - 72px) !important;
-  }
-
-}
-
-
 </style>

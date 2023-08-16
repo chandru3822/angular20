@@ -3,7 +3,7 @@
     <v-col cols="12" class="pt-0 px-0">
       <!--            work queue types -->
       <v-toolbar flat class="wqt-header-bar">
-        <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
+        <v-toolbar-title class="title-large">Work Queue Types</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn text color="primary"

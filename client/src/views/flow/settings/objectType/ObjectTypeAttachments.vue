@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" class="pa-0 mt-4">
         <v-toolbar flat class="attach-header-bar">
-          <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
+          <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="getAvailableAttachmentTypes" v-if="userCanAdd">
