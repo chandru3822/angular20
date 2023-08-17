@@ -270,7 +270,7 @@ export default {
 
 <style scoped lang="scss">
 .settings-container {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 120px);
   max-width: 100vw;
   @media (max-width: 960px) {
     width: 100vw;
@@ -314,6 +314,12 @@ a {
   }
 
 }
+</style>
 
-
+<style lang="scss">
+.settings-container {
+  .v-menu__content.theme--light.menuable__content__active{
+    max-height: calc(100vh - 140px);
+  }
+}
 </style>
