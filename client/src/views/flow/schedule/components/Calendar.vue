@@ -4,8 +4,8 @@
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
         <v-col class="py-0" cols="12" md="4">
-          <v-select attach v-model="selectedStates"
-                    :items="states"
+          <v-autocomplete attach v-model="selectedStates"
+                    :items="sortedStates"
                     label="States"
                     multiple
                     hide-details
@@ -42,11 +42,11 @@
               slot="prepend-item"
               class="mt-2"
             ></v-divider>
-          </v-select>
+          </v-autocomplete>
         </v-col>
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgTypes"
-                    :items="orgTypes"
+                    :items="sortedOrgTypes"
                     label="Organization Resource Types"
                     multiple
                     type="search"
@@ -59,10 +59,7 @@
                     @blur="filterOrgsAndUsers"
                           attach
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
+            <template v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedOrgTypes.length < 3">
                 <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
                         v-for="(sr, idx) in selectedOrgTypes">
@@ -92,7 +89,7 @@
         <v-col class="py-0" cols="12" md="4">
 
           <v-autocomplete v-model="selectedPositions"
-                    :items="positions"
+                    :items="sortedPositions"
                     label="Position Resource Types"
                     multiple
                     hide-details
@@ -150,7 +147,7 @@
         </v-col>
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgs"
-                    :items="orgs"
+                    :items="sortedOrgs"
                     label="Organization Resources"
                     multiple
                     clearable
@@ -179,7 +176,7 @@
         <v-col class="py-0" cols="12" md="4">
 
           <v-autocomplete v-model="selectedUsers"
-                          :items="users"
+                          :items="sortedUsers"
                           label="User Resources"
                           multiple
                           clearable
@@ -276,6 +273,11 @@
     },
     computed: {
       //states
+      sortedStates() {
+        const selectedStates = this.states.filter(state => this.selectedStates.includes(state))
+        const unselectedStates = this.states.filter(state => !this.selectedStates.includes(state))
+        return selectedStates.concat(unselectedStates)
+      },
       selectAllStates () {
         return this.states.length === this.selectedStates.length
       },
@@ -292,6 +294,11 @@
         return 'check_box_outline_blank'
       },
       //org Types
+      sortedOrgTypes() {
+        const selectedOrgTypes = this.orgTypes.filter(orgType => this.selectedOrgTypes.includes(orgType))
+        const unselectedOrgTypes = this.orgTypes.filter(orgType => !this.selectedOrgTypes.includes(orgType))
+        return selectedOrgTypes.concat(unselectedOrgTypes)
+      },
       selectAllOrgTypes () {
         return this.orgTypes.length === this.selectedOrgTypes.length
       },
@@ -308,6 +315,12 @@
         return 'check_box_outline_blank'
       },
       //positions
+      sortedPositions(){
+        const selectedPositions = this.positions.filter(position => this.selectedPositions.includes(position));
+        const unselectedPositions = this.positions.filter(position => !this.selectedPositions.includes(position));
+        return selectedPositions.concat(unselectedPositions)
+
+      },
       selectAllPositions () {
         return this.positions.length === this.selectedPositions.length
       },
@@ -323,6 +336,18 @@
         }
         return 'check_box_outline_blank'
       },
+      //orgs
+      sortedOrgs(){
+        const selectedOrgs = this.orgs.filter(org => this.selectedOrgs.includes(org));
+        const unselectedOrgs = this.orgs.filter(org => !this.selectedOrgs.includes(org));
+        return selectedOrgs.concat(unselectedOrgs)
+      },
+      //users
+      sortedUsers(){
+        const selectedUsers = this.users.filter(user => this.selectedUsers.includes(user));
+        const unselectedUsers = this.users.filter(user => !this.selectedUsers.includes(user));
+        return selectedUsers.concat(unselectedUsers)
+      }
     },
     mounted () {
       this.calendarApi = this.$refs.eventCalendar.getApi()
