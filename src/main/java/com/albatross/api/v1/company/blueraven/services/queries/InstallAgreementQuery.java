@@ -97,7 +97,15 @@ public class InstallAgreementQuery {
            plh.zip,
            case when c.mobile is not null and c.mobile <> '' then c.mobile else c.phone end as phone,
            c.email,
-           plh.fullname
+           plh.fullname,
+           plh.storage_size_kwh,
+           plh.system_size,
+           plh.inverter_custom_getting,
+           plh.panel,
+           plh.panel_wattage,
+           plh.storage_brand,
+           p.street1 as projectStreet1,
+           p.street2 as projectStreet2
     from brs.proposal_log_history plh
          left join flow.project p on plh.project_id = p.id
          left join flow.user_position up on p.user_position_id = up.id
@@ -177,5 +185,49 @@ public class InstallAgreementQuery {
     UPDATE brs.project_details
     SET credit_last_checked_by = :creditLastCheckedBy
     WHERE project_id = :projectId
+    """;
+
+  //language=PostgreSQL
+  public final static String getSunpowerProducts = """
+    SELECT
+        MAX(financialProductId) AS financialProductId,
+        MAX(inverterId) AS inverterId,
+        MAX(panelId) AS panelId,
+        MAX(storageId) AS storageId
+    FROM (
+             SELECT CASE WHEN product_name = :financialName THEN sunpower_id END AS financialProductId,
+                    NULL AS inverterId,
+                    NULL AS panelId,
+                    NULL AS storageId
+             FROM brs.sunpower_product sp
+             WHERE product_name = :financialName
+
+             UNION ALL
+
+             SELECT NULL AS financialProductId,
+                    CASE WHEN product_name = :inverterName THEN sunpower_id END AS inverterId,
+                    NULL AS panelId,
+                    NULL AS storageId
+             FROM brs.sunpower_product sp
+             WHERE product_name = :inverterName
+
+             UNION ALL
+
+             SELECT NULL AS financialProductId,
+                    NULL AS inverterId,
+                    CASE WHEN product_name = :panelName THEN sunpower_id END AS panelId,
+                    NULL AS storageId
+             FROM brs.sunpower_product sp
+             WHERE product_name = :panelName
+
+             UNION ALL
+
+             SELECT NULL AS financialProductId,
+                    NULL AS inverterId,
+                    NULL AS panelId,
+                    CASE WHEN product_name = :batteryName THEN sunpower_id END AS storageId
+             FROM brs.sunpower_product sp
+             WHERE product_name = :batteryName
+         ) AS subquery;
     """;
 }
