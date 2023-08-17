@@ -17,11 +17,13 @@
         {{pool.startDate | formatDate('date', 'M/D/YYYY')}} - {{pool.endDate | formatDate('date', 'M/D/YYYY')}}
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text @click="toggleSelectAllQualifying()" v-if="userCanEdit && !pool.advanced">
+          <v-btn text
+                 :disabled="bracketsEmpty"
+                 @click="toggleSelectAllQualifying()" v-if="userCanEdit && !pool.advanced">
             Select All Qualifying
           </v-btn>
           <v-btn v-if="userCanEdit"
-                 :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || matchesNotGenerated"
+                 :disabled="selectedUsers.length !== tournamentUserCount || pool.advanced || bracketsEmpty || matchesNotGenerated"
                  color="primary" class="white--text" @click="advanceSelectedToBracket()">
             <span v-if="matchesNotGenerated">Must Generate Matches</span>
             <span v-else-if="!pool.advanced">Advance Selected to Bracket</span>
@@ -70,7 +72,8 @@
         <template #item="{ item, index }">
           <tr :class="{'on-fence-row': !pool.advanced && item.score === lastQualifiedUserScore,'qualified-row': !pool.advanced && poolUsers.indexOf(item) < tournamentUserCount,'shaded-row': index % 2}">
             <td :key="selectRerender">
-              <input type="checkbox" v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
+              <input type="checkbox" :disabled="bracketsEmpty"
+                     v-if="!pool.advanced" v-model="item.selected" @change="toggleSingleSelect(item)">
               <v-icon color="green" v-else-if="item.qualified">mdi-check-decagram</v-icon>
             </td>
             <td class="text-left">
@@ -115,6 +118,7 @@
         finalMatches: [],
         showScoreUser: {},
         showModal: false,
+        bracketsEmpty: false,
         selectRerender: 1,
         search: '',
         tournament: {},
@@ -157,10 +161,10 @@
       }
     },
     async created() {
+      //need the tournament first so i can see how many users can qualify
+      await this.getTournament()
       this.getPool()
       this.getPoolUsers()
-      //need the tournament so i can see how many users can qualify
-      this.getTournament()
     },
     methods: {
       toggleSingleSelect(item) {
@@ -291,13 +295,17 @@
         try {
           const {data} = await getRequest(`/tournament/${this.tournamentId}`, 'blueraven')
           this.tournament = data
-          this.tournament?.brackets?.forEach(b => {
-            this.tournamentUserCount += b.numberOfUsers
-            if(!b.matchesGenerated) {
-              this.matchesNotGenerated = true
-            }
-          })
-          this.minRowsPerPage = this.tournamentUserCount > 100 ? this.tournamentUserCount : 100
+          if(this.tournament?.brackets?.length === 0) {
+            this.bracketsEmpty = true
+          } else {
+            this.tournament?.brackets?.forEach(b => {
+              this.tournamentUserCount += b.numberOfUsers
+              if(!b.matchesGenerated) {
+                this.matchesNotGenerated = true
+              }
+            })
+            this.minRowsPerPage = this.tournamentUserCount > 100 ? this.tournamentUserCount : 100
+          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Tournament')
@@ -320,7 +328,9 @@
         try {
           const {data, status} = await getRequest(`/tournament/${this.tournamentId}/pool/usersByType/${this.poolTypeId}`, 'blueraven')
           this.poolUsers = data
-          this.lastQualifiedUserScore = this.poolUsers[this.tournamentUserCount - 1].score
+          if(!this.bracketsEmpty) {
+            this.lastQualifiedUserScore = this.poolUsers[this.tournamentUserCount - 1].score
+          }
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           logError(e)
