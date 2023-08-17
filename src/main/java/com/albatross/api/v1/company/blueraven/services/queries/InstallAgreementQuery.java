@@ -195,39 +195,39 @@ public class InstallAgreementQuery {
         MAX(panelId) AS panelId,
         MAX(storageId) AS storageId
     FROM (
-             SELECT CASE WHEN product_name = :financialName THEN sunpower_id END AS financialProductId,
+             SELECT CASE WHEN product_name ILIKE :financialName THEN sunpower_id END AS financialProductId,
                     NULL AS inverterId,
                     NULL AS panelId,
                     NULL AS storageId
              FROM brs.sunpower_product sp
-             WHERE product_name = :financialName
+             WHERE product_name ILIKE :financialName
 
              UNION ALL
 
              SELECT NULL AS financialProductId,
-                    CASE WHEN product_name = :inverterName THEN sunpower_id END AS inverterId,
+                    CASE WHEN product_name ILIKE :inverterName THEN sunpower_id END AS inverterId,
                     NULL AS panelId,
                     NULL AS storageId
              FROM brs.sunpower_product sp
-             WHERE product_name = :inverterName
-
-             UNION ALL
-
-             SELECT NULL AS financialProductId,
-                    NULL AS inverterId,
-                    CASE WHEN product_name = :panelName THEN sunpower_id END AS panelId,
-                    NULL AS storageId
-             FROM brs.sunpower_product sp
-             WHERE product_name = :panelName
+             WHERE product_name ILIKE :inverterName
 
              UNION ALL
 
              SELECT NULL AS financialProductId,
                     NULL AS inverterId,
-                    NULL AS panelId,
-                    CASE WHEN product_name = :batteryName THEN sunpower_id END AS storageId
+                    CASE WHEN product_name ILIKE :panelName THEN sunpower_id END AS panelId,
+                    NULL AS storageId
              FROM brs.sunpower_product sp
-             WHERE product_name = :batteryName
+             WHERE product_name ILIKE :panelName
+
+             UNION ALL
+
+             SELECT NULL AS financialProductId,
+                    NULL AS inverterId,
+                    NULL AS panelId,
+                    CASE WHEN product_name ILIKE :batteryName THEN sunpower_id END AS storageId
+             FROM brs.sunpower_product sp
+             WHERE product_name ILIKE :batteryName
          ) AS subquery;
     """;
 }
