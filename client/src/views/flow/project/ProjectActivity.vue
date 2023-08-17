@@ -110,6 +110,7 @@
                      :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
                      class="text-capitalize my-4 fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
+                     @click="scrollToTop"
               >
                 Timeline
               </v-btn>
@@ -117,6 +118,7 @@
                      :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
                      class="text-capitalize  fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
+                     @click="scrollToTop"
               >
                 Topic
               </v-btn>

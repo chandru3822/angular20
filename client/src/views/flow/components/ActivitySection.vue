@@ -132,7 +132,8 @@
           offset="6"
           insert-space
         >
-          <v-textarea class="body-large" hide-details
+          <v-textarea class="body-large note-text-area"
+                      hide-details
                       auto-grow
                       autofocus
                       rows="2"
@@ -686,10 +687,17 @@ export default {
   background-color: var(--v-grey-lighten4) !important;
 }
 
+
 </style>
 <style lang="scss">
 .mention-selected {
   color: var(--v-primary-base);
   font-weight: bold;
+}
+.note-text-area {
+  textarea {
+    max-height: 300px;
+    overflow-y: scroll;
+  }
 }
 </style>

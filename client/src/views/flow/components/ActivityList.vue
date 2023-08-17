@@ -126,7 +126,7 @@ export default {
       //   editedActivity = cloneDeep(a),
       //   editedIndex = aIdx, addActivity = false,
       //     populateSelectedTopics()
-      console.log('todo: handle this edit', item)
+      // console.log('todo: handle this edit', item)
       this.editCallback(item)
     },
     goToPath(activity) {
