@@ -105,9 +105,14 @@ public class InstallAgreementQuery {
            plh.panel_wattage,
            plh.storage_brand,
            p.street1 as projectStreet1,
-           p.street2 as projectStreet2
+           p.street2 as projectStreet2,
+           p.city as projectCity,
+           s.abbreviation as projectState,
+           p.postal_code as projectZipCode
     from brs.proposal_log_history plh
          left join flow.project p on plh.project_id = p.id
+         left outer join flow.company_state cs on p.company_state_id = cs.id
+         left outer join flow.state s ON s.id = cs.state_id
          left join flow.user_position up on p.user_position_id = up.id
          left join flow.user u on up.user_id = u.id
          left join flow.contact c on p.contact_id = c.id
