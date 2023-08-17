@@ -693,7 +693,7 @@ export default {
       }
 
       action?.processStepActionLinks?.forEach(link => {
-        followLink(link.url, params)
+        followLink(this, link.url, params)
       })
     },
     completeAction: async function (action) {

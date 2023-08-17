@@ -26,6 +26,7 @@
             <div>
               These parameters can be used to add some system values to a url. <br/>
               Validation is not yet in place so be careful which screens you assign a url to. <br/>
+              If you want to use the value from a cfga, prefix the id with CFGA_ID_. <br/>
               For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
               <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
                 {{p.name}}
@@ -51,6 +52,7 @@
                     <div>
                       These parameters can be used to add some system values to a url. <br/>
                       Validation is not yet in place so be careful which screens you assign a url to. <br/>
+                      If you want to use the value from a cfga, prefix the id with CFGA_ID_ <br/>
                       For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
                       <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
                         {{p.name}}
