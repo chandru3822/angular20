@@ -10,6 +10,10 @@ public class LinkQuery {
     and archived is not true
     """;
 
+  public final static String buildLinkUrl = """
+      select * from flow.build_link_url(:currentUrl, :contactId::bigint, :projectId::bigint, :ppsId::bigint, :ppseId::bigint)
+    """;
+
   //language=PostgreSQL
   public final static String updateOrderInProcessStep = """
     update flow.process_step_link
