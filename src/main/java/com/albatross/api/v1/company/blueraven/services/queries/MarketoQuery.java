@@ -215,7 +215,9 @@ public class MarketoQuery {
            pd.final_design_complete_date,
            pd.ahj_final_inspection_verified,
            pd.pto_verified,
-           pd.substantial_completion_date
+           pd.substantial_completion_date,
+           pd.estimated_ahj_approval_timeline,
+           pd.lead_source_detail_name
     from flow.project p
     inner join flow.contact c on c.id = p.contact_id
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id

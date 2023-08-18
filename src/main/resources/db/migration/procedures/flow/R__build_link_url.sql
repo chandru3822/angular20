@@ -6,12 +6,10 @@ CREATE OR REPLACE FUNCTION flow.build_link_url(p_current_url character varying, 
 $BODY$
 DECLARE
     v_value    text;
-    v_error    boolean default false;
+    v_error    boolean;
     v_cfga_ids int[];
     r          bigint;
 BEGIN
-
-    v_error = false;
 
     with t as (select unnest(regexp_matches(p_current_url,
                                             'CFGA_ID_(\d+)', 'g')) s)
@@ -37,7 +35,6 @@ BEGIN
             END LOOP;
     end if;
 
-    raise notice 'current url ******** %', p_current_url;
     if v_error is true then
         return 'ERROR';
     else

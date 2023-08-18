@@ -74,7 +74,9 @@ public class MarketoProject {
                  readyToSendInstallationReminderEmail,
                  readyToSendFirstPermitUpdateEmail,
                  readyToSendSecondPermitUpdateEmail,
-                 readyToSendThirdPermitUpdateEmail;
+                 readyToSendThirdPermitUpdateEmail,
+                 estimatedAhjApprovalTimeline,
+                 leadSourceDetailName;
 
   private Boolean doNotSolicitReview;
 }
