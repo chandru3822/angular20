@@ -560,7 +560,7 @@ export default {
     async getProjectStatusTypesForWorkQueue() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/project/statusesForWqt`)
+        const {data, status} = await getRequest(`/projectStatus/wqt`)
         this.combinedStatuses = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

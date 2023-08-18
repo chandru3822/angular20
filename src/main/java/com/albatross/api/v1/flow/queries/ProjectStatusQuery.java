@@ -89,6 +89,7 @@ select
         cpst.project_status_type,
         cpst.display_order,
         cpst.description,
+        cpst.icon_tag,
         cpst.is_default,
         cpst.is_milestone,
         pst.id as "projectStatusTypeId",
@@ -107,6 +108,7 @@ select
         cpst.project_status_type,
         cpst.description,
         cpst.display_order,
+        cpst.icon_tag,
         cpst.is_default,
         cpst.is_milestone,
         pst.id as "projectStatusTypeId",
@@ -134,6 +136,7 @@ select
     set project_status_type = :projectStatusType,
         modified_by_id = :currentUserId,
         display_order = :displayOrder,
+        icon_tag = trim(:iconTag),
         description = :description,
         is_milestone = :isMilestone,
         date_modified = now()

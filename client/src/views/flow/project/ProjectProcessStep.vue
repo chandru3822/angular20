@@ -688,11 +688,12 @@ export default {
     followMultipleLinks(action) {
       let params = {
         projectId: this.projectId,
-        ppsId: this.projectProcessStepId
+        ppsId: this.projectProcessStepId,
+        contactId: this.processStep.contactId
       }
 
       action?.processStepActionLinks?.forEach(link => {
-        followLink(link.url, params)
+        followLink(this, link.url, params)
       })
     },
     completeAction: async function (action) {

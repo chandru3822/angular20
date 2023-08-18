@@ -15,8 +15,7 @@ public class ProjectStatusField {
   //id = companyProjectStatusTypeId
   private Long id, projectStatusTypeId, displayOrder;
 
-  private String description, projectStatusType, rootProjectStatusType;
-  private Attachment icon;
+  private String description, projectStatusType, rootProjectStatusType, iconTag;
 
   private List<AssignedField> assignedFields;
 

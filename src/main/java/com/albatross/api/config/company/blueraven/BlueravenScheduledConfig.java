@@ -96,8 +96,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  // daily at 1:15 mountain time
-   @Scheduled(cron = "0 15 7 * * *", zone = "UTC")
+  // daily at 4:00am mountain timec
+   @Scheduled(cron = "0 0 10 * * *", zone = "UTC")
   public void pushProjectsToMarketo() {
       if (marketoEnabled) {
           log.info("*** CRON: start pushing projects to Marketo ***");

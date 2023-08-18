@@ -125,7 +125,12 @@ BEGIN
                           and pd.first_appointment_missed_id is not null
                           AND pd.first_appointment_pitched is null
                           and pd.setter_user_id = p_user_id) +
-                       (select count(1) * 5
+                       (select count(1) * (select field_value
+                                           from brs.tournament_formula_field_value tffv
+                                                  inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                           where tff.tournament_formula_id = p_tournament_formula_id
+                                             and tffv.tournament_id = p_tournament_id
+                                             and tff.field_code = 'BOOKING_SCORE_VALUE_SETTERS')::int
                         from brs.project_details pd
                         where pd.installation_agreement_signed_date::date between p_start_date and p_end_date
                           and pd.setter_user_id = p_user_id))) as cnt;

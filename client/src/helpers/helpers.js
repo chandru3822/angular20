@@ -76,11 +76,29 @@ export function getFileIcon(file) {
   }
 }
 
-export function followLink(url, params) {
+export async function followLink(instance, url, params) {
   let adjustedUrl = getUrlForLink(url, params)
 
-  //the date stringify guarantees a new tab opens every time
-  window.open(adjustedUrl, JSON.stringify(new Date()))
+  if(adjustedUrl.includes('CFGA_ID_')) {
+    let urlParams = {
+      ...params,
+      currentLinkUrl: adjustedUrl
+    }
+
+    const {data, status} = await getRequestWithParams(`/links/buildUrl`, { params: urlParams })
+    if(data === 'ERROR') {
+      let snackbar = getSnackbar('ERROR', 'Error Generating Link. Please contact an administrator.')
+      instance.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+    } else {
+      adjustedUrl = data
+      //the date stringify guarantees a new tab opens every time
+      window.open(adjustedUrl, JSON.stringify(new Date()))
+    }
+  } else {
+    //the date stringify guarantees a new tab opens every time
+    window.open(adjustedUrl, JSON.stringify(new Date()))
+  }
+
 }
 
 export function getHostUrl() {
