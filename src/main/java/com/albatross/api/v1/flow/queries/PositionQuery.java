@@ -176,6 +176,7 @@ public class PositionQuery {
      SELECT *
      FROM flow.white_listed_position wlp
      WHERE wlp.archived is not true and wlp.position_id = :positionId
+     AND wlp.company_id = :companyId
     """;
 
   //language=PostgreSQL
