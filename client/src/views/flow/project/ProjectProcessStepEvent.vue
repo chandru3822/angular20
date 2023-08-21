@@ -557,7 +557,7 @@ export default {
       }
 
       action?.childLinks?.forEach(link => {
-        followLink(link.url, params)
+        followLink(this, link.url, params)
       })
     },
     validateActionRequirements: async function (action) {

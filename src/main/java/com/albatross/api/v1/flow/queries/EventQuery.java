@@ -66,6 +66,7 @@ public class EventQuery {
                                                                                             wlp.archived
                                                                                      FROM flow.white_listed_position wlp
                                                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                        AND wlp.white_list_type_id = 2
                                                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions",
                                                                    null::int as "defaultFieldId"
@@ -142,6 +143,7 @@ public class EventQuery {
                          FROM flow.white_listed_position wlp
                          WHERE wlp.white_list_type_id = 17
                            AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
                            and wlp.event_id = e.id) wlp), '[]') AS "hiddenWhiteListedPositions",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
@@ -205,6 +207,7 @@ public class EventQuery {
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 1
                                                                                      AND wlp.archived is not true) links), '[]') AS "whiteListedPositions",
                                                                  coalesce((
@@ -218,6 +221,7 @@ public class EventQuery {
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 2
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga
@@ -263,6 +267,7 @@ public class EventQuery {
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 2
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga
@@ -290,6 +295,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 6
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
                 coalesce((
@@ -302,6 +308,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 14
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "startTimeHiddenWhiteListedPositions",
                coalesce((
@@ -314,6 +321,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 7
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
                 coalesce((
@@ -326,6 +334,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 15
+                                  AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "endTimeHiddenWhiteListedPositions",
                coalesce((
@@ -338,6 +347,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 8
+                                  AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions",
                 coalesce((
@@ -350,6 +360,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 16
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions"
         from flow.event e
