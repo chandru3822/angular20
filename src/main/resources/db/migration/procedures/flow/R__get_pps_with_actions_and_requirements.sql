@@ -49,6 +49,7 @@ BEGIN
                                FROM flow.white_listed_position wlp
                                WHERE wlp.white_list_type_id = 9
                                  AND wlp.archived is not true
+                                 and wlp.company_id = p_company_id
                                  and wlp.process_step_id = ps.id) wlp), '[]') AS "whiteListedPositions",
              pps.id as "projectProcessStepId",
              pps.project_id as "projectId",
@@ -359,6 +360,7 @@ BEGIN
 								then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
 									where wlp2.event_id = pse.event_id
 									and wlp2.white_list_type_id = 17
+                    and wlp2.company_id = p_company_id
 									and wlp2.archived is not true
 									and wlp2.position_id = any(p_userPositions) limit 1
 								)
@@ -366,12 +368,14 @@ BEGIN
                    then case when ( select wlp2.event_id from flow.white_listed_position wlp2
                                     where wlp2.event_id = pse.event_id
                                       and wlp2.white_list_type_id = 17
+                                      and wlp2.company_id = p_company_id
                                       and wlp2.archived is not true
                                     limit 1
                  ) is null then true
                              else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
                                                    where wlp2.event_id = pse.event_id
                                                      and wlp2.white_list_type_id = 17
+                                                     and wlp2.company_id = p_company_id
                                                      and not wlp2.position_id = any(p_userPositions)
                                                      and wlp2.archived is not true
                                                    limit 1
