@@ -50,7 +50,8 @@ export default {
       let params = {
         projectId: this.projectId,
         ppsId: this.projectProcessStepId,
-        contactId: this.contactId
+        contactId: this.contactId,
+        ppseId: this.ppseId
       }
 
       followLink(this, url, params)
