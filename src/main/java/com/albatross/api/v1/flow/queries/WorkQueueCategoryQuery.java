@@ -25,6 +25,7 @@ public class WorkQueueCategoryQuery {
                                              FROM flow.white_listed_position wlp
                                              WHERE wlp.white_list_type_id = 11
                                                AND wlp.archived is not true
+                                               AND wlp.company_id = :companyId
                                                AND wlp.work_queue_category_id = wqc.id) wlp), '[]')
                                                 else '[]' end AS "hiddenWhiteListedPositions"
         from flow.work_queue_category wqc
@@ -35,11 +36,13 @@ public class WorkQueueCategoryQuery {
                                                   FROM flow.white_listed_position wlp
                                                   WHERE wlp.white_list_type_id = 11
                                                     AND wlp.archived is not true
+                                                    AND wlp.company_id = :companyId
                                                     AND wlp.work_queue_category_id = wqc.id)::bigint[]
             when wqc.hidden and not :hiddenWqcOverride and :filtered and not wqc.hidden_allow
                 then not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
                 FROM flow.white_listed_position wlp
                 WHERE wlp.white_list_type_id = 11
+                AND wlp.company_id = :companyId
                 AND wlp.archived is not true
                 AND wlp.work_queue_category_id = wqc.id)::bigint[], '{}')
                 else  1=1 end

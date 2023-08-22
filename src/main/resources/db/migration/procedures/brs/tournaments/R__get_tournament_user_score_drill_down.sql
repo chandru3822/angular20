@@ -179,7 +179,12 @@ BEGIN
                            ((pd.installation_agreement_signed_date at time zone 'UTC') at time zone
                             v_timezone)::timestamp as installation_agreement_signed_date,
                            'Installation Agreement Signed',
-                           count(1) * 5
+                           count(1) * (select field_value
+                                       from brs.tournament_formula_field_value tffv
+                                              inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                       where tff.tournament_formula_id = v_tournament_formula_id
+                                         and tffv.tournament_id = p_tournament_id
+                                         and tff.field_code = 'BOOKING_SCORE_VALUE_SETTERS')::int
                     from brs.project_details pd
                            inner join flow.project p on p.id = pd.project_id
                     where pd.installation_agreement_signed_date::date between p_start_date and p_end_date

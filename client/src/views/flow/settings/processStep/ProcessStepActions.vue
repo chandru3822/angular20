@@ -880,7 +880,7 @@
                              small class="ml-1 mr-1 mt-1 primary--text"
                              :disabled="!userCanEdit"
                              v-on="{ ...tooltip }"
-                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList.length - 1].sqlOrder + 1) }), actionLogicOrderChanged(item)]">
+                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList?.length - 1]?.sqlOrder + 1) }), actionLogicOrderChanged(item)]">
                         {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
                       </v-btn>
                     </template>
@@ -1151,7 +1151,7 @@ export default {
   methods: {
     actionLogicOrderChanged(item) {
       item.processStepLogicList = item.processStepLogicList.filter(psl => !psl.archived)
-      item.processStepLogicList.forEach((f, idx) => {
+      item.processStepLogicList?.forEach((f, idx) => {
         let order = idx + 1
         if (f.sqlOrder !== order) {
           f.sqlOrder = order

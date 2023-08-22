@@ -54,7 +54,16 @@
             </router-link>
           </td>
           <td class="text-left">{{ item.projectStatus }}</td>
-          <td class="text-left truncated" :title="item.message">{{ item.message }}</td>
+          <td class="text-left truncated">
+            <v-tooltip left max-width="300">
+              <template v-slot:activator="{ on: tooltip }">
+                <div v-on="{ ...tooltip }" class="d-inline-block mt-4">
+                  {{ item.message }}
+                </div>
+              </template>
+              <span>{{ item.message }}</span>
+            </v-tooltip>
+          </td>
           <td class="text-left">{{ item.lastMessageReceived | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
           <td class="text-left">{{ item.lastMessageSent | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
           <td class="text-left">{{ item.lastMessageSentBy }}</td>
@@ -142,7 +151,7 @@ export default {
         const {page, itemsPerPage} = this.options
         const {data, status} = await getRequestWithParams(`/sms/queue`, {
           params: {
-            page: page,
+            page: page - 1, //page needs to start at 0, not 1
             size: itemsPerPage
           }
         });

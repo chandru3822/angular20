@@ -230,18 +230,19 @@ public class SunpowerService {
             : pd.getSystemSize());
 
       BigDecimal roundedValue = new BigDecimal(projectSize).setScale(2, RoundingMode.HALF_UP);
+      BigDecimal roundedLoanAmount = new BigDecimal(pd.getLoanAmount()).setScale(2, RoundingMode.HALF_UP);
 
       b.addParameter("project_size", roundedValue.toString());
-      b.addParameter("financial_amount", pd.getLoanAmount());
+      b.addParameter("financial_amount", s(roundedLoanAmount));
       b.addParameter("financial_product_id", s(sp.getFinancialProductId()));
       b.addParameter("inverter_id", s(sp.getInverterId()));
       b.addParameter("panel_id", s(sp.getPanelId()));
       b.addParameter("storage_id", s(sp.getStorageId()));
       b.addParameter("project_address_line1", s(pd.getProjectStreet1()));
       b.addParameter("project_address_line2", s(pd.getProjectStreet2()));
-      b.addParameter("project_city", s(pd.getCity()));
-      b.addParameter("project_state", s(pd.getState()));
-      b.addParameter("project_zip_code", s(pd.getZip()));
+      b.addParameter("project_city", s(pd.getProjectCity()));
+      b.addParameter("project_state", s(pd.getProjectState()));
+      b.addParameter("project_zip_code", s(pd.getProjectZipCode()));
       b.addParameter("project_residence_use", "Primary Residence");
       b.addParameter("borrower_first_name", s(contact.getFirstName()));
       b.addParameter("borrower_last_name", s(contact.getLastName()));
@@ -263,8 +264,8 @@ public class SunpowerService {
         pd.getProjectStreet1() != null && pd.getProjectStreet1().equals(contact.getStreet1()))
         && (pd.getProjectStreet2() == null && contact.getStreet2() == null ||
         pd.getProjectStreet2() != null && pd.getProjectStreet2().equals(contact.getStreet2()))
-        && (pd.getCity() == null && contact.getCity() == null ||
-        pd.getCity() != null && pd.getCity().equals(contact.getCity()))) {
+        && (pd.getProjectCity() == null && contact.getCity() == null ||
+        pd.getProjectCity() != null && pd.getProjectCity().equals(contact.getCity()))) {
         b.addParameter("borrower_address_same_as_project", "true");
       } else {
         b.addParameter("borrower_address_same_as_project", "false");
