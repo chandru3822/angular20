@@ -14,7 +14,7 @@ public class ClosersPlan {
 
     @Id
     private Long id, userId, commissionPlanId, overridePlanId, userStatusTypeId;
-    private String name;
+    private String name, orgName;
     private String commissionPlan, commissionDescription, overridePlan, overrideDescription;
 
     private List<ReceivingPlan> receivingPlans;
