@@ -224,6 +224,14 @@ BEGIN
              when p_message_type_id = 25 then
                -- 25 = site survey rescheduled
                concat('Hi ', v_closer_first_name, ', ', v_project_name, ' ', p_project_id, ' has been rescheduled, and is now scheduled for ', v_site_survey_start_time)
+
+             when p_message_type_id = 26 then
+                -- 26 = final design complete
+                concat('Hi ', v_closer_first_name, ', the final design for', v_project_name, ' ', p_project_id, ' is complete and ready to send. Navigate to the “Send Final Design” process step in Albatross when you are ready to send. The design will automatically send tonight if you have not sent it by the end of the day.')
+
+             when p_message_type_id = 27 then
+               -- 27 = final design approved
+               concat(v_project_name, ' ', p_project_id, ' has approved their final design through the portal.')
              end
     into v_text_message_string;
 

@@ -664,6 +664,7 @@ FROM (select cfvs.id,
                              WHERE wlp.custom_field_group_assignment_id =
                                    cfvs.custom_field_group_assignment_id
                                AND wlp.white_list_type_id = 1
+                               AND wlp.company_id = p_company_id
                                AND wlp.archived is not true) wlp),
                       '[]')                                  AS "whiteListedPositions"
       from cfvs
@@ -682,6 +683,7 @@ FROM (select cfvs.id,
                                         cfvs.custom_field_group_assignment_id
                                     and wlp2.white_list_type_id = 2
                                     and wlp2.archived is not true
+                                    and wlp2.company_id = p_company_id
                                     and wlp2.position_id = any (p_user_position_ids::bigint[])
                                   limit 1)
                         when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
@@ -693,6 +695,7 @@ FROM (select cfvs.id,
                                       cfvs.custom_field_group_assignment_id
                                   and wlp2.white_list_type_id = 2
                                   and wlp2.archived is not true
+                                  and wlp2.company_id = p_company_id
                                   and wlp2.position_id = any (p_user_position_ids::bigint[])
                                 limit 1)), true)
                         else 1 = 1 end
@@ -779,6 +782,7 @@ FROM (select cfg.id,
                                                     WHERE wlp.custom_field_group_assignment_id =
                                                           cfvs.custom_field_group_assignment_id
                                                       AND wlp.white_list_type_id = 1
+                                                      and wlp.company_id = p_company_id
                                                       AND wlp.archived is not true) wlp),
                                              '[]')                                  AS "whiteListedPositions"
                              from cfvs
@@ -793,6 +797,7 @@ FROM (select cfg.id,
                                                    cfvs.custom_field_group_assignment_id
                                                and wlp2.white_list_type_id = 2
                                                and wlp2.archived is not true
+                                               and wlp2.company_id = p_company_id
                                                and wlp2.position_id = any (p_user_position_ids::bigint[])
                                              limit 1)
                                      when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
@@ -804,6 +809,7 @@ FROM (select cfg.id,
                                                              cfvs.custom_field_group_assignment_id
                                                          and wlp2.white_list_type_id = 2
                                                          and wlp2.archived is not true
+                                                         and wlp2.company_id = p_company_id
                                                          and wlp2.position_id = any (p_user_position_ids::bigint[])
                                                        limit 1)), true)
                                                else 1 = 1 end

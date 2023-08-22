@@ -603,6 +603,7 @@ public class ProjectService {
     params.put("statusTypeId", statusTypeId);
     params.put("systemAdmin", systemAdmin);
     params.put("userPositions", userPositionIds);
+    params.put("companyId", user.getCompanyId());
     List<ProjectProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
 
       for(ProjectProcessStepEvent event: processStepEvents){
