@@ -123,6 +123,12 @@ public class ProcessStepEventController {
     return processStepEventService.addChildFunctionToAction(actionId, child);
   }
 
+  @PutMapping(value = "/{eventId}/action/{actionId}/updateChildFunctionOrder", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateChildFunctionOrder(@PathVariable Long actionId,
+                                       @RequestBody List<ProcessStepEventActionChildFunction> childFns) {
+    processStepEventService.updateChildFunctionOrder(actionId, childFns);
+  }
+
   @DeleteMapping(value = "/{eventId}/action/{actionId}/deleteChildFunction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteChildFunctionFromAction(@PathVariable Long id) {
     processStepEventService.deleteChildFunctionFromAction(id);

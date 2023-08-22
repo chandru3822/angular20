@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -367,6 +368,19 @@ public class ProcessStepEventService {
     processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, id);
 
     return getActionChildFunction(id);
+  }
+
+  public void updateChildFunctionOrder(Long actionId, List<ProcessStepEventActionChildFunction> childFns) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+
+    for(ProcessStepActionChildFunction child : childFns) {
+      params.put("id", child.getId());
+      params.put("displayOrder", child.getDisplayOrder());
+
+      sqlCache.updateBySql(ProcessStepEventQuery.updateChildFunctionOrder, params);
+    }
   }
 
   public void deleteChildFunctionFromAction(Long childProcessId) {
