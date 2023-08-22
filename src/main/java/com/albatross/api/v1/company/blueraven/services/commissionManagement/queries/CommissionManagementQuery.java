@@ -239,6 +239,7 @@ public class CommissionManagementQuery {
     SELECT u.id                                      AS id,
                u.id                                         AS userId,
                concat(u.first_name, ' ', u.last_name) AS name,
+               o.org_name,
                ust.id                        AS userStatusTypeId,
                cp.name                                      AS commissionPlan,
                cp.description                               AS commissionDescription,
@@ -281,6 +282,7 @@ public class CommissionManagementQuery {
                         where up5.primary_flag is true
                           and up5.archived is false
                           and cf.archived is false)
+                inner join flow.org o on o.id = up.org_id
                inner join flow.company_user_status cus on cus.user_id = u.id
                inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.has_access is true and ust.company_id = 3
                LEFT JOIN brs.commission_plan_user cpu ON cpu.user_id = u.id AND (cpu.start_date <= CURRENT_TIMESTAMP AND
@@ -291,7 +293,7 @@ public class CommissionManagementQuery {
                                                                   (opau.end_date >= current_timestamp OR opau.end_date IS NULL))
                LEFT JOIN brs.override_plan op ON opau.override_plan_id = op.id and op.position_id = 1
 
-        GROUP BY u.id, u.first_name, u.last_name, ust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
+        GROUP BY u.id, o.org_name, u.first_name, u.last_name, ust.id, cp.name, cp.description, cp.id, op.name, op.description, op.id
         ORDER BY name
     """;
 
@@ -395,6 +397,7 @@ FROM (SELECT upv.user_id                                        AS "userId",
              concat(upv.first_name, ' ', upv.last_name) AS name,
              upv.start_date as "positionStartDate",
              upv.position,
+             upv.org_name as "orgName",
              coalesce((SELECT array_to_json(array_agg(row_to_json(plans)))
               FROM ( SELECT cpu.id as "userPlanId",
                            cpu.start_date AS "startDate",
@@ -433,7 +436,10 @@ FROM (SELECT upv.user_id                                        AS "userId",
                       AND op.name IS NOT NULL
                       AND op.name != '') receiving), '[]')              AS receiving
       FROM flow.user_positions_vw upv
-      WHERE upv.user_id = :userId and upv.company_id = 3 limit 1) AS sub_rows
+      WHERE upv.user_id = :userId
+        and upv.primary_flag is true
+        and upv.archived is false
+        and upv.company_id = 3 limit 1) AS sub_rows
     """;
 
   //language=PostgreSQL
