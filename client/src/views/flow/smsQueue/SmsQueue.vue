@@ -1,12 +1,21 @@
 <template>
-  <v-container class="app-container">
+  <v-container id="sms-queue-container">
     <v-row>
       <v-toolbar flat class="app-toolbar">
         <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">SMS Queue</v-toolbar-title>
 
         <v-spacer/>
 
-        <v-select attach class="status-dropdown"
+        <v-select class="status-dropdown mr-3"
+                  v-model="selectedObjectTypeId"
+                  :items="objectTypes"
+                  label="Type"
+                  item-text="text"
+                  item-value="value"
+                  hide-details
+        />
+
+        <v-select class="status-dropdown"
                   v-model="selectedStatus"
                   :items="messageStatuses"
                   label="Status"
@@ -16,17 +25,18 @@
         />
         <v-btn
           color="primary"
-          class="white--text mr-2 mb-3 filter-projects-btn"
-          @click="filterProjects"
+          text small
+          class="filter-projects-btn"
+          @click="getQueue()"
         >
-          Go
+          <v-icon>mdi-filter</v-icon>
         </v-btn>
       </v-toolbar>
     </v-row>
 
     <v-data-table
       :headers="headers"
-      :items="displayedProjects"
+      :items="queue"
       :fixed-header="true"
       :items-per-page="options.itemsPerPage"
       :footer-props="footerProps"
@@ -44,16 +54,18 @@
       </template>
 
       <template #item="{ item }">
-        <tr class="text-left" :class="{'shaded-row': displayedProjects.indexOf(item) % 2}">
-          <td>
-            <v-checkbox v-model="item.priority" @change="updateMessage(item)"></v-checkbox>
-          </td>
+        <tr class="text-left" :class="{'shaded-row': queue.indexOf(item) % 2}">
           <td class="text-left">
-            <router-link text :to="`/project/${item.projectId}?secondaryTab=3`">
-              {{ item.fullName }}
+            {{ item.objectTypeId === 1 ? 'Project' : 'User'}}
+          </td>
+          <td class="text-left sent-to-column">
+            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/details`">
+              {{ item.projectName }} - {{ item.projectStatusType}}
+            </router-link>
+            <router-link v-else text :to="`/user/${item.sentToUserId}/details`">
+              {{ item.sentToUserName }}
             </router-link>
           </td>
-          <td class="text-left">{{ item.projectStatus }}</td>
           <td class="text-left truncated">
             <v-tooltip left max-width="300">
               <template v-slot:activator="{ on: tooltip }">
@@ -64,21 +76,9 @@
               <span>{{ item.message }}</span>
             </v-tooltip>
           </td>
-          <td class="text-left">{{ item.lastMessageReceived | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
-          <td class="text-left">{{ item.lastMessageSent | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
-          <td class="text-left">{{ item.lastMessageSentBy }}</td>
-          <td class="text-left">
-            <v-autocomplete v-model="item.owner"
-                            :items="owners"
-                            label="Select Owner"
-                            item-text="fullName"
-                            placeholder="Unassigned"
-                            return-object
-                            autocomplete="off"
-                            @change="updateMessage(item)"
-                            attach
-            />
-          </td>
+          <td class="text-left">{{ item.twilioDelivered | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
+          <td class="text-left">{{ item.created | formatDate('timestamp', 'M/D/YYYY h:mm a') }}</td>
+          <td class="text-left">{{ item.sentByUserName }}</td>
           <td class="text-left">
             <v-select
               v-model="item.messageRead"
@@ -108,25 +108,29 @@ export default {
       constants,
       model: {},
       expanded: [],
-      projects: [],
-      displayedProjects: [],
+      queue: [],
       dashValues: [],
       performanceMetrics: [],
       owners: [],
-      selectedStatus: false,
+      selectedStatus: -1,
+      selectedObjectTypeId: -1,
+      objectTypes: [
+        {text: 'All', value: -1},
+        {text: 'Project', value: 1},
+        {text: 'User', value: 3},
+      ],
       messageStatuses: [
+        {text: 'All', value: -1},
         {text: 'Unread', value: false},
-        {text: 'Read', value: true}
+        {text: 'Read', value: true},
       ],
       headers: [
-        {text: 'Priority', value: 'priority', width: '50px', show: true},
-        {text: 'Project Name', value: 'fullName', show: true},
-        {text: 'Project Status', value: 'projectStatus', show: true},
+        {text: 'Type', value: 'objectTypeId', show: true},
+        {text: 'Sent To', value: 'blah', show: true},
         {text: 'Message', value: 'message', show: true},
-        {text: 'Message Received', value: 'lastMessageReceived', show: true},
-        {text: 'Last Message Sent', value: 'lastMessageSent', show: true},
-        {text: 'Last Message Sent By', value: 'lastMessageSentBy', show: true},
-        {text: 'Owner', value: 'owner', width: '150px', show: true},
+        {text: 'Received', value: 'twilioDelivered', show: true},
+        {text: 'Sent', value: 'created', show: true},
+        {text: 'Sent By', value: 'sentByUserName', show: true},
         {text: 'Status', value: 'messageRead', width: '150px', show: true}
       ],
       footerProps: {
@@ -141,51 +145,29 @@ export default {
     }
   },
   async created() {
-    this.getProjects()
-    this.getOwners()
+    this.getQueue()
   },
   methods: {
-    async getProjects() {
+    async getQueue() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {page, itemsPerPage} = this.options
-        const {data, status} = await getRequestWithParams(`/sms/queue`, {
-          params: {
-            page: page - 1, //page needs to start at 0, not 1
-            size: itemsPerPage
-          }
-        });
+        let params = {
+          page: page - 1, //page needs to start at 0, not 1
+          size: itemsPerPage,
+          objectTypeId: this.selectedObjectTypeId
+        }
 
-        this.projects = data.content
-        this.displayedProjects = data.content
+        if (this.selectedStatus !== -1) {
+          params.messageRead = this.selectedStatus
+        }
+        const {data, status} = await getRequestWithParams(`/sms/queue`, {params});
+
+        this.queue = data.content
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving Projects')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getOwners() {
-      try {
-        const {data} = await getRequest(`/sms/owners`)
-        this.owners = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving Projects')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async updateOwner(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/sms/updateOwner`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Message updated')
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        item.owner = 'Unassigned'
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+        this.snackbar = getSnackbar('ERROR', 'Error retrieving Queue')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -202,15 +184,27 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    filterProjects() {
-      this.displayedProjects = this.projects.filter(p => p.messageRead === this.selectedStatus);
     }
   }
 }
 </script>
 
+<style lang="scss">
+#sms-queue-container .v-data-table__wrapper {
+  height: calc(100vh - 240px);
+  min-height: 300px;
+}
+
+#sms-queue-container .v-data-footer__pagination {
+  display: none !important;
+}
+</style>
+
 <style scoped lang="scss">
+.sent-to-column {
+  max-width: 300px;
+}
+
 .truncated {
   max-width: 200px;
   overflow: hidden;

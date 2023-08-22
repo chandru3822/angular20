@@ -74,70 +74,22 @@ public class SmsServiceQuery {
     ORDER BY created ASC
         """;
 
-  //language=PostgreSQL
-  public final static String exportAll = """
-    SELECT
-                concat(u.first_name, ' ', u.last_name) AS full_name,
-                    u.email,
-                    sms.to_phone,
-                    sms.message,
-                    sms.message_status,
-                    sms.created,
-                    sms.twilio_sent,
-                    sms.twilio_delivered
-                FROM flow.sms_queue sms
-                    INNER JOIN flow.user u
-                        ON sms.user_id = u.id
-                ORDER BY sms.created DESC
-        """;
-
-  //language=PostgreSQL
-  public final static String fetchPage = """
-    WITH summary AS (
-                    SELECT
-                      count(1)                    AS item_count,
-                      ceil(count(1) / :page_size) AS pages
-                    FROM flow.sms_queue
-                    WHERE %s
-                ), data AS (
-                    SELECT
-                      sms.id,
-                      sms.user_id AS "userId",
-                      u.first_name AS "firstName",
-                      u.last_name AS "lastName",
-                      u.email,
-                      sms.message,
-                      array_to_json(sms.media_urls) AS "mediaUrls",
-                      sms.recipient_type_id,
-                      sms.error_message AS "errorMessage",
-                      sms.message_group AS "messageGroup",
-                      sms.message_sid AS "messageSid",
-                      sms.message_status AS "messageStatus",
-                      sms.from_phone AS "fromPhone",
-                      sms.to_phone AS "toPhone",
-                      sms.twilio_created AS "twilioCreated",
-                      sms.twilio_sent AS "twilioSent",
-                      sms.twilio_delivered AS "twilioDelivered",
-                      sms.created,
-                      sms.updated
-                    FROM flow.sms_queue sms
-                      INNER JOIN flow.user u
-                        ON sms.user_id = u.id
-                    WHERE %s
-                    ORDER BY id DESC
-                    LIMIT :page_size
-                    OFFSET :offset
-                ), agg AS (
-                    SELECT array_to_json(array_agg(e), TRUE) AS items
-                    FROM data e
-                )
-                SELECT
-                  :page_size   AS page_size,
-                  :page_number AS page_number,
-                  *
-                FROM summary
-                  CROSS JOIN agg
-        """;
+  //  //language=PostgreSQL
+//  public final static String exportAll = """
+//    SELECT
+//                concat(u.first_name, ' ', u.last_name) AS full_name,
+//                    u.email,
+//                    sms.to_phone,
+//                    sms.message,
+//                    sms.message_status,
+//                    sms.created,
+//                    sms.twilio_sent,
+//                    sms.twilio_delivered
+//                FROM flow.sms_queue sms
+//                    INNER JOIN flow.user u
+//                        ON sms.user_id = u.id
+//                ORDER BY sms.created DESC
+//        """;
 
   //language=PostgreSQL
   public final static String insert = """
@@ -149,7 +101,7 @@ public class SmsServiceQuery {
                 RETURNING id,user_id,contact_id, project_id,message,media_urls,
                   message_group,message_sid,message_status,error_message,
                   from_phone,to_phone,twilio_created,twilio_sent,twilio_delivered,
-                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id, priority)
+                  updated,created,recipient_type_id, message_sent_by_user_id, sms_team_id)
               SELECT sq.id,
                      sq.user_id,
                      sq.contact_id,
@@ -287,79 +239,61 @@ public class SmsServiceQuery {
      and u.archived is false
      """;
 
-  //language=PostgreSQL
-  public final static String fetchReply = """
-      SELECT *
-      FROM flow.sms_reply
-      WHERE from_phone = :phone
-        AND date_received > :since
-      ORDER BY date_received DESC
-      LIMIT 1
-    """;
-
-  //language=PostgreSQL
-  public final static String getSmsQueueCount = """
-     select count(1)
-      from flow.sms_queue sms
-      where sms.id in (select max(sq.id) from flow.sms_queue sq group by sq.user_id)
-    """;
+//  //language=PostgreSQL
+//  public final static String fetchReply = """
+//      SELECT *
+//      FROM flow.sms_reply
+//      WHERE from_phone = :phone
+//        AND date_received > :since
+//      ORDER BY date_received DESC
+//      LIMIT 1
+//    """;
 
   //language=PostgreSQL
   public final static String getSmsQueue = """
     select sms.id,
-               sms.user_id,
-               sms.to_phone,
-               sms.priority,
-               sms.message,
-               sms.twilio_created,
-               sms.message_read,
-               concat(c.first_name, ' ', c.last_name)              AS full_name,
-               p.id                                                as project_id,
-               cpst.project_status_type                            as projectStatus,
-               (select max(sr.date_received)
-                from flow.sms_reply sr
-                where sr.from_phone = sms.to_phone
-                group by sr.from_phone)                            as lastMessageReceived,
-               (select (u.first_name || ' ' || u.last_name || ' - ' || p3.position)
-                from flow.user u
-                         inner join flow.user_position up on up.user_id = u.id
-                         inner join flow.position p3 on p3.id = up.position_id and p3.company_id = c.company_id
-                where u.id = sms.message_sent_by_user_id
-                  and up.primary_flag is true
-                  and up.archived is not true)                     as lastMessageSentBy,
-               (SELECT row_to_json(o)
-                FROM (SELECT u.id                                   as "userId",
-                             u.first_name                           as "firstName",
-                             u.last_name                            as "lastName",
-                             concat(u.first_name, ' ', u.last_name) as "fullName",
-                             pos.position,
-                             up.id                                  as "userPositionId"
-                      FROM flow."user" u
-                               inner join flow.user_position up on up.user_id = u.id
-                               inner join flow.position pos on pos.id = up.position_id
-                      WHERE up.id = sms.owner_user_position_id) o) AS owner
-        from flow.sms_queue sms
-                 INNER JOIN flow.contact c ON sms.user_id = c.id
-                 INNER JOIN flow.project p ON p.contact_id = c.id
-                 INNER join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
-        where sms.id in (select max(sq.id) from flow.sms_queue sq group by sq.user_id)
-        order by sms.id desc
-        limit :limit offset :offset
+            sms.user_id,
+            sms.to_phone,
+            sms.message,
+            sms.created,
+            sms.message_read,
+            sms.twilio_delivered,
+            sms.user_id                                                  as sent_to_user_id,
+            concat(sent_to_user.first_name, ' ', sent_to_user.last_name) as sent_to_user_name,
+            concat(sent_by_user.first_name, ' ', sent_by_user.last_name) as sent_by_user_name,
+            sms.project_id,
+            sms.contact_id,
+            p.project_name,
+            cpst.project_status_type,
+            case
+                when sms.project_id is not null then 1
+                when sms.contact_id is not null then 2
+                else 3 end                                               as object_type_id,
+            concat(c.first_name, ' ', c.last_name)                       as contact_name
+     from flow.sms_queue sms
+              LEFT JOIN flow.contact c ON sms.contact_id = c.id
+              LEFT JOIN flow.project p on p.id = sms.project_id
+              LEFT join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+              LEFT JOIN flow.user sent_to_user on sent_to_user.id = sms.user_id
+              INNER JOIN flow.user sent_by_user on sent_by_user.id = sms.message_sent_by_user_id
+     where case when :objectTypeId = 1 then sms.project_id is not null
+                when :objectTypeId = 3 then sms.user_id is not null else true end
+        and case when :messageRead::boolean is not null then sms.message_read = :messageRead::boolean else true end
+     order by sms.id desc
+     limit :limit offset :offset
         """;
 
   //language=PostgreSQL
   public final static String update = """
           update flow.sms_queue
-          set priority = :priority,
-              owner_user_position_id = :ownerUserPositionId,
-              message_read = :messageRead,
+          set message_read = :messageRead,
               updated = now()
             where id = :smsId
     """;
 
-  //language=PostgreSQL
-  public final static String getOwners = """
-    select * from flow.get_sms_available_owners(:companyId::bigint, :parentCompanyId::bigint, :isParent::bool)
-        """;
+//  //language=PostgreSQL
+//  public final static String getOwners = """
+//    select * from flow.get_sms_available_owners(:companyId::bigint, :parentCompanyId::bigint, :isParent::bool)
+//        """;
 
 }
