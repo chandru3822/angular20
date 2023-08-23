@@ -36,13 +36,13 @@ public class ProjectStatusTypeController {
 
   private final ProjectStatusService projectStatusService;
 
-  @PostMapping(value = "/company/{cpstId}")
+  @PostMapping(value = "/company/{cpstId}/field")
   public Optional<CompanyProjectStatusFieldAssignment> saveFieldToCompanyProjectStatus(@PathVariable Long cpstId,
                                                                                        @RequestBody CompanyProjectStatusFieldAssignment field) {
     return projectStatusService.addFieldToCompanyProjectStatus(cpstId, field);
   }
 
-  @GetMapping(value = "/company/{cpstId}")
+  @GetMapping(value = "/company/{cpstId}/fields")
   public List<CompanyProjectStatusFieldAssignment> getFieldsForCompanyProjectStatus(@PathVariable Long cpstId) {
     return projectStatusService.getFieldsForCompanyProjectStatus(cpstId);
   }
