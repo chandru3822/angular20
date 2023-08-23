@@ -36,6 +36,15 @@ BEGIN
   if v_company_activity_id is not null then
     if p_object_type_id = 1 then
       --if the activity is for event status changes then check that shiz here
+      if p_activity_id = 1 then
+        select event_name from flow.event where id =
+          (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+        into v_activity_name;
+
+        v_prepend_msg = concat(v_activity_name, ' ');
+
+      end if;
+
       if p_activity_id = 5 then
         select cest.event_status_type,
                cest.event_status_type_id,
