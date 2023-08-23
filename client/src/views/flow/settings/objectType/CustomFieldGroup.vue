@@ -37,7 +37,7 @@
     </v-dialog>
     <v-card flat color="primary lighten-9" class="square-card" v-if="parseInt(typeId) === 2">
       <multi-select-group
-        v-if="!positionsLoading"
+        v-if="!objectTypeLoading"
         background-color="transparent"
         :userCanEdit="userCanEdit"
         :returnObject="objectType"
@@ -48,7 +48,7 @@
         :label="'Allowed Positions'"
         :alternateLabel = "'Denied Positions'"
         :allow="objectType.ownerReadOnlyAllow"
-        :contentLoading="positionsLoading"
+        :contentLoading="objectTypeLoading"
         @selected-changed="objectTypeReadOnlySelectedEventListener"
         @allow-changed="objectTypeReadOnlyAllowEventListener"
         @checkbox-changed="objectTypeReadOnlyCheckboxEventListener"></multi-select-group>
@@ -480,6 +480,7 @@ export default {
       addNew: false,
       ownerPositionsChanged: false,
       objectType: {},
+      objectTypeLoading: false,
       ownerWhiteListedPositions: [],
       deleteError: false,
       deleteHeader: null,
@@ -878,8 +879,10 @@ export default {
     async getObjectTypeDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.objectTypeLoading = true
         const {data, status} = await getRequest(`/objectType/getByType/${this.typeId}`)
         this.objectType = data
+        this.objectTypeLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
