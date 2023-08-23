@@ -14,7 +14,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class SMSQueueItem {
 
-  private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId;
+  private Long id, userId, recipientTypeId, projectId, messageSentByUserId, contactId, priorityLevel;
   private String firstName, lastName, fullName, email, message;
   private String messageGroup,
       messageSid,
@@ -25,7 +25,7 @@ public class SMSQueueItem {
       projectStatus,
       sentByName;
   private List<String> mediaUrls;
-  private boolean priority, messageRead;
+  private boolean messageRead;
   private Owner owner;
 
   private Date created,
