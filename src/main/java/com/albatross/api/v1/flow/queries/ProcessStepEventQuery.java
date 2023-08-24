@@ -852,7 +852,16 @@ where psea.id = :id
   //language=PostgreSQL
   public final static String addChildFunctionToAction = """
     insert into flow.process_step_event_action_company_function (process_step_event_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-        values (:processStepEventActionId, :companyFunctionId, :displayOrder, :createdById, now(), :createdById, now())
+        values (:processStepEventActionId, :companyFunctionId, (COALESCE((SELECT MAX(display_order) + 1 FROM flow.process_step_event_action_company_function psacf where psacf.process_step_event_action_id = :processStepEventActionId and psacf.archived is false), 1)), :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String updateChildFunctionOrder = """
+    update flow.process_step_event_action_company_function
+        set display_order = :displayOrder,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+      where id = :id
         """;
 
   //language=PostgreSQL

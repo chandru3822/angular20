@@ -37,7 +37,7 @@
     </v-dialog>
     <v-card flat color="primary lighten-9" class="square-card" v-if="parseInt(typeId) === 2">
       <multi-select-group
-        v-if="!positionsLoading"
+        v-if="!objectTypeLoading"
         background-color="transparent"
         :userCanEdit="userCanEdit"
         :returnObject="objectType"
@@ -48,7 +48,7 @@
         :label="'Allowed Positions'"
         :alternateLabel = "'Denied Positions'"
         :allow="objectType.ownerReadOnlyAllow"
-        :contentLoading="positionsLoading"
+        :contentLoading="objectTypeLoading"
         @selected-changed="objectTypeReadOnlySelectedEventListener"
         @allow-changed="objectTypeReadOnlyAllowEventListener"
         @checkbox-changed="objectTypeReadOnlyCheckboxEventListener"></multi-select-group>
@@ -344,6 +344,7 @@
                           </div>
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                            <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
                                 <v-col cols="6">
@@ -420,7 +421,7 @@
 
                         </v-menu>
                         <v-btn text small color="primary" v-else></v-btn>
-                        <v-btn text color="primary" small v-if="userCanEdit && cf.dataViewFieldConfigId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
+                        <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
@@ -480,6 +481,7 @@ export default {
       addNew: false,
       ownerPositionsChanged: false,
       objectType: {},
+      objectTypeLoading: false,
       ownerWhiteListedPositions: [],
       deleteError: false,
       deleteHeader: null,
@@ -878,8 +880,10 @@ export default {
     async getObjectTypeDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.objectTypeLoading = true
         const {data, status} = await getRequest(`/objectType/getByType/${this.typeId}`)
         this.objectType = data
+        this.objectTypeLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

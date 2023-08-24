@@ -120,7 +120,7 @@ public class ObjectTypeService {
       for (WhiteListedPosition wlp : positionsToUse) {
         params.put("positionId", wlp.getPositionId());
         // this insert checks if there is already a non-archived row with the same values
-        sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.insertWhiteListPosition, params);
+        sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.insertWhiteListPositionWithNullCfgaId, params);
       }
     }
   }

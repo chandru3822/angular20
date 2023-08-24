@@ -531,6 +531,18 @@ public class CustomFieldGroupAssignmentQuery {
                               and archived is not true)
        """;
 
+  public final static String insertWhiteListPositionWithNullCfgaId = """
+    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+       select :positionId, null, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
+       where not exists (  select id
+                           from flow.white_listed_position
+                           where custom_field_group_assignment_id is null
+                             and position_id = :positionId
+                             and company_id = :companyId
+                             and white_list_type_id = :whiteListTypeId
+                              and archived is not true)
+       """;
+
   //language=PostgreSQL
   public final static String updateFieldInGroup = """
     update flow.custom_field_group_assignment

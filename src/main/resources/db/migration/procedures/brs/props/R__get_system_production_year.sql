@@ -1,8 +1,8 @@
- drop function if exists  brs.get_system_production_25_year(
+ drop function if exists  brs.get_system_production_year(
    p_first_year_annual_production numeric,
    p_panel_degradation_factor numeric,
    p_years bigint);
-CREATE OR REPLACE FUNCTION brs.get_system_production_25_year(
+CREATE OR REPLACE FUNCTION brs.get_system_production_year(
   p_first_year_annual_production numeric,
   p_panel_degradation_factor numeric,
   p_years bigint)
