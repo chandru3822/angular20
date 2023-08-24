@@ -239,7 +239,7 @@
       <ConfirmationDialog :open-dialog="daySelector" @close-dialog="daySelector = false" hide-confirm :width="300">
         <template v-slot:title>Select Day</template>
         <v-list>
-          <v-list-item v-for="option in dayOptions()" @click="switchToDayView(option)">{{option}}</v-list-item>
+          <v-list-item v-for="option in dayOptions()" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
         </v-list>
       </ConfirmationDialog>
     </div>
@@ -527,20 +527,24 @@
         let dayOptions = []
         let i = this.calendarStartTime
         while(moment().utc(this.calendarEndTime).isAfter(i)) {
-          dayOptions.push(moment.utc(i).format('dddd MMM Do, YYYY'))
+          let dayOption = {
+            rawDate: i,
+            formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
+          }
+          dayOptions.push(dayOption)
           i = moment(i).add(1,'days')
         }
         return dayOptions
       },
       switchToDayView(dayOption){
-        console.log(dayOption)
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
         this.calendar.options.minTime = '02:00:00'
         this.calendar.options.maxTime = '23:00:00'
         this.calendar.options.slotLabelInterval = '01:00:00'
         this.calendar.options.slotWidth = 45
-        calendarApi.changeView('resourceTimelineDay')
+        let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
+        calendarApi.changeView('resourceTimelineDay', day)
         this.getEvents(false, true)
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
         this.daySelector = false
