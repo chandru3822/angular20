@@ -174,7 +174,8 @@ from flow.custom_field_group_assignment native_cfga
 where native_cfga.archived is false
   and native_cot.company_id = p_company_id
   and case
-        when p_object_type_id = 1 then native_cot.object_type_id = 1
+        when p_object_type_id = 1 and p_secondary_id is null then native_cot.object_type_id = 1
+        when p_object_type_id = 1 and p_secondary_id is not null then native_cot.object_type_id = 1 and native_cfg.company_object_type_tab_id = p_secondary_id
         when p_object_type_id = 2 then native_cot.object_type_id = 2
         when p_object_type_id = 3 then native_cot.object_type_id = 3
         when p_object_type_id = 4 then (native_cot.object_type_id = 4 and native_cfg.process_step_id =
@@ -819,6 +820,7 @@ FROM (select cfg.id,
       where cot.object_type_id = p_object_type_id
         and cfg.archived is false
         and case
+              when p_object_type_id = 1 and p_secondary_id is not null then cfg.company_object_type_tab_id = p_secondary_id
               when p_object_type_id = 4 then cfg.process_step_id = (select pps.process_step_id
                                                                     from flow.project_process_step pps
                                                                     where pps.id = p_source_id)

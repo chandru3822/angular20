@@ -66,6 +66,13 @@ public class CustomFieldValueController {
         ObjectType.PROJECT, projectId);
   }
 
+  @GetMapping(value = "/project/{projectId}/tab/{tabId}")
+  public List<CustomFieldGroup> getFieldsByProjectIdAndTabId(@PathVariable Long projectId,
+                                                             @PathVariable Long tabId) {
+    return customFieldValueService.getCustomFieldGroupsAndValues(
+            ObjectType.PROJECT, projectId, tabId, false);
+  }
+
   @GetMapping(value = "/project/{projectId}/processStep/{projectProcessStepId}")
   public ResponseEntity<List<CustomFieldGroup>> getFieldsByProjectProcessStepId(
       @PathVariable Long projectId, @PathVariable Long projectProcessStepId) {
@@ -150,10 +157,11 @@ public class CustomFieldValueController {
 
   @PostMapping(value = "/project/{projectId}")
   public List<CustomFieldGroup> updateProjectCustomFieldValues(
-      @RequestBody List<CustomFieldValue> values, @PathVariable Long projectId) {
+      @RequestBody List<CustomFieldValue> values, @PathVariable Long projectId,
+      @RequestParam(required = false) Long tabId) {
     List<CustomFieldGroup> groups =
         customFieldValueService.updateCustomFieldValues(
-            values, projectId, ObjectType.PROJECT);
+            values, projectId, ObjectType.PROJECT, tabId, false, false);
 
     List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
     try {

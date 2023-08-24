@@ -1,6 +1,6 @@
 <template>
   <v-row id="project-details-container" class="">
-    <v-col cols="12" lg="12" class="text-left pt-0">
+    <v-col cols="12" lg="12" class="text-left pt-0"  :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header">
@@ -15,15 +15,17 @@
                 :contact-id="project.contactId"
                 @step-added="getProcessSteps"
               />
+              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
+                <v-icon v-else>mdi-chevron-down</v-icon>
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-col cols="12" v-if="isProcessStepsLoading">
-            <SpinnerInline :size="20" color="primary"/>
-          </v-col>
+          <v-col cols="12" class="py-0" v-if="sectionExpanded">
+            <SpinnerInline v-if="isProcessStepsLoading" :size="20" color="primary"/>
 
-          <v-col cols="12" v-else class="py-0">
-            <ActiveProjectProcessStepSnippet
+            <ActiveProjectProcessStepSnippet v-else
               :steps="processSteps"
               :projectId="projectId"
               :contactId="project.contactId"/>
@@ -32,7 +34,7 @@
       </v-col>
 
 
-      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-fade-transition v-if="sectionExpanded && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-col
           cols="12"
           class="text-left pt-0"
@@ -77,6 +79,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
+      sectionExpanded: true,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
