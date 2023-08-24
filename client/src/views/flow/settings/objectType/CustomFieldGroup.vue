@@ -344,6 +344,7 @@
                           </div>
                           <div v-else>
                             {{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{cf.fieldName}} (Ancillary)
+                            <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
                                 <v-col cols="6">
@@ -420,7 +421,7 @@
 
                         </v-menu>
                         <v-btn text small color="primary" v-else></v-btn>
-                        <v-btn text color="primary" small v-if="userCanEdit && cf.dataViewFieldConfigId == null" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
+                        <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
                           <v-icon>edit</v-icon>
                         </v-btn>
                         <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
