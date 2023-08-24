@@ -58,7 +58,7 @@
                     <!-- CONTACTS -->
                     <FeatDbContact title="Contacts"
                                 :user-can-edit="userCanEdit"
-                                :contactTypeId="12"
+                                :contactTypeId="11"
                                 :itemId="supplier.id"
                                 :itemType="itemType"
                                 :contacts="supplier.contacts"
