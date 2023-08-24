@@ -211,7 +211,7 @@
           :color="'primary'"
         ></v-progress-circular>
       </div>
-      <FullCalendar ref="eventCalendar"
+      <FullCalendar ref="eventCalendar" id="event-calendar"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
                     :resources="resources"
@@ -235,9 +235,14 @@
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
-      />
+      ></FullCalendar>
+      <ConfirmationDialog :open-dialog="daySelector" @close-dialog="daySelector = false" hide-confirm :width="300">
+        <template v-slot:title>Select Day</template>
+        <v-list>
+          <v-list-item v-for="option in dayOptions()" @click="switchToDayView(option)">{{option}}</v-list-item>
+        </v-list>
+      </ConfirmationDialog>
     </div>
-
   </div>
 </template>
 
@@ -259,10 +264,12 @@
 
   import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
 
   export default {
     name: 'ScheduleCalendar',
     components: {
+      ConfirmationDialog,
       FullCalendar,
     },
     props: {
@@ -347,7 +354,10 @@
         const selectedUsers = this.users.filter(user => this.selectedUsers.includes(user));
         const unselectedUsers = this.users.filter(user => !this.selectedUsers.includes(user));
         return selectedUsers.concat(unselectedUsers)
-      }
+      },
+      firstDayOption(){
+        return moment.utc(this.calendarStartTime).format('dddd MMM Do, YYYY')
+      },
     },
     mounted () {
       this.calendarApi = this.$refs.eventCalendar.getApi()
@@ -428,6 +438,7 @@
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
+        daySelector: false,
         calendar: {
           options: {
             slotDuration: '00:30:00',
@@ -481,16 +492,14 @@
               },
               customTimelineDay: {
                 text: 'day',
+                id:'customTimelineDay',
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
-                  this.calendar.options.slotDuration = '00:30:00'
-                  this.calendar.options.minTime = '02:00:00'
-                  this.calendar.options.maxTime = '23:00:00'
-                  this.calendar.options.slotLabelInterval = '01:00:00'
-                  this.calendar.options.slotWidth = 45
-                  calendarApi.changeView('resourceTimelineDay')
-                  this.getEvents(false, true)
-                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+                  if(calendarApi.view.type !== 'resourceTimelineDay') {
+                    this.daySelector = true
+                  } else {
+                    this.switchToDayView()
+                  }
                 }
               },
               customTimelineWeek: {
@@ -514,6 +523,28 @@
       }
     },
     methods: {
+      dayOptions(){
+        let dayOptions = []
+        let i = this.calendarStartTime
+        while(moment().utc(this.calendarEndTime).isAfter(i)) {
+          dayOptions.push(moment.utc(i).format('dddd MMM Do, YYYY'))
+          i = moment(i).add(1,'days')
+        }
+        return dayOptions
+      },
+      switchToDayView(dayOption){
+        console.log(dayOption)
+        let calendarApi = this.$refs.eventCalendar.getApi()
+        this.calendar.options.slotDuration = '00:30:00'
+        this.calendar.options.minTime = '02:00:00'
+        this.calendar.options.maxTime = '23:00:00'
+        this.calendar.options.slotLabelInterval = '01:00:00'
+        this.calendar.options.slotWidth = 45
+        calendarApi.changeView('resourceTimelineDay')
+        this.getEvents(false, true)
+        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+        this.daySelector = false
+      },
       handleResourceColors() {
         this.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
