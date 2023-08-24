@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.controllers.ProjectController;
 import com.albatross.api.v1.flow.controllers.ProjectStatusTypeController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
