@@ -7,7 +7,7 @@
 #   NODE_VERSION = "12.18.3"
 
 [context.release]
-  publish = "dist/"
+  publish = "client/dist/"
 
 [context.master]
-    publish = "dist/"
+    publish = "client/dist/"
