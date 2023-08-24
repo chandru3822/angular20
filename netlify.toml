@@ -1,13 +1,8 @@
 [build]
   base  = "client"
   publish = "dist/"
+  command = 'npm ci && npm run build'
   ignore = "git diff --quiet HEAD^ HEAD ."
-
-# [build.environment]
-#   NODE_VERSION = "12.18.3"
 
 [context.release]
   publish = "client/dist/"
-
-[context.master]
-    publish = "client/dist/"
