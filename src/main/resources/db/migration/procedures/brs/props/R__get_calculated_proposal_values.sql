@@ -439,6 +439,7 @@ v_source_id bigint;
 v_adjusted_price_per_watt numeric;
 v_lead_source_discount numeric;
 v_redline_markup numeric;
+v_admin_discount numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -481,7 +482,8 @@ BEGIN
          pcfv17.int_value,
          pcfv18.int_value,
          pcfv19.numeric_value,
-         d.source
+         d.source,
+         pcfv20.numeric_value
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -518,7 +520,8 @@ BEGIN
     v_financial_product_id,
     v_odoe_income_status,
     v_desired_commission_amount,
-    v_source_id
+    v_source_id,
+    v_admin_discount
   from brs.proposal prop
          inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
@@ -561,6 +564,8 @@ BEGIN
                                                              pcfv18.custom_field_group_assignment_id = 447
          left join brs.proposal_custom_field_value pcfv19 on prop.id = pcfv19.proposal_id and
                                                              pcfv19.custom_field_group_assignment_id = 454
+         left join brs.proposal_custom_field_value pcfv20 on prop.id = pcfv20.proposal_id and
+                                                             pcfv20.custom_field_group_assignment_id = 455
   where prop.id = p_proposal_id;
 
   select string_agg(lov.name, ',')
@@ -1025,7 +1030,7 @@ BEGIN
   v_calculated_price_adjustment = v_price_change_per_production_point * v_points_off_south_production_factor;
   raise notice 'v_calculated_price_adjustment = %',v_calculated_price_adjustment;
 
-  v_max_price_adjustment = (select least(greatest((v_funding_range * -1), v_calculated_price_adjustment), 0))::numeric +
+  v_max_price_adjustment = (select least(greatest((v_funding_range * -1), v_calculated_price_adjustment), 0))::numeric -
                            case
                              when v_friends_and_family is true then .5::numeric
                              else 0::numeric
@@ -1387,9 +1392,9 @@ BEGIN
   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
   v_total_system_cost =
-      (((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
+      ((((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
        coalesce(v_other_adder_and_discount_amount, 0)) + coalesce(v_down_payment_amount, 0) + coalesce(v_above_line_rebate, 0) +
-      coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0);
+      coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0) + (284.00::numeric/ (1 - v_dealer_fee)))- (coalesce(v_admin_discount,0));
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
 

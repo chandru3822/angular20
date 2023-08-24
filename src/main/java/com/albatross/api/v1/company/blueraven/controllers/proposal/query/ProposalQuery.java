@@ -238,12 +238,12 @@ public class ProposalQuery {
                                                          cfga.hidden                                                        as "customFieldGroupAssignmentHidden",
                                                          cfga.use_parent_data                                               as "useParentData",
                                                          cfga.conditional_on_cfga_id                                        as "conditionalOnId",
+                                                         cfga.visibility                                                    as "visibility",
                                                          coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
                                                          coalesce(cf.field_name, flowCf.field_name)                         as "fieldName",
                                                          coalesce(cf.sort_list_values_alphabetically,
                                                                   flowCf.sort_list_values_alphabetically)                   as "sortListValuesAlphabetically",
                                                          cf.flow_custom_field_id                                            as "flowCustomFieldId",
-                                                         -- cf.lazy_load_values                                             as "lazyLoadValues",
                                                          coalesce(cf.custom_field_sql, flowCf.custom_field_sql)             as "customFieldSql",
                                                          coalesce(cf.company_system_list_id, flowCf.company_system_list_id) as "companySystemListId",
                                                          coalesce(cf.system_list_option_ids, flowCf.system_list_option_ids) as "systemListOptionIds",
@@ -518,4 +518,28 @@ public class ProposalQuery {
     """;
   public static String updateProposalDiscountAmount = """
     update brs.project_details set commission_forfeited_by_closer = :amount where project_id = :projectId""";
+
+  public static String getProjectProcessStepCustomFieldValuesAsJSON = """
+    select json_agg(json_build_object(
+            'fieldId', cf.id,
+            'fieldName', cf.field_name,
+            'value',
+            case
+                when dt.data_type = 'date' then to_json(ppscfv.date_value)
+                when dt.data_type = 'integer' then to_json(ppscfv.int_value)
+                when dt.data_type = 'boolean' then to_json(ppscfv.boolean_value)
+                when dt.data_type = 'text' then to_json(ppscfv.text_value)
+                when dt.data_type = 'timestamp' then to_json(ppscfv.timestamp_value)
+                when dt.data_type = 'system' then to_json(ppscfv.int_value)
+                when dt.data_type = 'System List' then to_json(ppscfv.int_value)
+                when dt.data_type = 'numeric' then to_json(ppscfv.int_value)
+                end)) as val
+    from flow.project_process_step_custom_field_value ppscfv
+             inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+             inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+             inner join flow.data_type dt on cdt.data_type_id = dt.id
+    where pps.id = :ppsId
+        """;
 }

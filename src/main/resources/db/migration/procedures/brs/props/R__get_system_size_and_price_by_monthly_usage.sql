@@ -333,7 +333,7 @@ BEGIN
       v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_115 * 12 * 25) +
                                v_total_system_cost_115_offset_low_month_pmt ) + v_federal_tax_incentive_amount_115_low_mon_pay;
 
-
+  drop table if exists proposal_value;
   return query
     select v_average_production_factor,
            v_utility_rate_kwh,
@@ -375,7 +375,7 @@ BEGIN
            round(v_twenty_five_year_savings_low_payment_100_offset),
            round(v_twenty_five_year_savings_low_payment_85_offset),
            round(v_twenty_five_year_savings_low_payment_115_offset);
-drop table if exists proposal_value;
+
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE
