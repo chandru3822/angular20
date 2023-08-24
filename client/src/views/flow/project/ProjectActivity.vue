@@ -494,7 +494,7 @@ export default {
       if(this.showSmsTab) {
         try {
           this.conversationIsLoading = true
-          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`, null, [])
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.teamsAssociatedToUser = data
 

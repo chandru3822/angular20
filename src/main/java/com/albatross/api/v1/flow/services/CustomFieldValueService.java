@@ -156,6 +156,7 @@ public class CustomFieldValueService {
       params.put("objectTypeId", objectType.id);
       params.put("sourceId", id);
       //this is new and only required for attachments because we need to know the attachmentTypeId AND the attachmentId in order to load these values
+      // also, now going to use this secondary id when loading project cfgs by tabId
       params.put("secondaryId", secondaryId);
       params.put("userPositions", null != userPositions && userPositions.size() > 0 ? sqlArrayService.createSqlArrayOfType("bigint", userPositions.stream().map(up -> up.getPositionId()).collect(Collectors.toList())) : null);
       params.put("systemAdmin", systemAdmin);

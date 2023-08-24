@@ -42,4 +42,10 @@ public class CustomFieldValue {
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
+
+  /**
+   * Used in {@link com.albatross.api.v1.company.blueraven.controllers.proposal.BlueravenProposalService}
+   * Allows dynamic visibility based on a provided "context" of values from a process step custom field values
+   */
+  private String visibility;
 }

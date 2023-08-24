@@ -137,15 +137,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <div>
-          <v-btn color="#fff"
-                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
-                 class="mt-3 no-text-transform primary--text"
-                 :to="`/projectAdmin/${projectId}`"
-          >
-            Project Admin
-          </v-btn>
-        </div>
+
       </v-toolbar-items>
     </v-toolbar >
 <!--    <v-toolbar flat color="grey lighten-2" id="tag-toolbar" v-if="project.tags && project.tags.length > 0">-->
@@ -166,17 +158,17 @@
             @clickEdit="showEditModal()"
             :details="overviewDetails"
           ></PageOverview>
-          <v-divider class="mt-6"></v-divider>
+          <v-divider></v-divider>
+          <ProjectTabs :project="project" :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
+          <v-divider></v-divider>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
-          <v-divider class="mb-3"></v-divider>
+          <v-divider></v-divider>
           <ActiveEvents v-if="userHasEventsFeature"
                           :update-key="updateEventKey"
                           :projectId="projectId"
                           class="mx-2"/>
-          <v-btn outlined small color="primary" class="label-medium text-transform-unset px-3 py-1 mb-5 ml-5"
-                 :to="`/project/${ projectId }/workQueues`">
-            Current Work Queues
-          </v-btn>
+          <v-divider class="mb-3"></v-divider>
+
         </div>
       </div>
       <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
@@ -188,6 +180,7 @@
                      @refresh-upcoming-pps="updatePpsKey++"
                      @refresh-project-status="getUpdatedProjectStatus()"
                      ref="childComponent"
+                     :project-tab="selectedTab"
                      v-if="project && project.id" class="router-view"
                      :project="project"
         ></router-view>
@@ -218,6 +211,7 @@ import {
 import cloneDeep from 'lodash.clonedeep'
 import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
+import ProjectTabs from '@/views/flow/project/ProjectTabs'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
 import {getCompanyProjectStatusTypes, getStatusColorClass} from "@/services/projectStatusTypeService"
@@ -240,6 +234,7 @@ export default {
     ConfirmationDialog,
     ProjectActivity,
     ActiveProcessSteps,
+    ProjectTabs,
     ActiveEvents
   },
   data() {
@@ -267,6 +262,7 @@ export default {
       isNumberOrHyphen,
       states: [],
       countries: [],
+      selectedTab: {},
       projectLoading: true,
       projectId: parseInt(this.$route.params.projectId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -359,6 +355,13 @@ export default {
   mounted() {
   },
   methods: {
+    changeTabs(selectedTab, buttonClicked) {
+      this.selectedTab = selectedTab
+      console.log('clicked', buttonClicked)
+      if(buttonClicked && this.$route.name !== 'projectDetails') {
+        this.$router.push({ name: 'projectDetails', projectId: this.projectId })
+      }
+    },
     stateIsActive() {
       //states is already a list of company states
       let companyStateIds = this.states.map(s => s.id)
