@@ -70,7 +70,7 @@
                   <v-col cols="12" md="6" class="group px-2 py-2">
                     <FeatDbLinks title="All Links"
                               :user-can-edit="userCanEdit"
-                              :linkTypeId="14"
+                              :linkTypeId="13"
                               :itemId="supplier.id"
                               :itemType="itemType"
                               :links="supplier.links"
