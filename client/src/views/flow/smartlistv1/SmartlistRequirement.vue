@@ -671,7 +671,7 @@ export default {
     },
     async getProjectStatusTypes () {
       try {
-        const [result, companyResult] = await Promise.all([getRequest(`/projectStatus`), getRequest(`/projectStatus/company`)])
+        const [result, companyResult] = await Promise.all([getRequest(`/projectStatus`), getRequest(`/project/companyStatus`)])
         this.projectStatusTypes = result.data
         this.companyProjectStatusTypes = companyResult.data
       } catch (e) {
