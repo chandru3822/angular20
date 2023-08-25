@@ -369,7 +369,15 @@
                         {{ childField.uniqueBehaviorType }} <br/>
                         {{ childField.uniqueBehaviorTypeDescription }}
                       </td>
-                      <td>
+                      <td style="width: 130px;">
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          </template>
+                          <span>ID: {{childField.id}}</span>
+                          <div class="text-center">(click to copy)</div>
+                        </v-tooltip>
                         <v-btn small text color="primary" v-if="!childFieldExpanded.includes(childField)"
                                @click="[addChild = false, childFieldExpanded = [childField] ]">
                           <v-icon>edit</v-icon>
@@ -393,6 +401,14 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.fieldToUpdate }}</td>
               <td>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                           v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                  </template>
+                  <span>ID: {{item.id}}</span>
+                  <div class="text-center">(click to copy)</div>
+                </v-tooltip>
                 <v-btn small text color="primary" v-if="!expanded.includes(item)"
                        @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
@@ -488,6 +504,11 @@ export default {
     this.getParentObjects()
   },
   methods: {
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
     async getCompanyProcesses() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

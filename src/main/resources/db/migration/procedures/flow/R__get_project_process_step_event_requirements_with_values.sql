@@ -99,6 +99,7 @@ BEGIN
                                              dfp.parameter_name as "parameterName",
                                              dfp.data_type_id as "dataTypeId",
                                              dfp.id as "dbFunctionParamId",
+                                             dfp.nullable,
                                              rpdv.process_step_event_requirement_id as "processStepRequirementId",
                                              rpdv.dynamic_value as "dynamicValue"
                                       from flow.db_function_param dfp
@@ -113,6 +114,7 @@ BEGIN
                                       select dfp.data_type_id as "dataTypeId",
                                              dfp.parameter_type_id as "parameterTypeId",
                                              dfp.display_order as "displayOrder",
+                                             dfp.nullable,
                                              ppscfv.text_value as "textValue",
                                              ppscfv.date_value as "dateValue",
                                              ppscfv.timestamp_value as "timestampValue",
