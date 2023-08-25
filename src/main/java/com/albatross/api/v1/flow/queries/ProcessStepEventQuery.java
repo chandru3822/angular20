@@ -975,6 +975,7 @@ where psea.id = :id
                                    ppscfv.numeric_value as "numericValue",
                                    ppscfv.int_value as "intValue",
                                    dfp.system_value_id as "systemValueId",
+                                   dfp.nullable,
                                    apdv.dynamic_value as "dynamicValue"
                             from flow.db_function_param dfp
                                    left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id
