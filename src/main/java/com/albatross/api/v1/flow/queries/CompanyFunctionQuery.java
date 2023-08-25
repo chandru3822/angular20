@@ -54,6 +54,7 @@ public class CompanyFunctionQuery {
                                 dfp.system_value_id as "systemValueId",
                                 sv.system_value as "systemValue",
                                 dfp.id as "dbFunctionParamId",
+                                dfp.nullable,
                                 dfp.db_function_id as "dbFunctionId",
                                 dfp.parameter_name as "parameterName",
                                 dfp.display_order as "displayOrder",

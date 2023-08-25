@@ -136,6 +136,7 @@ public class ProcessStepRequirementQuery {
                                                                       dfp.data_type_id as "dataTypeId",
                                                                       dfp.description,
                                                                       dfp.nullable,
+                                                                      dfp.nullable,
                                                                       dfp.id as "dbFunctionParamId",
                                                                       rpdv.process_step_requirement_id as "processStepRequirementId",
                                                                       rpdv.dynamic_value as "dynamicValue"

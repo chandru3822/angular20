@@ -328,6 +328,7 @@ public class ProcessStepEventQuery {
                                                                                       dfp.data_type_id as "dataTypeId",
                                                                                       dfp.id as "dbFunctionParamId",
                                                                                       dfp.description,
+                                                                                      dfp.nullable,
                                                                                       apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                                                       apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                                                                       apdv.dynamic_value as "dynamicValue"
@@ -655,6 +656,7 @@ select  psea.*,
                                                           dfp.data_type_id as "dataTypeId",
                                                           dfp.id as "dbFunctionParamId",
                                                           dfp.description,
+                                                          dfp.nullable,
                                                           apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                                           apdv.dynamic_value as "dynamicValue"
                                                    from flow.db_function_param dfp
@@ -886,6 +888,7 @@ where psea.id = :id
                                         dfp.data_type_id as "dataTypeId",
                                         dfp.id as "dbFunctionParamId",
                                         dfp.description,
+                                        dfp.nullable,
                                         apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                         apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                         apdv.dynamic_value as "dynamicValue"
@@ -946,6 +949,7 @@ where psea.id = :id
                               dfp.data_type_id as "dataTypeId",
                               dfp.id as "dbFunctionParamId",
                               dfp.description,
+                              dfp.nullable,
                               apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                               apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                               apdv.dynamic_value as "dynamicValue"
