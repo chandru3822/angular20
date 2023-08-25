@@ -341,11 +341,22 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.fieldName }} </a><span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId">
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{ cf.fieldName }} </a>
+                            </div>
+                            <div v-else>
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.fieldName }} </a>
+                              <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                            </div>
                             <div>
                               Detail View:
-                              <input :disabled="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.detailView"
+                              <input :disabled="!userCanEdit" :readonly="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.detailView"
                                      @input="saveDetailView(cf)">
+                            </div>
+                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId && cf.processStepName">
+                              Use Parent Data:
+                              <input :disabled="!userCanEdit" :readonly="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.useParentData"
+                                     @input="saveUseParentData(cf)">
                             </div>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
@@ -519,7 +530,7 @@ import {
   deleteRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar
+  getSnackbar, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
@@ -979,6 +990,10 @@ export default {
         if (this.parent.isProcessStep) {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
           this.ancillaryCustomFields = data
+        } else if (this.parent.objectTypeId === 8) {
+          const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          handleHidingGlobalLoader(this, status)
         } else {
           const {data} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
           this.ancillaryCustomFields = data
@@ -992,6 +1007,8 @@ export default {
       }
     },
     async saveUseParentData(field) {
+      //because of the dim dam dumb dom i have to flip the boolean before I save it
+      field.useParentData = !field.useParentData
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await putRequest(`/customFieldGroup/saveUseParentData`, field)
@@ -1091,6 +1108,8 @@ export default {
           customFieldGroupId: cfg.id,
           id: null,
           ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+          dataViewFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId ? null : this.selectedAncillaryField.dataViewFieldConfigId,
+          dataViewChildFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId,
           fieldOrder: 0
         }
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)
