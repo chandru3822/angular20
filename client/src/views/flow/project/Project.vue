@@ -357,7 +357,6 @@ export default {
   methods: {
     changeTabs(selectedTab, buttonClicked) {
       this.selectedTab = selectedTab
-      console.log('clicked', buttonClicked)
       if(buttonClicked && this.$route.name !== 'projectDetails') {
         this.$router.push({ name: 'projectDetails', projectId: this.projectId })
       }

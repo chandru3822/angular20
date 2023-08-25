@@ -97,6 +97,7 @@ public class CompanyFunctionQuery {
            dfp.data_type_id,
            dfp.parameter_name,
            dfp.description,
+           dfp.nullable,
            case when dfp.data_type_id = 3 then false end as dynamic_value
     from flow.db_function_param dfp
     where dfp.db_function_id = :dbFunctionId

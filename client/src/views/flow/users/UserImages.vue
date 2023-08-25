@@ -148,7 +148,6 @@ export default {
       alert("PDF generated successfully!");
     },
     generatePDF() {
-      console.log("Hi")
       this.$refs.html2Pdf.generatePdf();
     },
 
