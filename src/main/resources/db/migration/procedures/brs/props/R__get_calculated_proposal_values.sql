@@ -440,6 +440,7 @@ v_adjusted_price_per_watt numeric;
 v_lead_source_discount numeric;
 v_redline_markup numeric;
 v_admin_discount numeric;
+v_storage_capacity numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -902,8 +903,9 @@ BEGIN
   raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 155)') ->> 'value')::numeric as number_of_batteries,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 157)') ->> 'value')::numeric as cash_price_storage
-  into v_number_of_batteries,v_cash_price_storage
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 157)') ->> 'value')::numeric as cash_price_storage,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 151)') ->> 'value')::numeric as storage_capacity
+  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity
   from proposal_value pv
   where object_code = 'PROPOSAL_STORAGE_DETAILS'
     and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
@@ -1394,7 +1396,7 @@ BEGIN
   v_total_system_cost =
       ((((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
        coalesce(v_other_adder_and_discount_amount, 0)) + coalesce(v_down_payment_amount, 0) + coalesce(v_above_line_rebate, 0) +
-      coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0) + (284.00::numeric/ (1 - v_dealer_fee)))- (coalesce(v_admin_discount,0));
+      coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0) + case when v_commission_strategy_id = 23610 then 0::numeric else (284.00::numeric/ (1 - v_dealer_fee)) end)- (coalesce(v_admin_discount,0));
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
 
@@ -1407,17 +1409,27 @@ BEGIN
                ((v_total_system_cost * (1-v_dealer_fee)) * v_non_solar_cap)) /
               (1-v_non_solar_cap)),0);
 
+  raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
+
+  if v_number_of_batteries > 0  and v_financier_id = 116 then
+    v_required_down_payment = coalesce(v_required_down_payment,0) + (((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
+                              coalesce(v_other_adder_and_discount_amount, 0) - coalesce(v_required_down_payment,0) - coalesce(v_down_payment_amount,0)) - least(50000::numeric,2500::numeric*v_storage_capacity);
+  end if;
+
+  raise notice 'v_storage_capacity %',v_storage_capacity;
+  raise notice 'v_required_down_payment = %',v_required_down_payment;
+
 --   v_required_down_payment =
 --     greatest(((coalesce(v_other_adder_and_discount_amount, 0) +
 --                coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_unapproved_zip_code_adder, 0) +
 --                coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
 --                coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
 --                coalesce(v_ac_unit_relocation_cost, 0)::numeric)/(1-v_dealer_fee)) - (v_total_system_cost * v_non_solar_cap), 0);
-   raise notice 'v_required_down_payment = %',v_required_down_payment;
+
 
   v_total_loan_amount =
       ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
-      coalesce(v_other_adder_and_discount_amount, 0) - coalesce(v_required_down_payment,0) - coalesce(v_down_payment_amount,0);
+      coalesce(v_other_adder_and_discount_amount, 0) - coalesce(v_required_down_payment,0) - coalesce(v_down_payment_amount,0)- coalesce(v_admin_discount,0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
 
   v_check_from_br = 0.00::numeric;

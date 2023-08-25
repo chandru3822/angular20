@@ -53,7 +53,7 @@ BEGIN
     if p_number_of_batteries > 0 then
       v_value = coalesce(v_value, 0) +
                 least(p_battery_rebate_cap_amount, (p_cash_price_storage * p_battery_rebate_cap_percent_of_total),
-                      p_system_size * p_battery_rebate_amount);
+                      (p_system_size * 1000) * p_battery_rebate_amount);
     end if;
   end if;
   return coalesce(v_value, 0);
