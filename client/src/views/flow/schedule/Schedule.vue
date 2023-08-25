@@ -311,8 +311,8 @@
               :server-items-length="totalProjects"
               item-key="projectProcessStepEventId"
               :show-select="true"
-              :item-selected="(item, value) => this.zoomToMap(item, value)"
-              :toggle-select-all="(value) => this.zoomToMap(value)"
+              @item-selected="zoomToMap"
+              @toggle-select-all="zoomToMap"
               class="elevation-1 square-card"
           >
             <template #no-data>
@@ -743,6 +743,7 @@
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
+            this.selectedRows.push(this.projects[0])
           }
           this.listLoading = false
         } catch (e) {
@@ -752,10 +753,14 @@
           this.listLoading = false
         }
       },
+      zoomToMap(item, value) {
+        if(value){
+          this.state.mapZoom = 10
+          this.state.mapLongitude = item.longitude
+          this.state.mapLatitude = item.latitude
+        }
+      }
 
-    },
-    zoomToMap(item) {
-      console.log('ZOOM ITEM', item)
     }
   }
 </script>
