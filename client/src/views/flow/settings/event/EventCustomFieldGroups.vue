@@ -275,21 +275,48 @@
                 <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
-                    <!--                    <v-radio-group v-model="newFieldType"-->
-                    <!--                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">-->
-                    <!--                      <v-radio label="Native Field"-->
-                    <!--                               value="native"></v-radio>-->
-                    <!--                      <v-radio label="Reference Field: viewed only from process steps or other object types"-->
-                    <!--                               value="ancillary"></v-radio>-->
-                    <!--                    </v-radio-group>-->
+                    <v-radio-group v-model="newFieldType"
+                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
+                      <v-radio label="Native Field"
+                               value="native"></v-radio>
+                      <v-radio label="Reference Field: viewed only from process steps or other object types"
+                               value="ancillary"></v-radio>
+                    </v-radio-group>
 
                     <v-autocomplete v-model="newField"
+                                    v-if="newFieldType === 'native'"
                                     :items="availableCustomFields"
                                     label="New Custom Field"
                                     item-text="fieldName"
                                     return-object
                                     autocomplete="off"
                                     @input="assignCustomField(item)"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.fieldName }}
+                      </template>
+                    </v-autocomplete>
+                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    v-model="parent"
+                                    :items="parentObjects"
+                                    label="Parent Object"
+                                    item-text="name"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="loadFieldsByParent"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.name }}
+                      </template>
+                    </v-autocomplete>
+                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    v-model="selectedAncillaryField"
+                                    :items="ancillaryCustomFields"
+                                    label="Custom Field"
+                                    item-text="fieldName"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="assignAncillaryCustomField(item)"
                     >
                       <template slot='item' slot-scope='{ item }'>
                         {{ item.fieldName }}
@@ -446,7 +473,7 @@
                 v-if="cfgToDisplayOnSnippet"
                 label="Custom Field"
                 v-model="cfToDisplayOnSnippet"
-                :items="cfgToDisplayOnSnippet.customFields"
+                :items="nonAncillaryGfgFields(cfgToDisplayOnSnippet.customFields)"
                 item-text="fieldName"
                 item-value="id"
                 return-object
@@ -628,6 +655,9 @@ export default {
     await this.getEvent()
   },
   methods: {
+    nonAncillaryGfgFields(fields) {
+      return fields.filter(f => !f.ancillaryCustomFieldGroupAssignmentId)
+    },
     async getResourceFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {

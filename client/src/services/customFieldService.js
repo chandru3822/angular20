@@ -22,7 +22,10 @@ export function getCustomFieldReadOnly(store, field) {
 export function getEventCustomFieldReadOnly(store, field) {
   let readonly = false
   //more verbose but easier to figure out what is going on
-  if (field.whiteListedPositions?.length > 0) {
+  if(field.ancillaryCustomFieldGroupAssignmentId !== null) {
+    //all ancillary fields are ALWAYS readonly
+    readonly = true
+  } else if (field.whiteListedPositions?.length > 0) {
     //this is a change to how it used to work.  now having white listed positions overrides the master/higher level readonly
     //do any of the users active positions match the white listed positions
     readonly = !store.getters.userHasAnyPosition(field.whiteListedPositions?.map(wlp => wlp.positionId))

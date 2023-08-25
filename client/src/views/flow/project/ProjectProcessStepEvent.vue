@@ -762,9 +762,9 @@ export default {
     },
     getFieldReadOnly: function (field) {
       if (null != field) {
-        //full Admin is never read only
-        // read only if either the field or the event is read only
-        return (!this.$store.getters.isFullAdmin && getEventCustomFieldReadOnly(this.$store, field)) || this.isEventReadonly
+        // read only if either the field or the event is read only or the user cannot edit
+        //had to remove the fullAdmin thing because events can now have ancillary fields which need to always be readonly regardless of permissions
+        return !this.userCanEdit || getEventCustomFieldReadOnly(this.$store, field) || this.isEventReadonly
       }
       return false
     },
