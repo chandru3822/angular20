@@ -561,6 +561,7 @@ public class ProcessStepActionQuery {
                 select dfp.data_type_id as "dataTypeId",
                        dfp.parameter_type_id as "parameterTypeId",
                        dfp.display_order as "displayOrder",
+                       dfp.nullable,
                        ppscfv.text_value as "textValue",
                        ppscfv.date_value as "dateValue",
                        ppscfv.timestamp_value as "timestampValue",
