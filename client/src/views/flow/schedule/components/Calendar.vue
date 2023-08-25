@@ -525,14 +525,19 @@
     methods: {
       dayOptions(){
         let dayOptions = []
-        let i = this.calendarStartTime
-        while(moment().utc(this.calendarEndTime).isAfter(i)) {
-          let dayOption = {
-            rawDate: i,
-            formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
+        const startDate = this.calendarApi?.view.activeStart
+        const endDate = this.calendarApi?.view.activeEnd
+
+        if(startDate && endDate) {
+          let i = startDate
+          while (moment(endDate).isAfter(i)) {
+            let dayOption = {
+              rawDate: i,
+              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
+            }
+            dayOptions.push(dayOption)
+            i = moment(i).add(1, 'days')
           }
-          dayOptions.push(dayOption)
-          i = moment(i).add(1,'days')
         }
         return dayOptions
       },
