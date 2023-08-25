@@ -332,28 +332,28 @@ set id              = case
                         when original_rows.ancillary_object_type_id = 2 then ancillary_contact_cfv.int_array_value
                         when original_rows.ancillary_object_type_id = 4 then ancillary_ppscfv.int_array_value end
   from cfvs original_rows
-                 left join flow.project_process_step ancillary_pps on ancillary_pps.project_id = original_rows.project_id and
-  ancillary_pps.process_step_id =
-  original_rows.ancillary_process_step_id and
-  ancillary_pps.archived is false
-  and case
-  when original_rows.use_parent_data is true then ancillary_pps.id = (select id
-  from flow.pps_parent_hierarchy(
-  p_source_id,
-  original_rows.ancillary_custom_field_group_assignment_id))
-  else ancillary_pps.main is true end
-                 left join flow.project_process_step_custom_field_value ancillary_ppscfv
-                           on ancillary_ppscfv.custom_field_group_assignment_id =
-                              original_rows.ancillary_custom_field_group_assignment_id and
-                              ancillary_ppscfv.project_process_step_id = ancillary_pps.id
-                 left join flow.project_custom_field_value ancillary_project_cfv
-                           on ancillary_project_cfv.custom_field_group_assignment_id =
-                              original_rows.ancillary_custom_field_group_assignment_id and
-                              ancillary_project_cfv.project_id = original_rows.project_id
-                 left join flow.contact_custom_field_value ancillary_contact_cfv
-                           on ancillary_contact_cfv.custom_field_group_assignment_id =
-                              original_rows.ancillary_custom_field_group_assignment_id and
-                              ancillary_contact_cfv.contact_id = original_rows.contact_id
+ left join flow.project_process_step ancillary_pps on ancillary_pps.project_id = original_rows.project_id and
+                  ancillary_pps.process_step_id =
+                  original_rows.ancillary_process_step_id and
+                  ancillary_pps.archived is false
+                  and case
+                  when original_rows.use_parent_data is true then ancillary_pps.id = (select id
+                                                      from flow.pps_parent_hierarchy(
+                                                      p_source_id,
+                                                      original_rows.ancillary_custom_field_group_assignment_id))
+                  else ancillary_pps.main is true end
+ left join flow.project_process_step_custom_field_value ancillary_ppscfv
+           on ancillary_ppscfv.custom_field_group_assignment_id =
+              original_rows.ancillary_custom_field_group_assignment_id and
+              ancillary_ppscfv.project_process_step_id = ancillary_pps.id
+ left join flow.project_custom_field_value ancillary_project_cfv
+           on ancillary_project_cfv.custom_field_group_assignment_id =
+              original_rows.ancillary_custom_field_group_assignment_id and
+              ancillary_project_cfv.project_id = original_rows.project_id
+ left join flow.contact_custom_field_value ancillary_contact_cfv
+           on ancillary_contact_cfv.custom_field_group_assignment_id =
+              original_rows.ancillary_custom_field_group_assignment_id and
+              ancillary_contact_cfv.contact_id = original_rows.contact_id
         where original_rows.custom_field_group_assignment_id = new_data.custom_field_group_assignment_id
           and original_rows.ancillary_custom_field_group_assignment_id is not null;
     elseif p_object_type_id = 6 then --project_process_step_event
@@ -412,21 +412,24 @@ set id              = case
                         when original_rows.ancillary_object_type_id = 2 then ancillary_contact_cfv.int_array_value
                         when original_rows.ancillary_object_type_id = 4 then ancillary_ppscfv.int_array_value end
   from cfvs original_rows
-                 left join flow.project_process_step ancillary_pps
-on ancillary_pps.process_step_id = original_rows.ancillary_process_step_id and
-  ancillary_pps.project_id = original_rows.project_id
+  left join flow.project_process_step ancillary_pps
+        on ancillary_pps.process_step_id = original_rows.ancillary_process_step_id and
+          ancillary_pps.project_id = original_rows.project_id and
+           ancillary_pps.archived is false
+        and case when original_rows.use_parent_data is true then ancillary_pps.id = ( select ppse.project_process_step_id from flow.project_process_step_event ppse where ppse.id = p_source_id)
+            else ancillary_pps.main end
   left join flow.project_process_step_custom_field_value ancillary_ppscfv
-  on ancillary_ppscfv.custom_field_group_assignment_id =
-  original_rows.ancillary_custom_field_group_assignment_id and
-  ancillary_ppscfv.project_process_step_id = ancillary_pps.id
+    on ancillary_ppscfv.custom_field_group_assignment_id =
+    original_rows.ancillary_custom_field_group_assignment_id and
+    ancillary_ppscfv.project_process_step_id = ancillary_pps.id
   left join flow.project_custom_field_value ancillary_project_cfv
-  on ancillary_project_cfv.custom_field_group_assignment_id =
-  original_rows.ancillary_custom_field_group_assignment_id and
-  ancillary_project_cfv.project_id = original_rows.project_id
+    on ancillary_project_cfv.custom_field_group_assignment_id =
+    original_rows.ancillary_custom_field_group_assignment_id and
+    ancillary_project_cfv.project_id = original_rows.project_id
   left join flow.contact_custom_field_value ancillary_contact_cfv
-  on ancillary_contact_cfv.custom_field_group_assignment_id =
-  original_rows.ancillary_custom_field_group_assignment_id and
-  ancillary_contact_cfv.contact_id = original_rows.contact_id
+    on ancillary_contact_cfv.custom_field_group_assignment_id =
+    original_rows.ancillary_custom_field_group_assignment_id and
+    ancillary_contact_cfv.contact_id = original_rows.contact_id
 where original_rows.custom_field_group_assignment_id = new_data.custom_field_group_assignment_id
   and original_rows.ancillary_custom_field_group_assignment_id is not null;
 elseif p_object_type_id = 7 then --attachments
