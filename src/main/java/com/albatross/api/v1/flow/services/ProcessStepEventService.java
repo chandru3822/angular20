@@ -39,16 +39,18 @@ public class ProcessStepEventService {
 
   private final UserPositionService userPositionService;
 
-  public List<ProcessStepEvent> getStepEvents(Long processStepId) {
+  public List<ProcessStepEvent> getStepEvents(Long processStepId, Boolean adminScreenLoad) {
+    //had to add the adminScreenLoad because the events were being filtered out of the settings screen and couldn't be configured
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    Boolean adminLoad = systemAdmin || adminScreenLoad;
     List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    params.put("systemAdmin", systemAdmin);
+    params.put("systemAdmin", adminLoad);
     params.put("userPositions", userPositionIds);
     List<ProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
-    if(!user.isSystemAdmin()) {
+    if(!adminLoad) {
       for (int x = 0; x < processStepEvents.size(); x++) {
         if (processStepEvents.get(x).getEventHidden()) {
           boolean hiddenWhiteListed = false;
