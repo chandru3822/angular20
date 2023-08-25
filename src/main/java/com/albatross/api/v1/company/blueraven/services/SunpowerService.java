@@ -389,7 +389,7 @@ public class SunpowerService {
     params.put("financialName", pd.getLoanTerm() + " Year Loan at " + interestRateRounded + "% APR");
     params.put("inverterName", pd.getInverterCustomGetting());
 
-    HashSet<String> panelNames = new HashSet<>(Arrays.asList("REC", "SPR-U400-BLK", "SPR-U4000-BLK"));
+    HashSet<String> panelNames = new HashSet<>(Arrays.asList("REC", "SPR-U400-BLK", "SPR-U4000-BLK", "SEG SOLAR INC. 405"));
     if (panelNames.contains(pd.getPanel())) {
       params.put("panelName", pd.getPanel());
     }
