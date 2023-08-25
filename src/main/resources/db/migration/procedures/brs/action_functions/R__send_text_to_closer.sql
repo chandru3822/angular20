@@ -101,63 +101,66 @@ BEGIN
          mt.include_manager
   into v_message_type_content, v_message_type_include_manager
   from brs.message_type mt
-  where mt.id = p_message_type_id;
+  where mt.id = p_message_type_id
+    and mt.archived is not false;
 
-  --check if the assigned closer is a `closer` and that the message type should send to manager
-  if (v_closer_position_id = 1 AND v_message_type_include_manager) then
-    --populate the manager's name and phone number
-    select up.user_id, u.first_name, u.phone_number
-    into v_manager_user_id, v_manager_first_name, v_manager_phone_number
-    from flow.user_position up
-           inner join flow.position p on up.position_id = p.id
-           inner join flow."user" u on up.user_id = u.id
-           INNER JOIN flow.company_user_status cus on cus.user_id = u.id
-           INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
-    where up.org_id = 805
-      and up.position_id = 2  --only look for closer managers per carlin
-      and up.primary_flag is true
-      and up.archived is false
-      and up.start_date < now()
-      and ust.has_access is true
-      and (up.end_date is null or up.end_date > now());
-
-
-    v_do_manager_send = v_manager_phone_number is not null and trim(v_manager_phone_number) != '' and v_manager_first_name is not null;
-    if(v_do_manager_send) then
-      --add managers name key here so the replace stuff can change it later. i am tired. that seems dumb.
-      v_message_type_content = replace(v_message_type_content, 'v_closer_first_name', concat('v_closer_first_name and ', v_manager_first_name));
-    end if;
-  end if;
-
-  if v_closer_has_access is true and v_closer_phone_number is not null and trim(v_closer_phone_number) != '' then
-
-    FOR dv IN SELECT * FROM jsonb_each_text(vars)
-      LOOP
-        v_message_type_content = replace(v_message_type_content, dv.key, dv.value);
-      END LOOP;
+  --dont do anything if we didn't find a messsage
+  if(v_message_type_content is not null) then
+      --check if the assigned closer is a `closer` and that the message type should send to manager
+      if (v_closer_position_id = 1 AND v_message_type_include_manager) then
+        --populate the manager's name and phone number
+        select up.user_id, u.first_name, u.phone_number
+        into v_manager_user_id, v_manager_first_name, v_manager_phone_number
+        from flow.user_position up
+               inner join flow.position p on up.position_id = p.id
+               inner join flow."user" u on up.user_id = u.id
+               INNER JOIN flow.company_user_status cus on cus.user_id = u.id
+               INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+        where up.org_id = 805
+          and up.position_id = 2  --only look for closer managers per carlin
+          and up.primary_flag is true
+          and up.archived is false
+          and up.start_date < now()
+          and ust.has_access is true
+          and (up.end_date is null or up.end_date > now());
 
 
-    if(v_message_type_content is not null) then
-      --insert the sms queue record for the closer's message
-      insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
-                                 message_sent_by_user_id, priority_level)
-      values (v_closer_user_id,
-              v_message_type_content,
-              (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1,
-              p_current_user_id, 2);
-
-      --insert the sms queue record for the manager's message
-      if (v_do_manager_send is true) then
-        insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
-                                   message_sent_by_user_id, priority_level)
-        values (v_manager_user_id,
-                v_message_type_content,
-                (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_manager_phone_number, now(), 1,
-                p_current_user_id, 2);
+        v_do_manager_send = v_manager_phone_number is not null and trim(v_manager_phone_number) != '' and v_manager_first_name is not null;
+        if(v_do_manager_send) then
+          --add managers name key here so the replace stuff can change it later. i am tired. that seems dumb.
+          v_message_type_content = replace(v_message_type_content, 'v_closer_first_name', concat('v_closer_first_name and ', v_manager_first_name));
+        end if;
       end if;
-    end if;
-  end if;
 
+      if v_closer_has_access is true and v_closer_phone_number is not null and trim(v_closer_phone_number) != '' then
+
+        FOR dv IN SELECT * FROM jsonb_each_text(vars)
+          LOOP
+            v_message_type_content = replace(v_message_type_content, dv.key, dv.value);
+          END LOOP;
+
+
+        if(v_message_type_content is not null) then
+          --insert the sms queue record for the closer's message
+          insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
+                                     message_sent_by_user_id, priority_level)
+          values (v_closer_user_id,
+                  v_message_type_content,
+                  (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_closer_phone_number, now(), 1,
+                  p_current_user_id, 2);
+
+          --insert the sms queue record for the manager's message
+          if (v_do_manager_send is true) then
+            insert into flow.sms_queue(user_id, message, message_group, to_phone, created, recipient_type_id,
+                                       message_sent_by_user_id, priority_level)
+            values (v_manager_user_id,
+                    v_message_type_content,
+                    (SELECT md5(random()::text || clock_timestamp()::text)::uuid), v_manager_phone_number, now(), 1,
+                    p_current_user_id, 2);
+          end if;
+        end if;
+      end if;
+  end if;
 END
 $function$
 

@@ -85,8 +85,8 @@
               Unlock
             </v-btn>
           </v-card>
-          <v-divider class="mt-4"></v-divider>
-          <div class="mt-2">
+          <v-divider></v-divider>
+          <div>
             <v-toolbar color="transparent" flat>
               <v-toolbar-title class="albatross-header-3">Company Access</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -100,6 +100,7 @@
                   <template v-slot:activator="{ on: menu }">
                     <v-btn text color="primary"
                            v-on="{ ...menu }"
+                           x-small
                            v-if="userIsAdmin"
                            @click="addUserCompany = !addUserCompany">
                       <v-icon>add</v-icon>
@@ -124,6 +125,7 @@
                     <v-btn
                       v-if="userIsAdmin"
                       color="primary"
+                      x-small
                       class="white--text mb-2"
                       :disabled="!newCompany.id || !newCompany.companyUserStatusTypeId"
                       text
@@ -131,9 +133,13 @@
                     </v-btn>
                   </v-card>
                 </v-menu>
+                <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+                  <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
+                  <v-icon v-else>mdi-chevron-down</v-icon>
+                </v-btn>
               </v-toolbar-items>
             </v-toolbar>
-            <div class="mx-2">
+            <div class="mx-2" v-if="sectionExpanded">
               <v-card flat v-for="uc in user.companies"
                       class="user-company-button albatross-body-1">
                 {{ uc.companyName }}
@@ -142,6 +148,7 @@
                        @click="companyToDelete = uc"><v-icon>delete</v-icon></v-btn>
               </v-card>
             </div>
+            <v-divider></v-divider>
           </div>
         </div>
       </template>
@@ -306,6 +313,7 @@ export default {
       userStatusTypes: [],
       addUserCompany: false,
       newCompany: {},
+      sectionExpanded: true,
       companyUserStatusTypes: [],
       companyToDelete: null
     }

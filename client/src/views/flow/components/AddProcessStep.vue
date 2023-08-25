@@ -6,7 +6,6 @@
     min-width="350"
     :close-on-content-click="false"
 >
-
   <template #activator="{on}">
     <v-btn text color="primary" class="" x-small v-on="on" @click="[ getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>

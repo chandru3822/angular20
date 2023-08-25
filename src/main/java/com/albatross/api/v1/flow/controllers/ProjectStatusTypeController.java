@@ -1,32 +1,16 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.company.blueraven.models.MarketoProject;
-import com.albatross.api.v1.company.blueraven.services.MarketoService;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.DensitySearch;
-import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.*;
-import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
-import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
-import com.albatross.api.v1.flow.services.MessagingService;
-import com.albatross.api.v1.flow.services.ProjectService;
 import com.albatross.api.v1.flow.services.ProjectStatusService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -36,13 +20,13 @@ public class ProjectStatusTypeController {
 
   private final ProjectStatusService projectStatusService;
 
-  @PostMapping(value = "/company/{cpstId}")
+  @PostMapping(value = "/company/{cpstId}/field")
   public Optional<CompanyProjectStatusFieldAssignment> saveFieldToCompanyProjectStatus(@PathVariable Long cpstId,
                                                                                        @RequestBody CompanyProjectStatusFieldAssignment field) {
     return projectStatusService.addFieldToCompanyProjectStatus(cpstId, field);
   }
 
-  @GetMapping(value = "/company/{cpstId}")
+  @GetMapping(value = "/company/{cpstId}/fields")
   public List<CompanyProjectStatusFieldAssignment> getFieldsForCompanyProjectStatus(@PathVariable Long cpstId) {
     return projectStatusService.getFieldsForCompanyProjectStatus(cpstId);
   }
