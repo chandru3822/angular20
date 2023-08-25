@@ -455,18 +455,17 @@ export default {
             sort: (a, b) => {
               //if it is a date, format the string as a date and sort by that value
               //without the .toString() this fails for numeric values
-              if ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
+              if (typeof a === 'number' || typeof b === 'number') {
+                return (a === null) - (b === null) || a - b
+              }
+              else if ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
                   || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b)))))) {
                 //todo: keep an eye on if Date.parse returns false for regular numbers and such
                 //note: firefox doesn't support date formats with hyphens. only with /
                 return new Date(a.replace(/-/g, '/')) - new Date(b.replace(/-/g, '/'))
               } else {
                 //otherwise sort normally
-                if (typeof a === 'number' || typeof b === 'number') {
-                  return (a === null) - (b === null) || a - b
-                } else {
-                  return null != a ? a.localeCompare(b) : a - b
-                }
+                return null != a ? a.localeCompare(b) : a - b
               }
             },
             show: true
