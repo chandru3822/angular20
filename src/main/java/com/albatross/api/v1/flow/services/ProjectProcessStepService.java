@@ -1287,7 +1287,7 @@ public class ProjectProcessStepService {
             break;
           case 2:
             //if the param is nullable then just use null
-            params.put(param.getDisplayOrder(), (param.getNullable() && param.getDynamicValue().isEmpty() ? null : getTypedDynamicValue(param).toString()));
+            params.put(param.getDisplayOrder(), (param.getNullable() && (null == param.getDynamicValue() || param.getDynamicValue().isEmpty()) ? null : getTypedDynamicValue(param).toString()));
             break;
           case 3:
             Object paramValue = getParamValueByDataType(param);
