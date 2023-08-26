@@ -18,7 +18,7 @@ BEGIN
      into v_data_view_value;
    end if;
 
-  RAISE NOTICE 'value %', v_data_view_value;
+--   RAISE NOTICE 'value %', v_data_view_value;
 
   -- IN check, value passed in should be an array
 --     return v_data_view_value = any ( string_to_array( trim(both ' ' from regexp_replace(p_value_to_check_for, '\s*,\s*', ',')), ',')::text[] );
