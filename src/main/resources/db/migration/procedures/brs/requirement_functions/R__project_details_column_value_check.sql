@@ -18,8 +18,11 @@ BEGIN
      into v_data_view_value;
    end if;
 
-    -- IN check, value passed in should be an array
-    return v_data_view_value = any ( string_to_array( trim(both ' ' from regexp_replace(p_value_to_check_for, '\s*,\s*', ',')), ',')::text[] );
+--   RAISE NOTICE 'value %', v_data_view_value;
+
+  -- IN check, value passed in should be an array
+--     return v_data_view_value = any ( string_to_array( trim(both ' ' from regexp_replace(p_value_to_check_for, '\s*,\s*', ',')), ',')::text[] );
+    return v_data_view_value IN ( select trim(unnest(string_to_array(p_value_to_check_for, ',')::text[])) );
 
 END
 $BODY$
