@@ -124,6 +124,7 @@ public class CustomFieldGroupQuery {
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                             AND wlp.white_list_type_id = 1
+                                                            AND wlp.company_id = :companyId
                                                             AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
                                         coalesce((
                                                    SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -137,6 +138,7 @@ public class CustomFieldGroupQuery {
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                             AND wlp.white_list_type_id = 2
+                                                            AND wlp.company_id = :companyId
                                                             AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                  from flow.custom_field_group_assignment cfga
                                         inner join flow.custom_field cf on cf.id = cfga.custom_field_id

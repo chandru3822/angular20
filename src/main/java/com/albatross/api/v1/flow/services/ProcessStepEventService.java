@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -38,16 +39,18 @@ public class ProcessStepEventService {
 
   private final UserPositionService userPositionService;
 
-  public List<ProcessStepEvent> getStepEvents(Long processStepId) {
+  public List<ProcessStepEvent> getStepEvents(Long processStepId, Boolean adminScreenLoad) {
+    //had to add the adminScreenLoad because the events were being filtered out of the settings screen and couldn't be configured
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    Boolean adminLoad = systemAdmin || adminScreenLoad;
     List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    params.put("systemAdmin", systemAdmin);
+    params.put("systemAdmin", adminLoad);
     params.put("userPositions", userPositionIds);
     List<ProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
-    if(!user.isSystemAdmin()) {
+    if(!adminLoad) {
       for (int x = 0; x < processStepEvents.size(); x++) {
         if (processStepEvents.get(x).getEventHidden()) {
           boolean hiddenWhiteListed = false;
@@ -367,6 +370,19 @@ public class ProcessStepEventService {
     processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, id);
 
     return getActionChildFunction(id);
+  }
+
+  public void updateChildFunctionOrder(Long actionId, List<ProcessStepEventActionChildFunction> childFns) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+
+    for(ProcessStepActionChildFunction child : childFns) {
+      params.put("id", child.getId());
+      params.put("displayOrder", child.getDisplayOrder());
+
+      sqlCache.updateBySql(ProcessStepEventQuery.updateChildFunctionOrder, params);
+    }
   }
 
   public void deleteChildFunctionFromAction(Long childProcessId) {

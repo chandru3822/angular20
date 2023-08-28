@@ -60,6 +60,7 @@ public class DbFunctionQuery {
                                   dfp.display_order as "displayOrder",
                                   dfp.system_value_id as "systemValueId",
                                   sv.system_value as "systemValue",
+                                  dfp.nullable,
                                   dfp.parameter_name as "parameterName",
                                   dfp.data_type_id as "dataTypeId",
                                   dfp.parameter_type_id as "parameterTypeId",

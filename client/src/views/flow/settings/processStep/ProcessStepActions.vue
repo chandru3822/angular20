@@ -607,10 +607,17 @@
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="item.actionTypeId === 2 && item.processStepActionChildFunctions && item.processStepActionChildFunctions.length > 0">
                   <v-col cols="12" class="pt-0">
+                    <draggable v-model="item.processStepActionChildFunctions" v-if="item.processStepActionChildFunctions && item.processStepActionChildFunctions.length > 0"
+                               :disabled="!userCanEdit"
+                               group="customFields" @start="drag=true" @end="drag=false"
+                               @change="saveChildFunctionOrder(item.id, item.processStepActionChildFunctions)">
                     <v-list v-for="(cp, index) in filterBy(item.processStepActionChildFunctions, false, 'archived')"
                             :key="index"
                             :class="{ 'shaded-row': index % 2 }">
-                      <v-list-item>
+                      <v-list-item class="grab">
+                        <v-list-item-action>
+                          <v-icon v-if="userCanEdit">drag_handle</v-icon>
+                        </v-list-item-action>
                         <v-list-item-content class="text-left">
                           <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
                           <div class="mt-2"
@@ -748,6 +755,7 @@
                         </v-dialog>
                       </v-list-item>
                     </v-list>
+                    </draggable>
                   </v-col>
                 </v-row>
                 <!-- SMS MESSAGES CAN ONLY BE ADDED TO BUTTONS -->
@@ -880,7 +888,7 @@
                              small class="ml-1 mr-1 mt-1 primary--text"
                              :disabled="!userCanEdit"
                              v-on="{ ...tooltip }"
-                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList.length - 1].sqlOrder + 1) }), actionLogicOrderChanged(item)]">
+                             @click="[item.logicListChanged = true, item.alwaysEnabled = false, item.processStepLogicList.push({ requirementNbr: r.requirementNbr, processStepRequirementId: r.id, archived: false, logicString: r.logicString, sqlOrder: (item.processStepLogicList[item.processStepLogicList?.length - 1]?.sqlOrder + 1) }), actionLogicOrderChanged(item)]">
                         {{ logicStringToggle ? getLogicButtonText(r) : r.requirementNbr }}
                       </v-btn>
                     </template>
@@ -1149,9 +1157,38 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    async saveChildFunctionOrder(actionId, childFns) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let fnsToSave = []
+        childFns.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            fnsToSave.push(f)
+          }
+        })
+
+        // save them here
+        if (fnsToSave.length > 0) {
+          await putRequest(`/processStep/${this.processStepId}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Function Order Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Function Order')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+
+    },
     actionLogicOrderChanged(item) {
       item.processStepLogicList = item.processStepLogicList.filter(psl => !psl.archived)
-      item.processStepLogicList.forEach((f, idx) => {
+      item.processStepLogicList?.forEach((f, idx) => {
         let order = idx + 1
         if (f.sqlOrder !== order) {
           f.sqlOrder = order

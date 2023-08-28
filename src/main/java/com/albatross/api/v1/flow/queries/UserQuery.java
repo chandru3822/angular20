@@ -860,6 +860,7 @@ public class UserQuery {
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                                      AND wlp.white_list_type_id = 2
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga
                                                                  inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id

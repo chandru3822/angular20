@@ -61,6 +61,7 @@ select cot.id,
                               wlp.archived
                        FROM flow.white_listed_position wlp
                        WHERE wlp.white_list_type_id = :statusReadOnlyTypeId
+                          AND wlp.company_id = :companyId
                          AND wlp.archived is not true) wlp), '[]') AS "statusReadOnlyWhiteListedPositions",
              coalesce((
                           SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -73,6 +74,7 @@ select cot.id,
                                           wlp.archived
                                    FROM flow.white_listed_position wlp
                                    WHERE wlp.white_list_type_id = :ownerReadOnlyTypeId
+                                     AND wlp.company_id = :companyId
                                      AND wlp.archived is not true) wlp), '[]') AS "ownerReadOnlyWhiteListedPositions"
     from flow.company_object_type cot
       inner join flow.object_type ot on ot.id = cot.object_type_id

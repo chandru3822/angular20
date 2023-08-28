@@ -15,7 +15,7 @@
           <template #header.icons="{}">
             <div class="text-right mr-2">
               <v-btn text @click="addItem" color="primary"
-                     v-if="$store.getters.userHasFeatureAccessLevel('Supplier', 'ADD')">
+                     v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'ADD')">
                 <v-icon>add</v-icon>
                 <span v-if="!constants.IS_MOBILE">Add New</span>
               </v-btn>
@@ -62,10 +62,10 @@
                 {{ item.state || '' }}
               </td>
               <td class="text-right">
-                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('Supplier', 'EDIT')" small color="primary"
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editSupplier(item)">
                   edit
-                </v-icon><v-icon v-if="$store.getters.userHasFeatureAccessLevel('Supplier', 'DELETE')" small color="primary"
+                </v-icon><v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'DELETE')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="deleteSupplier(item)">
                   delete
                 </v-icon>

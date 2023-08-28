@@ -14,6 +14,6 @@ public class CompanyFunctionParam extends CustomFieldValue {
 
   private Long id, companyFunctionId, customFieldGroupAssignmentId, systemValueId, dbFunctionParamId, displayOrder, dataTypeId, processStepId, createdById, modifiedById, parameterTypeId;
   private String companyFunctionName, dynamicValue, systemValue, parameterName, fieldName, processStepName;
-  private Boolean archived;
+  private Boolean archived, nullable;
 }
 

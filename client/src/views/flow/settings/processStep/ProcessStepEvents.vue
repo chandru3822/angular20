@@ -179,7 +179,7 @@ export default {
     async getEvents() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/event`)
+        const {data} = await getRequest(`/processStep/${this.processStepId}/event/admin`)
         this.events = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

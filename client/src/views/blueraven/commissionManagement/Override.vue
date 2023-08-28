@@ -1021,7 +1021,6 @@
         this.closeDeleteDialog()
       },
       deleteConfirmed(){
-        console.log("deleteConfirmed")
         switch (this.deleteType){
           case deleteTypes.OVERRIDE:
             this.deleteOverride()

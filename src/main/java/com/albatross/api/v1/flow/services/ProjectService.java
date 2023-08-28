@@ -276,12 +276,6 @@ public class ProjectService {
 
     List<ProjectStatusField> results = sqlCache.queryBySql(ProjectQuery.getStatusFieldsByProject, params, new ProjectStatusFieldMapper<>(ProjectStatusField.class, om));
 
-    //include the attachment for the status logo here
-    for(ProjectStatusField field : results) {
-        Attachment a = attachmentService.getOneBySourceIdAndType(field.getId(), 463L);
-        field.setIcon(null != a && null != a.getId() ? a : new Attachment());
-    }
-
     return results;
   }
 
@@ -609,6 +603,7 @@ public class ProjectService {
     params.put("statusTypeId", statusTypeId);
     params.put("systemAdmin", systemAdmin);
     params.put("userPositions", userPositionIds);
+    params.put("companyId", user.getCompanyId());
     List<ProjectProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProjectQuery.getEventsByProjectId, params, new ProjectProcessStepEventService.PpsEventMapper<>(ProjectProcessStepEvent.class, om));
 
       for(ProjectProcessStepEvent event: processStepEvents){

@@ -734,7 +734,12 @@ const router = new Router({
                       return accessDenied()
                     }
                   },
-                }
+                },
+                {
+                  path: 'messageTypes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "states" */ './views/flow/settings/MessageTypes.vue'),
+                },
               ]
             }, {
               path: 'postalCodes',

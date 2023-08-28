@@ -175,6 +175,7 @@ public class ProcessStepActionQuery {
                                                              dfp.data_type_id as "dataTypeId",
                                                              dfp.id as "dbFunctionParamId",
                                                              dfp.description,
+                                                             dfp.nullable,
                                                              apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                              apdv.dynamic_value as "dynamicValue"
                                                       from flow.db_function_param dfp
@@ -434,7 +435,16 @@ public class ProcessStepActionQuery {
   //language=PostgreSQL
   public final static String addChildFunctionToAction = """
     insert into flow.process_step_action_company_function (process_step_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-        values (:processStepActionId, :companyFunctionId, :displayOrder, :createdById, now(), :createdById, now())
+        values (:processStepActionId, :companyFunctionId, (COALESCE((SELECT MAX(display_order) + 1 FROM flow.process_step_action_company_function psacf where psacf.process_step_action_id = :processStepActionId and psacf.archived is false), 1)), :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String updateChildFunctionOrder = """
+    update flow.process_step_action_company_function
+        set display_order = :displayOrder,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+      where id = :id
         """;
 
   //language=PostgreSQL
@@ -459,6 +469,7 @@ public class ProcessStepActionQuery {
                                        dfp.data_type_id as "dataTypeId",
                                        dfp.id as "dbFunctionParamId",
                                        dfp.description,
+                                       dfp.nullable,
                                        apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                        apdv.dynamic_value as "dynamicValue"
                                 from flow.db_function_param dfp
@@ -532,6 +543,7 @@ public class ProcessStepActionQuery {
           dfp.data_type_id as "dataTypeId",
           dfp.id as "dbFunctionParamId",
           dfp.description,
+          dfp.nullable,
           apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
           apdv.dynamic_value as "dynamicValue"
         from flow.db_function_param dfp
@@ -549,6 +561,7 @@ public class ProcessStepActionQuery {
                 select dfp.data_type_id as "dataTypeId",
                        dfp.parameter_type_id as "parameterTypeId",
                        dfp.display_order as "displayOrder",
+                       dfp.nullable,
                        ppscfv.text_value as "textValue",
                        ppscfv.date_value as "dateValue",
                        ppscfv.timestamp_value as "timestampValue",

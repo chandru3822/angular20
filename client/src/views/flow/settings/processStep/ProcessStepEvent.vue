@@ -488,10 +488,17 @@
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="action.childFunctions && action.childFunctions.length > 0">
                   <v-col cols="12" class="pt-0">
+                    <draggable v-model="action.childFunctions" v-if="action.childFunctions && action.childFunctions.length > 0"
+                               :disabled="!userCanEdit"
+                               group="customFields" @start="drag=true" @end="drag=false"
+                               @change="saveChildFunctionOrder(action.id, action.childFunctions)">
                     <v-list v-for="(cp, index) in filterBy(action.childFunctions, false, 'archived')"
                             :key="index"
                             :class="{ 'shaded-row': index % 2 }">
-                      <v-list-item>
+                      <v-list-item class="grab">
+                        <v-list-item-action>
+                          <v-icon v-if="userCanEdit">drag_handle</v-icon>
+                        </v-list-item-action>
                         <v-list-item-content class="text-left">
                           <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
                           <div class="mt-2"
@@ -627,6 +634,7 @@
                         </v-dialog>
                       </v-list-item>
                     </v-list>
+                    </draggable>
                   </v-col>
                 </v-row>
               </div>
@@ -864,6 +872,7 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
+import draggable from 'vuedraggable'
 import {
   getRequest,
   deleteRequest,
@@ -883,6 +892,7 @@ export default {
   name: 'ProcessStepEvent',
   mixins: [Vue2Filters.mixin],
   components: {
+    draggable,
     ConfirmationDialog,
     ProcessStepRequirements,
     ProcessStepWorkQueueTypes
@@ -1032,6 +1042,35 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    async saveChildFunctionOrder(actionId, childFns) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let fnsToSave = []
+        childFns.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            fnsToSave.push(f)
+          }
+        })
+
+        // save them here
+        if (fnsToSave.length > 0) {
+          await putRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Function Order Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Function Order')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+
+    },
     changeBooleanValue(e, fp) {
       this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
     },

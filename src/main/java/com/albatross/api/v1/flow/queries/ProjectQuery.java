@@ -491,6 +491,7 @@ select
                          FROM flow.white_listed_position wlp
                          WHERE wlp.white_list_type_id = 17
                            AND wlp.archived is not true
+                           and wlp.company_id = :companyId
                            and wlp.event_id = e.id) wlp), '[]') AS "eventHiddenWhiteListedPositions"
       from flow.project p
              inner join flow.project_process_step pps on pps.project_id = p.id
@@ -516,6 +517,7 @@ select
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
                                                and wlp2.archived is not true
+                                               and wlp2.company_id = :companyId
                                                and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
             )
             when e.hidden and :systemAdmin::boolean is false and not e.hidden_allow
@@ -523,12 +525,14 @@ select
                       then case when ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
+                                               and wlp2.company_id = :companyId
                                                and wlp2.archived is not true
                                          limit 1
             ) is null then true
                        else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
+                                               and wlp2.company_id = :companyId
                                                and wlp2.archived is not true
                                          limit 1
             ) end
@@ -836,6 +840,7 @@ where contact_id = :contactId
                                                                                      FROM flow.white_listed_position wlp
                                                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                                        AND wlp.white_list_type_id = 2
+                                                                                       AND wlp.company_id = :companyId
                                                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                             FROM flow.custom_field_group_assignment cfga
                                                                    inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
@@ -892,6 +897,7 @@ where contact_id = :contactId
            cpst.project_status_type_id,
            cpst.project_status_type,
            cpst.company_id,
+           cpst.icon_tag,
            cpst.display_order,
            cpst.description,
            cpst.is_milestone,

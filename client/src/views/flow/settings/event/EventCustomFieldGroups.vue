@@ -275,21 +275,48 @@
                 <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2}">
                   <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                     <h3 class="text-left">Add New Field</h3>
-                    <!--                    <v-radio-group v-model="newFieldType"-->
-                    <!--                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">-->
-                    <!--                      <v-radio label="Native Field"-->
-                    <!--                               value="native"></v-radio>-->
-                    <!--                      <v-radio label="Reference Field: viewed only from process steps or other object types"-->
-                    <!--                               value="ancillary"></v-radio>-->
-                    <!--                    </v-radio-group>-->
+                    <v-radio-group v-model="newFieldType"
+                                   @change="fetchAvailableCustomFields(item.companyObjectTypeId, item.id)">
+                      <v-radio label="Native Field"
+                               value="native"></v-radio>
+                      <v-radio label="Reference Field: viewed only from process steps or other object types"
+                               value="ancillary"></v-radio>
+                    </v-radio-group>
 
                     <v-autocomplete v-model="newField"
+                                    v-if="newFieldType === 'native'"
                                     :items="availableCustomFields"
                                     label="New Custom Field"
                                     item-text="fieldName"
                                     return-object
                                     autocomplete="off"
                                     @input="assignCustomField(item)"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.fieldName }}
+                      </template>
+                    </v-autocomplete>
+                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    v-model="parent"
+                                    :items="parentObjects"
+                                    label="Parent Object"
+                                    item-text="name"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="loadFieldsByParent"
+                    >
+                      <template slot='item' slot-scope='{ item }'>
+                        {{ item.name }}
+                      </template>
+                    </v-autocomplete>
+                    <v-autocomplete v-if="newFieldType === 'ancillary'"
+                                    v-model="selectedAncillaryField"
+                                    :items="ancillaryCustomFields"
+                                    label="Custom Field"
+                                    item-text="fieldName"
+                                    return-object
+                                    autocomplete="off"
+                                    @input="assignAncillaryCustomField(item)"
                     >
                       <template slot='item' slot-scope='{ item }'>
                         {{ item.fieldName }}
@@ -314,11 +341,22 @@
                             <v-icon v-if="userCanEdit">drag_handle</v-icon>
                           </v-list-item-action>
                           <v-list-item-content>
-                            <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.fieldName }} </a><span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId">
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{ cf.fieldName }} </a>
+                            </div>
+                            <div v-else>
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.fieldName }} </a>
+                              <span v-if="cf.customFieldGroupAssignmentReadOnly || cf.systemReadonly">(Read Only)</span>
+                            </div>
                             <div>
                               Detail View:
-                              <input :disabled="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.detailView"
+                              <input :disabled="!userCanEdit" :readonly="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.detailView"
                                      @input="saveDetailView(cf)">
+                            </div>
+                            <div v-if="cf.ancillaryCustomFieldGroupAssignmentId && cf.processStepName">
+                              Use Parent Data:
+                              <input :disabled="!userCanEdit" :readonly="!userCanEdit" type="checkbox" class="ml-2" v-model="cf.useParentData"
+                                     @input="saveUseParentData(cf)">
                             </div>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
@@ -446,7 +484,7 @@
                 v-if="cfgToDisplayOnSnippet"
                 label="Custom Field"
                 v-model="cfToDisplayOnSnippet"
-                :items="cfgToDisplayOnSnippet.customFields"
+                :items="nonAncillaryGfgFields(cfgToDisplayOnSnippet.customFields)"
                 item-text="fieldName"
                 item-value="id"
                 return-object
@@ -492,7 +530,7 @@ import {
   deleteRequest,
   postRequest,
   getRequestWithParams,
-  getSnackbar
+  getSnackbar, handleHidingGlobalLoader
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import Sortable from "sortablejs";
@@ -628,6 +666,9 @@ export default {
     await this.getEvent()
   },
   methods: {
+    nonAncillaryGfgFields(fields) {
+      return fields.filter(f => !f.ancillaryCustomFieldGroupAssignmentId)
+    },
     async getResourceFields() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -949,6 +990,10 @@ export default {
         if (this.parent.isProcessStep) {
           const {data} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
           this.ancillaryCustomFields = data
+        } else if (this.parent.objectTypeId === 8) {
+          const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
+          this.ancillaryCustomFields = data
+          handleHidingGlobalLoader(this, status)
         } else {
           const {data} = await getRequest(`/customField/getByParentType/${this.parent.id}`)
           this.ancillaryCustomFields = data
@@ -962,6 +1007,8 @@ export default {
       }
     },
     async saveUseParentData(field) {
+      //because of the dim dam dumb dom i have to flip the boolean before I save it
+      field.useParentData = !field.useParentData
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         await putRequest(`/customFieldGroup/saveUseParentData`, field)
@@ -1061,6 +1108,8 @@ export default {
           customFieldGroupId: cfg.id,
           id: null,
           ancillaryCustomFieldGroupAssignmentId: this.selectedAncillaryField.customFieldGroupAssignmentId,
+          dataViewFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId ? null : this.selectedAncillaryField.dataViewFieldConfigId,
+          dataViewChildFieldConfigId: this.selectedAncillaryField.dataViewChildFieldConfigId,
           fieldOrder: 0
         }
         const {data} = await postRequest(`/customFieldGroup/addFieldToGroup`, params)

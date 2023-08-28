@@ -161,8 +161,8 @@
                         @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
                         :details="overviewDetails"
           ></PageOverview>
-          <v-divider class="mt-4"></v-divider>
-          <v-toolbar color="transparent" flat>
+          <v-divider></v-divider>
+          <v-toolbar color="transparent" class="pr-1" flat>
             <div class="headline-small">Associated Projects</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -210,9 +210,13 @@
                   </v-btn>
                 </v-card>
               </v-menu>
+              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
+                <v-icon v-else>mdi-chevron-down</v-icon>
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
-          <div class="mx-2">
+          <div class="mx-2" v-if="sectionExpanded">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
                     :to="`/project/${p.id}/details`">
@@ -222,6 +226,7 @@
 
             </v-card>
           </div>
+          <v-divider></v-divider>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned scrollable show-xs mobile-padding-menu">
@@ -549,6 +554,7 @@ export default {
       countries: [],
       showEditModal: false,
       contact: {},
+      sectionExpanded: true,
       getStatusClass,
       formatPhoneNumber,
       requiredRules: constants.BASIC_REQUIRED_RULE,

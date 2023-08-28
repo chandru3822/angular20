@@ -46,10 +46,12 @@ public class EventService {
   }
 
   public Event getEvent(Long id) {
+    User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("companyId", user.getCompanyId());
     Event e = sqlCache.getBySql(EventQuery.get, params, new EventMapper<>(Event.class, om)).orElse(null);
-    return sqlCache.getBySql(EventQuery.get, params, new EventMapper<>(Event.class, om)).orElse(null);
+    return e;
   }
 
   public void saveHiddenAndWhiteList(Event event, Boolean positionsChanged){

@@ -26,7 +26,12 @@ public class ProcessStepEventController {
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepEvent> getStepEvents (@PathVariable Long stepId) {
-    return processStepEventService.getStepEvents(stepId);
+    return processStepEventService.getStepEvents(stepId, false);
+  }
+
+  @GetMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepEvent> getStepEventsForAdminScreen (@PathVariable Long stepId) {
+    return processStepEventService.getStepEvents(stepId, true);
   }
 
   @GetMapping(value = "/{psEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -121,6 +126,12 @@ public class ProcessStepEventController {
   public ProcessStepEventActionChildFunction addChildFunctionToAction(@PathVariable Long actionId,
                                                                       @RequestBody ProcessStepEventActionChildFunction child) {
     return processStepEventService.addChildFunctionToAction(actionId, child);
+  }
+
+  @PutMapping(value = "/{eventId}/action/{actionId}/updateChildFunctionOrder", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateChildFunctionOrder(@PathVariable Long actionId,
+                                       @RequestBody List<ProcessStepEventActionChildFunction> childFns) {
+    processStepEventService.updateChildFunctionOrder(actionId, childFns);
   }
 
   @DeleteMapping(value = "/{eventId}/action/{actionId}/deleteChildFunction/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

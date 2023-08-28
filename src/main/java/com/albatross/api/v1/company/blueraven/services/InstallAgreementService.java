@@ -29,10 +29,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -307,9 +304,15 @@ public class InstallAgreementService {
         }
       } else if (loanType.toLowerCase().contains("sunpower")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
-
+        final HashSet<Long> betaUserIds = new HashSet<>(Arrays.asList(2419024L, 2354009L, 2413520L, 2424722L, 2393253L, 2354854L, 2377753L, 2356764L));
         try {
-          return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
+          User user = securityService.getCurrentUser();
+          if (betaUserIds.contains(user.trueUserId())) {
+            return sunpowerService.openDolphinLoanApp(propLogDetail.get());
+          }
+          else {
+            return sunpowerService.saveLoanFields(propLogDetail.get(), projectId, proposalNbr, sendVia, false);
+          }
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }
@@ -484,7 +487,18 @@ public class InstallAgreementService {
       state,
       zip,
       phone,
-      fullName;
+      fullName,
+      storageSizeKwh,
+      systemSize,
+      projectStreet1,
+      projectStreet2,
+      projectCity,
+      projectState,
+      projectZipCode,
+      inverterCustomGetting,
+      panel,
+      panelWattage,
+      storageBrand;
   }
 
   @Data
