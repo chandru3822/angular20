@@ -70,6 +70,17 @@
               item-text="dataType"
               item-value="id"
             ></v-select>
+            <div v-if="newParam.parameterTypeId != null && newParam.parameterTypeId !== 1">
+              <v-checkbox label="Nullable"
+                          class="default-text-color"
+                          v-model="newParam.nullable"
+              />
+              <v-textarea class="body-medium" hide-details
+                          auto-grow
+                          rows="4"
+                          label="Description"
+                          outlined v-model="newParam.description"/>
+            </div>
           </div>
           <v-btn :disabled="!newParam || !newParam.parameterName || ( newParam.parameterTypeId !== 1 && !newParam.dataTypeId)
                     || !newParam.parameterTypeId || (newParam.parameterTypeId === 1 && !newParam.systemValueId)"
@@ -88,6 +99,8 @@
             :items="dbFunction.dbFunctionParams"
             :fixed-header="true"
             hide-default-footer
+            single-expand
+            :expanded.sync="expanded"
             class="elevation-1 mt-3"
           >
             <template #no-data>
@@ -95,6 +108,33 @@
             </template>
             <template #no-results>
               <span class="default-text-color">No available params</span>
+            </template>
+
+            <template #expanded-item="{ headers, item }">
+              <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': dbFunction.dbFunctionParams.indexOf(item) % 2}">
+                <h3>Edit Param</h3>
+                <div class="mb-3">
+                  <v-text-field text label="Parameter Name"
+                                v-model="item.parameterName"
+                                hint="* This should be a UI friendly name"
+                                persistent-hint></v-text-field>
+                  <div v-if="item.parameterTypeId !== 1">
+                    <v-checkbox label="Nullable"
+                                class="default-text-color"
+                                v-model="item.nullable"
+                    />
+                    <v-textarea class="body-medium" hide-details
+                                auto-grow
+                                rows="4"
+                                label="Description"
+                                outlined v-model="item.description"/>
+                  </div>
+                </div>
+                <v-btn color="primary" class="white--text mr-2"
+                       @click="saveParam(item)">
+                  Save
+                </v-btn>
+              </td>
             </template>
 
             <template #item="{ item, index }">
@@ -113,6 +153,20 @@
                 </td>
                 <td class="text-left">
                   {{item.systemValue}}
+                </td>
+                <td class="text-left">
+                  <input type="checkbox" v-model="item.nullable" disabled readonly>
+                </td>
+                <td class="text-left">
+                  <pre class="app-pre-wrapper">
+                    {{item.description}}
+                  </pre>
+                </td>
+                <td>
+                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
                 </td>
               </tr>
             </template>
@@ -171,7 +225,7 @@
 
 <script>
   import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   export default {
@@ -187,6 +241,7 @@
         parameterTypes: [],
         systemValues: [],
         companies: [],
+        expanded: [],
         selectedCompanies: [],
         functionId: parseInt(this.$route.params.id),
         headers: [
@@ -194,7 +249,10 @@
           {text: 'Parameter Name', value: 'parameterName', show: true},
           {text: 'Data Type', value: 'dataType', show: true},
           {text: 'Parameter Type', value: 'parameterType', show: true},
-          {text: 'System Value', value: 'systemValue', show: true}
+          {text: 'System Value', value: 'systemValue', show: true},
+          {text: 'Nullable', value: 'nullable', show: true},
+          {text: 'Description', value: 'description', show: true},
+          {text: '', value: 'icons', show: true},
         ],
         breadcrumbs: [
           {
@@ -211,6 +269,9 @@
       this.getCompanies()
     },
     methods: {
+      blah(item) {
+        this.$set(item, 'edit', true)
+      },
       async getFunction() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -265,6 +326,19 @@
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
+        }
+      },
+      async saveParam(item) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await putRequest(`/dbFunction/param`, item)
+          this.expanded = []
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Saving Function Param')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async addParam() {

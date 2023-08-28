@@ -60,6 +60,7 @@ public class DbFunctionQuery {
                                   dfp.display_order as "displayOrder",
                                   dfp.system_value_id as "systemValueId",
                                   sv.system_value as "systemValue",
+                                  dfp.description,
                                   dfp.nullable,
                                   dfp.parameter_name as "parameterName",
                                   dfp.data_type_id as "dataTypeId",
@@ -100,9 +101,19 @@ public class DbFunctionQuery {
 
   //language=PostgreSQL
   public final static String insertParam = """
-    insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id)
-            values(:dbFunctionId, :parameterName, (select coalesce(max(display_order) + 1, 0) from flow.db_function_param where db_function_id = :dbFunctionId), :dataTypeId, :parameterTypeId, :systemValueId)
+    insert into flow.db_function_param(db_function_id, parameter_name, display_order, data_type_id, parameter_type_id, system_value_id, nullable, description)
+            values(:dbFunctionId, :parameterName, (select coalesce(max(display_order) + 1, 0) from flow.db_function_param where db_function_id = :dbFunctionId), :dataTypeId, :parameterTypeId, :systemValueId, :nullable, :description)
         """;
+
+
+  //language=PostgreSQL
+  public final static String updateParam = """
+    update flow.db_function_param
+    set description = :description,
+        parameter_name = :parameterName,
+        nullable = :nullable
+    where id = :parameterId
+  """;
 
   //language=PostgreSQL
   public final static String addToCompany = """
