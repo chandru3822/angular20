@@ -60,7 +60,6 @@ import static java.util.function.Predicate.not;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class BlueravenProposalService {
   private static final Long CREATE_PROPOSAL_DESIGN_ID = 3507L;

@@ -67,6 +67,7 @@
         <v-btn color="primary"
                dark
                class="mt-4 one-hunned text-capitalize font-weight-bold"
+               v-if="canEdit"
                @click="addProposal(d)">
           Create new proposal
         </v-btn>
@@ -109,17 +110,19 @@
         height="535"
         class="proposal-card request-new"
         :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
-        <v-btn text
-               :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
-               color="primary"
-               @click="handleNewRequest">
-          <v-icon :size="60">add</v-icon>
-        </v-btn>
-        <div class="mt-5 primary--text"
-             :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
-          Request New Design
-        </div>
 
+        <div v-if="canEdit">
+          <v-btn text
+                 :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
+                 color="primary"
+                 @click="handleNewRequest">
+            <v-icon :size="60">add</v-icon>
+          </v-btn>
+          <div class="mt-5 primary--text"
+               :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
+            Request New Design
+          </div>
+        </div>
         <div class="request-new-details grey--text text--darken-2" v-if="hasActiveDesign">
           <div>
             <router-link
@@ -286,6 +289,12 @@ export default {
     await this.getActiveDesign()
   },
   computed: {
+    canEdit() {
+      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+      const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
+      console.log({hasEdit, hasAdmin})
+      return hasAdmin || hasEdit
+    },
     hasActiveDesign() {
       return !!this.activeDesign?.projectId
     }

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -13,10 +14,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/proposal/versions")
 @RequiredArgsConstructor
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('PROPOSALS_ADMIN')")
 public class BlueravenProposalVersionController {
   private final ProposalVersionService proposalVersionService;
 
@@ -42,33 +45,33 @@ public class BlueravenProposalVersionController {
 
   @GetMapping(value = "/{id}/values/{objectCode}")
   public List<ProposalCustomValuesRow> getProposalCustomFieldsByObjectCode(
-      @PathVariable Long id, @PathVariable String objectCode) {
+    @PathVariable Long id, @PathVariable String objectCode) {
     return proposalVersionService.getProposalCustomFieldValues(id, objectCode);
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}")
   public Optional<ProposalCustomValuesRow> updateProposalCustomFieldsByObjectCode(
-      @PathVariable Long id,
-      @PathVariable String objectCode,
-      @Valid @RequestBody final ProposalCustomGroup group) {
+    @PathVariable Long id,
+    @PathVariable String objectCode,
+    @Valid @RequestBody final ProposalCustomGroup group) {
     return proposalVersionService.updateCustomFieldValue(id, objectCode, group);
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}/reset")
   public List<ProposalCustomValuesRow> undoChangesToProposalObject(
-      @PathVariable Long id, @PathVariable String objectCode) {
+    @PathVariable Long id, @PathVariable String objectCode) {
     return proposalVersionService.resetProposalVersionByCustomFieldByObjectCode(id, objectCode);
   }
 
   @DeleteMapping(value = "/{id}/values/{objectCode}/{groupUUID}")
   public Optional<ProposalCustomValuesRow> deleteCustomFieldGroup(
-      @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
+    @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
     return proposalVersionService.deleteCustomFieldGroup(id, objectCode, groupUUID);
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}/{groupUUID}/archive")
   public Optional<ProposalCustomValuesRow> archiveCustomFieldGroup(
-      @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
+    @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
     return proposalVersionService.archiveCustomFieldGroup(id, objectCode, groupUUID);
   }
 
@@ -79,7 +82,7 @@ public class BlueravenProposalVersionController {
 
   @GetMapping(value = "/fields/{objectCode}")
   public List<ProposalFieldObjectType> getProposalCustomFieldsByObjectCode(
-      @PathVariable(name = "objectCode") String objectCode) {
+    @PathVariable(name = "objectCode") String objectCode) {
     return proposalVersionService.getProposalFieldsByObjectCode(objectCode);
   }
 }
