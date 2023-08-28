@@ -68,6 +68,11 @@ public class DbFunctionController {
     return dbFunctionService.insertDbFunctionParam(dbFunctionParam);
   }
 
+  @PutMapping(value = "/param", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateDbFunctionParam (@RequestBody DbFunctionParam dbFunctionParam) {
+    dbFunctionService.updateDbFunctionParam(dbFunctionParam);
+  }
+
   @Data
   public static class AddToCompanyRequest extends DbFunction {
     private List<Long> selectedCompanyIds;
