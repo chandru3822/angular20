@@ -45,6 +45,11 @@ import constants from '@/helpers/constants'
             label: 'Email',
             path: `/settings/company/email`,
             display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+          },
+          {
+            label: 'Message Types',
+            path: `/settings/company/messageTypes`,
+            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
           }
         ]
       }

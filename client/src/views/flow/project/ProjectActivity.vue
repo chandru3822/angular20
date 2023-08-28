@@ -254,7 +254,7 @@
           </div>
         </div>
       </div>
-      <div v-else>
+      <div v-else-if="selectedOption === 2">
         <div class="headline-small mobile-contact-header"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Documents</div>
         <div style="width: 168px;" class="mr-2 mobile-content-padding">
 
@@ -385,17 +385,25 @@ export default {
     // whenever userImage changes, this function will run
     '$route.params.projectId': function() {
       this.projectId = parseInt(this.$route.params.projectId) || null
-      this.fetchTeamsForUser()
       this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab ? 1 : this.$store.state.project.selectedTab)
+      if(this.selectedOption === 0) {
+        this.fetchTeamsForUser()
+      }
     },
     '$route.params.userId': function() {
       this.userId = parseInt(this.$route.params.userId) || null
-      this.fetchTeamsForUser()
       this.selectedOption = this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.user.selectedTab ? 1 : this.$store.state.user.selectedTab)
+      if(this.selectedOption === 0) {
+        this.fetchTeamsForUser()
+      }
     },
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
-    }, 800)
+    }, 800),
+    selectedOption: function() {
+      console.log('option changed to:', this.selectedOption)
+      this.handlePageLoad()
+    }
   },
   data() {
     return {
@@ -424,12 +432,7 @@ export default {
     }
   },
   created() {
-    if (this.userCanViewSms) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.fetchTeamsForUser()
-      this.getAvailableTeams()
-      this.$store.commit(AppMutations.SET_LOADING, false)
-    }
+    this.handlePageLoad()
   },
   computed: {
     objectTypeId() {
@@ -471,6 +474,19 @@ export default {
     }
   },
   methods: {
+    handlePageLoad() {
+      //dont load the sms stuff if they aren't on the sms tab
+      if (this.userCanViewSms && this.selectedOption === 0) {
+        this.handleSmsLoad()
+      }
+    },
+    handleSmsLoad() {
+        //i dont think we should show the global spinner when the side section is loading
+      // this.$store.commit(AppMutations.SET_LOADING, true)
+      this.fetchTeamsForUser()
+      this.getAvailableTeams()
+      // this.$store.commit(AppMutations.SET_LOADING, false)
+    },
     closeRight() {
       this.$emit('closeRight')
     },
@@ -526,15 +542,15 @@ export default {
       if(this.showSmsTab) {
         try {
           this.conversationIsLoading = true
-          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`, null, [])
+          // this.$store.commit(AppMutations.SET_LOADING, false)
           this.teamsAssociatedToUser = data
 
           if (data != null && data.length > 0) {
             this.userHasTeam = true
             this.teamNamesAssociatedToUser = this.teamsAssociatedToUser.map(team => team.teamName)
           }
-          handleHidingGlobalLoader(this, status)
+          // handleHidingGlobalLoader(this, status)
           await this.loadConversation()
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -560,7 +576,7 @@ export default {
               })
             }
           })
-          handleHidingGlobalLoader(this, status)
+          // handleHidingGlobalLoader(this, status)
           this.conversationIsLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -594,17 +610,17 @@ export default {
       }
     },
     async getAvailableTeams() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const { data, status } = await getRequest(`/smsTeam/users`)
         if (data) {
           this.selectableTeams = data
         }
-        handleHidingGlobalLoader(this, status)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // handleHidingGlobalLoader(this, status)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
         this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }

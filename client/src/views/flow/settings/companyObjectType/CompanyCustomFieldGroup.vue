@@ -45,9 +45,11 @@
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
                         <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                               v-on="on">
+                          <v-icon>mdi-information</v-icon>
+                        </v-btn>
                       </template>
-                      <span>Custom Field Group Id: {{item.id}}</span>
+                      <span>Custom Field Group Id: {{ item.id }}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
                     <div v-if="userCanEdit" class="flex-display">
@@ -194,24 +196,24 @@
                             </label>
                           </div>
 
-                          <div  v-if="objectType.allowConditional">
+                          <div v-if="objectType.allowConditional">
                             <label>
                               <input type="checkbox" v-model="cf.hasConditionalOnId"
                                      :disabled="!userCanEdit" @change="saveConditionalField(cf)"/>
                               Conditional On
                             </label>
                             <v-select v-model="cf.conditionalOnId"
-                                      v-if="cf.hasConditionalOnId"
-                                      :items="filterAvailableCustomFields(cf, item)"
-                                      item-value="customFieldGroupAssignmentId"
-                                      item-text="fieldName"
-                                      placeholder="Choose a field"
-                                      @change="saveConditionalField(cf)"
+                              v-if="cf.hasConditionalOnId"
+                              :items="filterAvailableCustomFields(cf)"
+                              item-value="customFieldGroupAssignmentId"
+                              item-text="fieldName"
+                              placeholder="Choose a field"
+                              @change="saveConditionalField(cf)"
                             />
                           </div>
 
                           <div>
-                            <div  v-if="objectType.allowReadonly">
+                            <div v-if="objectType.allowReadonly">
                               <label>
                                 <input type="checkbox" v-model="cf.customFieldGroupAssignmentReadOnly"
                                        :disabled="!userCanEdit" @change="saveReadOnlyAndWhiteList(cf)"/>
@@ -262,16 +264,16 @@
                                 </v-autocomplete>
 
                                 <v-btn color="primary" dark class="d-inline-block white--text"
-                                     @click="saveReadOnlyAndWhiteList(cf)">
-                                <v-icon class="mr-2">save</v-icon>
-                                Save Read Only
-                              </v-btn>
+                                       @click="saveReadOnlyAndWhiteList(cf)">
+                                  <v-icon class="mr-2">save</v-icon>
+                                  Save Read Only
+                                </v-btn>
                               </div>
                             </div>
                           </div>
 
                           <div>
-                            <div  v-if="objectType.allowHidden">
+                            <div v-if="objectType.allowHidden">
                               <label>
                                 <input type="checkbox" v-model="cf.customFieldGroupAssignmentHidden"
                                        :disabled="!userCanEdit" @change="saveHiddenAndWhiteList(cf)"/>
@@ -322,10 +324,10 @@
                                 </v-autocomplete>
 
                                 <v-btn color="primary" dark class="white--text d-inline-block"
-                                     @click="saveHiddenAndWhiteList(cf)">
-                                <v-icon class="mr-2">save</v-icon>
-                                Save Hidden
-                              </v-btn>
+                                       @click="saveHiddenAndWhiteList(cf)">
+                                  <v-icon class="mr-2">save</v-icon>
+                                  Save Hidden
+                                </v-btn>
                               </div>
                             </div>
                           </div>
@@ -344,7 +346,7 @@
                                           label="Maximum Value"
                                           @change="changedMinMax(cf)"
                                           :disabled="!userCanEdit"
-                                          v-model.number="cf.maxValue" />
+                                          v-model.number="cf.maxValue"/>
                             <v-btn text color="primary" @click="saveMinMax(cf)"
                                    :disabled="!cf.minMaxValueChanged">
                               <v-icon>save</v-icon>
@@ -353,10 +355,13 @@
                         </v-list-item-content>
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
-                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                            <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)"
+                                   v-bind="attrs"
+                                   v-on="on">
+                              <v-icon>mdi-information</v-icon>
+                            </v-btn>
                           </template>
-                          <span>Custom Field Group Assignment Id: {{cf.customFieldGroupAssignmentId}}</span>
+                          <span>Custom Field Group Assignment Id: {{ cf.customFieldGroupAssignmentId }}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
                         <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" small text
@@ -462,7 +467,7 @@ export default {
       columnChangeCount: 0,
       count: 0,
       numberValues: [
-       undefined, 'One', 'Two', 'Three', 'Four'
+        undefined, 'One', 'Two', 'Three', 'Four'
       ],
       positions: [],
       positionsLoading: false,
@@ -824,17 +829,17 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    filterAvailableCustomFields(current, item) {
-      return item.customFields?.filter(cf => {
-        return !cf.archived && cf.id !== current.id
-      })
+    filterAvailableCustomFields(current) {
+      return this.customFieldGroups.flatMap(g => g.customFields)
+        .filter(cf => !cf.archived)
+        .filter(cf => cf.id !== current.id)
     },
-    async saveReadOnlyAndWhiteList (field) {
+    async saveReadOnlyAndWhiteList(field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList`, field, 'blueraven')
         field.positionsChanged = false
-        if(!field.customFieldGroupAssignmentReadOnly) {
+        if (!field.customFieldGroupAssignmentReadOnly) {
           this.$set(field, 'whiteListedPositions', [])
         }
         this.snackbar = getSnackbar('SUCCESS', 'Field Updated')
@@ -863,13 +868,13 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    selectAll (f, attr) {
+    selectAll(f, attr) {
       return f[attr]?.length === this.positions?.length
     },
-    selectSome (f, attr) {
+    selectSome(f, attr) {
       return f[attr]?.length > 0 && !this.selectAll(f, attr)
     },
-    icon (f, attr = 'whiteListedPositions') {
+    icon(f, attr = 'whiteListedPositions') {
       if (this.selectAll(f, attr)) {
         return 'check_box'
       }
@@ -879,7 +884,7 @@ export default {
       return 'check_box_outline_blank'
     },
     async getPositions() {
-      if(this.positions?.length === 0) {
+      if (this.positions?.length === 0) {
         try {
           this.positionsLoading = true
           const {data, status} = await getRequest(`/position/withParent`)
@@ -895,16 +900,16 @@ export default {
         }
       }
     },
-    toggleSelectAllPositions (field, attr = 'whiteListedPositions') {
-      if (this.selectAll(field, attr)){
+    toggleSelectAllPositions(field, attr = 'whiteListedPositions') {
+      if (this.selectAll(field, attr)) {
         this.$set(field, attr, [])
-      }else {
+      } else {
         this.$set(field, attr, cloneDeep(this.positions))
       }
       this.$set(field, 'positionsChanged', true) //todo change to use the 'attr'
 
     },
-    copyToClipBoard(textValue){
+    copyToClipBoard(textValue) {
       navigator.clipboard.writeText(textValue);
       this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

@@ -25,6 +25,9 @@ public class ApiApplication {
   public static TimeZone TIMEZONE = TimeZone.getTimeZone("UTC");
 
   public static void main(String[] args) {
+    //don't show annoying message about the graaljs polyglot engine being in interpreter mode
+    System.setProperty("polyglot.engine.WarnInterpreterOnly", "false");
+
     TimeZone.setDefault(TIMEZONE);
     DateTimeZone.setDefault(DateTimeZone.forTimeZone(TIMEZONE));
     SpringApplication.run(ApiApplication.class, args);

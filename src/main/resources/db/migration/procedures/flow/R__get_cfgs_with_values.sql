@@ -174,7 +174,8 @@ from flow.custom_field_group_assignment native_cfga
 where native_cfga.archived is false
   and native_cot.company_id = p_company_id
   and case
-        when p_object_type_id = 1 then native_cot.object_type_id = 1
+        when p_object_type_id = 1 and p_secondary_id is null then native_cot.object_type_id = 1
+        when p_object_type_id = 1 and p_secondary_id is not null then native_cot.object_type_id = 1 and native_cfg.company_object_type_tab_id = p_secondary_id
         when p_object_type_id = 2 then native_cot.object_type_id = 2
         when p_object_type_id = 3 then native_cot.object_type_id = 3
         when p_object_type_id = 4 then (native_cot.object_type_id = 4 and native_cfg.process_step_id =
@@ -331,28 +332,28 @@ set id              = case
                         when original_rows.ancillary_object_type_id = 2 then ancillary_contact_cfv.int_array_value
                         when original_rows.ancillary_object_type_id = 4 then ancillary_ppscfv.int_array_value end
   from cfvs original_rows
-                 left join flow.project_process_step ancillary_pps on ancillary_pps.project_id = original_rows.project_id and
-  ancillary_pps.process_step_id =
-  original_rows.ancillary_process_step_id and
-  ancillary_pps.archived is false
-  and case
-  when original_rows.use_parent_data is true then ancillary_pps.id = (select id
-  from flow.pps_parent_hierarchy(
-  p_source_id,
-  original_rows.ancillary_custom_field_group_assignment_id))
-  else ancillary_pps.main is true end
-                 left join flow.project_process_step_custom_field_value ancillary_ppscfv
-                           on ancillary_ppscfv.custom_field_group_assignment_id =
-                              original_rows.ancillary_custom_field_group_assignment_id and
-                              ancillary_ppscfv.project_process_step_id = ancillary_pps.id
-                 left join flow.project_custom_field_value ancillary_project_cfv
-                           on ancillary_project_cfv.custom_field_group_assignment_id =
-                              original_rows.ancillary_custom_field_group_assignment_id and
-                              ancillary_project_cfv.project_id = original_rows.project_id
-                 left join flow.contact_custom_field_value ancillary_contact_cfv
-                           on ancillary_contact_cfv.custom_field_group_assignment_id =
-                              original_rows.ancillary_custom_field_group_assignment_id and
-                              ancillary_contact_cfv.contact_id = original_rows.contact_id
+ left join flow.project_process_step ancillary_pps on ancillary_pps.project_id = original_rows.project_id and
+                  ancillary_pps.process_step_id =
+                  original_rows.ancillary_process_step_id and
+                  ancillary_pps.archived is false
+                  and case
+                  when original_rows.use_parent_data is true then ancillary_pps.id = (select id
+                                                      from flow.pps_parent_hierarchy(
+                                                      p_source_id,
+                                                      original_rows.ancillary_custom_field_group_assignment_id))
+                  else ancillary_pps.main is true end
+ left join flow.project_process_step_custom_field_value ancillary_ppscfv
+           on ancillary_ppscfv.custom_field_group_assignment_id =
+              original_rows.ancillary_custom_field_group_assignment_id and
+              ancillary_ppscfv.project_process_step_id = ancillary_pps.id
+ left join flow.project_custom_field_value ancillary_project_cfv
+           on ancillary_project_cfv.custom_field_group_assignment_id =
+              original_rows.ancillary_custom_field_group_assignment_id and
+              ancillary_project_cfv.project_id = original_rows.project_id
+ left join flow.contact_custom_field_value ancillary_contact_cfv
+           on ancillary_contact_cfv.custom_field_group_assignment_id =
+              original_rows.ancillary_custom_field_group_assignment_id and
+              ancillary_contact_cfv.contact_id = original_rows.contact_id
         where original_rows.custom_field_group_assignment_id = new_data.custom_field_group_assignment_id
           and original_rows.ancillary_custom_field_group_assignment_id is not null;
     elseif p_object_type_id = 6 then --project_process_step_event
@@ -411,21 +412,24 @@ set id              = case
                         when original_rows.ancillary_object_type_id = 2 then ancillary_contact_cfv.int_array_value
                         when original_rows.ancillary_object_type_id = 4 then ancillary_ppscfv.int_array_value end
   from cfvs original_rows
-                 left join flow.project_process_step ancillary_pps
-on ancillary_pps.process_step_id = original_rows.ancillary_process_step_id and
-  ancillary_pps.project_id = original_rows.project_id
+  left join flow.project_process_step ancillary_pps
+        on ancillary_pps.process_step_id = original_rows.ancillary_process_step_id and
+          ancillary_pps.project_id = original_rows.project_id and
+           ancillary_pps.archived is false
+        and case when original_rows.use_parent_data is true then ancillary_pps.id = ( select ppse.project_process_step_id from flow.project_process_step_event ppse where ppse.id = p_source_id)
+            else ancillary_pps.main end
   left join flow.project_process_step_custom_field_value ancillary_ppscfv
-  on ancillary_ppscfv.custom_field_group_assignment_id =
-  original_rows.ancillary_custom_field_group_assignment_id and
-  ancillary_ppscfv.project_process_step_id = ancillary_pps.id
+    on ancillary_ppscfv.custom_field_group_assignment_id =
+    original_rows.ancillary_custom_field_group_assignment_id and
+    ancillary_ppscfv.project_process_step_id = ancillary_pps.id
   left join flow.project_custom_field_value ancillary_project_cfv
-  on ancillary_project_cfv.custom_field_group_assignment_id =
-  original_rows.ancillary_custom_field_group_assignment_id and
-  ancillary_project_cfv.project_id = original_rows.project_id
+    on ancillary_project_cfv.custom_field_group_assignment_id =
+    original_rows.ancillary_custom_field_group_assignment_id and
+    ancillary_project_cfv.project_id = original_rows.project_id
   left join flow.contact_custom_field_value ancillary_contact_cfv
-  on ancillary_contact_cfv.custom_field_group_assignment_id =
-  original_rows.ancillary_custom_field_group_assignment_id and
-  ancillary_contact_cfv.contact_id = original_rows.contact_id
+    on ancillary_contact_cfv.custom_field_group_assignment_id =
+    original_rows.ancillary_custom_field_group_assignment_id and
+    ancillary_contact_cfv.contact_id = original_rows.contact_id
 where original_rows.custom_field_group_assignment_id = new_data.custom_field_group_assignment_id
   and original_rows.ancillary_custom_field_group_assignment_id is not null;
 elseif p_object_type_id = 7 then --attachments
@@ -664,6 +668,7 @@ FROM (select cfvs.id,
                              WHERE wlp.custom_field_group_assignment_id =
                                    cfvs.custom_field_group_assignment_id
                                AND wlp.white_list_type_id = 1
+                               AND wlp.company_id = p_company_id
                                AND wlp.archived is not true) wlp),
                       '[]')                                  AS "whiteListedPositions"
       from cfvs
@@ -682,6 +687,7 @@ FROM (select cfvs.id,
                                         cfvs.custom_field_group_assignment_id
                                     and wlp2.white_list_type_id = 2
                                     and wlp2.archived is not true
+                                    and wlp2.company_id = p_company_id
                                     and wlp2.position_id = any (p_user_position_ids::bigint[])
                                   limit 1)
                         when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
@@ -693,6 +699,7 @@ FROM (select cfvs.id,
                                       cfvs.custom_field_group_assignment_id
                                   and wlp2.white_list_type_id = 2
                                   and wlp2.archived is not true
+                                  and wlp2.company_id = p_company_id
                                   and wlp2.position_id = any (p_user_position_ids::bigint[])
                                 limit 1)), true)
                         else 1 = 1 end
@@ -779,6 +786,7 @@ FROM (select cfg.id,
                                                     WHERE wlp.custom_field_group_assignment_id =
                                                           cfvs.custom_field_group_assignment_id
                                                       AND wlp.white_list_type_id = 1
+                                                      and wlp.company_id = p_company_id
                                                       AND wlp.archived is not true) wlp),
                                              '[]')                                  AS "whiteListedPositions"
                              from cfvs
@@ -793,6 +801,7 @@ FROM (select cfg.id,
                                                    cfvs.custom_field_group_assignment_id
                                                and wlp2.white_list_type_id = 2
                                                and wlp2.archived is not true
+                                               and wlp2.company_id = p_company_id
                                                and wlp2.position_id = any (p_user_position_ids::bigint[])
                                              limit 1)
                                      when cfvs.custom_field_group_assignment_hidden and p_is_system_admin::boolean is false
@@ -804,6 +813,7 @@ FROM (select cfg.id,
                                                              cfvs.custom_field_group_assignment_id
                                                          and wlp2.white_list_type_id = 2
                                                          and wlp2.archived is not true
+                                                         and wlp2.company_id = p_company_id
                                                          and wlp2.position_id = any (p_user_position_ids::bigint[])
                                                        limit 1)), true)
                                                else 1 = 1 end
@@ -813,6 +823,7 @@ FROM (select cfg.id,
       where cot.object_type_id = p_object_type_id
         and cfg.archived is false
         and case
+              when p_object_type_id = 1 and p_secondary_id is not null then cfg.company_object_type_tab_id = p_secondary_id
               when p_object_type_id = 4 then cfg.process_step_id = (select pps.process_step_id
                                                                     from flow.project_process_step pps
                                                                     where pps.id = p_source_id)

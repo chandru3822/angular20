@@ -2,7 +2,7 @@ package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.controllers.ProjectController;
+import com.albatross.api.v1.flow.controllers.ProjectStatusTypeController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
@@ -111,6 +111,7 @@ public class ProjectStatusService {
     params.put("projectStatusType", status.getProjectStatusType());
     params.put("description", status.getDescription());
     params.put("isMilestone", status.getIsMilestone());
+    params.put("iconTag", status.getIconTag());
     params.put("companyId", currentUser.getCompanyId());
     Long id;
 
@@ -138,7 +139,7 @@ public class ProjectStatusService {
     return sqlCache.queryBySql(ProjectStatusQuery.getStatuses, Collections.emptyMap(), ProjectStatusType.class);
   }
 
-  public ResponseEntity<ProjectController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(Long id) {
+  public ResponseEntity<ProjectStatusTypeController.CannotDeleteProjectStatus> deleteCompanyProjectStatus(Long id) {
     User currentUser = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUserId", currentUser.trueUserId());
@@ -155,7 +156,7 @@ public class ProjectStatusService {
       return ResponseEntity.ok().build();
     }
     else {
-      ProjectController.CannotDeleteProjectStatus cannotDelete = new ProjectController.CannotDeleteProjectStatus();
+      ProjectStatusTypeController.CannotDeleteProjectStatus cannotDelete = new ProjectStatusTypeController.CannotDeleteProjectStatus();
       cannotDelete.setStatusInUseByProjects(statusInUseByProjects);
       cannotDelete.setStatusInUseByActions(statusInUseByActions);
       cannotDelete.setStatusInUseByEventRequirements(statusInUseByEventRequirements);

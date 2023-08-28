@@ -447,26 +447,35 @@ export default {
           ]
         }
 
+        //all custom fields from smartlists already had a dataTypeId, I changed the event default fields to pass back dataTypeId on the necessary columns
+        //process step default fields dont need it as they are treated differently
+        // 1 = date, 2 = timestamp, 4 = numeric, 6 = int
+
         this.customColumns = data?.headers || []
         this.customColumns.forEach(c => {
           this.headers.push({
             text: c.name,
             value: c.name,
             sort: (a, b) => {
+              //dataTypeId = 6 is an int
+              if ([4,6].includes(c.dataTypeId) ) {
+                return (a === null) - (b === null) || a - b
+              }
               //if it is a date, format the string as a date and sort by that value
               //without the .toString() this fails for numeric values
-              if ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
-                  || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b)))))) {
+              //this does a lot of extra checking we probably dont need now that we know the data type id of the column, but i am keeping it cuz i am not sure what it all does
+              else if ( [1,2].includes(c.dataTypeId) && ((null != a && a.toString().match(/^\d{4}-\d{2}-\d{2}/)) || (null != b && b.toString().match(/^\d{4}-\d{2}-\d{2}/))
+                  || ((null != a && !isNaN(Date.parse(a)) || (null != b && !isNaN(Date.parse(b))))))) {
                 //todo: keep an eye on if Date.parse returns false for regular numbers and such
                 //note: firefox doesn't support date formats with hyphens. only with /
-                return new Date(a.replace(/-/g, '/')) - new Date(b.replace(/-/g, '/'))
+
+                return ( null != a ? new Date(a.replace(/-/g, '/')) : a) - ( null != b ? new Date(b.replace(/-/g, '/')) : b )
               } else {
                 //otherwise sort normally
-                if (typeof a === 'number' || typeof b === 'number') {
-                  return (a === null) - (b === null) || a - b
-                } else {
-                  return null != a ? a.localeCompare(b) : a - b
-                }
+                //nulls were sorting super weird when the normal options had special characters in them, like '#BQ-1234', setting nulls to '' before sorting seems to fix that, plus saves some null checks for localeCompare
+                let newA = null == a ? '' : a.trim().toLowerCase()
+                let newB = null == b ? '' : b.trim().toLowerCase()
+                return newA.localeCompare(newB)
               }
             },
             show: true

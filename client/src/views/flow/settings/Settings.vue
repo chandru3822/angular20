@@ -26,7 +26,7 @@
           </template>
           <SettingsMenu class="pa-3" :title="title" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
         </v-menu>
-        <v-card v-else class=" left-menu square-card d-flex justify-space-between">
+        <v-card v-else class=" left-menu square-card d-flex">
           <SettingsMenu class="px-5 py-2 settings-container" :class="{'hidden': leftCollapsed}"></SettingsMenu>
           <v-btn small text color="primary" @click="collapseMenu" class="py-6">
             <v-icon>mdi-menu</v-icon>
@@ -272,6 +272,7 @@ export default {
 .settings-container {
   height: calc(100vh - 50px);
   max-width: 100vw;
+  flex-grow:2;
   @media (max-width: 960px) {
     width: 100vw;
   }
@@ -314,6 +315,14 @@ a {
   }
 
 }
+</style>
 
-
+<style lang="scss">
+.settings-container {
+  .v-menu__content.theme--light.menuable__content__active{
+    @media (max-width: 960px) {
+      max-height: calc(100vh - 110px);
+    }
+  }
+}
 </style>

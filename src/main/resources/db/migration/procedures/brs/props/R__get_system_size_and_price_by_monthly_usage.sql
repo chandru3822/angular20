@@ -117,6 +117,7 @@ BEGIN
   inner join flow.state s on s.abbreviation = p_state_abbrev
   where sapf.state_id = s.id;
 
+  drop table if exists proposal_value;
   create table proposal_value as
   with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
                                                                                                        proposal_group_uuid,
@@ -333,15 +334,14 @@ BEGIN
       v_total_cost_25_years - ((v_remaining_mon_electric_bill_25_year_average_115 * 12 * 25) +
                                v_total_system_cost_115_offset_low_month_pmt ) + v_federal_tax_incentive_amount_115_low_mon_pay;
 
-
   return query
     select v_average_production_factor,
            v_utility_rate_kwh,
            round(v_monthly_usage_kwh),
            round(v_annual_usage_kwh),
-           round(v_system_size_kw_100_percent_offset),
-           round(v_system_size_kw_85_percent_offset),
-           round(v_system_size_kw_115_percent_offset),
+           round(v_system_size_kw_100_percent_offset, 1),
+           round(v_system_size_kw_85_percent_offset, 1),
+           round(v_system_size_kw_115_percent_offset, 1),
            round(v_cash_price_for_100_percent_offset),
            round(v_cash_price_for_85_percent_offset),
            round(v_cash_price_for_115_percent_offset),
@@ -375,7 +375,7 @@ BEGIN
            round(v_twenty_five_year_savings_low_payment_100_offset),
            round(v_twenty_five_year_savings_low_payment_85_offset),
            round(v_twenty_five_year_savings_low_payment_115_offset);
-drop table if exists proposal_value;
+
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE

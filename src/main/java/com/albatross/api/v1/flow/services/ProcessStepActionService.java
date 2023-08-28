@@ -8,6 +8,7 @@ import com.albatross.api.v1.flow.model.MessageTeam;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.CustomFieldGroupAssignmentQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -335,7 +336,6 @@ public class ProcessStepActionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyFunctionId", child.getCompanyFunctionId());
     params.put("processStepActionId", actionId);
-    params.put("displayOrder", child.getDisplayOrder());
     params.put("createdById", currentUser.trueUserId());
 
     Long id =
@@ -346,6 +346,19 @@ public class ProcessStepActionService {
     handleDynamicValueParams(child.getActionParamDynamicValues(), id, null);
 
     return getActionChildFunction(id);
+  }
+
+  public void updateChildFunctionOrder(Long actionId, List<ProcessStepActionChildFunction> childFns) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+
+    for(ProcessStepActionChildFunction child : childFns) {
+      params.put("id", child.getId());
+      params.put("displayOrder", child.getDisplayOrder());
+
+      sqlCache.updateBySql(ProcessStepActionQuery.updateChildFunctionOrder, params);
+    }
   }
 
   public ProcessStepActionChildFunction getActionChildFunction(Long id) {

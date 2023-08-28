@@ -14,34 +14,18 @@
       </AttachmentCoversheetModal>
     </v-dialog>
     <div class="pa-0 height-one-hunned">
-      <div class="project-header" v-if="!tabsLoading">
-        <v-tabs v-if="tabs.length > 0"
-                background-color="transparent"
-                v-model="selectedTab.uniqueIdentifier"
-                show-arrows>
-          <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
-          <v-tab v-for="t in tabs" :key="t.id"
-                 @click="tabSelection(t)">
-            {{ t.tabName }}
-          </v-tab>
-        </v-tabs>
-        <v-tabs v-else background-color="transparent">
-          <v-tab>
-            Project Details
-          </v-tab>
-        </v-tabs>
-        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6"
-                   v-if="displayedGroups && displayedGroups.length > 0">
-          <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
+      <div class="project-header">
+        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6">
+          <v-toolbar-title class="albatross-header-2">{{ projectTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-toolbar-items>
+          <v-toolbar-items v-if="projectTab.id !== -1">
             <v-menu data-app right
                     offset-y
                     v-model="attachmentMenuOpen"
                     max-height="350"
                     :close-on-content-click="true">
               <template v-slot:activator="{ on }">
-                <v-btn text color="primary" @click="loadProjectTypes()" v-on="on">
+                <v-btn text color="primary" @click="loadProjectAttachmentTypes()" v-on="on">
                   <v-icon>mdi-tray-arrow-up</v-icon>
                 </v-btn>
               </template>
@@ -78,15 +62,11 @@
                 v-if="userCanEdit"
                 color="primary"
                 class="mt-3"
-                :loading="isFieldsLoading"
-                :disabled="fieldsSaving"
+                :disabled="isFieldsLoading || fieldsSaving"
                 @click="updateFieldGroups()">Save Fields
               </v-btn>
             </div>
           </v-toolbar-items>
-        </v-toolbar>
-        <v-toolbar v-else color="secondary" class="elevation-0 process-step-toolbar mx-6">
-          <v-toolbar-title class="albatross-header-2">{{ selectedTab.tabName }}</v-toolbar-title>
         </v-toolbar>
       </div>
       <div class="project-fields-container px-3" ref="projectFieldsContainer">
@@ -96,11 +76,11 @@
           </v-col>
 
           <div v-else>
-            <div v-if="selectedTab.id !== -1">
+            <div v-if="projectTab.id !== -1">
               <v-col
                 :class="{ 'mt-4': index !== 0 }"
                 class="py-0"
-                v-for="(group, index) in displayedGroups"
+                v-for="(group, index) in customFieldGroups"
                 :key="index"
               >
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
@@ -139,6 +119,7 @@
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
                                        is-card
+                                       :hide-empty="true"
                                        title="Uploaded Documents"
                                        :allow-upload="true"/>
               </v-col>
@@ -146,6 +127,7 @@
                 <AttachmentsFolderList :object-type-id="1"
                                        :project-id="projectId"
                                        is-card
+                                       :hide-empty="true"
                                        title="Linked Documents"
                                        :load-linked="true"/>
               </v-col>
@@ -167,7 +149,7 @@
 import {
   handleHidingGlobalLoader,
   getRequest,
-  postRequest,
+  postRequestWithRequestParams,
   logError,
   getSnackbar,
   getRequestWithParams, getAttachmentSourceId
@@ -195,16 +177,11 @@ export default {
   data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
-      processSteps: [],
-      tabs: [],
-      tabsLoading: true,
-      selectedTab: {},
       customFieldGroups: [],
       menuOpen: false,
       fieldsSaving: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      isProcessStepsLoading: false,
-      isFieldsLoading: true,
+      isFieldsLoading: false,
       dirtyCfvs: [],
       attachmentTypes: [],
       attachmentMenuOpen: false,
@@ -216,7 +193,6 @@ export default {
       unsavedFieldsModal: false,
       toPath: null,
       query: {},
-      isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
       // windowWidth: window.innerWidth,
       // splitColumnMinWidth: 1700
@@ -224,8 +200,6 @@ export default {
   },
   created() {
     window.document.title = `${this.project.projectName} - Project Details`
-    this.getProjectTabs()
-    this.getProcessSteps()
     this.getFieldGroups()
   },
   mounted() {
@@ -235,21 +209,15 @@ export default {
   },
   props: {
     project: Object,
+    projectTab: Object
+  },
+  watch: {
+    projectTab: function () {
+      this.getFieldGroups()
+    },
   },
   computed: {
-    displayedGroups() {
-      return this.selectedTab?.id ? this.customFieldGroups.filter(cfg => cfg.companyObjectTypeTabId === this.selectedTab.id) : this.customFieldGroups
-    },
-    processStepsByName() {
-      const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
-      return names.map(processStepName => {
-        return {
-          processStepName,
-          processSteps: this.processSteps.filter(step => step.processStepName === processStepName)
-        }
-      })
-    }
   },
   beforeRouteUpdate(to, from, next){
     if(this.dirtyCfvs.length === 0){
@@ -270,7 +238,7 @@ export default {
     }
   },
   methods: {
-    async loadProjectTypes() {
+    async loadProjectAttachmentTypes() {
       const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, {
         params: {
           linkable: false,
@@ -293,57 +261,23 @@ export default {
         return values
       }
     },
-    tabSelection(t) {
-      this.selectedTab = t
-      this.$refs.projectFieldsContainer.scrollTop = 0
-    },
-    getProjectTabs: async function () {
-      this.tabsLoading = true
-      try {
-        let params = {
-          projectId: parseInt(this.projectId)
-        }
-        const {data} = await getRequestWithParams(`/objectTypeTab/project`, {params})
-        this.tabs = data
-        this.tabs.push({
-          archived: false,
-          companyObjectTypeId: 1,
-          displayOrder: this.tabs.length,
-          id: -1,
-          tabName: 'Uploaded and Linked Documents',
-          uniqueIdentifier: 'tab_documents'
-        })
-        this.selectedTab = this.tabs?.length > 0 ? data[0] : {}
-        // use this line to preselect the docs tab for testing purposes
-        // this.selectedTab = this.tabs?.length > 0 ? data[this.tabs?.length - 1] : {}
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.tabsLoading = false
-      }
-    },
+
     getDirtyFieldsCount() {
       return this.dirtyCfvs?.length || 0
     },
-    getProcessSteps: async function () {
-      try {
-        this.isProcessStepsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-        this.processSteps = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isProcessStepsLoading = false
-      }
-    },
     getFieldGroups: async function () {
-      try {
-        const {data} = await getRequest(`/customFieldValues/project/${this.projectId}`, null, [])
-        this.customFieldGroups = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isFieldsLoading = false
+      //two custom tabs have id = -1 and id = -2
+      if(this.projectTab?.id != null && this.projectTab?.id > 0) {
+        this.isFieldsLoading = true
+        this.customFieldGroups = []
+        try {
+          const {data} = await getRequest(`/customFieldValues/project/${this.projectId}/tab/${this.projectTab.id}`, null, [])
+          this.customFieldGroups = data
+        } catch (e) {
+          logError(e)
+        } finally {
+          this.isFieldsLoading = false
+        }
       }
     },
     updateFieldGroups: async function () {
@@ -351,10 +285,9 @@ export default {
         this.fieldsSaving = true
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await postRequest(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs)
-          if (this.dirtyCfvs.length > 0) {
-            this.getProcessSteps()
-          }
+          const {data, status} = await postRequestWithRequestParams(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs, {
+            tabId: this.projectTab.id
+          })
           this.dirtyCfvs = []
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')

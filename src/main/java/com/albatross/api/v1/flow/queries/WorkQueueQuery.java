@@ -56,12 +56,14 @@ public class WorkQueueQuery {
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
+                                                            AND wlp.company_id = :companyId
                                                             AND wlp.work_queue_type_id = wqt.id)::bigint[]
               when wqt.hidden and not :hiddenWqtOverride and not wqt.hidden_allow
  then not array[ :positionIds ]::bigint[] && coalesce((select array_agg(wlp.position_id)
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
+                                                            AND wlp.company_id = :companyId
                                                             AND wlp.work_queue_type_id = wqt.id)::bigint[], '{}')
                                                             else 1=1 end
         union all
@@ -122,12 +124,14 @@ public class WorkQueueQuery {
                                                                FROM flow.white_listed_position wlp
                                                                WHERE wlp.white_list_type_id = 10
                                                                  AND wlp.archived is not true
+                                                                 AND wlp.company_id = :companyId
                                                                  AND wlp.work_queue_type_id = wqt.id)::bigint[], '{}')
                                                             when wqt.hidden and not :hiddenWqtOverride and wqt.hidden_allow
           then array[ :positionIds ]::bigint[] && (select array_agg(wlp.position_id)
                                                           FROM flow.white_listed_position wlp
                                                           WHERE wlp.white_list_type_id = 10
                                                             AND wlp.archived is not true
+                                                            AND wlp.company_id = :companyId
                                                             AND wlp.work_queue_type_id = wqt.id)::bigint[]
               else 1=1 end
         order by work_queue_category_display_order, work_queue_type_display_order
@@ -149,6 +153,7 @@ public class WorkQueueQuery {
                                                               FROM flow.white_listed_position wlp
                                                               WHERE wlp.white_list_type_id = 10
                                                                 AND wlp.archived is not true
+                                                                AND wlp.company_id = :companyId
                                                                 AND wlp.work_queue_type_id = wqt.id)::bigint[] else true end
         from flow.work_queue_type wqt
         where wqt.id = :workQueueTypeId

@@ -32,7 +32,7 @@ BEGIN
             RETURN QUERY select (select array_to_json(array_agg(row_to_json(drilldown)))
                                  from (
                                           select project_id,
-                                                 p.project_name,
+                                                 pd.project_name,
                                                  ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
                                                  count(1) * (select field_value
@@ -42,7 +42,6 @@ BEGIN
                                                                and tffv.tournament_id = p_tournament_id
                                                                and tff.field_code = 'BOOKING_SCORE_VALUE')::int as score
                                           from brs.project_details pd
-                                                   inner join flow.project p on pd.project_id = p.id
                                           where ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                             and pd.closer_user_id = p_user_id
                                             and pd.cancelled_date is null
@@ -55,15 +54,13 @@ BEGIN
                                           group by 1, 2, 3, 4
                                           union
                                           select project_id,
-                                                 p.project_name,
+                                                 pd.project_name,
                                                  ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
                                                  count(1) * 4 as score
                                           from brs.project_details pd
-                                                   inner join flow.project p on p.id = pd.project_id
-                                                   inner join flow.contact c on c.id = p.contact_id
                                                    left join flow.contact_custom_field_value ccfv
-                                                             on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
+                                                             on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
                                           where pd.closer_user_id = p_user_id
                                             and pd.cancelled_date is null
                                             and pd.final_design_complete_date between p_start_date and p_end_date
@@ -78,15 +75,13 @@ BEGIN
                                           group by 1, 2, 3, 4
                                           union
                                           select project_id,
-                                                 p.project_name,
+                                                 pd.project_name,
                                                  ((pd.complete_date_booking at time zone 'UTC') at time zone v_timezone)::timestamp as complete_date_booking,
                                                  pd.final_design_complete_date,
                                                  count(1) * 5 as score
                                           from brs.project_details pd
-                                                   inner join flow.project p on p.id = pd.project_id
-                                                   inner join flow.contact c on c.id = p.contact_id
                                                    inner join flow.contact_custom_field_value ccfv
-                                                              on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
+                                                              on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
                                           where pd.final_design_complete_date is not null
                                             and pd.cancelled_date is null
                                             and pd.closer_user_id = p_user_id
@@ -105,12 +100,11 @@ BEGIN
                 RETURN QUERY select (select array_to_json(array_agg(row_to_json(drilldown)))
                                      from (
                                               select pd.project_id,
-                                                     p.project_name,
+                                                     pd.project_name,
                                                      ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                                                      lov.name,
                                                      count(1)*2 as score
                                               from brs.project_details pd
-                                                       inner join flow.project p on pd.project_id = p.id
                                                        inner join flow.list_of_value lov on lov.id = pd.first_appointment_pitched_id
                                               where ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                                 and first_appointment_pitched_id is not null
@@ -118,12 +112,11 @@ BEGIN
                                               group by 1, 2, 3, 4
                                               union
                                               select pd.project_id,
-                                                     p.project_name,
+                                                     pd.project_name,
                                                      ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                                                      lov.name,
                                                      count(1) as score
                                               from brs.project_details pd
-                                                       inner join flow.project p on pd.project_id = p.id
                                                        inner join flow.list_of_value lov on lov.id = pd.first_appointment_missed_id
                                               where ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                                 and pd.first_appointment_missed_id is not null
@@ -132,12 +125,11 @@ BEGIN
                                               group by 1, 2, 3, 4
                                               union
                                               select pd.project_id,
-                                                     p.project_name,
+                                                     pd.project_name,
                                                      ((pd.first_appointment_not_pitched_or_missed at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                                                      lov.name,
                                                      count(1) *-1 as score
                                               from brs.project_details pd
-                                                       inner join flow.project p on pd.project_id = p.id
                                                        inner join flow.list_of_value lov on lov.id = pd.first_appointment_not_pitched_or_missed_id
                                               where ((pd.first_appointment_not_pitched_or_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                                                 and pd.first_appointment_not_pitched_or_missed_id in (58,56)
@@ -148,12 +140,11 @@ BEGIN
              when v_tournament_formula_id = 3 then
                RETURN QUERY select (select array_to_json(array_agg(row_to_json(drilldown)))
               from (select pd.project_id,
-                           p.project_name,
+                           pd.project_name,
                            ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                            lov.name,
                            count(1)                                                                               as score
                     from brs.project_details pd
-                           inner join flow.project p on p.id = pd.project_id
                            inner join flow.list_of_value lov on lov.id = pd.first_appointment_pitched_id
                     where ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                       and first_appointment_pitched_id is not null
@@ -161,13 +152,12 @@ BEGIN
                     group by 1, 2, 3, 4
                     union
                     select pd.project_id,
-                           p.project_name,
+                           pd.project_name,
                            ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::timestamp as first_appointment,
                            lov.name,
                            count(1)                                                                              as score
                     from brs.project_details pd
-                           inner join flow.project p on p.id = pd.project_id
-                           inner join flow.list_of_value lov on lov.id = pd.first_appointment_pitched_id
+                           inner join flow.list_of_value lov on lov.id = pd.first_appointment_missed_id
                     where ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
                       and pd.first_appointment_missed_id is not null
                       AND pd.first_appointment_pitched is null
@@ -175,13 +165,17 @@ BEGIN
                     group by 1, 2, 3, 4
                     union
                     select pd.project_id,
-                           p.project_name,
+                           pd.project_name,
                            ((pd.installation_agreement_signed_date at time zone 'UTC') at time zone
                             v_timezone)::timestamp as installation_agreement_signed_date,
                            'Installation Agreement Signed',
-                           count(1) * 5
+                           count(1) * (select field_value
+                                       from brs.tournament_formula_field_value tffv
+                                              inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                       where tff.tournament_formula_id = v_tournament_formula_id
+                                         and tffv.tournament_id = p_tournament_id
+                                         and tff.field_code = 'BOOKING_SCORE_VALUE_SETTERS')::int
                     from brs.project_details pd
-                           inner join flow.project p on p.id = pd.project_id
                     where pd.installation_agreement_signed_date::date between p_start_date and p_end_date
                       and pd.setter_user_id = p_user_id
                     group by 1, 2, 3, 4) as drilldown) as drilldown;

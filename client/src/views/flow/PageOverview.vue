@@ -1,6 +1,6 @@
 <template>
 <v-container class="pa-0 mobile-background">
-  <v-toolbar flat color="transparent" class="mobile-contact-header">
+  <v-toolbar flat color="transparent" class="mobile-contact-header pr-1">
     <div class="headline-small hide-xs">{{pageName}} Overview</div>
     <div class=" headline-small show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>
     <v-spacer></v-spacer>
@@ -11,9 +11,13 @@
         v-if="showEditBtn">
         <v-icon>edit</v-icon>
       </v-btn>
+      <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+        <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
+        <v-icon v-else>mdi-chevron-down</v-icon>
+      </v-btn>
     </v-toolbar-items>
   </v-toolbar>
-  <div class="mx-4 mobile-content-padding" v-if="details">
+  <div class="mx-4 mobile-content-padding"  :class="{'mb-6': sectionExpanded}" v-if="details && sectionExpanded">
     <div v-for="detail in details">
       <div v-if="!detail.type || detail.type === constants.OVERVIEW_FIELD_TYPES.DEFAULT" class="mb-2">
         <span class="detail-label label-small">{{detail.label}}: </span>
@@ -159,6 +163,7 @@ export default {
   data() {
     return {
       constants,
+      sectionExpanded: true,
       formatPhoneNumber,
       cleanPhoneNumberForCopying,
       getStatusColorClass,

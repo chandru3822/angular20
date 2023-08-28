@@ -95,8 +95,7 @@
                 <input v-if="item.isDefault" type="checkbox" v-model="item.isDefault" disabled readonly>
               </td>
               <td class="text-left">
-                <img v-if="item.icon && item.icon.presignedUrl"
-                     class="status-icon-grid" :src="item.icon.presignedUrl">
+                <v-icon v-if="item.iconTag != null">{{item.iconTag}}</v-icon>
               </td>
               <td class="text-right">
                 <v-tooltip left>
@@ -204,7 +203,7 @@
       async saveOrderChanges (types) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/project/companyStatuses`, types)
+          const {status} = await putRequest(`/projectStatus/companyStatuses`, types)
           this.snackbar = getSnackbar('SUCCESS', 'Status Types Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
@@ -233,7 +232,7 @@
       async saveNewType(type) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await putRequest(`/project/companyStatus`, type)
+          const {data, status} = await putRequest(`/projectStatus/company`, type)
 
           // add it to the records already on the screen
           this.statusTypes.push(data)
@@ -270,7 +269,7 @@
         const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/project/companyStatus/${item.id}`)
+          const {status} = await deleteRequest(`/projectStatus/company/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

@@ -135,6 +135,7 @@ public class ProcessStepEventRequirementQuery {
                                           dfp.parameter_name as "parameterName",
                                           dfp.data_type_id as "dataTypeId",
                                           dfp.id as "dbFunctionParamId",
+                                          dfp.nullable,
                                           rpdv.process_step_event_requirement_id as "processStepEventRequirementId",
                                           rpdv.dynamic_value as "dynamicValue"
                                    from flow.db_function_param dfp
@@ -359,6 +360,7 @@ public class ProcessStepEventRequirementQuery {
                                           dfp.parameter_name as "parameterName",
                                           dfp.data_type_id as "dataTypeId",
                                           dfp.id as "dbFunctionParamId",
+                                          dfp.nullable,
                                           rpdv.process_step_event_requirement_id as "processStepEventRequirementId",
                                           rpdv.dynamic_value as "dynamicValue"
                                    from flow.db_function_param dfp

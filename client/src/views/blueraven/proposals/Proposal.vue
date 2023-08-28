@@ -241,7 +241,7 @@ export default {
       return this.template?.filter(x => x.parentId === undefined)
     },
     sortedCustomFieldGroups() {
-      const customFieldGroups = [...this.proposal?.customFieldGroups]
+      const customFieldGroups = [...this?.proposal?.customFieldGroups ?? []]
       return customFieldGroups.sort((cfg1, cfg2) => {
         if (cfg1.groupOrder < cfg2.groupOrder) {
           return -1
@@ -370,8 +370,7 @@ export default {
       if (match && remove) {
         //remove any from the array where the selected field is a marked as conditional field
         const removeIds = this.proposal?.customFieldGroups
-          ?.map(cfg => cfg.customFieldValues)
-          ?.flat()
+          ?.flatMap(cfg => cfg.customFieldValues)
           ?.filter(f => f.conditionalOnId === field.customFieldGroupAssignmentId)
           ?.map(f => f.customFieldGroupAssignmentId)
 
@@ -387,7 +386,6 @@ export default {
 
     async deleteProposal() {
       try {
-
         const { ok } = await this.$refs.deleteConfirmDialog.open()
         if (!ok) {
           return
@@ -397,9 +395,9 @@ export default {
         this.proposalExists = false
         this.$snackbar('SUCCESS', `Deleted proposal #${this?.proposal?.proposalNbr}`)
         handleHidingGlobalLoader(this, status)
+        await this.$router.push({name: 'proposalDesigns', params: {projectId: this?.proposal?.projectId}})
       } catch (e) {
         this.$snackbar('ERROR', e?.data?.message || 'Error deleting proposal')
-
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -462,8 +460,7 @@ export default {
 
       try {
         const fields = this.proposal?.customFieldGroups
-          ?.map(cfg => cfg.customFieldValues)
-          ?.flat()
+          ?.flatMap(cfg => cfg.customFieldValues)
 
         //value is either going to come from a local change
         const dirtyCfvValue = this.dirtyCfvs.find(cfv => cfv.customFieldId === field.customFieldId)?.intValue
@@ -507,7 +504,7 @@ export default {
             return Promise.resolve()
           })
 
-          await Promise.all(allFilters)
+          await Promise.allSettled(allFilters)
         }
       } catch (e) {
         logError(e)

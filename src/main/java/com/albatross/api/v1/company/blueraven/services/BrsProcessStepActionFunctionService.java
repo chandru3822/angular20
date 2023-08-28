@@ -508,7 +508,8 @@ public class BrsProcessStepActionFunctionService {
           sqlCache.updateBySql(ProcessStepCfvQuery.upsertCustomFieldValue, params);
         });
 
-      if (marketoEnabled) {
+      final boolean pushToMarketo = Boolean.parseBoolean(func.getActionParamDynamicValues().get(1).getDynamicValue());
+      if (marketoEnabled && pushToMarketo) {
         MarketoProject project = marketoService.getProject(projectId);
 
         if (project == null) {

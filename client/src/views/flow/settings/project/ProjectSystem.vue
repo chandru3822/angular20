@@ -11,6 +11,8 @@
         :dropdownEnabled="projectObjectType.statusReadOnly"
         :selectedContent="projectObjectType.statusReadOnlyWhiteListedPositions"
         :title="'Status Read Only'"
+        :label="'Allowed Positions'"
+        :alternateLabel = "'Denied Positions'"
         user
         :allow="projectObjectType.statusReadOnlyAllow"
         :contentLoading="objectTypeDetailsLoading"

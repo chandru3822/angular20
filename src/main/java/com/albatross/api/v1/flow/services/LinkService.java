@@ -32,6 +32,20 @@ public class LinkService {
     return sqlCache.queryBySql(LinkQuery.getLinksForCompany, params, Link.class);
   }
 
+  public String getLinkUrl(String currentUrl, Long contactId, Long projectId, Long ppsId, Long ppseId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("currentUrl", currentUrl);
+    params.put("contactId", contactId);
+    params.put("projectId", projectId);
+    params.put("ppsId", ppsId);
+    params.put("ppseId", ppseId);
+
+
+
+    String adjustedUrl = sqlCache.queryForObjectBySql(LinkQuery.buildLinkUrl, params, String.class);
+    return adjustedUrl;
+  }
+
   public void updateOrderInProcessStep(List<ProcessStepLink> links) {
     for (ProcessStepLink l : links) {
       updateTypeOrderInProcessStep(l);

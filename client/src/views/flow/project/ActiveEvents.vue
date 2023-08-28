@@ -1,21 +1,23 @@
 <template>
-  <v-row id="project-details-container" class="mb-4">
-    <v-col cols="12" lg="12" class="text-left pt-0">
+  <v-row id="project-details-container">
+    <v-col cols="12" lg="12" class="text-left pt-0"  :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header">
             <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
+              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
+                <v-icon v-else>mdi-chevron-down</v-icon>
+              </v-btn>
             </v-toolbar-items>
           </v-toolbar>
 
-          <v-col cols="12" v-if="activeEventsLoading">
-            <SpinnerInline :size="20" color="primary"/>
-          </v-col>
+          <v-col cols="12" class="py-0" v-if="sectionExpanded">
+            <SpinnerInline v-if="activeEventsLoading" :size="20" color="primary"/>
 
-          <v-col cols="12" v-else class="pa-0">
-            <ActiveEventSnippet
+            <ActiveEventSnippet v-else
               @refresh-upcoming-events="getEvents()"
               :events="events"
               :projectId="projectId"/>
@@ -23,7 +25,7 @@
         </v-row>
       </v-col>
 
-      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-fade-transition v-if="sectionExpanded && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-col
           cols="12"
           class="text-left pt-0 albatross-body-3"
@@ -63,6 +65,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
+      sectionExpanded: true,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),

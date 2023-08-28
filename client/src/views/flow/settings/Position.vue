@@ -107,7 +107,7 @@
               <input type="checkbox" class="ml-3" v-model="position.cloneWhitelist">
             </div>
           </div>
-          <div v-show="!clonePositionId || (clonePositionId && !position.cloneAccess)">
+          <div v-show="positionId && (!clonePositionId || (clonePositionId && !position.cloneAccess))">
             <v-divider class="my-2"></v-divider>
             <h3>Access Control</h3>
             <AccessControl v-if="positionLoaded"
@@ -228,15 +228,21 @@
               const {data, status} = await postRequest('/position/clone/' + this.clonePositionId, this.position)
               this.positionId = data.id
               this.clonePositionId = ''
-              this.$router.push({name: 'position', params: {id: this.positionId}})
+              this.position = data
+              this.accessControlKey++
+              // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+              // this.$router.push({name: 'position', params: {id: this.positionId}})
               handleHidingGlobalLoader(this, status)
               this.dirtyFields = false
-              window.location.reload()
+              // window.location.reload()
             }
             else {
               const {data, status} = await postRequest(`/position/`, this.position)
               this.positionId = data.id
-              this.$router.push({name: 'position', params: {id: this.positionId}})
+              this.position = data
+              this.accessControlKey++
+              // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+              // this.$router.push({name: 'position', params: {id: this.positionId}})
               handleHidingGlobalLoader(this, status)
               this.dirtyFields = false
             }

@@ -145,14 +145,14 @@
               </v-toolbar-items>
             </v-toolbar>
             <v-card class="square-card pa-2" color="primary lighten-9" v-if="addNewLink">
-              <v-select attach v-if="addNewLink"
+              <v-autocomplete attach v-if="addNewLink"
                         v-model="newLink.linkId"
                         :items="availableLinks"
                         label="Select Link"
                         item-text="link"
                         item-value="id"
                         @input="assignNewLink"
-              ></v-select>
+              ></v-autocomplete>
             </v-card>
             <v-card flat v-if="processStep.links && processStep.links.length > 0 && expandLinks">
               <draggable v-model="processStep.links" group="links"
