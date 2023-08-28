@@ -328,9 +328,12 @@ public class ProposalVersionService {
       varsObject.setValue(objectMapper.writeValueAsString(filter));
 
       return sqlCache.queryBySql(
-        ProposalToolQuery.findFilterableValues,
-        Map.of("versionId", proposalVersion.getId(), "vars", varsObject),
-        new SingleColumnRowMapper<>(Long.class));
+          ProposalToolQuery.findFilterableValues,
+          Map.of("versionId", proposalVersion.getId(), "vars", varsObject),
+          new SingleColumnRowMapper<>(Long.class))
+        .stream()
+        .filter(Objects::nonNull)
+        .toList();
 
     } catch (SQLException | JsonProcessingException e) {
       throw new ApiException(e);

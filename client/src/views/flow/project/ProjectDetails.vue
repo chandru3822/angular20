@@ -25,7 +25,7 @@
                     max-height="350"
                     :close-on-content-click="true">
               <template v-slot:activator="{ on }">
-                <v-btn text color="primary" @click="loadProjectTypes()" v-on="on">
+                <v-btn text color="primary" @click="loadProjectAttachmentTypes()" v-on="on">
                   <v-icon>mdi-tray-arrow-up</v-icon>
                 </v-btn>
               </template>
@@ -177,13 +177,11 @@ export default {
   data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
-      processSteps: [],
       customFieldGroups: [],
       menuOpen: false,
       fieldsSaving: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
-      isProcessStepsLoading: false,
-      isFieldsLoading: true,
+      isFieldsLoading: false,
       dirtyCfvs: [],
       attachmentTypes: [],
       attachmentMenuOpen: false,
@@ -195,7 +193,6 @@ export default {
       unsavedFieldsModal: false,
       toPath: null,
       query: {},
-      isProcessStepsExpanded: false,
       companyId: this.$store.state.user.details.companyId,
       // windowWidth: window.innerWidth,
       // splitColumnMinWidth: 1700
@@ -203,7 +200,6 @@ export default {
   },
   created() {
     window.document.title = `${this.project.projectName} - Project Details`
-    this.getProcessSteps()
     this.getFieldGroups()
   },
   mounted() {
@@ -221,16 +217,7 @@ export default {
     },
   },
   computed: {
-    processStepsByName() {
-      const names = [...new Set(this.processSteps.map(step => step.processStepName))]
 
-      return names.map(processStepName => {
-        return {
-          processStepName,
-          processSteps: this.processSteps.filter(step => step.processStepName === processStepName)
-        }
-      })
-    }
   },
   beforeRouteUpdate(to, from, next){
     if(this.dirtyCfvs.length === 0){
@@ -251,7 +238,7 @@ export default {
     }
   },
   methods: {
-    async loadProjectTypes() {
+    async loadProjectAttachmentTypes() {
       const {data} = await getRequestWithParams(`/attachmentType/objectType/project`, {
         params: {
           linkable: false,
@@ -278,19 +265,9 @@ export default {
     getDirtyFieldsCount() {
       return this.dirtyCfvs?.length || 0
     },
-    getProcessSteps: async function () {
-      try {
-        this.isProcessStepsLoading = true
-        const {data} = await getRequest(`/project/${this.projectId}/processSteps`)
-        this.processSteps = data
-      } catch (e) {
-        logError(e)
-      } finally {
-        this.isProcessStepsLoading = false
-      }
-    },
     getFieldGroups: async function () {
-      if(this.projectTab?.id != null) {
+      //two custom tabs have id = -1 and id = -2
+      if(this.projectTab?.id != null && this.projectTab?.id > 0) {
         this.isFieldsLoading = true
         this.customFieldGroups = []
         try {
@@ -311,9 +288,6 @@ export default {
           const {data, status} = await postRequestWithRequestParams(`/customFieldValues/project/${this.projectId}`, this.dirtyCfvs, {
             tabId: this.projectTab.id
           })
-          if (this.dirtyCfvs.length > 0) {
-            this.getProcessSteps()
-          }
           this.dirtyCfvs = []
           this.customFieldGroups = data
           this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')

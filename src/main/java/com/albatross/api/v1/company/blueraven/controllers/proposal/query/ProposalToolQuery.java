@@ -276,6 +276,12 @@ where id in (select pvcfv.id
                                                  :vars) -> 'intArrayValue')::bigint as ids
     from grouped_rows
     where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
+    union
+        select (jsonb_path_query(row,
+                                                 '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
+                                                 :vars) -> 'intValue')::bigint as ids
+    from grouped_rows
+    where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
     """;
 
   public static final String findFilterableValuesByFieldId = """

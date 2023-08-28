@@ -585,8 +585,8 @@ BEGIN
          ppscfv5.int_value,
          lov.name,
          cs.state_id,
-         pd.utility_company,
-         pd.utility_company_name,
+         ppscfv15.int_value,
+         lov15.name,
          ppscfv6.json_value,
          ppscfv7.int_value,
          ppscfv8.int_value,
@@ -672,6 +672,10 @@ BEGIN
                    on ppscfv14.project_process_step_id = pps.id and
                       ppscfv14.custom_field_group_assignment_id =
                       26122
+         left join flow.project_process_step_custom_field_value ppscfv15 on ppscfv15.project_process_step_id = pps.id and
+                                                                           ppscfv15.custom_field_group_assignment_id =
+                                                                           23802
+         left join flow.list_of_value lov15 on lov15.id = ppscfv15.int_value
   where pps.id = v_project_process_step_id;
 
   create temp table proposal_value as (with version_values
@@ -1044,9 +1048,11 @@ BEGIN
     v_redline_markup = coalesce(v_desired_commission_amount,0) / 0.68;
     v_lead_source_discount = case when  v_source_id = 523 then coalesce(v_closer_gen_discount,0) else 0 end;
     v_adjusted_price_per_watt = coalesce(v_red_line_funding_amount,0) + coalesce(v_redline_markup,0) - coalesce(v_lead_source_discount,0);
+    raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
     raise notice 'v_redline_markup = %',v_redline_markup;
     raise notice 'v_lead_source_discount = %',v_lead_source_discount;
     raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
+    raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
   else
     v_adjusted_price_per_watt =
         v_maximum_funding_amount_per_watt +
@@ -1223,7 +1229,7 @@ BEGIN
 
   v_total_system_cost_before_rebates =
     (coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0) +
-     coalesce(v_referral_promotion * -1, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0));
+    coalesce((v_other_adder_and_discount_amount * -1), 0));
   raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
   raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
 
@@ -1393,12 +1399,12 @@ BEGIN
 
   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
-  v_total_system_cost =
-      ((((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
-       coalesce(v_other_adder_and_discount_amount, 0)) + coalesce(v_down_payment_amount, 0) + coalesce(v_above_line_rebate, 0) +
-      coalesce(v_referral_promotion, 0) + coalesce((v_other_adder_and_discount_amount * -1), 0) + case when v_commission_strategy_id = 23610 then 0::numeric else (284.00::numeric/ (1 - v_dealer_fee)) end)- (coalesce(v_admin_discount,0));
-  raise notice 'v_total_system_cost = %',v_total_system_cost;
 
+  v_total_system_cost =
+      (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
+      coalesce(v_above_line_rebate, 0) +
+      case when v_commission_strategy_id = 23610 then 0::numeric else (284.00::numeric/ (1 - v_dealer_fee)) end);
+  raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   v_required_down_payment =  --judson changed from the lower function to this one right before he left his job.
     greatest((((coalesce(v_other_adder_and_discount_amount, 0) +
@@ -1406,8 +1412,15 @@ BEGIN
                 coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
                 coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
                 coalesce(v_ac_unit_relocation_cost, 0)::numeric) -
-               ((v_total_system_cost * (1-v_dealer_fee)) * v_non_solar_cap)) /
-              (1-v_non_solar_cap)),0);
+               (((v_total_system_cost * (1-v_dealer_fee)) * v_non_solar_cap)) /
+              (1-v_non_solar_cap))),0);
+
+  --   v_required_down_payment =
+--     greatest(((coalesce(v_other_adder_and_discount_amount, 0) +
+--                coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_unapproved_zip_code_adder, 0) +
+--                coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
+--                coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
+--                coalesce(v_ac_unit_relocation_cost, 0)::numeric)/(1-v_dealer_fee)) - (v_total_system_cost * v_non_solar_cap), 0);
 
   raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
 
@@ -1419,18 +1432,13 @@ BEGIN
   raise notice 'v_storage_capacity %',v_storage_capacity;
   raise notice 'v_required_down_payment = %',v_required_down_payment;
 
---   v_required_down_payment =
---     greatest(((coalesce(v_other_adder_and_discount_amount, 0) +
---                coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_unapproved_zip_code_adder, 0) +
---                coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
---                coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
---                coalesce(v_ac_unit_relocation_cost, 0)::numeric)/(1-v_dealer_fee)) - (v_total_system_cost * v_non_solar_cap), 0);
-
-
   v_total_loan_amount =
-      ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) +
-      coalesce(v_other_adder_and_discount_amount, 0) - coalesce(v_required_down_payment,0) - coalesce(v_down_payment_amount,0)- coalesce(v_admin_discount,0);
+      ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0)) / (1 - v_dealer_fee)) -
+      coalesce(v_other_adder_and_discount_amount, 0) - coalesce(v_required_down_payment,0) - coalesce(v_down_payment_amount,0) +
+      case when v_commission_strategy_id = 23610 then 0::numeric else (284.00::numeric/ (1 - v_dealer_fee)) end - coalesce(v_admin_discount,0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
+  raise notice 'v_above_line_rebate = %',v_above_line_rebate;
+  raise notice 'v_admin_discount = %',v_admin_discount;
 
   v_check_from_br = 0.00::numeric;
   if v_product_id in (293, 19424) then
@@ -1639,7 +1647,7 @@ BEGIN
   raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
 
   v_net_system_cost =
-          v_total_system_cost - coalesce(v_referral_promotion, 0) - coalesce(v_federal_tax_incentive_amount, 0) -
+          v_total_system_cost - coalesce(v_federal_tax_incentive_amount, 0) -
           coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0) -
           coalesce(v_state_rebate_amount, 0);
   raise notice 'v_net_system_cost = %',v_net_system_cost;
@@ -1677,7 +1685,8 @@ BEGIN
                                     (0.0016 + sqrt(v_system_size * 0.00012)) * v_total_square_footage *
                                     v_number_of_batteries end;
   v_solar_rebate_for_hic =  --todo take out required down payment other discounts and adders Michael
-      v_total_system_cost - coalesce(v_referral_promotion, 0) - coalesce(v_down_payment_amount, 0) -
+    coalesce(v_total_system_cost,0) - coalesce(v_down_payment_amount, 0) -
+      coalesce(v_required_down_payment,0) -
       coalesce(v_total_loan_amount, 0);
 
   if p_insert_prop_log_history is true then
