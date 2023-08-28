@@ -1,7 +1,9 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <ConfirmationDialog :open-dialog="showEditProjectModal" @confirm="validateForm" @close-dialog="showEditProjectModal = false">
+    <ConfirmationDialog :open-dialog="showEditProjectModal"
+                        @confirm="validateForm"
+                        @close-dialog="showEditProjectModal = false">
       <template v-slot:title>Project Overview</template>
       <v-form ref="projectEditForm">
         <div>
@@ -16,7 +18,7 @@
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             label="Project Name"
-          ></v-text-field>
+          />
           <v-text-field
             v-model="tempProject.street1"
             label="Street"
@@ -25,14 +27,14 @@
             counter
             maxlength="100"
             @change="tempProject.reloadCoordinates = true"
-          ></v-text-field>
+          />
           <v-text-field
             v-model="tempProject.city"
             label="City"
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             @change="tempProject.reloadCoordinates = true"
-          ></v-text-field>
+          />
           <v-text-field
             type="text"
             v-model="tempProject.postalCode"
@@ -40,11 +42,11 @@
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             maxlength="10"
-            @keypress="isNumberOrHyphen"
+            @keyup="isNumberOrHyphen"
             :rules="postalCodeRules"
             @change="tempProject.reloadCoordinates = true"
             label="Postal Code"
-          ></v-text-field>
+          />
           <div v-if="tempProject.companyStateId && !stateIsActive() && !editState">
             <v-text-field
               type="text"
@@ -53,7 +55,7 @@
               :disabled="true"
               label="State"
               hide-details
-            ></v-text-field>
+            />
             <a class="edit-state-link" @click="editState = true">Click here to edit state</a>
           </div>
           <v-autocomplete v-else
@@ -66,7 +68,7 @@
                           item-text="state"
                           item-value="id"
                           @input="tempProject.reloadCoordinates = true"
-          ></v-autocomplete>
+          />
           <v-select v-model="tempProject.companyCountryId"
                     :items="countries"
                     label="Country"
@@ -76,7 +78,7 @@
                     @input="tempProject.reloadCoordinates = true"
                     item-text="country"
                     item-value="id"
-          ></v-select>
+          />
         </div>
         <v-autocomplete v-model="tempProject.owner"
                         :readonly="projectOwnerFieldIsReadOnly()"
@@ -87,8 +89,7 @@
                         clearable
                         item-text="fullName"
                         return-object
-                        autocomplete="off">
-        </v-autocomplete>
+                        autocomplete="off"/>
         <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
                         :items="statuses"
                         :readonly="projectStatusIsReadOnly()"
@@ -107,19 +108,21 @@
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
-      :class="{'mt-4': project.tags && project.tags.length > 0}">
+                       :class="{'mt-4': project.tags && project.tags.length > 0}">
         <div>
           <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
           <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-              {{$store.state.project.pps.processStepName}}
+            <router-link class="breadcrumb albatross-body-2"
+                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
+              {{ $store.state.project.pps.processStepName }}
             </router-link>
           </span>
           <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-              {{$store.state.project.ppsEvent.eventName}} Event
+            <router-link class="breadcrumb albatross-body-2"
+                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+              {{ $store.state.project.ppsEvent.eventName }} Event
             </router-link>
           </span>
         </div>
@@ -131,51 +134,47 @@
                   :text-color="tag.fontColor"
                   :close="tag.removable"
                   :class="{'ml-2': idx !== 0}">
-            {{tag.tagName}}
+            {{ tag.tagName }}
           </v-chip>
         </div>
       </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-
-      </v-toolbar-items>
-    </v-toolbar >
-<!--    <v-toolbar flat color="grey lighten-2" id="tag-toolbar" v-if="project.tags && project.tags.length > 0">-->
-<!--    </v-toolbar>-->
+      <v-spacer/>
+    </v-toolbar>
     <v-row class="project-split-container" :class="{'split-container-no-tags': project && !project.tags || project.tags.length === 0,
                                                     'split-container-with-tags': project && project.tags && project.tags.length > 0}">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}" @click="endNotesTimer('Clicked outside right panel')">
-          <v-btn small text color="primary" @click="collapseSide('left')" >
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}"
+             @click="endNotesTimer('Clicked outside right panel')">
+          <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 left-panel-scrollable-area overflow-y-auto">
+        <div v-if="!$store.state.project.leftSideSplit && project && project.id"
+             class="px-2 left-panel-scrollable-area overflow-y-auto">
           <PageOverview
             page-name="Project"
             :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
             :details="overviewDetails"
-          ></PageOverview>
-          <v-divider></v-divider>
+          />
+          <v-divider/>
           <ProjectTabs :project="project" :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
-          <v-divider></v-divider>
+          <v-divider/>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
-          <v-divider></v-divider>
+          <v-divider/>
           <ActiveEvents v-if="userHasEventsFeature"
-                          :update-key="updateEventKey"
-                          :projectId="projectId"
-                          class="mx-2"/>
-          <v-divider class="mb-3"></v-divider>
-
+                        :update-key="updateEventKey"
+                        :projectId="projectId"
+                        class="mx-2"/>
+          <v-divider class="mb-3"/>
         </div>
       </div>
       <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                                                                  'center-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                                                                  'center-width-right-side-collapse': !$store.state.project.leftSideSplit && $store.state.project.rightSideSplit,
                                                                  'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}"
-      @click="endNotesTimer('Clicked outside right panel')">
+           @click="endNotesTimer('Clicked outside right panel')">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
                      @refresh-project-status="getUpdatedProjectStatus()"
@@ -183,14 +182,14 @@
                      :project-tab="selectedTab"
                      v-if="project && project.id" class="router-view"
                      :project="project"
-        ></router-view>
+        />
       </div>
       <div class="project-section px-0 white-bg "
            :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
                     'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                     'collapse-right text-center': $store.state.project.rightSideSplit}">
-        <ProjectActivity v-if="!projectLoading"  :show-sms-tab="true"
-                         @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
+        <ProjectActivity v-if="!projectLoading" :show-sms-tab="true"
+                         @openRight="$store.state.project.rightSideSplit = false"/>
       </div>
     </v-row>
   </div>
@@ -198,15 +197,15 @@
 
 <script>
 import {
-  handleHidingGlobalLoader,
+  formatPhoneNumber,
   getRequest,
-  putRequest,
-  postRequest,
-  logError,
   getRequestWithParams,
   getSnackbar,
-  formatPhoneNumber,
-  isNumberOrHyphen
+  handleHidingGlobalLoader,
+  isNumberOrHyphen,
+  logError,
+  postRequest,
+  putRequest
 } from '@/helpers/helpers'
 import cloneDeep from 'lodash.clonedeep'
 import {AppMutations} from '@/stores/AppStore'
@@ -222,10 +221,7 @@ import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
-import {
-  endTimer,
-  projectOpened
-} from '@/services/analyticsService'
+import {endTimer, projectOpened} from '@/services/analyticsService'
 
 export default {
   name: 'Project',
@@ -284,13 +280,13 @@ export default {
       this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
     },
     projectTagEvents: async function () {
-      if(this.projectTagEvents?.length > 0) {
+      if (this.projectTagEvents?.length > 0) {
         this.$store.dispatch(NotificationActions.PROCESS_PROJECT_MSG, this.projectId)
         await this.getProjectTags()
       }
     }
   },
-  beforeRouteLeave (to, from, next) {
+  beforeRouteLeave(to, from, next) {
     this.endNotesTimer("Clicked outside right panel");
     next();
   },
@@ -301,7 +297,7 @@ export default {
     projectStage() {
       return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType
     },
-    overviewDetails(){
+    overviewDetails() {
       return [
         {
           label: 'Project Stage',
@@ -357,8 +353,8 @@ export default {
   methods: {
     changeTabs(selectedTab, buttonClicked) {
       this.selectedTab = selectedTab
-      if(buttonClicked && this.$route.name !== 'projectDetails') {
-        this.$router.push({ name: 'projectDetails', projectId: this.projectId })
+      if (buttonClicked && this.$route.name !== 'projectDetails') {
+        this.$router.push({name: 'projectDetails', projectId: this.projectId})
       }
     },
     stateIsActive() {
@@ -367,7 +363,7 @@ export default {
       return companyStateIds.includes(this.tempProject.companyStateId)
     },
     collapseSide(side) {
-      if(side === 'left') {
+      if (side === 'left') {
         this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
       } else {
         this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
@@ -390,7 +386,7 @@ export default {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
         window.document.title = `${this.project.projectName} - Project Details`
-        if(this.checkAddress) {
+        if (this.checkAddress) {
           this.showEditModal()
         }
         this.projectLoading = false
@@ -405,7 +401,7 @@ export default {
     getProjectTags: async function () {
       try {
         const {data, status} = await getRequestWithParams(`/tag/project/${this.projectId}`,
-          {skipCancel: true }, null, [])
+          {skipCancel: true}, null, [])
         this.project.tags = data
       } catch (e) {
         logError(e)
@@ -442,16 +438,16 @@ export default {
       }
     },
     projectStatusIsReadOnly() {
-      if(this.is7oaksAdmin) {
+      if (this.is7oaksAdmin) {
         return false
       } else {
         return this.project.statusReadOnly
       }
     },
     projectOwnerFieldIsReadOnly() {
-      if(this.is7oaksAdmin) {
+      if (this.is7oaksAdmin) {
         return false
-      }else {
+      } else {
         return this.project.ownerReadOnly
       }
     },
@@ -532,7 +528,7 @@ export default {
         this.tempProject.state = selectedState?.state || null
         this.tempProject.stateAbbreviation = selectedState?.abbreviation || null
         //if they entered a valid address then stop asking for it
-        if(this.tempProject.companyStateId && this.stateIsActive()) {
+        if (this.tempProject.companyStateId && this.stateIsActive()) {
           this.$router.replace({'query': null})
           this.checkAddress = false
         }
@@ -568,7 +564,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    endNotesTimer(endEvent){
+    endNotesTimer(endEvent) {
       endTimer(endEvent);
     }
   }
@@ -584,6 +580,7 @@ export default {
     height: 35px !important;
   }
 }
+
 .project-section-header .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
