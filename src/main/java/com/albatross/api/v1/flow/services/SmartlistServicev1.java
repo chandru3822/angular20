@@ -5031,13 +5031,16 @@ public class SmartlistServicev1 {
     defaultFields.add(psStatus);
     var daysInQueue = new SmartlistFieldAssignment();
     daysInQueue.setName("Days In Queue");
+    daysInQueue.setDataTypeId(6L);
     defaultFields.add(daysInQueue);
     var eventStartTime = new SmartlistFieldAssignment();
     eventStartTime.setName("Event Start Time");
+    eventStartTime.setDataTypeId(2L);
     defaultFields.add(eventStartTime);
     if (isCSV) {
       var nextFollowUp = new SmartlistFieldAssignment();
       nextFollowUp.setName("Next Follow-up Date");
+      nextFollowUp.setDataTypeId(1L);
       defaultFields.add(nextFollowUp);
       var noteContent = new SmartlistFieldAssignment();
       noteContent.setName("Note Content");
@@ -5047,6 +5050,7 @@ public class SmartlistServicev1 {
       defaultFields.add(noteCreatedBy);
       var noteCreatedAt = new SmartlistFieldAssignment();
       noteCreatedAt.setName("Note Created At");
+      noteCreatedAt.setDataTypeId(2L);
       defaultFields.add(noteCreatedAt);
     }
     return defaultFields;

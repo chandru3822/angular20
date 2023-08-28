@@ -26,7 +26,12 @@ public class ProcessStepEventController {
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProcessStepEvent> getStepEvents (@PathVariable Long stepId) {
-    return processStepEventService.getStepEvents(stepId);
+    return processStepEventService.getStepEvents(stepId, false);
+  }
+
+  @GetMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ProcessStepEvent> getStepEventsForAdminScreen (@PathVariable Long stepId) {
+    return processStepEventService.getStepEvents(stepId, true);
   }
 
   @GetMapping(value = "/{psEventId}", produces = MediaType.APPLICATION_JSON_VALUE)

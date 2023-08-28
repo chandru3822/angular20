@@ -1038,7 +1038,7 @@ export default {
       //if there are dynamic params, ensure they are all populated
       if (this.newRequirement.requirementParamDynamicValues.length > 0) {
         this.newRequirement.requirementParamDynamicValues.forEach(fp => {
-          if (!fp.dynamicValue) {
+          if (!fp.nullable && !fp.dynamicValue) {
             invalidParams = true
           }
         })

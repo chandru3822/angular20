@@ -225,6 +225,7 @@ BEGIN
                                                                               dfp.parameter_name as "parameterName",
                                                                               dfp.data_type_id as "dataTypeId",
                                                                               dfp.description,
+                                                                              dfp.nullable,
                                                                               apdv.db_function_param_id as "dbFunctionParamId",
                                                                               apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                                               apdv.dynamic_value as "dynamicValue"
