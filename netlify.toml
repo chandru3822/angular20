@@ -6,3 +6,6 @@
 
 [context.release]
   publish = "client/dist/"
+
+[context.master]
+publish = "client/dist/"
