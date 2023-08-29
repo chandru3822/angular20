@@ -206,6 +206,8 @@ public class BlueravenProposalService {
    */
   private void filterCustomFieldsByVisibility(Proposal proposal) {
     List<ProposalStepCustomFieldValue> values = getProjectProcessStepValues(proposal.getProjectProcessStepId());
+    log.info("[Proposals] Found {} custom field values for proposal id={}", values.size(), proposal.getId());
+
     if (values != null && !values.isEmpty()) {
 
       ProposalJsContext jsContext = new ProposalJsContext(values);
