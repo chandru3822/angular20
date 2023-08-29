@@ -87,7 +87,6 @@ public class ProposalTemplateService {
         .mappingProvider(new JacksonMappingProvider())
         .build();
 
-//    NOTE (kaleb): is this the best way to handle this?
     this.engine = new ScriptEngineManager().getEngineByName("graal.js");
   }
 
@@ -112,7 +111,7 @@ public class ProposalTemplateService {
     List<ProposalTemplateBlock> hiddenBlocks = template.getBlocks().stream()
       .filter(block -> {
         String visibility = block.getVisibility();
-        if (visibility == null || visibility.trim().equals("")) {
+        if (visibility == null || visibility.trim().isEmpty()) {
           return false;
         }
         try {

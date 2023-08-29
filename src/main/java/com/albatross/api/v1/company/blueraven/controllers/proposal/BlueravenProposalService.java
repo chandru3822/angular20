@@ -41,7 +41,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -231,6 +230,8 @@ public class BlueravenProposalService {
 
           customFieldGroup.setCustomFieldValues(filteredList);
         }
+      } catch (Exception e) {
+        log.error("[Proposals] Error filtering custom fields", e);
       }
     }
   }
