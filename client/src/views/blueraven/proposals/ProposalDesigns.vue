@@ -292,7 +292,6 @@ export default {
     canEdit() {
       const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
       const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
-      console.log({hasEdit, hasAdmin})
       return hasAdmin || hasEdit
     },
     hasActiveDesign() {
