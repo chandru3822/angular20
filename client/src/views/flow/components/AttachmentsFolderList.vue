@@ -203,7 +203,7 @@ export default {
       eventId: null,
       tempFile: {},
       fileToUpload: null,
-      loadingDetails: true,
+      loadingDetails: false,
       projectProcessStepId: null,
       projectProcessStepEventId: null,
       selectedAttachmentsForCompare: [],
@@ -213,7 +213,7 @@ export default {
       dragTypeId: null,
       showCoversheetModal: false,
       coversheetSelectedTypeId: null,
-      attachmentTypesLoading: true,
+      attachmentTypesLoading: false,
       error: {},
       maxFiles: constants.MAX_FILE_UPLOADS,
       renderTicker: 0,
@@ -348,7 +348,6 @@ export default {
     },
     async loadAllPageDetails() {
       //if not objectTypeId(org,contact,user) and should be "all" then use these endpoints to get combined list
-      this.loadingDetails = true
       let params = {}
       if ((!this.objectTypeId || this.objectTypeId === 1) && !this.allowUpload && !this.loadLinked) {
         this.typePath = `/combined/project`
@@ -388,10 +387,11 @@ export default {
       // }
 
       if (this.typePath && this.attachmentPath) {
+        this.loadingDetails = true
         let requests = [this.fetchAttachmentTypes(params), this.fetchAttachments(params)]
         await Promise.all(requests)
+        this.loadingDetails = false
       }
-      this.loadingDetails = false
     },
     fetchAttachmentTypes: async function (typeParams) {
       this.attachmentTypesLoading = true

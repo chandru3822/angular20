@@ -88,9 +88,21 @@ public class DbFunctionService {
     params.put("dataTypeId", dbFunctionParam.getDataTypeId());
     params.put("parameterTypeId", dbFunctionParam.getParameterTypeId());
     params.put("systemValueId", dbFunctionParam.getSystemValueId());
+    params.put("nullable", null != dbFunctionParam.getNullable() ? dbFunctionParam.getNullable() : false);
+    params.put("description", dbFunctionParam.getDescription());
 
     sqlCache.updateBySql(DbFunctionQuery.insertParam, params);
     return getDbFunction(dbFunctionParam.getDbFunctionId());
+  }
+
+  public void updateDbFunctionParam(DbFunctionParam dbFunctionParam) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("parameterId", dbFunctionParam.getId());
+    params.put("description", dbFunctionParam.getDescription());
+    params.put("parameterName", dbFunctionParam.getParameterName());
+    params.put("nullable", null != dbFunctionParam.getNullable() ? dbFunctionParam.getNullable() : false);
+
+    sqlCache.updateBySql(DbFunctionQuery.updateParam, params);
   }
 
   public DbFunction addToCompany(Long functionId, DbFunctionController.AddToCompanyRequest req) {
