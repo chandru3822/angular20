@@ -111,7 +111,7 @@ begin
                           --'custom_fields.Non-Standard Installation Work',
                           --json_build_array(proposal->>'Non-Standard Work 1',proposal->>'Non-Standard Work 2',proposal->>'Non-Standard Work 3'),
                           'custom_fields.Notice of Cancellation Deadline',
-                          (((now() AT TIME ZONE 'US/Mountain') :: DATE) + 8) :: DATE,
+                          (((now() AT TIME ZONE 'US/Mountain') :: DATE) + 10) :: DATE,
                          'custom_fields.Utility Rebate Amount ($ to BRS)',
                           case when cs.state_id = 37 then
                                    coalesce(round(((current_oet_rebate)::numeric),2),0)::bigint
