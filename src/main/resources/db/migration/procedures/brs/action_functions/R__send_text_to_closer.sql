@@ -107,7 +107,7 @@ BEGIN
   into v_message_type_content, v_message_type_include_manager
   from brs.message_type mt
   where mt.id = p_message_type_id
-    and mt.archived is not false;
+    and mt.archived is not true;
 
   --dont do anything if we didn't find a messsage
   if (v_message_type_content is not null) then
