@@ -13,6 +13,7 @@ declare
     v_number_of_arrays bigint;
     v_number_of_pitch bigint;
     v_loan_type varchar;
+    v_closer_commission_forfeiture_amount numeric;
 BEGIN
 
     select ppscfv.int_value
@@ -35,8 +36,8 @@ BEGIN
       and cf2.parent_custom_field_id = 10495;
 
 
-    select substring(loan_type,1,position(' ' in loan_type)-1)
-    into v_loan_type
+    select substring(loan_type,1,position(' ' in loan_type)-1),closer_commission_forfeiture_amount
+    into v_loan_type,v_closer_commission_forfeiture_amount
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
@@ -372,6 +373,10 @@ BEGIN
         --raise notice 'cfga% value %',_key,_value;
         perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
+
+    update brs.project_details d
+    set commission_forfeited_by_closer = v_closer_commission_forfeiture_amount
+    where d.project_id = p_project_id;
 
     insert into flow.company_function_log(function_name, db_function_id, parameters)
     values ('Populate System and Financial Fields', 12, 'p_project_id: ' || p_project_id ||
