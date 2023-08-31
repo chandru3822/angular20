@@ -25,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/proposal", produces = MediaType.APPLICATION_JSON_VALUE)
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 public class BlueravenProposalController {
 
   private final BlueravenProposalService proposalService;
@@ -56,21 +58,25 @@ public class BlueravenProposalController {
   private final ObjectMapper objectMapper;
 
   @GetMapping(value = "/projects")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Page<ProposalProject> getProposalProjects(@RequestParam String query, Pageable pageable) {
     return proposalService.getProposalProjects(query, pageable);
   }
 
   @GetMapping(value = "/projects/{projectId}/designs")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public List<ProposalDesign> getProposalDesigns(@PathVariable Long projectId) {
     return proposalService.getProposalDesigns(projectId);
   }
 
   @GetMapping(value = "/projects/{projectId}/designs/active")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public ProposalDesign getActiveDesign(@PathVariable Long projectId) {
     return proposalService.getActiveDesign(projectId).orElse(null);
   }
 
   @PostMapping(value = "/projects/{projectId}/designs")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public List<ProposalDesign> requestNewDesign(@PathVariable Long projectId,
                                                @Valid @ModelAttribute CreateNewDesignRequest request,
                                                @AuthenticationPrincipal UserAccountDetails details) throws IOException {
@@ -78,6 +84,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/projects/{projectId}/postalCode")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public ProposalDesign requestPostalCodeApproval(@PathVariable Long projectId,
                                                   @Valid @RequestBody ProposalPostalApprovalRequest request,
                                                   @AuthenticationPrincipal UserAccountDetails details) {
@@ -85,42 +92,50 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/projects/{projectId}/postalCode")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public ProposalPostalCodeStatus checkPostalCodeApproval(@PathVariable Long projectId) {
     return proposalService.checkPostalCodeApproval(projectId);
   }
 
   @PostMapping
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> addProposal(@RequestBody Proposal proposal,
                                         @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.addProposal(proposal, details);
   }
 
   @GetMapping(value = "/{proposalId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> getProposal(@PathVariable Long proposalId) {
     return proposalService.getProposal(proposalId);
   }
 
   @PostMapping(value = "/{proposalId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody @Size(min = 1) List<CustomFieldValue> cfvs) {
     return proposalService.updateProposalCustomFieldValues(proposalId, cfvs);
   }
 
   @DeleteMapping(value = "/{proposalId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public void archiveProposal(@PathVariable Long proposalId, @AuthenticationPrincipal UserAccountDetails details) {
     proposalService.archiveProposal(proposalId, details);
   }
 
   @PostMapping(value = "/{proposalId}/name")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Proposal updateProposalName(@PathVariable Long proposalId, @Valid @RequestBody ProposalNameUpdateRequest nameUpdateRequest, @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.setProposalName(proposalId, nameUpdateRequest.name(), details);
   }
 
   @PostMapping(value = "/{proposalId}/lock")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> lockProposal(@PathVariable Long proposalId, @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.lockProposal(proposalId, details);
   }
 
   @GetMapping(value = "/{proposalId}/loanApplication")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<String> generateLoanApplication(@PathVariable Long proposalId, @AuthenticationPrincipal UserAccountDetails details) {
     return getLockedProposal(proposalId)
       .map(proposal -> {
@@ -141,6 +156,7 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/{proposalId}/sendDocs")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<DocRequestResponse> sendDocs(@PathVariable Long proposalId, @Valid @RequestBody SendDocRequest docRequest, @AuthenticationPrincipal UserAccountDetails details) {
 
     return getLockedProposal(proposalId)
@@ -177,6 +193,7 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/{proposalId}/loanStatus")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Optional<String> checkLoanStatus(@PathVariable Long proposalId) {
     return getLockedProposal(proposalId)
       .map(proposal -> installAgreementService.getLoanStatus(proposal.getProjectId(), proposal.getProposalNbr()));
@@ -193,12 +210,14 @@ public class BlueravenProposalController {
   }
 
   @PostMapping(value = "/{proposalId}/duplicate")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> createProposalDuplicate(@PathVariable Long proposalId,
                                                     @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.createProposalDuplicate(proposalId, details.getTrueUserId());
   }
 
   @GetMapping(value = "/{proposalId}/template")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Optional<ProposalTemplate> getProposalTemplate(@PathVariable Long proposalId,
                                                         @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId,
                                                         @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE") ProposalGeneratedType proposalGeneratedType,
@@ -208,6 +227,7 @@ public class BlueravenProposalController {
 
   @Timed
   @GetMapping(value = "/{proposalId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public ResponseEntity<StreamingResponseBody> getProposalTemplatePdf(@PathVariable Long proposalId,
                                                                       @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId,
                                                                       @RequestParam(value = "inline", defaultValue = "false") boolean inline,
@@ -243,6 +263,7 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/{proposalId}/filter")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
     final Proposal proposal = proposalService.getProposal(proposalId).orElseThrow(NotFoundException::new);

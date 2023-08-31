@@ -28,7 +28,6 @@ import java.util.function.Function;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('PROPOSALS_ADMIN')")
 @RequiredArgsConstructor
 public class ProposalVersionService {
 

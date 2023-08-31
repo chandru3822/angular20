@@ -39,6 +39,7 @@ public class ProposalTemplateQuery {
                                     left join brs.proposal_template_block_kind ptbk
                                               on ptb.proposal_template_block_kind_id = ptbk.id
                            where ptb.proposal_template_id = pt.id
+                             and ptb.date_archived is null
                            order by coalesce(ptb.parent_id, ptb.id), ptb.parent_id is not null, ptb.id) blocks), '[]') as blocks,
            pt.created_by_id,
            pt.date_created,
@@ -71,6 +72,7 @@ public class ProposalTemplateQuery {
              left join brs.proposal_template_block_kind ptbk
                       on ptb.proposal_template_block_kind_id = ptbk.id
     where ptb.id in (:ids)
+      and ptb.date_archived is null
     """;
 
   //language=PostgreSQL
