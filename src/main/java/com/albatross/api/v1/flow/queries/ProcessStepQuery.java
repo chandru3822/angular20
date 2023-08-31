@@ -55,6 +55,7 @@ public class ProcessStepQuery {
 select ps.id,
        ps.process_step_name,
        ps.non_admin_add,
+       ps.non_admin_add_allow,
        ps.company_id,
        ps.archived,
        ps.date_created,
@@ -77,6 +78,20 @@ select ps.id,
                            AND wlp.archived is not true
                            AND wlp.company_id = :companyId
                            and wlp.process_step_id = ps.id) wlp), '[]') AS "whiteListedPositions",
+        coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.process_step_id as "processStepId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 18
+                           AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
+                           and wlp.process_step_id = ps.id) wlp), '[]') AS "nonAdminAddWhiteListedPositions",
        coalesce((
                   SELECT array_to_json(array_agg(row_to_json(links)))
                   FROM (
@@ -391,11 +406,12 @@ where ps.id = :id
   //language=PostgreSQL
   public final static String update = """
     update flow.process_step
-         set modified_by_id = :modifiedById,
+         set modified_by_id = :userId,
              date_modified = now(),
              process_step_name = :name,
-             non_admin_add = :nonAdminAdd
-         where id = :id
+             non_admin_add = :nonAdminAdd,
+             non_admin_add_allow = :nonAdminAddAllow
+         where id = :psId
        """;
 
   //language=PostgreSQL
