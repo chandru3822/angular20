@@ -744,6 +744,13 @@
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
             this.selectedRows.push(this.projects[0])
+            this.zoomToMap({
+              item:{
+                longitude: this.selectedProject.longitude,
+                latitude: this.selectedProject.latitude
+              },
+              value: true
+            })
           }
           this.listLoading = false
         } catch (e) {
@@ -753,8 +760,9 @@
           this.listLoading = false
         }
       },
-      zoomToMap(item, value) {
-        if(value){
+      zoomToMap(event) {
+        if(event.value){
+          const item = event.item
           console.log('zoom zoom')
           console.log('longitude', item.longitude)
           console.log('latitude', item.latitude)
