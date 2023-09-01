@@ -424,12 +424,6 @@ export default {
         zoom: this.zoom,
         speed: 2
       })
-      // Here we're catching 'load' map event
-      // await this.asyncActions.flyTo({
-      //   center: [this.longitude, this.latitude],
-      //   zoom: this.zoom,
-      //   speed: 2
-      // })
 
     },
     async onMapLoad(event) {
