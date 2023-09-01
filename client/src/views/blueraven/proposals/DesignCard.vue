@@ -84,8 +84,6 @@ export default {
       offset: 0
     }
   },
-  created (){
-  },
   computed: {
     disableAddSlice() {
       const proposalCount = this.d.proposals.length
@@ -96,9 +94,6 @@ export default {
       }
       return pageCount === this.offset
     },
-  },
-  methods: {
-
   }
 }
 </script>

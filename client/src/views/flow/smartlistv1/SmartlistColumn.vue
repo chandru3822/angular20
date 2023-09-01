@@ -79,6 +79,7 @@
           label="Field"
           :items="availableFields"
           item-text="name"
+          item-value="customFieldGroupAssignmentId"
           return-object
           attach
         />

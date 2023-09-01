@@ -72,6 +72,11 @@
           >{{ selected.length }} selected</span>
         </template>
       </v-autocomplete>
+      <v-btn v-if="userCanEdit && saveButton" color="primary" dark class="d-inline-block white--text mt-4"
+             @click="save()">
+        <v-icon class="mr-2">save</v-icon>
+        {{saveButtonText || 'Save'}}
+      </v-btn>
     </v-card-text>
   </v-card>
 
@@ -97,7 +102,14 @@ export default {
       default: false,
       type: Boolean
     },
-    alternateLabel: String
+    alternateLabel: String,
+    saveButton: {
+      type: Boolean,
+      default: false
+    },
+    saveButtonText: {
+
+    }
   },
   data() {
     return {
@@ -153,6 +165,9 @@ export default {
     },
     checkboxChanged(){
       this.$emit('checkbox-changed', this.enabled)
+    },
+    save(){
+      this.$emit('save-multi-select')
     },
     switchLabel(){
       if(this.alternateLabel != null) {

@@ -13,7 +13,8 @@ public enum WhiteListType {
   WORK_QUEUE_TYPE_HIDDEN(10L),
   WORK_QUEUE_CATEGORY_HIDDEN(11L),
   PROCESS_STEP_EVENT_READ_ONLY(13L),
-  EVENT_HIDDEN(17L);
+  EVENT_HIDDEN(17L),
+  PROCESS_STEP_ADD_TO_PROJECT(18L); //todo: make sure this matches prod
 
   public final Long id;
 

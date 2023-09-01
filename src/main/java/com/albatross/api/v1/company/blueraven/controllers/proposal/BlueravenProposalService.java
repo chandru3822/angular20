@@ -41,7 +41,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -60,7 +59,6 @@ import static java.util.function.Predicate.not;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class BlueravenProposalService {
   private static final Long CREATE_PROPOSAL_DESIGN_ID = 3507L;
@@ -208,7 +206,9 @@ public class BlueravenProposalService {
    */
   private void filterCustomFieldsByVisibility(Proposal proposal) {
     List<ProposalStepCustomFieldValue> values = getProjectProcessStepValues(proposal.getProjectProcessStepId());
-    if (values != null && !values.isEmpty()) {
+    log.debug("[Proposals] Found {} custom field values for proposalId={}", values.size(), proposal.getId());
+
+    if (!values.isEmpty()) {
 
       ProposalJsContext jsContext = new ProposalJsContext(values);
 
@@ -232,6 +232,8 @@ public class BlueravenProposalService {
 
           customFieldGroup.setCustomFieldValues(filteredList);
         }
+      } catch (Exception e) {
+        log.error("[Proposals] Error filtering custom fields", e);
       }
     }
   }
