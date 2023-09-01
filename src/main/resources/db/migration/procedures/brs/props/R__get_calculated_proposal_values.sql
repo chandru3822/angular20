@@ -443,6 +443,11 @@ v_redline_markup numeric;
 v_admin_discount numeric;
 v_storage_capacity numeric;
 v_required_down_payment_number numeric;
+v_minimum_tsrf bigint;
+v_utility_rebate_value numeric;
+v_state_rebate_value numeric;
+v_virginia_srec_rebate_amount numeric;
+v_virginia_srec_rate numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -687,11 +692,11 @@ BEGIN
                                                                                                                                field_id,
                                                                                                                                object_code
                                                   from brs.proposal_version_custom_field_value_vw v
-                                                  where v.proposal_version_id <= v_proposal_id
+                                                  where v.proposal_version_id <= v_version_id
                                                     and proposal_group_uuid not in (select distinct proposal_group_uuid
                                                                                     from brs.proposal_version_custom_field_group
                                                                                     where archived is not null
-                                                                                      and proposal_version_id <= v_proposal_id)
+                                                                                      and proposal_version_id <= v_version_id)
                                                   order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
                                             grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
                                                                                        'object_code', object_code,
@@ -728,7 +733,7 @@ BEGIN
   raise notice 'v_panel_watts = % ',v_panel_watts;
   raise notice 'v_panel_brand_id = % ',v_panel_brand_id;
   raise notice 'v_state_id = % ',v_state_id;
-
+  raise notice 'v_postal_code = % ',v_postal_code;
   raise notice 'v_main_panel_upgrade_cost = % ',v_main_panel_upgrade_cost;
   raise notice 'v_structural_upgrade_cost = % ',v_structural_upgrade_cost;
   raise notice 'v_reroof_cost = % ',v_reroof_cost;
@@ -1049,7 +1054,7 @@ BEGIN
   if v_commission_strategy_id = 23610 then
     v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount/1000,0),0);
     v_redline_markup = greatest(v_desired_commission_amount / 0.68,0);
-    v_lead_source_discount = case when  v_source_id = 523 then coalesce(v_closer_gen_discount,0) else 0 end;
+    v_lead_source_discount = case when  v_source_id in (523,524) then coalesce(v_closer_gen_discount,0) else 0 end;
     v_adjusted_price_per_watt = coalesce(v_red_line_funding_amount,0) + coalesce(v_redline_markup,0) - coalesce(v_lead_source_discount,0);
     raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
     raise notice 'v_redline_markup = %',v_redline_markup;
@@ -1106,14 +1111,22 @@ BEGIN
   end if;
   raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_name
+
+  with my_zips as (
+    select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_name,
+           ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 122)') -> 'value')))::bigint[] as postal_codes
+    from proposal_value pv
+    where object_code = 'PROPOSAL_ZONE_ADDERS')
+  select adder_name
   into v_zone_adder
-  from proposal_value pv
-  where object_code = 'PROPOSAL_ZONE_ADDERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intArrayValue == $field))',
-                         jsonb_build_object('field', v_postal_code));
+  from my_zips
+  where v_postal_code::bigint = any(postal_codes);
+
 
   raise notice 'v_zone_adder = %',v_zone_adder;
+  raise notice 'v_equipment_storage_adder = %',v_equipment_storage_adder;
+  raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
+  raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
 
   v_promotion_cost = 0.00;
   if v_product_id = 293 then
@@ -1185,11 +1198,11 @@ BEGIN
 
   v_state_rebate_amount = 0.00::numeric;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as state_rebate_amount,
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as state_rebate_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_state_rebate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as state_rebate_cap_amount,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as state_rebate_cap_percent_of_total
-  into v_state_rebate_amount,v_unit_type_state_rebate,v_state_rebate_cap_amount,v_state_rebate_cap_percent_of_total
+  into v_state_rebate_value,v_unit_type_state_rebate,v_state_rebate_cap_amount,v_state_rebate_cap_percent_of_total
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
@@ -1206,11 +1219,13 @@ BEGIN
   raise notice 'v_state_rebate_cap_percent_of_total***************************** = % ',v_state_rebate_cap_percent_of_total;
 
   v_utility_rebate_amount = 0.00::numeric;
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as utility_rebate_amount,
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as utility_rebate_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_utility_rebate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as utility_rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as utility_rebate_cap_percent_of_total
-  into v_utility_rebate_amount,v_unit_type_utility_rebate,v_utility_rebate_cap_amount,v_utility_rebate_cap_percent_of_total
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as utility_rebate_cap_percent_of_total,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 399)') ->> 'value')::text  as minimum_tsrf
+  into v_utility_rebate_value,v_unit_type_utility_rebate,v_utility_rebate_cap_amount,v_utility_rebate_cap_percent_of_total,
+  v_minimum_tsrf
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
@@ -1221,10 +1236,10 @@ BEGIN
   }'));
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
-  raise notice 'v_utility_rebate_amount***************************** = % ',v_utility_rebate_amount;
+  raise notice 'v_utility_rebate_value***************************** = % ',v_utility_rebate_value;
 
   v_utility_rebate_amount = coalesce(v_utility_rebate_amount, 0);
-  raise notice 'v_utility_rebate_amount***************************** = % ',v_utility_rebate_amount;
+
   raise notice 'v_unit_type_utility_rebate***************************** = % ',v_unit_type_utility_rebate;
   raise notice 'v_utility_rebate_cap_amount***************************** = % ',v_utility_rebate_cap_amount;
   raise notice 'v_utility_rebate_cap_percent_of_total***************************** = % ',v_utility_rebate_cap_percent_of_total;
@@ -1236,7 +1251,7 @@ BEGIN
   raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
   raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
 
---illionios
+--illinios
   if v_state_id = 13 then
     select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 369)') ->> 'value')::numeric as il_srec_less_10,
            (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 370)') ->> 'value')::numeric as il_srec_between_10_25,
@@ -1289,22 +1304,58 @@ BEGIN
     end if;
     raise notice 'v_ill_srec_rebate_amount = %',v_ill_srec_rebate_amount;
   end if;
+  raise notice 'v_minimum_tsrf = %',v_minimum_tsrf;
+  if v_minimum_tsrf is not null then
+    select *
+    into v_utility_rebate_amount
+    from brs.get_rebate_for_utility_with_tsrf(v_aurora_design_summary,
+                                              v_system_size,
+                                              v_utility_rebate_cap_amount,
+                                              v_utility_rebate_value,
+                                              v_minimum_tsrf);
+  else
 
-  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
-                                     v_utility_rebate_amount::numeric, v_unit_type_utility_rebate::bigint,
-                                     (coalesce(v_total_system_cost_before_rebates, 0)),
-                                     null,
-                                     null)
-  into v_utility_rebate_amount;
+    select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
+                                       v_utility_rebate_value::numeric, v_unit_type_utility_rebate::bigint,
+                                       (coalesce(v_total_system_cost_before_rebates, 0)),
+                                       null,
+                                       null)
+    into v_utility_rebate_amount;
 
-  if v_utility_rebate_cap_amount is not null then
-    v_utility_rebate_amount = least(v_utility_rebate_amount::numeric, v_utility_rebate_cap_amount::numeric);
-  elsif v_utility_rebate_cap_percent_of_total is not null then
-    v_utility_rebate_amount =
-      least(v_utility_rebate_amount, v_utility_rebate_cap_percent_of_total * v_total_system_cost_before_rebates);
+    if v_utility_rebate_cap_amount is not null then
+      v_utility_rebate_amount = least(v_utility_rebate_amount::numeric, v_utility_rebate_cap_amount::numeric);
+    elsif v_utility_rebate_cap_percent_of_total is not null then
+      v_utility_rebate_amount =
+        least(v_utility_rebate_amount, v_utility_rebate_cap_percent_of_total * v_total_system_cost_before_rebates);
+    end if;
   end if;
 
   raise notice 'v_utility_rebate_amount = %',v_utility_rebate_amount;
+
+
+  --virginia
+  if v_state_id = 46 then
+    select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric as srec_rate
+    into v_virginia_srec_rate
+    from proposal_value pv
+    where object_code = 'PROPOSAL_REBATE'
+      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
+      "targetFieldId": 86,
+      "intValue": 46
+    }'))
+      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
+      "targetFieldId": 96,
+      "intValue": 1911
+    }'))
+      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
+      "targetFieldId": 93,
+      "intValue": 1969
+    }'));
+
+    raise notice 'v_virginia_srec_rate = %',v_virginia_srec_rate;
+    v_virginia_srec_rebate_amount = v_virginia_srec_rate * v_system_size * 1000;
+    raise notice 'v_virginia_srec_rebate_amount = %',v_virginia_srec_rebate_amount;
+    end if;
 
   --   v_csu_rebate = 0;
 --   if v_utility_company_id = 241 then
@@ -1390,7 +1441,7 @@ BEGIN
 
 
   raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
-  v_above_line_rebate = coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate,0);
+  v_above_line_rebate = coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate,0) + coalesce(v_virginia_srec_rebate_amount,0);
   --+ coalesce(v_csu_rebate, 0);  --Judson wanted me to take out this rebate
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap
@@ -1452,7 +1503,7 @@ BEGIN
   v_total_loan_amount = --todo this will never me done
       ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0) -
          case when v_product_id = 293 then (coalesce(v_required_down_payment,0) + (coalesce(v_required_down_payment,0) * v_initial_payment_factor * 18)/((1-v_dealer_fee)-(v_initial_payment_factor * 18))) else coalesce(v_required_down_payment,0) end  -
-        case when v_product_id = 293 then (coalesce(v_down_payment_amount,0) * v_initial_payment_factor * 18)/((1-v_dealer_fee)-(v_initial_payment_factor * 18))  else coalesce(v_down_payment_amount,0) end ) / (1 - v_dealer_fee)) -
+        case when v_product_id = 293 then (coalesce(v_down_payment_amount,0) * v_initial_payment_factor * 18)/((1-v_dealer_fee)-(v_initial_payment_factor * 18))  else 0::numeric end ) / (1 - v_dealer_fee)) -
       coalesce(v_other_adder_and_discount_amount, 0) +
       (284.00::numeric/ (1 - v_dealer_fee)) - coalesce(v_admin_discount,0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
@@ -1462,22 +1513,40 @@ BEGIN
   v_check_from_br = 0.00::numeric;
   if v_product_id in (293, 19424) then
     v_check_from_br = round((v_total_loan_amount * v_initial_payment_factor)::numeric, 2);
+    v_promotion_cost = v_check_from_br*18;
+    raise notice 'v_promotion_cost = %',v_promotion_cost;
   end if;
 
   raise notice 'v_check_from_br = %',v_check_from_br;
 
-  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
-                                     v_state_rebate_amount::numeric, v_unit_type_state_rebate::bigint,
-                                     (coalesce(v_total_system_cost_before_rebates, 0)),
-                                     null,
-                                     null)
-  into v_state_rebate_amount;
+  if v_state_id  = 40 then
+    select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
+                                       v_state_rebate_value::numeric, v_unit_type_state_rebate::bigint,
+                                       (coalesce(v_total_loan_amount,0) + coalesce(v_down_payment_amount,0) + coalesce(v_required_down_payment,0)),
+                                       null,
+                                       null)
+    into v_state_rebate_amount;
+    if v_state_rebate_cap_amount is not null then
+      v_state_rebate_amount = least(v_state_rebate_amount::numeric, v_state_rebate_cap_amount::numeric);
+    elsif v_state_rebate_cap_percent_of_total is not null then
+      v_state_rebate_amount =
+        least(v_state_rebate_amount, v_state_rebate_cap_percent_of_total * (coalesce(v_total_loan_amount,0) + coalesce(v_down_payment_amount,0) + coalesce(v_required_down_payment,0)));
+    end if;
+  else
+    select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
+                                       v_state_rebate_value::numeric, v_unit_type_state_rebate::bigint,
+                                       (coalesce(v_total_system_cost_before_rebates, 0)),
+                                       null,
+                                       null)
+    into v_state_rebate_amount;
 
-  if v_state_rebate_cap_amount is not null then
-    v_state_rebate_amount = least(v_state_rebate_amount::numeric, v_state_rebate_cap_amount::numeric);
-  elsif v_state_rebate_cap_percent_of_total is not null then
-    v_state_rebate_amount =
-      least(v_state_rebate_amount, v_state_rebate_cap_percent_of_total * v_total_system_cost_before_rebates);
+    if v_state_rebate_cap_amount is not null then
+      v_state_rebate_amount = least(v_state_rebate_amount::numeric, v_state_rebate_cap_amount::numeric);
+    elsif v_state_rebate_cap_percent_of_total is not null then
+      v_state_rebate_amount =
+        least(v_state_rebate_amount, v_state_rebate_cap_percent_of_total * v_total_system_cost_before_rebates);
+    end if;
+
   end if;
 
   raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
@@ -1669,7 +1738,7 @@ BEGIN
         coalesce(v_total_loan_amount,0) + coalesce(v_required_down_payment,0) +
         coalesce(v_down_payment_amount,0) -
         coalesce(v_federal_tax_incentive_amount, 0) -
-          coalesce(v_state_rebate_amount, 0) -coalesce(v_above_line_rebate, 0);
+          coalesce(v_state_rebate_amount, 0);
   raise notice 'v_net_system_cost = %',v_net_system_cost;
 
   v_current_estimated_annual_utility_bill =
@@ -1781,20 +1850,20 @@ BEGIN
              coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
              coalesce(v_ac_unit_relocation_cost, 0)::numeric),
             v_adjusted_price_per_watt,
-            v_total_loan_amount,
-            v_total_system_cost,
+            round(v_total_loan_amount,2),
+            round(v_total_system_cost,2),
             v_estimated_offset,
             v_dealer_fee,
             v_utility_cost_escalator,
             v_panel_degradation_factor,
             v_production_factor,
-            v_total_system_cost,
+            round(v_total_system_cost,2),
             (v_down_payment_amount + v_above_line_rebate),
             v_referral_promotion,
             v_initial_system_cost,
-            v_total_loan_amount,
-            v_federal_tax_incentive_amount,
-            v_state_rebate_amount,
+            round(v_total_loan_amount,2),
+            round(v_federal_tax_incentive_amount,2),
+            round(v_state_rebate_amount,2),
             v_monthly_cost_today_without_solar,
             v_monthly_solar_payment,
             v_monthly_cost_today_avg_remaining_electrical_bill,
@@ -1805,8 +1874,8 @@ BEGIN
             v_estimated_annual_energy_consumption_kwh,
             (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),
             v_monthly_cost_25_year_average_without_solar,
-            v_total_cost_25_years,
-            v_total_savings_25_years,
+            round(v_total_cost_25_years,2),
+            round(v_total_savings_25_years,2),
             v_remaining_monthly_electric_bill_25_year_average,
             v_reamortized_monthly_payment_all_credits_to_loan,
             v_initial_monthly_payment_all_credits_to_loan,
