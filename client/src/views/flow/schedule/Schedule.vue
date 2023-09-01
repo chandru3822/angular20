@@ -755,6 +755,9 @@
       },
       zoomToMap(item, value) {
         if(value){
+          console.log('zoom zoom')
+          console.log('longitude', item.longitude)
+          console.log('latitude', item.latitude)
           this.state.mapZoom = 15
           this.state.mapLongitude = item.longitude
           this.state.mapLatitude = item.latitude
