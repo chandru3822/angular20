@@ -10,6 +10,7 @@
               <AddProcessStep
                 v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
                 class="d-inline-block"
+                :admin="$store.getters.isFullAdmin"
                 :project-id="projectId"
                 :process-id="project.processId"
                 :contact-id="project.contactId"
