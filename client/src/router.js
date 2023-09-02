@@ -27,6 +27,11 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "forgotPassword" */'./views/ForgotPassword.vue')
     },
     {
+      path: '/stripeSuccess',
+      name: 'stripeSuccess',
+      component: () => import(/* webpackChunkName: "forgotPassword" */'./views/StripeSuccessLanding.vue')
+    },
+    {
       path: '/siteUnderMaintenance',
       name: 'siteUnderMaintenance',
       component: () => import(/* webpackChunkName: "forgotPassword" */'./views/SiteUnderMaintenance.vue')

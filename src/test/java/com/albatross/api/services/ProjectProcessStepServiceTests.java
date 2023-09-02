@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService
 import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
 import com.albatross.api.v1.company.blueraven.services.GoodleapService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.StripeService;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepAction;
@@ -78,6 +79,8 @@ public class ProjectProcessStepServiceTests {
 
   BirdEyeService birdeyeService = mock(BirdEyeService.class);
 
+  StripeService stripeService = mock(StripeService.class);
+
   private ProjectProcessStepAction action;
 
   private List<ProcessStepLogic> processStepLogicList;
@@ -87,7 +90,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
