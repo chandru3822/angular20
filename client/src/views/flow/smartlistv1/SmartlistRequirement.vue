@@ -88,7 +88,7 @@
           label="Field"
           :items="availableFields"
           item-text="name"
-          item-value="customFieldGroupAssignmentId"
+          :item-value="item =>`${item.name} - ${item.smartlistFieldId} - ${item.customFieldGroupAssignmentId}`"
           return-object
           attach
           @input="[
