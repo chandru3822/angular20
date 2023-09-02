@@ -41,7 +41,7 @@ public class StripeService {
             inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
             inner join flow.project p on pps.project_id = p.id
         where project_process_step_event_id = :ppsEventId
-            and case when p.company_process_id = 20 then custom_field_group_assignment_id = 26138
+            and case when p.company_process_id = 20 then custom_field_group_assignment_id = 26154
             else custom_field_group_assignment_id = 26138 end
     """;
 
@@ -49,7 +49,6 @@ public class StripeService {
         try {
             Stripe.apiKey = stripeApiToken;
 
-            //todo: update when company_process_id = 20 to the right cfga ID from Bradley
             Map<String, Object> cfvParams = new HashMap<>();
             cfvParams.put("ppsEventId", ppsEventId);
 
