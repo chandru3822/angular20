@@ -7,7 +7,7 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn text color="primary" v-if="userCanEdit" @click="editZone = !editZone">
+        <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editZone = !editZone">
           <v-icon>edit</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -77,7 +77,7 @@
     </div>
     <v-divider></v-divider>
     <!--    <v-toolbar dense color="white" tabs flat class="elevation-1">-->
-    <v-tabs :optional="false" color="primary"
+    <v-tabs :optional="false" color="primary" id="round-robin-tabs"
             slot="extension"
             class="hello"
             dense
@@ -189,6 +189,16 @@ export default {
 <style lang="scss" scoped>
 .dtf {
   font-size: 14px;
+}
+</style>
+<style lang="scss">
+@media (max-width: 959px) {
+  #round-robin-tabs > div > div.v-slide-group__wrapper > div {
+    justify-content: center;
+  }
+  #round-robin-tabs > div > div.v-slide-group__prev.v-slide-group__prev--disabled {
+    display: none;
+  }
 }
 </style>
 

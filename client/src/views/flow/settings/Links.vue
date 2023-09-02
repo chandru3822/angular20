@@ -3,11 +3,11 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Links</v-toolbar-title>
+          <v-toolbar-title class="title-large">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newLink = { url: ''}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
+              <v-icon v-if="isMobile">{{addNew ? 'close' : 'add'}}</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -24,11 +24,11 @@
                           label="URL">
             </v-text-field>
             <div>
-              These parameters can be used to add some system values to a url. <br/>
-              Validation is not yet in place so be careful which screens you assign a url to. <br/>
-              If you want to use the value from a cfga, prefix the id with CFGA_ID_. <br/>
-              For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
-              <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
+              <p>These parameters can be used to add some system values to a url. </p>
+              <p>Validation is not yet in place so be careful which screens you assign a url to.</p>
+              <p>If you want to use the value from a cfga, prefix the id with CFGA_ID_. </p>
+              <p>For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
+              <v-btn text outlined color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
                 {{p.name}}
               </v-btn>
             </div>
@@ -37,41 +37,46 @@
           <div v-else>
             <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
                     :key="index"  class="pa-0">
-              <v-list-item :class="{'shaded-row': index % 2}">
+              <v-list-item :class="{'shaded-row': index % 2, 'flex-column': $vuetify.breakpoint.smAndDown && selectedLinkId === a.id}">
                 <v-list-item-content class="text-left">
                   <div v-if="selectedLinkId === a.id">
                     <v-text-field class="one-hunned"
+                                  :class="{'px-4': $vuetify.breakpoint.smAndDown}"
                                   label="Link"
                                   v-model="a.link">
                     </v-text-field>
                     <v-text-field class="one-hunned"
+                                  :class="{'px-4': $vuetify.breakpoint.smAndDown}"
                                   label="URL"
                                   clearable
                                   v-model="a.url">
                     </v-text-field>
                     <div>
-                      These parameters can be used to add some system values to a url. <br/>
-                      Validation is not yet in place so be careful which screens you assign a url to. <br/>
-                      If you want to use the value from a cfga, prefix the id with CFGA_ID_ <br/>
-                      For example, you should not add a url using "Project Process Step Event ID" to a Process Step. <br/>
-                      <v-btn color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
-                        {{p.name}}
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}">These parameters can be used to add some system values to a url. </p>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}">Validation is not yet in place so be careful which screens you assign a url to. </p>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}"> If you want to use the value from a cfga, prefix the id with CFGA_ID_ </p>
+                      <p :class="{'px-4': $vuetify.breakpoint.smAndDown}">For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
+                      <v-btn text outlined color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
+                        <span>{{p.name}}</span>
                       </v-btn>
                     </div>
                   </div>
                   <div v-else>{{a.link}}</div>
                 </v-list-item-content>
-                <v-list-item-action class="clickable" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-btn text color="primary" :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id" @click="saveLink(a)">
+                <div :class="{'d-flex flex-row align-center justify-end': $vuetify.breakpoint.smAndDown, 'align-self-end': selectedLinkId === a.id && $vuetify.breakpoint.smAndDown}">
+                  <v-btn text color="primary" :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveLink(a)">
                     <v-icon>save</v-icon>
                   </v-btn>
-                  <v-icon v-else color="primary" @click="selectedLinkId = a.id">edit</v-icon>
-                </v-list-item-action>
+                  <v-icon v-else-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" color="primary" @click="selectedLinkId = a.id">edit</v-icon>
+                  <v-btn small text color="primary" v-if="selectedLinkId === a.id" @click="selectedLinkId = null">
+                    <v-icon>close</v-icon>
+                  </v-btn>
                 <v-btn small text color="primary"
                        v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                        @click="linkToDelete=a">
                   <v-icon>delete</v-icon>
                 </v-btn>
+                </div>
               </v-list-item>
             </v-list>
           </div>
@@ -124,7 +129,10 @@
     computed: {
       linkToDeleteValue(){
         return this.linkToDelete ? this.linkToDelete.link : ''
-      }
+      },
+      isMobile(){
+        return this.$vuetify.breakpoint.smAndDown
+      },
     },
     methods: {
       updateUrl(item, code) {

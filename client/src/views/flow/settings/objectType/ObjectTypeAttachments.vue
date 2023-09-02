@@ -7,8 +7,8 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="getAvailableAttachmentTypes" v-if="userCanAdd">
-              <v-icon v-if="!addNewType">add</v-icon>
-              {{ addNewType ? 'Cancel' : 'Add Type' }}
+              <v-icon>{{ addNewType ? 'close' : 'add' }}</v-icon>
+              <span v-if="$vuetify.breakpoint.smAndUp">{{ addNewType ? 'Cancel' : 'Add Type' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -29,10 +29,9 @@
             :items-per-page="-1"
             :sort-desc="[false]"
             :sort-by="['displayOrder']"
-            :mobile-breakpoint="0"
             hide-default-footer
             disable-sort
-            class="attachment-type-table elevation-1 fix-column-width-bug square-card"
+            class="attachment-type-table elevation-1 square-card table-striped"
           >
             <template #no-data>
               No attachment types found
@@ -41,45 +40,35 @@
             <template #no-results>
               No attachment types found
             </template>
-
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
-<!--                <td style="width: 50px">-->
-<!--                  <v-btn text v-if="userCanEdit" icon small class="handle">-->
-<!--                    <v-icon>drag_handle</v-icon>-->
-<!--                  </v-btn>-->
-<!--                </td>-->
-                <td class="text-left">{{item.attachmentType}}</td>
-                <td v-if="showUploadable">
-                  <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
-                              @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
-                  </v-checkbox>
-                </td>
-                <td v-if="showLinkable">
-                  <v-checkbox type="checkbox" class="ml-3" v-model="item.linkable"
-                    @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
-                  </v-checkbox>
-                </td>
-                <td v-if="showFocused">
-                  <v-checkbox type="checkbox" class="ml-3" v-model="item.focused"
-                              @change="updateType(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
-                  </v-checkbox>
-                </td>
-                <td>
-                  <div style="display: flex; justify-content: flex-end">
-                    <router-link class="no-text-decoration pr-3"
-                                 :to="getAttachmentTypeUrl(item.id)">
-                      <v-btn small text >
-                        <v-icon>edit</v-icon>
-                      </v-btn>
-                    </router-link>
-                    <v-btn v-if="userCanEdit" small text color="primary" class="clickable"
-                           @click="attachmentTypeToDelete=item">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </div>
-                </td>
-              </tr>
+            <template #item.attachmentType="{item}" class="text-left">{{item.attachmentType}}</template>
+            <template #item.allowUpload="{item}">
+              <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
+                          @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+              </v-checkbox>
+            </template>
+            <template #item.linkable="{item}">
+              <v-checkbox type="checkbox" class="ml-3" v-model="item.linkable"
+                          @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
+              </v-checkbox>
+            </template>
+            <template #item.focused="{item}">
+              <v-checkbox type="checkbox" class="ml-3" v-model="item.focused"
+                          @change="updateType(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
+              </v-checkbox>
+            </template>
+            <template #item.icons="{item, index}">
+              <div style="display: flex; justify-content: flex-end">
+                <router-link class="no-text-decoration pr-3"
+                             :to="getAttachmentTypeUrl(item.id)">
+                  <v-btn small text color="primary">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                </router-link>
+                <v-btn v-if="userCanEdit" small text color="primary" class="clickable"
+                       @click="attachmentTypeToDelete=item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
+              </div>
             </template>
           </v-data-table>
       </v-col>
@@ -162,7 +151,8 @@ export default {
         {text: 'Focused', value: 'focused', show: this.showFocused, width: 100},
         {text: null, value: 'icons', show: true, width: 150}
       ]
-    }
+    },
+
   },
   data () {
     return {
