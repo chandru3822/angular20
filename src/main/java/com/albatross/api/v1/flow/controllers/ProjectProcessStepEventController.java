@@ -126,7 +126,15 @@ public class ProjectProcessStepEventController {
         pubSubService.publish(EventChannel.NOTIFICATION, ptm);
       }
 
-      return ResponseEntity.ok(getPpsEvent(ppsId, ppseActionResult.getPpsEventId()));
+      //why in the world do we return the entire object here?
+      Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
+
+      //add in the child function returned strings
+      if(ppsEvent.isPresent()) {
+        ppsEvent.get().setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings());
+      }
+
+      return ResponseEntity.ok(ppsEvent);
     } catch (Exception e) {
       User currentUser = securityService.getCurrentUser();
       final String errMessage =
