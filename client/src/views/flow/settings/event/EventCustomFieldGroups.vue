@@ -342,7 +342,7 @@
                           </v-list-item-action>
                           <v-list-item-content>
                             <div v-if="cf.ancillaryCustomFieldGroupAssignmentId">
-                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{ cf.fieldName }} </a>
+                              <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.processStepName || cf.objectType }}: {{ cf.groupName }} - {{ cf.fieldName }} (Ancillary) {{ cf.customFieldGroupAssignmentHidden ? '(Hidden)' : ''}}</a>
                             </div>
                             <div v-else>
                               <a :href="`/settings/customField/${cf.customFieldId}`">{{ cf.fieldName }} </a>
@@ -362,7 +362,9 @@
                               <v-row>
                                 <v-col cols="12">
                                   <v-row class="flex-display">
-                                  <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'"
+                                  <v-card flat
+                                          v-if="!cf.ancillaryCustomFieldGroupAssignmentId"
+                                          :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'"
                                           class="square-card px-4" style="width:50%">
                                     <v-card-text v-if="cf.systemReadonly" class="mt-2">
                                       System Readonly Cannot Change
