@@ -766,7 +766,7 @@ BEGIN
                     (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
              from proposal_value pv
              where object_code = 'PROPOSAL_SITE_SURVEY')
-  select string_agg(t.adder_name, ', ')
+  select string_agg(t.adder_name,',')
   into v_site_survey_items
   from t
   where val = any (v_site_survey_time_adders);
@@ -1829,7 +1829,9 @@ BEGIN
                                          loan_product,
                                          financed_system_cost_with_fees,
                                          financed_ancillary_cost_with_fees,
-                                         total_promotion_amount)
+                                         total_ancillary_cost,
+                                         total_promotion_amount,
+                                         storage_cost_with_fees)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1923,7 +1925,14 @@ BEGIN
             coalesce(v_tree_trimming_cost, 0)::numeric +
             coalesce(v_trenching_cost, 0)::numeric +
             coalesce(v_ac_unit_relocation_cost, 0)::numeric)*(1-v_dealer_fee),
-            coalesce(v_promotion_cost,0));
+            (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+             coalesce(v_structural_upgrade_cost, 0)::numeric +
+             coalesce(v_reroof_cost, 0)::numeric +
+             coalesce(v_tree_trimming_cost, 0)::numeric +
+             coalesce(v_trenching_cost, 0)::numeric +
+             coalesce(v_ac_unit_relocation_cost, 0)::numeric),
+            coalesce(v_promotion_cost,0),
+            v_loan_price_storage);
   end if;
 
   return query
