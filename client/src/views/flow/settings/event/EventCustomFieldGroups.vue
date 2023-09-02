@@ -379,7 +379,7 @@
                                         :title="'Read Only'"
                                         :label="'Allowed Positions'"
                                         :alternateLabel = "'Denied Positions'"
-                                        :allow="cf.customFieldGroupAssignmentReadOnlyAllow"
+                                        :allow="cf.customFieldGroupAssignmentReadOnlyAllow || null == cf.customFieldGroupAssignmentReadOnlyAllow"
                                         :contentLoading="positionsLoading"
                                         @selected-changed="cfgReadOnlySelectedEventListener($event, cf)"
                                         @allow-changed="cfgReadOnlyAllowEventListener($event, cf)"
@@ -406,7 +406,7 @@
                                         :title="'Hidden'"
                                         :label="'Allowed Positions'"
                                         :alternateLabel = "'Denied Positions'"
-                                        :allow="cf.customFieldGroupAssignmentHiddenAllow"
+                                        :allow="cf.customFieldGroupAssignmentHiddenAllow || null == cf.customFieldGroupAssignmentHiddenAllow"
                                         :contentLoading="positionsLoading"
                                         @selected-changed="cfgHiddenSelectedEventListener($event, cf)"
                                         @allow-changed="cfgHiddenAllowEventListener($event, cf)"
@@ -1023,6 +1023,8 @@ export default {
     async saveReadOnlyAndWhiteList(field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        field.customFieldGroupAssignmentReadOnlyAllow = null != field.customFieldGroupAssignmentReadOnlyAllow ? field.customFieldGroupAssignmentReadOnlyAllow : true
+        field.whiteListedPositions = null != field.whiteListedPositions ? field.whiteListedPositions : []
         await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
         field.positionsChanged = false
         if (!field.customFieldGroupAssignmentReadOnly) {
@@ -1039,6 +1041,9 @@ export default {
     async saveHiddenAndWhiteList(field) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        field.customFieldGroupAssignmentHiddenAllow = null != field.customFieldGroupAssignmentHiddenAllow ? field.customFieldGroupAssignmentHiddenAllow : true
+        field.hiddenWhiteListedPositions = null != field.hiddenWhiteListedPositions ? field.hiddenWhiteListedPositions : []
+
         await putRequest(`/customFieldGroup/saveHiddenAndWhiteList?savePositions=${field.hiddenPositionsChanged ?? false}`, field)
         field.hiddenPositionsChanged = false
         if (!field.customFieldGroupAssignmentHidden) {
