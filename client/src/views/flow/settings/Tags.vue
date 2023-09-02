@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Tags</v-toolbar-title>
+          <v-toolbar-title v-if="!constants.IS_MOBILE" class="title-large">Tags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary"
@@ -55,7 +55,7 @@
           <div v-else>
             <v-list v-for="(a, index) in filterBy(tags, false, 'archived')"
                     :key="index" class="pa-0">
-              <v-list-item :class="{'shaded-row': index % 2}">
+              <v-list-item :class="{'shaded-row': index % 2, 'mobile': $vuetify.breakpoint.smAndDown}">
                 <v-list-item-content class="text-left">
                   <div v-if="selectedTagId === a.id">
                     <v-text-field class="one-hunned"
@@ -95,15 +95,18 @@
                     {{ a.tagName }}
                   </div>
                 </v-list-item-content>
-                <v-list-item-action class="clickable"
+                <div>
+                <span class="clickable"
                                     v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-                  <v-btn text color="primary" :disabled="!a.tagName || !a.fontColor || !a.bgColor"
+                  <v-btn text small color="primary" :disabled="!a.tagName || !a.fontColor || !a.bgColor"
                          v-if="selectedTagId === a.id" @click="saveTag(a, false)">
                     <v-icon>save</v-icon>
                   </v-btn>
-                  <v-icon v-else color="primary" @click="selectedTagId = a.id">edit</v-icon>
-                </v-list-item-action>
-                <v-btn text color="primary" v-if="selectedTagId === a.id" @click="selectedTagId = null">
+                  <v-btn v-else text small color="primary" @click="selectedTagId = a.id">
+                  <v-icon>edit</v-icon>
+                    </v-btn>
+                </span>
+                <v-btn small text color="primary" v-if="selectedTagId === a.id" @click="selectedTagId = null">
                   <v-icon>close</v-icon>
                 </v-btn>
                 <v-btn small text color="primary"
@@ -131,6 +134,7 @@
                   </template>
                   <span>Tag ID: {{ a.id }}</span>
                 </v-tooltip>
+                </div>
               </v-list-item>
             </v-list>
           </div>
@@ -253,4 +257,8 @@ export default {
   }
 }
 </script>
-
+<style scoped lang="scss">
+.mobile {
+  flex-direction: column;
+}
+</style>

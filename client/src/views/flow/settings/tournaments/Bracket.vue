@@ -3,9 +3,9 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Brackets</v-toolbar-title>
+          <v-toolbar-title class="title-large">Brackets</v-toolbar-title>
           <v-spacer></v-spacer>
-          <v-btn text color="primary" @click="addBracket = !addBracket">
+          <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="addBracket = !addBracket">
             <v-icon>add</v-icon>
           </v-btn>
         </v-toolbar>
@@ -30,33 +30,35 @@
         </v-card>
         <div :key="bracketRerenderKey">
           <v-card flat
-
                   :class="{'shaded-row': index % 2}" class="pa-3 square-card"
                   v-for="(b, index) in filterBy(tournament.brackets, false, 'archived')" :key="index">
             <v-toolbar flat color="transparent">
-              <v-toolbar-title class="app-title">
+              <v-toolbar-title class="title-large text-wrap">
                 Bracket #{{index + 1}}: {{ b.numberOfUsers }} Users
               </v-toolbar-title>
               <v-spacer></v-spacer>
-              <v-btn color="primary"
+              <v-btn text color="primary" :class="{'no-display': b.matchesGenerated && $vuetify.breakpoint.xsOnly}"
                      @click="bracketForMatches = b"
                      :disabled="b.matchesGenerated || b.rounds.length === 0">
-                <span v-if="!b.matchesGenerated">Generate Matches</span>
+                <v-icon large v-if="!b.matchesGenerated && $vuetify.breakpoint.smAndDown">mdi-tournament</v-icon>
+                <span v-else-if="!b.matchesGenerated">Generate Matches</span>
                 <span v-else>Matches Created</span>
               </v-btn>
               <v-btn v-if="b.maxRounds" text disabled color="primary" class="white--text">
-                <span>Max Rounds Reached</span>
+                <span v-if="$vuetify.breakpoint.smAndDown">Max</span>
+                <span v-else>Max Rounds Reached</span>
               </v-btn>
               <v-btn text color="primary" v-else-if="!b.matchesGenerated" class="white--text"
                      @click="[b.addRound = !b.addRound, rerenderBracket()]">
-                <span v-if="!b.addRound">Add Round</span>
+                <v-icon large v-if="!b.addRound && $vuetify.breakpoint.smAndDown">add</v-icon>
+                <span v-else-if="!b.addRound">Add Round</span>
                 <span v-else>Cancel</span>
               </v-btn>
-              <v-btn small text color="primary" @click="bracketToCopy=b"
+              <v-btn small icon :large="$vuetify.breakpoint.smAndDown" class="mx-3" color="primary" @click="bracketToCopy=b"
                      v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')">
                 <v-icon>mdi-content-copy</v-icon>
               </v-btn>
-              <v-btn small color="primary" text v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')" @click="bracketToDelete=b"><v-icon>delete</v-icon></v-btn>
+              <v-btn small :large="$vuetify.breakpoint.smAndDown" color="primary" icon v-if="$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')" @click="bracketToDelete=b"><v-icon>delete</v-icon></v-btn>
             </v-toolbar>
             <v-card flat v-if="b.addRound">
               <DatetimePickerInput
@@ -80,13 +82,13 @@
               </v-btn>
             </v-card>
             <v-data-table
-              :key="rerenderKey"
-              :headers="headers"
-              :items="filterRounds(b)"
-              hide-default-footer
-              :items-per-page="-1"
-              disable-sort
-              class="elevation-1 square-card"
+                :key="rerenderKey"
+                :headers="headers"
+                :items="filterRounds(b)"
+                hide-default-footer
+                :items-per-page="-1"
+                disable-sort
+                class="elevation-1 square-card table-striped"
             >
               <template #no-data>
                 <span class="default-text-color">No available rounds</span>
@@ -96,59 +98,53 @@
                 <span class="default-text-color">No available rounds</span>
               </template>
 
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left">
-                    {{item.roundNumber}}
-                  </td>
-                  <td class="text-left">
-                    {{ getNumberOfUsers(b, item) }}
-                  </td>
-                  <td class="text-left">
-                    {{ getNumberOfMatches(b, item) }}
-                  </td>
-                  <td class="text-left">
-                    <span v-if="!item.edit">{{item.startDate | formatDate('date', 'MM/DD/YYYY')}}</span>
-                    <DatetimePickerInput
-                      v-else
-                      v-model="item.startDate"
-                      :timezone="timezone"
-                      :type="'date'"
-                      :format="'MMMM DD, YYYY'"
-                      label="Start Date"
-                    />
-                  </td>
-                  <td class="text-left">
-                    <span v-if="!item.edit">{{item.endDate | formatDate('date', 'MM/DD/YYYY')}}</span>
-                    <DatetimePickerInput
-                      v-else
-                      v-model="item.endDate"
-                      :timezone="timezone"
-                      :type="'date'"
-                      :format="'MMMM DD, YYYY'"
-                      label="End Date"
-                    />
-                  </td>
-                  <td>
-                    <div v-if="index === b.rounds.length - 1">
-                      NOTE: This is the final round, it is for displaying the finalists. It will not actually be played.
-                    </div>
-                  </td>
-                  <td class="text-right">
-                    <v-btn small text color="primary" @click="[item.edit = !item.edit, rerenderKey++]">
-                      <v-icon v-if="!item.edit">edit</v-icon>
-                      <span v-else>cancel</span>
-                    </v-btn>
-                    <v-btn v-if="item.edit" text color="primary"
-                           :disabled="!item.startDate || !item.endDate || item.startDate > item.endDate"
-                           @click="saveRound(b, item)">Save
-                    </v-btn>
-                    <v-btn text color="primary" @click="[roundToDelete = item, bracketToDeleteRoundFrom = b]"
-                           v-if="!b.matchesGenerated && $store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </td>
-                </tr>
+
+              <template #item.users="{item}" class="text-left">
+                {{ getNumberOfUsers(b, item) }}
+              </template>
+              <template #item.matches="{item}" class="text-left">
+                {{ getNumberOfMatches(b, item) }}
+              </template>
+              <template #item.startDate="{item}" class="text-left">
+                <span v-if="!item.edit">{{item.startDate | formatDate('date', 'MM/DD/YYYY')}}</span>
+                <DatetimePickerInput
+                    v-else
+                    v-model="item.startDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :format="'MMMM DD, YYYY'"
+                    label="Start Date"
+                />
+              </template>
+              <template #item.endDate="{item}" class="text-left">
+                <span v-if="!item.edit">{{item.endDate | formatDate('date', 'MM/DD/YYYY')}}</span>
+                <DatetimePickerInput
+                    v-else
+                    v-model="item.endDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :format="'MMMM DD, YYYY'"
+                    label="End Date"
+                />
+              </template>
+              <template #item.notes="{item, index}">
+                <div v-if="index === b.rounds.length - 1">
+                  NOTE: This is the final round, it is for displaying the finalists. It will not actually be played.
+                </div>
+              </template>
+              <template #item.icons="{item}" class="text-right">
+                <v-btn small text color="primary" @click="[item.edit = !item.edit, rerenderKey++]">
+                  <v-icon v-if="!item.edit">edit</v-icon>
+                  <span v-else :class="{'body-large': $vuetify.breakpoint.smAndDown}">cancel</span>
+                </v-btn>
+                <v-btn v-if="item.edit" icon color="primary" :class="{'mx-4': $vuetify.breakpoint.smAndDown}"
+                       :disabled="!item.startDate || !item.endDate || item.startDate > item.endDate"
+                       @click="saveRound(b, item)"><span :class="{'body-large': $vuetify.breakpoint.smAndDown}">Save</span>
+                </v-btn>
+                <v-btn text color="primary" @click="[roundToDelete = item, bracketToDeleteRoundFrom = b]"
+                       v-if="!b.matchesGenerated && $store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </template>
             </v-data-table>
           </v-card>

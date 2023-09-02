@@ -3,11 +3,12 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Round Robins</v-toolbar-title>
+          <v-toolbar-title class="title-large">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
-              {{'Add New'}}
+              <span v-if="!addNew">{{'Add New'}}</span>
+              <span v-else>{{'Cancel'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -31,7 +32,7 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <v-btn color="primary" :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone">Save</v-btn>
+            <v-btn color="primary" :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone" class="mb-3">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -52,8 +53,10 @@
               :items-per-page="-1"
               disable-sort
               :loading="dataLoading"
+              @click:row="goToPostalCodeZone"
               hide-default-footer
-              class="elevation-1 round-robin-table"
+              :mobile-breakpoint="770"
+              class="elevation-1 round-robin-table table-striped"
             >
 
               <template #header.zoneName="{ header }">
@@ -68,19 +71,11 @@
                 </th>
               </template>
 
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.zoneName}}</td>
-                  <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.distributionTimeFrameDays}}</td>
-                  <td class="text-left clickable" @click="goToPostalCodeZone(item.id)">{{item.schedulableFutureDays}}</td>
-                  <td class="text-right">
-                    <v-btn small text color="primary" @click="goToPostalCodeZone(item.id)">
+              <template #item.icons="{ item }"class="text-right">
+                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToPostalCodeZone(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn v-if="userCanDelete" text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
-                  </td>
-
-                </tr>
+                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
               </template>
             </v-data-table>
           </v-card>
@@ -164,8 +159,8 @@
       filterPostalCodeZones () {
         return this.postalCodeZones.filter(pcz => { return !pcz.archived})
       },
-      goToPostalCodeZone(zoneId) {
-        this.$router.push({path: `/settings/postalCode/${zoneId}/scheduleTo`})
+      goToPostalCodeZone(zone) {
+        this.$router.push({path: `/settings/postalCode/${zone.id}/scheduleTo`})
       },
       async getPostalCodeZones () {
         this.dataLoading = true
