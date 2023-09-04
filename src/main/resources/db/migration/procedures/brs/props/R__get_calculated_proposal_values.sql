@@ -771,6 +771,9 @@ BEGIN
   from t
   where val = any (v_site_survey_time_adders);
 
+  select string_agg(trim(v_site_survey_items, E'\n\r\t '),',')::text
+    into v_site_survey_items;
+
   raise notice 'v_site_survey_items = %',v_site_survey_items;
 
   select sum(site_survey_duration::bigint)
