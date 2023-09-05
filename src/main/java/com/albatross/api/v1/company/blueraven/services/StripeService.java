@@ -36,22 +36,21 @@ public class StripeService {
     //language=PostgreSQL
     public final static String getDownPaymentAmount = """
         select (int_value * 100)::int
-        from flow.project_process_step_event_custom_field_value ppsecfv
-            inner join flow.project_process_step_event ppse on ppsecfv.project_process_step_event_id = ppse.id
-            inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
-            inner join flow.project p on pps.project_id = p.id
-        where project_process_step_event_id = :ppsEventId
-            and case when p.company_process_id = 20 then custom_field_group_assignment_id = 26157
-                     when p.company_process_id = 18 then custom_field_group_assignment_id = 26158
-                     else custom_field_group_assignment_id = 26156 end
+        from flow.project_process_step_custom_field_value ppscfv
+                 inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+                 inner join flow.project p on pps.project_id = p.id
+        where pps.id = :ppsId
+          and case when p.company_process_id = 20 then custom_field_group_assignment_id = 26157
+                   when p.company_process_id = 18 then custom_field_group_assignment_id = 26158
+                   else custom_field_group_assignment_id = 26156 end
     """;
 
-    public String chargeProject(Long projectId, Long ppsEventId) throws Exception {
+    public String chargeProject(Long projectId, Long ppsId) throws Exception {
         try {
             Stripe.apiKey = stripeApiToken;
 
             Map<String, Object> cfvParams = new HashMap<>();
-            cfvParams.put("ppsEventId", ppsEventId);
+            cfvParams.put("ppsId", ppsId);
 
             Optional<Long> downPaymentAmount = sqlCache.queryForObjectOptionalBySql(getDownPaymentAmount, cfvParams, Long.class);
 

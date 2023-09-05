@@ -475,9 +475,9 @@ public class BrsProcessStepActionFunctionService {
 
   public String generateStripeDownPaymentCheckout(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
     final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
-    final Long ppsEventId = Long.parseLong(systemValues.get("ppsEventId").toString());
+    final Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
     try {
-      String url = stripeService.chargeProject(projectId, ppsEventId);
+      String url = stripeService.chargeProject(projectId, ppsId);
       if (url != null) {
         return url;
       }
