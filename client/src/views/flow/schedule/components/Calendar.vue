@@ -251,12 +251,6 @@
         <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
       </v-list>
       </v-menu>
-<!--      <ConfirmationDialog :open-dialog="daySelector" @close-dialog="daySelector = false" hide-confirm :width="300">-->
-<!--        <template v-slot:title>Select Day</template>-->
-<!--        <v-list>-->
-<!--          <v-list-item v-for="option in dayOptions()" @click="switchToDayView(option)" class="clickable"><span class="primary&#45;&#45;text">{{option.formattedDate}}</span></v-list-item>-->
-<!--        </v-list>-->
-<!--      </ConfirmationDialog>-->
     </div>
   </div>
 </template>
