@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +19,7 @@ import java.util.Optional;
 @RequestMapping(
     value = "/api/v1/company/blueraven/proposal/template",
     produces = MediaType.APPLICATION_JSON_VALUE)
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class ProposalTemplateController {
   private final ProposalTemplateService proposalTemplateService;
@@ -28,11 +30,13 @@ public class ProposalTemplateController {
   }
 
   @PostMapping(value = "/{templateId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public void updateTemplateById(@PathVariable Long templateId) {
     proposalTemplateService.updateTemplate(templateId);
   }
 
   @PostMapping(value = "/{templateId}/blocks")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalTemplateBlock> updateTemplateBlocks(
       @PathVariable Long templateId,
       @RequestBody UpdateTemplateBlockRequest update,
