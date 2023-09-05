@@ -765,13 +765,14 @@ BEGIN
   with t as (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'value')            as adder_name,
                     (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
              from proposal_value pv
-             where object_code = 'PROPOSAL_SITE_SURVEY'
-               and jsonb_path_match(row, 'exists($.fields[*] ? (@.intArrayValue == $field))',
-                                    jsonb_build_object('field', v_state_id)))
-  select string_agg(t.adder_name, ', ')
+             where object_code = 'PROPOSAL_SITE_SURVEY')
+  select string_agg(t.adder_name,',')
   into v_site_survey_items
   from t
   where val = any (v_site_survey_time_adders);
+
+  select string_agg(trim(v_site_survey_items, E'\n\r\t '),',')::text
+    into v_site_survey_items;
 
   raise notice 'v_site_survey_items = %',v_site_survey_items;
 
@@ -786,6 +787,10 @@ BEGIN
           "targetFieldId": 329,
           "value": true
         }'))
+        and not (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
+          "targetFieldId": 337,
+          "intValue": 1722
+        }'))
         union
         select *
         from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,0)   as site_survey_duration,
@@ -796,7 +801,15 @@ BEGIN
                 and not jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
                 "field": 329
               }')) as foo1
-        where val = any (v_site_survey_time_adders)) as foo;
+        where val = any (v_site_survey_time_adders)
+        union
+        select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,0)   as site_survey_duration,
+               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
+               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
+        from proposal_value pv
+        where object_code = 'PROPOSAL_SITE_SURVEY'
+          and jsonb_path_match(row, 'exists($.fields[*] ? (@.intArrayValue == $field))',
+                               jsonb_build_object('field', v_state_id))) as foo;
 
   raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
 
@@ -1814,7 +1827,14 @@ BEGIN
                                          solar_rebate_for_hic,
                                          full_commission_discount_amount,
                                          closer_commission_forfeiture_amount,
-                                         desired_commission_amount)
+                                         desired_commission_amount,
+                                         number_of_promotion_payments,
+                                         loan_product,
+                                         financed_system_cost_with_fees,
+                                         financed_ancillary_cost_with_fees,
+                                         total_ancillary_cost,
+                                         total_promotion_amount,
+                                         storage_cost_with_fees)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1829,11 +1849,11 @@ BEGIN
             v_led_light_bulbs,
             v_smart_thermostat,
             v_current_estimated_cost_per_kwh,
-            v_promotion_cost,
+            coalesce(v_promotion_cost,0),
             v_first_year_production_estimate,
             v_panel_quantity,
             v_panel_watts,
-            v_system_size,
+            v_system_size*1000,
             v_panel_brand,
             v_panel_quantity,
             v_inverter_brand,
@@ -1879,13 +1899,13 @@ BEGIN
             v_remaining_monthly_electric_bill_25_year_average,
             v_reamortized_monthly_payment_all_credits_to_loan,
             v_initial_monthly_payment_all_credits_to_loan,
-            v_reamortized_monthly_payment_all_credits_to_loan,
+            round(v_reamortized_monthly_payment_all_credits_to_loan,2),
             now(),
-            v_promotion_cost,
+            coalesce(v_promotion_cost,0),
             now(),
             v_proposal_nbr,
             v_proposal_id,
-            v_promotion_cost,
+            coalesce(v_promotion_cost,0),
             v_aurora_design_id,
             v_loan_type,
             v_display_name,
@@ -1898,7 +1918,24 @@ BEGIN
             v_solar_rebate_for_hic,
             v_other_adder_and_discount_amount,
             v_other_adder_and_discount_amount * .5,
-            v_desired_commission_amount);
+            v_desired_commission_amount,
+            case when v_product_id = 293 then 18 else 0 end,
+            v_product_name,
+            coalesce(v_total_loan_amount,0),
+            (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+            coalesce(v_structural_upgrade_cost, 0)::numeric +
+            coalesce(v_reroof_cost, 0)::numeric +
+            coalesce(v_tree_trimming_cost, 0)::numeric +
+            coalesce(v_trenching_cost, 0)::numeric +
+            coalesce(v_ac_unit_relocation_cost, 0)::numeric)*(1-v_dealer_fee),
+            (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+             coalesce(v_structural_upgrade_cost, 0)::numeric +
+             coalesce(v_reroof_cost, 0)::numeric +
+             coalesce(v_tree_trimming_cost, 0)::numeric +
+             coalesce(v_trenching_cost, 0)::numeric +
+             coalesce(v_ac_unit_relocation_cost, 0)::numeric),
+            coalesce(v_promotion_cost,0),
+            v_loan_price_storage);
   end if;
 
   return query
