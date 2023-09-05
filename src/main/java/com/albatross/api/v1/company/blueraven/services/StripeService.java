@@ -41,8 +41,9 @@ public class StripeService {
             inner join flow.project_process_step pps on ppse.project_process_step_id = pps.id
             inner join flow.project p on pps.project_id = p.id
         where project_process_step_event_id = :ppsEventId
-            and case when p.company_process_id = 20 then custom_field_group_assignment_id = 26154
-            else custom_field_group_assignment_id = 26138 end
+            and case when p.company_process_id = 20 then custom_field_group_assignment_id = 26157
+                     when p.company_process_id = 18 then custom_field_group_assignment_id = 26158
+                     else custom_field_group_assignment_id = 26156 end
     """;
 
     public String chargeProject(Long projectId, Long ppsEventId) throws Exception {
