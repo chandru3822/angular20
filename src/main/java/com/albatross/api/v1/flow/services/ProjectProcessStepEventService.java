@@ -6,10 +6,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
-import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
-import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
-import com.albatross.api.v1.company.blueraven.services.GoodleapService;
-import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.*;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
 import com.albatross.api.v1.flow.enums.EventStatusType;
 import com.albatross.api.v1.flow.enums.ObjectType;
@@ -73,6 +70,7 @@ public class ProjectProcessStepEventService {
   private final CustomerPortalService customerPortalService;
   private final ListOfValueService listOfValueService;
   private final BirdEyeService birdeyeService;
+  private final StripeService stripeService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -568,6 +566,7 @@ public class ProjectProcessStepEventService {
     private Boolean didFunctionsRun;
     private Boolean shouldRunProjectTagUpdate;
     private List<Long> newChildPpsIds = new ArrayList<>();
+    private List<String> childFunctionReturnedStrings = new ArrayList<>();
     private Long ppsEventId, projectId;
   }
 
@@ -605,10 +604,13 @@ public class ProjectProcessStepEventService {
           systemValues.put("ppsEventId", ppsEventId);
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
-            method.invoke(functionClass, childFunction, systemValues);
+            Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
+            if(null != backendActionResult) {
+              ppseActionResult.childFunctionReturnedStrings.add(backendActionResult.toString());
+            }
           } else {
             // @TODO: Add company IDs here during onboarding
           }

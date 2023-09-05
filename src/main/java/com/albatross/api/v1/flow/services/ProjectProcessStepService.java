@@ -9,10 +9,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
-import com.albatross.api.v1.company.blueraven.services.BrsProcessStepActionFunctionService;
-import com.albatross.api.v1.company.blueraven.services.CustomerPortalService;
-import com.albatross.api.v1.company.blueraven.services.GoodleapService;
-import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.*;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
@@ -86,6 +83,7 @@ public class ProjectProcessStepService {
   private final CustomerPortalService customerPortalService;
   private final BirdEyeService birdeyeService;
   private final PubSubService pubSubService;
+  private final StripeService stripeService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -1198,12 +1196,14 @@ public class ProjectProcessStepService {
     private Boolean shouldRunAutoTriggers;
     private Boolean shouldRunProjectTagUpdate;
     private List<Long> ppsIds = new ArrayList<>();
+    private List<String> childFunctionReturnedStrings = new ArrayList<>();
   }
 
   public PpsActionResult performChildFunctions(Long actionId, Long ppsId, Long processStepId, Long projectId) {
     var shouldRunAutoTriggers = false;
     List<ProcessStepActionChildFunction> childFunctions = processStepActionService.getChildFunctionsWithParamValues(actionId, ppsId);
     AtomicBoolean doProjectTagUpdate = new AtomicBoolean(false);
+    PpsActionResult ppsActionResult = new PpsActionResult();
     childFunctions.forEach(childFunction -> {
       try {
         if (childFunction.getRunInBackend()) {
@@ -1222,10 +1222,13 @@ public class ProjectProcessStepService {
           systemValues.put("companyId", user.getCompanyId());
 
           if (functionAbbreviation.equals("brs")) {
-            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService);
+            var functionClass = new BrsProcessStepActionFunctionService(sqlCache, goodleapService, auroraService, marketoService, customerPortalService, listOfValueService, birdeyeService, stripeService);
             functionClass.marketoEnabled = marketoEnabled;
             Method method = BrsProcessStepActionFunctionService.class.getMethod(functionName, ProcessStepActionChildFunction.class, Map.class);
-            method.invoke(functionClass, childFunction, systemValues);
+            Object backendActionResult = method.invoke(functionClass, childFunction, systemValues);
+            if(null != backendActionResult) {
+              ppsActionResult.childFunctionReturnedStrings.add(backendActionResult.toString());
+            }
           } else {
             // @TODO: Add company IDs here during onboarding
           }
@@ -1249,11 +1252,11 @@ public class ProjectProcessStepService {
       shouldRunAutoTriggers = true;
     }
 
-    PpsActionResult results = new PpsActionResult();
-    results.setShouldRunAutoTriggers(shouldRunAutoTriggers);
-    results.setShouldRunProjectTagUpdate(doProjectTagUpdate.get());
+
+    ppsActionResult.setShouldRunAutoTriggers(shouldRunAutoTriggers);
+    ppsActionResult.setShouldRunProjectTagUpdate(doProjectTagUpdate.get());
 //    return shouldRunAutoTriggers;
-    return results;
+    return ppsActionResult;
   }
 
   public String[] prepareFunctionParams(List<CompanyFunctionParam> functionParams, Long projectId, Long processStepId, Long ppsId, Long ppsEventId) throws Exception {

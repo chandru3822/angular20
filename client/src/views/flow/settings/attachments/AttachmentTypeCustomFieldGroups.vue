@@ -6,9 +6,9 @@
           <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="!createNew && userCanAdd" @click="createNew = !createNew">
+            <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
               <v-icon>add</v-icon>
-              <span v-if="!constants.IS_MOBILE">Create Group</span>
+              <span v-if="$vuetify.breakpoint.mdAndUp">Create Group</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -28,7 +28,7 @@
             @click="saveFieldGroup()">
             Save
           </v-btn>
-          <v-btn
+          <v-btn text color="primary"
             @click="[newGroup = {}, createNew = false]">
             Cancel
           </v-btn>
@@ -46,7 +46,7 @@
               hide-default-header
               :sort-desc="[false]"
               :sort-by="['groupOrder']"
-              class="elevation-1 fix-column-width-bug attachment-cfg-table square-card"
+              class="elevation-1 attachment-cfg-table square-card"
             >
               <template #no-data>
                 No custom field groups for this attachment type
@@ -63,7 +63,7 @@
                       <v-icon>drag_handle</v-icon>
                     </v-btn>
                   </td>
-                  <td class="text-left">
+                  <td class="text-left" :class="{'one-hunned':$vuetify.breakpoint.mdAndDown}">
                     <div v-if="userCanEdit">
                       <v-text-field text
                                     v-if="item.edit"
@@ -80,13 +80,13 @@
                     <span v-else>{{ item.groupName }}</span>
                   </td>
                   <td>
-                    <div class="item-icons">
-                      <v-btn v-if="userCanAdd" small text
+                    <div class="item-icons" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
+                      <v-btn v-if="userCanAdd" small text color="primary"
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], fetchAvailableCustomFields(item.companyObjectTypeId, item.id)]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
                         <v-icon v-else>add</v-icon>
                       </v-btn>
-                      <v-btn small text
+                      <v-btn small text color="primary"
                              @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index]">
                         <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
                         <v-icon v-else>expand_more</v-icon>
@@ -121,7 +121,7 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <v-btn @click="addField = false">Cancel</v-btn>
+                    <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -156,7 +156,7 @@
                             <template v-slot:activator="{ on: menu }">
                               <v-tooltip bottom>
                                 <template v-slot:activator="{ on: tooltip }">
-                                  <v-btn text small v-on="{...tooltip, ...menu}"
+                                  <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
                                          v-if="!cf.ancillaryCustomFieldGroupAssignmentId">
                                     <v-icon>mdi-cursor-move</v-icon>
                                   </v-btn>

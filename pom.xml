@@ -49,6 +49,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.stripe</groupId>
+      <artifactId>stripe-java</artifactId>
+      <version>22.30.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>io.awspring.cloud</groupId>
       <artifactId>spring-cloud-starter-aws-secrets-manager-config</artifactId>
       <version>${aws-springcloud.version}</version>

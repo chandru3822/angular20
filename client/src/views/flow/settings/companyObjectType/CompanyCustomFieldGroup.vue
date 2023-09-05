@@ -1,8 +1,8 @@
 <template>
   <v-container class="custom-field-group-container">
     <v-row>
-      <v-col cols="12">
-        <v-container v-for="n in numberOfCols">
+      <v-col cols="12" id="columnTables">
+        <v-container v-for="n in numberOfCols" >
           <span v-if="objectType && objectType.customColumns"
                 class="albatross-header-4 mb-2">Column {{ numberValues[n] }}</span>
           <v-data-table
@@ -16,7 +16,8 @@
             :expanded.sync="expanded[n]"
             hide-default-footer
             hide-default-header
-            class="elevation-1 fix-column-width-bug mb-5 draggable-table table-striped"
+            :class="{'fix-column-width-bug': !isMobile}"
+            class="elevation-1 mb-5 draggable-table table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available field groups</span>
@@ -26,6 +27,7 @@
               <span class="default-text-color">No available field groups</span>
             </template>
 
+            <!--todo: this grid still needs some work but it's giving me a hard time so I'm going to come back to it later-->
             <template #item="{ item, index }">
               <tr>
                 <td style="width: 50px">
@@ -33,7 +35,7 @@
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
-                <td class="text-left">
+                <td class="text-left group-name-col">
                   <v-text-field text
                                 v-if="item.edit"
                                 v-model="item.groupName">
@@ -41,7 +43,7 @@
                   <span v-else>{{ item.groupName }}</span>
                 </td>
                 <td>
-                  <div class="item-icons">
+                  <div class="item-icons" v-if="!isMobile">
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
                         <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
@@ -95,6 +97,64 @@
                       <v-icon v-if="expanded[n].includes(item)">expand_less</v-icon>
                       <v-icon v-else>expand_more</v-icon>
                     </v-btn>
+                    <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item">
+                      <v-icon>delete</v-icon>
+                    </v-btn>
+                  </div>
+                  <!--div below reorders the buttons to make more sense when columns wrap-->
+                  <div class="item-icons" v-else>
+                    <v-tooltip left>
+                      <template v-slot:activator="{ on, attrs }">
+                        <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                      </template>
+                      <span>Custom Field Group Id: {{item.id}}</span>
+                      <div class="text-center">(click to copy)</div>
+                    </v-tooltip>
+                    <v-btn small icon color="primary"
+                           @click="[expanded[n].includes(item) ? expanded[n] = [] : expanded[n] = [item], selectedIndex = index]">
+                      <v-icon v-if="expanded[n].includes(item)">expand_less</v-icon>
+                      <v-icon v-else>expand_more</v-icon>
+                    </v-btn>
+                    <v-btn small text color="primary"
+                             v-if="userCanAdd"
+                             @click="[addField = !addField, fetchAvailableCustomFields(item.id), expanded[n] = [item], selectedIndex = index]">
+                        <v-icon v-if="addField && expanded[n].includes(item)">remove</v-icon>
+                        <v-icon v-else>add</v-icon>
+                      </v-btn>
+
+                      <div v-if="userCanEdit" class="flex-display">
+                        <v-btn small text color="primary"
+                               @click="item.edit = !item.edit">
+                          <v-icon v-if="item.edit">remove</v-icon>
+                          <v-icon v-else>edit</v-icon>
+                        </v-btn>
+                        <v-btn small text color="primary"
+                               v-if="item.edit"
+                               @click="[saveGroup(item), item.edit = false]">
+                          <v-icon>save</v-icon>
+                        </v-btn>
+                      </div>
+                      <v-menu offset-y
+                              v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
+                        <template v-slot:activator="{ on: menu }">
+                          <v-tooltip bottom>
+                            <template v-slot:activator="{ on: tooltip }">
+                              <v-btn text small color="primary" v-on="{...tooltip, ...menu}"
+                                     v-if="objectType && objectType.customColumns">
+                                <v-icon>mdi-cursor-move</v-icon>
+                              </v-btn>
+                            </template>
+                            <span>Change Column</span>
+                          </v-tooltip>
+                        </template>
+                        <v-list>
+                          <v-list-item v-for="num in numberOfCols" v-if="n !== num"
+                                       @click="moveCustomFieldGroupToColumn(item, num)">
+                            <v-list-item-title>{{ `Column ${numberValues[num]}` }}</v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                      </v-menu>
                     <v-btn v-if="userCanEdit" small text color="primary" @click="cfgToDelete=item">
                       <v-icon>delete</v-icon>
                     </v-btn>
@@ -497,6 +557,9 @@ export default {
         return 2
       }
       return 1
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.xsOnly
     }
   },
   mounted() {
@@ -920,12 +983,44 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
+.group-name-col {
+  @media (max-width: 510px) {
+    max-width: 80px;
+  }
+}
 .item-icons {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  
+  @media (max-width: 1040px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 510px) {
+    grid-template-columns: repeat(2, 1fr);
+    float: left;
+  }
+}
+
+.item-icons-mobile {
   display: flex;
+  flex-direction: column;
   float: right;
+  @media(max-width: 465px) {
+    flex-direction: row;
+  div.row {
+
+      flex-direction: column;
+    }
+  }
 }
 
 .handle {
   cursor: move !important;
+}
+</style>
+<style lang="scss">
+#columnTables > div > div > div.v-data-table__wrapper > table > tbody {
+display: table-row-group;
 }
 </style>

@@ -12,7 +12,7 @@
           disable-sort
           :fixed-header="true"
           :items-per-page="-1"
-          class="elevation-1">
+          class="elevation-1 table-striped">
 
           <template #no-data>
             <span class="default-text-color">No available object types</span>
@@ -22,18 +22,16 @@
             <span class="default-text-color">No available object types</span>
           </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{ item.objectType }}</td>
-              <td>
+          <template #item.objectTye="{ item }">
+              <span class="text-left">{{ item.objectType }}</span>
+          </template>
+              <template #item.icons="{item}">
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text color="primary" @click="goToDetails(item)">
+                  <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="goToDetails(item)">
                     <v-icon>edit</v-icon>
                   </v-btn>
                 </div>
-              </td>
-            </tr>
-          </template>
+              </template>
         </v-data-table>
       </v-col>
 

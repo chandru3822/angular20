@@ -5,7 +5,7 @@
         <v-toolbar flat class="app-toolbar">
           <h3>Projects</h3>
           <v-spacer></v-spacer>
-          <v-toolbar-items :slot="constants.IS_MOBILE ? 'extension' : 'default'">
+          <v-toolbar-items :slot="isMobile ? 'extension' : 'default'">
             <v-tabs class="tabs-bar" v-model="activeTab">
               <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
                      class="text-capitalize ma-0"
@@ -71,7 +71,10 @@
         set: function(val) {
           return val
         }
-      }
+      },
+      isMobile(){
+        return this.$vuetify.breakpoint.smAndDown
+      },
     },
     async created () {
     },
