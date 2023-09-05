@@ -1,6 +1,8 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalResource;
+import com.albatross.api.v1.company.blueraven.models.Proposal;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
@@ -8,6 +10,7 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -16,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -48,27 +52,9 @@ public class ProposalProcessor {
 
         try {
           proposalService.generateProposalPDF(proposal.getId(), 1L)
-            .ifPresent(resource -> {
-              log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
-
-              try {
-                projectService.addAttachment(
-                  proposal.getProjectId(),
-                  PROPOSAL_ATTACHMENT_TYPE,
-                  resource.contentLength(),
-                  MediaType.APPLICATION_PDF_VALUE,
-                  String.format("%s.pdf", proposal.getDisplayName()),
-                  resource.getInputStream(),
-                  proposal.getDisplayName());
-
-                log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
-                proposalService.setProposalAsProcessed(proposal.getId());
-
-                count.getAndIncrement();
-
-              } catch (IOException e) {
-                throw new RuntimeException(e);
-              }
+            .ifPresent(result -> {
+              handleResult(result);
+              count.getAndIncrement();
             });
         } catch (Exception e) {
           log.error("[Proposal] Error processing final PDF for proposalId={}", proposal.getId(), e);
@@ -79,8 +65,43 @@ public class ProposalProcessor {
     Instant endTime = Instant.now();
     if (count.get() > 0) {
       log.info("[Proposal] Generating PDF batch took {}ms to generate {} files",
-        TimeUnit.MILLISECONDS.convert(endTime.toEpochMilli() - startTime.toEpochMilli(), TimeUnit.MILLISECONDS)
+        TimeUnit.MILLISECONDS.convert(
+          endTime.toEpochMilli() - startTime.toEpochMilli(),
+          TimeUnit.MILLISECONDS)
         , count.get());
+    }
+  }
+
+  private void handleResult(ProposalResource result) {
+    try {
+      Proposal proposal = result.proposal();
+      log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
+
+      Map<String, Object> context = result.context();
+
+      String financier = context.getOrDefault("financier", "").toString();
+      String loanTerm = context.getOrDefault("loan_term", "").toString();
+      String product = context.getOrDefault("product_name", "").toString();
+
+      String displayName = String.format("%s %s %s %s", proposal.getDisplayName(), financier, loanTerm, product).trim();
+      String filename = String.format("%s.pdf", displayName);
+
+      Resource resource = result.resource();
+
+      projectService.addAttachment(
+        proposal.getProjectId(),
+        PROPOSAL_ATTACHMENT_TYPE,
+        resource.contentLength(),
+        MediaType.APPLICATION_PDF_VALUE,
+        filename,
+        resource.getInputStream(),
+        displayName);
+
+      log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
+      proposalService.setProposalAsProcessed(proposal.getId());
+
+    } catch (IOException e) {
+      throw new RuntimeException(e);
     }
   }
 

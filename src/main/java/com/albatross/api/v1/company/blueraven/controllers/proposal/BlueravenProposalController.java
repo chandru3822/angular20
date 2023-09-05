@@ -248,8 +248,8 @@ public class BlueravenProposalController {
         proposalService.generateProposalPDF(proposalId, templateId)
           .ifPresent(result -> {
             try {
-              response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(result.contentLength()));
-              IOUtils.copy(result.getInputStream(), outputStream);
+              response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(result.resource().contentLength()));
+              IOUtils.copy(result.resource().getInputStream(), outputStream);
             } catch (IOException e) {
               throw new ApiException(e);
             }

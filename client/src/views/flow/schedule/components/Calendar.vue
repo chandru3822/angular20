@@ -211,7 +211,17 @@
           :color="'primary'"
         ></v-progress-circular>
       </div>
+      <div class="d-flex">
+        <v-spacer></v-spacer>
+      <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>
+      <v-menu activator="#day-selection-btn" nudge-bottom="40px">
+        <v-list>
+          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
+        </v-list>
+      </v-menu>
+      </div>
       <FullCalendar ref="eventCalendar" id="event-calendar"
+                    :title-format="calendar.options.titleFormat"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
                     :resources="resources"
@@ -236,12 +246,11 @@
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
       ></FullCalendar>
-      <ConfirmationDialog :open-dialog="daySelector" @close-dialog="daySelector = false" hide-confirm :width="300">
-        <template v-slot:title>Select Day</template>
+      <v-menu activator="#event-calendar.fc .fc-header-toolbar .fc-right .fc-button-group .fc-customTimelineDay-button">
         <v-list>
-          <v-list-item v-for="option in dayOptions()" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
-        </v-list>
-      </ConfirmationDialog>
+        <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
+      </v-list>
+      </v-menu>
     </div>
   </div>
 </template>
@@ -279,6 +288,24 @@
       states: {type: Array}
     },
     computed: {
+      dayOptions(){
+        let dayOptions = []
+        const startDate = this.calendarApi?.view.activeStart
+        const endDate = this.calendarApi?.view.activeEnd
+
+        if(startDate && endDate) {
+          let i = startDate
+          while (moment(endDate).isAfter(i)) {
+            let dayOption = {
+              rawDate: i,
+              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
+            }
+            dayOptions.push(dayOption)
+            i = moment(i).add(1, 'days')
+          }
+        }
+        return dayOptions
+      },
       //states
       sortedStates() {
         const selectedStates = this.states.filter(state => this.selectedStates.includes(state))
@@ -441,6 +468,11 @@
         daySelector: false,
         calendar: {
           options: {
+            titleFormat:{ month: 'long',
+              year: 'numeric',
+              day: 'numeric',
+              weekday: 'long'
+             },
             slotDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
@@ -496,7 +528,9 @@
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   if(calendarApi.view.type !== 'resourceTimelineDay') {
-                    this.daySelector = true
+                    this.$refs.daySelectionbtn.$el.click()
+                    //this is very hacky; it would be way better if we could update the library to the version where the weekday header
+                    //click works instead of doing this wacky work around, but that requires a major refactor
                   } else {
                     this.switchToDayView()
                   }
@@ -510,6 +544,7 @@
                   this.calendar.options.slotDuration = '01:00:00'
                   this.calendar.options.slotLabelInterval = '02:00:00'
                   this.calendar.options.slotWidth = 25
+                  this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
 
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.changeView('resourceTimelineWeek')
@@ -523,24 +558,6 @@
       }
     },
     methods: {
-      dayOptions(){
-        let dayOptions = []
-        const startDate = this.calendarApi?.view.activeStart
-        const endDate = this.calendarApi?.view.activeEnd
-
-        if(startDate && endDate) {
-          let i = startDate
-          while (moment(endDate).isAfter(i)) {
-            let dayOption = {
-              rawDate: i,
-              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
-            }
-            dayOptions.push(dayOption)
-            i = moment(i).add(1, 'days')
-          }
-        }
-        return dayOptions
-      },
       switchToDayView(dayOption){
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
@@ -548,11 +565,11 @@
         this.calendar.options.maxTime = '23:00:00'
         this.calendar.options.slotLabelInterval = '01:00:00'
         this.calendar.options.slotWidth = 45
+        this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
         let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
         calendarApi.changeView('resourceTimelineDay', day)
         this.getEvents(false, true)
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-        this.daySelector = false
       },
       handleResourceColors() {
         this.resources.forEach((r, index) => {
@@ -1050,6 +1067,10 @@
   margin: auto;
   background-color: var(--v-secondary-base);
   opacity: .5;
+}
+.invisible-btn{
+  visibility: hidden;
+  height: 0 !important;
 }
 </style>
 

@@ -12,6 +12,7 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.Propo
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalResource;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
@@ -331,12 +332,13 @@ public class BlueravenProposalService {
       });
   }
 
-  public Optional<Resource> generateProposalPDF(Long proposalId, Long templateId) throws Exception {
+  public Optional<ProposalResource> generateProposalPDF(Long proposalId, Long templateId) throws Exception {
     final var proposal = getProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
     final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, false);
-    return Optional.ofNullable(proposalTemplateService.generatePdf(templateId, context, false));
+    Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
+    return Optional.of(new ProposalResource(pdf, proposal, context));
   }
 
   private Map<String, Object> getCalculatedProposalValues(
@@ -348,10 +350,12 @@ public class BlueravenProposalService {
     Map<String, Object> context = new HashMap<>();
 
     try {
-      context = sqlCache.queryForMapBySql(
-        ProposalQuery.getCalculatedProposalValues,
-        Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory,
-          "currentUserId", securityService.getCurrentUser().trueUserId()));
+      Map<String, Object> params = Map.of(
+        "proposalId", proposalId,
+        "insertPropLogHistory", insertPropLogHistory,
+        "currentUserId", securityService.getCurrentUser().trueUserId());
+
+      context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
     } catch (Exception e) {
       log.error("[Proposals] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
     }
