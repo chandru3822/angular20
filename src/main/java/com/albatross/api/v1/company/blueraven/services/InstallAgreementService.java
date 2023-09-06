@@ -178,6 +178,8 @@ public class InstallAgreementService {
       log.debug("IARQ: create PandaDoc? {}; project {}", createPandaDoc, projectId);
       if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
         pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
+      } else if (!createPandaDoc) {
+        throw new RuntimeException("Loan Application Not Found.");
       }
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
