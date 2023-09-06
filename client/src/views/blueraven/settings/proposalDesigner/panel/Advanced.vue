@@ -2,7 +2,7 @@
   <v-card flat>
     <v-card-title>Advanced</v-card-title>
     <v-text-field outlined dense
-                  v-model="visibility"
+                  v-model="expression"
                   label="Visibility"
                   hint="This expression must evaluate to a boolean"
                   @change="handleChange"
@@ -44,10 +44,10 @@
               </ul>
             </v-card-text>
 
-            <v-divider></v-divider>
+            <v-divider/>
 
             <v-card-actions>
-              <v-spacer></v-spacer>
+              <v-spacer/>
               <v-btn
                 color="primary"
                 text
@@ -58,8 +58,6 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-
-
       </template>
     </v-text-field>
   </v-card>
@@ -76,6 +74,7 @@ export default {
   },
   data() {
     return {
+      expression: undefined,
       dialog: false,
     }
   },
@@ -84,9 +83,14 @@ export default {
       tags: (state) => state.proposal.tags
     })
   },
+  watch: {
+    'visibility' : function(arg){
+      this.expression = arg
+    }
+  },
   methods: {
     handleChange() {
-      this.$emit('input', this.visibility)
+      this.$emit('input', this.expression)
     }
   }
 }

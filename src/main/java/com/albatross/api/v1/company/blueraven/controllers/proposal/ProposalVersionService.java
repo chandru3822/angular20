@@ -17,7 +17,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -123,10 +122,16 @@ public class ProposalVersionService {
       ProposalFieldObjectType.class);
   }
 
+  @Transactional
   public List<ProposalCustomValuesRow> resetProposalVersionByCustomFieldByObjectCode(
     Long versionId, String objectCode) {
-    sqlCache.updateBySql(ProposalToolQuery.resetCustomFieldGroup,
-      Map.of("versionId", versionId, "objectCode", objectCode));
+    Map<String, Object> params = Map.of("versionId", versionId, "objectCode", objectCode);
+
+    sqlCache.updateBySql(ProposalToolQuery.resetCustomFieldGroup, params);
+
+    // TODO figure out what to do here
+    //    sqlCache.updateBySql(ProposalToolQuery.unarchiveCustomFieldGroup, params);
+
     return getProposalCustomFieldValues(versionId, objectCode);
   }
 
@@ -281,7 +286,7 @@ public class ProposalVersionService {
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID);
   }
 
-  public Optional<ProposalCustomValuesRow> getProposalCustomFieldValuesByGroupUUID(
+  private Optional<ProposalCustomValuesRow> getProposalCustomFieldValuesByGroupUUID(
     Long versionId, String objectCode, UUID groupUUID) {
     final List<Map<String, Object>> query =
       sqlCache.queryBySql(
