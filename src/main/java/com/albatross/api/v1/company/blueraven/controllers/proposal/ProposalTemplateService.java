@@ -56,7 +56,6 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 public class ProposalTemplateService {
   private final SqlCache sqlCache;
   private final ObjectMapper objectMapper;
@@ -157,7 +156,6 @@ public class ProposalTemplateService {
 
     } catch (Exception e) {
       log.error("[Proposal] Error fetching template id={}", templateId, e);
-
     }
     return null;
   }
