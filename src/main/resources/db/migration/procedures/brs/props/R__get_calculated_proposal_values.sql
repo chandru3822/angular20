@@ -149,7 +149,8 @@ create type brs.calculated_proposal_value as
   estimated_backup_days                            numeric,
   solar_rebate_for_hic                             numeric,
   total_square_footage                             numeric,
-  net_payment_from_customer                        varchar
+  net_payment_from_customer                        varchar,
+  initial_monthly_payment_all_credits_to_loan_bpPlus varchar
 );
 
 drop type brs.excluded_proposal_value;
@@ -448,6 +449,9 @@ v_utility_rebate_value numeric;
 v_state_rebate_value numeric;
 v_virginia_srec_rebate_amount numeric;
 v_virginia_srec_rate numeric;
+v_is_first_year_rebate_cap bigint;
+v_first_year_rebate_cap numeric;
+v_initial_monthly_payment_all_credits_to_loan_bpPlus numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -593,7 +597,7 @@ BEGIN
          lov.name,
          cs.state_id,
          ppscfv15.int_value,
-         lov15.name,
+         utility15.name,
          ppscfv6.json_value,
          ppscfv7.int_value,
          ppscfv8.int_value,
@@ -682,7 +686,7 @@ BEGIN
          left join flow.project_process_step_custom_field_value ppscfv15 on ppscfv15.project_process_step_id = pps.id and
                                                                            ppscfv15.custom_field_group_assignment_id =
                                                                            23802
-         left join flow.list_of_value lov15 on lov15.id = ppscfv15.int_value
+         left join brs.feat_db_utility utility15 on utility15.id = ppscfv15.int_value
   where pps.id = v_project_process_step_id;
 
   create temp table proposal_value as (with version_values
@@ -1214,8 +1218,11 @@ BEGIN
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as state_rebate_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_state_rebate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as state_rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as state_rebate_cap_percent_of_total
-  into v_state_rebate_value,v_unit_type_state_rebate,v_state_rebate_cap_amount,v_state_rebate_cap_percent_of_total
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as state_rebate_cap_percent_of_total,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 100)') ->> 'value')::numeric  as first_year_cap,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 99)') ->> 'intValue')::bigint  as is_first_year_cap
+  into v_state_rebate_value,v_unit_type_state_rebate,v_state_rebate_cap_amount,v_state_rebate_cap_percent_of_total,
+  v_first_year_rebate_cap,v_is_first_year_rebate_cap
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
@@ -1650,7 +1657,7 @@ BEGIN
   else  --TODO judson check to see if we need to subtract the rebates
     v_reamortized_monthly_payment_all_credits_to_loan =
         (coalesce(v_total_loan_amount, 0) - coalesce(v_federal_tax_incentive_amount, 0) -
-         coalesce(v_state_rebate_amount, 0)) * v_reamortization_factor;
+        case when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462 then least(coalesce(v_state_rebate_amount, 0),coalesce(v_first_year_rebate_cap,0)) else coalesce(v_state_rebate_amount, 0)end) * v_reamortization_factor;
   end if;
 
 
@@ -1706,7 +1713,11 @@ BEGIN
                                                                                12);
   raise notice 'v_monthly_cost_today_avg_remaining_electrical_bill = %',v_monthly_cost_today_avg_remaining_electrical_bill;
 
-
+  if v_product_id = 293 then
+    v_initial_monthly_payment_all_credits_to_loan_bpPlus = 0::numeric;
+  else
+    v_initial_monthly_payment_all_credits_to_loan_bpPlus = v_total_loan_amount * v_initial_payment_factor;
+  end if;
   v_initial_monthly_payment_all_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
   raise notice 'v_initial_monthly_payment_all_credits_to_loan = %',v_initial_monthly_payment_all_credits_to_loan;
 
@@ -1774,7 +1785,7 @@ BEGIN
        coalesce(v_initial_monthly_payment_all_credits_to_loan, 0));
   raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
 
-  v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount;
+  v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount + case when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462 then least(coalesce(v_state_rebate_amount, 0),coalesce(v_first_year_rebate_cap,0)) else coalesce(v_state_rebate_amount, 0)end;
   raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
 
   v_loan_type = concat(v_financier || ' ' || v_loan_term);
@@ -2086,7 +2097,8 @@ BEGIN
            v_estimated_backup_days,
            v_solar_rebate_for_hic,
            v_total_square_footage,
-           cast(round(v_net_payment_from_customer, 2) as money)::varchar;
+           cast(round(v_net_payment_from_customer, 2) as money)::varchar,
+           cast(round(v_initial_monthly_payment_all_credits_to_loan_bpPlus, 2) as money)::varchar;
 
   drop table proposal_value;
 
