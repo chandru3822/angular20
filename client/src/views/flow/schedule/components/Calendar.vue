@@ -246,11 +246,6 @@
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
       ></FullCalendar>
-      <v-menu activator="#event-calendar.fc .fc-header-toolbar .fc-right .fc-button-group .fc-customTimelineDay-button">
-        <v-list>
-        <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
-      </v-list>
-      </v-menu>
     </div>
   </div>
 </template>
@@ -288,24 +283,6 @@
       states: {type: Array}
     },
     computed: {
-      dayOptions(){
-        let dayOptions = []
-        const startDate = this.calendarApi?.view.activeStart
-        const endDate = this.calendarApi?.view.activeEnd
-
-        if(startDate && endDate) {
-          let i = startDate
-          while (moment(endDate).isAfter(i)) {
-            let dayOption = {
-              rawDate: i,
-              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
-            }
-            dayOptions.push(dayOption)
-            i = moment(i).add(1, 'days')
-          }
-        }
-        return dayOptions
-      },
       //states
       sortedStates() {
         const selectedStates = this.states.filter(state => this.selectedStates.includes(state))
@@ -408,6 +385,9 @@
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
       },
+      calendarEndTime: function (){
+        this.getDayOptions()
+      }
     },
     created() {
       // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
@@ -466,6 +446,7 @@
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
+        dayOptions: [],
         calendar: {
           options: {
             titleFormat:{ month: 'long',
@@ -559,6 +540,7 @@
     },
     methods: {
       switchToDayView(dayOption){
+        debugger
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
         this.calendar.options.minTime = '02:00:00'
@@ -589,6 +571,24 @@
             r.color = '#'+hexColorCode
           }
         })
+      },
+      getDayOptions(){
+        let dayOptions = []
+        const startDate = this.calendarApi?.view.activeStart
+        const endDate = this.calendarApi?.view.activeEnd
+
+        if(startDate && endDate) {
+          let i = startDate
+          while (moment(endDate).isAfter(i)) {
+            let dayOption = {
+              rawDate: i,
+              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
+            }
+            dayOptions.push(dayOption)
+            i = moment(i).add(1, 'days')
+          }
+        }
+        this.dayOptions = dayOptions
       },
       toggleSelectAllStates () {
         this.$nextTick(() => {
