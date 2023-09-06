@@ -62,20 +62,20 @@ public class ProposalVersionService {
   }
 
   @Transactional
-  public Optional<ProposalVersion> publishProposalVersion(Long id) {
+  public Optional<ProposalVersion> publishProposalVersion(Long id, String message) {
     final var currentUser = securityService.getCurrentUser();
+
+    if (message == null || message.trim().isEmpty()) {
+      throw new ApiException("A message is required to publish a proposal");
+    }
 
     sqlCache.updateBySql(
       ProposalToolQuery.publishProposalVersion,
       Map.of(
-        "statusId",
-        ProposalVersionStatus.PUBLISHED.ordinal(),
-        "id",
-        id,
-        "notes",
-        "",
-        "currentUserId",
-        currentUser.getId()));
+        "statusId", ProposalVersionStatus.PUBLISHED.ordinal(),
+        "id", id,
+        "notes", message,
+        "currentUserId", currentUser.getId()));
 
     sqlCache.updateBySql(
       ProposalToolQuery.setAsCompanyPrimary,
@@ -270,18 +270,16 @@ public class ProposalVersionService {
       sqlCache.updateBySql(
         ProposalToolQuery.deleteCustomFieldGroup,
         Map.of(
-          "currentUserId",
-          currentUser.getId(),
-          "groupUUID",
-          groupUUID,
-          "versionId",
-          versionId));
+          "currentUserId", currentUser.getId(),
+          "groupUUID", groupUUID,
+          "versionId", versionId));
     }
 
     sqlCache.updateBySql(
       ProposalToolQuery.archiveCustomFieldGroup,
       Map.of(
-        "currentUserId", currentUser.getId(), "groupUUID", groupUUID, "versionId", versionId));
+        "currentUserId", currentUser.getId(),
+        "groupUUID", groupUUID, "versionId", versionId));
 
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID);
   }

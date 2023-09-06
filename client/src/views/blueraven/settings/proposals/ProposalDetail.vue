@@ -11,14 +11,62 @@
         <v-chip class="ma-2 default-text-color" color="primary lighten-9" label v-if="detail.primaryVersion">
           Current
         </v-chip>
+
+        <fragment
+          v-if="!isDraft"
+        >
+          <v-btn
+            class="ma-2"
+            text
+            icon
+            color="blue lighten-2"
+            @click="showHistory = true"
+          >
+            <v-icon>mdi-history</v-icon>
+          </v-btn>
+
+          <v-dialog persistent scrollable max-width="600px" :value="showHistory">
+            <v-card>
+              <v-card-title>History</v-card-title>
+              <v-card-text>
+                <v-row no-gutters>
+                  <v-col cols="4" class="font-weight-bold">Last Modified By:</v-col>
+                  <v-col cols="8">{{detail.modifiedBy}}</v-col>
+                  <v-col cols="4" class="font-weight-bold">Last Modified:</v-col>
+                  <v-col cols="8">{{detail.dateModified | timestamp}}</v-col>
+                  <v-col v-if="detail.notes" cols="4" class="font-weight-bold">Notes:</v-col>
+                  <v-col v-if="detail.notes" cols="8">{{detail.notes}}</v-col>
+                </v-row>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer/>
+                <v-btn text color="primary" @click="showHistory = false">Close</v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </fragment>
       </v-toolbar-title>
       <v-spacer/>
       <v-toolbar-items v-if="isDraft">
         <v-btn text color="primary" @click="confirmation=true">Publish</v-btn>
-        <ConfirmationDialog :open-dialog="confirmation" @confirm="publish(detail.id)"
-                            @close-dialog="confirmation=false">
+        <ConfirmationDialog
+          :open-dialog="confirmation"
+          :disable-confirm="!publishNote"
+          @confirm="publish(detail.id, publishNote)"
+          @close-dialog="confirmation=false">
           <template v-slot:title>Confirm</template>
           <div>Are you sure you want to publish this version?</div>
+          <v-form>
+            <v-textarea
+              v-model="publishNote"
+              class="mt-3"
+              solo
+              autofocus
+              clearable
+              no-resize
+              placeholder="Please explain changes to this version"
+            />
+          </v-form>
           <template v-slot:yes>Publish</template>
         </ConfirmationDialog>
       </v-toolbar-items>
@@ -93,14 +141,13 @@
         >
           <template #top>
             <v-container fluid>
-              <v-row>
-
+              <v-row no-gutters>
                 <v-col cols="8">
                   <v-text-field
                     v-model="search"
                     prepend-inner-icon="search"
                     label="Search"
-                    class="mx-4 my-4"
+                    class="mx-2 my-2"
                     single-line
                     clearable
                     hide-details
@@ -191,6 +238,15 @@ export default {
       if (!value) return
       return value[0].toUpperCase() + value?.slice(1).toLowerCase()
     },
+    timestamp: (value)=> {
+      if (!value){
+        return
+      }
+      return new Intl.DateTimeFormat('default', {
+        dateStyle: 'short',
+        timeStyle: 'short'
+      }).format(new Date(value))
+    },
     customValueFormatter: ({value, type}) => {
       if (Array.isArray(value)) {
         return value?.join(', ')
@@ -206,8 +262,10 @@ export default {
     }
   },
   created() {
-    this.getProposalDetail(this.id)
-    this.getProposalObjectTypes()
+    Promise.allSettled([
+      this.getProposalDetail(this.id),
+      this.getProposalObjectTypes()
+    ])
   },
   data() {
     return {
@@ -226,7 +284,9 @@ export default {
       footerProps: {
         'items-per-page-options': [1, 5, 10, 20, 50, -1]
       },
-      selectedDeleteItem: undefined
+      selectedDeleteItem: undefined,
+      publishNote: undefined,
+      showHistory: false
     }
   },
   computed: {
@@ -373,14 +433,20 @@ export default {
       this.values = values
     },
 
-    async publish(proposalVersionId) {
-      const {data} = await postRequest(`/proposal/versions/${proposalVersionId}/publish`, {}, 'blueraven')
-      this.detail = {...data}
-      //hide the action column
-      this.headers = this.headers.slice(0, this.headers.length - 1)
+    async publish(proposalVersionId, message) {
+      try {
+        const {data} = await postRequest(`/proposal/versions/${proposalVersionId}/publish`, {message}, 'blueraven')
+        this.detail = {...data}
+        //hide the action column
+        this.headers = this.headers.slice(0, this.headers.length - 1)
 
-      const snackbar = getSnackbar('SUCCESS', `Proposal Version #${proposalVersionId} Successfully Published`)
-      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+        const snackbar = getSnackbar('SUCCESS', `Proposal Version #${proposalVersionId} Successfully Published`)
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+      } catch (e) {
+        const message = e?.data?.message ?? 'Unable to publish proposal version'
+        const snackbar = getSnackbar('ERROR', message)
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+      }
     },
 
     async doInput(val) {
