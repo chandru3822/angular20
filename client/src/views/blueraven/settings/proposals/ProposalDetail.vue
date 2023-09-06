@@ -23,20 +23,24 @@
         </ConfirmationDialog>
       </v-toolbar-items>
     </v-toolbar>
-    <v-card v-if="detail">
+    <div v-if="detail">
       <div class="top-actions">
         <v-autocomplete
           outlined
           dense
           autofocus
+          clearable
+          single-line
+          return-object
+          hide-details
+          full-width
+          class="pr-2"
           v-model="propType"
           :items="types"
           item-text="name"
           item-value="id"
-          single-line
-          return-object
-          clearable
           @change="changer"
+          placeholder="Please select a type"
         />
         <fragment v-if="isDraft">
           <v-btn v-if="hasChanges" text
@@ -74,8 +78,9 @@
           It <b>will not</b> be available in future versions.
         </p>
       </ConfirmationDialog>
-      <v-card color="basil" flat>
+      <div>
         <v-data-table
+          v-if="propType"
           :headers="headers"
           :items="rows"
           :options.sync="options"
@@ -104,13 +109,13 @@
                 <v-col cols="4" v-if="isDraft">
                   <v-switch
                     v-model="modifiedOnlyFilter"
+                    hide-details
                     inset
                     :label="`${!modifiedOnlyFilter ? 'Show Modified Only' : 'Show All'}`"
                   ></v-switch>
                 </v-col>
               </v-row>
             </v-container>
-
           </template>
 
           <template #item="{item, headers}">
@@ -133,11 +138,14 @@
             </tr>
           </template>
         </v-data-table>
-      </v-card>
-    </v-card>
-    <v-card v-else>
-      <v-card-text>This isn't the proposal version you are looking for...</v-card-text>
-    </v-card>
+        <p v-else>
+          No type selected
+        </p>
+      </div>
+    </div>
+    <div v-else>
+      <p>This isn't the proposal version you are looking for...</p>
+    </div>
   </div>
 </template>
 <script>
@@ -206,7 +214,7 @@ export default {
       search: '',
       options: {},
       detail: {},
-      propType: {},
+      propType: undefined,
       headers: [],
       values: [],
       types: [],
@@ -243,7 +251,7 @@ export default {
         requests.push(this.getProposalObjectTypeFields(code))
         requests.push(this.getProposalObjectTypeFieldValues(this.id, code))
         await Promise.all(requests)
-      }else {
+      } else {
         this.headers = []
         this.values = []
       }
@@ -410,13 +418,10 @@ export default {
 @import "@/styles/main.scss";
 
 .top-actions {
-  padding: 10px;
+  padding: 10px 0;
   display: flex;
-  justify-content: flex-end;
-
-  & > .v-btn {
-    margin: 0 10px;
-  }
+  justify-content: center;
+  align-items: center;
 }
 
 .row-actions {
