@@ -70,9 +70,10 @@ export default {
       },
       headers: [
         { text: '', value: 'status', sortable: false },
-        { text: 'version', value: 'version', sortable: false },
-        { text: 'modified', value: 'dateModified', sortable: false },
-        { text: 'modified by', value: 'modifiedBy', sortable: false }
+        { text: 'Version', value: 'version', sortable: false },
+        { text: 'Modified on', value: 'dateModified', sortable: false },
+        { text: 'Modified by', value: 'modifiedBy', sortable: false },
+        { text: 'Description', value: 'notes', sortable: false }
       ],
       footerProps: {
         'items-per-page-options': [5, 10, 20, 50, 100],
