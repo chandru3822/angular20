@@ -55,7 +55,7 @@
           @confirm="publish(detail.id, publishNote)"
           @close-dialog="confirmation=false">
           <template v-slot:title>Confirm</template>
-          <div>Are you sure you want to publish this version?</div>
+          <div>Please provide a description of changes made:</div>
           <v-form>
             <v-textarea
               v-model="publishNote"
@@ -64,7 +64,7 @@
               autofocus
               clearable
               no-resize
-              placeholder="Please explain changes to this version"
+              placeholder="Description"
             />
           </v-form>
           <template v-slot:yes>Publish</template>
