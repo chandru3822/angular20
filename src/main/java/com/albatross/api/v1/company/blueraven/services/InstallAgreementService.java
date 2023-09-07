@@ -179,7 +179,7 @@ public class InstallAgreementService {
       if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
         pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
       } else if (!createPandaDoc) {
-        throw new RuntimeException("Loan Application Not Found.");
+        throw new RuntimeException("Loan Application Not Found. Installation Agreement not sent.");
       }
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
