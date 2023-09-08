@@ -10,9 +10,9 @@
             <v-btn color="primary white--text" @click="saveProcess" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">Save Changes</v-btn>
           </div>
         </v-toolbar>
-        <v-toolbar flat class="">
-            <v-text-field class="d-inline-block mt-4" v-if="editName" v-model="process.processName"></v-text-field>
-            <span v-else>
+        <v-toolbar flat>
+            <v-text-field class=" d-inline-block mt-4" v-if="editName" v-model="process.processName" :class="{'one-hunned': isMobile}"></v-text-field>
+            <span v-else :class="{'one-hunned': isMobile}">
               {{  processId ? process.processName : 'New Process Step'}}
             </span>
             <v-btn class="d-inline-block" small text color="primary" v-if="processId && editName && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveProcess()">
@@ -24,7 +24,9 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="getAvailableProcessSteps()" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
-              {{addNew ? 'Cancel' : 'Add Process Step'}}
+              <v-icon v-if="addNew && isMobile">mdi-close</v-icon>
+              <v-icon v-else-if="isMobile">mdi-plus</v-icon>
+              <span v-else>{{addNew ? 'Cancel' : 'Add Process Step'}}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -91,8 +93,8 @@
         </v-container>
         <v-text-field
           v-model="search"
-          class="mb-3 px-3"
-          style="width: 250px;"
+          class="mb-3 px-3 col-12"
+          :style="{width: isMobile ? '100%' : '250px'}"
           append-icon="mdi-magnify"
           label="Search"
           single-line
@@ -107,7 +109,7 @@
             :search="search"
             fixed-header
             :expanded.sync="expanded"
-            class="elevation-1"
+            class="elevation-1 table-striped"
         >
           <template v-slot:no-data>
             NO DATA HERE!
@@ -118,7 +120,7 @@
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pb-4" :class="{'shaded-row': process.processStepProcesses.indexOf(item) % 2}">
+            <td :colspan="headers.length" class="pb-4">
               <v-card flat color="transparent" class="text-left pa-4">
                 <div class="mb-2">
                   <label>Initial Step:</label>
@@ -158,19 +160,18 @@
             </td>
           </template>
 
-          <template #item="{ item, index }">
-            <tr :class="{ 'shaded-row': process.processStepProcesses.indexOf(item) % 2 }">
-              <td class="text-left">{{ item.processStepName }}</td>
-              <td class="text-left">
+
+              <template #item.processStepName="{item}" class="text-left">{{ item.processStepName }}</template>
+              <template #item.positionName="{item}" class="text-left">
                 <span v-for="(op,idx) in item.owningPositions" :key="idx">{{op.position}}<br/></span>
-              </td>
-              <td class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</td>
-              <td class="text-center">
+              </template>
+              <template #item.dateModified="{item}" class="text-left">{{ item.dateModified ? item.dateModified : item.dateCreated | formatDate('date') }}</template>
+              <template #item.initialStep="{item}" class="text-center">
                 <input type="checkbox" v-model="item.initialStep"
                        disabled readonly>
-              </td>
-              <td class="text-left">{{ item.processStepStatusType }}</td>
-              <td>
+              </template>
+              <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType }}</template>
+              <template #item.icons="{item}">
                 <div style="display: flex; float: right;">
                   <v-btn text color="primary" @click="[expanded.includes(item) ? expanded = [] : expanded = [item], selectedIndex = index, getActiveAssignedToProcessStep(item)]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')">
                     <v-icon v-if="expanded.includes(item)">expand_less</v-icon>
@@ -178,9 +179,8 @@
                   </v-btn>
                   <v-btn :disabled="!userCanDelete" text color="primary" @click="processStepToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </div>
-              </td>
-            </tr>
-          </template>
+              </template>
+
         </v-data-table>
       </v-col>
     </v-row>
@@ -232,12 +232,12 @@ export default {
         },
       ],
       headers: [
-        { text: 'Name', value: 'processStepName'},
-        { text: 'Owning Positions', value: 'positionName', sortable: false},
-        { text: 'Last Modified', value: 'dateModified'},
-        { text: 'Initial', value: 'initialStep'},
-        { text: 'Status Type', value: 'processStepStatusType'},
-        { text: null, value: null},
+        { text: 'Name', value: 'processStepName', show: true},
+        { text: 'Owning Positions', value: 'positionName', sortable: false, show: true},
+        { text: 'Last Modified', value: 'dateModified', show: true},
+        { text: 'Initial', value: 'initialStep', show: true},
+        { text: 'Status Type', value: 'processStepStatusType', show: true},
+        { text: null, value: 'icons', show: true},
       ],
       footerProps: {
         'items-per-page-text': 'Rows per page:',
@@ -273,6 +273,9 @@ export default {
         return 'indeterminate_check_box'
       }
       return 'check_box_outline_blank'
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     },
   },
   methods: {

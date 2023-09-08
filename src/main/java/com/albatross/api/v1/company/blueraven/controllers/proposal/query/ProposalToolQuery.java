@@ -191,33 +191,33 @@ public class ProposalToolQuery {
      """;
 
   public final static String deleteEmptyCustomFieldValues = """
-delete
-from brs.proposal_version_custom_field_value
-where id in (select pvcfv.id
-             from brs.proposal_version_custom_field_value pvcfv
-                      inner join brs.proposal_version_custom_field_group pvcfg
-                                 on pvcfv.proposal_version_custom_field_group_id = pvcfg.id
-                      inner join brs.custom_field_group_assignment cfga
-                                 on pvcfv.custom_field_group_assignment_id = cfga.id
-                      inner join brs.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
-                      inner join brs.custom_field cf on cfga.custom_field_id = cf.id
-                      inner join brs.object_type ot on cfg.object_type_id = ot.id
-                      inner join brs.proposal_version pv on pvcfg.proposal_version_id = pv.id
-                 and pv.proposal_version_status_id = 1 -- DRAFT
-             where pvcfg.proposal_group_uuid = :groupUUID
-               and pvcfg.proposal_version_id = :proposalVersionId
-               and ot.object_code = :objectCode
-               and cf.archived is false
-               and cfga.archived is false
-               and cf.id = :fieldId)
-    """;
+    delete
+    from brs.proposal_version_custom_field_value
+    where id in (select pvcfv.id
+                 from brs.proposal_version_custom_field_value pvcfv
+                          inner join brs.proposal_version_custom_field_group pvcfg
+                                     on pvcfv.proposal_version_custom_field_group_id = pvcfg.id
+                          inner join brs.custom_field_group_assignment cfga
+                                     on pvcfv.custom_field_group_assignment_id = cfga.id
+                          inner join brs.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                          inner join brs.custom_field cf on cfga.custom_field_id = cf.id
+                          inner join brs.object_type ot on cfg.object_type_id = ot.id
+                          inner join brs.proposal_version pv on pvcfg.proposal_version_id = pv.id
+                     and pv.proposal_version_status_id = 1 -- DRAFT
+                 where pvcfg.proposal_group_uuid = :groupUUID
+                   and pvcfg.proposal_version_id = :proposalVersionId
+                   and ot.object_code = :objectCode
+                   and cf.archived is false
+                   and cfga.archived is false
+                   and cf.id = :fieldId)
+        """;
 
   //language=PostgreSQL
   public final static String archiveCustomFieldGroup = """
     insert into brs.proposal_version_custom_field_group
     (proposal_version_id, proposal_group_uuid, archived, created_by_id, date_created, modified_by_id, date_modified)
     values (:versionId, :groupUUID, now(), :currentUserId, now(), :currentUserId, now())
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteCustomFieldGroup = """
@@ -248,6 +248,24 @@ where id in (select pvcfv.id
       and pv.id = :versionId
       and ot.object_code = :objectCode
      """;
+
+  public final static String unarchiveCustomFieldGroup = """
+        with version_values as (select distinct proposal_group_uuid
+                            from brs.proposal_version_custom_field_value_vw
+                            where proposal_version_id <= :versionId
+                              and object_code = :objectCode),
+         archived as (select pvcfg.id, pvcfg.proposal_group_uuid, archived
+                      from brs.proposal_version_custom_field_group pvcfg
+                               inner join brs.proposal_version pv on pvcfg.proposal_version_id = pv.id
+                      where pvcfg.proposal_version_id = :versionId
+                        and pv.proposal_version_status_id <> 2
+                        and archived is not null)
+    delete
+    from brs.proposal_version_custom_field_group
+    where id in (select distinct a.id
+                 from archived a
+                          inner join version_values vv on a.proposal_group_uuid = vv.proposal_group_uuid);
+        """;
 
   //language=PostgreSQL
   public final static String findFilterableValues = """
