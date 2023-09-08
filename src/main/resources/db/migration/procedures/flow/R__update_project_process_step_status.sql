@@ -16,6 +16,7 @@ $$
 DECLARE
     v_count      bigint;
     v_company_id bigint;
+    v_pps_set_to_main_id bigint;
 BEGIN
 
     -- Get count of active PPS other than the one we're updating
@@ -107,34 +108,34 @@ BEGIN
 
     END IF;
 
--- if after all this there are no primary/main pps and there is only 1 non-cancelled pps, make it main
+-- old way: if after all this there are no primary/main pps and there is only 1 non-cancelled pps, make it main
+-- new way: if after all this there are no primary/main pps, then make the most recently completed one main
     IF (select count(1)
         from flow.project_process_step pps
         where project_id = p_project_id
           and pps.process_step_id = p_process_step_id
           and pps.main is true
           and pps.archived is not true) = 0
-        AND
-       (select count(1)
-        from flow.project_process_step pps
-                 INNER JOIN flow.company_process_step_status_type cpsst
-                            on pps.company_process_step_status_type_id = cpsst.id
-        where pps.project_id = p_project_id
-          and pps.process_step_id = p_process_step_id
-          AND cpsst.process_step_status_type_id != 3
-          and pps.main is FALSE
-          and pps.archived is not true) = 1
     THEN
-        update flow.project_process_step pps
-        set main = true
-        from flow.company_process_step_status_type cpsst
+        select pps.id
+        from flow.project_process_step pps
+                 inner join flow.company_process_step_status_type cpsst on pps.company_process_step_status_type_id = cpsst.id
         where pps.company_process_step_status_type_id = cpsst.id
           AND cpsst.process_step_status_type_id != 3
           and pps.project_id = p_project_id
           and pps.process_step_id = p_process_step_id
           and pps.main is FALSE
-          and pps.archived is not true;
+          and pps.archived is not true
+        order by pps.process_step_complete_date desc
+        limit 1
+        into v_pps_set_to_main_id;
     END IF;
+
+    if v_pps_set_to_main_id is not null then
+        update flow.project_process_step pps
+        set main = true
+        where pps.id = v_pps_set_to_main_id;
+    end if;
 
 END;
 $$
