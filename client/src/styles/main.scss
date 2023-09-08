@@ -372,6 +372,11 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .clickable {
   cursor: pointer !important;
 }
+
+.not-clickable {
+  cursor: default !important;
+}
+
 .no-display {
   display: none !important;
 }

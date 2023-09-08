@@ -128,9 +128,7 @@ public class ProposalVersionService {
     Map<String, Object> params = Map.of("versionId", versionId, "objectCode", objectCode);
 
     sqlCache.updateBySql(ProposalToolQuery.resetCustomFieldGroup, params);
-
-    // TODO figure out what to do here
-    //    sqlCache.updateBySql(ProposalToolQuery.unarchiveCustomFieldGroup, params);
+    sqlCache.updateBySql(ProposalToolQuery.unarchiveCustomFieldGroup, params);
 
     return getProposalCustomFieldValues(versionId, objectCode);
   }
@@ -229,13 +227,9 @@ public class ProposalVersionService {
     if (proposalCustomFieldValuesByGroupUUID.isPresent()) {
       sqlCache.updateBySql(
         ProposalToolQuery.deleteCustomFieldGroup,
-        Map.of(
-          "currentUserId",
-          currentUser.getId(),
-          "groupUUID",
-          groupUUID,
-          "versionId",
-          versionId));
+        Map.of("currentUserId", currentUser.getId(),
+          "groupUUID", groupUUID,
+          "versionId", versionId));
     }
 
     return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID);

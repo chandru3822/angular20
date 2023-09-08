@@ -179,7 +179,7 @@ public class InstallAgreementService {
       if (createPandaDoc && (request.getSendInstallationAgreement() || request.getIsSpanish())) {
         pandaDocService.createDocument(projectId, request.getProposalNbr(), request.getIsSpanish());
       } else if (!createPandaDoc) {
-        throw new RuntimeException("Loan Application Not Found.");
+        throw new RuntimeException("Loan Application Not Found. Installation Agreement not sent.");
       }
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
@@ -306,7 +306,7 @@ public class InstallAgreementService {
         }
       } else if (loanType.toLowerCase().contains("sunpower")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
-        final HashSet<Long> betaUserIds = new HashSet<>(Arrays.asList(2419024L, 2354009L, 2413520L, 2424722L, 2393253L, 2354854L, 2377753L, 2356764L));
+        final HashSet<Long> betaUserIds = new HashSet<>(Arrays.asList(2419024L, 2413520L, 2424722L, 2393253L, 2354854L, 2377753L, 2356764L));
         try {
           User user = securityService.getCurrentUser();
           if (betaUserIds.contains(user.trueUserId())) {
