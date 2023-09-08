@@ -298,6 +298,8 @@ public class ContactService {
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
+      params.put("ownerUserPositionId", (contact.getOwnerUserPositionId() != null) ? contact.getOwnerUserPositionId() : existingContact.getOwnerUserPositionId());
+
       // add update when we add that to the UI
       sqlCache.updateBySql(ContactQuery.updateContact, params);
 
@@ -334,21 +336,25 @@ public class ContactService {
         longitude = coordinates.get(0);
       }
 
-      UserPosition userPrimaryPosition =
+      if (contact.getOwnerUserPositionId() != null) {
+        params.put("ownerUserPositionId", contact.getOwner());
+      } else {
+        UserPosition userPrimaryPosition =
           userPositionService.getUserPrimaryPosition(currentUser.getId(), currentUser.getCompanyId());
-      params.put(
+        params.put(
           "ownerUserPositionId",
           null == userPrimaryPosition || null == userPrimaryPosition.getId()
-              ? null
-              : userPrimaryPosition.getId());
-      if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
-        // todo: come back and remove this at some point
-        log.warn(
+            ? null
+            : userPrimaryPosition.getId());
+        if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
+          // todo: come back and remove this at some point
+          log.warn(
             "RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}",
             currentUser.getId(),
             contact.getFirstName(),
             contact.getLastName(),
             contact.getEmail());
+        }
       }
       params.put("latitude", latitude);
       params.put("longitude", longitude);
