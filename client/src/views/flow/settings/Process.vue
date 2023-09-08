@@ -101,6 +101,7 @@
           hide-details
         ></v-text-field>
         <v-data-table
+            id="process-step-table"
             :headers="headers"
             :items="filterProcesses()"
             :items-per-page="100"
@@ -477,3 +478,36 @@ export default {
 }
 
 </style>
+<style lang="scss">
+@media (max-width: 770px) {
+  #process-step-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
+</style>
+
