@@ -42,7 +42,7 @@ public class OverridePlanService {
     @Data
     public static class OverrideReceivingUser {
         private Long userId;
-        private Double m1Allocation, m2Allocation;
+        private Double m1Allocation, m2Allocation, redLineM1Allocation, redLineM2Allocation;
         private String note;
     }
 
@@ -228,6 +228,8 @@ public class OverridePlanService {
         params.put("userId", receivingUser.getUserId());
         params.put("m1Allocation", receivingUser.getM1Allocation());
         params.put("m2Allocation", receivingUser.getM2Allocation());
+        params.put("redLineM1Allocation", receivingUser.getRedLineM1Allocation());
+        params.put("redLineM2Allocation", receivingUser.getRedLineM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().trueUserId());
 
         sqlCache.updateBySqlReturningId(OverrideManagementQuery.addReceivingUser, params, "id").longValue();
@@ -242,6 +244,8 @@ public class OverridePlanService {
         params.put("userId", receivingUser.getUserId());
         params.put("m1", receivingUser.getM1Allocation());
         params.put("m2", receivingUser.getM2Allocation());
+        params.put("redLineM1", receivingUser.getRedLineM1Allocation());
+        params.put("redLineM2", receivingUser.getRedLineM2Allocation());
         params.put("updatedBy", securityService.getCurrentUser().trueUserId());
         params.put("note", receivingUser.getNote());
 
