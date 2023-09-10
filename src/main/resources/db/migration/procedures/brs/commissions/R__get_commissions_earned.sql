@@ -39,7 +39,7 @@ BEGIN
     v_source_id,
     v_primary_financier,
     v_desired_commission_amount;
-
+--todo Carlin wants me to stop doing quick and dirty work and he ripped on me in front of our boss Michael Lowry!!!
   select ppscfv.id
   into v_milestone_2
   from flow.project_process_step pps
