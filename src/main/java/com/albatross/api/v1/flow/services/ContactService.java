@@ -337,7 +337,7 @@ public class ContactService {
       }
 
       if (contact.getOwnerUserPositionId() != null) {
-        params.put("ownerUserPositionId", contact.getOwner());
+        params.put("ownerUserPositionId", contact.getOwnerUserPositionId());
       } else {
         UserPosition userPrimaryPosition =
           userPositionService.getUserPrimaryPosition(currentUser.getId(), currentUser.getCompanyId());

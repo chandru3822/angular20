@@ -58,6 +58,7 @@ public class DataViewQuery {
                                  dvfc.update_first_value_only as "updateFirstValueOnly",
                                  dvfc.reset_on_new as "resetOnNew",
                                  dvfc.reset_values_on_main as "resetValuesOnMain",
+                                 dvfc.ignore_if_null as "ignoreIfNull",
                                  dvfc.archived,
                                  coalesce((
                                             SELECT array_to_json(array_agg(row_to_json(childFields)))
@@ -114,8 +115,8 @@ public class DataViewQuery {
 
   //language=PostgreSQL
   public final static String addFieldConfig = """
-    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main)
-        values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain)
+    insert into flow.data_view_field_config(data_view_id, default_field_id, custom_field_group_assignment_id, process_step_event_id, process_step_id, field_to_update, display_name, update_first_value_only, reset_on_new, created_by_id, reset_values_on_main, ignore_if_null)
+        values(:viewId, :defaultFieldId, :customFieldGroupAssignmentId, :processStepEventId, :processStepId, :fieldToUpdate, :displayName, :updateFirstValueOnly, :resetOnNew, :userId, :resetValuesOnMain, :ignoreIfNull )
         """;
 
   //language=PostgreSQL
@@ -149,6 +150,7 @@ public class DataViewQuery {
               dvfc.update_first_value_only as "updateFirstValueOnly",
               dvfc.reset_on_new as "resetOnNew",
               dvfc.reset_values_on_main as "resetValuesOnMain",
+              dvfc.ignore_if_null as "ignoreIfNull",
               dvfc.archived,
               coalesce((
                          SELECT array_to_json(array_agg(row_to_json(childFields)))

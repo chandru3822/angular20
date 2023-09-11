@@ -330,4 +330,9 @@ public class ContactLeadController {
   public void updateContactEasySolar(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/remodelwell", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactRemodelWell(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

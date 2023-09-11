@@ -175,6 +175,14 @@
                   v-model="newField.resetValuesOnMain"
                 />
                 </div>
+                <div>
+                  <span
+                    class="mr-3">Ignore If Null?</span>
+                  <input
+                    type="checkbox"
+                    v-model="newField.ignoreIfNull"
+                  />
+                </div>
               </div>
             </v-form>
             <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
@@ -281,6 +289,15 @@
                   type="checkbox"
                   v-model="item.resetValuesOnMain"
                 />
+                </div>
+                <div>
+                  <span
+                    class="mr-3 disabled-label">Ignore If Null?</span>
+                  <input
+                    disabled readonly
+                    type="checkbox"
+                    v-model="item.ignoreIfNull"
+                  />
                 </div>
               </div>
 
@@ -551,6 +568,7 @@ export default {
       this.$set(this.newField, 'updateFirstValueOnly', false)
       this.$set(this.newField, 'resetOnNew', false)
       this.$set(this.newField, 'resetValuesOnMain', false)
+      this.$set(this.newField, 'ignoreIfNull', false)
       this.cfgaParentObject = {}
       this.newField.processStepEventId = null
       this.newField.processStepId = null
