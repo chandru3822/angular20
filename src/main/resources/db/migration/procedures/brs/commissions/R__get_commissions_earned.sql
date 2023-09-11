@@ -14,6 +14,7 @@ DECLARE
   v_allocation_m1             numeric;
   v_total_commission_amount   numeric;
   v_milestone_2               bigint;
+  v_milestone_1               bigint;
 BEGIN
 
   select c.allocation
@@ -39,7 +40,7 @@ BEGIN
     v_source_id,
     v_primary_financier,
     v_desired_commission_amount;
---todo Carlin wants me to stop doing quick and dirty work and he ripped on me in front of our boss Michael Lowry!!!
+
   select ppscfv.id
   into v_milestone_2
   from flow.project_process_step pps
@@ -50,7 +51,17 @@ BEGIN
     and pps.process_step_id = 3365
     and ppscfv.date_value is not null;
 
-  if v_desired_commission_amount > 0 and p_code = 'M1' then
+  select ppscfv.id
+  into v_milestone_1
+  from flow.project_process_step pps
+         inner join flow.project_process_step_custom_field_value ppscfv
+                    on ppscfv.project_process_step_id = pps.id and
+                       ppscfv.custom_field_group_assignment_id = 1251
+  where pps.project_id = p_project_id
+    and pps.process_step_id = 175
+    and ppscfv.date_value is not null;
+
+  if v_desired_commission_amount > 0 and p_code = 'M1' and v_milestone_1 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -107,14 +118,7 @@ BEGIN
                                on cpsa.commission_plan_id = cp.id and cpsa.source_id = v_source_id
                                  and cpsa.milestone_id = 1
               WHERE p1.id = p_project_id
-                and exists (select ppscfv.id
-                            from flow.project_process_step pps
-                                   inner join flow.project_process_step_custom_field_value ppscfv
-                                              on ppscfv.project_process_step_id = pps.id and
-                                                 ppscfv.custom_field_group_assignment_id = 1251
-                            where pps.project_id = p_project_id
-                              and pps.process_step_id = 175
-                              and ppscfv.date_value is not null)), 0)
+                and v_milestone_1 is not null), 0)
     into v_total;
 
   elsif p_code = 'M2' then
@@ -155,14 +159,7 @@ BEGIN
                                on cpsa.commission_plan_id = cp.id and cpa.milestone_id = 2 and
                                   cpsa.source_id = v_source_id
               WHERE p1.id = p_project_id
-                and exists (select ppscfv.id
-                            from flow.project_process_step pps
-                                   inner join flow.project_process_step_custom_field_value ppscfv
-                                              on ppscfv.project_process_step_id = pps.id and
-                                                 ppscfv.custom_field_group_assignment_id = 21009
-                            where pps.project_id = p_project_id
-                              and pps.process_step_id = 3365
-                              and ppscfv.date_value is not null)), 0)
+                and v_milestone_2 is not null), 0)
     into v_total;
   end if;
 
