@@ -385,8 +385,15 @@
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
       },
-      calendarEndTime: function (){
-        this.getDayOptions()
+      calendarStartTime: function (newStartTime, oldStartTime){
+        if(newStartTime !== oldStartTime) {
+          this.getDayOptions()
+        }
+      },
+      calendarEndTime: function (newEndTime, oldEndTime){
+        if(newEndTime !== oldEndTime) {
+          this.getDayOptions()
+        }
       }
     },
     created() {
@@ -540,7 +547,6 @@
     },
     methods: {
       switchToDayView(dayOption){
-        debugger
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
         this.calendar.options.minTime = '02:00:00'
