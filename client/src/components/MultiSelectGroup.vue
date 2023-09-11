@@ -122,7 +122,6 @@ export default {
     };
   },
   mounted() {
-    console.log('enabled', this.enabled)
     if(!this.allow) {
       this.allowFlag = 1;
       if (this.alternateLabel != null) {
