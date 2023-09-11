@@ -1,6 +1,6 @@
 <template>
   <v-card v-if="!this.contentLoading" flat :color="backgroundColor" class="square-card flex-grow-1" :class="{'full-size': fullSize, 'half-size': !fullSize}">
-    <v-card-title style="min-height: 40px" class="py-0 title-medium flex-display align-center">
+    <v-card-title style="min-height: 40px" class="py-0 title-medium flex-display align-center" :class="{'justify-space-between': isMobile}">
       <span class="select-group-title">{{title}}</span>
       <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                   v-model="enabled" @change="checkboxChanged()"></v-checkbox>
@@ -72,7 +72,6 @@
           >{{ selected.length }} selected</span>
         </template>
       </v-autocomplete>
-      <br v-if="userCanEdit && saveButton && !enabled"/>
       <v-btn v-if="userCanEdit && saveButton" color="primary" dark class="d-inline-block white--text mt-4"
              @click="save()">
         <v-icon class="mr-2">save</v-icon>
@@ -120,6 +119,11 @@ export default {
       selected: this.selectedContent,
       textLabel: this.label
     };
+  },
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   mounted() {
     if(!this.allow) {
@@ -197,7 +201,8 @@ export default {
     width: 50%;
   }
   .select-group-title {
-    max-width: 60%;
+    max-width: 80%;
+    word-break: break-word;
   }
 
 </style>
