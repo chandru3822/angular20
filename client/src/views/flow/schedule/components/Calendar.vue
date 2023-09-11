@@ -216,7 +216,7 @@
       <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>
       <v-menu activator="#day-selection-btn" nudge-bottom="40px">
         <v-list>
-          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
+          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="body-large py-4">{{option.formattedDate}}</span></v-list-item>
         </v-list>
       </v-menu>
       </div>
