@@ -322,7 +322,7 @@
                           <span :class="{'bold': pss.isRoot}">{{ pss.eventStatusType }}</span>
                         </span>
                 </template>
-                <template #item.icons="{items}" class="clickable text-right">
+                <template #item.icons="{item}" class="clickable text-right">
                   <div class="flex-display">
                     <v-btn text color="primary"
                            @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
