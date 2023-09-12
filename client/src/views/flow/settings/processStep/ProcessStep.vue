@@ -14,27 +14,7 @@
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
-            <div class="non-admin-container">
-              <multi-select-group
-                  background-color="transparent"
-                  :userCanEdit="userCanEdit"
-                  :return-object="processStep"
-                  :content="positions"
-                  :dropdownEnabled="processStep.nonAdminAdd"
-                  :selectedContent="processStep.nonAdminAddWhiteListedPositions"
-                  title="Allow Non-Admin to Add to Project"
-                  label="Allowed Positions"
-                  alternateLabel = "Denied Positions"
-                  :allow="true"
-                  :contentLoading="positionsLoading"
-                  :flex-column="true"
-                  save-button
-                  @selected-changed="nonAdminWBLPositionsSelectionChange"
-                  @allow-changed="toggleNonAdminAllowDenyList"
-                  @checkbox-changed="toggleAllowNonAdminCheckbox"
-                  @save-multi-select="saveProcessStep(false)"
-              />
-            </div>
+
           </div>
           <div class="text-right" v-if="userCanEdit">
             <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
@@ -170,16 +150,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      nonAdminWBLPositionsSelectionChange(e){
-        this.processStep.nonAdminAddWhiteListedPositions = e
-        this.nonAdminAddWhiteListedPositionsChanged = true
-      },
-      toggleNonAdminAllowDenyList(e){
-        this.processStep.nonAdminAddAllow = (e === 0)
-      },
-      toggleAllowNonAdminCheckbox(e){
-        this.processStep.nonAdminAdd = e
       },
       async getPositions() {
         if(this.positions?.length === 0) {

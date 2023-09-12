@@ -216,7 +216,7 @@
       <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>
       <v-menu activator="#day-selection-btn" nudge-bottom="40px">
         <v-list>
-          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="primary--text">{{option.formattedDate}}</span></v-list-item>
+          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="body-large py-4">{{option.formattedDate}}</span></v-list-item>
         </v-list>
       </v-menu>
       </div>
@@ -385,8 +385,15 @@
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
       },
-      calendarEndTime: function (){
-        this.getDayOptions()
+      calendarStartTime: function (newStartTime, oldStartTime){
+        if(newStartTime !== oldStartTime) {
+          this.getDayOptions()
+        }
+      },
+      calendarEndTime: function (newEndTime, oldEndTime){
+        if(newEndTime !== oldEndTime) {
+          this.getDayOptions()
+        }
       }
     },
     created() {
@@ -540,7 +547,6 @@
     },
     methods: {
       switchToDayView(dayOption){
-        debugger
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
         this.calendar.options.minTime = '02:00:00'
