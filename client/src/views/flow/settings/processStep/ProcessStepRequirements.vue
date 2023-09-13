@@ -42,7 +42,8 @@
           <v-toolbar-items>
             <v-btn @click="[getRequirementTypes(), selectedDataTypeRequirement = {}]" text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewRequirement">add</v-icon>
-              {{ addNewRequirement ? 'Cancel' : 'Add Requirement' }}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewRequirement ? 'Cancel' : 'Add Requirement' }}</span>
             </v-btn>
             <v-btn color="primary" text @click="expandRequirements = !expandRequirements">
               <v-icon v-if="!expandRequirements">mdi-chevron-down</v-icon>
@@ -324,12 +325,13 @@
               :headers="headers"
               :items="filterRequirements()"
               :items-per-page="-1"
-              :mobile-breakpoint="0"
+              :mobile-breakpoint="960"
               disable-sort
               single-expand
               :expanded.sync="expanded"
               hide-default-footer
-              class="elevation-1 fix-column-width-bug square-card"
+              class="elevation-1 square-card expanded-row-flatten"
+              :item-class="shadeRow"
             >
               <template #no-data>
                 <span class="default-text-color">No requirements for this process step</span>
@@ -339,8 +341,8 @@
                 <span class="default-text-color">No requirements for this process step</span>
               </template>
 
-              <template #expanded-item="{ headers, item }">
-                <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': selectedRequirementIndex % 2}">
+              <template #expanded-item="{ headers, item, index }">
+                <td :colspan="headers.length" class="pa-4 elevation-0" :class="shadeRow(item)">
                   <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
                     <h5 class="text-left">Dynamic Function Parameters</h5>
                     <v-card flat color="transparent">
@@ -528,18 +530,17 @@
                            :readonly="item.immutable || !userCanEdit"
                            :disabled="item.immutable || !userCanEdit">
                   </div>
-                  <v-btn v-if="userCanEdit" @click="updateRequirement(item)" color="primary">
+                  <v-btn v-if="userCanEdit && !item.immutable" @click="updateRequirement(item)" color="primary">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>
                 </td>
               </template>
 
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left" style="width: 65px">{{ item.requirementNbr }}</td>
-                  <td class="text-left">{{ item.processStepRequirementType }}</td>
-                  <td class="text-left">
+
+                  <template #item.requirementNbr="{item}" style="width: 65px">{{ item.requirementNbr }}</template>
+                  <template #item.processStepRequirementType="{item}" class="text-left">{{ item.processStepRequirementType }}</template>
+                  <template #item.custom="{item}" class="text-left">
                     <span v-if="item.processStepRequirementTypeId === 1">
                       <a :href="`/settings/processStep/${item.processStepId}/components`">{{ item.parentName }}</a> | {{ item.fieldName }}
                     </span>
@@ -556,9 +557,9 @@
                     <span v-else>
                       {{ item.fieldName }}
                     </span>
-                  </td>
-                  <td class="text-left">{{ item.operatorType }}</td>
-                  <td class="text-left">
+                  </template>
+                  <template #item.operatorType="{item}" class="text-left">{{ item.operatorType }}</template>
+                  <template #item.requirementValue="{item}" class="text-left">
                     <span v-if="item.requirementValue">
                       {{ item.requirementValue }}
                     </span>
@@ -575,24 +576,24 @@
                       <!-- todo: show the selected values here -->
                       {{ item.listOfValues.map(v => ' ' + v.name).toString() }}
                     </span>
-                  </td>
-                  <td>
+                  </template>
+                  <template #item.icons="{item, index}">
                     <div style="display: flex;">
-                      <v-btn small text color="primary" @click="[expanded = [item], loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId),
-                                    loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index]"
+                      <v-btn small text color="primary" @click="[loadOperatorTypes(item.dataTypeId, item.processStepRequirementTypeId),
+                                    loadDataTypeRequirements(item.dataTypeId), selectedRequirementIndex = index, expanded = [item]]"
                              v-if="!expanded.includes(item)">
                         <v-icon v-if="item.immutable">expand_more</v-icon>
                         <v-icon v-else>edit</v-icon>
                       </v-btn>
-                      <v-btn small text color="primary" @click="[expanded = [], selectedRequirementIndex = index]"
-                             v-if="expanded.includes(item)">cancel
+                      <v-btn small text color="primary" @click="[selectedRequirementIndex = index, expanded = []]"
+                             v-if="expanded.includes(item)">
+                        <v-icon v-if="item.immutable">expand_less</v-icon>
+                        <span v-else>cancel</span>
                       </v-btn>
                       <v-btn small text color="primary" v-if="userCanEdit" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                       <v-btn small text color="primary" @click="showActionsUsingLogic(item.id)"><v-icon>mdi-information</v-icon></v-btn>
                     </div>
-                  </td>
-                </tr>
-              </template>
+                  </template>
             </v-data-table>
           </v-col>
         </v-row>
@@ -716,13 +717,20 @@ export default {
       showInfoDialog: false
     }
   },
-  computed: {},
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
+  },
   async created() {
     //api = process step requirements OR process step event requirements
     this.apiUrl = this.eventRequirements ? `/processStep/${this.processStepId}/event/${this.processStepEventId}/requirement` : `/processStep/${this.processStepId}/requirement`
     this.getRequirements()
   },
   methods: {
+    shadeRow(item){
+      return item.requirementNbr % 2 === 0 ? 'shaded-row' : ''
+    },
     //requirements
     changeBooleanValue(e, fp) {
       this.$set(fp, 'dynamicValue', e == null ? 'fa$lse' : e.toString())
