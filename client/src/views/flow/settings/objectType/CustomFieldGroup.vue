@@ -296,49 +296,6 @@
                                         @allow-changed="cfgaHiddenAllowEventListener"
                                         @checkbox-changed="cfgaHiddenCheckboxEventListener"></multi-select-group>
 
-                                      <!--                                      <v-autocomplete-->
-<!--                                        v-if="cf.customFieldGroupAssignmentHidden"-->
-<!--                                        v-model="cf.hiddenWhiteListedPositions"-->
-<!--                                        :items="positions"-->
-<!--                                        :loading="positionsLoading"-->
-<!--                                        multiple-->
-<!--                                        clearable-->
-<!--                                        label="White Listed Positions"-->
-<!--                                        item-text="position"-->
-<!--                                        item-value="positionId"-->
-<!--                                        return-object-->
-<!--                                        height="35px"-->
-<!--                                        class="d-inline-block mr-3"-->
-<!--                                        @change="cf.hiddenPositionsChanged = true"-->
-<!--                                      >-->
-<!--                                        <v-list-item-->
-<!--                                          slot="prepend-item"-->
-<!--                                          ripple-->
-<!--                                          @click="toggleHiddenSelectAllPositions(cf)"-->
-<!--                                        >-->
-<!--                                          <v-list-item-action>-->
-<!--                                            <v-icon>{{ icon(cf) }}</v-icon>-->
-<!--                                          </v-list-item-action>-->
-<!--                                          <v-list-item-title>Select All</v-list-item-title>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-divider-->
-<!--                                          slot="prepend-item"-->
-<!--                                          class="mt-2"-->
-<!--                                        ></v-divider>-->
-<!--                                        <template-->
-<!--                                          slot="selection"-->
-<!--                                          slot-scope="{ item, index }"-->
-<!--                                        >-->
-<!--                                          <v-chip small-->
-<!--                                                  v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">-->
-<!--                                            <span>{{ item.position }}</span>-->
-<!--                                          </v-chip>-->
-<!--                                          <span-->
-<!--                                            v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"-->
-<!--                                            class="primary&#45;&#45;text text-caption"-->
-<!--                                          >{{ cf.hiddenWhiteListedPositions.length }} selected</span>-->
-<!--                                        </template>-->
-<!--                                      </v-autocomplete>-->
                                       <br/>
                                       <div class="d-flex">
                                         <v-spacer v-if="isMobile"/>
