@@ -52,7 +52,7 @@
               :smartlist-id="report.id"
               :disabled="!canDelete"
               :show-text="true"
-              @deleted="router.go(-1)"
+              @deleted="report.archived = true; router.go(-1)"
             />
 
             <SmartlistShare
@@ -683,7 +683,7 @@ onMounted(async () => {
 onUnmounted(() => window.removeEventListener('beforeunload', windowLeave))
 
 onBeforeRouteLeave(async (to, from, next) => {
-  if (hasUnsavedChanges.value) {
+  if (hasUnsavedChanges.value && !report.value.archived) {
     const shouldSave = await unsavedPrompt()
 
     if (shouldSave) {
@@ -763,7 +763,7 @@ const windowLeave = async (event) => {
   }
 
   :deep(.v-data-table__wrapper) {
-    height: calc(100vh - 270px) !important;
+    height: calc(100vh - 300px) !important;
   }
 
   .v-item-group {

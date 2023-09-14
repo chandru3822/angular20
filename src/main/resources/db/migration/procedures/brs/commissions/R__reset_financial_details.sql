@@ -1,5 +1,5 @@
-drop procedure if exists brs.reset_financial_details();
-CREATE OR REPLACE procedure brs.reset_financial_details() AS
+drop procedure if exists brs.reset_financial_details(p_project_id bigint);
+CREATE OR REPLACE procedure brs.reset_financial_details(p_project_id bigint) AS
 $BODY$
 declare
   x record;
@@ -16,7 +16,8 @@ BEGIN
     from (select pd.project_id
           from brs.project_details pd
           where pd.final_design_complete_date is not null
-           --and project_id = 807435
+            and case when p_project_id is not null then  project_id = p_project_id
+                else 1=1 end
          ) as foo
 
     loop
@@ -35,7 +36,9 @@ BEGIN
 
   for x in select project_id, coalesce(sum(amount), 0) amount1
            from brs.project_commission_ledger pcl
-           where ledger_type_id = 1
+           where ledger_type_id = 1 and
+             case when p_project_id is not null then  project_id = p_project_id
+                  else 1=1 end
            group by project_id
 
     loop
@@ -49,6 +52,9 @@ BEGIN
   for x in select project_id, coalesce(sum(amount), 0) amount1
            from brs.project_commission_ledger pcl
            where ledger_type_id = 2
+             and case
+                   when p_project_id is not null then project_id = p_project_id
+                   else 1 = 1 end
            group by project_id
 
     loop
@@ -62,7 +68,10 @@ BEGIN
 
   for x in select project_id, coalesce(sum(paid_to_date), 0) amount1
            from brs.project_commission_ledger pcl
-           where ledger_type_id = 3
+           where ledger_type_id = 3 and
+             case
+               when p_project_id is not null then project_id = p_project_id
+               else 1 = 1 end
            group by project_id
 
     loop
@@ -75,7 +84,10 @@ BEGIN
 
   for x in select project_id, coalesce(sum(amount), 0) amount1
            from brs.project_commission_ledger pcl
-           where ledger_type_id = 7
+           where ledger_type_id = 7 and
+             case
+               when p_project_id is not null then project_id = p_project_id
+               else 1 = 1 end
            group by project_id
 
     loop

@@ -3,7 +3,7 @@
   <v-dialog
     v-model="openDialog"
     :width="450"
-    persistent
+    @click:outside="closeDialog"
   >
     <v-card>
       <v-card-title
@@ -128,7 +128,7 @@
                 align-self="center"
                 class="pl-0"
               >
-                <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
+                <v-icon color="primary" @click="markDeleted(accessLevel)">mdi-delete</v-icon>
               </v-col>
             </v-row>
           </v-list-item>
@@ -381,6 +381,10 @@ const markDeleted = (accessLevel) => {
     deleted: true
   })
 }
+
+const closeDialog = () => {
+  emit('dialog-closed')
+};
 
 getSharables()
 getAccessLevels()

@@ -62,7 +62,7 @@
                   :key="idx"
                   :required="field.required"
                   :callback="populateDirtyCfvs"
-                  :readonly="!canEdit || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                  :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
                   :field="field"
                   :show-field-name="false"
                   :list-of-value-filter="filters[field.customFieldId]"
@@ -70,7 +70,7 @@
                 />
               </div>
             </div>
-            <div class="configuration-save-container" v-if="canEdit">
+            <div class="configuration-save-container" v-if="canEdit && !proposal.locked">
               <v-btn depressed
                      text
                      color="primary"
@@ -112,7 +112,7 @@
               <div class="d-flex align-center">
                 <div class="proposal-title">Proposal <span>#{{ proposal.proposalNbr }}</span></div>
                 <v-spacer/>
-                <v-btn v-if="canEdit"
+                <v-btn v-if="canEdit && !proposal.locked"
                        color="grey lighten-4"
                        class="proposal-container-buttons text-capitalize primary--text"
                        @click="deleteProposal">
@@ -234,7 +234,7 @@ export default {
     canEdit() {
       const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
       const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
-      return (hasAdmin || hasEdit) && (this.proposal && this.proposal.locked === false)
+      return (hasAdmin || hasEdit)
     },
     defaultProposalName() {
       if (this.proposal?.name) {
