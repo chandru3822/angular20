@@ -25,6 +25,7 @@ declare
   v_found_user_on_plan        bigint;
   v_found_user_residual       bigint;
   v_desired_commission_amount numeric;
+  v_commission_strategy_id    bigint;
 BEGIN
 
   select rp.id, rp.name, rps.status_type
@@ -94,7 +95,18 @@ BEGIN
     and p.process_step_id in (3355)
     and p.main is true;
 
-  if v_desired_commission_amount > 0 then
+  select coalesce(v.int_value, fd.commission_strategy)
+  into v_commission_strategy_id
+  from flow.project_process_step p
+         left join flow.project_process_step_custom_field_value v
+                   on v.project_process_step_id = p.id and v.custom_field_group_assignment_id = 26176 and  --26168 stage -- 26176 prod
+                      int_value is not null
+         inner join brs.financial_details fd on fd.project_id = p.project_id
+  where p.project_id = p_project_id
+    and p.process_step_id in (3355)
+    and p.main is true;
+
+  if v_commission_strategy_id = 23610 then
     select cp.id, cp.name, cps.status_type
     into v_commission_plan_id,v_commission_plan,v_commission_status
     from brs.commission_plan cp

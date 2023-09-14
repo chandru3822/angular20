@@ -15,6 +15,7 @@ DECLARE
   v_total_commission_amount   numeric;
   v_milestone_2               bigint;
   v_milestone_1               bigint;
+  v_commission_strategy_id    bigint;
 BEGIN
 
   select c.allocation
@@ -31,7 +32,8 @@ BEGIN
          system_size,
          source_id,
          primary_financier,
-         desired_commission_amount
+         desired_commission_amount,
+         commission_strategy_id
   from brs.get_commission_data(p_project_id)
   into v_cancelled_date,
     v_interest_rate,
@@ -39,7 +41,8 @@ BEGIN
     v_system_size,
     v_source_id,
     v_primary_financier,
-    v_desired_commission_amount;
+    v_desired_commission_amount,
+    v_commission_strategy_id;
 
   select ppscfv.id
   into v_milestone_2
@@ -61,7 +64,7 @@ BEGIN
     and pps.process_step_id = 175
     and ppscfv.date_value is not null;
 
-  if v_desired_commission_amount > 0 and p_code = 'M1' and v_milestone_1 is not null then
+  if v_commission_strategy_id = 23610 and p_code = 'M1' and v_milestone_1 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
@@ -70,7 +73,7 @@ BEGIN
     else
       v_total = v_allocation_m1 * v_system_size;
     end if;
-  elsif v_desired_commission_amount > 0 and p_code = 'M2' and v_milestone_2 is not null then
+  elsif v_commission_strategy_id = 23610 and p_code = 'M2' and v_milestone_2 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;
