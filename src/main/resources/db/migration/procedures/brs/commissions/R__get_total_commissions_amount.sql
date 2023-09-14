@@ -10,6 +10,7 @@ DECLARE
   v_loan_term                 bigint;
   v_interest_rate             numeric;
   v_desired_commission_amount numeric;
+  v_commission_strategy_id    bigint;
 BEGIN
 
   select interest_rate,
@@ -17,7 +18,8 @@ BEGIN
          system_size,
          primary_financier,
          source_id,
-         desired_commission_amount
+         desired_commission_amount,
+         commission_strategy_id
   from brs.get_commission_data(p_project_id)
   into
     v_interest_rate,
@@ -25,9 +27,10 @@ BEGIN
     v_system_size,
     v_primary_financier,
     v_source_id,
-    v_desired_commission_amount;
+    v_desired_commission_amount,
+    v_commission_strategy_id;
 
-  if v_desired_commission_amount > 0 then
+  if v_commission_strategy_id = 23610 then
 
     v_total = v_desired_commission_amount * v_system_size * 1000;
   else
