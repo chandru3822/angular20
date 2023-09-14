@@ -9,12 +9,15 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              {{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+              <v-icon v-if="isMobile && logicStringToggle">mdi-numeric</v-icon>
+              <v-icon v-else-if="isMobile">mdi-alphabetical</v-icon>
+              <span v-if="!isMobile">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
             </v-btn>
             <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']"
                    text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
-              {{ addNewAction ? 'Cancel' : 'Add Action' }}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewAction ? 'Cancel' : 'Add Action' }}</span>
             </v-btn>
             <v-btn text color="primary" @click="expandActions = !expandActions">
               <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
@@ -133,10 +136,9 @@
             single-expand
             :sort-desc="[false]"
             :sort-by="['displayOrder']"
-            :mobile-breakpoint="0"
             :expanded.sync="actionExpanded"
             hide-default-footer
-            class="action-table elevation-1 fix-column-width-bug"
+            class="action-table elevation-1 expanded-row-flatten table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No actions for this process step</span>
@@ -907,18 +909,16 @@
               </td>
             </template>
 
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': actions.indexOf(item) % 2}">
-                <td style="width: 50px">
+                <template #item.draggable="{item}" style="width: 50px">
                   <v-btn text v-if="userCanEdit" icon small class="handle" color="primary">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
-                </td>
-                <td class="text-left">{{ item.actionName }}</td>
-                <td class="text-left">{{ item.actionType }}</td>
-                <td class="text-left">{{ item.processStepStatusType || 'N/A' }}</td>
-                <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
-                <td>
+                </template>
+                <template #item.actionName="{item}" class="text-left">{{ item.actionName }}</template>
+                <template #item.actionType="{item}" class="text-left">{{ item.actionType }}</template>
+                <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType || 'N/A' }}</template>
+                <template #item.projectStatusType="{item}" class="text-left">{{ item.projectStatusType || 'N/A' }}</template>
+                <template #item.icons="{item, index}">
                   <div style="display: flex; float: right;">
                     <v-tooltip left small>
                       <template v-slot:activator="{on, attrs}">
@@ -943,9 +943,7 @@
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>
-                </td>
-              </tr>
-            </template>
+                </template>
 
           </v-data-table>
         </v-card>
@@ -1149,7 +1147,11 @@ export default {
       itemToDelete: null
     }
   },
-  computed: {},
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
+  },
   async created() {
     this.getActions()
     this.getStatusTypes()
