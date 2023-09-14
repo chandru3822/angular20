@@ -1843,7 +1843,8 @@ BEGIN
                                          financed_ancillary_cost_with_fees,
                                          total_ancillary_cost,
                                          total_promotion_amount,
-                                         storage_cost_with_fees)
+                                         storage_cost_with_fees,
+                                         commission_strategy_id)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1945,7 +1946,8 @@ BEGIN
              coalesce(v_trenching_cost, 0)::numeric +
              coalesce(v_ac_unit_relocation_cost, 0)::numeric),
             coalesce(v_promotion_cost,0),
-            round(v_loan_price_storage,0));
+            round(v_loan_price_storage,0),
+            v_commission_strategy_id);
   end if;
 
   return query

@@ -56,6 +56,10 @@ begin
                                                                                   when pd.cancelled_date is not null
                                                                                     then
                                                                                     0::numeric
+                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
+                                                                                    (opru.red_line_m1_allocation + opru.red_line_m2_allocation) * fd.total_commissions
+                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
+                                                                                      (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
                                                                                     (opru.m1_allocation + opru.m2_allocation) * fd.system_size
@@ -83,7 +87,11 @@ begin
                                                                                   pd.cancelled_date,
                                                                                   fd.substantial_completion_date,
                                                                                   opru.m2_allocation, fd.system_size,
-                                                                                  pd.closer_user_id) as foo) as foo1),
+                                                                                  pd.closer_user_id,
+                                                                                  fd.commission_strategy,
+                                                                                  opru.red_line_m1_allocation,
+                                                                                  opru.red_line_m2_allocation,
+                                                                                  fd.total_commissions) as foo) as foo1),
                                                             0)   AS total_overrides,
 
                                                    (coalesce((select sum(amount)
@@ -129,6 +137,10 @@ begin
                                                                                   when pd.cancelled_date is not null
                                                                                     then
                                                                                     0::numeric
+                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
+                                                                                      (opru.red_line_m1_allocation + opru.red_line_m2_allocation) * fd.total_commissions
+                                                                                  when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
+                                                                                      (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
                                                                                     (opru.m1_allocation + opru.m2_allocation) * fd.system_size
@@ -154,7 +166,11 @@ begin
                                                                                   opru.m1_allocation,
                                                                                   opru.m2_allocation,
                                                                                   pd.cancelled_date,
-                                                                                  fd.substantial_completion_date) as foo) as foo1),
+                                                                                  fd.substantial_completion_date,
+                                                                                  fd.commission_strategy,
+                                                                                  opru.red_line_m1_allocation,
+                                                                                  opru.red_line_m2_allocation,
+                                                                                  fd.total_commissions) as foo) as foo1),
                                                             0)                            AS total_overrides,
 
                                                    0::numeric                             AS commission_adjustments

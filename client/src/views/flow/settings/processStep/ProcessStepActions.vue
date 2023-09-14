@@ -9,12 +9,15 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              {{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+              <v-icon v-if="isMobile && logicStringToggle">mdi-numeric</v-icon>
+              <v-icon v-else-if="isMobile">mdi-alphabetical</v-icon>
+              <span v-if="!isMobile">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
             </v-btn>
             <v-btn @click="[addNewAction = !addNewAction, newAction.color = '#1F3C73', newAction.bgColor = '#878787']"
                    text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewAction">add</v-icon>
-              {{ addNewAction ? 'Cancel' : 'Add Action' }}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewAction ? 'Cancel' : 'Add Action' }}</span>
             </v-btn>
             <v-btn text color="primary" @click="expandActions = !expandActions">
               <v-icon v-if="!expandActions">mdi-chevron-down</v-icon>
@@ -133,10 +136,9 @@
             single-expand
             :sort-desc="[false]"
             :sort-by="['displayOrder']"
-            :mobile-breakpoint="0"
             :expanded.sync="actionExpanded"
             hide-default-footer
-            class="action-table elevation-1 fix-column-width-bug"
+            class="action-table elevation-1 expanded-row-flatten table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No actions for this process step</span>
@@ -242,7 +244,7 @@
                         </v-toolbar-title>
                         <v-spacer></v-spacer>
                         <v-toolbar-items>
-                          <v-btn v-if="!addChildLink && userCanEdit"
+                          <v-btn v-if="!addChildLink && userCanEdit" text color="primary"
                                  @click="[addChildLink = true, loadLinks(item.id)]">
                             <v-icon>add</v-icon>
                           </v-btn>
@@ -258,7 +260,7 @@
                                   return-object
                                   @input="saveLinkToAction(item)"
                         ></v-select>
-                        <v-btn @click="addChildLink = false">
+                        <v-btn text color="primary" @click="addChildLink = false">
                           <v-icon>remove</v-icon>
                           Cancel
                         </v-btn>
@@ -304,46 +306,9 @@
                         <v-list-item-content class="text-left">
                           {{ al.link }}
                         </v-list-item-content>
-                        <v-dialog
-                          v-if="userCanEdit"
-                          v-model="al.deleteConfirm"
-                          width="500">
-                          <template v-slot:activator="{ on }">
-                            <v-list-item-action class="clickable" v-on="on">
-                              <v-icon>delete</v-icon>
-                            </v-list-item-action>
-                          </template>
-                          <v-card>
-                            <v-card-title
-                              class="text-h5 grey lighten-2"
-                              primary-title
-                            >
-                              Confirm
-                            </v-card-title>
-
-                            <v-card-text>
-                              Are you sure you want to delete <strong>{{ al.link }}</strong> from <strong>{{
-                                item.actionName
-                              }}</strong>?
-                            </v-card-text>
-
-                            <v-divider></v-divider>
-
-                            <v-card-actions>
-                              <v-spacer></v-spacer>
-                              <v-btn
-                                @click="al.deleteConfirm = false">
-                                No
-                              </v-btn>
-                              <v-btn
-                                color="primary"
-                                text
-                                @click="[al.archived = true, deleteLinkFromAction(item.id, al.id)]">
-                                Yes
-                              </v-btn>
-                            </v-card-actions>
-                          </v-card>
-                        </v-dialog>
+                        <v-list-item-action class="clickable" @click="[linkToDelete=al, parentActionForChildToDelete=item]">
+                          <v-icon color="primary">delete</v-icon>
+                        </v-list-item-action>
                       </v-list-item>
                     </v-list>
                   </v-col>
@@ -455,59 +420,19 @@
                         </tr>
                       </template>
 
-                      <template #item="{ item:cp, index }">
-                        <tr :class="{'shaded-row': index % 2}">
-                          <td class="text-left"><a :href="`/settings/processStep/${cp.processStepId}/components`">{{ cp.processStepName }}</a></td>
-                          <td class="text-left">{{ cp.initialProcessStepStatusType }}</td>
-                          <td class="text-left">{{ cp.existingProcessStepStatusType }}</td>
-                          <td class="text-right">
+                          <template #item.processStepName="{item:cp}" class="text-left"><a :href="`/settings/processStep/${cp.processStepId}/components`">{{ cp.processStepName }}</a></template>
+                          <template #item.initialProcessStepStatusType="{item:cp}" class="text-left">{{ cp.initialProcessStepStatusType }}</template>
+                          <template #item.existingProcessStepStatusType="{item:cp}" class="text-left">{{ cp.existingProcessStepStatusType }}</template>
+                          <template #item.icons="{item:cp}" class="text-right">
                             <v-btn text color="primary" v-if="!cpExpanded.includes(cp)"
                                    @click="[ cpExpanded = [cp], getStatusesAssignedToStep(cp), getCancelledStatuses(cp)]">
                               <v-icon>edit</v-icon>
                             </v-btn>
                             <v-btn small text v-if="cpExpanded.includes(cp)" @click="cpExpanded = []">cancel</v-btn>
-                            <v-dialog v-if="userCanEdit" v-model="cp.deleteConfirm" width="500">
-                              <template v-slot:activator="{ on }">
-                                <v-btn text v-on="on">
-                                  <v-icon>delete</v-icon>
-                                </v-btn>
-                              </template>
-                              <v-card>
-                                <v-card-title
-                                  class="text-h5 grey lighten-2"
-                                  primary-title
-                                >
-                                  Confirm
-                                </v-card-title>
-
-                                <v-card-text>
-                                  Are you sure you want to delete <strong>{{ cp.processStepName }}</strong> from
-                                  <strong>{{
-                                      item.actionName
-                                    }}</strong>?
-                                </v-card-text>
-
-                                <v-divider></v-divider>
-
-                                <v-card-actions>
-                                  <v-spacer></v-spacer>
-                                  <v-btn
-                                    @click="cp.deleteConfirm = false">
-                                    No
-                                  </v-btn>
-                                  <v-btn
-                                    color="primary"
-                                    text
-                                    @click="[cp.archived = true, deleteChildProcessFromAction(item.id, cp.id)]">
-                                    Yes
-                                  </v-btn>
-                                </v-card-actions>
-                              </v-card>
-                            </v-dialog>
-                          </td>
-
-                        </tr>
-                      </template>
+                            <v-btn text color="primary" @click="[childProcessToDelete = cp, parentActionForChildToDelete = item]">
+                              <v-icon>delete</v-icon>
+                            </v-btn>
+                          </template>
                     </v-data-table>
 
                   </v-col>
@@ -713,46 +638,9 @@
                           <v-icon v-if="cp.edit">remove</v-icon>
                           <v-icon v-else>edit</v-icon>
                         </v-btn>
-                        <v-dialog
-                          v-if="userCanEdit"
-                          v-model="cp.deleteConfirm"
-                          width="500">
-                          <template v-slot:activator="{ on }">
-                            <v-list-item-action class="clickable" v-on="on">
-                              <v-icon>delete</v-icon>
-                            </v-list-item-action>
-                          </template>
-                          <v-card>
-                            <v-card-title
-                              class="text-h5 grey lighten-2"
-                              primary-title
-                            >
-                              Confirm
-                            </v-card-title>
-
-                            <v-card-text>
-                              Are you sure you want to delete <strong>{{ cp.functionName }}</strong> from <strong>{{
-                                item.actionName
-                              }}</strong>?
-                            </v-card-text>
-
-                            <v-divider></v-divider>
-
-                            <v-card-actions>
-                              <v-spacer></v-spacer>
-                              <v-btn
-                                @click="cp.deleteConfirm = false">
-                                No
-                              </v-btn>
-                              <v-btn
-                                color="primary"
-                                text
-                                @click="[cp.archived = true, deleteChildFunctionFromAction(item.id, cp.id)]">
-                                Yes
-                              </v-btn>
-                            </v-card-actions>
-                          </v-card>
-                        </v-dialog>
+                        <v-list-item-action class="clickable" @click="[childProcessToDelete = cp, parentActionForChildToDelete = item]">
+                          <v-icon>delete</v-icon>
+                        </v-list-item-action>
                       </v-list-item>
                     </v-list>
                     </draggable>
@@ -907,18 +795,16 @@
               </td>
             </template>
 
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': actions.indexOf(item) % 2}">
-                <td style="width: 50px">
+                <template #item.draggable="{item}" style="width: 50px">
                   <v-btn text v-if="userCanEdit" icon small class="handle" color="primary">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
-                </td>
-                <td class="text-left">{{ item.actionName }}</td>
-                <td class="text-left">{{ item.actionType }}</td>
-                <td class="text-left">{{ item.processStepStatusType || 'N/A' }}</td>
-                <td class="text-left">{{ item.projectStatusType || 'N/A' }}</td>
-                <td>
+                </template>
+                <template #item.actionName="{item}" class="text-left">{{ item.actionName }}</template>
+                <template #item.actionType="{item}" class="text-left">{{ item.actionType }}</template>
+                <template #item.processStepStatusType="{item}" class="text-left">{{ item.processStepStatusType || 'N/A' }}</template>
+                <template #item.projectStatusType="{item}" class="text-left">{{ item.projectStatusType || 'N/A' }}</template>
+                <template #item.icons="{item, index}">
                   <div style="display: flex; float: right;">
                     <v-tooltip left small>
                       <template v-slot:activator="{on, attrs}">
@@ -943,9 +829,7 @@
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>
-                </td>
-              </tr>
-            </template>
+                </template>
 
           </v-data-table>
         </v-card>
@@ -954,6 +838,15 @@
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAction" @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this action?
 
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLinkFromAction" @close-dialog="closeLinkDeleteDialog">
+      Are you sure you want to delete <strong>{{ linkToDelete?.link }}</strong> from <strong>{{
+        parentActionForChildToDelete?.actionName
+      }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction" @close-dialog="closeChildProcessDialog">
+      Are you sure you want to delete <strong>{{ childProcessToDelete?.processStepName }}</strong> from
+      <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -1146,10 +1039,17 @@ export default {
       invalidFirsts: ['2', '3', '4'],
       invalidLasts: ['1', '3', '4', '5'],
       showDeleteDialog: false,
-      itemToDelete: null
+      itemToDelete: null,
+      linkToDelete: null,
+      parentActionForChildToDelete: null,
+      childProcessToDelete: null,
     }
   },
-  computed: {},
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
+  },
   async created() {
     this.getActions()
     this.getStatusTypes()
@@ -1590,7 +1490,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteChildProcessFromAction(actionId, id) {
+    async deleteChildProcessFromAction() {
+      this.childProcessToDelete.archived = true
+      const actionId = this.parentActionForChildToDelete.id
+      const id = this.childProcessToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildStep/${id}`)
@@ -1693,7 +1596,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteLinkFromAction(actionId, id) {
+    async deleteLinkFromAction() {
+      this.linkToDelete.archived = true
+      const actionId = this.parentActionForChildToDelete.id
+      const id = this.linkToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteLinkFromAction/${id}`)
@@ -1788,6 +1694,14 @@ export default {
     closeDeleteDialog() {
       this.showDeleteDialog = false
       this.itemToDelete = null
+    },
+    closeLinkDeleteDialog() {
+      this.linkToDelete = null
+      this.parentActionForChildToDelete = null
+    },
+    closeChildProcessDialog() {
+      this.childProcessToDelete = null
+      this.parentActionForChildToDelete = null
     }
   }
 

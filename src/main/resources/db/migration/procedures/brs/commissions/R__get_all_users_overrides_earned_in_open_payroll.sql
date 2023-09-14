@@ -35,24 +35,41 @@ BEGIN
              foo.project_name,
              foo.system_size,
              case
-               when overrides_earned_m1 = 0 then
+               when cancelled_date is not null then
                  0
+               when foo.commission_strategy =23610 and foo.substantial_completion_date is not null then
+                   (foo.red_line_m1_allocation + foo.red_line_m2_allocation) * foo.total_commissions
+               when foo.commission_strategy =23610 and foo.substantial_completion_date is null then
+                   (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
                  foo.system_size * foo.milestone1_amount
                else foo.system_size * (foo.milestone1_amount + foo.milestone2_amount) end                         overrides_earned,
              foo.overrides_paid                                                                                as prior_pay,
              case
-               when overrides_earned_m1 = 0 then
+               when cancelled_date is not null  then
                  0
+               when foo.commission_strategy =23610 and foo.substantial_completion_date is not null then
+                   (foo.red_line_m1_allocation + foo.red_line_m2_allocation) * foo.total_commissions
+               when foo.commission_strategy =23610 and foo.substantial_completion_date is null then
+                   (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
                  foo.system_size * foo.milestone1_amount
                else foo.system_size * (foo.milestone1_amount + foo.milestone2_amount) end -
              foo.overrides_paid                                                                                as current_pay,
              foo.name                                                                                          as override_plan_name,
-             foo.user_allocation,
-             foo.milestone1_amount,
-             foo.milestone2_amount,
-             foo.plan_total                                                                                    as plan_total
+             case when foo.commission_strategy =23610 then
+                    foo.red_line_m1_allocation + foo.red_line_m2_allocation
+              else foo.user_allocation end ,
+             case when foo.commission_strategy =23610 then
+               foo.red_line_m1_allocation
+              else foo.milestone1_amount end ,
+             case when foo.commission_strategy =23610 then
+               foo.red_line_m2_allocation
+              else
+              foo.milestone2_amount end ,
+             case when foo.commission_strategy =23610 then
+               0::numeric
+               else foo.plan_total  end                                                                                  as plan_total
       from (select p.id                                      as project_id,
                    u.first_name || ' ' || u.last_name        as closer,
                    p.project_name                            as project_name,
@@ -60,6 +77,11 @@ BEGIN
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
                    opru1.m1_allocation                       as milestone1_amount,
                    opru1.m2_allocation                       as milestone2_amount,
+                   opru1.red_line_m1_allocation              as red_line_m1_allocation,
+                   opru1.red_line_m2_allocation              as red_line_m2_allocation,
+                   fd.total_commissions,
+                   fd.desired_commission_amount,
+                   fd.commission_strategy,
                    op.total                                  as plan_total,
                    (select coalesce(sum(dcl.paid_to_date), 0)
                     from brs.project_commission_ledger dcl
@@ -71,7 +93,8 @@ BEGIN
                       and dcl.position_id = 1)                  overrides_paid,
                    op.name                                   as name,
                    fd.substantial_completion_date,
-                   fd.overrides_earned_m1
+                   fd.overrides_earned_m1,
+                   fd.cancelled_date
             from brs.payroll p1
                    inner join flow.project p on p.id = any (p1.selected_project_ids)
                    inner join brs.project_details pd on pd.project_id = p.id
@@ -90,6 +113,11 @@ BEGIN
                    0                                  as user_allocation,
                    0                                  as milestone1_amount,
                    0                                  as milestone2_amount,
+                   0              as red_line_m1_allocation,
+                   0              as red_line_m2_allocation,
+                   0 as total_commissions,
+                   0  as desired_commission_amount,
+                   fd.commission_strategy,
                    0                                  as plan_total,
                    (select coalesce(sum(dcl.paid_to_date), 0)
                     from brs.project_commission_ledger dcl
@@ -101,7 +129,8 @@ BEGIN
                       and dcl.position_id = 1)           overrides_paid,
                    null                               as name,
                    fd.substantial_completion_date,
-                   fd.overrides_earned_m1
+                   fd.overrides_earned_m1,
+                   fd.cancelled_date
             from brs.payroll p1
                    inner join flow.project p on p.id = any (p1.selected_project_ids)
                    inner join brs.project_details pd on pd.project_id = p.id
