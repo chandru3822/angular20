@@ -243,6 +243,7 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
+const companyId = vueInstance.$store.state.user.details.companyId
 
 const availableDataTypeRequirements = ref([])
 const availableOperators = ref([])
@@ -627,6 +628,10 @@ const add = () => {
   }
 
   requirement.value.isCustomValue = typeof value.value === 'string'
+
+  if (requirement.value.companyId === null) {
+    requirement.value.companyId = companyId
+  }
 
   if (isEditing.value) {
     emit('updated', requirement.value)
