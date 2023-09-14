@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS brs.process_permit_pack_log_history();
+DROP FUNCTION IF EXISTS brs.process_permit_pack_log_history() cascade;
 CREATE OR REPLACE FUNCTION brs.process_permit_pack_log_history() RETURNS trigger
   LANGUAGE plpgsql
 AS

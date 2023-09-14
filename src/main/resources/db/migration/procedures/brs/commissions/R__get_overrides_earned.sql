@@ -16,6 +16,7 @@ DECLARE
   v_allocation_m1             numeric;
   v_red_line_m2_allocation    numeric;
   v_red_line_m1_allocation    numeric;
+  v_commission_strategy_id    bigint;
 BEGIN
 
   select c.allocation
@@ -30,14 +31,16 @@ BEGIN
          loan_term,
          system_size,
          primary_financier,
-         desired_commission_amount
+         desired_commission_amount,
+         commission_strategy_id
   from brs.get_commission_data(p_project_id)
   into v_cancelled_date,
     v_interest_rate,
     v_loan_term,
     v_system_size,
     v_primary_financier,
-    v_desired_commission_amount;
+    v_desired_commission_amount,
+    v_commission_strategy_id;
 
   select ppscfv.id
   into v_milestone_2
@@ -67,7 +70,7 @@ BEGIN
   where f.project_id = p_project_id
   and (u.red_line_m1_allocation > 0 or u.red_line_m2_allocation >0);
  -- raise notice 'v_desired_commission_amount %',v_desired_commission_amount;
-  if v_desired_commission_amount > 0 and p_code = 'M1' and v_milestone_1 is not null then
+  if v_commission_strategy_id = 23610 and p_code = 'M1' and v_milestone_1 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
 --     raise notice 'v_total_commission_amount %',v_total_commission_amount;
 --     raise notice 'v_allocation_m1 %',v_allocation_m1;
@@ -81,7 +84,7 @@ BEGIN
       v_total = v_total_commission_amount * v_red_line_m1_allocation;
      -- raise notice 'total %',v_allocation_m1 * v_system_size * v_red_line_m1_allocation;
     end if;
-  elsif v_desired_commission_amount > 0 and p_code = 'M2' and v_milestone_2 is not null then
+  elsif v_commission_strategy_id = 23610 and p_code = 'M2' and v_milestone_2 is not null then
     v_total_commission_amount = v_desired_commission_amount * v_system_size * 1000;
     if v_cancelled_date is not null then
       v_total = 0.00;

@@ -147,9 +147,11 @@ BEGIN
                                 coalesce(
                                   round(case
                                           when pd.cancelled_date is not null then 0::numeric
+                                          when f.commission_strategy =23610 then
+                                              (opru.red_line_m1_allocation) * f.total_commissions
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
-                                          else pd.system_size::numeric end * opru.m1_allocation, 2),
+                                          else pd.system_size::numeric * opru.m1_allocation end, 2),
                                   0)     total,
                                 1     as milestone_id
                          FROM flow.project p1
@@ -176,9 +178,11 @@ BEGIN
                                 u.last_name,
                                 coalesce(
                                   round(case when pd.cancelled_date is not null then 0::numeric
+                                             when d.commission_strategy =23610  then
+                                                 (opru.red_line_m2_allocation) * d.total_commissions
                                           when pd.primary_financier_name = 'LoanPal' and pd.loan_term = 427 and
                                                pd.interest_rate = 2.99 then 0
-                                          else pd.system_size::numeric end * opru.m2_allocation, 2),
+                                          else pd.system_size::numeric  * opru.m2_allocation end, 2),
                                   0)     total,
                                 2     as milestone_id
                          FROM flow.project p1
