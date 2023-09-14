@@ -671,7 +671,6 @@ export default {
         if (this.parent.isProcessStep) {
           const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.parent.id}`)
           this.ancillaryCustomFields = data
-          debugger
           handleHidingGlobalLoader(this, status)
         } else if (this.parent.objectTypeId === 8) {
           const {data, status} = await getRequest(`/customField/getByDataView/${this.parent.id}`)
@@ -702,7 +701,6 @@ export default {
       }
     },
     async saveReadOnlyAndWhiteList(field) {
-      debugger
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/customFieldGroup/saveReadOnlyAndWhiteList?savePositions=${field.positionsChanged ?? false}`, field)
