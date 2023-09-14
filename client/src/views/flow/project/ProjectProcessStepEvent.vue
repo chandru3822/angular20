@@ -684,6 +684,13 @@ export default {
 
         //set this because running an action also saves fields so it needs to be reset
         this.defaultValuesChanged = false
+
+        //if there are links returned, open them
+        data?.childFunctionReturnedStrings?.forEach(rs => {
+          //the date stringify guarantees a new tab opens every time
+          window.open(rs, JSON.stringify(new Date()))
+        })
+
         if (data?.processStepStatusTypeId !== 1) {
           //set navigation override so we dont get the unsaved fields popup
           this.navigationOverride = true

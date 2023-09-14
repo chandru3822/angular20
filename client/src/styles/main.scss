@@ -301,7 +301,13 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   min-height: 35px !important;
 }
 
-.shaded-row{
+.expanded-row-flatten {
+  tbody tr {
+    box-shadow: none !important;
+  }
+}
+
+.shaded-row, .shaded-row.text-start{
   background-color: var(--v-primary-lighten9) !important;
 }
 
@@ -378,6 +384,11 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .clickable {
   cursor: pointer !important;
 }
+
+.not-clickable {
+  cursor: default !important;
+}
+
 .no-display {
   display: none !important;
 }

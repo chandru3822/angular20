@@ -51,8 +51,8 @@ public class ProcessStepController {
   }
 
   @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateStep(@RequestBody ProcessStep processStep) {
-    processStepService.updateStep(processStep);
+  public void updateStep(@RequestParam(required = false) Boolean savePositions, @RequestBody ProcessStep processStep) {
+    processStepService.updateStep(processStep, savePositions);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

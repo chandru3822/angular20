@@ -203,7 +203,21 @@ public class ProcessQuery {
 
   //language=PostgreSQL
   public final static String nonAdminProcessStepsForProcess = """
-      select ps.*
+      select ps.*,
+      coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.process_step_id as "processStepId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 18
+                           AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
+                           and wlp.process_step_id = ps.id) wlp), '[]') AS "nonAdminAddWhiteListedPositions"
       from flow.process_step ps
           inner join flow.process_step_process psp on psp.process_step_id = ps.id
       where ps.archived is not true

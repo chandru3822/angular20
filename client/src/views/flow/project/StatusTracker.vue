@@ -1,27 +1,17 @@
 <template>
   <v-row no-gutters id="project-status-tracker-container" class="py-0 relative height-one-hunned overflow-y-auto">
     <v-col cols="12" lg="12" class="pa-3">
-      <div v-if="fieldsLoading" class="section-spinner">
-        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
-      </div>
-      <div v-else>
+<!--      <div v-if="fieldsLoading" class="section-spinner">-->
+<!--        <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>-->
+<!--      </div>-->
+      <div>
         Status: {{currentStatus.projectStatusType}}
-        <div v-for="(milestone, idx) in statusFields" class="mb-3">
+        <div v-for="(milestone, idx) in milestones" class="mb-3">
           <div class="flex-display flex-align-items-center">
-            <v-btn fab x-small :outlined="idx > 1" :color="idx > 1 ? 'grey' : 'green'" elevation="0">
-
-              <v-icon v-if="milestone.iconTag" :color="idx > 1 ? 'blue' : 'white'">{{milestone.iconTag}}</v-icon>
-              <v-icon v-else :color="idx > 1 ? 'grey' : 'white'">blank</v-icon>
-            </v-btn>
-            <v-avatar :tile="false"
-                      :size="35"
-                      :color="getMilestoneColor(milestone)"
-                      class="account-img"
-
-            >
-              <v-icon v-if="milestone.iconTag" color="white">{{milestone.iconTag}}</v-icon>
-              <v-icon v-else color="white">blank</v-icon>
-            </v-avatar>
+            <StatusTrackerIcon :clickable="false"
+                               :milestone="milestone"
+                               :current-status-id="currentStatus.companyProjectStatusTypeId"
+            ></StatusTrackerIcon>
             <span class="ml-2" :class="{'active-status': milestone.id === currentStatus.companyProjectStatusTypeId}">{{milestone.projectStatusType}}</span>
             <v-spacer></v-spacer>
             <v-tooltip left>
@@ -34,23 +24,8 @@
           </div>
         <v-card class="px-3 mt-2 ml-10 pb-3" v-if="milestone.assignedFields?.length > 0">
           <div v-for="field in milestone.assignedFields">
-            <div>
-              <v-checkbox
-                          :label="field.fieldName"
-                          color="green"
-                          :ripple="false"
-                          readonly
-                          hide-details
-                          v-model="field.fieldValue"
-                          class="default-text-color d-inline-block"
-              />
-              <div v-if="field.fieldValue != null" class="d-inline-block ml-3">
-    <!--        i dont think we have to handle ALL data types here. just the common ones, data view fields are pretty normalized -->
-                <span v-if="field.dataTypeId === 1">{{field.fieldValue | formatDate('date', 'D MMM YYYY')}}</span>
-                <span v-else-if="field.dataTypeId === 2">{{field.fieldValue | formatDate('timestamp', 'D MMM YYYY H:mm a')}}</span>
-                <span v-else>{{field.fieldValue}}</span>
-              </div>
-            </div>
+            <StatusTrackerItem :field="field"
+            ></StatusTrackerItem>
           </div>
         </v-card>
         </div>
@@ -64,56 +39,39 @@
 import {getRequest, getSnackbar, handleHidingGlobalLoader, logError} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import SpinnerInline from '@/components/SpinnerInline'
+import StatusTrackerIcon from '@/views/flow/project/StatusTrackerIcon'
+import StatusTrackerItem from '@/views/flow/project/StatusTrackerItem'
 import {AppMutations} from "@/stores/AppStore";
 
 export default {
   name: 'StatusTracker',
   components: {
-    SpinnerInline
+    SpinnerInline,
+    StatusTrackerIcon,
+    StatusTrackerItem,
+  },
+  props: {
+    milestones: [],
   },
   data() {
     return {
       constants,
       currentStatus: {},
       projectId: parseInt(this.$route.params.projectId),
-      statusFields: [],
-      fieldsLoading: true
     }
   },
   created() {
     this.getCurrentStatus()
-    this.getStatusFields()
   },
   computed: {},
   methods: {
-    getMilestoneColor(milestone) {
-      //todo: this color check should work like this:
-      // IF the current project status is one of the milestones, that one should be blue
-      // Every milestone BEFORE ^^ that one should be green.
-
-      //IF the current project status is NOT one of the milestones then only show as green if every field in that section has a value.
-      return 'green'
-    },
     async getCurrentStatus() {
-      this.fieldsLoading = true
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/status`)
         this.currentStatus = data
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Current Project Status')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getStatusFields() {
-      this.fieldsLoading = true
-      try {
-        const {data, status} = await getRequest(`/project/${this.projectId}/statusFields`)
-        this.statusFields = data
-        this.fieldsLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Tracker Details')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },

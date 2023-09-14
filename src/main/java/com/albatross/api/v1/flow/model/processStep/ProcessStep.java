@@ -20,7 +20,7 @@ public class ProcessStep {
   private Long id, companyProcessId, companyId, createdById, modifiedById;
   // originalProcessStepName used for frontend validation (without having to loop to populate it on frontend)
   private String processStepName, originalProcessStepName;
-  private Boolean archived, nonAdminAdd, readonly, usedByProcess, readonlyAllow;
+  private Boolean archived, nonAdminAdd, nonAdminAddAllow, readonly, usedByProcess, readonlyAllow;
   private Date dateCreated, dateModified;
 
   private List<CustomFieldGroup> customFieldGroups;
@@ -29,6 +29,7 @@ public class ProcessStep {
 
   private List<OwningPosition> owningPositions;
   private List<WhiteListedPosition> whiteListedPositions;
+  private List<WhiteListedPosition> nonAdminAddWhiteListedPositions;
 
   private List<ProcessStepWorkQueueType> workQueueTypes;
   private List<ProcessStepCompanyProcessStepStatusType> companyProcessStepStatusTypes;

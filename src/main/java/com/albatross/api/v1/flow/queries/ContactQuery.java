@@ -178,7 +178,8 @@ select c.id,
            email = :email,
            mobile = :mobile,
            modified_by_id = :modifiedById,
-           date_modified = now()
+           date_modified = now(),
+           owner_user_position_id = :ownerUserPositionId
     where id = :id
     """;
 

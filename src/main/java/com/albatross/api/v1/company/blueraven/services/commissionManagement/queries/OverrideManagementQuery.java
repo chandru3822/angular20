@@ -81,6 +81,8 @@ public class OverrideManagementQuery {
     concat(u.first_name, ' ', u.last_name) AS name,
                  opu.m1_allocation                      AS "m1Allocation",
                  opu.m2_allocation                      AS "m2Allocation",
+                 opu.red_line_m1_allocation             AS "redLineM1Allocation",
+                 opu.red_line_m2_allocation             AS "redLineM2Allocation",
                  (select
                       string_agg(DISTINCT p.position, ', ')
                   from flow.user_position up
@@ -98,12 +100,14 @@ public class OverrideManagementQuery {
   public final static String addReceivingUser = """
     WITH new_user AS (
         INSERT INTO brs.override_plan_receiving_user
-            (override_plan_id, user_id, m1_allocation, m2_allocation)
-            VALUES (:planId, :userId, :m1Allocation, :m2Allocation)
+            (override_plan_id, user_id, m1_allocation, m2_allocation, red_line_m1_allocation, red_line_m2_allocation)
+            VALUES (:planId, :userId, :m1Allocation, :m2Allocation, :redLineM1Allocation, :redLineM2Allocation)
             ON CONFLICT (override_plan_id, user_id)
                 DO UPDATE
                     SET m1_allocation = EXCLUDED.m1_allocation,
-                        m2_allocation = EXCLUDED.m2_allocation
+                        m2_allocation = EXCLUDED.m2_allocation,
+                        red_line_m1_allocation = EXCLUDED.red_line_m1_allocation,
+                        red_line_m2_allocation = EXCLUDED.red_line_m2_allocation
             RETURNING override_plan_id)
     UPDATE brs.override_plan
     SET updated  = now(),
@@ -117,6 +121,8 @@ public class OverrideManagementQuery {
        SET note = :note,
        m1_allocation = :m1,
        m2_allocation = :m2,
+       red_line_m1_allocation = :redLineM1,
+       red_line_m2_allocation = :redLineM2,
        date_modified = now()
      WHERE override_plan_id = :planId
       AND user_id = :userId
@@ -327,6 +333,8 @@ FROM (SELECT op.id,
                                     concat(u.first_name, ' ', u.last_name) AS name,
                                     opu.m1_allocation                      AS "m1Allocation",
                                     opu.m2_allocation                      AS "m2Allocation",
+                                    opu.red_line_m1_allocation                      AS "redLineM1Allocation",
+                                    opu.red_line_m2_allocation                      AS "redLineM2Allocation",
                                     (select
                                          string_agg(DISTINCT p.position, ', ')
                                      from flow.user_position up
@@ -343,7 +351,7 @@ FROM (SELECT op.id,
                              FROM brs.override_plan_receiving_user opu
                                       INNER JOIN flow."user" u ON opu.user_id = u.id
                              WHERE override_plan_id = op.id
-                             GROUP BY 1, 2, 3, 4, 5) u), '[]')                          AS "receivingUsers",
+                             GROUP BY 1, 2, 3, 4, 5, 6, 7) u), '[]')                          AS "receivingUsers",
              coalesce((SELECT array_to_json(array_agg(row_to_json(u)))
                        FROM (SELECT opa.id,
                                     opa.user_id                        AS "userId",

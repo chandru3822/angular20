@@ -13,6 +13,7 @@ declare
     v_number_of_arrays bigint;
     v_number_of_pitch bigint;
     v_loan_type varchar;
+    v_closer_commission_forfeiture_amount numeric;
 BEGIN
 
     select ppscfv.int_value
@@ -35,8 +36,8 @@ BEGIN
       and cf2.parent_custom_field_id = 10495;
 
 
-    select substring(loan_type,1,position(' ' in loan_type)-1)
-    into v_loan_type
+    select substring(loan_type,1,position(' ' in loan_type)-1),closer_commission_forfeiture_amount
+    into v_loan_type,v_closer_commission_forfeiture_amount
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
@@ -114,6 +115,14 @@ BEGIN
                                               and cfga.archived is false and cf.archived is false and cfg.archived is false
                                               and cf.company_id = v_company_id
                                               and cfg.process_step_id = p_process_step_id), plh.financed_system_cost_with_fees::numeric,
+                                           (select cfga.id
+                                            from flow.custom_field cf
+                                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                                            where cf.id = 12614
+                                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                                              and cf.company_id =  v_company_id
+                                              and cfg.process_step_id = p_process_step_id), plh.desired_commission_amount::numeric,
                                            (select cfga.id
                                             from flow.custom_field cf
                                                    inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -361,8 +370,8 @@ BEGIN
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and plh.loan_amount::numeric is null) then 0.00::numeric
                                                                                       when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric
-                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric is null) then 0.00::numeric
-                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric > 0.00::numeric) then coalesce(round(optional_down_payment::numeric,2),0)::numeric
+                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
+                                                                                      when (v_loan_type != 'Cash' and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
                                                                                       else 0.00::numeric end)) as me
                  from brs.proposal_log_history plh
                  inner join brs.project_details pd on pd.project_id = plh.project_id
@@ -372,6 +381,10 @@ BEGIN
         --raise notice 'cfga% value %',_key,_value;
         perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
+
+    update brs.project_details d
+    set commission_forfeited_by_closer = v_closer_commission_forfeiture_amount
+    where d.project_id = p_project_id;
 
     insert into flow.company_function_log(function_name, db_function_id, parameters)
     values ('Populate System and Financial Fields', 12, 'p_project_id: ' || p_project_id ||

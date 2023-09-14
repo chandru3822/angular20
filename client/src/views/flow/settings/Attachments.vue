@@ -36,12 +36,13 @@
     <v-row>
       <v-col class="shrink" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Attachment Types</v-toolbar-title>
+          <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]"
+            <v-btn text @click="[addNew = !addNew, newType = {}]" color="primary"
                    v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <span>{{ addNew ? 'Cancel' : 'Add New' }}</span>
+              <v-icon v-if="$vuetify.breakpoint.xsOnly">{{ addNew ? 'close' : 'add' }}</v-icon>
+              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -52,7 +53,7 @@
                           placeholder="Enter a type"
                           label="Attachment Type">
             </v-text-field>
-            <v-btn v-if="addNew" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
+            <v-btn v-if="addNew" color="primary" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -78,21 +79,20 @@
               <template #item="{ item, index }">
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToType(item.id)">{{ item.attachmentType }}</td>
-                  <td class="text-right">
-                    <v-btn small text @click="goToType(item.id)">
+                  <td class="text-right" :class="{'d-flex flex-column align-end': $vuetify.breakpoint.xsOnly}">
+                    <v-btn small text color="primary" @click="goToType(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <ConfirmationDialog :open-dialog="showDeleteDialog"
-                                        @confirm=deleteType
-                                        @close-dialog="closeDeleteDialog"
-                    >Are you sure you want to delete this attachment type:
-                      <strong>{{ itemToDeleteAttachmentType }}</strong></ConfirmationDialog>
                   </td>
-
                 </tr>
               </template>
             </v-data-table>
           </v-card>
+          <ConfirmationDialog :open-dialog="showDeleteDialog"
+                              @confirm=deleteType
+                              @close-dialog="closeDeleteDialog"
+          >Are you sure you want to delete this attachment type:
+            <strong>{{ itemToDeleteAttachmentType }}</strong></ConfirmationDialog>
         </v-container>
       </v-col>
     </v-row>

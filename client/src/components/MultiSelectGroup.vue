@@ -1,7 +1,7 @@
 <template>
   <v-card v-if="!this.contentLoading" flat :color="backgroundColor" class="square-card flex-grow-1" :class="{'full-size': fullSize, 'half-size': !fullSize}">
-    <v-card-title style="height: 40px" class="py-0 title-medium flex-display align-center">
-      {{title}}
+    <v-card-title style="min-height: 40px" class="py-0 title-medium flex-display align-center" :class="{'justify-space-between': isMobile}">
+      <span class="select-group-title">{{title}}</span>
       <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                   v-model="enabled" @change="checkboxChanged()"></v-checkbox>
     </v-card-title>
@@ -72,6 +72,11 @@
           >{{ selected.length }} selected</span>
         </template>
       </v-autocomplete>
+      <v-btn v-if="userCanEdit && saveButton" color="primary" dark class="d-inline-block white--text mt-4"
+             @click="save()">
+        <v-icon class="mr-2">save</v-icon>
+        {{saveButtonText || 'Save'}}
+      </v-btn>
     </v-card-text>
   </v-card>
 
@@ -97,7 +102,14 @@ export default {
       default: false,
       type: Boolean
     },
-    alternateLabel: String
+    alternateLabel: String,
+    saveButton: {
+      type: Boolean,
+      default: false
+    },
+    saveButtonText: {
+
+    }
   },
   data() {
     return {
@@ -107,6 +119,11 @@ export default {
       selected: this.selectedContent,
       textLabel: this.label
     };
+  },
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   mounted() {
     if(!this.allow) {
@@ -154,6 +171,9 @@ export default {
     checkboxChanged(){
       this.$emit('checkbox-changed', this.enabled)
     },
+    save(){
+      this.$emit('save-multi-select')
+    },
     switchLabel(){
       if(this.alternateLabel != null) {
         if (this.allowFlag == 0) {
@@ -179,6 +199,10 @@ export default {
   }
   .half-size{
     width: 50%;
+  }
+  .select-group-title {
+    max-width: 80%;
+    word-break: break-word;
   }
 
 </style>

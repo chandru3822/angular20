@@ -4,6 +4,7 @@ import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValueDisplay;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventAction;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +32,9 @@ public class ProjectProcessStepEvent {
   private Boolean archived, readonly, readonlyAllow, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned, startTimeReadOnlyAllow, startTimeHiddenAllow, endTimeReadOnlyAllow, endTimeHiddenAllow, resourceReadOnlyAllow, resourceHiddenAllow, eventHiddenAllow;;
   private List<WhiteListedPosition> readonlyWhiteListedPositions, eventHiddenWhiteListedPositions, startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions, endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions, resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
   private CustomFieldValueDisplay customFieldDisplayValue;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private List<String> childFunctionReturnedStrings;
 
 
   @Data

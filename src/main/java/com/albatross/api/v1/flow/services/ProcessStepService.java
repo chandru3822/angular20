@@ -113,14 +113,42 @@ public class ProcessStepService {
     }
   }
 
-  public void updateStep(ProcessStep processStep) {
-    User currentUser = securityService.getCurrentUser();
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", processStep.getId());
-    params.put("modifiedById", currentUser.trueUserId());
-    params.put("name", processStep.getProcessStepName());
-    params.put("nonAdminAdd", processStep.getNonAdminAdd());
-    sqlCache.updateBySql(ProcessStepQuery.update, params);
+    public void updateStep(ProcessStep processStep, Boolean savePositions) {
+        User currentUser = securityService.getCurrentUser();
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("psId", processStep.getId());
+        params.put("userId", currentUser.trueUserId());
+        params.put("name", processStep.getProcessStepName());
+        params.put("nonAdminAdd", processStep.getNonAdminAdd());
+        params.put("nonAdminAddAllow", processStep.getNonAdminAddAllow());
+        params.put("companyId", currentUser.getCompanyId());
+        sqlCache.updateBySql(ProcessStepQuery.update, params);
+
+        //update the nonAdminAddWhitelistPositions
+        params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_ADD_TO_PROJECT.id);
+        if(!processStep.getNonAdminAdd()){
+            // if ps does not allow non-admin to add to project archive any white listed positions
+            sqlCache.updateBySql(ProcessStepQuery.archiveWhiteListPositions, params);
+        } else if (null != savePositions && savePositions) {
+            // if ps DOES allow non-admin to add to project archive any white listed positions no longer in the body sent in
+            List<WhiteListedPosition> positionsToUse = processStep.getNonAdminAddWhiteListedPositions();
+            List<Long> positionIdsUsed = processStep.getNonAdminAddWhiteListedPositions().stream()
+                    .map(WhiteListedPosition::getPositionId)
+                    .collect(Collectors.toList());
+            params.put("positionIdsUsed", positionIdsUsed);
+            if (positionIdsUsed.size() > 0) {
+                sqlCache.updateBySql(ProcessStepQuery.archiveWhiteListPositionsNoLongerUsed, params);
+            } else {
+                // this means they removed ALL white listed positions
+                sqlCache.updateBySql(ProcessStepQuery.archiveWhiteListPositions, params);
+            }
+
+            for (WhiteListedPosition wlp : positionsToUse) {
+                params.put("positionId", wlp.getPositionId());
+                // this insert checks if there is already a non-archived row with the same values
+                sqlCache.updateBySql(ProcessStepQuery.insertWhiteListPosition, params);
+            }
+        }
   }
 
   public Optional<ProcessStep> insertStep(ProcessStep processStep) {
@@ -210,6 +238,11 @@ public class ProcessStepService {
       bw.registerCustomEditor(
         List.class,
         "whiteListedPositions",
+        new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
+
+ bw.registerCustomEditor(
+        List.class,
+        "nonAdminAddWhiteListedPositions",
         new JsonCollectionDeserializer(whiteListedPositionsRef, objectMapper));
 
       bw.registerCustomEditor(

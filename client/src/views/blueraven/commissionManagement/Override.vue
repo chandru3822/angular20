@@ -226,6 +226,17 @@
                         type="number"
                         label="M2 Allocation"
                         v-model="newReceivingUser.m2Allocation">
+            </v-text-field>
+            <v-text-field text
+                          type="number"
+                          label="Redline M1 Allocation"
+                          v-model="newReceivingUser.redLineM1Allocation">
+            </v-text-field>
+            <v-text-field text
+                          v-if="positionId === 1"
+                          type="number"
+                          label="Redline M2 Allocation"
+                          v-model="newReceivingUser.redLineM2Allocation">
           </v-text-field>
             <v-btn color="primary" class="mr-3 white--text" @click="addReceivingUserToOverride()"
                    :disabled="!newReceivingUser.userId">
@@ -267,6 +278,17 @@
                             label="M2 Allocation"
                             v-model.number="item.m2Allocation">
               </v-text-field>
+              <v-text-field text
+                            type="number"
+                            label="Redline M1 Allocation"
+                            v-model.number="item.redLineM1Allocation">
+              </v-text-field>
+              <v-text-field text
+                            v-if="positionId === 1"
+                            type="number"
+                            label="Redline M2 Allocation"
+                            v-model.number="item.redLineM2Allocation">
+              </v-text-field>
               <v-btn color="primary" :disabled="!item.m1Allocation || (positionId === 1 && !item.m2Allocation)"
                      @click="[expanded = [], updateReceivingUser(item)]">Save</v-btn>
             </td>
@@ -278,6 +300,8 @@
               <td class="text-left">{{item.employeeId}}</td>
               <td class="text-left">{{item.m1Allocation}}</td>
               <td class="text-left" v-if="positionId !== 4">{{item.m2Allocation}}</td>
+              <td class="text-left">{{item.redLineM1Allocation}}</td>
+              <td class="text-left" v-if="positionId !== 4">{{item.redLineM2Allocation}}</td>
               <td>
                 <v-btn small text color="primary" @click="expanded = [item]"
                        v-if="override.status === 'PENDING' && !expanded.includes(item)">
@@ -591,6 +615,8 @@
           {text: 'Employee ID', value: 'employeeId', show: true},
           {text: 'M1 Allocation', value: 'm1Allocation', show: true},
           {text: 'M2 Allocation', value: 'm2Allocation', show: this.$store.state.brs.commissionPositionId !== 4},
+          {text: 'Redline M1', value: 'redLineM1Allocation', show: true},
+          {text: 'Redline M2', value: 'redLineM2Allocation', show: this.$store.state.brs.commissionPositionId !== 4},
           {text: '', value: 'icons', show: true},
         ],
         override: {
@@ -612,6 +638,8 @@
         newReceivingUser: {
           m1Allocation: 0,
           m2Allocation: 0,
+          redLineM1Allocation: 0,
+          redLineM2Allocation: 0,
         },
         errorLoadingUserHistory: false,
         historyHeaders: [
@@ -981,14 +1009,18 @@
             let params = {
               userId: this.newReceivingUser.userId,
               m1Allocation: this.newReceivingUser.m1Allocation,
-              m2Allocation: this.newReceivingUser.m2Allocation
+              m2Allocation: this.newReceivingUser.m2Allocation,
+              redLineM1Allocation: this.newReceivingUser.redLineM1Allocation,
+              redLineM2Allocation: this.newReceivingUser.redLineM2Allocation
             }
             const {data} = await postRequest(`/commissionManagement/overrides/${this.override.id}/receivingUsers`, params, 'blueraven')
             this.override.receivingUsers.push(data)
             this.checkErrorMessages()
             this.newReceivingUser = {
               m1Allocation: 0,
-              m2Allocation: 0
+              m2Allocation: 0,
+              redLineM1Allocation: 0,
+              redLineM2Allocation: 0,
             }
             this.receivingUserSearch = null
             this.addReceivingUser = false

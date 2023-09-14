@@ -64,11 +64,11 @@
     <v-row>
       <v-col cols="12" class="shrink pt-0">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="!constants.IS_MOBILE" class="title-large">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp" class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
+              <v-icon v-if="$vuetify.breakpoint.smAndDown">{{ addNew ? 'close' : 'add' }}</v-icon>
               <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
             </v-btn>
           </v-toolbar-items>
@@ -83,6 +83,7 @@
           </v-text-field>
 
           <v-data-table
+              id="cfg-table"
               :headers="headers"
               :items="filterCustomFieldGroups()"
               :items-per-page="-1"
@@ -102,21 +103,25 @@
               <span class="default-text-color">No available field groups</span>
             </template>
 
-            <template #item="{ item, index }">
-              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2}">
+            <template #item="{ header, item, index }">
+              <tr  :class="{'shaded-row': customFieldGroups.indexOf(item) % 2, 'mobile-tr': $vuetify.breakpoint.xsOnly}">
                 <td style="width: 50px">
                   <v-btn text icon small color="primary" class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
                   </v-btn>
                 </td>
-                <td class="text-left">
+                <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
                   <v-text-field text
+                                :label="$vuetify.breakpoint.xsOnly ? 'Name': ''"
                                 v-if="item.edit"
                                 v-model="item.groupName">
                   </v-text-field>
-                  <span v-else>{{item.groupName}}</span>
+                  <span v-else>
+                    <span v-if="isMobile" class="label-medium">Name: </span>
+                    {{item.groupName}}
+                  </span>
                 </td>
-                <td class="text-left">
+                <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit && isProject}">
                   <v-select attach v-if="item.edit && isProject"
                             v-model="item.companyObjectTypeTabId"
                             :items="objectTypeTabs"
@@ -126,6 +131,7 @@
                             autocomplete="off">
                   </v-select>
                   <span v-if="!item.edit && isProject">
+                     <span v-if="isMobile" class="label-medium">Tab: </span>
                     {{item.tabName || 'n/a'}}
                   </span>
                 </td>
@@ -168,7 +174,7 @@
               </tr>
             </template>
             <template #expanded-item="{ headers, item, index }">
-              <td :colspan="headers.length" class="pb-2"  :class="{'shaded-row': selectedIndex % 2}">
+              <td :colspan="headers.length" class="pb-2" :class="{'shaded-row': selectedIndex % 2, 'mobile-width': $vuetify.breakpoint.smAndDown}">
                 <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                   <h3 class="text-left">Add New Field</h3>
                   <v-radio-group v-if="isProject" v-model="newFieldType" @change="fetchAvailableCustomFields(item.id)">
@@ -224,7 +230,7 @@
                              group="customFields" @start="drag=true" @end="drag=false" @change="saveFieldChanges(item.customFields)">
                     <v-list v-for="(cf, index) in filterBy(item.customFields, false, 'archived')"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
-                      <v-list-item class="grab pr-1">
+                      <v-list-item class="grab pr-1" :class="{'mobile-tr': $vuetify.breakpoint.xsOnly}">
                         <v-list-item-action v-if="userCanEdit">
                           <v-icon color="primary">drag_handle</v-icon>
                         </v-list-item-action>
@@ -235,7 +241,7 @@
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
-                                <v-col cols="6">
+                                <v-col cols="10" lg="6">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                     <v-card-text v-if="cf.systemReadonly" class="mt-2">
                                       System Readonly Cannot Change
@@ -259,15 +265,18 @@
                                         @checkbox-changed="cfgaReadOnlyCheckboxEventListener"></multi-select-group>
 
                                       <br/>
+                                      <div class="d-flex">
+                                      <v-spacer v-if="isMobile"/>
                                       <v-btn color="primary" dark class="d-inline-block white--text"
                                              @click="saveReadOnlyAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Read Only
+                                        <v-icon :class="{'mr-2': $vuetify.breakpoint.lgAndUp}">save</v-icon>
+                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Read Only</span>
                                       </v-btn>
+                                      </div>
                                     </v-card-text>
                                   </v-card>
                                 </v-col>
-                                <v-col cols="6">
+                                <v-col cols="10" lg="6">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                     <v-card-text>
                                       <multi-select-group
@@ -287,55 +296,15 @@
                                         @allow-changed="cfgaHiddenAllowEventListener"
                                         @checkbox-changed="cfgaHiddenCheckboxEventListener"></multi-select-group>
 
-                                      <!--                                      <v-autocomplete-->
-<!--                                        v-if="cf.customFieldGroupAssignmentHidden"-->
-<!--                                        v-model="cf.hiddenWhiteListedPositions"-->
-<!--                                        :items="positions"-->
-<!--                                        :loading="positionsLoading"-->
-<!--                                        multiple-->
-<!--                                        clearable-->
-<!--                                        label="White Listed Positions"-->
-<!--                                        item-text="position"-->
-<!--                                        item-value="positionId"-->
-<!--                                        return-object-->
-<!--                                        height="35px"-->
-<!--                                        class="d-inline-block mr-3"-->
-<!--                                        @change="cf.hiddenPositionsChanged = true"-->
-<!--                                      >-->
-<!--                                        <v-list-item-->
-<!--                                          slot="prepend-item"-->
-<!--                                          ripple-->
-<!--                                          @click="toggleHiddenSelectAllPositions(cf)"-->
-<!--                                        >-->
-<!--                                          <v-list-item-action>-->
-<!--                                            <v-icon>{{ icon(cf) }}</v-icon>-->
-<!--                                          </v-list-item-action>-->
-<!--                                          <v-list-item-title>Select All</v-list-item-title>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-divider-->
-<!--                                          slot="prepend-item"-->
-<!--                                          class="mt-2"-->
-<!--                                        ></v-divider>-->
-<!--                                        <template-->
-<!--                                          slot="selection"-->
-<!--                                          slot-scope="{ item, index }"-->
-<!--                                        >-->
-<!--                                          <v-chip small-->
-<!--                                                  v-if="index === 0 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length < 2">-->
-<!--                                            <span>{{ item.position }}</span>-->
-<!--                                          </v-chip>-->
-<!--                                          <span-->
-<!--                                            v-if="index === 1 && cf.hiddenWhiteListedPositions && cf.hiddenWhiteListedPositions.length >= 2"-->
-<!--                                            class="primary&#45;&#45;text text-caption"-->
-<!--                                          >{{ cf.hiddenWhiteListedPositions.length }} selected</span>-->
-<!--                                        </template>-->
-<!--                                      </v-autocomplete>-->
                                       <br/>
+                                      <div class="d-flex">
+                                        <v-spacer v-if="isMobile"/>
                                       <v-btn color="primary" dark class="white--text d-inline-block"
                                              @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Hidden
+                                        <v-icon :class="{'mr-2':!isMobile}">save</v-icon>
+                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Hidden</span>
                                       </v-btn>
+                                      </div>
                                     </v-card-text>
                                   </v-card>
                                 </v-col>
@@ -397,6 +366,7 @@
                             </div>
                           </div>
                         </v-list-item-content>
+                        <div>
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
                             <v-btn icon color="primary" @click="copyToClipBoard(cf.customFieldGroupAssignmentId)" v-bind="attrs"
@@ -422,9 +392,11 @@
                         </v-menu>
                         <v-btn text small color="primary" v-else></v-btn>
                         <v-btn text color="primary" small v-if="userCanEdit" @click="[$set(cf, 'edit', !cf.edit), getPositions(), resetCurrentField()]">
-                          <v-icon>edit</v-icon>
+                          <v-icon v-if="cf.edit">close</v-icon>
+                          <v-icon v-else>edit</v-icon>
                         </v-btn>
                         <v-btn v-if="userCanEdit" text small color="primary" @click="[cFieldToDelete=cf, cfgToDelete=item]"><v-icon>delete</v-icon></v-btn>
+                        </div>
                       </v-list-item>
                     </v-list>
                   </draggable>
@@ -512,10 +484,10 @@ export default {
       //if you set this to a value it doesn't update when the route param changes
       // objectTypeId: this.$route.params.id
       headers: [
-        { text: null, value: 'draggable', width: '50px', show: true },
+        { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
         { text: 'Name', value: 'groupName', show: true },
         { text: 'Tab', value: 'tabName', show: true },
-        { text: null, value: 'icons', show: true }
+        { text: null, value: 'icons', show: true, sortable: false }
       ],
       expanded: [],
       parent: {},
@@ -533,7 +505,10 @@ export default {
     },
     cFieldToDeleteName(){
       return this.cFieldToDelete ? this.cFieldToDelete.fieldName : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   mounted() {
     let table = document.querySelector('tbody')
@@ -1081,4 +1056,33 @@ export default {
   .hideId {
     visibility: hidden;
   }
+
+  .mobile-width {
+    width: calc(100vw - 100px);
+  }
+
+  .mobile-tr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-bottom: thin solid rgba(0, 0, 0, 0.12);
+    width: calc(100vw - 100px);
+  }
+
+</style>
+<style lang="scss">
+#cfg-table > div > table > thead > tr > th {
+  width: 100%;
+}
+//I don't know why this was necessary, but the first row of the table does not change if we keep it scoped
+#cfg-table > div > table > tbody > tr.mobile-tr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: thin solid rgba(0, 0, 0, 0.12);
+  width: calc(100vw - 100px);
+  td {
+    border-bottom: none !important;
+  }
+}
 </style>

@@ -190,7 +190,7 @@ public class ProcessService {
     return sqlCache.queryBySql(
       ProcessQuery.nonAdminProcessStepsForProcess,
         ImmutableMap.of("companyProcessId", companyProcessId, "companyId", companyId),
-        ProcessStep.class);
+        new ProcessStepService.ProcessStepMapper<>(ProcessStep.class, om));
   }
 
   public Optional<ProcessStepProcess> getOneProcessStepProcess(Long id) {

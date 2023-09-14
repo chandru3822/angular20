@@ -139,6 +139,39 @@
         </div>
       </v-toolbar-title>
       <v-spacer/>
+      <div v-if="milestones && milestones.length > 0">
+        <div class="milestone-item" v-for="(milestone, idx) in milestones">
+          <v-menu v-model="milestone.menuOpen"
+                  offset-y
+                  rounded="0"
+                  :close-on-content-click="false"
+                  min-width="290px">
+            <template v-slot:activator="{ on }">
+              <StatusTrackerIcon :on="on"
+                                 :clickable="true"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+            </template>
+            <v-card class="pa-5 square-card">
+              <StatusTrackerIcon :clickable="false"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+              {{milestone.projectStatusType}}
+              <div>
+                <div v-for="field in milestone.assignedFields">
+                  <StatusTrackerItem :field="field"
+                  ></StatusTrackerItem>
+                </div>
+              </div>
+              <div class="text-right">
+                <v-btn text color="primary" @click="milestone.menuOpen = false">Done</v-btn>
+              </div>
+            </v-card>
+          </v-menu>
+        </div>
+      </div>
     </v-toolbar>
     <v-row class="project-split-container" :class="{'split-container-no-tags': project && !project.tags || project.tags.length === 0,
                                                     'split-container-with-tags': project && project.tags && project.tags.length > 0}">
@@ -182,6 +215,7 @@
                      :project-tab="selectedTab"
                      v-if="project && project.id" class="router-view"
                      :project="project"
+                     :milestones="milestones"
         />
       </div>
       <div class="project-section px-0 white-bg "
@@ -213,7 +247,11 @@ import ProjectActivity from '@/views/flow/project/ProjectActivity'
 import ProjectTabs from '@/views/flow/project/ProjectTabs'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
-import {getCompanyProjectStatusTypes, getStatusColorClass} from "@/services/projectStatusTypeService"
+import {
+  getCompanyProjectStatusType,
+  getCompanyProjectStatusTypes,
+  getStatusColorClass
+} from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
 import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
@@ -222,10 +260,14 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {endTimer, projectOpened} from '@/services/analyticsService'
+import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
+import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 
 export default {
   name: 'Project',
   components: {
+    StatusTrackerIcon,
+    StatusTrackerItem,
     PageOverview,
     ConfirmationDialog,
     ProjectActivity,
@@ -259,6 +301,7 @@ export default {
       states: [],
       countries: [],
       selectedTab: {},
+      milestones: [],
       projectLoading: true,
       projectId: parseInt(this.$route.params.projectId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -270,6 +313,9 @@ export default {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
+    if(this.is7oaksAdmin) {
+      this.getMilestones()
+    }
   },
   watch: {
     '$route.params.processStepId': async function () {
@@ -396,6 +442,28 @@ export default {
         this.projectLoading = false
         this.$store.commit(AppMutations.SET_LOADING, false)
         logError(e)
+      }
+    },
+    async getMilestones() {
+      try {
+        const {data, status} = await getRequest(`/project/${this.projectId}/statusFields`)
+        this.milestones = data
+        this.milestones.forEach(m => {
+          // if(m.assignedFields.every(f => f.hasOwnProperty('fieldValue'))) {
+          // console.log('A', m.assignedFields.every(f => f.fieldValue))
+          // console.log('B', m.assignedFields.every(f => f.hasOwnProperty('fieldValue')))
+          if(m.assignedFields.every(f => f.fieldValue)) {
+            m.btnColor = 'green'
+            m.iconColor = 'white'
+          } else {
+            m.btnColor = 'grey'
+            m.iconColor = 'grey'
+          }
+        })
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Tracker Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
     getProjectTags: async function () {
@@ -708,6 +776,32 @@ export default {
   font-size: 11px;
 }
 
+.milestone-item {
+  display: inline-block;
+  margin-right: 16px;
+  position:relative
+}
+
+.milestone-item:before,
+.milestone-item:after
+{
+  content:'';
+  width: 16px;
+  border-bottom:1px solid #9E9E9E;
+  position:absolute;
+  top:50%;
+
+}
+:after {
+  left:100%;
+}
+:before {
+  right:100%;
+}
+.milestone-item:first-of-type:before,
+.milestone-item:last-of-type:after {
+  display:none;
+}
 
 </style>
 

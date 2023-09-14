@@ -8,6 +8,7 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
@@ -17,6 +18,7 @@ import java.util.HashMap;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/proposal-preview")
+@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class ProposalPreviewController {
   private final ProposalTemplateService proposalTemplateService;

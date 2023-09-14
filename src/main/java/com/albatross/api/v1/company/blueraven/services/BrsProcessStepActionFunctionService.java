@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +58,8 @@ public class BrsProcessStepActionFunctionService {
   private final ListOfValueService listOfValueService;
 
   private final BirdEyeService birdeyeService;
+
+  private final StripeService stripeService;
 
   // @TODO: I would like this to have the usual @Value annotation to the marketo cron flag, but it doesn't work with the manual class instantiation used
   public Boolean marketoEnabled;
@@ -467,6 +470,23 @@ public class BrsProcessStepActionFunctionService {
       } catch (Exception e) {
         throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
       }
+    }
+  }
+
+  public String generateStripeDownPaymentCheckout(ProcessStepActionChildFunction func, Map<String, Object> systemValues) {
+    final Long projectId = Long.parseLong(systemValues.get("projectId").toString());
+    final Long ppsId = Long.parseLong(systemValues.get("ppsId").toString());
+    try {
+      String url = stripeService.chargeProject(projectId, ppsId);
+      if (url != null) {
+        return url;
+      }
+      else {
+        throw new RuntimeException(formatErrorMessage(func, "Failed Charge"));
+      }
+
+    } catch (Exception e) {
+      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
     }
   }
 

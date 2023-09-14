@@ -185,21 +185,9 @@ BEGIN
                    (select count(1) < 1
                     from excluded_appointments
                     where excluded_appointments.user_id = foo1.user_id
-                      and case
-                            when id > 0 then
-                              (((foo1.scheduled_start_time between excluded_appointments.start_time and excluded_appointments.end_time)
-                                or
-                                (foo1.scheduled_end_time between excluded_appointments.start_time and excluded_appointments.end_time))
-                                or
-                               (excluded_appointments.start_time between foo1.scheduled_start_time and foo1.scheduled_end_time
-                                 or
-                                excluded_appointments.end_time between foo1.scheduled_start_time and foo1.scheduled_end_time))
-                            else ((excluded_appointments.start_time < foo1.scheduled_end_time
-                              and excluded_appointments.end_time > foo1.scheduled_start_time))
-                              and
-                                 ((foo1.scheduled_start_time between excluded_appointments.start_time and excluded_appointments.end_time)
-                                   or
-                                  (foo1.scheduled_end_time between excluded_appointments.start_time and excluded_appointments.end_time)) end) as available
+                      and (tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
+                            && tsrange(excluded_appointments.start_time, excluded_appointments.end_time, '[]'))
+            ) as available
             from (select user_id,
                          available_times                                                          as scheduled_start_time,
                          (available_times + (default_appointment_length || ' minutes')::interval) as scheduled_end_time
@@ -262,21 +250,9 @@ BEGIN
                    (select count(1) < 1
                     from excluded_appointments
                     where excluded_appointments.user_id = foo1.user_id
-                      and case
-                            when id > 0 then
-                              ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps
-                               (excluded_appointments.start_time, excluded_appointments.end_time)
-                                or
-                               (excluded_appointments.start_time, excluded_appointments.end_time) overlaps
-                               (foo1.scheduled_start_time, foo1.scheduled_end_time))
-                            else ((excluded_appointments.start_time < foo1.scheduled_end_time
-                              and excluded_appointments.end_time > foo1.scheduled_start_time))
-                              and
-                                 ((foo1.scheduled_start_time, foo1.scheduled_end_time) overlaps
-                                  (excluded_appointments.start_time, excluded_appointments.end_time)
-                                   or
-                                  (excluded_appointments.start_time, excluded_appointments.end_time) overlaps
-                                  (foo1.scheduled_start_time, foo1.scheduled_end_time)) end) as available,
+                      and (tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
+                        && tsrange(excluded_appointments.start_time, excluded_appointments.end_time, '[]'))
+                    ) as available,
                    pczu_timezone
             from (select user_id,
                          available_times                                                          as scheduled_start_time,

@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addNumber = !addNumber, newNumber = '']">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addNumber = !addNumber, newNumber = '']">
               <v-icon v-if="addNumber">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -40,7 +40,7 @@
           ></v-text-field>
         </v-card-title>
         <v-divider></v-divider>
-        <v-data-table
+        <v-data-table id="call-group-phone-number-table"
           :headers="numberHeaders"
           :items="filterPhoneNumbers()"
           :fixed-header="true"
@@ -57,24 +57,20 @@
           <template #no-results>
             <span class="default-text-color">No available phone numbers</span>
           </template>
-
-          <template #item="{ item, index }">
-            <tr>
-              <td class="text-left">
+              <template #item.phoneNumber="{item}" class="text-left">
                 <img v-if="item.maxCallCountHit"
                   name="userImg" src="../../../../assets/blueraven/alert_icon.jpg" class="icon-height"
                 title="Max call count exceeded">
-                {{item.phoneNumber}}</td>
-              <td class="text-left">{{item.dateCreated  | formatDate('date', 'M/D/YYYY')}}</td>
-              <td class="text-left">{{item.callCount}}</td>
-              <td class="text-left">
+                {{item.phoneNumber}}
+              </template>
+              <template #item.dateCreated="{item}" class="text-left">{{item.dateCreated  | formatDate('date', 'M/D/YYYY')}}</template>
+              <template #item.callCount="{item}" class="text-left">{{item.callCount}}</template>
+              <template #item.active="{item}" class="text-left">
                 <v-select attach style="width: 120px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updatePhoneNumber(item)"></v-select>
-              </td>
-              <td>
-                <v-btn small text color="primary" v-if="userCanDelete" @click="phoneNumberToDelete=item"><v-icon>delete</v-icon></v-btn>
-              </td>
-            </tr>
-          </template>
+              </template>
+              <template #item.icons="{item}">
+                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="phoneNumberToDelete=item"><v-icon>delete</v-icon></v-btn>
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -223,5 +219,35 @@
     width: 25px;
     margin-right: 15px;
   }
+
+  @media (max-width: 770px) {
+    #call-group-phone-number-table {
+      padding-bottom: 12px;
+      div.v-data-footer {
+        display: inline-block;
+        width: 100%;
+        padding-bottom: 12px;
+
+        div.v-data-footer__select {
+          justify-content: center;
+        }
+
+        div.v-data-footer__pagination {
+
+        }
+
+        div.v-data-footer__icons-before {
+          display: inline;
+          margin-left: calc(50% - 36px);
+        }
+
+        div.v-data-footer__icons-after {
+          display: inline;
+        }
+
+      }
+    }
+  }
+
 </style>
 

@@ -63,7 +63,8 @@
                        @click="[addNewProcessStepStatusType = !addNewProcessStepStatusType, expanded = [], getCompanyProcessStepStatusTypes()]"
                        v-if="userCanAdd">
                   <v-icon v-if="!addNewProcessStepStatusType">add</v-icon>
-                  {{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}
+                  <v-icon v-else-if="isMobile">close</v-icon>
+                  <span v-if="!isMobile">{{ addNewProcessStepStatusType ? 'Cancel' : 'Add Process Step Status Type' }}</span>
                 </v-btn>
                 <v-btn text color="primary" @click="expandPsst = !expandPsst">
                   <v-icon v-if="!expandPsst">mdi-chevron-down</v-icon>
@@ -97,7 +98,7 @@
                 hide-default-footer
                 :items-per-page="-1"
                 disable-sort
-                class="elevation-1 square-card mb-2"
+                class="elevation-1 square-card mb-2 table-striped"
               >
                 <template #no-data>
                   <span class="default-text-color">No available process step status types</span>
@@ -107,22 +108,18 @@
                   <span class="default-text-color">No available process step status types</span>
                 </template>
 
-                <template #item="{ item, index }">
-                  <tr class="clickable" :class="{'shaded-row': index % 2}">
-                    <td class="text-left"><a href="/settings/processStepStatuses" >{{ item.processStepStatusType }}</a></td>
-                    <td class="text-left">{{ item.rootProcessStepStatusType }}</td>
-                    <td class="text-left" v-if="allowNonAdminAdd">
+                    <template #item.statusType = {item} class="text-left"><a href="/settings/processStepStatuses" >{{ item.processStepStatusType }}</a></template>
+                    <template #item.category="{item}" class="text-left">{{ item.rootProcessStepStatusType }}</template>
+                    <template #item.allowNonAdminUse="{item}" class="text-left" v-if="allowNonAdminAdd">
                       <input type="checkbox" v-model="item.allowNonAdminUse"
                              @input="saveNonAdminUse($event, item)"
                              :disabled="!userCanEdit" :readonly="!userCanEdit" />
-                    </td>
-                    <td class="text-right">
+                    </template>
+                    <template #item.icons="{item}" class="text-right">
                       <div class="flex-display">
                         <v-btn v-if="userCanEdit" small text color="primary" @click="deleteProcessStepStatusType=item"><v-icon>delete</v-icon></v-btn>
                       </div>
-                    </td>
-                  </tr>
-                </template>
+                    </template>
               </v-data-table>
             </div>
             <ProcessStepWorkQueueTypes :process-step="processStep"></ProcessStepWorkQueueTypes>
@@ -136,7 +133,8 @@
               <v-toolbar-items>
                 <v-btn text color="primary" @click="getLinksForProcessStep" v-if="userCanAdd">
                   <v-icon v-if="!addNewLink">add</v-icon>
-                  {{ addNewLink ? 'Cancel' : 'Add Link' }}
+                  <v-icon v-else-if="isMobile">close</v-icon>
+                  <span v-if="!isMobile">{{ addNewLink ? 'Cancel' : 'Add Link' }}</span>
                 </v-btn>
                 <v-btn text color="primary" @click="expandLinks = !expandLinks">
                   <v-icon v-if="!expandLinks">mdi-chevron-down</v-icon>
@@ -181,32 +179,59 @@
             <v-toolbar flat class="access-header-bar">
               <v-toolbar-title class="title-large">Process Step Access Control</v-toolbar-title>
             </v-toolbar>
-            <v-card flat color="rowShadeCustom" class="square-card mt-2">
-              <v-card-text>
-                <multi-select-group
-                  v-if="!positionsLoading"
-                  background-color="transparent"
-                  :userCanEdit="userCanEdit"
-                  :returnObject="processStep"
-                  :content="positions"
-                  :dropdownEnabled="processStep.readonly"
-                  :selectedContent="processStep.whiteListedPositions"
-                  :title="'Read Only'"
-                  :label="'Allowed Positions'"
-                  :alternateLabel = "'Denied Positions'"
-                  :allow="processStep.readonlyAllow"
-                  :contentLoading="positionsLoading"
-                  @selected-changed="startTimeReadOnlySelectedEventListener"
-                  @allow-changed="startTimeReadOnlyAllowEventListener"
-                  @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
-                <br/>
-                <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
-                       @click="saveReadOnlyAndWhiteList()">
-                  <v-icon class="mr-2">save</v-icon>
-                  Save
-                </v-btn>
-              </v-card-text>
+            <div v-if="positionsLoading" class="section-spinner">
+              <SpinnerInline :size="50" :spinner-color="`primary`" :transparent="true" :centered="true"/>
+            </div>
+            <v-row v-else>
+              <v-card flat color="rowShadeCustom" class="square-card mt-2 col-12 col-md-4">
+                <v-card-text>
+                  <multi-select-group
+                      v-if="!positionsLoading"
+                      background-color="transparent"
+                      :userCanEdit="userCanEdit"
+                      :returnObject="processStep"
+                      :content="positions"
+                      :dropdownEnabled="processStep.readonly"
+                      :selectedContent="processStep.whiteListedPositions"
+                      :title="'Read Only'"
+                      :label="'Allowed Positions'"
+                      :alternateLabel = "'Denied Positions'"
+                      :allow="processStep.readonlyAllow"
+                      :contentLoading="positionsLoading"
+                      save-button
+                      full-size
+                      @selected-changed="startTimeReadOnlySelectedEventListener"
+                      @allow-changed="startTimeReadOnlyAllowEventListener"
+                      @checkbox-changed="startTimeReadOnlyCheckboxEventListener"
+                      @save-multi-select="saveReadOnlyAndWhiteList"
+                  ></multi-select-group>
+                </v-card-text>
+              </v-card>
+              <v-card flat class="square-card mt-2 col-12 col-md-8 col-lg-6">
+                <v-card-text>
+                  <multi-select-group
+                      v-if="!positionsLoading"
+                      background-color="transparent"
+                      :userCanEdit="userCanEdit"
+                      :return-object="processStep"
+                      :content="positions"
+                      :dropdownEnabled="processStep.nonAdminAdd"
+                      :selectedContent="processStep.nonAdminAddWhiteListedPositions"
+                      title="Allow Non-Admin to Add to Project"
+                      label="Allowed Positions"
+                      alternateLabel = "Denied Positions"
+                      :allow="true"
+                      :contentLoading="positionsLoading"
+                      save-button
+                      full-size
+                      @selected-changed="nonAdminWBLPositionsSelectionChange"
+                      @allow-changed="toggleNonAdminAllowDenyList"
+                      @checkbox-changed="toggleAllowNonAdminCheckbox"
+                      @save-multi-select="saveProcessStep"
+                  />
+                </v-card-text>
             </v-card>
+            </v-row>
           </v-col>
         </v-row>
       </v-col>
@@ -327,7 +352,10 @@ export default {
         return this.deleteAttachment.attachmentType
       }
       return ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     await this.getProcessStepDetails()
@@ -390,6 +418,31 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    nonAdminWBLPositionsSelectionChange(e){
+      this.processStep.nonAdminAddWhiteListedPositions = e
+      this.nonAdminAddWhiteListedPositionsChanged = true
+    },
+    toggleNonAdminAllowDenyList(e){
+      this.processStep.nonAdminAddAllow = (e === 0)
+    },
+    toggleAllowNonAdminCheckbox(e){
+      this.processStep.nonAdminAdd = e
+    },
+    async saveProcessStep() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/processStep?savePositions=${this.nonAdminAddWhiteListedPositionsChanged ?? false}`, this.processStep)
+        this.editName = false
+        this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Process Step')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
@@ -605,5 +658,4 @@ export default {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
 }
-
 </style>

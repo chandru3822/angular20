@@ -706,6 +706,12 @@ export default {
 
       this.snackbar = getSnackbar('SUCCESS', 'Action Completed')
       this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      //if there are links returned, open them
+      data?.childFunctionReturnedStrings?.forEach(rs => {
+        //the date stringify guarantees a new tab opens every time
+        window.open(rs, JSON.stringify(new Date()))
+      })
+
       //if root status is not active then go back to project screen
       if (data?.processStepStatusTypeId !== 1) {
         //just in case something wasn't saved before running this action then still allow the nav

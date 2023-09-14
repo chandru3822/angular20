@@ -178,7 +178,8 @@ public class CustomFieldGroupService {
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
     params.put("cfgaReadOnlyAllow", customField.getCustomFieldGroupAssignmentReadOnlyAllow());
     params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());
-    params.put("cfgaHiddenAllow", customField.getCustomFieldGroupAssignmentHiddenAllow());
+    //this is pissing me off. setting to true if a value is not passed in since that should be the default
+    params.put("cfgaHiddenAllow", null != customField.getCustomFieldGroupAssignmentHiddenAllow() ? customField.getCustomFieldGroupAssignmentHiddenAllow() : true);
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
     params.put("whiteListTypeId", whiteListTypeId);
 
