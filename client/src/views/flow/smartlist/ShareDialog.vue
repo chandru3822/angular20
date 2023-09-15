@@ -114,7 +114,7 @@
                   <template #append-item>
                     <v-divider/>
                     <v-list-item
-                      v-if="accessLevel.isUser"
+                      v-if="accessLevel.isUser && isOwner"
                       @click="confirmOwnershipChange(accessLevel)"
                     >
                       Transfer Ownership
