@@ -158,7 +158,6 @@ public class SmartlistQuery {
     inner join flow.user u on u.id = s.owner_id
     where
       cot.company_id = :companyId and
-      s.owner_id != :userId and
       s.public and
       s.archived is not true and
       s.work_queue_type_id is null
@@ -648,7 +647,7 @@ public class SmartlistQuery {
         inner join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
         inner join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
         inner join flow.process_step ps1 on ps1.id = cfg1.process_step_id
-        where 
+        where
           cot1.object_type_id = cot.object_type_id and
           cot1.company_id = :companyId and
           cfga1.ancillary_custom_field_group_assignment_id is null and
@@ -681,7 +680,7 @@ public class SmartlistQuery {
     from flow.process_step ps
     inner join flow.process_step_process psp on ps.id = psp.process_step_id
     left join flow.custom_field_group cfg on ps.id = cfg.process_step_id
-    where 
+    where
       ps.archived is not true and
       ps.company_id = :companyId and
       -- include these results only if we're fetching process steps
@@ -729,7 +728,7 @@ public class SmartlistQuery {
   public final static String addField = """
     insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
-    
+
     returning id
   """;
 
