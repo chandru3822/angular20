@@ -263,6 +263,7 @@ export default {
       ],
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       currentUserId:this.$store.state.user.details.id,
+      pinnedActivitiesOnly: [],
     }
   },
   watch: {
@@ -272,6 +273,9 @@ export default {
       } else {
         this.getActivityTopics()
       }
+    },
+    sortedFilteredActivities: function (){
+      this.getPinnedActivitiesOnly()
     },
     searchText: function () {
       this.$emit('scrollToTop')
@@ -306,10 +310,6 @@ export default {
           && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['dateCreated'], [ this.sortDirection])
-    },
-    pinnedActivitiesOnly() {
-      const sortedFilteredActivitiesCopy = cloneDeep(this.sortedFilteredActivities)
-      return sortedFilteredActivitiesCopy.filter(a => a.pinned)
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
@@ -379,6 +379,14 @@ export default {
         return activityCount > 0
       })
 
+    },
+    getPinnedActivitiesOnly() {
+      const sortedFilteredPinnedActivities = cloneDeep(this.sortedFilteredActivities).filter(a => a.pinned)
+      if(this.pinnedActivitiesOnly.length === 0 || sortedFilteredPinnedActivities.length !== this.pinnedActivitiesOnly.length){
+        //if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
+        // but we still get the update when we pin/unpin a note
+        this.pinnedActivitiesOnly = sortedFilteredPinnedActivities
+      }
     },
     countedCategoryLabel(activities, activityTypeId){
       const activityCount = this.countSortedFilteredActivities(activities)
