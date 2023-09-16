@@ -49,6 +49,7 @@
                       :edit-callback="setEditedActivity"
                       :search-callback="searchByClick"
                       @reload="getActivities"
+                      @remove-deleted="removeDeletedActivity"
         />
       </div>
 <!--Topic View-->
@@ -633,6 +634,12 @@ export default {
     },
     startWriteNotesTimer(startEvent){
       writeNoteStartTimer(startEvent);
+    },
+    removeDeletedActivity(activityId){
+      const deletedActivity = this.activities.find(a => a.id === activityId)
+      if(deletedActivity) {
+        deletedActivity.archived = true
+      }
     }
   }
 }

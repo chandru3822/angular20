@@ -165,6 +165,7 @@ export default {
         //todo handle sending this back up
         this.snackbar = getSnackbar('SUCCESS', 'Note Deleted')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$emit('remove-deleted', activity.id);
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error deleting note')
