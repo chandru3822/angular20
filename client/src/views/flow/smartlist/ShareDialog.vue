@@ -151,7 +151,7 @@
           class="white--text elevation-2 text-capitalize mr-2 mb-2"
           @click="updateAccess"
         >
-          Share
+          Save
         </v-btn>
       </v-card-actions>
     </v-card>

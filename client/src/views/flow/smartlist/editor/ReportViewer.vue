@@ -9,7 +9,8 @@
   class="rounded-0"
 >
   <template #no-data>
-    No available report data
+    <span v-if="requirements.length > 0">No available report data</span>
+    <span v-else>Select at least one column and one filter to view data preview</span>
   </template>
 
   <template #no-results>
