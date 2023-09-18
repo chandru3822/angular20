@@ -53,7 +53,8 @@ BEGIN
   IF v_previous_main_company_process_step_status_type_id = any(v_company_active_status_ids)
   THEN
     update flow.project_process_step
-    set company_process_step_status_type_id = p_cancelled_company_process_step_status_type_id
+    set company_process_step_status_type_id = p_cancelled_company_process_step_status_type_id,
+        date_modified = now()
     where id = v_previous_main_project_process_step_id;
   END IF;
 
