@@ -124,6 +124,20 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
+      <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="saveEventDetails" @close-dialog="conflictingEvent = null; fieldsSaving = false">
+        <template v-slot:title>Conflict</template>
+        <div>
+          Resource <b>{{this.conflictingEvent.resourceName}}</b>
+          has another event on their calendar on <b>{{this.conflictingEvent.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+          - {{this.conflictingEvent.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+          <b></b>
+        </div>
+        <br>
+        <b>Existing Event:</b> {{ conflictingEvent.eventName }} ({{ conflictingEvent.projectName }}, ID: {{ conflictingEvent.projectId }})
+        <template v-slot:no>Cancel</template>
+        <template v-slot:yes>Schedule Anyway</template>
+
+      </ConfirmationDialog>
       <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
@@ -382,6 +396,7 @@ export default {
       unsavedFieldsModal: false,
       navigationOverride: false,
       toPath: null,
+      conflictingEvent: null,
       query: {},
       attemptedAction: {},
       companyEventStatuses: [],
@@ -867,6 +882,33 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async checkForSchedulingConflicts(){
+      let paramsForAvailability = {
+        // orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+        // this was the old way. leaving here in case
+        // userPositionIds: this.getUserPositionIds(),
+        userPositionIds: [this.selectedEvent.resourceId],
+        startTime: this.selectedEvent.startTime,
+        endTime: this.selectedEvent.endTime,
+        includeCancelled: false,
+        resourceId: this.selectedEvent.resourceId
+      }
+
+      await postRequest(`/schedule`, paramsForAvailability).then(response => {
+        for(let scheduledEvent of response.data) {
+          if ((scheduledEvent.start >= this.selectedEvent.startTime && scheduledEvent.start <= this.selectedEvent.endTime) || (scheduledEvent.end >= this.selectedEvent.startTime && scheduledEvent.end <= this.selectedEvent.endTime)) {
+            this.conflictingEvent = scheduledEvent;
+            break;
+          }
+          else{
+            this.conflictingEvent = null;
+          }
+        }
+        if(this.conflictingEvent == null){
+          this.saveEventDetails();
+        }
+      });
+    },
     async saveEventDetails() {
       this.eventSaveOverrideRequired = true
       this.eventActionMissingRequirements = false
@@ -1057,7 +1099,7 @@ export default {
       if (validSave) {
         this.eventActionMissingRequirements = false
         this.defaultValuesChanged = false
-        this.saveEventDetails()
+        this.checkForSchedulingConflicts();
       }
     },
     filterProjectProcessStepEvents() {
