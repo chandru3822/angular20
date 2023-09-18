@@ -78,20 +78,22 @@ IF p_receiving_users IS NOT NULL THEN
             AND user_id = ANY (p_receiving_users)
   )
   INSERT INTO brs.override_plan_receiving_user
-  (override_plan_id, user_id, m1_allocation,m2_allocation)
+  (override_plan_id, user_id, m1_allocation,m2_allocation,red_line_m1_allocation,red_line_m2_allocation)
     SELECT
       _cloneId,
       user_id,
       m1_allocation,
-      m2_allocation
+      m2_allocation,
+      red_line_m1_allocation,
+      red_line_m2_allocation
     FROM receiving_users;
 
 END IF;
 
 IF p_user_to_add IS NOT NULL THEN
   INSERT INTO brs.override_plan_receiving_user
-  (override_plan_id, user_id, m1_allocation,m2_allocation)
-  VALUES (_cloneId, p_user_to_add, 0,0)
+  (override_plan_id, user_id, m1_allocation,m2_allocation,red_line_m1_allocation,red_line_m2_allocation)
+  VALUES (_cloneId, p_user_to_add, 0,0,0,0)
   ON CONFLICT (override_plan_id, user_id)
             DO NOTHING;
 
