@@ -9,7 +9,7 @@
       @added="added"
     />
   </v-col>
-  <v-col class="flex-grow-1 flex-shrink-0">
+  <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
     <v-list>
       <template v-for="(requirement, index) in requirements">
         <v-card
