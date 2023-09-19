@@ -627,20 +627,27 @@ public class SmartlistQueryv1 {
       null                                                                               as process_step_event_id,
     coalesce(pdc.second_field_to_update, sfa.project_details_column)                   as project_details_column,
     pdc.display_name                                                                   as name,
-      case
-    when sfa.project_details_column = 'ahj' then 8
-      else coalesce(pdc.second_data_type_id, pdc.data_type_id)
-    end                                                                                as data_type_id,
-      null                                                                               as has_list_values,
-         case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
-         case when sfa.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
-         case when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
-      null                                                                               as list_of_values
+    coalesce(pdc.second_data_type_id, pdc.data_type_id) as data_type_id,
+    case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as has_list_values,
+    cf.custom_field_sql_key,
+    cf.custom_field_sql,
+    cf.custom_field_sql_smartlist,
+    case
+        when cf.custom_field_sql_smartlist is not null then (
+          select to_jsonb(array_agg(row_to_json(listOfValues)))
+          from (
+            select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+          ) listOfValues
+        )
+      end                                                                         as list_of_values
     from flow.smartlist_field_assignment sfa
     inner join (
-      select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
+      select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id, custom_field_group_assignment_id
       from brs.project_details_config
     ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
+    left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+    left join flow.custom_field cf on cfga.custom_field_id = cf.id
+    left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
     where sfa.smartlist_id = :smartlistId and
     sfa.archived is not true
     union
@@ -774,31 +781,31 @@ select sfa.id,
        null                                                                               as process_step_event_id,
        coalesce(pdc.second_field_to_update, sfa.project_details_column)                   as project_details_column,
        pdc.display_name                                                                   as name,
-       case
-           when sfa.project_details_column = 'ahj' then 8
-           else coalesce(pdc.second_data_type_id, pdc.data_type_id)
-           end                                                                            as data_type_id,
-       null                                                                               as has_list_values,
-       case when sfa.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
-       case
-           when sfa.project_details_column = 'ahj' then (select custom_field_sql
-                                                         from flow.custom_field
-                                                         where custom_field_sql_key = 'customFieldSql.brs.ahjList'
-                                                           and company_id = 3) end        as custom_field_sql,
-       case
-           when sfa.project_details_column = 'ahj' then (select custom_field_sql_smartlist
-                                                         from flow.custom_field
-                                                         where custom_field_sql_key = 'customFieldSql.brs.ahjList'
-                                                           and company_id = 3) end        as custom_field_sql_smartlist,
-       null                                                                               as list_of_values
+      coalesce(pdc.second_data_type_id, pdc.data_type_id) as data_type_id,
+      case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as has_list_values,
+      cf.custom_field_sql_key,
+      cf.custom_field_sql,
+      cf.custom_field_sql_smartlist,
+      case
+        when cf.custom_field_sql_smartlist is not null then (
+          select to_jsonb(array_agg(row_to_json(listOfValues)))
+          from (
+            select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+          ) listOfValues
+        )
+      end as list_of_values
 from flow.smartlist_field_assignment sfa
          inner join (select distinct field_to_update,
                                      display_name,
                                      data_type_id,
                                      second_field_to_update,
-                                     second_data_type_id
+                                     second_data_type_id,
+                                     custom_field_group_assignment_id
                      from brs.project_details_config) pdc
                     on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sfa.project_details_column
+left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+left join flow.custom_field cf on cfga.custom_field_id = cf.id
+left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
 where sfa.id = :id
 union
 select sfa.id,
@@ -1389,22 +1396,29 @@ where sfa.id = :id
       null                                                                              as process_step_event_id,
     coalesce(pdc.second_field_to_update, sr.project_details_column)                   as project_details_column,
     pdc.display_name                                                                  as name,
-      case
-    when sr.project_details_column = 'ahj' then 8
-      else coalesce(pdc.second_data_type_id, pdc.data_type_id)
-    end                                                                               as data_type_id,
-      null                                                                              as has_list_values,
-         case when sr.project_details_column = 'ahj' then 'customFieldSql.brs.ahjList' end as custom_field_sql_key,
-              case when sr.project_details_column = 'ahj' then (select custom_field_sql from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql,
-      case when sr.project_details_column = 'ahj' then (select custom_field_sql_smartlist from flow.custom_field where custom_field_sql_key = 'customFieldSql.brs.ahjList' and company_id = 3) end as custom_field_sql_smartlist,
-      null                                                                              as available_list_of_values
+    coalesce(pdc.second_data_type_id, pdc.data_type_id) as data_type_id,
+    case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as has_list_values,
+    cf.custom_field_sql_key,
+    cf.custom_field_sql,
+    cf.custom_field_sql_smartlist,
+    case
+      when cf.custom_field_sql_smartlist is not null then (
+        select to_jsonb(array_agg(row_to_json(listOfValues)))
+        from (
+          select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+        ) listOfValues
+      )
+    end as available_list_of_values
     from flow.smartlist_requirement sr
     inner join (
-      select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id
+      select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id, custom_field_group_assignment_id
       from brs.project_details_config
     ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sr.project_details_column
     inner join flow.operator_type opt on opt.id = sr.operator_type_id
     left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
+    left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+    left join flow.custom_field cf on cfga.custom_field_id = cf.id
+    left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
     where sr.smartlist_id = :smartlistId and
     sr.archived is not true
     union
