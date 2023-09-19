@@ -46,9 +46,13 @@ BEGIN
         end if;
 
       end loop;
+    if v_plane_rebate_amount is not null then
     v_value = least(p_rebate_cap_dollar_amount,
                     (p_total_system_cost_before_rebates * p_rebate_cap_percentage_of_total),
                     v_plane_rebate_amount);
+    else
+      v_value = 0.00::numeric;
+    end if;
 
     if p_number_of_batteries > 0 then
       v_value = coalesce(v_value, 0) +

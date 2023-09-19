@@ -188,7 +188,8 @@ public class InstallAgreementQuery {
   //language=PostgreSQL
   public final static String setCreditLastCheckedBy = """
     UPDATE brs.project_details
-    SET credit_last_checked_by = :creditLastCheckedBy
+    SET credit_last_checked_by = :creditLastCheckedBy,
+        date_modified = now()
     WHERE project_id = :projectId
     """;
 
