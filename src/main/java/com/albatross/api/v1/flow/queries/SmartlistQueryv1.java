@@ -505,7 +505,7 @@ public class SmartlistQueryv1 {
     pdc.display_name else
       case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
     end as name,
-      case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
+      case when sf.smartlist_system_list_id is null then cdt1.has_list_values or cf.custom_field_sql_smartlist is not null else true end as has_list_values,
     cdt1.allow_multiple,
     cf.company_system_list_id,
     sl.system_list_type_id,
@@ -534,24 +534,31 @@ public class SmartlistQueryv1 {
     cf.system_list_option_ids as "systemListOptionIds",
     cf.company_data_type_id as "companyDataTypeId",
     cdt.data_type_id as "dataTypeId",
-    cdt.has_list_values as "hasListValues",
-    coalesce((
+    case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as "hasListValues",
+    case
+      when cf.custom_field_sql_smartlist is not null then (
+        select to_json(array_agg(row_to_json(listOfValues)))
+        from (
+          select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+        ) listOfValues
+      )
+    else coalesce((
              SELECT array_to_json(array_agg(row_to_json(listOfValues)))
-    FROM (
-      select
-        lov.id,
-      lov.name,
-      lov.code,
-      lov.parent_id,
-      lov.display_order
-        from flow.list_of_value lov
-        where lov.parent_id is not null
-        and lov.parent_id = cf.list_of_value_id
-        and lov.archived is not true
-        order by
-        case when cf.sort_list_values_alphabetically is true  then lov.name end,
-                                 case when cf.sort_list_values_alphabetically is false then lov.display_order end
-    ) listOfValues), '[]') AS "listOfValues",
+      FROM (
+        select
+          lov.id,
+        lov.name,
+        lov.code,
+        lov.parent_id,
+        lov.display_order
+          from flow.list_of_value lov
+          where lov.parent_id is not null
+          and lov.parent_id = cf.list_of_value_id
+          and lov.archived is not true
+          order by
+          case when cf.sort_list_values_alphabetically is true  then lov.name end,
+                                   case when cf.sort_list_values_alphabetically is false then lov.display_order end
+      ) listOfValues), '[]') end AS "listOfValues",
     coalesce((
              SELECT array_to_json(array_agg(row_to_json(wlp)))
     FROM (

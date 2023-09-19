@@ -568,9 +568,16 @@ public class SmartlistQuery {
       e.event_name as "eventName",
       pse.id as "processStepEventId",
       cdt.data_type_id as "dataTypeId",
-      cdt.has_list_values as "hasListValues",
+      case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as "hasListValues",
       cdt.allow_multiple as "allowMultiple",
-      coalesce((
+      case
+        when cf.custom_field_sql_smartlist is not null then (
+          select to_jsonb(array_agg(row_to_json(listOfValues)))
+          from (
+            select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+          ) listOfValues
+        )
+        else coalesce((
         select to_jsonb(array_agg(row_to_json(rows))) from (
           select
             lv.id,
@@ -589,7 +596,7 @@ public class SmartlistQuery {
           order by
             case when cf.sort_list_values_alphabetically is true  then lv.name end,
             case when cf.sort_list_values_alphabetically is false then lv.display_order end
-      ) rows), '[]') AS "listOfValues"
+      ) rows), '[]') end AS "listOfValues"
     from flow.custom_field_group_assignment cfga
     inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
