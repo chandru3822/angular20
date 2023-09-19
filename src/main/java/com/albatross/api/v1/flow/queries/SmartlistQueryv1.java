@@ -731,7 +731,7 @@ public class SmartlistQueryv1 {
     pdc.display_name else
       case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
     end as name,
-      case when sf.smartlist_system_list_id is null then cdt1.has_list_values else true end as has_list_values,
+      case when sf.smartlist_system_list_id is null then cdt1.has_list_values or cf.custom_field_sql_smartlist is not null else true end as has_list_values,
     cdt1.allow_multiple,
     cf.company_system_list_id,
     sl.system_list_type_id,

@@ -328,19 +328,26 @@ const updateAccess = async () => {
     try {
       store.commit(AppMutations.SET_LOADING, true)
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
-      snackbar('SUCCESS', `Smartlist Successfully Shared`)
+
+      if (payload.updatePublic && payload.public) {
+        snackbar('SUCCESS', `Smartlist made public`)
+      }
+      else {
+        snackbar('SUCCESS', `Access updated`)
+      }
+
       emit('dialog-closed')
       if (props.smartlist.public !== isPublic.value) {
         emit('updated-public', isPublic.value)
       }
     } catch (err) {
       logError(err)
-      snackbar('ERROR', 'Error while Sharing Smartlist')
+      snackbar('ERROR', 'Error while sharing Smartlist')
     } finally {
       handleHidingGlobalLoader(vueInstance, true)
     }
   } else {
-    snackbar('SUCCESS', `Smartlist Successfully Shared`)
+    snackbar('SUCCESS', `Access updated`)
     emit('dialog-closed')
   }
 }
