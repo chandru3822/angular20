@@ -502,8 +502,8 @@ public class SmartlistQueryv1 {
     case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
     case when sfa.smartlist_field_id is not null then cdt.company_id else cdt1.company_id end as company_id,
     case when sfa.project_details_column is not null then
-    pdc.display_name else
-      case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
+    REPLACE(pdc.display_name, '"', '''') else
+      case when sfa.smartlist_field_id is not null then REPLACE(sf.name, '"', '''') else REPLACE(cf.field_name, '"', '''') end
     end as name,
       case when sf.smartlist_system_list_id is null then cdt1.has_list_values or cf.custom_field_sql_smartlist is not null else true end as has_list_values,
     cdt1.allow_multiple,
@@ -728,8 +728,8 @@ public class SmartlistQueryv1 {
       case when sfa.custom_field_group_assignment_id is not null then cdt1.data_type_id else cdt.data_type_id end as data_type_id,
     case when sfa.smartlist_field_id is not null then cdt.company_id else cdt1.company_id end as company_id,
     case when sfa.project_details_column is not null then
-    pdc.display_name else
-      case when sfa.smartlist_field_id is not null then sf.name else cf.field_name end
+    REPLACE(pdc.display_name, '"', '''') else
+                 case when sfa.smartlist_field_id is not null then REPLACE(sf.name, '"', '''') else REPLACE(cf.field_name, '"', '''') end
     end as name,
       case when sf.smartlist_system_list_id is null then cdt1.has_list_values or cf.custom_field_sql_smartlist is not null else true end as has_list_values,
     cdt1.allow_multiple,
@@ -926,8 +926,8 @@ where sfa.id = :id
            case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
       opt.operator_type,
         case when sr.project_details_column is not null then
-      pdc.display_name else
-        case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
+      REPLACE(pdc.display_name, '"', '''') else
+                   case when sr.smartlist_field_id is not null then REPLACE(sf.name, '"', '''') else REPLACE(cf.field_name, '"', '''') end
       end as name,
         case when sr.project_details_column is not null then
              case when sr.project_details_column = 'ahj' then 8 else coalesce(pdc.second_data_type_id, pdc.data_type_id) end else
@@ -1194,8 +1194,8 @@ where sfa.id = :id
          case when sr.smartlist_field_id is not null then cot.company_id else cot1.company_id end as company_id,
     opt.operator_type,
       case when sr.project_details_column is not null then
-    pdc.display_name else
-      case when sr.smartlist_field_id is not null then sf.name else cf.field_name end
+    REPLACE(pdc.display_name, '"', '''') else
+      case when sr.smartlist_field_id is not null then REPLACE(sf.name, '"', '''') else REPLACE(cf.field_name, '"', '''') end
     end as name,
       case when sr.project_details_column is not null then
            case when sr.project_details_column = 'ahj' then 8 else coalesce(pdc.second_data_type_id, pdc.data_type_id) end else
