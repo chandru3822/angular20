@@ -660,40 +660,9 @@
                 <v-toolbar flat dense color="transparent">
                   <v-toolbar-title class="title-large">
                     Current Logic
-                    <v-dialog
-                      v-if="item.processStepLogicList && item.processStepLogicList.length > 0 && !item.logicListChanged"
-                      v-model="showActionLogicString"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn text class="d-inline-block" color="primary" @click="getActionLogicString(item.id)" v-on="on">
-                          <v-icon>mdi-information</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Action Logic String
-                        </v-card-title>
-
-                        <v-card-text class="pt-4">
-                          {{ actionLogicString }}
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-btn @click="copyToClipBoard()">
-                            Copy
-                          </v-btn>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="showActionLogicString = false">
-                            OK
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn text class="d-inline-block" color="primary" @click="getActionLogicString(item.id)">
+                      <v-icon>mdi-information</v-icon>
+                    </v-btn>
                   </v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items
@@ -849,6 +818,12 @@
     <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction" @close-dialog="closeChildProcessDialog">
       Are you sure you want to delete <strong>{{ childProcessToDelete?.processStepName }}</strong> from
       <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showLogicInfoDialog" @confirm="copyToClipBoard" @close-dialog="closeLogicInfoDialog">
+      <template v-slot:title>Action Logic String</template>
+      {{ actionLogicString }}
+      <template v-slot:yes>Copy</template>
+      <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -1045,6 +1020,7 @@ export default {
       linkToDelete: null,
       parentActionForChildToDelete: null,
       childProcessToDelete: null,
+      showLogicInfoDialog: false,
     }
   },
   computed: {
@@ -1216,6 +1192,7 @@ export default {
       try {
         const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/logicString`)
         this.actionLogicString = data
+        this.showLogicInfoDialog = true
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
@@ -1704,6 +1681,9 @@ export default {
     closeChildProcessDialog() {
       this.childProcessToDelete = null
       this.parentActionForChildToDelete = null
+    },
+    closeLogicInfoDialog() {
+      this.showLogicInfoDialog = false
     }
   }
 
