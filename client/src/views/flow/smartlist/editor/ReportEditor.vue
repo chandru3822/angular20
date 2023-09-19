@@ -524,7 +524,7 @@ const save = async () => {
     snackbar('SUCCESS', 'Save Successful')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error saving smartlist')
+    snackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
   } finally {
     store.commit(AppMutations.SET_LOADING, false)
   }
