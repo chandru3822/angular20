@@ -665,7 +665,7 @@
                       v-model="showActionLogicString"
                       width="500">
                       <template #activator="{ on }">
-                        <v-btn text class="d-inline-block" @click="getActionLogicString(item.id)" v-on="on">
+                        <v-btn text class="d-inline-block" color="primary" @click="getActionLogicString(item.id)" v-on="on">
                           <v-icon>mdi-information</v-icon>
                         </v-btn>
                       </template>
@@ -698,7 +698,7 @@
                   <v-spacer></v-spacer>
                   <v-toolbar-items
                     v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
-                    <v-btn text
+                    <v-btn text color="primary"
                            @click="[item.logicListChanged = true, item.logicMargin = 0, item.processStepLogicList = [], item.alwaysEnabled = false]">
                       <v-icon>clear</v-icon>
                       Clear All
@@ -808,7 +808,7 @@
                   <div style="display: flex; float: right;">
                     <v-tooltip left small>
                       <template v-slot:activator="{on, attrs}">
-                    <v-btn small text color="primary"
+                    <v-btn small text color="primary" :class="{'squished-btn':isMobile}"
                            v-if="userCanEdit"
                            v-bind="attrs" v-on="on"
                            @click="duplicateAction(item.id)">
@@ -817,15 +817,17 @@
                       </template>
                       <span class="label-small">Duplicate action</span>
                     </v-tooltip>
-                    <v-btn small text color="primary"
+                    <v-btn small text color="primary"  :class="{'squished-btn':isMobile}"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text color="primary" @click="[actionExpanded = [], selectedActionIndex = index]"
-                           v-if="actionExpanded.includes(item)">cancel
+                    <v-btn small text color="primary"  :class="{'squished-btn':isMobile}" @click="[actionExpanded = [], selectedActionIndex = index]"
+                           v-if="actionExpanded.includes(item)">
+                      <v-icon v-if="isMobile">close</v-icon>
+                      <span v-else>Cancel</span>
                     </v-btn>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
+                    <v-btn v-if="userCanEdit"  :class="{'squished-btn':isMobile}" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>
@@ -1048,7 +1050,7 @@ export default {
   computed: {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
-    },
+    }
   },
   async created() {
     this.getActions()
@@ -1721,5 +1723,10 @@ export default {
 .action-header-bar {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
+}
+
+.squished-btn {
+  min-width: 0 !important;
+  padding: 4px !important;
 }
 </style>
