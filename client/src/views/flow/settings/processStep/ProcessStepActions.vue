@@ -660,45 +660,14 @@
                 <v-toolbar flat dense color="transparent">
                   <v-toolbar-title class="title-large">
                     Current Logic
-                    <v-dialog
-                      v-if="item.processStepLogicList && item.processStepLogicList.length > 0 && !item.logicListChanged"
-                      v-model="showActionLogicString"
-                      width="500">
-                      <template #activator="{ on }">
-                        <v-btn text class="d-inline-block" @click="getActionLogicString(item.id)" v-on="on">
-                          <v-icon>mdi-information</v-icon>
-                        </v-btn>
-                      </template>
-                      <v-card>
-                        <v-card-title
-                          class="text-h5 grey lighten-2"
-                          primary-title>
-                          Action Logic String
-                        </v-card-title>
-
-                        <v-card-text class="pt-4">
-                          {{ actionLogicString }}
-                        </v-card-text>
-
-                        <v-divider></v-divider>
-
-                        <v-card-actions>
-                          <v-btn @click="copyToClipBoard()">
-                            Copy
-                          </v-btn>
-                          <v-spacer></v-spacer>
-                          <v-btn
-                            @click="showActionLogicString = false">
-                            OK
-                          </v-btn>
-                        </v-card-actions>
-                      </v-card>
-                    </v-dialog>
+                    <v-btn text class="d-inline-block" color="primary" @click="getActionLogicString(item.id)">
+                      <v-icon>mdi-information</v-icon>
+                    </v-btn>
                   </v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items
                     v-if="((item.processStepLogicList && item.processStepLogicList.length > 0) || item.alwaysEnabled) && userCanEdit">
-                    <v-btn text
+                    <v-btn text color="primary"
                            @click="[item.logicListChanged = true, item.logicMargin = 0, item.processStepLogicList = [], item.alwaysEnabled = false]">
                       <v-icon>clear</v-icon>
                       Clear All
@@ -808,7 +777,7 @@
                   <div style="display: flex; float: right;">
                     <v-tooltip left small>
                       <template v-slot:activator="{on, attrs}">
-                    <v-btn small text color="primary"
+                    <v-btn small text color="primary" :class="{'squished-btn':isMobile}"
                            v-if="userCanEdit"
                            v-bind="attrs" v-on="on"
                            @click="duplicateAction(item.id)">
@@ -817,15 +786,17 @@
                       </template>
                       <span class="label-small">Duplicate action</span>
                     </v-tooltip>
-                    <v-btn small text color="primary"
+                    <v-btn small text color="primary"  :class="{'squished-btn':isMobile}"
                            @click="[validateActionLogicString(item), actionExpanded = [item], selectedActionIndex = index]"
                            v-if="!actionExpanded.includes(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn small text color="primary" @click="[actionExpanded = [], selectedActionIndex = index]"
-                           v-if="actionExpanded.includes(item)">cancel
+                    <v-btn small text color="primary"  :class="{'squished-btn':isMobile}" @click="[actionExpanded = [], selectedActionIndex = index]"
+                           v-if="actionExpanded.includes(item)">
+                      <v-icon v-if="isMobile">close</v-icon>
+                      <span v-else>Cancel</span>
                     </v-btn>
-                    <v-btn v-if="userCanEdit" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
+                    <v-btn v-if="userCanEdit"  :class="{'squished-btn':isMobile}" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]">
                       <v-icon>delete</v-icon>
                     </v-btn>
                   </div>
@@ -847,6 +818,12 @@
     <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction" @close-dialog="closeChildProcessDialog">
       Are you sure you want to delete <strong>{{ childProcessToDelete?.processStepName }}</strong> from
       <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="showLogicInfoDialog" @confirm="copyToClipBoard" @close-dialog="closeLogicInfoDialog">
+      <template v-slot:title>Action Logic String</template>
+      {{ actionLogicString }}
+      <template v-slot:yes>Copy</template>
+      <template v-slot:no>Close</template>
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -1043,12 +1020,13 @@ export default {
       linkToDelete: null,
       parentActionForChildToDelete: null,
       childProcessToDelete: null,
+      showLogicInfoDialog: false,
     }
   },
   computed: {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
-    },
+    }
   },
   async created() {
     this.getActions()
@@ -1214,6 +1192,7 @@ export default {
       try {
         const {data} = await getRequest(`/processStep/${this.processStepId}/action/${actionId}/logicString`)
         this.actionLogicString = data
+        this.showLogicInfoDialog = true
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error fetching logic string')
@@ -1702,6 +1681,9 @@ export default {
     closeChildProcessDialog() {
       this.childProcessToDelete = null
       this.parentActionForChildToDelete = null
+    },
+    closeLogicInfoDialog() {
+      this.showLogicInfoDialog = false
     }
   }
 
@@ -1721,5 +1703,10 @@ export default {
 .action-header-bar {
   border-top: 1px solid #E6E6E6;
   border-bottom: 1px solid #E6E6E6;
+}
+
+.squished-btn {
+  min-width: 0 !important;
+  padding: 4px !important;
 }
 </style>
