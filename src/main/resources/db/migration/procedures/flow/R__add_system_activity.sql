@@ -130,6 +130,38 @@ BEGIN
         end if;
       end if;
 
+      if p_activity_id = 8 then
+        select cpst.project_status_type,
+               cpst.project_status_type_id,
+               pst.project_status_type
+        into v_old_company_status, v_old_root_status_id, v_old_root_status
+        from flow.company_project_status_type cpst
+               inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+        where cpst.id = p_old_status_id;
+        select cpst.project_status_type,
+               cpst.project_status_type_id,
+               pst.project_status_type
+        into v_new_company_status, v_new_root_status_id, v_new_root_status
+        from flow.company_project_status_type cpst
+               inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
+        where cpst.id = p_new_status_id;
+
+        select event_name from flow.event where id =
+                                                (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+        into v_activity_name;
+
+        v_prepend_msg = concat(v_activity_name, ' ');
+        v_append_msg = '';
+
+        --if the activity is for ROOT only event status change, then we need to compare those instead
+        if v_root_change_only is true then
+          v_do_insert = (v_old_root_status_id != v_new_root_status_id);
+        end if;
+      end if;
+
+
+
+
       if p_activity_id = 9 then
         select cpst.project_status_type,
                cpst.project_status_type_id,
