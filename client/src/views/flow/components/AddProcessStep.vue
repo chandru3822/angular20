@@ -106,6 +106,9 @@ export default {
               //do any of the user's active positions match the white listed positions
               allowAdd = ps.nonAdminAddAllow ? this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId)) :
                   !this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId))
+            } else {
+              //allow them to add if nonAdminAdd is true and it is set to a deny list and there are no positions
+              allowAdd = ps.nonAdminAdd && !ps.nonAdminAddAllow
             }
             return allowAdd
           })

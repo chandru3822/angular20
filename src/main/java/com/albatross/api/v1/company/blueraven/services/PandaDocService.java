@@ -676,6 +676,16 @@ public class PandaDocService {
       tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
       tokens.put("Project.Total System Price", totalCost - referralPromotionAmount);
 
+      Double annualDegradation =
+        Double.parseDouble(
+          result.get("custom_fields.Annual Panel Degradation") == null
+            ? "0"
+            : result.get("custom_fields.Annual Panel Degradation").toString()) * 100.0;
+
+      // Round to 2 decimals
+      annualDegradation = (double) Math.round(annualDegradation * 100) / 100;
+      tokens.put("Proposal.Annual Panel Degradation", annualDegradation + "%");
+
       Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
       if (deets.getFinancier().equals("Cash")) {
         tokens.put("Deal.NV Cash Down Payment", Math.round(cashDownPayment));

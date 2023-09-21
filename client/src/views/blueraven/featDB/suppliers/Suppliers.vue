@@ -62,6 +62,9 @@
                 {{ item.state || '' }}
               </td>
               <td class="text-right">
+                <v-btn :to="`/database/supplier/${item.id}/details`" text x-small fab>
+                  <v-icon>mdi-arrow-right</v-icon>
+                </v-btn>
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('SUPPLIERS', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editSupplier(item)">
                   edit

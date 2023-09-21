@@ -86,7 +86,7 @@
                 <v-toolbar color="transparent" class="elevation-0 process-step-toolbar">
                   <v-toolbar-title class="albatross-header-4-new">{{ group.groupName }}</v-toolbar-title>
                 </v-toolbar>
-                <v-card class="px-4 text-left square-card">
+                <v-card class="px-4 text-left square-card" :class="{'mb-6': index === customFieldGroups.length - 1}">
                   <v-row>
                     <v-col :cols="$store.state.project.manualColumnSplit ? 6 : 12" class="pb-0 pt-2">
                       <CustomValueInput
@@ -431,8 +431,8 @@ export default {
 
 .project-fields-container {
   overflow: auto;
-  height: calc(100% - 115px);
-  padding-bottom: 20px !important;
+  height: calc(100% - 65px);
+  padding-bottom: 0px !important;
 }
 
 .project-title {

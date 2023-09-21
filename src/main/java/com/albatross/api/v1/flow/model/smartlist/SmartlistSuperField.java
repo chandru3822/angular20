@@ -12,7 +12,7 @@ import java.util.List;
 public class SmartlistSuperField {
   private Long id, smartlistId, smartlistFieldId, customFieldGroupAssignmentId, createdById, modifiedById,
     displayOrder, processStepId, eventId, processStepEventId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
-    companyId, systemListId;
+    companyId, systemListId, eventResourceSystemListId;
 
   private String name, objectType, processStepName, eventName, projectDetailsColumn;
 
@@ -32,8 +32,4 @@ public class SmartlistSuperField {
   //These fields are used for smartlist generation
   @JsonIgnore
   private String referenceTable, referenceColumn, joinTable, joinColumn, valueReferenceTable, ppsTable, ppsEventTable, userPositionTable;
-
-  //The system list ID of the custom field attached to this event's resource field
-  @JsonIgnore
-  private Long eventResourceSystemListId;
 }
