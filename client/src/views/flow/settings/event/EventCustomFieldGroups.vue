@@ -59,6 +59,7 @@
                     :alternateLabel = "'Denied Positions'"
                     :allow="event.startTimeHiddenAllow"
                     :contentLoading="positionsLoading"
+                    full-size
                     @selected-changed="startTimeHiddenSelectedEventListener"
                     @allow-changed="startTimeHiddenAllowEventListener"
                     @checkbox-changed="startTimeHiddenCheckboxEventListener"></multi-select-group>
@@ -88,6 +89,7 @@
                     :alternateLabel = "'Denied Positions'"
                     :allow="event.endTimeReadOnlyAllow"
                     :contentLoading="positionsLoading"
+                    full-size
                     @selected-changed="endTimeReadOnlySelectedEventListener"
                     @allow-changed="endTimeReadOnlyAllowEventListener"
                     @checkbox-changed="endTimeReadOnlyCheckboxEventListener"></multi-select-group>
@@ -105,6 +107,7 @@
                     :alternateLabel = "'Denied Positions'"
                     :allow="event.endTimeHiddenAllow"
                     :contentLoading="positionsLoading"
+                    full-size
                     @selected-changed="endTimeHiddenSelectedEventListener"
                     @allow-changed="endTimeHiddenAllowEventListener"
                     @checkbox-changed="endTimeHiddenCheckboxEventListener"></multi-select-group>
@@ -139,6 +142,7 @@
                     :alternateLabel = "'Denied Positions'"
                     :allow="event.resourceReadOnlyAllow"
                     :contentLoading="positionsLoading"
+                    full-size
                     @selected-changed="resourceReadOnlySelectedEventListener"
                     @allow-changed="resourceReadOnlyAllowEventListener"
                     @checkbox-changed="resourceReadOnlyCheckboxEventListener"></multi-select-group>
@@ -156,6 +160,7 @@
                     :alternateLabel = "'Denied Positions'"
                     :allow="event.resourceHiddenAllow"
                     :contentLoading="positionsLoading"
+                    full-size
                     @selected-changed="resourceHiddenSelectedEventListener"
                     @allow-changed="resourceHiddenAllowEventListener"
                     @checkbox-changed="resourceHiddenCheckboxEventListener"></multi-select-group>
@@ -383,15 +388,14 @@
                                         :alternateLabel = "'Denied Positions'"
                                         :allow="cf.customFieldGroupAssignmentReadOnlyAllow || null == cf.customFieldGroupAssignmentReadOnlyAllow"
                                         :contentLoading="positionsLoading"
+                                        save-button
+                                        save-button-text="Save Read Only"
+                                        full-size
                                         @selected-changed="cfgReadOnlySelectedEventListener($event, cf)"
                                         @allow-changed="cfgReadOnlyAllowEventListener($event, cf)"
-                                        @checkbox-changed="cfgReadOnlyCheckboxEventListener($event, cf)"></multi-select-group>
-                           <br/>
-                                      <v-btn color="primary" dark class="d-inline-block white--text"
-                                             @click="saveReadOnlyAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Read Only
-                                      </v-btn>
+                                        @checkbox-changed="cfgReadOnlyCheckboxEventListener($event, cf)"
+                                        @save-multi-select="saveReadOnlyAndWhiteList(cf)"
+                                      ></multi-select-group>
                                     </v-card-text>
                                   </v-card>
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'"
@@ -410,6 +414,7 @@
                                         :alternateLabel = "'Denied Positions'"
                                         :allow="cf.customFieldGroupAssignmentHiddenAllow || null == cf.customFieldGroupAssignmentHiddenAllow"
                                         :contentLoading="positionsLoading"
+                                        full-size
                                         @selected-changed="cfgHiddenSelectedEventListener($event, cf)"
                                         @allow-changed="cfgHiddenAllowEventListener($event, cf)"
                                         @checkbox-changed="cfgHiddenCheckboxEventListener($event, cf)"></multi-select-group>
