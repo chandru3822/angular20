@@ -1,6 +1,6 @@
 <template>
   <v-row id="project-details-container" class="">
-    <v-col cols="12" lg="12" class="text-left pt-0"  :class="{'pb-0': !sectionExpanded}">
+    <v-col cols="12" lg="12" class="text-left pt-1 pb-1"  :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header" height="auto">
@@ -84,7 +84,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
-      sectionExpanded: false,
+      sectionExpanded: this.$route.path.includes('processStep'),
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),

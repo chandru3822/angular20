@@ -69,7 +69,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
-      sectionExpanded: false,
+      sectionExpanded: this.$route.path.includes('processStep'),
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
