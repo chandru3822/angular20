@@ -457,6 +457,7 @@ v_ancillary_cost_portion_of_loan_before_rebates numeric;
 v_additional_fee_for_exceeding_non_solar_threshold numeric;
 v_non_solar_threshold_for_additional_fee  numeric;
 v_maximum_dollar_per_watt_for_solar  numeric;
+  v_no_ancillary_total_loan_amount numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -947,7 +948,7 @@ BEGIN
   }')
     and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
                          jsonb_build_object('field', v_storage_type_id));
-
+  v_number_of_batteries = coalesce(v_number_of_batteries,0);
   raise notice 'v_number_of_batteries = %',v_number_of_batteries;
   raise notice 'v_cash_price_storage = %',v_cash_price_storage;
 
@@ -1133,7 +1134,7 @@ BEGIN
   end if;
   raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
-
+  v_postal_code = substring(v_postal_code,1,5);
   with my_zips as (
     select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_name,
            ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 122)') -> 'value')))::bigint[] as postal_codes
@@ -1182,6 +1183,25 @@ BEGIN
   end if;
   raise notice 'v_promotion_cost = %',v_promotion_cost;
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
+  v_non_solar_cap = 0.00;
+  v_non_solar_threshold_for_additional_fee = 0.00;
+  v_additional_fee_for_exceeding_non_solar_threshold = 0.00;
+  v_maximum_dollar_per_watt_for_solar = 0.00;
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 103)') ->> 'value') non_solar_threshold_for_additional_fee,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 107)') ->> 'value') additional_fee_for_exceeding_non_solar_threshold,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 105)') ->> 'value') maximum_dollar_per_watt_for_solar
+  into v_non_solar_cap,v_non_solar_threshold_for_additional_fee,
+    v_additional_fee_for_exceeding_non_solar_threshold,
+    v_maximum_dollar_per_watt_for_solar
+  from proposal_value pv
+  where object_code = 'PROPOSAL_FINANCIERS'
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
+                         jsonb_build_object('field', v_financier_id));
+
+  raise notice 'v_non_solar_cap = %',v_non_solar_cap;
+
+  raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
 
 --dealer fee escalator for ancillary costs above threshold
   v_ancillary_cost_portion_of_loan_before_rebates = 0.00;
@@ -1213,8 +1233,10 @@ BEGIN
   if v_ancillary_cost_portion_of_loan_before_rebates > v_non_solar_threshold_for_additional_fee then
     v_dealer_fee = v_dealer_fee + v_additional_fee_for_exceeding_non_solar_threshold;
   end if;
-
-
+  raise notice 'v_dealer_fee after = %',v_dealer_fee;
+  raise notice 'v_ancillary_cost_portion_of_loan_before_rebates = %',v_ancillary_cost_portion_of_loan_before_rebates;
+  raise notice 'v_additional_fee_for_exceeding_non_solar_threshold = %',v_additional_fee_for_exceeding_non_solar_threshold;
+  raise notice 'v_non_solar_threshold_for_additional_fee = %',v_non_solar_threshold_for_additional_fee;
 
   raise notice 'v_zone_adder = %',v_zone_adder;
   v_total_loan_amount_before_rebate = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
@@ -1231,6 +1253,16 @@ BEGIN
                                        coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_promotion_cost, 0) +
                                        coalesce(v_zone_adder, 0));
   raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
+
+
+  v_no_ancillary_total_loan_amount = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
+                                       coalesce(v_equipment_inverter_adder, 0) +
+                                       coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_storage_adder, 0) +
+                                       coalesce(v_unapproved_zip_code_adder, 0) +
+                                       coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+                                       coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_promotion_cost, 0) +
+                                       coalesce(v_zone_adder, 0));
+  raise notice 'v_no_ancillary_total_loan_amount = %',v_no_ancillary_total_loan_amount;
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::bigint as referral_promotion
@@ -1499,20 +1531,6 @@ BEGIN
   v_above_line_rebate = coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate,0);
   --+ coalesce(v_csu_rebate, 0);  --Judson wanted me to take out this rebate
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 103)') ->> 'value') non_solar_threshold_for_additional_fee,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 107)') ->> 'value') additional_fee_for_exceeding_non_solar_threshold,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 105)') ->> 'value') maximum_dollar_per_watt_for_solar
-  into v_non_solar_cap,v_non_solar_threshold_for_additional_fee,
-    v_additional_fee_for_exceeding_non_solar_threshold,
-    v_maximum_dollar_per_watt_for_solar
-  from proposal_value pv
-  where object_code = 'PROPOSAL_FINANCIERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', v_financier_id));
-
-  raise notice 'v_non_solar_cap = %',v_non_solar_cap;
-
 
   v_total_system_cost =
       (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
@@ -1556,7 +1574,7 @@ BEGIN
     v_required_down_payment = coalesce(v_required_down_payment, 0) +
                               greatest(
                                 (
-                                    ((((coalesce(v_total_loan_amount_before_rebate, 0) -
+                                    (((((coalesce(v_no_ancillary_total_loan_amount, 0) -
                                         coalesce(v_above_line_rebate, 0) -
                                         case
                                           when v_product_id = 293 then (coalesce(v_required_down_payment, 0) +
@@ -1571,10 +1589,10 @@ BEGIN
                                           else 0::numeric end) / (1 - v_dealer_fee)) -
                                       coalesce(v_other_adder_and_discount_amount, 0) +
                                       (284.00::numeric / (1 - v_dealer_fee)) -
-                                      coalesce(v_admin_discount, 0) /
+                                      coalesce(v_admin_discount, 0)) /
                                       (v_system_size * 1000)) -
                                      v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
-                                  )
+                                  )*(1-v_dealer_fee)
                                 , 0);
   end if;
 

@@ -1,6 +1,6 @@
 <template>
   <v-card v-if="!this.contentLoading" flat :color="backgroundColor" class="square-card flex-grow-1" :class="{'full-size': fullSize, 'half-size': !fullSize}">
-    <v-card-title style="min-height: 40px" class="py-0 title-medium flex-display align-center" :class="{'justify-space-between': isMobile}">
+    <v-card-title style="min-height: 40px" class="py-0 title-medium flex-display align-center">
       <span class="select-group-title">{{title}}</span>
       <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
                   v-model="enabled" @change="checkboxChanged()"></v-checkbox>

@@ -47,49 +47,13 @@
               :allow="selectedEvent.readonlyAllow"
               :contentLoading="positionsLoading"
               :fullSize="true"
+              save-button
+              save-button-text="Save Read Only"
               @selected-changed="startTimeReadOnlySelectedEventListener"
               @allow-changed="startTimeReadOnlyAllowEventListener"
-              @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
-<!--          <v-autocomplete-->
-<!--              v-if="selectedEvent.readonly"-->
-<!--            v-model="selectedEvent.readonlyWhiteListPositions"-->
-<!--            :items="positions"-->
-<!--            label="Whitelisted Positions"-->
-<!--            item-text="position"-->
-<!--            item-value="positionId"-->
-<!--              :disabled="!userCanEdit"-->
-<!--            return-object-->
-<!--            multiple-->
-<!--            clearable-->
-<!--          >-->
-<!--            <template v-slot:selection="{item, index}">-->
-<!--              <v-chip small-->
-<!--                      v-if="selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length < 6">-->
-<!--                <span>{{ item.position }}</span>-->
-<!--              </v-chip>-->
-<!--              <span-->
-<!--                  v-if="index === 1 && selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length >= 6"-->
-<!--                  class="primary&#45;&#45;text text-caption"-->
-<!--              >{{ selectedEvent.readonlyWhiteListPositions.length }} selected</span>-->
-<!--            </template>-->
-<!--            <template v-slot:prepend-item>-->
-<!--              <v-list-item-->
-<!--                  @click="toggleSelectAllPositions()">-->
-<!--                <v-list-item-action>-->
-<!--                  <v-icon>{{ icon }}</v-icon>-->
-<!--                </v-list-item-action>-->
-<!--                <v-list-item-title>Select All</v-list-item-title>-->
-<!--              </v-list-item>-->
-<!--              <v-divider-->
-<!--                  class="mt-2"-->
-<!--              ></v-divider>-->
-<!--            </template>-->
-<!--          </v-autocomplete>-->
+              @checkbox-changed="startTimeReadOnlyCheckboxEventListener"
+            @save-multi-select="saveReadOnlyWhiteList"/>
           </v-card-text>
-          <v-btn color="primary" v-if="userCanEdit"
-                 @click="saveReadOnlyWhiteList(selectedEvent)"
-          >Save Read Only
-          </v-btn>
         </v-card>
       </v-col>
 
@@ -1256,7 +1220,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveReadOnlyWhiteList(psEvent) {
+    async saveReadOnlyWhiteList() {
+      const psEvent = this.selectedEvent
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)

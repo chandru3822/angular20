@@ -1,12 +1,10 @@
 <template>
   <v-row id="project-details-container" class="">
-    <v-col cols="12" lg="12" class="text-left pt-0" :class="{'pb-0': !sectionExpanded}">
+    <v-col cols="12" lg="12" class="text-left pt-1 pb-1 pl-2 pr-1" :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0">
         <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="albatross-header-3">
-              Project Details
-            </v-toolbar-title>
+          <v-toolbar color="transparent" flat class="project-section-header" height="auto">
+            <div class="label-large">Project Details</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn
@@ -17,10 +15,10 @@
                 <v-icon>mdi-cog</v-icon>
               </v-btn>
 
-              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+              <div class="clickable d-flex" @click="sectionExpanded = !sectionExpanded">
                 <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
                 <v-icon v-else>mdi-chevron-down</v-icon>
-              </v-btn>
+              </div>
             </v-toolbar-items>
           </v-toolbar>
 
@@ -28,7 +26,7 @@
             <SpinnerInline v-if="tabsLoading" :size="20" color="primary"/>
             <div v-else>
               <v-card outlined v-for="tab in tabs"
-                      class="mb-2 pa-2 elevation-0 clickable"
+                      class="mb-2 pa-2 elevation-0 body-large"
                       :class="{'active-tab': tabIsActive(tab)}"
                       @click="changeTabs(tab, true)">
                 {{ tab.tabName }}
