@@ -1,16 +1,20 @@
 <template>
   <v-row id="project-details-container">
-    <v-col cols="12" lg="12" class="text-left pt-0"  :class="{'pb-0': !sectionExpanded}">
+    <v-col cols="12" lg="12" class="text-left pt-1  pb-1"  :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
+          <v-toolbar color="transparent" flat class="project-section-header" height="auto">
+            <div class="label-large">Active Events</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">
+<!--              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">-->
+<!--                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>-->
+<!--                <v-icon v-else>mdi-chevron-down</v-icon>-->
+<!--              </v-btn>-->
+              <div class="clickable d-flex" @click="sectionExpanded = !sectionExpanded">
                 <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
                 <v-icon v-else>mdi-chevron-down</v-icon>
-              </v-btn>
+              </div>
             </v-toolbar-items>
           </v-toolbar>
 
