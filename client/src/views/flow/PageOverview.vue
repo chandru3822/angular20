@@ -1,6 +1,6 @@
 <template>
 <v-container class="pa-0 mobile-background">
-  <v-toolbar flat color="transparent" class="mobile-contact-header pr-1">
+  <v-toolbar flat color="transparent" class="mobile-contact-header pr-1" height="auto">
     <div class="label-large hide-xs">{{pageName}} Overview</div>
     <div class="label-large show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>
     <v-spacer></v-spacer>

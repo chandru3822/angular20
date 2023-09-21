@@ -3,7 +3,7 @@
     <v-col cols="12" lg="12" class="text-left pt-1 pb-1" :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0">
         <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header" height="56">
+          <v-toolbar color="transparent" flat class="project-section-header" height="auto">
             <div class="label-large">Project Details</div>
             <v-spacer></v-spacer>
             <v-toolbar-items>
