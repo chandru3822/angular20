@@ -1,5 +1,5 @@
 <template>
-  <v-row id="project-details-container" class="px-3">
+  <v-row id="project-details-container" class="mx-6">
     <v-col cols="12" lg="12" class="text-left pt-1 pb-1 px-0">
       <v-expansion-panels flat class="py-0">
         <v-expansion-panel>

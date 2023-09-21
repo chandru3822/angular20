@@ -2,7 +2,7 @@
 <v-container class="pa-0 mobile-background">
   <v-expansion-panels :value="opened" flat>
     <v-expansion-panel>
-      <v-expansion-panel-header flat color="transparent" class="project-section-header pr-3 pt-1 pb-1 pl-4"  height="auto">
+      <v-expansion-panel-header flat color="transparent" class="project-section-header" height="auto">
         <div class="label-large hide-xs">{{pageName}} Overview</div>
 <!--        todo: fix below when working on mobile view for Project page-->
 <!--        <div class="label-large show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>-->
@@ -14,7 +14,7 @@
             <v-icon>edit</v-icon>
           </v-btn>
       </v-expansion-panel-header>
-      <v-expansion-panel-content class="mx-4 mobile-content-padding" v-if="details">
+      <v-expansion-panel-content class=" mobile-content-padding" v-if="details">
         <div v-for="detail in details">
           <div v-if="!detail.type || detail.type === constants.OVERVIEW_FIELD_TYPES.DEFAULT" class="mb-2">
             <span class="detail-label label-small">{{detail.label}}: </span>

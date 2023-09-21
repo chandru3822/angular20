@@ -184,7 +184,7 @@
           </v-btn>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && project && project.id"
-             class="px-2 left-panel-scrollable-area overflow-y-auto">
+             class="left-panel-scrollable-area overflow-y-auto">
           <PageOverview
             page-name="Project"
             :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
