@@ -65,7 +65,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
-      sectionExpanded: true,
+      sectionExpanded: false,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
