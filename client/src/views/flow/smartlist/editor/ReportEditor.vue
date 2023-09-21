@@ -105,7 +105,7 @@
           >
             <v-checkbox
               v-model="report.mainProcessSteps"
-              :disabled="!canEdit"
+              :disabled="!canEdit && report?.id != null"
               label="Primary Steps Only"
               hide-details
               :ripple="false"
