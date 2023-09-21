@@ -1,6 +1,6 @@
 <template>
   <v-row id="project-details-container" class="">
-    <v-col cols="12" lg="12" class="text-left pt-1 pb-1" :class="{'pb-0': !sectionExpanded}">
+    <v-col cols="12" lg="12" class="text-left pt-1 pb-1 pl-2 pr-1" :class="{'pb-0': !sectionExpanded}">
       <v-col class="py-0">
         <v-row>
           <v-toolbar color="transparent" flat class="project-section-header" height="auto">
