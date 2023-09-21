@@ -710,7 +710,7 @@ export default {
 
 .project-section {
   max-height: 100%;
-  padding-top: 24px;
+  padding-top: 16px;
 }
 
 .left-panel-scrollable-area {

@@ -431,7 +431,7 @@ export default {
 
 .project-fields-container {
   overflow: auto;
-  height: calc(100% - 115px);
+  height: calc(100% - 75px);
   padding-bottom: 20px !important;
 }
 
