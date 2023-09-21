@@ -60,6 +60,9 @@
               <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
               <td class="text-left">{{ item.state ? item.state : '' }}</td>
               <td class="text-right">
+                <v-btn :to="`/database/utility/${item.id}/details`" text x-small fab>
+                  <v-icon>mdi-arrow-right</v-icon>
+                </v-btn>
                 <v-icon color="primary" small class="mr-3 feat-db-link-icon" @click.stop="editUtility(item)" v-if="$store.getters.userHasFeatureAccessLevel('UTILITY', 'EDIT')">
                   edit
                 </v-icon>
