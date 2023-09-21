@@ -63,7 +63,7 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       tabsLoading: true,
       selectedTab: {},
-      sectionExpanded: this.$route.name === 'projectDetails',
+      sectionExpanded: false,
       tabs: [],
     }
   },
