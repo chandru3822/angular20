@@ -1,28 +1,21 @@
 <template>
-  <v-row id="project-details-container" class="">
-    <v-col cols="12" lg="12" class="text-left pt-1 pb-1 pl-2 pr-1" :class="{'pb-0': !sectionExpanded}">
-      <v-col class="py-0">
-        <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header" height="auto">
+  <v-row id="project-details-container" class="px-3">
+    <v-col cols="12" lg="12" class="text-left pt-1 pb-1 px-0">
+      <v-expansion-panels flat class="py-0">
+        <v-expansion-panel>
+          <v-expansion-panel-header color="transparent" flat class="px-0 project-section-header" height="56">
             <div class="label-large">Project Details</div>
             <v-spacer></v-spacer>
-            <v-toolbar-items>
               <v-btn
-                  text color="primary" class="" x-small
+                  text color="primary" class="px-0 mx-n4" x-small
                   v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
                   :to="`/projectAdmin/${projectId}`"
               >
                 <v-icon>mdi-cog</v-icon>
               </v-btn>
+          </v-expansion-panel-header>
 
-              <div class="clickable d-flex" @click="sectionExpanded = !sectionExpanded">
-                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
-                <v-icon v-else>mdi-chevron-down</v-icon>
-              </div>
-            </v-toolbar-items>
-          </v-toolbar>
-
-          <v-col cols="12" class="pa-0" v-if="sectionExpanded">
+          <v-expansion-panel-content cols="12" class="pa-0">
             <SpinnerInline v-if="tabsLoading" :size="20" color="primary"/>
             <div v-else>
               <v-card outlined v-for="tab in tabs"
@@ -32,9 +25,9 @@
                 {{ tab.tabName }}
               </v-card>
             </div>
-          </v-col>
-        </v-row>
-      </v-col>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
 
     </v-col>
 
@@ -143,5 +136,7 @@ export default {
 </style>
 
 <style lang="scss">
-
+#project-details-container div.v-expansion-panel-content__wrap{
+  padding:0;
+}
 </style>
