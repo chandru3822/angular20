@@ -65,10 +65,14 @@
                 {{ item.managementCompany || '' }}
               </td>
               <td class="text-right">
+                <v-btn :to="`/database/hoa/${item.id}/details`" text x-small fab>
+                  <v-icon>mdi-arrow-right</v-icon>
+                </v-btn>
                 <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'EDIT')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="editHoa(item)">
                   edit
-                </v-icon><v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'DELETE')" small color="primary"
+                </v-icon>
+                <v-icon v-if="$store.getters.userHasFeatureAccessLevel('HOA', 'DELETE')" small color="primary"
                         class="mr-3 feat-db-link-icon" @click="deleteHoa(item)">
                   delete
                 </v-icon>

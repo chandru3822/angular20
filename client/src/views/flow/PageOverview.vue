@@ -2,7 +2,7 @@
 <v-container class="pa-0 mobile-background">
   <v-expansion-panels :value="opened" flat>
     <v-expansion-panel>
-      <v-expansion-panel-header flat color="transparent" class="mobile-contact-header pr-1">
+      <v-expansion-panel-header flat color="transparent" class="project-section-header pr-3 pt-1 pb-1 pl-4"  height="auto">
         <div class="label-large hide-xs">{{pageName}} Overview</div>
 <!--        todo: fix below when working on mobile view for Project page-->
 <!--        <div class="label-large show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>-->

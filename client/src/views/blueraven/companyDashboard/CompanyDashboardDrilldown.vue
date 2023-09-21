@@ -3,6 +3,7 @@
     <v-card-title class="mb-1">
       <span v-if="startDate === endDate" class="drilldown-title">{{ milestone.name }} on {{ startDate | formatDate('date', 'MM/DD/YYYY') }}</span>
       <span v-else class="drilldown-title">{{ milestone.name }} {{ startDate | formatDate('date', 'MM/DD/YYYY') }} - {{ endDate | formatDate('date', 'MM/DD/YYYY') }}</span>
+
       <a class="close-modal-x pb-3" title="Close" @click="closeCallback">×</a>
     </v-card-title>
 
@@ -57,6 +58,10 @@
     </v-card-text>
 
     <v-card-actions>
+      <v-btn color="primary" class="mr-4 mb-2"
+             @click="exportCsv()">
+        Export
+      </v-btn>
       <v-spacer></v-spacer>
       <v-btn id="drilldown-close-btn" class="white--text text-capitalize mr-4 mb-2"
              color="primary" @click="closeCallback">
@@ -70,6 +75,7 @@
   import constants from '@/helpers/constants'
   import DatetimePickerInput from "@/components/DatetimePickerInput"
   import Snackbar from '@/components/Snackbar.vue'
+  import { saveAs } from 'file-saver'
 
   export default {
     name: 'companyDashboardDrilldown',
@@ -121,6 +127,42 @@
     methods: {
       filteredHeaders () {
         return this.drilldownHeaders.filter(header => header.show === true)
+      },
+      exportCsv() {
+        let csv = ''
+
+        this.filteredHeaders().forEach(h => {
+          if(h.text !== '') {
+            return csv += `${h.text},`
+          }
+        })
+
+        this.drilldownData.forEach((o, idx) => {
+          if(idx === 0) {
+            csv += `${o.date_label},`
+
+            if(o.additional_field_label) {
+              csv += `${o.additional_field_label},`
+            }
+          }
+
+          csv += `\n`
+
+          this.filteredHeaders().forEach(h => {
+
+            if(h.value === 'date_value') {
+              csv += '"'+`${o.date_value === null || o.date_value === undefined ? '' : this.$filters.formatDate(o.date_value, o.date_type, 'MM/DD/YYYY')}`+'",'
+            } else if (h.value === 'additional_field_value') {
+              csv += '"'+`${o.additional_field_value === null || o.additional_field_value === undefined ? '' : this.$filters.formatDate(o.additional_field_value, o.additional_field_type, 'MM/DD/YYYY')}`+'",'
+            } else if (h.text !== '') {
+              csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}`+'",'
+            }
+          })
+          csv += `\n`
+        })
+
+        const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
+        saveAs(blob, `${this.milestone.name}.csv`)
       }
     }
 

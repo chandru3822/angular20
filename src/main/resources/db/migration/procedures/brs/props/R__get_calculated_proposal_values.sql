@@ -1183,6 +1183,25 @@ BEGIN
   end if;
   raise notice 'v_promotion_cost = %',v_promotion_cost;
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
+  v_non_solar_cap = 0.00;
+  v_non_solar_threshold_for_additional_fee = 0.00;
+  v_additional_fee_for_exceeding_non_solar_threshold = 0.00;
+  v_maximum_dollar_per_watt_for_solar = 0.00;
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 103)') ->> 'value') non_solar_threshold_for_additional_fee,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 107)') ->> 'value') additional_fee_for_exceeding_non_solar_threshold,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 105)') ->> 'value') maximum_dollar_per_watt_for_solar
+  into v_non_solar_cap,v_non_solar_threshold_for_additional_fee,
+    v_additional_fee_for_exceeding_non_solar_threshold,
+    v_maximum_dollar_per_watt_for_solar
+  from proposal_value pv
+  where object_code = 'PROPOSAL_FINANCIERS'
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
+                         jsonb_build_object('field', v_financier_id));
+
+  raise notice 'v_non_solar_cap = %',v_non_solar_cap;
+
+  raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
 
 --dealer fee escalator for ancillary costs above threshold
   v_ancillary_cost_portion_of_loan_before_rebates = 0.00;
@@ -1214,8 +1233,10 @@ BEGIN
   if v_ancillary_cost_portion_of_loan_before_rebates > v_non_solar_threshold_for_additional_fee then
     v_dealer_fee = v_dealer_fee + v_additional_fee_for_exceeding_non_solar_threshold;
   end if;
-
-
+  raise notice 'v_dealer_fee after = %',v_dealer_fee;
+  raise notice 'v_ancillary_cost_portion_of_loan_before_rebates = %',v_ancillary_cost_portion_of_loan_before_rebates;
+  raise notice 'v_additional_fee_for_exceeding_non_solar_threshold = %',v_additional_fee_for_exceeding_non_solar_threshold;
+  raise notice 'v_non_solar_threshold_for_additional_fee = %',v_non_solar_threshold_for_additional_fee;
 
   raise notice 'v_zone_adder = %',v_zone_adder;
   v_total_loan_amount_before_rebate = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
@@ -1510,21 +1531,6 @@ BEGIN
   v_above_line_rebate = coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate,0);
   --+ coalesce(v_csu_rebate, 0);  --Judson wanted me to take out this rebate
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 103)') ->> 'value') non_solar_threshold_for_additional_fee,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 107)') ->> 'value') additional_fee_for_exceeding_non_solar_threshold,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 105)') ->> 'value') maximum_dollar_per_watt_for_solar
-  into v_non_solar_cap,v_non_solar_threshold_for_additional_fee,
-    v_additional_fee_for_exceeding_non_solar_threshold,
-    v_maximum_dollar_per_watt_for_solar
-  from proposal_value pv
-  where object_code = 'PROPOSAL_FINANCIERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', v_financier_id));
-
-  raise notice 'v_non_solar_cap = %',v_non_solar_cap;
-
-  raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
 
   v_total_system_cost =
       (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
