@@ -292,9 +292,9 @@ public class BlueravenProposalService {
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
     return proposal.getCustomFieldGroups().stream()
-      .flatMap(cfg -> cfg.getCustomFieldValues().stream())
-      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
-      .findFirst();
+                   .flatMap(cfg -> cfg.getCustomFieldValues().stream())
+                   .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+                   .findFirst();
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
@@ -467,6 +467,13 @@ public class BlueravenProposalService {
 
   private Proposal getUnlockedProposal(@NonNull Long proposalId) {
     return getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+  }
+
+  public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
+    return sqlCache.getBySql(
+      ProposalQuery.simple,
+      Map.of("proposalId", proposalId),
+      new ProposalMapper<>(Proposal.class, om));
   }
 
   public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
