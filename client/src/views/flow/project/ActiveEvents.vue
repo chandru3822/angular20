@@ -1,12 +1,11 @@
 <template>
   <v-row id="project-details-container" class="mx-6">
     <v-col cols="12" lg="12" class="text-left py-0 px-0">
-      <v-expansion-panels flat class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-expansion-panels flat class="py-0" :value="sectionExpanded" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
         <v-expansion-panel>
           <v-expansion-panel-header color="transparent" flat class="px-0 project-section-header" height="auto">
             <div class="label-large">Active Events</div>
           </v-expansion-panel-header>
-
           <v-expansion-panel-content cols="12" class="py-0">
             <SpinnerInline v-if="activeEventsLoading" :size="20" color="primary"/>
             <ActiveEventSnippet v-else class="px-4"
@@ -23,12 +22,7 @@
           </v-expansion-panel-content>
         </v-expansion-panel>
       </v-expansion-panels>
-
-      <v-fade-transition v-if="sectionExpanded && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-
-      </v-fade-transition>
     </v-col>
-
   </v-row>
 </template>
 
@@ -59,7 +53,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
-      sectionExpanded: this.$route.path.includes('processStep'),
+      sectionExpanded: this.$route.path.includes('processStep') ? 0 : null,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
