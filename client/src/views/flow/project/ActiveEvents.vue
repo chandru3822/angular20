@@ -6,7 +6,7 @@
           <v-expansion-panel-header color="transparent" flat class="px-0 project-section-header" height="auto">
             <div class="label-large">Active Events</div>
           </v-expansion-panel-header>
-          <v-expansion-panel-content cols="12" class="py-0">
+          <v-expansion-panel-content cols="12" class="pt-0 pb-4">
             <SpinnerInline v-if="activeEventsLoading" :size="20" color="primary"/>
             <ActiveEventSnippet v-else class="px-4"
               @refresh-upcoming-events="getEvents()"
