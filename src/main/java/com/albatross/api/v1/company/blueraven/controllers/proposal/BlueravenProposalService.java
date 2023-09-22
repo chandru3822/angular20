@@ -466,7 +466,14 @@ public class BlueravenProposalService {
   }
 
   private Proposal getUnlockedProposal(@NonNull Long proposalId) {
-    return getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+    return getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+  }
+
+  public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
+    return sqlCache.getBySql(
+      ProposalQuery.simple,
+      Map.of("proposalId", proposalId),
+      new ProposalMapper<>(Proposal.class, om));
   }
 
   public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
