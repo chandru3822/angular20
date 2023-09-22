@@ -17,7 +17,7 @@
               />
           </v-expansion-panel-header>
           <v-expansion-panel-content cols="12" class="py-0 pb-4">
-            <SpinnerInline v-if="isProcessStepsLoading" :size="20" color="primary"/>
+            <SpinnerInline v-if="isProcessStepsLoading" centered :size="20" color="primary"/>
             <ActiveProjectProcessStepSnippet v-else class="px-4"
               :steps="processSteps"
               :projectId="projectId"

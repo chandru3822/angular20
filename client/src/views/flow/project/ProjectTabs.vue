@@ -16,7 +16,7 @@
           </v-expansion-panel-header>
 
           <v-expansion-panel-content cols="12" class="pa-0 pb-4">
-            <SpinnerInline v-if="tabsLoading" :size="20" color="primary"/>
+            <SpinnerInline v-if="tabsLoading" centered :size="20" color="primary"/>
             <div v-else>
               <v-card outlined v-for="tab in tabs"
                       class="mb-2 pa-2 elevation-0 body-large"

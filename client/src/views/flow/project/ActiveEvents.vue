@@ -7,7 +7,7 @@
             <div class="label-large">Active Events</div>
           </v-expansion-panel-header>
           <v-expansion-panel-content cols="12" class="pt-0 pb-4">
-            <SpinnerInline v-if="activeEventsLoading" :size="20" color="primary"/>
+            <SpinnerInline v-if="activeEventsLoading" centered :size="20" color="primary"/>
             <ActiveEventSnippet v-else class="px-4"
               @refresh-upcoming-events="getEvents()"
               :events="events"
