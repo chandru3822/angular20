@@ -301,15 +301,13 @@ public class ProposalVersionService {
     return query.stream().map(getMapper(objectMapper)).filter(Objects::nonNull).toList();
   }
 
-  //  TODO: cacheable
   public List<Long> getProposalValuesByFieldId(@NonNull Long versionId, @NonNull Long fieldId) {
     return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldId,
       Map.of("versionId", versionId, "fieldId", fieldId), new SingleColumnRowMapper<>(Long.class));
   }
 
   //  TODO: cacheable
-  public List<Long> getProposalValuesFilterIds(
-    @NonNull Long versionId, ProposalValueFilter filter) {
+  public List<Long> getProposalValuesFilterIds(@NonNull Long versionId, ProposalValueFilter filter) {
     try {
 
       final ProposalVersion proposalVersion =
@@ -334,6 +332,26 @@ public class ProposalVersionService {
     } catch (SQLException | JsonProcessingException e) {
       throw new ApiException(e);
     }
+  }
+
+  /***
+   * Returns a list of proposal value ids available after filtering by the custom field and value.
+   * This result set excludes values from the custom field instead of including them
+   *
+   * @param versionId
+   * @param fieldId
+   * @param filterFieldId
+   * @param filterFieldValue
+   * @return
+   */
+  public List<Long> getProposalValueFilterIdsByExclusionCustomField(@NonNull Long versionId, @NonNull Long fieldId, Long filterFieldId, Object filterFieldValue) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("versionId", versionId);
+    params.put("fieldId", fieldId);
+    params.put("filterFieldId", filterFieldId);
+    params.put("filterFieldValue", filterFieldValue);
+
+    return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByExclusionField, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   private Function<Map<String, Object>, ProposalCustomValuesRow> getMapper(ObjectMapper om) {
