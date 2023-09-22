@@ -291,15 +291,10 @@ public class BlueravenProposalService {
   }
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
-    var groups = proposal.getCustomFieldGroups();
-    if (groups != null && !groups.isEmpty()) {
-      return groups.stream()
+    return proposal.getCustomFieldGroups().stream()
                    .flatMap(cfg -> cfg.getCustomFieldValues().stream())
                    .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
                    .findFirst();
-    } else {
-      return Optional.empty();
-    }
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
@@ -471,7 +466,7 @@ public class BlueravenProposalService {
   }
 
   private Proposal getUnlockedProposal(@NonNull Long proposalId) {
-    return getSimpleProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+    return getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
   }
 
   public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
