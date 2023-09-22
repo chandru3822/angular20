@@ -291,10 +291,15 @@ public class BlueravenProposalService {
   }
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
-    return proposal.getCustomFieldGroups().stream()
-      .flatMap(cfg -> cfg.getCustomFieldValues().stream())
-      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
-      .findFirst();
+    var groups = proposal.getCustomFieldGroups();
+    if (groups != null && !groups.isEmpty()) {
+      return groups.stream()
+                   .flatMap(cfg -> cfg.getCustomFieldValues().stream())
+                   .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+                   .findFirst();
+    } else {
+      return Optional.empty();
+    }
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
