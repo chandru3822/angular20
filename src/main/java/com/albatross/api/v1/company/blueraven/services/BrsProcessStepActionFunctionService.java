@@ -581,16 +581,20 @@ public class BrsProcessStepActionFunctionService {
 
       if (contact.getMobile() != null && !contact.getMobile().trim().equals("")) {
         invitation.setCustomerPhone(contact.getMobile());
+        birdeyeService.sendCheckIn(invitation);
       } else if (contact.getPhone() != null && !contact.getPhone().trim().equals("")) {
         invitation.setCustomerPhone(contact.getPhone());
-      } else {
-        throw new RuntimeException(formatErrorMessage(func, "Unable to find phone number"));
+        birdeyeService.sendCheckIn(invitation);
       }
+//      else {
+//        throw new RuntimeException(formatErrorMessage(func, "Unable to find phone number"));
+//      }
 
-      birdeyeService.sendCheckIn(invitation);
     } catch (Exception e) {
-      log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
-      throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+      if( !e.getMessage().equals("Not a valid phone number.") ) {
+        log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
+        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+      }
     }
   }
 }
