@@ -7,7 +7,7 @@
             <div class="label-large">Project Details</div>
             <v-spacer></v-spacer>
               <v-btn
-                  text color="primary" class="px-0 mx-n4" x-small
+                  text color="primary" class="px-0" small
                   v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
                   :to="`/projectAdmin/${projectId}`"
               >

@@ -8,7 +8,7 @@
 <!--        <div class="label-large show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Overview</div>-->
         <v-spacer></v-spacer>
           <v-btn
-              text x-small color="primary"
+              text small color="primary" class="px-0"
               @click.stop="$emit('clickEdit')"
               v-if="showEditBtn">
             <v-icon>edit</v-icon>
