@@ -190,7 +190,8 @@ public class UserController {
             context,
             "SalesOps@blueravensolar.com",
             "Blue Raven Sales Operation",
-            user.trueUserId());
+            user.trueUserId(),
+            null);
         log.debug(
             "AUTH: Password reset email has been sent to {}",
             passwordResetRequest.getUsernameOrEmail());
@@ -307,6 +308,11 @@ public class UserController {
   @PutMapping(value = "/{userId}/saveSmsTeamNotifications")
   public void saveSmsTeamNotification(@PathVariable Long userId, @RequestBody List<SmsTeam> smsTeams) {
     userService.saveSmsTeamNotification(userId, smsTeams);
+  }
+
+  @GetMapping(value = "/smsAccess/{userId}")
+  public boolean hasSmsAccess(@PathVariable Long userId) {
+    return userService.hasSmsAccess(userId);
   }
 
   @Data

@@ -13,7 +13,7 @@ public class WorkQueue {
     private Long workQueueTypeId, workQueueCategoryId, companyId, workQueueCount, smartlistId,
       shortWindow, longWindow, expectedCycle;
     private String workQueueType, color;
-    private Boolean archived, inverseExpectation, useEventData;
+    private Boolean archived, inverseExpectation, useEventData, hiddenAllow;
     //dont remove this. used for work queue metric population on frontend
     private Map<Object, Object> metrics = Map.of();
 }

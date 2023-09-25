@@ -85,55 +85,52 @@
               Unlock
             </v-btn>
           </v-card>
-          <v-divider class="mt-4"></v-divider>
-          <div class="mt-2">
-            <v-toolbar color="transparent" flat>
-              <v-toolbar-title class="albatross-header-3">Company Access</v-toolbar-title>
-              <v-spacer></v-spacer>
-              <v-toolbar-items>
-                <v-menu
+          <v-divider></v-divider>
+          <SidePanelExpansionPanel header="Company Access" :section-expanded="sectionExpanded">
+            <template v-slot:tool-btn>
+              <v-menu
                   v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
                   bottom
                   offset-y
                   :close-on-content-click="false"
-                >
-                  <template v-slot:activator="{ on: menu }">
-                    <v-btn text color="primary"
-                           v-on="{ ...menu }"
-                           v-if="userIsAdmin"
-                           @click="addUserCompany = !addUserCompany">
-                      <v-icon>add</v-icon>
-                    </v-btn>
-                  </template>
-                  <v-card class="pa-5">
-                    <v-select
+              >
+                <template v-slot:activator="{ on: menu }">
+                  <v-btn text color="primary"
+                         v-on="{ ...menu }"
+                         x-small
+                         v-if="userIsAdmin"
+                         @click="addUserCompany = !addUserCompany">
+                    <v-icon>add</v-icon>
+                  </v-btn>
+                </template>
+                <v-card class="pa-5">
+                  <v-select
                       v-model="newCompany.id"
                       :items="filterUserCompanies()"
                       label="Company"
                       item-text="companyName"
                       item-value="id"
                       @input="getUserStatusTypes(newCompany.id)"
-                    ></v-select>
-                    <v-select
+                  ></v-select>
+                  <v-select
                       v-model="newCompany.companyUserStatusTypeId"
                       :items="companyUserStatusTypes"
                       label="User Status"
                       item-text="userStatusType"
                       item-value="id"
-                    ></v-select>
-                    <v-btn
+                  ></v-select>
+                  <v-btn
                       v-if="userIsAdmin"
                       color="primary"
-                      class="white--text mb-2"
+                      class="mb-2"
                       :disabled="!newCompany.id || !newCompany.companyUserStatusTypeId"
                       text
                       @click="saveUserCompany">Add User to Company
-                    </v-btn>
-                  </v-card>
-                </v-menu>
-              </v-toolbar-items>
-            </v-toolbar>
-            <div class="mx-2">
+                  </v-btn>
+                </v-card>
+              </v-menu>
+            </template>
+            <template v-slot:expanded-content>
               <v-card flat v-for="uc in user.companies"
                       class="user-company-button albatross-body-1">
                 {{ uc.companyName }}
@@ -141,8 +138,9 @@
                        v-if="userIsAdmin && user.companies.length > 1"
                        @click="companyToDelete = uc"><v-icon>delete</v-icon></v-btn>
               </v-card>
-            </div>
-          </div>
+            </template>
+          </SidePanelExpansionPanel>
+            <v-divider></v-divider>
         </div>
       </template>
       <template v-slot:main-column>
@@ -225,9 +223,9 @@
       </template>
       <template v-slot:right-column>
         <ProjectActivity v-if="user && user.id"
-                         :user-id="userId"
+                         :user-id-in="userId"
                          :force-show-upload-btn="true"
-                         :show-sms-tab="false"></ProjectActivity>
+                         :show-sms-tab="true"></ProjectActivity>
       </template>
     </ThreeColumnLayout>
 
@@ -254,10 +252,12 @@ import constants from "@/helpers/constants";
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
+import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'User',
   components: {
+    SidePanelExpansionPanel,
     PageOverview,
     ConfirmationDialog,
     CustomValueInput,
@@ -306,6 +306,7 @@ export default {
       userStatusTypes: [],
       addUserCompany: false,
       newCompany: {},
+      sectionExpanded: true,
       companyUserStatusTypes: [],
       companyToDelete: null
     }

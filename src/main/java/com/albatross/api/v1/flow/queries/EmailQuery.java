@@ -6,7 +6,7 @@ public class EmailQuery {
   public final static String insert = """
     INSERT INTO flow.email_queue (
         user_id, subject, message,
-        attachments, from_email, to_email, processed, from_display_name
+        attachments, from_email, to_email, processed, from_display_name, cc_recipients
     ) VALUES (
         :userId,
         :subject,
@@ -15,7 +15,8 @@ public class EmailQuery {
         :from,
         :to,
         :processed,
-        :fromDisplayName
+        :fromDisplayName,
+        :cc
     )
     """;
 
@@ -29,7 +30,8 @@ public class EmailQuery {
            message as content,
            processed,
            user_id as "sentByUserId",
-           array_to_json(attachment_ids) as attachment_ids
+           array_to_json(attachment_ids) as attachment_ids,
+           cc_recipients as "cc"
     from flow.email_queue
     where processed is not true
     """;

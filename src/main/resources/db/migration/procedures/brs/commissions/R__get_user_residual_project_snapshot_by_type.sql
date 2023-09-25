@@ -1,10 +1,11 @@
 drop function if exists brs.get_user_residual_project_snapshot_by_type(p_residual_id bigint, p_closer_user_id bigint,
-                                                                        p_user_residual_project_snapshot_type_id bigint);
+                                                                       p_user_residual_project_snapshot_type_id bigint);
 CREATE or replace function brs.get_user_residual_project_snapshot_by_type(p_residual_id bigint, p_closer_user_id bigint,
                                                                           p_user_residual_project_snapshot_type_id bigint)
   RETURNS table
           (
             project_id                                  bigint,
+            project_name                                varchar,
             final_design_complete_date                  date,
             final_design_signed_date                    date,
             utility_bill_verified_date                  date,
@@ -18,7 +19,9 @@ CREATE or replace function brs.get_user_residual_project_snapshot_by_type(p_resi
             cancelled_date                              date,
             on_hold_date                                date,
             qualified_date                              date,
-            total                                       numeric
+            total                                       numeric,
+            clawback_amount                             numeric,
+            clawback_date                               date
           )
 AS
 $BODY$
@@ -26,6 +29,7 @@ begin
 
   return query
     select urps.project_id,
+           p.project_name,
            urps.final_design_complete_date,
            urps.final_design_signed_date,
            urps.utility_bill_verified_date,
@@ -39,9 +43,12 @@ begin
            urps.cancelled_date,
            urps.on_hold_date,
            urps.qualified_date,
-           urps.total
+           urps.total,
+           urps.total as clawback_amount,
+           urps.clawback_date
     from brs.user_residual_snapshot urs
            inner join brs.user_residual_project_snapshot urps on urps.user_residual_snapshot_id = urs.id
+           inner join flow.project p on p.id = urps.project_id
            inner join brs.user_residual_project_snapshot_type urpst
                       on urpst.id = urps.user_residual_project_snapshot_type_id and
                          urpst.id = p_user_residual_project_snapshot_type_id

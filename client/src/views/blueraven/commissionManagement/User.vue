@@ -1,6 +1,6 @@
 <template>
   <v-container class="pa-0" id="closer-container">
-    <v-toolbar flat color="transparent" :min-height="150">
+    <v-toolbar flat color="transparent" :min-height="120">
       <v-toolbar-title>
         {{closer.name}}
       </v-toolbar-title>
@@ -8,9 +8,8 @@
       <v-toolbar-items>
         <v-card flat color="transparent" class="text-right mt-3">
           <strong>User ID: </strong>{{closer.userId}}<br/>
-          <strong>Vendor Pay ID: </strong>{{closer.vendorPayId}}<br/>
           <strong>Position: </strong>{{closer.position}}<br/>
-          <strong>Hire Date: </strong>{{closer.hireDate}}<br/>
+          <strong>Office: </strong>{{closer.orgName}}<br/>
           <strong>Position Effective Date: </strong>{{closer.positionStartDate | formatDate('date')}}
         </v-card>
       </v-toolbar-items>

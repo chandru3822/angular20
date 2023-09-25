@@ -55,6 +55,7 @@ public class ProcessStepQuery {
 select ps.id,
        ps.process_step_name,
        ps.non_admin_add,
+       ps.non_admin_add_allow,
        ps.company_id,
        ps.archived,
        ps.date_created,
@@ -62,6 +63,7 @@ select ps.id,
        ps.created_by_id,
        ps.modified_by_id,
        ps.readonly,
+       ps.readonly_allow,
        coalesce((
                   SELECT array_to_json(array_agg(row_to_json(wlp)))
                   FROM (
@@ -74,7 +76,22 @@ select ps.id,
                          FROM flow.white_listed_position wlp
                          WHERE wlp.white_list_type_id = 9
                            AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
                            and wlp.process_step_id = ps.id) wlp), '[]') AS "whiteListedPositions",
+        coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.process_step_id as "processStepId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 18
+                           AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
+                           and wlp.process_step_id = ps.id) wlp), '[]') AS "nonAdminAddWhiteListedPositions",
        coalesce((
                   SELECT array_to_json(array_agg(row_to_json(links)))
                   FROM (
@@ -135,7 +152,9 @@ select ps.id,
                                                          cfga.field_order as "fieldOrder",
                                                          cfga.archived,
                                                          cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                         cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                                          cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                         cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                                          cf.field_name as "fieldName",
                                                          cf.system_readonly as "systemReadonly",
                                                          cfg1.group_name as "groupName",
@@ -153,6 +172,7 @@ select ps.id,
                                                                            FROM flow.white_listed_position wlp
                                                                            WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                              AND wlp.white_list_type_id = 1
+                                                                             AND wlp.company_id = :companyId
                                                                              AND wlp.archived is not true) links), '[]') AS "whiteListedPositions",
                                                          coalesce((
                                                                     SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -166,6 +186,7 @@ select ps.id,
                                                                            FROM flow.white_listed_position wlp
                                                                            WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                              AND wlp.white_list_type_id = 2
+                                                                             AND wlp.company_id = :companyId
                                                                              AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                   FROM flow.custom_field_group_assignment cfga
                                                          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
@@ -189,7 +210,9 @@ select ps.id,
                                                          cfga.field_order as "fieldOrder",
                                                          cfga.archived,
                                                          cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                         cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                                          cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                         cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                                          cf.field_name as "fieldName",
                                                          cf.system_readonly as "systemReadonly",
                                                          cfg1.group_name as "groupName",
@@ -208,6 +231,7 @@ select ps.id,
                                                                            FROM flow.white_listed_position wlp
                                                                            WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                              AND wlp.white_list_type_id = 2
+                                                                             AND wlp.company_id = :companyId
                                                                              AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                   FROM flow.custom_field_group_assignment cfga
                                                          inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
@@ -231,7 +255,9 @@ select ps.id,
                                                          cfga.field_order as "fieldOrder",
                                                          cfga.archived,
                                                          cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                         cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                                          cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                         cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                                          coalesce(dvcfc.display_name, dvfc.display_name) as "fieldName",
                                                          false as "systemReadonly",
                                                          dv.display_name as "groupName",
@@ -250,6 +276,7 @@ select ps.id,
                                                                            FROM flow.white_listed_position wlp
                                                                            WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                              AND wlp.white_list_type_id = 2
+                                                                             AND wlp.company_id = :companyId
                                                                              AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                   FROM flow.custom_field_group_assignment cfga
                                                        left join flow.data_view_child_field_config dvcfc on dvcfc.id = cfga.data_view_child_field_config_id
@@ -325,6 +352,7 @@ where ps.id = :id
   public final static String saveReadOnly = """
     update flow.process_step
          set readonly = :readOnly,
+             readonly_allow = :readOnlyAllow,
              modified_by_id = :userId,
              date_modified = now()
          where id = :psId
@@ -378,11 +406,12 @@ where ps.id = :id
   //language=PostgreSQL
   public final static String update = """
     update flow.process_step
-         set modified_by_id = :modifiedById,
+         set modified_by_id = :userId,
              date_modified = now(),
              process_step_name = :name,
-             non_admin_add = :nonAdminAdd
-         where id = :id
+             non_admin_add = :nonAdminAdd,
+             non_admin_add_allow = :nonAdminAddAllow
+         where id = :psId
        """;
 
   //language=PostgreSQL

@@ -37,6 +37,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @Value(value = "${app.maintenanceMode:false}")
   private Boolean maintenanceMode;
 
+  @Value("${app.local.cors:http://localhost:[*]}")
+  private String appLocalCors;
+
   @Bean
   public LoginSuccessHandler loginSuccessHandler() {
     return new LoginSuccessHandler();
@@ -53,7 +56,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     configuration.setAllowCredentials(true);
     configuration.setAllowedOriginPatterns(
         List.of(
-            "http://localhost:[*]",
+            appLocalCors,
             "https://*.myblueraven.com",
             "https://*blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));

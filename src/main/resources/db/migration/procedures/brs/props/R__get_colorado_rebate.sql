@@ -12,8 +12,8 @@ declare
   v_col_springs_rebate numeric;
 BEGIN
 
-      raise notice 'p_rebate_amount %',p_rebate_amount;
-      raise notice 'p_inverter_efficiency %',p_inverter_efficiency;
+     -- raise notice 'p_rebate_amount %',p_rebate_amount;
+     -- raise notice 'p_inverter_efficiency %',p_inverter_efficiency;
       v_col_springs_rebate = 0.00;
         for x  in SELECT jsonb_array_elements::jsonb FROM jsonb_array_elements(p_aurora_design_summary->'arrays')
           loop
@@ -28,16 +28,16 @@ BEGIN
             from brs.colorado_springs_rebate_factor
               where azimuth = v_azimuth and tilt = v_tilt;
 
-            raise notice 'v_percent_value = %',v_percent_value;
-            raise notice 'pitch = %',x::jsonb->'pitch';
-            raise notice 'azimuth = %',x::jsonb->'azimuth';
-            raise notice 'size = %',x::jsonb->'size';
-            raise notice 'annual = %',x::jsonb->'shading'->'solar_access'->'annual';
+          --  raise notice 'v_percent_value = %',v_percent_value;
+          --  raise notice 'pitch = %',x::jsonb->'pitch';
+          --  raise notice 'azimuth = %',x::jsonb->'azimuth';
+          --  raise notice 'size = %',x::jsonb->'size';
+          --  raise notice 'annual = %',x::jsonb->'shading'->'solar_access'->'annual';
 
             v_col_springs_rebate = v_col_springs_rebate + (v_size * v_annual * v_percent_value * p_inverter_efficiency * p_rebate_amount);
-            raise notice 'v_col_springs_rebate inside loop = %',v_col_springs_rebate;
+           -- raise notice 'v_col_springs_rebate inside loop = %',v_col_springs_rebate;
           end loop;
-      raise notice 'v_col_springs_rebate outside loop = %',v_col_springs_rebate;
+      --raise notice 'v_col_springs_rebate outside loop = %',v_col_springs_rebate;
   return v_col_springs_rebate;
 
 END

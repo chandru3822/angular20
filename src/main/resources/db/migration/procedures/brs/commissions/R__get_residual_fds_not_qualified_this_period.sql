@@ -64,6 +64,8 @@ begin
                   pd.proof_of_homeowners_insurance_required != 305)                                as proof_of_homeowners_insurance,
                  (pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1::numeric
                     and (
+                      (pd.third_party_financing is true and
+                       pd.first_cash_payment_paid_date is not null) or
                       (pd.project_state_id = 28 and pd.first_cash_payment_amount >= 1000.00 and
                        pd.first_cash_payment_paid_date is not null) or
                       ((round((pd.first_cash_payment_amount / greatest(pd.total_cash_down_payment, 1))::numeric,2) >= .49) and

@@ -305,4 +305,34 @@ public class ContactLeadController {
   public void updateContactCoreDigital(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/solarfunnels", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactSolarFunnels(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/juicedleads", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactJuicedLeads(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/consumeraffairs", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactConsumerAffairs(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/atleads", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactAtLeads(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/easysolar", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactEasySolar(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/remodelwell", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactRemodelWell(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

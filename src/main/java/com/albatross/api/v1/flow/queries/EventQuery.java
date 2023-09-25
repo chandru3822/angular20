@@ -44,7 +44,9 @@ public class EventQuery {
                                                                    cfga.field_order as "fieldOrder",
                                                                    cfga.archived,
                                                                    cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                   cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                                                    cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                   cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                                                    cfga.detail_view as "detailView",
                                                                    cf.field_name as "fieldName",
                                                                    cf.system_readonly as "systemReadonly",
@@ -64,6 +66,7 @@ public class EventQuery {
                                                                                             wlp.archived
                                                                                      FROM flow.white_listed_position wlp
                                                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                        AND wlp.white_list_type_id = 2
                                                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions",
                                                                    null::int as "defaultFieldId"
@@ -119,6 +122,13 @@ public class EventQuery {
                end_time_hidden,
                resource_read_only,
                resource_hidden,
+               start_time_read_only_allow,
+               start_time_hidden_allow,
+               end_time_read_only_allow,
+               end_time_hidden_allow,
+               resource_read_only_allow,
+               resource_hidden_allow,
+               hidden_allow,
                archived,
                hidden,
                coalesce((
@@ -133,6 +143,7 @@ public class EventQuery {
                          FROM flow.white_listed_position wlp
                          WHERE wlp.white_list_type_id = 17
                            AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
                            and wlp.event_id = e.id) wlp), '[]') AS "hiddenWhiteListedPositions",
                coalesce((
                           SELECT array_to_json(array_agg(row_to_json(companyEventStatusTypes)))
@@ -171,16 +182,21 @@ public class EventQuery {
                                                                  cfga.use_parent_data as "useParentData",
                                                                  cfga.id as "customFieldGroupAssignmentId",
                                                                  cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                 null::int as "dataViewFieldConfigId",
+                                                                 null::int as "dataViewChildFieldConfigId",
                                                                  cfga.field_order as "fieldOrder",
                                                                  cfga.archived,
                                                                  cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                 cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                                                  cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                 cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                                                  cfga.detail_view as "detailView",
+                                                                 cfga.display_on_snippet as "displayOnSnippet",
                                                                  cf.field_name as "fieldName",
                                                                  cf.system_readonly as "systemReadonly",
                                                                  cfg1.group_name as "groupName",
                                                                  e.event_name as "eventName",
-                                                                 null as "processStepName",
+                                                                 null::text as "processStepName",
                                                                  ot.object_type as "objectType",
                                                                  coalesce((
                                                                             SELECT array_to_json(array_agg(row_to_json(links)))
@@ -193,6 +209,7 @@ public class EventQuery {
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 1
                                                                                      AND wlp.archived is not true) links), '[]') AS "whiteListedPositions",
                                                                  coalesce((
@@ -206,6 +223,7 @@ public class EventQuery {
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 2
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga
@@ -221,19 +239,24 @@ public class EventQuery {
                                                           union all
                                                           SELECT cfga.id,
                                                                  cfga.custom_field_group_id as "customFieldGroupId",
-                                                                 cfga.custom_field_id as "customFieldId",
+                                                                 cfga2.custom_field_id as "customFieldId",
                                                                  cfga.use_parent_data as "useParentData",
                                                                  cfga.id as "customFieldGroupAssignmentId",
                                                                  cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
+                                                                 null::int as "dataViewFieldConfigId",
+                                                                 null::int as "dataViewChildFieldConfigId",
                                                                  cfga.field_order as "fieldOrder",
                                                                  cfga.archived,
                                                                  cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                                 cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                                                  cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                                 cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                                                  cfga.detail_view as "detailView",
+                                                                 cfga.display_on_snippet as "displayOnSnippet",
                                                                  cf.field_name as "fieldName",
                                                                  cf.system_readonly as "systemReadonly",
                                                                  cfg1.group_name as "groupName",
-                                                                 null as "eventName",
+                                                                 null::text as "eventName",
                                                                  ps.process_step_name as "processStepName",
                                                                  ot.object_type as "objectType",
                                                                  '[]' as whiteListedPositions,
@@ -248,6 +271,7 @@ public class EventQuery {
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 2
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga
@@ -260,6 +284,51 @@ public class EventQuery {
                                                           WHERE cfga.custom_field_group_id = cfg.id
                                                             AND cfga.archived is not true
                                                             and cf.archived is not true
+                                                            union all
+                                                  SELECT cfga.id,
+                                                         cfga.custom_field_group_id as "customFieldGroupId",
+                                                         cfga.custom_field_id as "customFieldId",
+                                                         cfga.use_parent_data as "useParentData",
+                                                         cfga.id as "customFieldGroupAssignmentId",
+                                                         coalesce(cfga.data_view_child_field_config_id, cfga.data_view_field_config_id) as "ancillaryCustomFieldGroupAssignmentId",
+                                                         cfga.data_view_field_config_id as "dataViewFieldConfigId",
+                                                         cfga.data_view_child_field_config_id as "dataViewChildFieldConfigId",
+                                                         cfga.field_order as "fieldOrder",
+                                                         cfga.archived,
+                                                         cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                                         cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
+                                                         cfga.hidden as "customFieldGroupAssignmentHidden",
+                                                         cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
+                                                         cfga.detail_view as "detailView",
+                                                         cfga.display_on_snippet as "displayOnSnippet",
+                                                         coalesce(dvcfc.display_name, dvfc.display_name) as "fieldName",
+                                                         false as "systemReadonly",
+                                                         dv.display_name as "groupName",
+                                                         null::text as "eventName",
+                                                         null::text as "processStepName",
+                                                         'Data View' as "objectType",
+                                                         '[]' as whiteListedPositions,
+                                                         coalesce((
+                                                                    SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                    FROM (
+                                                                           SELECT wlp.id,
+                                                                                  wlp.position_id as "positionId",
+                                                                                  wlp.custom_field_group_assignment_id as "custom_field_group_assignment_id",
+                                                                                  wlp.created_by_id as "createdById",
+                                                                                  wlp.modified_by_id as "modifiedById",
+                                                                                  wlp.archived
+                                                                           FROM flow.white_listed_position wlp
+                                                                           WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                             AND wlp.white_list_type_id = 2
+                                                                             AND wlp.company_id = :companyId
+                                                                             AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                  FROM flow.custom_field_group_assignment cfga
+                                                       left join flow.data_view_child_field_config dvcfc on dvcfc.id = cfga.data_view_child_field_config_id
+                                                       inner join flow.data_view_field_config dvfc on (cfga.data_view_field_config_id = dvfc.id OR dvfc.id = dvcfc.data_view_field_config_id)
+                                                       inner join flow.data_view dv on dv.id = dvfc.data_view_id
+                                                  WHERE cfga.custom_field_group_id = cfg.id
+                                                    AND cfga.archived is not true
+                                                    and dvfc.archived is not true
                                                           ORDER by "fieldOrder", "fieldName") customFields), '[]') AS "customFields"
                                  FROM flow.custom_field_group cfg
                                         inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
@@ -275,6 +344,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 6
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "startTimeWhiteListedPositions",
                 coalesce((
@@ -287,6 +357,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 14
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "startTimeHiddenWhiteListedPositions",
                coalesce((
@@ -299,6 +370,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 7
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "endTimeWhiteListedPositions",
                 coalesce((
@@ -311,6 +383,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 15
+                                  AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "endTimeHiddenWhiteListedPositions",
                coalesce((
@@ -323,6 +396,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 8
+                                  AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "resourceWhiteListedPositions",
                 coalesce((
@@ -335,6 +409,7 @@ public class EventQuery {
                                         wlp.archived
                                  FROM flow.white_listed_position wlp
                                  WHERE wlp.white_list_type_id = 16
+                                   AND wlp.company_id = :companyId
                                    and wlp.event_id = e.id
                                    AND wlp.archived is not true) wlp), '[]') AS "resourceHiddenWhiteListedPositions"
         from flow.event e
@@ -361,7 +436,14 @@ public class EventQuery {
           end_time_read_only = :endTimeReadOnly,
           end_time_hidden = :endTimeHidden,
           resource_read_only = :resourceReadOnly,
-          resource_hidden = :resourceHidden
+          resource_hidden = :resourceHidden,
+          start_time_read_only_allow = :startTimeReadOnlyAllow,
+          start_time_hidden_allow = :startTimeHiddenAllow,
+          end_time_read_only_allow = :endTimeReadOnlyAllow,
+          end_time_hidden_allow = :endTimeHiddenAllow,
+          resource_read_only_allow = :resourceReadOnlyAllow,
+          resource_hidden_allow = :resourceHiddenAllow,
+          hidden_allow = :hiddenAllow
       where id = :id
     """;
 
@@ -686,6 +768,7 @@ public class EventQuery {
     public final static String saveHidden = """
     update flow.event
         set hidden = :hidden,
+        hidden_allow = :hiddenAllow,
         modified_by_id = :userId,
         date_modified = now()
         where id = :eventId

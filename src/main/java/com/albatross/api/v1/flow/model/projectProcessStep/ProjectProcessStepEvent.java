@@ -1,8 +1,10 @@
 package com.albatross.api.v1.flow.model.projectProcessStep;
 
 import com.albatross.api.v1.flow.model.CustomFieldGroup;
+import com.albatross.api.v1.flow.model.CustomFieldValueDisplay;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventAction;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,15 +22,19 @@ public class ProjectProcessStepEvent {
 
   private Long id, projectProcessStepId, processStepEventId, companyEventStatusTypeId, processStepStatusTypeId, companyProcessStepStatusTypeId,
     eventId, resourceId, uniqueBehaviorTypeId, eventStatusTypeId, rootProjectProcessStepStatusTypeId, //rootProjectProcessStepStatusTypeId = the current status of the pps, needed to determine if the action can be run
-    processStepId, projectId, saveVersion;
+    processStepId, projectId, saveVersion, customFieldDisplayValueGroupAssignmentId;
   private String eventName, eventStatusType, resource, processStepName, lastUpdated,
     dateCreated, cancelledDate, completedDate, scheduledDate, createdBy;
   private Timestamp startTime, endTime;
   private List<CustomFieldGroup> customFieldGroups;
   private List<Resource> availableResources;
   private List<ProcessStepEventAction> eventActions, eventBanners;
-  private Boolean archived, readonly, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned;
+  private Boolean archived, readonly, readonlyAllow, eventHidden, startTimeReadOnly, startTimeHidden, endTimeReadOnly, endTimeHidden, resourceReadOnly, resourceHidden, hasAttachmentTypesAssigned, startTimeReadOnlyAllow, startTimeHiddenAllow, endTimeReadOnlyAllow, endTimeHiddenAllow, resourceReadOnlyAllow, resourceHiddenAllow, eventHiddenAllow;;
   private List<WhiteListedPosition> readonlyWhiteListedPositions, eventHiddenWhiteListedPositions, startTimeWhiteListedPositions, startTimeHiddenWhiteListedPositions, endTimeWhiteListedPositions, endTimeHiddenWhiteListedPositions, resourceWhiteListedPositions, resourceHiddenWhiteListedPositions;
+  private CustomFieldValueDisplay customFieldDisplayValue;
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  private List<String> childFunctionReturnedStrings;
 
 
   @Data

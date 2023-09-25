@@ -1,28 +1,83 @@
 package com.albatross.api.v1.company.blueraven.models;
 
-import com.albatross.api.v1.flow.model.project.Project;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
-public class MarketoProject extends Project {
+public class MarketoProject {
 
-    private String firstName,
-                   lastName,
-                   leadStatus,
-                   leadSource,
-                   finalDesignApprovedDate,
-                   energizedDate,
-                   installationStartTime,
-                   closerAppointmentStartTime,
-                   inspectionStartTime,
-                   substantialCompletionDate,
-                   inspectionPassedDate;
+  private Long companyProjectStatusTypeId;
 
-    private LocalDateTime finalDesignSentToHomeownerDate;
+  private String projectId,
+                 projectStatusType,
+                 firstName,
+                 lastName,
+                 address,
+                 city,
+                 state,
+                 country,
+                 postalCode,
+                 phone,
+                 email,
+                 leadStatus,
+                 leadSource,
+                 finalDesignApprovedDate,
+                 energizedDate,
+                 installationStartTime,
+                 closerAppointmentStartTime,
+                 inspectionStartTime,
+                 substantialCompletionDate,
+                 inspectionPassedDate,
+                 completeDateBooking,
+                 finalDesignSentToHomeownerDate,
+                 permitPackSubmittalStartTime,
+                 permitApprovedDate,
+                 hoaApprovalNeededName,
+                 hoaRequestForApprovalSubmittedDate,
+                 hoaApprovalReceivedDate,
+                 acCompressorRelocationRequired,
+                 acCompressorRelocationStartTime,
+                 acCompressorRelocationVerifiedDate,
+                 mainPanelUpgradeRequiredInHouse,
+                 inHouseMpuStartTime,
+                 inHouseMpuVerifiedDate,
+                 mainPanelUpgradeRequiredOutsourceName,
+                 outsourceMpuStartTime,
+                 outsourceMpuVerifiedDate,
+                 reroofRequiredName,
+                 reroofStartTime,
+                 reroofVerifiedDate,
+                 structuralUpgradeRequiredName,
+                 structuralUpgradeStartTime,
+                 structuralUpgradeVerifiedDate,
+                 treeTrimRequiredName,
+                 treeTrimmingStartTime,
+                 treeTrimmingVerifiedDate,
+                 trenchingRequiredName,
+                 trenchingStartTime,
+                 trenchingVerifiedDate,
+                 interconnectionApplicationSignedDate,
+                 interconnectionApplicationSubmittedToUtilityDate,
+                 interconnectionApplicationApprovedDate,
+                 installationReadyToScheduleDate,
+                 ahjInspectionScheduledDate,
+                 ahjInspectionApprovalSubmittedToUtilityDate,
+                 utilityMeterSetDate,
+                 utilityMeterOrderedDate,
+                 siteSurveyScheduledDate,
+                 finalDesignCreatedTimestamp,
+                 finalDesignSignedDate,
+                 finalDesignCompleteDate,
+                 ahjFinalInspectionVerified,
+                 ptoVerified,
+                 readyToSendInstallationReminderEmail,
+                 readyToSendFirstPermitUpdateEmail,
+                 readyToSendSecondPermitUpdateEmail,
+                 readyToSendThirdPermitUpdateEmail,
+                 estimatedAhjApprovalTimeline,
+                 leadSourceDetailName,
+                 customerPortalLink;
 
-    private Boolean doNotSolicitReview;
+  private Boolean doNotSolicitReview;
 }

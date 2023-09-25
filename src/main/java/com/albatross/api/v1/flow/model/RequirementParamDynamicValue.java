@@ -13,7 +13,7 @@ public class RequirementParamDynamicValue {
 
   private Long id, dbFunctionParamId, processStepRequirementId, dbFunctionId, dataTypeId;
   private String dynamicValue, parameterName, description;
-  private Boolean archived;
+  private Boolean archived, nullable;
 
 
 }

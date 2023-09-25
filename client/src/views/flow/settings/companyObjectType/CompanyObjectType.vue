@@ -17,7 +17,7 @@
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
               <v-icon v-if="isMobile && addNew">close</v-icon>
-              <v-icon v-if="isMobile">add</v-icon>
+              <v-icon v-else-if="isMobile">add</v-icon>
               <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
           </v-toolbar-items>

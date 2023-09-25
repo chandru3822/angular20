@@ -45,6 +45,8 @@ BEGIN
              left join flow.user_position up on up.id = ppse.resource_id  and sl.system_list_type_id = 2
              left join flow.user u on up.user_id = u.id
       where ppse.id = p_pps_event_id;
+    elseif (p_property_to_save = 'id') then
+        select p_pps_event_id::text into v_value_to_save;
     elseif (p_property_to_save = 'status_id') then
       select company_event_status_type_id::text
       into v_value_to_save

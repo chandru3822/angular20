@@ -130,7 +130,7 @@ public class PubSubService {
             });
 
         if (!deadEmitters.isEmpty()) {
-          log.info("[PubSub] Removing {} dead emitters", deadEmitters.size());
+          log.debug("[PubSub] Removing {} dead emitters", deadEmitters.size());
           deadEmitters.forEach(this.subscribers::remove);
         }
       }

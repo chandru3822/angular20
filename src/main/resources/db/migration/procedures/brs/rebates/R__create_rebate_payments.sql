@@ -1,73 +1,136 @@
 drop function if exists brs.create_rebate_payments(
   p_project_id bigint,
   p_created_by_user_id bigint,
-  p_total_promotion_amount numeric(12,2),
+  p_total_promotion_amount numeric(12, 2),
   p_number_of_promotion_payments bigint);
 CREATE OR REPLACE FUNCTION brs.create_rebate_payments(
-    p_project_id bigint,
-    p_created_by_user_id bigint,
-    p_total_promotion_amount numeric(12,2),
-    p_number_of_promotion_payments bigint)
+  p_project_id bigint,
+  p_created_by_user_id bigint,
+  p_total_promotion_amount numeric(12, 2),
+  p_number_of_promotion_payments bigint)
   RETURNS VOID AS
 $BODY$
 DECLARE
-v_payment_nbr bigint;
+  v_payment_nbr                            bigint;
+  v_utility_bill_uploaded_date             date;
+  v_hoi_uploaded_date                      date;
+  v_product                                integer;
+  v_installation_agreement_signed_date     date;
+  v_financial_agreement_signed_date        date;
+  v_substantial_completion_date            date;
+  v_proof_of_homeowners_insurance_required integer;
+v_fast_track_approval_override boolean;
 BEGIN
 
-    update flow.project_process_step_custom_field_value
-    set numeric_value = p_total_promotion_amount, modified_by_id = p_created_by_user_id, date_modified = now()
-    where id =
-    (select pscfv.id
-    from flow.project p
-             inner join flow.project_process_step pps
-                        on pps.project_id = p.id and pps.process_step_id = 4
-             inner join flow.project_process_step_custom_field_value pscfv
-                        on pps.id = pscfv.project_process_step_id
-             inner join flow.custom_field_group_assignment cfga
-                        on cfga.id = pscfv.custom_field_group_assignment_id
-             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-             inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10430
-                                    and company_id = (select company_id from brs.project_details where project_id = p_project_id))
-      and p.id = p_project_id and pps.main = true);
+  select (min(date_created) at time zone 'US/Mountain')::date
+  into v_utility_bill_uploaded_date
+  from (select min(att.date_created) as date_created
+        from flow.attachment att
+               join flow.project_attachment pa on att.id = pa.attachment_id
+          and att.attachment_type_id in (47)
+          and att.archived is not true
+        where pa.project_id = p_project_id
+        UNION
+        select min(att.date_created) as date_created
+        from flow.attachment att
+               join flow.project_process_step_attachment ppsa on att.id = ppsa.attachment_id
+          and att.attachment_type_id in (47)
+          and att.archived is not true
+               join flow.project_process_step pps on ppsa.project_process_step_id = pps.id
+        where pps.project_id = p_project_id) as ub;
 
-    update flow.project_process_step_custom_field_value
-    set int_value = p_number_of_promotion_payments, modified_by_id = p_created_by_user_id, date_modified = now() where id =
-    (select pscfv.id
-    from flow.project p
-             inner join flow.project_process_step pps
-                        on pps.project_id = p.id and pps.process_step_id = 4
-             inner join flow.project_process_step_custom_field_value pscfv
-                        on pps.id = pscfv.project_process_step_id
-             inner join flow.custom_field_group_assignment cfga
-                        on cfga.id = pscfv.custom_field_group_assignment_id
-             inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
-             inner join flow.custom_field cf on cf.id = cfga.custom_field_id
-             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-             inner join flow.data_type dt on dt.id = cdt.data_type_id
-    where cfga.custom_field_id = (select id from flow.custom_field where parent_custom_field_id= 10324
-                                    and company_id = (select company_id from brs.project_details where project_id = p_project_id))
-      and p.id = p_project_id and pps.main = true);
+  select (min(date_created) at time zone 'US/Mountain')::date
+  into v_hoi_uploaded_date
+  from (select min(att.date_created) as date_created
+        from flow.attachment att
+               join flow.project_attachment pa on att.id = pa.attachment_id
+          and att.attachment_type_id in (942)
+          and att.archived is not true
+        where pa.project_id = p_project_id
+        UNION
+
+        select min(att.date_created) as date_created
+        from flow.attachment att
+               join flow.project_process_step_attachment ppsa on att.id = ppsa.attachment_id
+          and att.attachment_type_id in (942)
+          and att.archived is not true
+               join flow.project_process_step pps on ppsa.project_process_step_id = pps.id
+        where pps.project_id = p_project_id) as hoi;
+
+  select product,
+         installation_agreement_signed_date,
+         financial_agreement_signed_date,
+         substantial_completion_date,
+         proof_of_homeowners_insurance_required,
+         pd.fast_track_approval_override
+  into v_product,
+    v_installation_agreement_signed_date,
+    v_financial_agreement_signed_date,
+    v_substantial_completion_date,
+    v_proof_of_homeowners_insurance_required,
+    v_fast_track_approval_override
+  from brs.project_details pd
+  where pd.project_id = p_project_id;
+
+  if v_product = 293 and v_substantial_completion_date is not null and
+     ((v_financial_agreement_signed_date <= (v_installation_agreement_signed_date + 3)::date and
+     v_utility_bill_uploaded_date <= (v_installation_agreement_signed_date + 3)::date and
+     (v_proof_of_homeowners_insurance_required = 305 and
+      v_hoi_uploaded_date <= (v_installation_agreement_signed_date + 3)::date
+       or (v_proof_of_homeowners_insurance_required = 306))) or (v_fast_track_approval_override is true)) then
+    p_number_of_promotion_payments = 1;
+  end if;
+
+
+  update flow.project_process_step_custom_field_value
+  set numeric_value  = p_total_promotion_amount,
+      modified_by_id = p_created_by_user_id,
+      date_modified  = now()
+  where id =
+        (select ppscfv.id
+         from flow.project_process_step pps
+                inner join flow.project_process_step_custom_field_value ppscfv
+                           on ppscfv.project_process_step_id = pps.id and
+                              ppscfv.custom_field_group_assignment_id = 19462
+         where project_id = p_project_id
+           and pps.main is true);
+
+  update flow.project_process_step_custom_field_value
+  set int_value      = p_number_of_promotion_payments,
+      modified_by_id = p_created_by_user_id,
+      date_modified  = now()
+  where id =
+        (select ppscfv.id
+         from flow.project_process_step pps
+                inner join flow.project_process_step_custom_field_value ppscfv
+                           on ppscfv.project_process_step_id = pps.id and
+                              ppscfv.custom_field_group_assignment_id = 19459
+         where project_id = p_project_id
+           and pps.main is true);
 
 --Create an audit record
-  insert into brs.project_rebate_payment_audit(project_id, audit, changed_date, changed_by_user_id) values
-                                                 (p_project_id, 'Payment schedule initial creation for project_id:'||p_project_id||' total_promotion_amount: '||p_total_promotion_amount||
-                                                             ' number_of_promotion_payments: '|| p_number_of_promotion_payments,
-                                                             (now() at time zone 'US/Mountain')::date, p_created_by_user_id);
+  insert into brs.project_rebate_payment_audit(project_id, audit, changed_date, changed_by_user_id)
+  values (p_project_id,
+          'Payment schedule initial creation for project_id:' || p_project_id || ' total_promotion_amount: ' ||
+          p_total_promotion_amount ||
+          ' number_of_promotion_payments: ' || p_number_of_promotion_payments,
+          (now() at time zone 'US/Mountain')::date, p_created_by_user_id);
 
   v_payment_nbr := 1;
 
 --Loop through the number of payments (aka number of months) and create a payment record for each payment installment.
-  FOR x in 1..p_number_of_promotion_payments LOOP
+  FOR x in 1..p_number_of_promotion_payments
+    LOOP
 
-     INSERT INTO brs.project_rebate_payment (project_id, payment_amount, payment_nbr, created_by_user_id, created_date, project_rebate_payment_state_id) values (p_project_id, p_total_promotion_amount/p_number_of_promotion_payments, v_payment_nbr, p_created_by_user_id,(now() at time zone 'US/Mountain')::date, 1);
-    v_payment_nbr := v_payment_nbr + 1;
-  END LOOP;
+      INSERT INTO brs.project_rebate_payment (project_id, payment_amount, payment_nbr, created_by_user_id, created_date,
+                                              project_rebate_payment_state_id)
+      values (p_project_id, p_total_promotion_amount / p_number_of_promotion_payments, v_payment_nbr,
+              p_created_by_user_id, (now() at time zone 'US/Mountain')::date, 1);
+      v_payment_nbr := v_payment_nbr + 1;
+    END LOOP;
 
 END;
 $BODY$
-LANGUAGE plpgsql VOLATILE
-COST 100;
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;
 

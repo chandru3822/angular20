@@ -1,39 +1,19 @@
 <template>
-  <v-row id="project-details-container" class="mb-4">
-    <v-col cols="12" lg="12" class="text-left pt-0">
-      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-        <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="albatross-header-3">Active Events</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-            </v-toolbar-items>
-          </v-toolbar>
-
-          <v-col cols="12" v-if="activeEventsLoading">
-            <SpinnerInline :size="20" color="primary"/>
-          </v-col>
-
-          <v-col cols="12" v-else class="pa-0">
-            <ActiveEventSnippet
-              @refresh-upcoming-events="getEvents()"
-              :events="events"
-              :projectId="projectId"/>
-          </v-col>
-        </v-row>
-      </v-col>
-
-      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-        <v-col
+  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')" header="Active Events" :section-expanded="sectionExpanded" :is-loading="activeEventsLoading">
+    <template v-slot:expanded-content>
+      <ActiveEventSnippet class="px-4"
+                          @refresh-upcoming-events="getEvents()"
+                          :events="events"
+                          :projectId="projectId"/>
+      <v-col
+          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           cols="12"
           class="text-left pt-0 albatross-body-3"
-        >
-          <router-link :to="`/project/${projectId}/events`">View All</router-link>
-        </v-col>
-      </v-fade-transition>
-    </v-col>
-
-  </v-row>
+      >
+        <router-link :to="`/project/${projectId}/events`">View All</router-link>
+      </v-col>
+    </template>
+  </SidePanelExpansionPanel>
 </template>
 
 <script>
@@ -42,10 +22,12 @@ import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
+import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ActiveEvents',
   components: {
+    SidePanelExpansionPanel,
     SpinnerInline,
     EventSnippet,
     ActiveEventSnippet
@@ -63,6 +45,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
+      sectionExpanded: this.$route.path.includes('processStep'),
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),

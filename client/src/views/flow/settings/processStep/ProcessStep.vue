@@ -8,18 +8,13 @@
         </v-btn>
         <div class="flex-display pt-3 px-3 mb-4" style="width: 100%">
           <div style="width: 100%">
-            <span class="page-title" v-if="!editName">{{ processStep.processStepName }}</span>
+            <span class="headline-small" v-if="!editName">{{ processStep.processStepName }}</span>
             <v-text-field v-else color="primary"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
                           v-model="processStep.processStepName"
                           label="Process Step Name"></v-text-field>
-            <div class="non-admin-container">
-              <label class="mr-3">Allow Non-Admin to Add to Project:</label>
-              <v-checkbox class="ma-0 pa-0 shrink" type="checkbox" :readonly="!userCanEdit"
-                          @change="saveProcessStep(false)"
-                          :disabled="!userCanEdit" v-model="processStep.nonAdminAdd"></v-checkbox>
-            </div>
+
           </div>
           <div class="text-right" v-if="userCanEdit">
             <v-btn text color="primary" v-if="!editName" class="" @click="[oldName = processStep.processStepName, editName = !editName]">
@@ -76,6 +71,9 @@
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         companyId: this.$store.state.user.details.companyId,
         processStep: {},
+        positions:[],
+        positionsLoading: false,
+        nonAdminAddWhiteListedPositionsChanged: false,
         tabs: [
           {
             id: 1,
@@ -118,6 +116,7 @@
     },
     async created () {
       this.getProcessStepDetails()
+      this.getPositions()
     },
     methods: {
       async getProcessStepDetails () {
@@ -140,7 +139,7 @@
       async saveProcessStep(closeEditor) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await putRequest(`/processStep`, this.processStep)
+          const {status} = await putRequest(`/processStep?savePositions=${this.nonAdminAddWhiteListedPositionsChanged ?? false}`, this.processStep)
           this.editName = false
           this.snackbar = getSnackbar('SUCCESS', 'Process Step Updated')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -152,6 +151,23 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getPositions() {
+        if(this.positions?.length === 0) {
+          try {
+            this.positionsLoading = true
+            const {data, status} = await getRequest(`/position/withParent`)
+            this.positions = data
+            this.positionsLoading = false
+            handleHidingGlobalLoader(this, status)
+          } catch (e) {
+            this.positionsLoading = false
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+        }
+      },
     }
 
   }
@@ -161,15 +177,12 @@
 .non-admin-container {
   display: flex;
   flex-direction: row;
+  max-width: 50%;
 }
 
 .name-container {
   background-color: var(--v-primary-lighten9) !important;
   border-radius: 5px;
-}
-.page-title {
-  font-size: 18px;
-  font-weight: 200;
 }
 
 .tabs-bar {

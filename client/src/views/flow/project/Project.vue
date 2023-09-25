@@ -1,7 +1,9 @@
 <template>
   <div id="project-container">
     <!--    modal for editing project fields -->
-    <ConfirmationDialog :open-dialog="showEditProjectModal" @confirm="validateForm" @close-dialog="showEditProjectModal = false">
+    <ConfirmationDialog :open-dialog="showEditProjectModal"
+                        @confirm="validateForm"
+                        @close-dialog="showEditProjectModal = false">
       <template v-slot:title>Project Overview</template>
       <v-form ref="projectEditForm">
         <div>
@@ -16,7 +18,7 @@
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             label="Project Name"
-          ></v-text-field>
+          />
           <v-text-field
             v-model="tempProject.street1"
             label="Street"
@@ -25,14 +27,14 @@
             counter
             maxlength="100"
             @change="tempProject.reloadCoordinates = true"
-          ></v-text-field>
+          />
           <v-text-field
             v-model="tempProject.city"
             label="City"
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             @change="tempProject.reloadCoordinates = true"
-          ></v-text-field>
+          />
           <v-text-field
             type="text"
             v-model="tempProject.postalCode"
@@ -40,11 +42,11 @@
             :readonly="!userCanEdit"
             :disabled="!userCanEdit"
             maxlength="10"
-            @keypress="isNumberOrHyphen"
+            @keyup="isNumberOrHyphen"
             :rules="postalCodeRules"
             @change="tempProject.reloadCoordinates = true"
             label="Postal Code"
-          ></v-text-field>
+          />
           <div v-if="tempProject.companyStateId && !stateIsActive() && !editState">
             <v-text-field
               type="text"
@@ -53,7 +55,7 @@
               :disabled="true"
               label="State"
               hide-details
-            ></v-text-field>
+            />
             <a class="edit-state-link" @click="editState = true">Click here to edit state</a>
           </div>
           <v-autocomplete v-else
@@ -66,7 +68,7 @@
                           item-text="state"
                           item-value="id"
                           @input="tempProject.reloadCoordinates = true"
-          ></v-autocomplete>
+          />
           <v-select v-model="tempProject.companyCountryId"
                     :items="countries"
                     label="Country"
@@ -76,7 +78,7 @@
                     @input="tempProject.reloadCoordinates = true"
                     item-text="country"
                     item-value="id"
-          ></v-select>
+          />
         </div>
         <v-autocomplete v-model="tempProject.owner"
                         :readonly="projectOwnerFieldIsReadOnly()"
@@ -87,8 +89,7 @@
                         clearable
                         item-text="fullName"
                         return-object
-                        autocomplete="off">
-        </v-autocomplete>
+                        autocomplete="off"/>
         <v-autocomplete v-model="tempProject.companyProjectStatusTypeId"
                         :items="statuses"
                         :readonly="projectStatusIsReadOnly()"
@@ -107,19 +108,21 @@
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                v-if="!projectLoading && project && project.id">
       <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
-      :class="{'mt-4': project.tags && project.tags.length > 0}">
+                       :class="{'mt-4': project.tags && project.tags.length > 0}">
         <div>
           <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
           <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-              {{$store.state.project.pps.processStepName}}
+            <router-link class="breadcrumb albatross-body-2"
+                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
+              {{ $store.state.project.pps.processStepName }}
             </router-link>
           </span>
           <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2" :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-              {{$store.state.project.ppsEvent.eventName}} Event
+            <router-link class="breadcrumb albatross-body-2"
+                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+              {{ $store.state.project.ppsEvent.eventName }} Event
             </router-link>
           </span>
         </div>
@@ -131,72 +134,96 @@
                   :text-color="tag.fontColor"
                   :close="tag.removable"
                   :class="{'ml-2': idx !== 0}">
-            {{tag.tagName}}
+            {{ tag.tagName }}
           </v-chip>
         </div>
       </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <div>
-          <v-btn color="#fff"
-                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
-                 class="mt-3 no-text-transform primary--text"
-                 :to="`/projectAdmin/${projectId}`"
-          >
-            Project Admin
-          </v-btn>
+      <v-spacer/>
+      <div v-if="milestones && milestones.length > 0">
+        <div class="milestone-item" v-for="(milestone, idx) in milestones">
+          <v-menu v-model="milestone.menuOpen"
+                  offset-y
+                  rounded="0"
+                  :close-on-content-click="false"
+                  min-width="290px">
+            <template v-slot:activator="{ on }">
+              <StatusTrackerIcon :on="on"
+                                 :clickable="true"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+            </template>
+            <v-card class="pa-5 square-card">
+              <StatusTrackerIcon :clickable="false"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+              {{milestone.projectStatusType}}
+              <div>
+                <div v-for="field in milestone.assignedFields">
+                  <StatusTrackerItem :field="field"
+                  ></StatusTrackerItem>
+                </div>
+              </div>
+              <div class="text-right">
+                <v-btn text color="primary" @click="milestone.menuOpen = false">Done</v-btn>
+              </div>
+            </v-card>
+          </v-menu>
         </div>
-      </v-toolbar-items>
-    </v-toolbar >
-<!--    <v-toolbar flat color="grey lighten-2" id="tag-toolbar" v-if="project.tags && project.tags.length > 0">-->
-<!--    </v-toolbar>-->
+      </div>
+    </v-toolbar>
     <v-row class="project-split-container" :class="{'split-container-no-tags': project && !project.tags || project.tags.length === 0,
                                                     'split-container-with-tags': project && project.tags && project.tags.length > 0}">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
-          <v-btn small text color="primary" @click="collapseSide('left')" >
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}"
+             @click="endNotesTimer('Clicked outside right panel')">
+          <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit && project && project.id" class="px-2 left-panel-scrollable-area overflow-y-auto">
+        <div v-if="!$store.state.project.leftSideSplit && project && project.id"
+             class="left-panel-scrollable-area overflow-y-auto">
           <PageOverview
             page-name="Project"
             :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
             :details="overviewDetails"
-          ></PageOverview>
-          <v-divider class="mt-6"></v-divider>
+          />
+          <v-divider/>
+          <ProjectTabs :project="project" :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
+          <v-divider/>
           <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
-          <v-divider class="mb-3"></v-divider>
+          <v-divider/>
           <ActiveEvents v-if="userHasEventsFeature"
-                          :update-key="updateEventKey"
-                          :projectId="projectId"
-                          class="mx-2"/>
-          <v-btn outlined small color="primary" class="label-medium text-transform-unset px-3 py-1 mb-5 ml-5"
-                 :to="`/project/${ projectId }/workQueues`">
-            Current Work Queues
-          </v-btn>
+                        :update-key="updateEventKey"
+                        :projectId="projectId"
+                        class="mx-2"/>
+          <v-divider class="mb-3"/>
         </div>
       </div>
       <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                                                                  'center-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                                                                  'center-width-right-side-collapse': !$store.state.project.leftSideSplit && $store.state.project.rightSideSplit,
-                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}">
+                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}"
+           @click="endNotesTimer('Clicked outside right panel')">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
                      @refresh-project-status="getUpdatedProjectStatus()"
                      ref="childComponent"
+                     :project-tab="selectedTab"
                      v-if="project && project.id" class="router-view"
                      :project="project"
-        ></router-view>
+                     :milestones="milestones"
+        />
       </div>
       <div class="project-section px-0 white-bg "
            :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
                     'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                     'collapse-right text-center': $store.state.project.rightSideSplit}">
-        <ProjectActivity v-if="!projectLoading"  :show-sms-tab="true"
-                         @openRight="$store.state.project.rightSideSplit = false"></ProjectActivity>
+        <ProjectActivity v-if="!projectLoading" :show-sms-tab="true"
+                         @openRight="$store.state.project.rightSideSplit = false"/>
       </div>
     </v-row>
   </div>
@@ -204,22 +231,27 @@
 
 <script>
 import {
-  handleHidingGlobalLoader,
+  formatPhoneNumber,
   getRequest,
-  putRequest,
-  postRequest,
-  logError,
   getRequestWithParams,
   getSnackbar,
-  formatPhoneNumber,
-  isNumberOrHyphen
+  handleHidingGlobalLoader,
+  isNumberOrHyphen,
+  logError,
+  postRequest,
+  putRequest
 } from '@/helpers/helpers'
 import cloneDeep from 'lodash.clonedeep'
 import {AppMutations} from '@/stores/AppStore'
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
+import ProjectTabs from '@/views/flow/project/ProjectTabs'
 import ActiveProcessSteps from '@/views/flow/project/ActiveProcessSteps'
 import ActiveEvents from '@/views/flow/project/ActiveEvents'
-import {getCompanyProjectStatusTypes, getStatusColorClass} from "@/services/projectStatusTypeService"
+import {
+  getCompanyProjectStatusType,
+  getCompanyProjectStatusTypes,
+  getStatusColorClass
+} from "@/services/projectStatusTypeService"
 import constants from "@/helpers/constants";
 import {getActiveStates} from "@/services/stateService";
 import {getCountries} from "@/services/countryService";
@@ -227,14 +259,20 @@ import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
+import {endTimer, projectOpened} from '@/services/analyticsService'
+import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
+import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 
 export default {
   name: 'Project',
   components: {
+    StatusTrackerIcon,
+    StatusTrackerItem,
     PageOverview,
     ConfirmationDialog,
     ProjectActivity,
     ActiveProcessSteps,
+    ProjectTabs,
     ActiveEvents
   },
   data() {
@@ -262,6 +300,8 @@ export default {
       isNumberOrHyphen,
       states: [],
       countries: [],
+      selectedTab: {},
+      milestones: [],
       projectLoading: true,
       projectId: parseInt(this.$route.params.projectId),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -273,6 +313,9 @@ export default {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
+    if(this.is7oaksAdmin) {
+      this.getMilestones()
+    }
   },
   watch: {
     '$route.params.processStepId': async function () {
@@ -283,11 +326,15 @@ export default {
       this.$store.commit(ProjectMutations.RESET_PPS_EVENT_STATE)
     },
     projectTagEvents: async function () {
-      if(this.projectTagEvents?.length > 0) {
+      if (this.projectTagEvents?.length > 0) {
         this.$store.dispatch(NotificationActions.PROCESS_PROJECT_MSG, this.projectId)
         await this.getProjectTags()
       }
     }
+  },
+  beforeRouteLeave(to, from, next) {
+    this.endNotesTimer("Clicked outside right panel");
+    next();
   },
   computed: {
     projectTagEvents() {
@@ -296,7 +343,7 @@ export default {
     projectStage() {
       return this.statuses?.find(s => s.id === this.project.companyProjectStatusTypeId)?.rootProjectStatusType
     },
-    overviewDetails(){
+    overviewDetails() {
       return [
         {
           label: 'Project Stage',
@@ -350,13 +397,19 @@ export default {
   mounted() {
   },
   methods: {
+    changeTabs(selectedTab, buttonClicked) {
+      this.selectedTab = selectedTab
+      if (buttonClicked && this.$route.name !== 'projectDetails') {
+        this.$router.push({name: 'projectDetails', projectId: this.projectId})
+      }
+    },
     stateIsActive() {
       //states is already a list of company states
       let companyStateIds = this.states.map(s => s.id)
       return companyStateIds.includes(this.tempProject.companyStateId)
     },
     collapseSide(side) {
-      if(side === 'left') {
+      if (side === 'left') {
         this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
       } else {
         this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
@@ -379,10 +432,11 @@ export default {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
         window.document.title = `${this.project.projectName} - Project Details`
-        if(this.checkAddress) {
+        if (this.checkAddress) {
           this.showEditModal()
         }
         this.projectLoading = false
+        projectOpened(this.projectId);
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.projectLoading = false
@@ -390,10 +444,32 @@ export default {
         logError(e)
       }
     },
+    async getMilestones() {
+      try {
+        const {data, status} = await getRequest(`/project/${this.projectId}/statusFields`)
+        this.milestones = data
+        this.milestones.forEach(m => {
+          // if(m.assignedFields.every(f => f.hasOwnProperty('fieldValue'))) {
+          // console.log('A', m.assignedFields.every(f => f.fieldValue))
+          // console.log('B', m.assignedFields.every(f => f.hasOwnProperty('fieldValue')))
+          if(m.assignedFields.every(f => f.fieldValue)) {
+            m.btnColor = 'green'
+            m.iconColor = 'white'
+          } else {
+            m.btnColor = 'grey'
+            m.iconColor = 'grey'
+          }
+        })
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Tracker Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
     getProjectTags: async function () {
       try {
         const {data, status} = await getRequestWithParams(`/tag/project/${this.projectId}`,
-          {skipCancel: true }, null, [])
+          {skipCancel: true}, null, [])
         this.project.tags = data
       } catch (e) {
         logError(e)
@@ -430,19 +506,15 @@ export default {
       }
     },
     projectStatusIsReadOnly() {
-      if(this.is7oaksAdmin) {
+      if (this.is7oaksAdmin) {
         return false
-      } else if (this.project.statusReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.project.statusReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.statusReadOnly
       }
     },
     projectOwnerFieldIsReadOnly() {
-      if(this.is7oaksAdmin) {
+      if (this.is7oaksAdmin) {
         return false
-      } else if (this.project.ownerReadOnlyWhiteListedPositions?.length > 0) {
-        return !this.$store.getters.userHasAnyPosition(this.project.ownerReadOnlyWhiteListedPositions?.map(wlp => wlp.positionId))
       } else {
         return this.project.ownerReadOnly
       }
@@ -524,7 +596,7 @@ export default {
         this.tempProject.state = selectedState?.state || null
         this.tempProject.stateAbbreviation = selectedState?.abbreviation || null
         //if they entered a valid address then stop asking for it
-        if(this.tempProject.companyStateId && this.stateIsActive()) {
+        if (this.tempProject.companyStateId && this.stateIsActive()) {
           this.$router.replace({'query': null})
           this.checkAddress = false
         }
@@ -560,6 +632,9 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
+    endNotesTimer(endEvent) {
+      endTimer(endEvent);
+    }
   }
 }
 </script>
@@ -573,6 +648,7 @@ export default {
     height: 35px !important;
   }
 }
+
 .project-section-header .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
@@ -634,7 +710,7 @@ export default {
 
 .project-section {
   max-height: 100%;
-  padding-top: 24px;
+  padding-top: 16px;
 }
 
 .left-panel-scrollable-area {
@@ -700,6 +776,32 @@ export default {
   font-size: 11px;
 }
 
+.milestone-item {
+  display: inline-block;
+  margin-right: 16px;
+  position:relative
+}
+
+.milestone-item:before,
+.milestone-item:after
+{
+  content:'';
+  width: 16px;
+  border-bottom:1px solid #9E9E9E;
+  position:absolute;
+  top:50%;
+
+}
+:after {
+  left:100%;
+}
+:before {
+  right:100%;
+}
+.milestone-item:first-of-type:before,
+.milestone-item:last-of-type:after {
+  display:none;
+}
 
 </style>
 

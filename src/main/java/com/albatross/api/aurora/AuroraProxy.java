@@ -19,6 +19,7 @@ import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Duration;
 import java.util.*;
 import java.util.stream.StreamSupport;
@@ -106,6 +107,15 @@ public class AuroraProxy {
       this.faces = Maps.transformValues(m, Face::new);
     }
 
+    public Optional<BigDecimal> getAnnualEnergyProduction() {
+      return getField(fields, "design", "energy_production", "annual")
+        .map(JsonNode::decimalValue)
+        .map(
+          bigD ->
+            // i.e., round half-up with zero decimal points (nearest whole number)
+            bigD.setScale(0, RoundingMode.HALF_UP));
+    }
+
     public Optional<String> getProjectId() {
       return getField(fields, "design", "project_id").map(JsonNode::textValue);
     }
@@ -132,6 +142,62 @@ public class AuroraProxy {
           "not all arrays have the same pitch");
       return pitch;
     }
+
+    public Optional<Integer> getTotalPanelCount() {
+      checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
+      return arrays.stream()
+                   .map(com.albatross.api.aurora.AuroraProxy.SolarArray::getPanelCount)
+                   .filter(Optional::isPresent)
+                   .map(Optional::get)
+                   .reduce(Integer::sum);
+    }
+
+    public Optional<Integer> getWeightedAverageAnnualSolarAccess() {
+      checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
+      int weightedSum = 0, numPanels = 0;
+      boolean missingAnyArrayValue = false;
+      for (com.albatross.api.aurora.AuroraProxy.SolarArray array : arrays) {
+        Optional<Integer> annualSolarAccess = array.getAnnualSolarAccess(),
+          panels = array.getPanelCount();
+        if (annualSolarAccess.isEmpty() || panels.isEmpty()) {
+          missingAnyArrayValue = true;
+        } else {
+          weightedSum += panels.get() * annualSolarAccess.get();
+          numPanels += panels.get();
+        }
+      }
+      // per judson we should return 0 instead of guessing what the values of panels and annual
+      // solar access might be
+      return missingAnyArrayValue ? Optional.of(0) : Optional.of(weightedSum / numPanels);
+    }
+
+    public Optional<Integer> getWeightedAverageTSRF() {
+      checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
+      int weightedSum = 0, numPanels = 0;
+      boolean missingAnyArrayValue = false;
+      for (SolarArray array : arrays) {
+        Optional<Integer> tsrf = array.getTotalSolarResourceFraction(),
+          panels = array.getPanelCount();
+        if (tsrf.isEmpty() || panels.isEmpty()) {
+          missingAnyArrayValue = true;
+        } else {
+          weightedSum += panels.get() * tsrf.get();
+          numPanels += panels.get();
+        }
+      }
+      // per judson we should return 0 instead of guessing what the values of panels and total solar
+      // resource refraction access might be
+      return missingAnyArrayValue ? Optional.of(0) : Optional.of(weightedSum / numPanels);
+    }
+
+    public Integer getFaceNumber() {
+      checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
+      int faceNumber = arrays.get(0).getFaceNumber();
+      checkArgument(
+        Iterables.all(arrays, a -> a.getFaceNumber() == faceNumber),
+        "not all arrays have the same face number");
+      return faceNumber;
+    }
   }
 
   @RequiredArgsConstructor
@@ -151,6 +217,19 @@ public class AuroraProxy {
 
     public Optional<BigDecimal> getAzimuth() {
       return getField(fields, "azimuth").map(JsonNode::decimalValue);
+    }
+
+    public Optional<Integer> getPanelCount() {
+      return getField(fields, "module", "count").map(JsonNode::intValue);
+    }
+
+    public Optional<Integer> getAnnualSolarAccess() {
+      return getField(fields, "shading", "solar_access", "annual").map(JsonNode::intValue);
+    }
+
+    public Optional<Integer> getTotalSolarResourceFraction() {
+      return getField(fields, "shading", "total_solar_resource_fraction", "annual")
+        .map(JsonNode::intValue);
     }
   }
 }

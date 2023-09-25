@@ -46,28 +46,29 @@ public class EventService {
   }
 
   public Event getEvent(Long id) {
+    User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    return sqlCache.getBySql(EventQuery.get, params, new EventMapper<>(Event.class, om)).orElse(null);
+    params.put("companyId", user.getCompanyId());
+    Event e = sqlCache.getBySql(EventQuery.get, params, new EventMapper<>(Event.class, om)).orElse(null);
+    return e;
   }
 
   public void saveHiddenAndWhiteList(Event event, Boolean positionsChanged){
       User currentUser = securityService.getCurrentUser();
-
       Map<String, Object> params = new HashMap<>();
       params.put("userId", currentUser.trueUserId());
       params.put("companyId", currentUser.getCompanyId());
       params.put("eventId", event.getId());
       params.put("hidden", event.getHidden());
       params.put("whiteListTypeId", WhiteListType.EVENT_HIDDEN.id);
-
+      params.put("hiddenAllow", event.getHiddenAllow());
       sqlCache.updateBySql(EventQuery.saveHidden, params);
-
       if(!event.getHidden()){
           // if event is not hidden, archive ALL white listed positions
           sqlCache.updateBySql(EventQuery.archiveWhiteListPositions, params);
       } else if(null != positionsChanged && positionsChanged){
-          //if event is hidden, archive any white listed positions no longer in the body sent in
+        //if event is hidden, archive any white listed positions no longer in the body sent in
           List<WhiteListedPosition> updatedWLPositions = event.getHiddenWhiteListedPositions();
           List<Long> updatedWLPositionIds = updatedWLPositions.stream()
                   .map(WhiteListedPosition::getPositionId)
@@ -107,6 +108,14 @@ public class EventService {
     params.put("endTimeHidden", event.getEndTimeHidden());
     params.put("resourceReadOnly", event.getResourceReadOnly());
     params.put("resourceHidden", event.getResourceHidden());
+    params.put("startTimeReadOnlyAllow", event.getStartTimeReadOnlyAllow());
+    params.put("startTimeHiddenAllow", event.getStartTimeHiddenAllow());
+    params.put("endTimeReadOnlyAllow", event.getEndTimeReadOnlyAllow());
+    params.put("endTimeHiddenAllow", event.getEndTimeHiddenAllow());
+    params.put("resourceReadOnlyAllow", event.getResourceReadOnlyAllow());
+    params.put("resourceHiddenAllow", event.getResourceHiddenAllow());
+    params.put("hiddenAllow", event.getHiddenAllow());
+
     sqlCache.updateBySql(EventQuery.saveChangesToDefaultFields, params);
   }
 
@@ -339,7 +348,6 @@ public class EventService {
   public void saveWhiteListPositions(
       Long eventId, Long whiteListTypeId, List<WhiteListedPosition> whiteListedPositions) {
     User currentUser = securityService.getCurrentUser();
-
     Map<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());

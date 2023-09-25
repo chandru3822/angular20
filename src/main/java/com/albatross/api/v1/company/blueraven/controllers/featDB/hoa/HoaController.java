@@ -54,39 +54,39 @@ public class HoaController {
 
   // CONTACTS
   @PostMapping(value = "/{hoaId}/contacts")
-  public Optional<FeatDbContact> addUtilityContact(@PathVariable Long hoaId,
+  public Optional<FeatDbContact> addHoaContact(@PathVariable Long hoaId,
                                                    @RequestBody FeatDbContact utilityContact) {
     return hoaService.saveHoaContact(hoaId, null, utilityContact);
   }
 
   @PutMapping(value = "/{hoaId}/contacts/{contactId}")
-  public Optional<FeatDbContact> updateUtilityContact(@PathVariable Long hoaId,
+  public Optional<FeatDbContact> updateHoaContact(@PathVariable Long hoaId,
                                                       @PathVariable Long contactId,
                                                       @RequestBody FeatDbContact utilityContact) {
     return hoaService.saveHoaContact(hoaId, contactId, utilityContact);
   }
 
   @PutMapping(value = "/contacts/{contactId}/archive")
-  public void deleteUtilityContact(@PathVariable Long contactId) {
+  public void deleteHoaContact(@PathVariable Long contactId) {
     hoaService.deleteHoaContact(contactId);
   }
 
   // LINKS
   @PostMapping(value = "/{hoaId}/links")
-  public Optional<FeatDbLink> addUtilityLink(@PathVariable Long hoaId,
+  public Optional<FeatDbLink> addHoaLink(@PathVariable Long hoaId,
                                              @RequestBody FeatDbLink link) {
     return hoaService.saveHoaLink(hoaId, null, link);
   }
 
   @PutMapping(value = "/{hoaId}/links/{linkId}")
-  public Optional<FeatDbLink> updateUtilityLink(@PathVariable Long hoaId,
+  public Optional<FeatDbLink> updateHoaLink(@PathVariable Long hoaId,
                                                 @PathVariable Long linkId,
                                                 @RequestBody FeatDbLink link) {
     return hoaService.saveHoaLink(hoaId, linkId, link);
   }
 
   @PutMapping(value = "/links/{linkId}/archive")
-  public void deleteUtilityLink(@PathVariable Long linkId) {
+  public void deleteHoaLink(@PathVariable Long linkId) {
     hoaService.deleteHoaLink(linkId);
   }
 }

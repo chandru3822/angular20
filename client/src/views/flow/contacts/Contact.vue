@@ -161,67 +161,67 @@
                         @clickEdit="[getStatesAndCountries(), getOwners(), tempContact = cloneDeep(contact), showEditModal = true]"
                         :details="overviewDetails"
           ></PageOverview>
-          <v-divider class="mt-4"></v-divider>
-          <v-toolbar color="transparent" flat>
-            <div class="headline-small">Associated Projects</div>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
+          <v-divider></v-divider>
+          <SidePanelExpansionPanel header="Associated Projects" :sectionExpanded="sectionExpanded">
+            <template v-slot:tool-btn>
               <v-menu
                 v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADD')"
                 bottom
                 offset-y
                 :close-on-content-click="false"
-              >
+            >
                 <template v-slot:activator="{ on: menu }">
-                  <!--                  <v-tooltip top :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId">-->
-                  <v-tooltip top
-                             :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
-                    <template v-slot:activator="{ on: tooltip }">
-                      <div v-on="{ ...tooltip }" class="d-inline-block mt-4">
-                        <v-btn v-on="{ ...menu }"
-                               text
-                               x-small
-                               :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
-                               color="primary"
-                               id="qa-create-project-button"
-                               @click="getAvailableProcesses">
-                          <v-icon>add</v-icon>
-                        </v-btn>
-                      </div>
-                    </template>
+                <v-tooltip top
+                           :disabled="(null != contact.firstName || null != contact.lastName) && (null != contact.owner && null != contact.owner.userId)">
+                  <template v-slot:activator="{ on: tooltip }">
+                    <div v-on="{ ...tooltip }" class="d-inline-block">
+                      <v-btn v-on="{ ...menu }"
+                             text
+                             small
+                             :disabled="(!contact.firstName && !contact.lastName) || !contact.owner || !contact.owner.userId"
+                             color="primary"
+                             id="qa-create-project-button"
+                             class="px-0"
+                             @click="getAvailableProcesses">
+                        <v-icon>add</v-icon>
+                      </v-btn>
+                    </div>
+                  </template>
                     <span v-if="!contact.firstName && !contact.lastName">Contact Requires First or Last Name</span>
                     <span v-else-if="!contact.owner || !contact.owner.userId">Requires Owner</span>
-                  </v-tooltip>
-                </template>
-                <v-card class="pa-5 body-large">
-                  Select a process to be used
-                  <v-select v-model="selectedProcess"
-                            :items="availableProcesses"
-                            label="Process"
-                            id="qa-process-selector"
-                            :loading="processesLoading"
-                            placeholder="Select one..."
-                            item-text="processName"
-                            return-object
-                            class="mt-2 qa-process-selector"
-                  ></v-select>
-                  <v-btn text class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
-                    Add Project
-                  </v-btn>
+                </v-tooltip>
+              </template>
+              <v-card class="pa-5 body-large">
+                Select a process to be used
+                <v-select v-model="selectedProcess"
+                          :items="availableProcesses"
+                          label="Process"
+                          id="qa-process-selector"
+                          :loading="processesLoading"
+                          placeholder="Select one..."
+                          item-text="processName"
+                          return-object
+                          class="mt-2 qa-process-selector"
+                ></v-select>
+                <v-btn text color="primary" class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
+                  Add Project
+                </v-btn>
+              </v-card>
+            </v-menu>
+            </template>
+            <template v-slot:expanded-content>
+              <div>
+                <v-card flat v-for="p in contact.projects"
+                        class="project-button albatross-body-1"
+                        :to="`/project/${p.id}/details`">
+                  <div class="body-large" >{{ p.projectName }} </div>
+                  <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                 </v-card>
-              </v-menu>
-            </v-toolbar-items>
-          </v-toolbar>
-          <div class="mx-2">
-            <v-card flat v-for="p in contact.projects"
-                    class="project-button albatross-body-1"
-                    :to="`/project/${p.id}/details`">
-              <div class="body-large" >{{ p.projectName }} </div>
-              <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
-              <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
-
-            </v-card>
-          </div>
+                <span v-if="contact?.projects?.length === 0">No associated projects</span>
+              </div>
+            </template>
+          </SidePanelExpansionPanel>
+          <v-divider></v-divider>
         </div>
         <div v-if="!$store.state.project.leftSideSplit && contact && contact.id"
              class="px-2 height-one-hunned scrollable show-xs mobile-padding-menu">
@@ -296,7 +296,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <v-btn text class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
+                  <v-btn text color="primary" class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
                     Add Project
                   </v-btn>
                 </v-card>
@@ -529,10 +529,12 @@ import {getStatusClass} from "@/services/processStepStatusTypeService";
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
+import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'Contact',
   components: {
+    SidePanelExpansionPanel,
     PageOverview,
     ConfirmationDialog,
     CustomValueInput,
@@ -549,6 +551,7 @@ export default {
       countries: [],
       showEditModal: false,
       contact: {},
+      sectionExpanded: true,
       getStatusClass,
       formatPhoneNumber,
       requiredRules: constants.BASIC_REQUIRED_RULE,

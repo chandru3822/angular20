@@ -110,6 +110,7 @@
           {text: 'Commissions Paid To Date', value: 'commissionPaidToDate', show: true},
           {text: 'Commission Forfeited Paid to Date', value: 'commissionForfeitedPaidToDate', show: true},
           {text: 'Commission Forfeited by Closer', value: 'commissionForfeitedByCloser', show: true},
+          {text: 'Forfeited Amount', value: 'forfeitedAmount', show: true},
           {text: 'Adjustment', value: 'commissionAdjustment', show: true},
           {text: 'Commission Pay', value: 'currentPayCommissions', show: true},
           {text: 'Remaining Value Commissions', value: 'remainingValueCommissions', show: true},
@@ -234,7 +235,7 @@
           let csvData = ''
 
           if(this.payroll.positionId === 1) {
-            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
             csvData += '\n'
 
             this.payrollSnapshot.forEach(p => {
@@ -254,6 +255,9 @@
                 p.commissionPlan + '",' +
                 p.commissionsEarned + ',' +
                 p.commissionPaidToDate + ',' +
+                p.commissionForfeitedPaidToDate + ',' +
+                p.commissionForfeitedByCloser + ',' +
+                p.forfeitedAmount + ',' +
                 p.commissionAdjustment + ',' +
                 p.currentPayCommissions + ',' +
                 p.remainingValueCommissions + ',' +
@@ -282,6 +286,8 @@
                 p.commission_plan + ',' +
                 p.commissions_earned + ',' +
                 p.commission_paid_to_date + ',' +
+                p.commission_forfeited_paid_to_date + ',' +
+                p.commission_forfeited_by_closer + ',' +
                 p.commission_adjustment + ',' +
                 p.current_pay_commissions + ',' +
                 p.override_plan + ',' +

@@ -27,6 +27,11 @@ const router = new Router({
       component: () => import(/* webpackChunkName: "forgotPassword" */'./views/ForgotPassword.vue')
     },
     {
+      path: '/stripeSuccess',
+      name: 'stripeSuccess',
+      component: () => import(/* webpackChunkName: "forgotPassword" */'./views/StripeSuccessLanding.vue')
+    },
+    {
       path: '/siteUnderMaintenance',
       name: 'siteUnderMaintenance',
       component: () => import(/* webpackChunkName: "forgotPassword" */'./views/SiteUnderMaintenance.vue')
@@ -313,8 +318,14 @@ const router = new Router({
               meta: {title: 'Albatross - Closer Dashboard'},
               component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserIncentive.vue')
             }, {
+              path: 'leaderboard',
+              name: 'closerLeaderboard',
+              meta: {title: 'Albatross - Closer Dashboard'},
+              component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserLeaderboard.vue')
+            }, {
               path: 'residuals',
               name: 'closerResiduals',
+              props: { isAdmin: false },
               meta: {title: 'Albatross - Closer Dashboard'},
               component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
             }
@@ -477,6 +488,29 @@ const router = new Router({
               component: () => {
                 if (store.getters.userHasFeature('HOA')) {
                   return import (/* webpackChunkName: "featDbHoaDetails" */ './views/blueraven/featDB/hoa/HoaDetails.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },{
+              path: 'supplier',
+              name: 'supplier',
+              meta: {title: 'Albatross - Suppliers'},
+              component: () => {
+                if (store.getters.userHasFeature('SUPPLIERS')) {
+                  return import (/* webpackChunkName: "featDbSuppliers" */ './views/blueraven/featDB/suppliers/Suppliers.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'supplier/:supplierId/details',
+              name: 'supplierDetails',
+              meta: {title: 'Databases - Supplier'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('SUPPLIERS')) {
+                  return import (/* webpackChunkName: "featDbSupplierDetails" */ './views/blueraven/featDB/suppliers/SupplierDetails.vue')
                 } else {
                   return accessDenied()
                 }
@@ -705,7 +739,12 @@ const router = new Router({
                       return accessDenied()
                     }
                   },
-                }
+                },
+                {
+                  path: 'messageTypes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "states" */ './views/flow/settings/MessageTypes.vue'),
+                },
               ]
             }, {
               path: 'postalCodes',
@@ -1022,11 +1061,32 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/ProjectStatuses.vue')
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatuses.vue')
                 } else {
                   return accessDenied()
                 }
               },
+            }, {
+              path: 'projectStatus/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatus.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'components',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatusComponents.vue'),
+                }, {
+                  path: 'fields',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/projectStatus/ProjectStatusFields.vue'),
+                },
+              ]
             }, {
               path: 'project',
               name: 'ProjectSettings',
@@ -1113,7 +1173,7 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {
-                  return import (/* webpackChunkName: "projectStatuses" */ './views/flow/settings/SmsTeam.vue')
+                  return import (/* webpackChunkName: "smsTeams" */ './views/flow/settings/SmsTeam.vue')
                 } else {
                   return accessDenied()
                 }
@@ -1357,7 +1417,17 @@ const router = new Router({
                   return accessDenied()
                 }
               }
-            },
+            }, {
+            path: 'dontGoHereRandaSaid',
+            // path: 'tracker',
+            component: () => {
+              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'GARBAGE')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/StatusTracker.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          }
           ]
         },        {
           name: 'projectAdmin',
@@ -1570,6 +1640,19 @@ const router = new Router({
               path: 'residuals',
               meta: {title: 'Albatross - Commissions'},
               component: () => import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/commissionManagement/Residuals.vue'),
+            }, {
+              path: 'closerResiduals',
+              name: 'closerResidualsAdmin',
+              props: { isAdmin: true },
+              meta: {title: 'Albatross - Commissions'},
+              // component: () => import (/* webpackChunkName: "closerDashboard" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('COMMISSIONS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "commissionManagement" */ './views/blueraven/closerDashboard/CloserResiduals.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }, {
               path: 'residualSearch',
               meta: {title: 'Albatross - Commissions'},
@@ -1798,8 +1881,7 @@ const router = new Router({
               },
               children: [
                   {
-                      path: 'inboxConversation/:projectId',
-                      name: 'inboxConversation',
+                      path: 'inboxConversation/project/:projectId',
                       meta: {title: 'Albatross - Inbox Conversation'},
                       component: () => {
                           if(store.getters.userHasFeature('SMS_INBOX')) {
@@ -1808,7 +1890,18 @@ const router = new Router({
                               return accessDenied()
                           }
                       }
+                  },
+                  {
+                  path: 'inboxConversation/user/:userId',
+                  meta: {title: 'Albatross - Inbox Conversation'},
+                  component: () => {
+                    if(store.getters.userHasFeature('SMS_INBOX')) {
+                      return import (/* webpackChunkName: "inboxConversation" */ './views/flow/settings/inbox/MainInbox')
+                    } else {
+                      return accessDenied()
+                    }
                   }
+                }
               ]
           },
       ]

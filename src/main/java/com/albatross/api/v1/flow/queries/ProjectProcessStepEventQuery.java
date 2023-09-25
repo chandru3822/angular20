@@ -24,8 +24,8 @@ public class ProjectProcessStepEventQuery {
 
   //language=PostgreSQL
   public final static String insertEvent = """
-    insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, company_event_status_type_id, created_by_id, save_version)
-        values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById, 1)
+    insert into flow.project_process_step_event(project_process_step_id, process_step_event_id, company_event_status_type_id, created_by_id, save_version, modified_by_id)
+        values(:projectProcessStepId, :processStepEventId, (select initial_company_event_status_type_id from flow.process_step_event where id = :processStepEventId), :createdById, 1, :createdById)
   """;
 
   //language=PostgreSQL
@@ -87,8 +87,15 @@ public class ProjectProcessStepEventQuery {
            e.end_time_hidden,
            e.resource_read_only,
            e.resource_hidden,
+           e.start_time_read_only_allow,
+           e.start_time_hidden_allow,
+           e.end_time_read_only_allow,
+           e.end_time_hidden_allow,
+           e.resource_read_only_allow,
+           e.resource_hidden_allow,
            pse.event_id,
            pse.readonly,
+           pse.readonly_allow,
            pps.company_process_step_status_type_id,
            cpsst.process_step_status_type_id,
            pse.unique_behavior_type_id,

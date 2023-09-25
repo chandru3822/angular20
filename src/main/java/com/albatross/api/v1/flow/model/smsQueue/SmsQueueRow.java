@@ -14,10 +14,8 @@ import java.util.Date;
 @NoArgsConstructor
 public class SmsQueueRow {
 
-  private Long id, userId, projectId;
-  private String fullName, message, projectStatus, lastMessageSentBy;
-  private boolean priority, messageRead;
-  private Owner owner;
-  private Long ownerUserPositionId;
-  private Date lastMessageSent, lastMessageReceived;
+  private Long id, sentToUserId, projectId, contactId, objectTypeId;
+  private String contactName, projectName, sentToUserName, message, projectStatusType, sentByUserName;
+  private Boolean messageRead;
+  private Date created, twilioDelivered;
 }

@@ -44,6 +44,10 @@ $default-text: rgba(0,0,0,0.87);
   color: $default-text !important;
 }
 
+.strike-thru {
+  text-decoration: line-through;
+}
+
 .anchor {
   color: var(--v-anchor-base) !important;
 } //this ought to work automatically with vuetify, but it doesn't
@@ -291,7 +295,13 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
   min-height: 35px !important;
 }
 
-.shaded-row{
+.expanded-row-flatten {
+  tbody tr {
+    box-shadow: none !important;
+  }
+}
+
+.shaded-row, .shaded-row.text-start{
   background-color: var(--v-primary-lighten9) !important;
 }
 
@@ -368,6 +378,11 @@ div.v-data-table__wrapper > table > thead.v-data-table-header > tr > th {
 .clickable {
   cursor: pointer !important;
 }
+
+.not-clickable {
+  cursor: default !important;
+}
+
 .no-display {
   display: none !important;
 }

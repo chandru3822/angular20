@@ -72,48 +72,22 @@
           <v-toolbar-title class="title-large">Event Access Control</v-toolbar-title>
         </v-toolbar>
         <v-card flat color="rowShadeCustom" class="square-card mt-2">
-          <v-card-title style="height: 40px" class="py-0">
-            Hidden
-            <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                        v-model="event.hidden"></v-checkbox>
-          </v-card-title>
           <v-card-text>
-            <v-autocomplete
-                v-if="event.hidden"
-                v-model="event.hiddenWhiteListedPositions"
-                :items="positions"
-                :loading="positionsLoading"
-                multiple
-                clearable
-                label="White Listed Positions"
-                item-text="position"
-                item-value="positionId"
-                return-object
-                height="35px"
-                class="d-inline-block mr-3"
-                @change="hiddenPositionsChanged = true">
-              <template v-slot:selection="{item, index}">
-                <v-chip small
-                        v-if="index === 0 && event.hiddenWhiteListedPositions && event.hiddenWhiteListedPositions.length < 2">
-                  <span>{{ item.position }}</span>
-                </v-chip>
-                <span
-                    v-if="index === 1 && event.hiddenWhiteListedPositions && event.hiddenWhiteListedPositions.length >= 2"
-                    class="primary--text text-caption"
-                >{{ event.hiddenWhiteListedPositions.length }} selected</span>
-              </template>
-              <template v-slot:prepend-item>
-              <v-list-item @click="toggleSelectAllPositionsOwner()">
-                <v-list-item-action>
-                  <v-icon>{{ icon() }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                  class="mt-2"
-              ></v-divider>
-              </template>
-            </v-autocomplete>
+            <multi-select-group
+              v-if="!eventLoading"
+              :userCanEdit="userCanEdit"
+              :returnObject="event"
+              :content="positions"
+              :dropdownEnabled="event.hidden"
+              :selectedContent="event.hiddenWhiteListedPositions"
+              :title="'Hidden'"
+              :label="'Allowed Positions'"
+              :alternateLabel = "'Denied Positions'"
+              :allow="event.hiddenAllow"
+              :contentLoading="positionsLoading"
+              @selected-changed="hiddenSelectedEventListener"
+              @allow-changed="hiddenAllowEventListener"
+              @checkbox-changed="hiddenCheckboxEventListener"></multi-select-group>
             <br/>
             <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
                    @click="saveHiddenAndWhiteList">
@@ -170,6 +144,7 @@ export default {
       positions: [],
       positionsLoading: false,
       hiddenPositionsChanged: false,
+      eventLoading: false
     }
   },
   computed: {
@@ -189,9 +164,11 @@ export default {
     async getEvent () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        this.eventLoading = true;
         const {data} = await getRequest(`/event/${this.eventId}`)
         this.event = data
         this.$store.commit(AppMutations.SET_LOADING, false)
+        this.eventLoading = false;
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
@@ -303,7 +280,7 @@ export default {
     async saveHiddenAndWhiteList () {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${this.hiddenPositionsChanged ?? false}`, this.event)
+        const {status} = await putRequest(`/event/saveHiddenAndWhiteList?positionsChanged=${this.event.hiddenPositionsChanged ?? false}`, this.event)
         this.hiddenPositionsChanged = false
         if(!this.event.hidden) {
           this.event.hiddenWhiteListedPositions = []
@@ -317,6 +294,16 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    hiddenSelectedEventListener(e){
+      this.event.hiddenWhiteListedPositions = e;
+      this.event.hiddenPositionsChanged = true;
+    },
+    hiddenAllowEventListener(e){
+      this.event.hiddenAllow = (e === 0);
+    },
+    hiddenCheckboxEventListener(e){
+      this.event.hidden = e;
     },
   }
 }

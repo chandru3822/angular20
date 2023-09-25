@@ -28,51 +28,32 @@
           </v-btn>
         </v-card>
         <v-card class="pa-4 mt-4">
-          <v-card-title class="title-medium pa-0 mb-4" style="height: 40px">Readonly
-          <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"
-                                                               v-model="selectedEvent.readonly"></v-checkbox>
-          </v-card-title>
+<!--          <v-card-title class="title-medium pa-0 mb-4" style="height: 40px">Readonly-->
+<!--          <v-checkbox :disabled="!userCanEdit" type="checkbox" class="ml-3"-->
+<!--                                                               v-model="selectedEvent.readonly"></v-checkbox>-->
+<!--          </v-card-title>-->
           <v-card-text>
-          <v-autocomplete
-              v-if="selectedEvent.readonly"
-            v-model="selectedEvent.readonlyWhiteListPositions"
-            :items="positions"
-            label="Whitelisted Positions"
-            item-text="position"
-            item-value="positionId"
-              :disabled="!userCanEdit"
-            return-object
-            multiple
-            clearable
-          >
-            <template v-slot:selection="{item, index}">
-              <v-chip small
-                      v-if="selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length < 6">
-                <span>{{ item.position }}</span>
-              </v-chip>
-              <span
-                  v-if="index === 1 && selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length >= 6"
-                  class="primary--text text-caption"
-              >{{ selectedEvent.readonlyWhiteListPositions.length }} selected</span>
-            </template>
-            <template v-slot:prepend-item>
-              <v-list-item
-                  @click="toggleSelectAllPositions()">
-                <v-list-item-action>
-                  <v-icon>{{ icon }}</v-icon>
-                </v-list-item-action>
-                <v-list-item-title>Select All</v-list-item-title>
-              </v-list-item>
-              <v-divider
-                  class="mt-2"
-              ></v-divider>
-            </template>
-          </v-autocomplete>
+            <multi-select-group
+              v-if="!eventLoading"
+              background-color="transparent"
+              :userCanEdit="userCanEdit"
+              :returnObject="selectedEvent"
+              :content="positions"
+              :dropdownEnabled="selectedEvent.readonly"
+              :selectedContent="selectedEvent.readonlyWhiteListPositions"
+              :title="'Read Only'"
+              :label="'Allowed Positions'"
+              :alternateLabel = "'Denied Positions'"
+              :allow="selectedEvent.readonlyAllow"
+              :contentLoading="positionsLoading"
+              :fullSize="true"
+              save-button
+              save-button-text="Save Read Only"
+              @selected-changed="startTimeReadOnlySelectedEventListener"
+              @allow-changed="startTimeReadOnlyAllowEventListener"
+              @checkbox-changed="startTimeReadOnlyCheckboxEventListener"
+            @save-multi-select="saveReadOnlyWhiteList"/>
           </v-card-text>
-          <v-btn color="primary" v-if="userCanEdit"
-                 @click="saveReadOnlyWhiteList(selectedEvent)"
-          >Save Read Only
-          </v-btn>
         </v-card>
       </v-col>
 
@@ -82,17 +63,20 @@
       <ProcessStepRequirements :callback="populateRequirements" :event-requirements="true"></ProcessStepRequirements>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="wqt-header-bar">
-          <v-toolbar-title class="app-title">Event Actions</v-toolbar-title>
+          <v-toolbar-title class="title-large">Event Actions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              {{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+              <v-icon v-if="isMobile && logicStringToggle">mdi-numeric</v-icon>
+              <v-icon v-else-if="isMobile">mdi-alphabetical</v-icon>
+              <span v-if="!isMobile">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
             </v-btn>
             <v-btn text color="primary"
                    @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
                    v-if="userCanAdd">
               <v-icon v-if="!addNewEventAction">add</v-icon>
-              {{ addNewEventAction ? 'Cancel' : 'Add Action' }}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewEventAction ? 'Cancel' : 'Add Action' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -169,12 +153,11 @@
           :items-per-page="-1"
           :sort-desc="[false]"
           :sort-by="['displayOrder']"
-          :mobile-breakpoint="0"
           single-expand
           disable-sort
           :expanded.sync="expanded"
           hide-default-footer
-          class="event-actions-table elevation-1 fix-column-width-bug square-card"
+          class="event-actions-table elevation-1 square-card table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No actions for this event</span>
@@ -224,7 +207,7 @@
                   </template>
                 </v-autocomplete>
 
-                <v-card flat class="pb-5" v-if="[1,2].includes(action.actionTypeId)">
+                <v-card flat class="pb-5" color="transparent" v-if="[1,2].includes(action.actionTypeId)">
                   <div class="title-medium">Options</div>
                   <v-row class="pb-4">
                     <v-col cols="12" md="3">
@@ -295,12 +278,12 @@
                 <div v-if="action.actionTypeId === 1">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
+                    <v-toolbar-title class="title-large">
                       Child Links
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn v-if="!addChildLink && userCanEdit" color="primary"
+                      <v-btn v-if="!addChildLink && userCanEdit" color="primary" text
                              @click="[addChildLink = true, loadLinks(action.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -381,7 +364,7 @@
                 <div v-if="action.actionTypeId === 2">
                   <v-divider></v-divider>
                   <v-toolbar flat color="transparent">
-                    <v-toolbar-title class="app-title">
+                    <v-toolbar-title class="title-large">
                       Child Functions
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
@@ -471,10 +454,17 @@
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="action.childFunctions && action.childFunctions.length > 0">
                   <v-col cols="12" class="pt-0">
+                    <draggable v-model="action.childFunctions" v-if="action.childFunctions && action.childFunctions.length > 0"
+                               :disabled="!userCanEdit"
+                               group="customFields" @start="drag=true" @end="drag=false"
+                               @change="saveChildFunctionOrder(action.id, action.childFunctions)">
                     <v-list v-for="(cp, index) in filterBy(action.childFunctions, false, 'archived')"
                             :key="index"
                             :class="{ 'shaded-row': index % 2 }">
-                      <v-list-item>
+                      <v-list-item class="grab">
+                        <v-list-item-action>
+                          <v-icon v-if="userCanEdit">drag_handle</v-icon>
+                        </v-list-item-action>
                         <v-list-item-content class="text-left">
                           <v-list-item-title>{{ cp.companyFunctionName }}</v-list-item-title>
                           <div class="mt-2"
@@ -610,6 +600,7 @@
                         </v-dialog>
                       </v-list-item>
                     </v-list>
+                    </draggable>
                   </v-col>
                 </v-row>
               </div>
@@ -641,7 +632,7 @@
               </div>
               <v-divider></v-divider>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">
+                <v-toolbar-title class="title-large">
                   Current Logic
                   <v-dialog
                     v-if="action.processStepEventLogicList && action.processStepEventLogicList.length > 0 && !action.logicListChanged"
@@ -722,7 +713,7 @@
                 </v-btn>
               </v-card>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Available Operations</v-toolbar-title>
+                <v-toolbar-title class="title-large">Available Operations</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left px-3" color="transparent">
                 <v-btn small class="ml-1 mr-1 mt-1 primary--text" v-for="(ot, index) in operationTypes" :key="index"
@@ -737,7 +728,7 @@
                 </v-btn>
               </v-card>
               <v-toolbar flat dense color="transparent">
-                <v-toolbar-title class="app-title">Requirements</v-toolbar-title>
+                <v-toolbar-title class="title-large">Requirements</v-toolbar-title>
               </v-toolbar>
               <v-card flat class="text-left mb-4 px-3" color="transparent">
                 <v-tooltip top max-width="300px"
@@ -767,7 +758,7 @@
               </v-btn>
 
               <v-toolbar flat>
-                <v-toolbar-title class="app-title">Event Custom Fields</v-toolbar-title>
+                <v-toolbar-title class="title-large">Event Custom Fields</v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 :headers="eventActionFieldHeaders"
@@ -805,18 +796,17 @@
             </td>
           </template>
 
-          <template #item="{ item: action, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td style="width: 50px">
+
+              <template #item.draggable="{item}" style="width: 50px">
                 <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
                   <v-icon>drag_handle</v-icon>
                 </v-btn>
-              </td>
-              <td class="text-left">{{ action.actionName }}</td>
-              <td class="text-left">{{ action.actionType }}</td>
-              <td class="text-left">{{ action.eventStatusType || 'N/A' }}</td>
-              <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
-              <td>
+              </template>
+              <template #item.actionName="{item: action}" class="text-left">{{ action.actionName }}</template>
+              <template #item.actionType="{item: action}" class="text-left">{{ action.actionType }}</template>
+              <template #item.companyEventStatusType="{item: action}" class="text-left">{{ action.eventStatusType || 'N/A' }}</template>
+              <template #item.companyProcessStepStatusType="{item: action}" class="text-left">{{ action.processStepStatusType || 'N/A' }}</template>
+              <template #item.icons="{item: action}">
                 <div style="display: flex; justify-content: flex-end">
                   <v-btn text color="primary" v-if="userCanEdit"
                          @click="duplicateAction(action.id)">
@@ -825,15 +815,16 @@
                   <v-btn text color="primary" @click="[expanded = [action]]" v-if="!expanded.includes(action)">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-btn text color="primary" @click="expanded = []" v-else>cancel
+                  <v-btn text color="primary" @click="expanded = []" v-else>
+                    <v-icon v-if="isMobile">close</v-icon>
+                    <span v-else>cancel</span>
                   </v-btn>
                   <v-btn small text color="primary" @click="eventActionToDelete = action">
                     <v-icon>delete</v-icon>
                   </v-btn>
                 </div>
-              </td>
-            </tr>
-          </template>
+              </template>
+
         </v-data-table>
       </v-col>
     </v-row>
@@ -847,6 +838,7 @@
 <script>
 import Vue2Filters from 'vue2-filters'
 import {AppMutations} from '@/stores/AppStore'
+import draggable from 'vuedraggable'
 import {
   getRequest,
   deleteRequest,
@@ -866,6 +858,7 @@ export default {
   name: 'ProcessStepEvent',
   mixins: [Vue2Filters.mixin],
   components: {
+    draggable,
     ConfirmationDialog,
     ProcessStepRequirements,
     ProcessStepWorkQueueTypes
@@ -1005,6 +998,9 @@ export default {
       }
       return 'check_box_outline_blank'
     },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     //get event details
@@ -1015,6 +1011,35 @@ export default {
     this.getOperationTypes()
   },
   methods: {
+    async saveChildFunctionOrder(actionId, childFns) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        // if the fieldOrder of any item does not match idx + 1, it means it was changed and needs to be saved
+        // pull those needing to be saved out of list
+        let fnsToSave = []
+        childFns.forEach((f, idx) => {
+          let order = idx + 1
+          if (f.displayOrder !== order) {
+            f.displayOrder = order
+            fnsToSave.push(f)
+          }
+        })
+
+        // save them here
+        if (fnsToSave.length > 0) {
+          await putRequest(`/processStep/${this.processStepId}/event/${this.eventId}/action/${actionId}/updateChildFunctionOrder`, fnsToSave)
+        }
+        this.snackbar = getSnackbar('SUCCESS', 'Function Order Updated')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Updating Function Order')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+
+    },
     changeBooleanValue(e, fp) {
       this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
     },
@@ -1195,7 +1220,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveReadOnlyWhiteList(psEvent) {
+    async saveReadOnlyWhiteList() {
+      const psEvent = this.selectedEvent
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)
@@ -1554,6 +1580,16 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    startTimeReadOnlySelectedEventListener(e){
+      this.selectedEvent.readonlyWhiteListPositions = e;
+      this.selectedEvent.positionsChanged = true;
+    },
+    startTimeReadOnlyAllowEventListener(e){
+      this.selectedEvent.readonlyAllow = (e === 0);
+    },
+    startTimeReadOnlyCheckboxEventListener(e){
+      this.selectedEvent.readonly = e;
     },
   }
 

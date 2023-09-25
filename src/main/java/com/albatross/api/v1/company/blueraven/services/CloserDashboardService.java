@@ -19,10 +19,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -44,15 +41,23 @@ public class CloserDashboardService {
         .get(0);
   }
 
-  public String getCloserResiduals(String residualDate) {
+  public String getCloserResiduals(String residualDate, Long userId) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", user.getId());
+    params.put("userId", null != userId ? userId : user.getId());
     params.put("residualDate", residualDate);
 
     return sqlCache
              .getBySql(CloserDashboardQuery.getCloserResiduals, params, new SingleColumnRowMapper<>(String.class))
              .orElse("{}");
+  }
+
+
+  public List<User> getClosers(Boolean showInactive) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("showInactive", showInactive);
+
+    return sqlCache.queryBySql(CloserDashboardQuery.getClosers, params, User.class);
   }
 
   public String finalDesignsCompletedDrilldown(int quarter) {
@@ -432,5 +437,14 @@ public class CloserDashboardService {
     parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
 
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
+  }
+
+  public List<LeaderboardBooking> getLeaderboardBookings(String bookingDate) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("bookingDate", bookingDate);
+
+
+    List<LeaderboardBooking> results = sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
+    return results;
   }
 }

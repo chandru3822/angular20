@@ -63,7 +63,7 @@ BEGIN
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
           p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$,
-                                                              pps.$$ || z.column_name || $$, pps.id,$$|| quote_literal('PROCESS_STEP')||$$)::$$ || x.data_type ||
+                                                              pps.$$ || z.column_name || $$::text,0::bigint, pps.id,$$|| quote_literal('PROCESS_STEP')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
       v_field_required = false;

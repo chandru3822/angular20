@@ -53,7 +53,6 @@ public class WorkQueueService {
     User user = securityService.getCurrentUser();
     List<UserPosition> userPositions = userPositionService.getAllActiveUserPositions(user.getId());
     Boolean userIsSuperAdmin = securityService.userIsSuperAdmin(user.getId());
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("workQueueCategoryId", workQueueCategoryId);
     params.put("companyId", user.getCompanyId());

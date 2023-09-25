@@ -9,16 +9,16 @@
         <div class="project-subtitle">
           Project ID:
           <router-link :to="`/project/${project.id}/details`">{{ project.id }}</router-link>
-          <br />
+          <br/>
           Address: {{ project.street1 }} - {{ project.city }}, {{ project.state }} {{ project.postalCode }}
-          <br />
+          <br/>
           <span v-if="project.mobile">
             Phone: {{ formatPhoneNumber(project.mobile) }}
           </span>
         </div>
       </v-col>
     </v-row>
-    <v-divider />
+    <v-divider/>
     <v-toolbar flat color="transparent">
       <v-toolbar-title class="proposal-designs-title">Designs and Proposals</v-toolbar-title>
     </v-toolbar>
@@ -34,7 +34,7 @@
             name="designImg"
             class="design-image"
             :quality="80"
-            :uuid="d.attachments[d.imageIndex].uuid" />
+            :uuid="d.attachments[d.imageIndex].uuid"/>
 
           <div class="design-image image-selection-container"
                :style="{'justify-content': d.imageIndex === 0 ? 'end' : d.imageIndex !== 0 ? 'space-between' : ''}">
@@ -67,6 +67,7 @@
         <v-btn color="primary"
                dark
                class="mt-4 one-hunned text-capitalize font-weight-bold"
+               v-if="canEdit"
                @click="addProposal(d)">
           Create new proposal
         </v-btn>
@@ -78,20 +79,15 @@
             class="proposal-container"
             @click="$router.push({name: 'proposal', params: {proposalId: proposal.id}})">
             <v-list-item-content>
-              <v-list-item-title class="proposal-title">
-                <span>{{ proposal.displayName }}</span>
-                <v-icon v-if="proposal.locked" small>mdi-lock</v-icon>
+              <v-list-item-title class="proposal-title d-flex justify-space-between align-center">
+                <span class="d-inline-flex">
+                  <span>{{ proposal.displayName }}</span>
+                  <v-icon v-if="proposal.locked" class="pl-1" small>mdi-lock</v-icon>
+                </span>
+                <span class="design-small-gray">
+                  {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
+                </span>
               </v-list-item-title>
-              <v-list-item-subtitle>
-                <v-container class="design-small-gray subtitle-container">
-                  <v-row>
-                    <v-col class="pt-2 pb-0"></v-col> <!--todo: use actual info here-->
-                    <v-col class="pt-2 pb-0 text-right">
-                      {{ proposal.dateCreated | formatDate('date', 'MMM D, YYYY') }}
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-list-item-subtitle>
             </v-list-item-content>
           </v-list-item>
         </v-list>
@@ -114,16 +110,19 @@
         height="535"
         class="proposal-card request-new"
         :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
-        <v-btn text
-               :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
-               color="primary"
-               @click="handleNewRequest">
-          <v-icon :size="60">add</v-icon>
-        </v-btn>
-        <div class="mt-5 primary--text" :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
-          Request New Design
-        </div>
 
+        <div v-if="canEdit">
+          <v-btn text
+                 :disabled="lockNewRequests || hasActiveDesign || !requestSuccessful"
+                 color="primary"
+                 @click="handleNewRequest">
+            <v-icon :size="60">add</v-icon>
+          </v-btn>
+          <div class="mt-5 primary--text"
+               :class="{'grey--text text--darken-1': lockNewRequests || hasActiveDesign || !requestSuccessful}">
+            Request New Design
+          </div>
+        </div>
         <div class="request-new-details grey--text text--darken-2" v-if="hasActiveDesign">
           <div>
             <router-link
@@ -134,8 +133,8 @@
             <v-icon small class="anchor">mdi-open-in-new</v-icon>
           </div>
 
-          Current Step: {{ activeDesign.processStepName }} <br />
-          Last Requested: {{ activeDesign.dateCreated | formatDate('date') }} <br />
+          Current Step: {{ activeDesign.processStepName }} <br/>
+          Last Requested: {{ activeDesign.dateCreated | formatDate('date') }} <br/>
           Current Status: {{ activeDesign.companyProcessStepStatusType }}
           <div v-if="activeDesign.comments">
             Comments: {{ activeDesign.comments }}
@@ -153,7 +152,7 @@
                       outlined
                       counter="250"
                       color="#808588"
-                      v-model="newDesignRequest.description" />
+                      v-model="newDesignRequest.description"/>
 
           <v-file-input
             dense
@@ -177,19 +176,10 @@
             @change="uploadFiles"
           />
 
-<!--          <DatetimePickerInput-->
-<!--            v-model="newDesignRequest.dueDate"-->
-<!--            :timezone="timezone"-->
-<!--            type="timestamp"-->
-<!--            :format="'MMMM DD, YYYY, h:mm A'"-->
-<!--            :min-date="minDate"-->
-<!--            label="Pick a due date and time (Required)"-->
-<!--          />-->
-
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer />
+          <v-spacer/>
           <v-btn text
                  color="primary"
                  class="text-capitalize"
@@ -222,11 +212,11 @@
                       outlined
                       counter="250"
                       color="#808588"
-                      v-model="newDesignRequest.description" />
+                      v-model="newDesignRequest.description"/>
         </v-card-text>
 
         <v-card-actions>
-          <v-spacer />
+          <v-spacer/>
           <v-btn text
                  class="text-capitalize"
                  @click="showNewPostalCodeRequestForm = false">
@@ -246,12 +236,27 @@
 
 <script>
 
-import { formatPhoneNumber, getRequest, handleHidingGlobalLoader, logError, postRequest } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
+import {formatPhoneNumber, getRequest, handleHidingGlobalLoader, logError, postRequest} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
 import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
 import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
+
+const dateSortFn = (prop = 'dateCreated') => {
+  return (a, b) => {
+    const aDate = new Date(a[prop])
+    const bDate = new Date(b[prop])
+
+    if (aDate < bDate) {
+      return 1
+    }
+    if (aDate > bDate) {
+      return -1
+    }
+    return 0
+  }
+}
 
 export default {
   name: 'ProposalDesigns',
@@ -284,6 +289,11 @@ export default {
     await this.getActiveDesign()
   },
   computed: {
+    canEdit() {
+      const hasAdmin = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN')
+      const hasEdit = this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'EDIT')
+      return hasAdmin || hasEdit
+    },
     hasActiveDesign() {
       return !!this.activeDesign?.projectId
     }
@@ -291,7 +301,7 @@ export default {
   methods: {
     async handleNewRequest() {
       this.lockNewRequests = true
-      const { data } = await getRequest(`/proposal/projects/${this.projectId}/postalCode`, 'blueraven')
+      const {data} = await getRequest(`/proposal/projects/${this.projectId}/postalCode`, 'blueraven')
 
       if (data?.approved) {
         this.showNewDesignRequestForm = true
@@ -340,7 +350,7 @@ export default {
         const {
           data,
           status
-        } = await postRequest(`/proposal/projects/${this.projectId}/postalCode`, { comments }, 'blueraven')
+        } = await postRequest(`/proposal/projects/${this.projectId}/postalCode`, {comments}, 'blueraven')
         this.activeDesign = data
         this.newDesignRequest = {}
         this.showNewPostalCodeRequestForm = false
@@ -361,7 +371,7 @@ export default {
     async getProposalProject() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { data, status } = await getRequest(`/project/${this.projectId}`)
+        const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -372,8 +382,15 @@ export default {
     async getCompletedProposalDesigns() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { data, status } = await getRequest(`/proposal/projects/${this.projectId}/designs`, 'blueraven', [])
-        this.designs = data
+        const {data, status} = await getRequest(`/proposal/projects/${this.projectId}/designs`, 'blueraven', [])
+        const designs = data
+          ?.map((d) => {
+            d?.proposals.sort(dateSortFn())
+            return d
+          })
+          ?.sort(dateSortFn('dateModified'))
+
+        this.designs = designs
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -401,10 +418,10 @@ export default {
     async addProposal(design) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { data, status } = await postRequest(`/proposal`, {
+        const {data, status} = await postRequest(`/proposal`, {
           projectProcessStepId: design.projectProcessStepId
         }, 'blueraven')
-        this.$router.push({ name: 'proposal', params: { proposalId: data.id } })
+        this.$router.push({name: 'proposal', params: {proposalId: data.id}})
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -412,11 +429,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    uploadFiles: function(files) {
+    uploadFiles: function (files) {
       this.newDesignRequest.attachments = files
     },
     //cuz i am dumb and can't figure out how to pass in "files"
-    uploadUtilityBillFiles: function(files) {
+    uploadUtilityBillFiles: function (files) {
       this.newDesignRequest.utilityBillAttachments = files
     }
   }
@@ -483,9 +500,9 @@ export default {
   padding: 0;
 }
 
-.proposal-container {
-  height: 71px;
-}
+//.proposal-container {
+//  height: 71px;
+//}
 
 .slice-selectors {
   position: absolute;

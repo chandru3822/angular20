@@ -38,6 +38,9 @@
                     {{item.name}}
                   </v-btn>
                 </td>
+                <td class="text-left pt-1" >
+                  {{ item.orgName }}
+                </td>
                 <td class="text-left pt-1">
                   <a v-if="item.commissionPlan !== null" @click="goToDetails(item, 1)">
                     {{item.commissionPlan}}:<br/>
@@ -96,6 +99,7 @@
         },
         headers: [
           {text: 'User', value: 'name', show: true},
+          {text: 'Office', value: 'orgName', show: true},
           {text: 'Commissions Assigned To', value: 'commissionPlan', show: true},
           {text: 'Overrides Assigned To', value: 'overridePlan', show: true},
           {text: 'Receiving Overrides From', value: 'receivingPlan', show: true},

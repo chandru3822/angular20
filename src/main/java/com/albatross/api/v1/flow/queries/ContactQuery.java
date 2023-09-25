@@ -52,6 +52,7 @@ select c.id,
        cc.country_id,
        c.owner_user_position_id,
        cot.owner_read_only,
+       cot.owner_read_only_allow,
        coalesce((
                     SELECT array_to_json(array_agg(row_to_json(wlp)))
                     FROM (
@@ -63,6 +64,7 @@ select c.id,
                                     wlp.archived
                              FROM flow.white_listed_position wlp
                              WHERE wlp.white_list_type_id = 5
+                             AND wlp.company_id = :companyId
                                AND wlp.archived is not true) wlp), '[]') AS "ownerReadOnlyWhiteListedPositions",
        coalesce((
             SELECT array_to_json(array_agg(row_to_json(projects)))
@@ -100,7 +102,9 @@ select c.id,
                      concat(u.first_name, ' ', u.last_name) as "fullName",
                      p.position,
                      up.id as "userPositionId",
-                     ust.has_access as "hasAccess"
+                     ust.has_access as "hasAccess",
+                     p.sms_enabled as "hasSmsAccess",
+                     p.active as "isActive"
                   FROM flow."user" u
                     inner join flow.user_position up on up.user_id = u.id
                     inner join flow.position p on p.id = up.position_id
@@ -174,7 +178,8 @@ select c.id,
            email = :email,
            mobile = :mobile,
            modified_by_id = :modifiedById,
-           date_modified = now()
+           date_modified = now(),
+           owner_user_position_id = :ownerUserPositionId
     where id = :id
     """;
 
@@ -381,6 +386,7 @@ select
                                                                                           wlp.archived
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.white_list_type_id = 2
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga

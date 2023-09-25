@@ -124,6 +124,20 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
+      <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="saveEventDetails" @close-dialog="conflictingEvent = null; fieldsSaving = false">
+        <template v-slot:title>Conflict</template>
+        <div>
+          Resource <b>{{this.conflictingEvent.resourceName}}</b>
+          has another event on their calendar on <b>{{this.conflictingEvent.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+          - {{this.conflictingEvent.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+          <b></b>
+        </div>
+        <br>
+        <b>Existing Event:</b> {{ conflictingEvent.eventName }} ({{ conflictingEvent.projectName }}, ID: {{ conflictingEvent.projectId }})
+        <template v-slot:no>Cancel</template>
+        <template v-slot:yes>Schedule Anyway</template>
+
+      </ConfirmationDialog>
       <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
@@ -147,7 +161,7 @@
             v-model="selectedEvent.companyEventStatusTypeId"
             :items="companyEventStatuses"
             label="Event Status"
-            :disabled="!userCanManage || isEventReadonly"
+            :disabled="!userIsAdmin || isEventReadonly"
             item-text="eventStatusType"
             item-value="id"
             @input="[statusChanged = true, defaultValuesChanged = true]"
@@ -166,10 +180,10 @@
                 <DatetimePickerInput
                     v-model="selectedEvent.startTime"
                     :timezone="this.timezone"
-                    :disabled="uniqueAlreadyHasValue || showRoundRobin || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
-                    :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly)"
+                    :disabled="uniqueAlreadyHasValue || showRoundRobin || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly, selectedEvent.startTimeReadOnlyAllow)"
+                    :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.startTimeWhiteListedPositions, selectedEvent.startTimeReadOnly, selectedEvent.startTimeReadOnlyAllow)"
                     :required="actionRequiresStart && !selectedEvent.startTime && !eventSaveOverrideRequired"
-                    v-if="!getDefaultFieldHidden(selectedEvent.startTimeHiddenWhiteListedPositions, selectedEvent.startTimeHidden)"
+                    v-if="!getDefaultFieldHidden(selectedEvent.startTimeHiddenWhiteListedPositions, selectedEvent.startTimeHidden, selectedEvent.startTimeHiddenAllow)"
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
                     label="Start Time"
@@ -180,9 +194,9 @@
                 <DatetimePickerInput
                     v-model="selectedEvent.endTime"
                     :timezone="this.timezone"
-                    :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-                    :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly)"
-                    v-if="!getDefaultFieldHidden(selectedEvent.endTimeHiddenWhiteListedPositions, selectedEvent.endTimeHidden)"
+                    :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly, selectedEvent.endTimeReadOnlyAllow)"
+                    :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.endTimeWhiteListedPositions, selectedEvent.endTimeReadOnly, selectedEvent.endTimeReadOnlyAllow)"
+                    v-if="!getDefaultFieldHidden(selectedEvent.endTimeHiddenWhiteListedPositions, selectedEvent.endTimeHidden, selectedEvent.endTimeHiddenAllow)"
                     :required="actionRequiresEnd && !selectedEvent.endTime && !eventSaveOverrideRequired"
                     :type="'timestamp'"
                     :format="'MMMM DD, YYYY, h:mm A'"
@@ -192,11 +206,11 @@
               </v-col>
             </v-row>
             <v-autocomplete
-                v-if="selectedEvent && selectedEvent.availableResources && !getDefaultFieldHidden(selectedEvent.resourceHiddenWhiteListedPositions, selectedEvent.resourceHidden)"
+                v-if="selectedEvent && selectedEvent.availableResources && !getDefaultFieldHidden(selectedEvent.resourceHiddenWhiteListedPositions, selectedEvent.resourceHidden, selectedEvent.resourceHiddenAllow)"
                 v-model="selectedEvent.resourceId"
                 :items="selectedEvent.availableResources"
-                :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
-                :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly)"
+                :disabled="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly, selectedEvent.resourceReadOnlyAllow)"
+                :readonly="uniqueAlreadyHasValue || getDefaultFieldReadOnly(selectedEvent.resourceWhiteListedPositions, selectedEvent.resourceReadOnly, selectedEvent.resourceReadOnlyAllow)"
                 :rules="getResourceRequirement()"
                 label="Resource"
                 item-text="name"
@@ -342,7 +356,7 @@ import {
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getAssignedToEvent} from '@/services/eventStatusTypeService'
-import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly, getEventDefaultFieldHidden} from "@/services/customFieldService";
+import {getEventCustomFieldReadOnly, getEventDefaultFieldReadOnly, getEventDefaultFieldHidden, getUserPositionIds} from "@/services/customFieldService";
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
 import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
 import constants from '@/helpers/constants'
@@ -382,6 +396,7 @@ export default {
       unsavedFieldsModal: false,
       navigationOverride: false,
       toPath: null,
+      conflictingEvent: null,
       query: {},
       attemptedAction: {},
       companyEventStatuses: [],
@@ -557,7 +572,7 @@ export default {
       }
 
       action?.childLinks?.forEach(link => {
-        followLink(link.url, params)
+        followLink(this, link.url, params)
       })
     },
     validateActionRequirements: async function (action) {
@@ -684,6 +699,13 @@ export default {
 
         //set this because running an action also saves fields so it needs to be reset
         this.defaultValuesChanged = false
+
+        //if there are links returned, open them
+        data?.childFunctionReturnedStrings?.forEach(rs => {
+          //the date stringify guarantees a new tab opens every time
+          window.open(rs, JSON.stringify(new Date()))
+        })
+
         if (data?.processStepStatusTypeId !== 1) {
           //set navigation override so we dont get the unsaved fields popup
           this.navigationOverride = true
@@ -762,20 +784,20 @@ export default {
     },
     getFieldReadOnly: function (field) {
       if (null != field) {
-        //full Admin is never read only
-        // read only if either the field or the event is read only
-        return (!this.$store.getters.isFullAdmin && getEventCustomFieldReadOnly(this.$store, field)) || this.isEventReadonly
+        // read only if either the field or the event is read only or the user cannot edit
+        //had to remove the fullAdmin thing because events can now have ancillary fields which need to always be readonly regardless of permissions
+        return !this.userCanEdit || getEventCustomFieldReadOnly(this.$store, field) || this.isEventReadonly
       }
       return false
     },
-    getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue) {
+    getDefaultFieldReadOnly: function (wlp, readOnlyFieldValue, allowFlag) {
       //full Admin is never read only
       // read only if either the field or the event is read only
-      return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue)) || this.isEventReadonly
+      return (!this.$store.getters.isFullAdmin && getEventDefaultFieldReadOnly(this.$store, wlp, readOnlyFieldValue, allowFlag)) || this.isEventReadonly
 
     },
-    getDefaultFieldHidden: function (wlp, hiddenFieldValue) {
-      return getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue)
+    getDefaultFieldHidden: function (wlp, hiddenFieldValue, hiddenFlag) {
+      return getEventDefaultFieldHidden(this.$store, wlp, hiddenFieldValue, hiddenFlag)
     },
     populateDirtyCfvs(field) {
       let match = this.dirtyCfvs.find(f => (null !== f.id && f.id === field.id) || f.customFieldGroupAssignmentId === field.customFieldGroupAssignmentId)
@@ -857,6 +879,33 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    async checkForSchedulingConflicts(){
+      let paramsForAvailability = {
+        // orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+        // this was the old way. leaving here in case
+        // userPositionIds: this.getUserPositionIds(),
+        userPositionIds: [this.selectedEvent.resourceId],
+        startTime: this.selectedEvent.startTime,
+        endTime: this.selectedEvent.endTime,
+        includeCancelled: false,
+        resourceId: this.selectedEvent.resourceId
+      }
+
+      await postRequest(`/schedule`, paramsForAvailability).then(response => {
+        for(let scheduledEvent of response.data) {
+          if ((scheduledEvent.start >= this.selectedEvent.startTime && scheduledEvent.start <= this.selectedEvent.endTime) || (scheduledEvent.end >= this.selectedEvent.startTime && scheduledEvent.end <= this.selectedEvent.endTime)) {
+            this.conflictingEvent = scheduledEvent;
+            break;
+          }
+          else{
+            this.conflictingEvent = null;
+          }
+        }
+        if(this.conflictingEvent == null){
+          this.saveEventDetails();
+        }
+      });
     },
     async saveEventDetails() {
       this.eventSaveOverrideRequired = true
@@ -1048,7 +1097,7 @@ export default {
       if (validSave) {
         this.eventActionMissingRequirements = false
         this.defaultValuesChanged = false
-        this.saveEventDetails()
+        this.checkForSchedulingConflicts();
       }
     },
     filterProjectProcessStepEvents() {

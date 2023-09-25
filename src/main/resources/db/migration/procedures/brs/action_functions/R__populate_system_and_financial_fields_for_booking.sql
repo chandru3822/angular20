@@ -28,6 +28,10 @@ BEGIN
     from brs.proposal_log_history
     where id = v_proposal_history_id;
 
+    if v_loan_type = 'SunPower' then
+      v_loan_type = 'SunPower Financial';
+    end if;
+
     select cp.company_id
     into v_company_id
     from flow.project p
@@ -209,6 +213,15 @@ BEGIN
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id), round(plh.system_size::numeric/1000,2),
+                           (select cfga.id
+                            from flow.custom_field cf
+                                   inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+                                   inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
+                            where cf.id = 35 --Estimated Annual Energy Consumption (kWh)
+                              and cfga.archived is false and cf.archived is false and cfg.archived is false
+                              and cf.company_id = v_company_id
+                              and cfg.process_step_id = p_process_step_id), (total_yearly_usage_pre_solar::numeric)::bigint,
+
                             (select cfga.id
                              from flow.custom_field cf
                                       inner join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
@@ -347,15 +360,15 @@ BEGIN
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and plh.loan_amount::numeric is null) then 0.00::numeric
                                                                                       when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric
-                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric is null) then 0.00::numeric
-                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric > 0.00::numeric) then coalesce(round(optional_down_payment::numeric,2),0)::numeric
+                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
+                                                                                      when (v_loan_type != 'Cash' and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
                                                                                       else 0.00::numeric end)) as me
                  from brs.proposal_log_history plh
                  inner join brs.project_details pd on pd.project_id = plh.project_id
                  where plh.id = v_proposal_history_id) as t
                  left join lateral jsonb_each_text(t.me) f on true
     LOOP
-       -- raise notice 'cfga% value %',_key,_value;
+      --  raise notice 'cfga% value %',_key,_value;
       perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
 

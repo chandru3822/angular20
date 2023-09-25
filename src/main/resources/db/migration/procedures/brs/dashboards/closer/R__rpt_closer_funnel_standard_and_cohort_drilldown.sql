@@ -46,6 +46,7 @@ BEGIN
                select pd.closer_name                 as  owner_name,
                       o.org_name                         office,
                       pd.project_state_abbreviation      state,
+                      pd.metro_area_name             as  metro_area,
                       pd.company_project_status_type as  status_type,
                       pd.contact_name                as  customer_name,
                       pd.contact_id,
@@ -69,7 +70,7 @@ BEGIN
                       pd.proof_of_homeowners_insurance_obtained_date,
                       pd.first_cash_payment_paid_date    cash_down_payment,
                       pd.utility_bill_verified_date,
-                      pd.site_survey_end_time            site_survey_completed_date,
+                      pd.site_survey_completed_date            site_survey_completed_date,
                       case
                         when p_funnel_id in (9, 3) then pd.credit_decision_date
                         when p_funnel_id = 4 then pd.installation_agreement_signed_date
@@ -125,7 +126,7 @@ BEGIN
                         pd.final_design_sent_to_homeowner_date, pd.final_design_signed_date,
                         pd.final_design_signed_date, pd.final_design_complete_date, pd.financial_agreement_signed_date,
                         pd.substantial_completion_date, pd.proof_of_homeowners_insurance_obtained_date,
-                        pd.first_cash_payment_paid_date, pd.utility_bill_verified_date, pd.site_survey_end_time,
+                        pd.first_cash_payment_paid_date, pd.utility_bill_verified_date, pd.site_survey_completed_date,
                         order_by_date
                order by owner_name, order_by_date
              ) as funnel_rows;
@@ -136,6 +137,7 @@ BEGIN
                select pd.closer_name                 as  owner_name,
                       o.org_name                         office,
                       pd.project_state_abbreviation      state,
+                      pd.metro_area_name             as  metro_area,
                       pd.company_project_status_type as  status_type,
                       pd.contact_name                as  customer_name,
                       pd.contact_id,
@@ -159,7 +161,7 @@ BEGIN
                       pd.proof_of_homeowners_insurance_obtained_date,
                       pd.first_cash_payment_paid_date    cash_down_payment,
                       pd.utility_bill_verified_date,
-                      pd.site_survey_end_time            site_survey_completed_date,
+                      pd.site_survey_completed_date            site_survey_completed_date,
                       case
                         when p_funnel_id in (9, 3) then pd.credit_decision_date
                         when p_funnel_id = 4 then pd.installation_agreement_signed_date
@@ -210,6 +212,7 @@ BEGIN
              select owner_name,
                     office,
                     state,
+                    metro_area,
                     status_type,
                     customer_name,
                     contact_id,

@@ -5,6 +5,7 @@ import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.controllers.OrgController;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.AttachmentType;
@@ -32,7 +33,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,6 +59,10 @@ public class OrgService {
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
+
+  public void doOrgStructureRefresh() {
+    sqlCache.updateBySql(OrgQuery.orgStructureRefresh, Collections.emptyMap());
+  }
 
   public List<Org> getOrgsForCompany() {
     User user = securityService.getCurrentUser();
@@ -264,35 +268,50 @@ public class OrgService {
     params.put("userId", userId);
     params.put("companyId", user.getCompanyId());
 
-    return sqlCache.queryBySql(OrgQuery.getOrgCalendarsForUser, params, Org.class);
+
+    if(userHasFullCalendarAccess(userId)) {
+      //get all scheduling orgs for company if user has full access
+      return getSchedulingOrgs(null, true);
+    } else {
+      return sqlCache.queryBySql(OrgQuery.getOrgCalendarsForUser, params, Org.class);
+    }
+
   }
 
-  public UserOrgAccess saveOrgCalendarToUser(UserOrgAccess userOrgAccess) {
+  public Boolean userHasFullCalendarAccess(Long userId) {
     User user = securityService.getCurrentUser();
-
     Map<String, Object> params = new HashMap<>();
-    params.put("userId", userOrgAccess.getUserId());
-    params.put("orgId", userOrgAccess.getOrgId());
-    params.put("createdById", user.trueUserId());
+    params.put("userId", userId);
+    params.put("companyId", user.getCompanyId());
 
-    Long id = sqlCache.updateBySqlReturningId(OrgQuery.saveOrgCalendarToUser, params, "id").longValue();
-    return getOneOrgCalendarAccess(id);
+    return sqlCache.queryForObjectBySql(OrgQuery.getOrgCalendarsAccessLevelForUser, params, Boolean.class);
   }
 
-  public void deleteOrgCalendarFromUser(Long id) {
-    User user = securityService.getCurrentUser();
+
+  public List<Org> saveOrgCalendarsAccess(OrgController.UserOrgAccessRequest request) {
+    User currentUser = securityService.getCurrentUser();
 
     Map<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    params.put("modifiedById", user.trueUserId());
+    params.put("userId", request.getUserId());
+    params.put("companyId", currentUser.getCompanyId());
+    params.put("currentUserId", currentUser.trueUserId());
+    params.put("fullCalendarAccess", request.isFullCalendarAccess());
 
-    sqlCache.updateBySql(OrgQuery.deleteOrgCalendarFromUser, params);
-  }
+    //save the full calendar access every time...for now cuz this is taking too long
+    sqlCache.updateBySql(OrgQuery.saveUserFullCalendarAccess, params);
 
-  public UserOrgAccess getOneOrgCalendarAccess(Long id) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    return sqlCache.getBySql(OrgQuery.getOneOrgCalendarAccess, params, UserOrgAccess.class).orElse(null);
+    if(!request.isFullCalendarAccess()) {
+      List<Long> orgIdsSentIn = request.getUserOrgAccess().stream().map(UserOrgAccess::getOrgId).toList();
+      params.put("orgIdsSentIn", orgIdsSentIn);
+
+      //delete any orgs that exist and werent sent in
+      sqlCache.updateBySql(OrgQuery.deleteArchivedUserOrgAccess, params);
+
+      //add any orgs that are new and not archived
+      sqlCache.updateBySql(OrgQuery.saveOrgCalendarsToUser, params);
+    }
+
+    return getOrgCalendarsForUser(request.getUserId());
   }
 
   public List<Attachment> getOrgAttachments(Long orgId, Boolean isMobile, Boolean linked) {

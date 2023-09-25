@@ -19,7 +19,23 @@ declare
   v_join text;
   v_order_by text;
   v_field_required boolean default false;
+v_custom_field_group_assignment_ids text;
 BEGIN
+  with my_data as (
+    select cf.field_name,cf.id as custom_field_id,cfga.id,dvfc.field_to_update
+    from flow.data_view_field_config dvfc
+           inner join flow.custom_field_group_assignment cfga on cfga.id = dvfc.custom_field_group_assignment_id
+           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+    where custom_field_group_assignment_id = z.custom_field_group_assignment_id)
+  select string_agg(c.id::text,',')
+  into v_custom_field_group_assignment_ids
+  from flow.data_view_field_config dvfc2
+         inner join flow.custom_field_group_assignment c on c.id = dvfc2.custom_field_group_assignment_id
+         inner join flow.custom_field f on f.id = c.custom_field_id
+         inner join my_data md on md.custom_field_id = f.id
+  where dvfc2.field_to_update = md.field_to_update;
+
+
       if p_in_event_details > 1 then
         p_sql = p_sql || $$ event_details_$$||p_in_event_details||$$ as (select distinct on (p.id) p.id,$$;
         p_text_array_tables = array_append(p_text_array_tables, ($$event_details_$$||p_in_event_details|| $$ ed_$$||p_in_event_details)::character varying);
@@ -64,7 +80,7 @@ BEGIN
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
           p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$, ppsecfv.$$
-                    || flow.get_value_based_on_data_type(z.data_type_id) || $$, ppsecfv.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
+                    || flow.get_value_based_on_data_type(z.data_type_id) || $$::text,0::bigint, ppsecfv.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
 
@@ -86,12 +102,11 @@ BEGIN
                       inner join flow.project_process_step_event ppse on ppse.project_process_step_id = pps.id and
                                               ppse.process_step_event_id = $$ || z.process_step_event_id || $$
                       $$||v_join||$$ join flow.project_process_step_event_custom_field_value ppsecfv on ppse.id = ppsecfv.project_process_step_event_id
-                        and ppsecfv.custom_field_group_assignment_id = $$ || z.custom_field_group_assignment_id || $$
+                        and ppsecfv.custom_field_group_assignment_id in ($$ || v_custom_field_group_assignment_ids || $$)
                         where case when $$||v_field_required||$$ is true then ppsecfv.$$||flow.get_value_based_on_data_type(z.data_type_id)||
             $$ is not null else 1=1 end and
             p.company_process_id = any('$$||z.company_process_ids::text||$$'::bigint[])
                         order by p.id, $$||v_order_by|| v_order ||$$ ), $$;
-
 
 
 END

@@ -65,48 +65,50 @@ public class SMSService {
   private final PhoneNumberUtil phoneNumberUtil = PhoneNumberUtil.getInstance();
   private final SecurityService securityService;
 
-  public Page<SmsQueueRow> getSmsQueue(Pageable pageable) {
-    final Map<String, Object> params =
-      Map.of(
-        "limit", pageable.getPageSize(),
-        "offset", pageable.getOffset());
-    final Long count = sqlCache.queryForObjectBySql(SmsServiceQuery.getSmsQueueCount, Map.of(), Long.class);
+  public Page<SmsQueueRow> getSmsQueue(Pageable pageable, Long objectTypeId, Boolean messageRead) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("objectTypeId", objectTypeId);
+    params.put("messageRead", messageRead);
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
+
+    int total = 10000;
     List<SmsQueueRow> results =
       sqlCache.queryBySql(SmsServiceQuery.getSmsQueue, params, new SMSQueuePageMapper<>(SmsQueueRow.class, om));
     return new PageImpl<>(
-      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
+      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), total);
   }
 
-  public List<Owner> getOwners() {
-    User user = securityService.getCurrentUser();
-    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+  //not used anymore?
+//  public List<Owner> getOwners() {
+//    User user = securityService.getCurrentUser();
+//    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+//
+//    return sqlCache.queryBySql(
+//      ProjectQuery.getOwners,
+//      Map.of(
+//        "companyId", user.getCompanyId(),
+//        "isParent", isParent,
+//        "parentCompanyId", user.getHighestParentCompanyId()),
+//      Owner.class);
+//  }
 
-    return sqlCache.queryBySql(
-      ProjectQuery.getOwners,
-      Map.of(
-        "companyId", user.getCompanyId(),
-        "isParent", isParent,
-        "parentCompanyId", user.getHighestParentCompanyId()),
-      Owner.class);
-  }
-
-  public List<SMSQueueExportItem> exportSmsQueue() {
-
-    return sqlCache.queryBySql(
-      SmsServiceQuery.exportAll, Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
-  }
-
-  public Optional<SMSQueueItem> getSmsById(Long id) {
-    Map<String, Object> params = Map.of("id", id);
-
-    return sqlCache.getBySql(
-      SmsServiceQuery.fetch, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
-  }
+//  public List<SMSQueueExportItem> exportSmsQueue() {
+//
+//    return sqlCache.queryBySql(
+//      SmsServiceQuery.exportAll, Map.of(), new SMSQueueMapper<>(SMSQueueExportItem.class, om));
+//  }
 
   public List<SMSQueueItem> getSmsByProjectId(Long projectId) {
     Map<String, Object> params = Map.of("projectId", projectId);
     return sqlCache.queryBySql(
       SmsServiceQuery.fetchByProjectId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
+  }
+
+  public List<SMSQueueItem> getSmsByUserId(Long userId) {
+    Map<String, Object> params = Map.of("userId", userId);
+    return sqlCache.queryBySql(
+      SmsServiceQuery.fetchByUserId, params, new SMSQueueMapper<>(SMSQueueItem.class, om));
   }
 
   public SMSQueueItem queueMessage(
@@ -119,35 +121,42 @@ public class SMSService {
     List<URI> mediaURLs,
     RecipientType recipientType,
     Long sentByUserId,
-    Long sentBySmsTeamId) {
-    String queueInsert = SmsServiceQuery.insert;
+    Long sentBySmsTeamId,
+    Integer priorityLevel) {
 
-    MapSqlParameterSource source = new MapSqlParameterSource();
-    source.addValue("messageGroup", messageGroup);
-    source.addValue("userId", userId);
-    source.addValue("contactId", contactId);
-    source.addValue("projectId", projectId);
-    source.addValue("message", message);
-    source.addValue("toPhone", toPhone);
-    source.addValue("mediaUrls", null);
-    source.addValue("recipientTypeId", recipientType.ordinal());
-    source.addValue("messageSentByUserId", sentByUserId);
-    source.addValue("sentBySmsTeamId", sentBySmsTeamId);
+    if(null != toPhone && !toPhone.isBlank()) {
+      String queueInsert = SmsServiceQuery.insert;
 
-    if (mediaURLs != null && !mediaURLs.isEmpty()) {
+      MapSqlParameterSource source = new MapSqlParameterSource();
+      source.addValue("messageGroup", messageGroup);
+      source.addValue("userId", userId);
+      source.addValue("contactId", contactId);
+      source.addValue("projectId", projectId);
+      source.addValue("message", message);
+      source.addValue("toPhone", toPhone);
+      source.addValue("mediaUrls", null);
+      source.addValue("recipientTypeId", recipientType.ordinal());
+      source.addValue("messageSentByUserId", sentByUserId);
+      source.addValue("sentBySmsTeamId", sentBySmsTeamId);
+      source.addValue("priorityLevel", priorityLevel);
 
-      try (Connection connection = dataSource.getConnection()) {
-        String[] mediaUrls = mediaURLs.stream().map(URI::toString).toArray(String[]::new);
-        Array varchar = connection.createArrayOf("varchar", mediaUrls);
-        source.addValue("mediaUrls", varchar);
-      } catch (SQLException e) {
-        log.error("TWILIO_WEBHOOK_ERROR: media url problems, error={}", e.getMessage());
+      if (mediaURLs != null && !mediaURLs.isEmpty()) {
+
+        try (Connection connection = dataSource.getConnection()) {
+          String[] mediaUrls = mediaURLs.stream().map(URI::toString).toArray(String[]::new);
+          Array varchar = connection.createArrayOf("varchar", mediaUrls);
+          source.addValue("mediaUrls", varchar);
+        } catch (SQLException e) {
+          log.error("TWILIO_WEBHOOK_ERROR: media url problems, error={}", e.getMessage());
+        }
       }
-    }
 
-    List<SMSQueueItem> items =
-      jdbcTemplate.query(queueInsert, source, new SMSQueueMapper<>(SMSQueueItem.class, om));
-    return items.get(0);
+      List<SMSQueueItem> items =
+        jdbcTemplate.query(queueInsert, source, new SMSQueueMapper<>(SMSQueueItem.class, om));
+      return items.get(0);
+    } else {
+      return null;
+    }
   }
 
   @Transactional
@@ -368,15 +377,22 @@ public class SMSService {
     Twilio.init(properties.getTwilioAccountSID(), properties.getTwilioAuthToken());
 
     PhoneNumber toPhoneNumber = new PhoneNumber(phoneNumber);
-    String twilioMessageServiceSID = getMessageServiceSID(recipientType);
-    String twilioPhoneNumber = properties.getTwilioPhoneNumber();
-
     MessageCreator creator = null;
-    // prefer Message Service SID over phone number if available
-    if (StringUtils.hasText(twilioMessageServiceSID)) {
-      creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
-    } else if (StringUtils.hasText(twilioPhoneNumber)) {
-      creator = Message.creator(toPhoneNumber, new PhoneNumber(twilioPhoneNumber), messageText);
+    String twilioMessageServiceSID = getMessageServiceSID(recipientType);
+
+    switch (recipientType) {
+      case PROJECT:
+        creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioPhoneNumber()), messageText);
+        creator.setMessagingServiceSid(twilioMessageServiceSID);
+        break;
+      case USER:
+        creator = Message.creator(toPhoneNumber, new PhoneNumber(properties.getTwilioInternalPhoneNumber()), messageText);
+        creator.setMessagingServiceSid(twilioMessageServiceSID);
+        break;
+      default:
+        if (StringUtils.hasText(twilioMessageServiceSID)) {
+          creator = Message.creator(toPhoneNumber, twilioMessageServiceSID, messageText);
+        }
     }
 
     if (mediaURLs != null && !mediaURLs.isEmpty()) {
@@ -407,11 +423,7 @@ public class SMSService {
   public void updateSms(SMSQueueItem smsQueueItem) {
     Map<String, Object> params = new HashMap<>();
     params.put("smsId", smsQueueItem.getId());
-    params.put("priority", smsQueueItem.isPriority());
     params.put("messageRead", smsQueueItem.isMessageRead());
-    params.put(
-      "ownerUserPositionId",
-      smsQueueItem.getOwner() != null ? smsQueueItem.getOwner().getUserPositionId() : null);
     sqlCache.updateBySql(SmsServiceQuery.update, params);
   }
 
@@ -434,19 +446,19 @@ public class SMSService {
     output = cleanPhoneNumber(input);
     return output;
   }
-
-  public Optional<TwilioMessageRequest> getReply(String phone, Date since)
-    throws NumberParseException {
-    String phoneE164 = cleanPhoneNumber(phone);
-
-    log.debug("TWILIO: input phone: {}; clean phone: {}", phone, phoneE164);
-    Map<String, Object> params =
-      Map.of(
-        "phone", phoneE164,
-        "since", since);
-
-    return sqlCache.getBySql(SmsServiceQuery.fetchReply, params, TwilioMessageRequest.class);
-  }
+//
+//  public Optional<TwilioMessageRequest> getReply(String phone, Date since)
+//    throws NumberParseException {
+//    String phoneE164 = cleanPhoneNumber(phone);
+//
+//    log.debug("TWILIO: input phone: {}; clean phone: {}", phone, phoneE164);
+//    Map<String, Object> params =
+//      Map.of(
+//        "phone", phoneE164,
+//        "since", since);
+//
+//    return sqlCache.getBySql(SmsServiceQuery.fetchReply, params, TwilioMessageRequest.class);
+//  }
 
   public static class SMSQueueMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper om;

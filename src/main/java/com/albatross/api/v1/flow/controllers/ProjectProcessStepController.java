@@ -109,7 +109,7 @@ public class ProjectProcessStepController {
   }
 
   @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
-  public ResponseEntity<ProjectProcessStepStatus> performAction(
+  public ResponseEntity<ProjectProcessStepActionResult> performAction(
       @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
@@ -139,7 +139,10 @@ public class ProjectProcessStepController {
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
-      actionResults.add(projectProcessStepService.performAction(action, pps, new ArrayList<>()));
+      ProjectProcessStepActionResult actionResultToReturn = new ProjectProcessStepActionResult();
+      ProjectProcessStepService.PpsActionResult ppsActionResult = projectProcessStepService.performAction(action, pps, new ArrayList<>());
+      actionResults.add(ppsActionResult);
+      actionResultToReturn.setChildFunctionReturnedStrings(ppsActionResult.getChildFunctionReturnedStrings());
 
       // Since something on the PPS might have changed, run autotriggers for it
       actionResults.add(projectProcessStepService.performAutoTriggerActions(
@@ -149,6 +152,7 @@ public class ProjectProcessStepController {
       // Consolidate to projectProcessStepService
       // run autotriggers for ancillary fields
       List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(projectProcessStepId);
+
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
             projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
@@ -182,7 +186,18 @@ public class ProjectProcessStepController {
       boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
       projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, pps.getProjectId(), null);
 
-      return new ResponseEntity<>(status, HttpStatus.OK);
+      actionResultToReturn.setProjectProcessStepId(status.getProjectProcessStepId());
+      actionResultToReturn.setProcessStepStatusTypeId(status.getProcessStepStatusTypeId());
+      actionResultToReturn.setCompanyProcessStepStatusTypeId(status.getCompanyProcessStepStatusTypeId());
+      actionResultToReturn.setProcessStepStatusType(status.getProcessStepStatusType());
+      actionResultToReturn.setCompanyProcessStepStatusType(status.getCompanyProcessStepStatusType());
+
+
+      //map in the returned strings from the child functions.
+      //todo: make this work for more than route urls the frontend should follow, but for now that is all this does - keep mobile in mind if changes made
+
+
+      return new ResponseEntity<>(actionResultToReturn, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
           String.format(
@@ -355,6 +370,7 @@ public class ProjectProcessStepController {
 
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } catch (RuntimeException e) {
+      log.error("PPS: Unexpected error on PPS ID: {}", projectProcessStepId, e);
       throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage(), e);
     }
   }

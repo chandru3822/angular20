@@ -17,7 +17,7 @@ public class ProcessStepEvent {
 
   private Long id, processStepId, eventId, initialCompanyEventStatusTypeId, uniqueBehaviorTypeId, displayOrder;
   private String eventName, initialEventStatusType, processStepName;
-  private Boolean archived, readonly, eventHidden, showOnCancelledCompletedEvents, showOnCancelledCompletedProcessStep;
+  private Boolean archived, readonly, readonlyAllow, eventHidden, eventHiddenAllow, showOnCancelledCompletedEvents, showOnCancelledCompletedProcessStep;
   private List<CompanyEventStatusType> companyEventStatusTypes;
   private List<ProcessStepEventAction> processStepEventActions;
   private List<ProcessStepEventWorkQueueType> workQueueTypes;

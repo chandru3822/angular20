@@ -1,7 +1,7 @@
 <template>
   <v-container class="pt-0">
     <v-row class="settings-container" :class="{'d-inline-block': isMobile}">
-      <v-col cols="12" md="3" class="text-left pa-0">
+      <v-col class="text-left pa-0" :class="{'collapse-left':leftCollapsed && !isMobile, 'col-md-3': !leftCollapsed}">
         <v-menu data-app
                 v-if="isMobile"
                 offset-y
@@ -12,10 +12,10 @@
                 :close-on-content-click="false">
           <template v-slot:activator="{ on }">
             <v-toolbar
-              color="white"
-              v-on="on"
-              class="label-large"
-              style="z-index: 1"
+                color="white"
+                v-on="on"
+                class="label-large"
+                style="z-index: 1"
             >
               {{ title }}
               <v-spacer></v-spacer>
@@ -26,11 +26,14 @@
           </template>
           <SettingsMenu class="pa-3" :title="title" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
         </v-menu>
-        <v-card class=" left-menu square-card" v-else>
-          <SettingsMenu class="px-5 py-2 settings-container"></SettingsMenu>
+        <v-card v-else class=" left-menu square-card d-flex">
+          <SettingsMenu class="px-5 py-2 settings-container" :class="{'hidden': leftCollapsed}"></SettingsMenu>
+          <v-btn small text color="primary" @click="collapseMenu" class="py-6">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
         </v-card>
       </v-col>
-      <v-col cols="12" md="9" class="px-4 pt-0 main-section">
+      <v-col class="px-4 pt-0 main-section" :class="{'main-section-left-collapsed': leftCollapsed, 'col-12 col-md-9': !leftCollapsed}">
         <router-view/>
       </v-col>
     </v-row>
@@ -43,6 +46,8 @@ import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import SettingsMenu from "./SettingsMenu";
+import {UserMutations} from "../../../stores/UserStore";
 import SettingsMenu from "./SettingsMenu";
 
 export default {
@@ -66,6 +71,9 @@ export default {
   computed: {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
+    },
+    leftCollapsed(){
+      return this.$store.state.user.settingsMenuCollapsed
     },
     items() { return [
       {
@@ -249,10 +257,14 @@ export default {
       } else {
         this.title = this.items.find(i => i.pathMatch ?? i.path === this.$route.path).title
       }
+    },
+    collapseMenu (){
+      this.$store.commit(UserMutations.SETTINGS_MENU_COLLAPSE)
     }
   },
   created () {
     this.getCompanyObjectTypes()
+    this.setTitle()
   }
 }
 </script>
@@ -261,6 +273,7 @@ export default {
 .settings-container {
   height: calc(100vh - 50px);
   max-width: 100vw;
+  flex-grow:2;
   @media (max-width: 960px) {
     width: 100vw;
   }
@@ -282,13 +295,35 @@ a {
   height: 100%;
   max-height: 100%;
 }
+.collapse-left {
+  max-width: 72px;
+  padding-left:0;
+  div.left-menu {
+    justify-content: center !important;
+  }
+}
+.hidden {
+  display: none;
+}
 
 .main-section {
   height: 100vh;
   background-color: #fff;
   max-height: 100%;
   overflow: auto;
+  .main-section-left-collapsed {
+    max-width: calc(100% - 72px) !important;
+  }
+
 }
+</style>
 
-
+<style lang="scss">
+.settings-container {
+  .v-menu__content.theme--light.menuable__content__active{
+    @media (max-width: 960px) {
+      max-height: calc(100vh - 110px);
+    }
+  }
+}
 </style>

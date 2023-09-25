@@ -6,6 +6,7 @@ import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.FeatureQuery;
 import com.albatross.api.v1.flow.queries.UserQuery;
 import com.albatross.api.v1.flow.services.CompanyService;
+import com.albatross.api.v1.flow.services.UserPositionService;
 import com.albatross.api.v1.flow.services.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,16 +22,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
 public class SecurityService implements UserDetailsService {
 
   @Autowired private UserService userService;
+
+  @Autowired private UserPositionService userPositionService;
 
   @Autowired private CompanyService companyService;
 
@@ -93,6 +93,7 @@ public class SecurityService implements UserDetailsService {
           user.setCompanyId(3L);
           user.setHighestCompanyId(3L);
           user.setParentCompanyId(3L);
+          user.setUserPositions(new ArrayList<>());
           user.setHighestParentCompanyId(3L);
         } else if (details.getId().equals(SystemSettings.BR_SYSTEM_USER.getId())) {
           // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party
@@ -102,6 +103,7 @@ public class SecurityService implements UserDetailsService {
           user.setHighestCompanyId(3L);
           user.setParentCompanyId(3L);
           user.setHighestParentCompanyId(3L);
+          user.setUserPositions(new ArrayList<>());
           user.setId(details.getId());
         } else {
           user = userService.findUserById(details.getId());
@@ -115,6 +117,11 @@ public class SecurityService implements UserDetailsService {
           List<FeatureAccessControl> results =
               getUserFeatureAccess(details.getId(), user.getCompanyId());
           user.setFeatureAccess(results);
+          UserPosition userPosition = userPositionService.getUserPrimaryPosition(user.getId(), user.getCompanyId());
+          if(userPosition != null) {
+            user.setUserPositionId(userPosition.getPositionId());
+            user.setPrimaryPosition(userPosition.getPosition());
+          }
         }
 
       } else {

@@ -41,16 +41,17 @@
                 <v-btn color="primary" raised @click="openLoanApp()" class="white--text">
                   <span>Finance Application</span>
                 </v-btn>
-                <v-btn :disabled="!requestItem.proposalNbr" v-if="requestItem.sunpowerUrlExists" color="primary" raised @click="updateSunpowerApp()" class="white--text mt-5">
+                <v-btn :disabled="!requestItem.proposalNbr" v-if="requestItem.sunpowerProposal" color="primary" raised @click="updateSunpowerApp()" class="white--text mt-5">
                   <span>Update / Renew Spwr Quote</span>
                 </v-btn>
               </v-col>
               <v-col>
                 <v-select attach label="Proposal Number"
-                          v-model="requestItem.proposalNbr"
+                          v-model="selectedProposal"
+                          return-object
                           :items="requestItem.proposalNbrs"
                           item-text="proposalNbr"
-                          item-value="proposalNbr"
+                          @change="handleProposalSelection"
                 />
                 <v-checkbox label="Send English Installation Agreement"
                             class="default-text-color"
@@ -121,9 +122,9 @@ export default {
         sendLoanDocs: true,
         sendInstallationAgreement: false,
         isSpanish: false,
-        sunpowerUrlExists: false,
         projectId: ''
       },
+      selectedProposal: null,
       currentEmail: '',
       editEmail: false
     }
@@ -181,12 +182,18 @@ export default {
     setSearchQuery(query){
       this.searchQuery=query
     },
+    handleProposalSelection() {
+      this.requestItem.proposalNbr = this.selectedProposal.proposalNbr
+      if (this.selectedProposal.loanType) {
+        this.requestItem.sunpowerProposal = this.selectedProposal.loanType.includes('SunPower')
+      }
+    },
     async openRequest(it) {
       this.requestItem.customer_name = it.customer_name
       this.requestItem.email = it.email
       this.currentEmail = it.email
       this.requestItem.projectId = it.project_id
-      this.requestItem.sunpowerUrlExists = it.sunpower_url_exists
+      this.requestItem.sunpowerProposal = false
 
       // get proposal numbers
       try {

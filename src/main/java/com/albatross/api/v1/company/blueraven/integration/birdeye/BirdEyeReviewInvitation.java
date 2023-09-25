@@ -15,6 +15,9 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class BirdEyeReviewInvitation {
+
+  public static final String FIELD_TYPE_ID = "Type";
+
   private Long id;
   private String customerName, customerEmail, customerPhone, customerId, birdeyeBusinessId, birdeyeCustomerId;
   private Long projectId;

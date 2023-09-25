@@ -141,6 +141,23 @@ public class CloserDashboardQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getClosers = """
+      select u.id,
+             concat(u.first_name, ' ', u.last_name) as "fullName"
+      from flow."user" u
+      inner join flow.user_position up on u.id = up.user_id
+      inner join flow.company_user_status cus on cus.user_id = u.id
+      inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.has_access is true and ust.company_id = 3
+      where up.position_id IN (select unnest(string_to_array(value, ',')::bigint[])
+                               from flow.company_configuration_value
+                               where code = 'CLOSER_POSITION_IDS')
+      and up.archived is false
+      and ((up.end_date is null and up.start_date <= now())
+          OR now() between up.start_date and up.end_date)
+      order by u.first_name, u.last_name
+    """;
+
+  //language=PostgreSQL
   public final static String getCloserResiduals = """
       select row_to_json(rows)
       from (
@@ -352,5 +369,32 @@ public class CloserDashboardQuery {
         AND lov.parent_id = 520
         AND pd.company_id = 3
       ORDER BY source_name
+    """;
+
+  //language=PostgreSQL
+  public final static String getLeaderboardBookings = """
+    select pd.closer_user_id,
+          pd.closer_name,
+          o.org_name as office_name,
+          coalesce(lov.name, '--') as metro_area,
+          count(1) as booking_count
+   from brs.project_details pd
+       inner join flow.user_position up on up.id = pd.closer_user_position_id
+       INNER JOIN flow.org o ON o.id = up.org_id
+       INNER JOIN flow.company_user_status cus on cus.user_id = up.user_id
+       INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
+       LEFT JOIN flow.organization_custom_field_value ocfv ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
+       LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
+   where pd.installation_agreement_signed_date = :bookingDate::date
+         and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
+                                 from flow.company_configuration_value
+                                 where code = 'CLOSER_POSITION_IDS')
+         AND up.archived IS FALSE
+         AND up.primary_flag IS true
+         AND (up.end_date is null or up.end_date >= now())
+         AND ust.has_access is true
+   group by pd.closer_user_id, pd.closer_name, o.org_name, lov.name
+   having count(1) > 1
+   order by booking_count desc, closer_name;
     """;
 }

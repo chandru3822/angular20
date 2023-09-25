@@ -372,8 +372,10 @@ export default {
           lov.isDirty = true
         }
         lov.displayOrder = idx
+        //this makes it so the UX doesn't freak out when editing names that would re-sort themselves
+        Object.assign(lov, 'nameSortFix', lov.name)
       })
-      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort && lov.id ? lov.name?.toLowerCase() : lov.displayOrder);
+      return orderBy(lovs.filter(lov => !lov.archived), lov => alphaSort && lov.id ? lov.nameSortFix?.toLowerCase() : lov.displayOrder);
     },
     filterCompanyDataTypes() {
       if (this.userIsSystemAdmin) {

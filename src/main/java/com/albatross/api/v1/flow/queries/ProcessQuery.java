@@ -147,7 +147,7 @@ public class ProcessQuery {
   public final static String insertDenyListPosition = """
     insert into flow.deny_list_position(position_id, company_process_id, created_by_id, date_created, modified_by_id, date_modified, deny_list_type_id)
     select :positionId, :companyProcessId,  :userId, now(), :userId, now(), :denyListTypeId
-    where not exists ( select id 
+    where not exists ( select id
                         from flow.deny_list_position
                         where company_process_id = :companyProcessId
                             and position_id = :positionId
@@ -203,12 +203,27 @@ public class ProcessQuery {
 
   //language=PostgreSQL
   public final static String nonAdminProcessStepsForProcess = """
-      select ps.*
+      select ps.*,
+      coalesce((
+                  SELECT array_to_json(array_agg(row_to_json(wlp)))
+                  FROM (
+                         SELECT wlp.id,
+                                wlp.position_id as "positionId",
+                                wlp.process_step_id as "processStepId",
+                                wlp.created_by_id as "createdById",
+                                wlp.modified_by_id as "modifiedById",
+                                wlp.archived
+                         FROM flow.white_listed_position wlp
+                         WHERE wlp.white_list_type_id = 18
+                           AND wlp.archived is not true
+                           AND wlp.company_id = :companyId
+                           and wlp.process_step_id = ps.id) wlp), '[]') AS "nonAdminAddWhiteListedPositions"
       from flow.process_step ps
           inner join flow.process_step_process psp on psp.process_step_id = ps.id
       where ps.archived is not true
         and ps.company_id = :companyId
         and ps.non_admin_add is true
+        and psp.archived is false
         and psp.company_process_id = :companyProcessId
       order by ps.process_step_name
     """;

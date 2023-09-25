@@ -1,6 +1,6 @@
 <template>
 <v-row>
-  <v-col cols="12" class="pt-0">
+  <v-col cols="12" class="pa-0">
     <div v-for="e in events"
     >
       <EventButton

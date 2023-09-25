@@ -52,10 +52,8 @@ BEGIN
                                and tff.field_code = 'APPOINTMENT_DATE')::date) +
                      ((select count(1)
                        from brs.project_details pd
-                              inner join flow.project p on p.id = pd.project_id
-                              inner join flow.contact c on c.id = p.contact_id
                               left join flow.contact_custom_field_value ccfv
-                                        on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
+                                        on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
                        where pd.closer_user_id = p_user_id
                          and pd.cancelled_date is null
                          and pd.final_design_complete_date between p_start_date and p_end_date
@@ -70,10 +68,8 @@ BEGIN
                                 and tff.field_code = 'APPOINTMENT_DATE')::date) * 4) +
                      ((select count(1)
                        from brs.project_details pd
-                              inner join flow.project p on p.id = pd.project_id
-                              inner join flow.contact c on c.id = p.contact_id
                               left join flow.contact_custom_field_value ccfv
-                                        on ccfv.contact_id = c.id and ccfv.custom_field_group_assignment_id = 19106
+                                        on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
                        where pd.final_design_complete_date is not null
                          and pd.cancelled_date is null
                          and pd.closer_user_id = p_user_id
@@ -109,6 +105,30 @@ BEGIN
                           and pd.first_appointment_not_pitched_or_missed_id in (58, 56)
                           AND pd.first_appointment_pitched is null
                           AND pd.first_appointment_missed is null
+                          and pd.setter_user_id = p_user_id))) as cnt;
+        when p_tournament_formula_id = 3 then
+        select *
+        into v_score
+        from (
+               (select (select count(1)
+                        from brs.project_details pd
+                        where ((pd.first_appointment_pitched at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                          and first_appointment_pitched_id is not null
+                          and pd.setter_user_id = p_user_id) +
+                       (select count(1)
+                        from brs.project_details pd
+                        where ((pd.first_appointment_missed at time zone 'UTC') at time zone v_timezone)::date between p_start_date and p_end_date
+                          and pd.first_appointment_missed_id is not null
+                          AND pd.first_appointment_pitched is null
+                          and pd.setter_user_id = p_user_id) +
+                       (select count(1) * (select field_value
+                                           from brs.tournament_formula_field_value tffv
+                                                  inner join brs.tournament_formula_field tff on tff.id = tffv.tournament_formula_field_id
+                                           where tff.tournament_formula_id = p_tournament_formula_id
+                                             and tffv.tournament_id = p_tournament_id
+                                             and tff.field_code = 'BOOKING_SCORE_VALUE_SETTERS')::int
+                        from brs.project_details pd
+                        where pd.installation_agreement_signed_date::date between p_start_date and p_end_date
                           and pd.setter_user_id = p_user_id))) as cnt;
 
       else

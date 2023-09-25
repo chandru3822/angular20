@@ -21,23 +21,26 @@ public class SmsQueueController {
   private final SMSService smsService;
 
   @GetMapping(value = "/queue")
-  public Page<SmsQueueRow> getQueue(Pageable pageable) {
-    return smsService.getSmsQueue(pageable);
+  public Page<SmsQueueRow> getQueue(@RequestParam Long objectTypeId,
+                                    @RequestParam(required = false) Boolean messageRead,
+                                    Pageable pageable) {
+    return smsService.getSmsQueue(pageable, objectTypeId, messageRead);
   }
 
-  @GetMapping(value = "/exportQueue")
-  public List<SMSQueueExportItem> exportQueue() {
-    return smsService.exportSmsQueue();
-  }
+  //not currently used - taking out for now
+//  @GetMapping(value = "/exportQueue")
+//  public List<SMSQueueExportItem> exportQueue() {
+//    return smsService.exportSmsQueue();
+//  }
 
-  @GetMapping(value = "/owners")
-  public List<Owner> getOwners() {
-    return smsService.getOwners();
-  }
-
-  @GetMapping(value = "/messages/{projectId}")
-  public List<SMSQueueItem> getMessages(@PathVariable Long projectId) {
+  @GetMapping(value = "/messages/project/{projectId}")
+  public List<SMSQueueItem> getProjectMessages(@PathVariable Long projectId) {
     return smsService.getSmsByProjectId(projectId);
+  }
+
+  @GetMapping(value = "/messages/user/{userId}")
+  public List<SMSQueueItem> getUserMessages(@PathVariable Long userId) {
+    return smsService.getSmsByUserId(userId);
   }
 
   @PostMapping(value = "/updateSms")

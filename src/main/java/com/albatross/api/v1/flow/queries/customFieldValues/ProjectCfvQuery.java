@@ -71,8 +71,10 @@ select
                           cfga.custom_field_group_id as "customFieldGroupId",
                           cfga.id as "customFieldGroupAssignmentId",
                           cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                          cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                           cfga.required,
                           cfga.hidden as "customFieldGroupAssignmentHidden",
+                          cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                           coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
                           cfga.field_order as "fieldOrder",
                           cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
@@ -156,8 +158,10 @@ select
                 cfga.custom_field_group_id as "customFieldGroupId",
                 cfga.id as "customFieldGroupAssignmentId",
                 cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                 cfga.required,
                 cfga.hidden as "customFieldGroupAssignmentHidden",
+                cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                 coalesce(cfga.custom_field_id, cfga1.custom_field_id) as "customFieldId",
                 cfga.field_order as "fieldOrder",
                 cfga.ancillary_custom_field_group_assignment_id as "ancillaryCustomFieldGroupAssignmentId",
@@ -209,6 +213,7 @@ select
                                                                      FROM flow.white_listed_position wlp
                                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                        AND wlp.white_list_type_id = 1
+                                                                       AND wlp.company_id = :companyId
                                                                        AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
                                                                        coalesce((
                                                             SELECT array_to_json(array_agg(row_to_json(wlp)))
@@ -222,6 +227,7 @@ select
                                                                      FROM flow.white_listed_position wlp
                                                                      WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                        AND wlp.white_list_type_id = 2
+                                                                       AND wlp.company_id = :companyId
                                                                        AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
             from flow.custom_field_group_assignment cfga
                      left join flow.custom_field_group_assignment cfga1 on cfga1.id = cfga.ancillary_custom_field_group_assignment_id
@@ -240,6 +246,7 @@ select
                                                             where wlp2.custom_field_group_assignment_id = cfga.id
                                                               and wlp2.white_list_type_id = 2
                                                               and wlp2.archived is not true
+                                                              AND wlp2.company_id = :companyId
                                                               and wlp2.position_id = any(:userPositions::bigint[])
                                                             limit 1
                                                     )

@@ -25,6 +25,7 @@ BEGIN
     WHERE r.id = p_residual_id
 
     LOOP
+      v_snapshot_id = null;
       INSERT INTO brs.user_residual_snapshot(residual_id,
                                              user_id,
                                              user_first_name,
@@ -80,7 +81,7 @@ BEGIN
               d.percent_of_residual_earned,
               d.potential_residual,
               d.earned_residual,
-              d.clawback,
+              d.total_clawback,
               d.adjustment_override,
               d.total,
               case
@@ -145,7 +146,8 @@ BEGIN
          from brs.get_residual_qualified_lifetime_fds(d.user_id) rqlf
          inner join brs.user_residual_snapshot as u on u.user_id = d.user_id and
                                                        u.paid_in_period is true and
-                                                       u.residual_earned is true);
+                                                       u.residual_earned is true and
+                                                       u.id = v_snapshot_id);
 
       insert into brs.user_residual_project_snapshot(user_residual_snapshot_id,
                                                      project_id,
@@ -253,7 +255,8 @@ BEGIN
                                                      date_created,
                                                      created_by_id,
                                                      date_modified,
-                                                     modified_by_id)
+                                                     modified_by_id,
+                                                     clawback_date)
         (select v_snapshot_id,
                 rqlf.project_id,
                 (select id
@@ -264,7 +267,8 @@ BEGIN
                 now(),
                 p_updated_by_id,
                 now(),
-                p_updated_by_id
+                p_updated_by_id,
+                rqlf.clawback_date
          from brs.get_current_residual_clawbacks(d.user_id) rqlf
          inner join brs.project_details as pd on pd.project_id = rqlf.project_id);
 

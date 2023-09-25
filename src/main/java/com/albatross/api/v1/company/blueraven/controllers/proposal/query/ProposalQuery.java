@@ -49,6 +49,7 @@ public class ProposalQuery {
                                   p.name,
                                   p.revision_number                             as "revisionNumber",
                                   p.date_created                                as "dateCreated",
+                                  p.date_modified                               as "dateModified",
                                   p.archived,
                                   p.locked_tsz is not null                      as locked,
                                   p.credit_check_submitted_tsz is not null      as "creditCheckSubmitted",
@@ -56,7 +57,8 @@ public class ProposalQuery {
                                   p.installation_agreement_sent_tsz is not null as "installationAgreementSent"
                            from brs.proposal p
                            where p.archived is not true
-                             and p.project_process_step_id = pps.id) rows), '[]') AS proposals,
+                             and p.project_process_step_id = pps.id
+                        order by p.date_created desc) rows), '[]') AS proposals,
            coalesce((select array_to_json(array_agg(rows))
                      from (SELECT a.id,
                                   a.uuid,
@@ -89,6 +91,7 @@ public class ProposalQuery {
       and p.id = :projectId
       and p.archived is false
       and cpsst.process_step_status_type_id = 2
+    order by pps.date_modified desc
     """;
 
   //language=PostgreSQL
@@ -110,6 +113,7 @@ public class ProposalQuery {
                                   p.name,
                                   p.revision_number                             as "revisionNumber",
                                   p.date_created                                as "dateCreated",
+                                  p.date_modified                               as "dateModified",
                                   p.archived,
                                   p.locked_tsz is not null                      as locked,
                                   p.credit_check_submitted_tsz is not null      as "creditCheckSubmitted",
@@ -154,8 +158,13 @@ public class ProposalQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getProposalVersionId = """
+    select proposal_version_id from brs.proposal where id = :proposalId and archived is false
+    """;
+
+  //language=PostgreSQL
   public final static String get = """
-    select p.id,
+        select p.id,
            p.proposal_nbr,
            p.proposal_version_id,
            p.name,
@@ -163,13 +172,17 @@ public class ProposalQuery {
            pv.version,
            pps.project_id,
            prj.project_name,
+           cs.state_id,
            c.email,
            p.project_process_step_id,
            p.archived,
+           p.date_created,
+           p.date_modified,
            p.locked_tsz is not null                               as locked,
            p.credit_check_submitted_tsz is not null               as credit_check_submitted,
            p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
            p.installation_agreement_sent_tsz is not null          as installation_agreement_sent,
+           md                                                     as max_discount_amount,
            coalesce((SELECT array_to_json(array_agg(row_to_json(cfgs)))
                      FROM (select cfg.id,
                                   cfg.group_name                                          as "groupName",
@@ -231,13 +244,13 @@ public class ProposalQuery {
                                                          cfga.hidden                                                        as "customFieldGroupAssignmentHidden",
                                                          cfga.use_parent_data                                               as "useParentData",
                                                          cfga.conditional_on_cfga_id                                        as "conditionalOnId",
+                                                         cfga.visibility                                                    as "visibility",
                                                          coalesce(cf.list_of_value_id, flowCf.list_of_value_id)             as "listOfValueId",
                                                          coalesce(cf.field_name, flowCf.field_name)                         as "fieldName",
                                                          coalesce(cf.sort_list_values_alphabetically,
                                                                   flowCf.sort_list_values_alphabetically)                   as "sortListValuesAlphabetically",
                                                          cf.flow_custom_field_id                                            as "flowCustomFieldId",
-                                                         -- cf.lazy_load_values                                             as "lazyLoadValues",
-                                                         coalesce(cf.custom_field_sql, flowCf.custom_field_sql)     as "customFieldSql",
+                                                         coalesce(cf.custom_field_sql, flowCf.custom_field_sql)             as "customFieldSql",
                                                          coalesce(cf.company_system_list_id, flowCf.company_system_list_id) as "companySystemListId",
                                                          coalesce(cf.system_list_option_ids, flowCf.system_list_option_ids) as "systemListOptionIds",
                                                          coalesce(cf.company_data_type_id, flowCf.company_data_type_id)     as "companyDataTypeId",
@@ -265,32 +278,30 @@ public class ProposalQuery {
                                                                           and lov.parent_id = flowCf.list_of_value_id
                                                                           and lov.archived is not true) listOfValues),
                                                                  '[]')                                                      AS "listOfValues",
-                                                         coalesce((
-                                                                      SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                      FROM (
-                                                                               SELECT wlp.id,
-                                                                                      wlp.position_id as "positionId",
-                                                                                      wlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
-                                                                                      wlp.created_by_id as "createdById",
-                                                                                      wlp.modified_by_id as "modifiedById",
-                                                                                      wlp.archived
-                                                                               FROM brs.white_listed_position wlp
-                                                                               WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                 AND wlp.white_list_type_id = 1
-                                                                                 AND wlp.archived is not true) wlp), '[]') AS "whiteListedPositions",
-                                                         coalesce((
-                                                                      SELECT array_to_json(array_agg(row_to_json(wlp)))
-                                                                      FROM (
-                                                                               SELECT wlp.id,
-                                                                                      wlp.position_id as "positionId",
-                                                                                      wlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
-                                                                                      wlp.created_by_id as "createdById",
-                                                                                      wlp.modified_by_id as "modifiedById",
-                                                                                      wlp.archived
-                                                                               FROM brs.white_listed_position wlp
-                                                                               WHERE wlp.custom_field_group_assignment_id = cfga.id
-                                                                                 AND wlp.white_list_type_id = 2
-                                                                                 AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
+                                                         coalesce((SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                   FROM (SELECT wlp.id,
+                                                                                wlp.position_id                      as "positionId",
+                                                                                wlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                                                wlp.created_by_id                    as "createdById",
+                                                                                wlp.modified_by_id                   as "modifiedById",
+                                                                                wlp.archived
+                                                                         FROM brs.white_listed_position wlp
+                                                                         WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                           AND wlp.white_list_type_id = 1
+                                                                           AND wlp.archived is not true) wlp),
+                                                                  '[]')                                                     AS "whiteListedPositions",
+                                                         coalesce((SELECT array_to_json(array_agg(row_to_json(wlp)))
+                                                                   FROM (SELECT wlp.id,
+                                                                                wlp.position_id                      as "positionId",
+                                                                                wlp.custom_field_group_assignment_id as "customFieldGroupAssignmentId",
+                                                                                wlp.created_by_id                    as "createdById",
+                                                                                wlp.modified_by_id                   as "modifiedById",
+                                                                                wlp.archived
+                                                                         FROM brs.white_listed_position wlp
+                                                                         WHERE wlp.custom_field_group_assignment_id = cfga.id
+                                                                           AND wlp.white_list_type_id = 2
+                                                                           AND wlp.archived is not true) wlp),
+                                                                  '[]')                                                     AS "hiddenWhiteListedPositions"
                                                   from brs.custom_field_group_assignment cfga
                                                            left join brs.custom_field_group cfg1 on cfg1.id = cfga.custom_field_group_id
                                                            left join flow.object_type ot1 on ot1.id = cfg1.object_type_id
@@ -342,11 +353,38 @@ public class ProposalQuery {
     from brs.proposal p
              inner join flow.project_process_step pps on p.project_process_step_id = pps.id
              inner join flow.project prj on pps.project_id = prj.id
+             inner join flow.company_state cs on cs.id = prj.company_state_id
              inner join flow.contact c on prj.contact_id = c.id
              inner join brs.proposal_version pv on pv.id = p.proposal_version_id
+             left join lateral brs.get_max_proposal_discount_amount(p.id) md on true
     where p.id = :proposalId
       and p.archived is false
-    """;
+        """;
+
+  public final static String simple = """
+select p.id,
+       p.proposal_nbr,
+       p.proposal_version_id,
+       p.name,
+       p.revision_number,
+       pps.project_id,
+       prj.project_name,
+       cs.state_id,
+       p.project_process_step_id,
+       p.archived,
+       p.date_created,
+       p.date_modified,
+       p.locked_tsz is not null                               as locked,
+       p.credit_check_submitted_tsz is not null               as credit_check_submitted,
+       p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
+       p.installation_agreement_sent_tsz is not null          as installation_agreement_sent
+from brs.proposal p
+         inner join flow.project_process_step pps on p.project_process_step_id = pps.id
+         inner join flow.project prj on pps.project_id = prj.id
+         inner join flow.company_state cs on cs.id = prj.company_state_id
+where p.id = :proposalId
+  and p.archived is false
+      """;
 
   //language=PostgreSQL
   public final static String insert = """
@@ -371,6 +409,7 @@ public class ProposalQuery {
              inner join brs.proposal p on p.project_process_step_id = ppsa.project_process_step_id
     where p.id = :proposalId
       and ppsa.archived is false
+      and a.archived is false
         """;
 
   //language=PostgreSQL
@@ -510,4 +549,30 @@ public class ProposalQuery {
       and processed_tsz is null
       and error_msg is null
     """;
+  public static String updateProposalDiscountAmount = """
+    update brs.project_details set commission_forfeited_by_closer = :amount where project_id = :projectId""";
+
+  public static String getProjectProcessStepCustomFieldValuesAsJSON = """
+    select json_agg(json_build_object(
+            'fieldId', cf.id,
+            'fieldName', cf.field_name,
+            'value',
+            case
+                when dt.data_type = 'date' then to_json(ppscfv.date_value)
+                when dt.data_type = 'integer' then to_json(ppscfv.int_value)
+                when dt.data_type = 'boolean' then to_json(ppscfv.boolean_value)
+                when dt.data_type = 'text' then to_json(ppscfv.text_value)
+                when dt.data_type = 'timestamp' then to_json(ppscfv.timestamp_value)
+                when dt.data_type = 'system' then to_json(ppscfv.int_value)
+                when dt.data_type = 'System List' then to_json(ppscfv.int_value)
+                when dt.data_type = 'numeric' then to_json(ppscfv.int_value)
+                end)) as val
+    from flow.project_process_step_custom_field_value ppscfv
+             inner join flow.custom_field_group_assignment cfga on ppscfv.custom_field_group_assignment_id = cfga.id
+             inner join flow.project_process_step pps on ppscfv.project_process_step_id = pps.id
+             inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+             inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+             inner join flow.data_type dt on cdt.data_type_id = dt.id
+    where pps.id = :ppsId
+        """;
 }

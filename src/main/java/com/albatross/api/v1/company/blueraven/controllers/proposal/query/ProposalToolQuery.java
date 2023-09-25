@@ -190,12 +190,34 @@ public class ProposalToolQuery {
             modified_by_id = excluded.modified_by_id
      """;
 
+  public final static String deleteEmptyCustomFieldValues = """
+    delete
+    from brs.proposal_version_custom_field_value
+    where id in (select pvcfv.id
+                 from brs.proposal_version_custom_field_value pvcfv
+                          inner join brs.proposal_version_custom_field_group pvcfg
+                                     on pvcfv.proposal_version_custom_field_group_id = pvcfg.id
+                          inner join brs.custom_field_group_assignment cfga
+                                     on pvcfv.custom_field_group_assignment_id = cfga.id
+                          inner join brs.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
+                          inner join brs.custom_field cf on cfga.custom_field_id = cf.id
+                          inner join brs.object_type ot on cfg.object_type_id = ot.id
+                          inner join brs.proposal_version pv on pvcfg.proposal_version_id = pv.id
+                     and pv.proposal_version_status_id = 1 -- DRAFT
+                 where pvcfg.proposal_group_uuid = :groupUUID
+                   and pvcfg.proposal_version_id = :proposalVersionId
+                   and ot.object_code = :objectCode
+                   and cf.archived is false
+                   and cfga.archived is false
+                   and cf.id = :fieldId)
+        """;
+
   //language=PostgreSQL
   public final static String archiveCustomFieldGroup = """
     insert into brs.proposal_version_custom_field_group
     (proposal_version_id, proposal_group_uuid, archived, created_by_id, date_created, modified_by_id, date_modified)
     values (:versionId, :groupUUID, now(), :currentUserId, now(), :currentUserId, now())
-     """;
+    """;
 
   //language=PostgreSQL
   public final static String deleteCustomFieldGroup = """
@@ -209,7 +231,6 @@ public class ProposalToolQuery {
 
   //language=PostgreSQL
   public final static String resetCustomFieldGroup = """
-
     delete
     from brs.proposal_version_custom_field_group pvcfg
         using
@@ -227,6 +248,24 @@ public class ProposalToolQuery {
       and pv.id = :versionId
       and ot.object_code = :objectCode
      """;
+
+  public final static String unarchiveCustomFieldGroup = """
+        with version_values as (select distinct proposal_group_uuid
+                            from brs.proposal_version_custom_field_value_vw
+                            where proposal_version_id <= :versionId
+                              and object_code = :objectCode),
+         archived as (select pvcfg.id, pvcfg.proposal_group_uuid, archived
+                      from brs.proposal_version_custom_field_group pvcfg
+                               inner join brs.proposal_version pv on pvcfg.proposal_version_id = pv.id
+                      where pvcfg.proposal_version_id = :versionId
+                        and pv.proposal_version_status_id <> 2
+                        and archived is not null)
+    delete
+    from brs.proposal_version_custom_field_group
+    where id in (select distinct a.id
+                 from archived a
+                          inner join version_values vv on a.proposal_group_uuid = vv.proposal_group_uuid);
+        """;
 
   //language=PostgreSQL
   public final static String findFilterableValues = """
@@ -254,7 +293,55 @@ public class ProposalToolQuery {
                                                  '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
                                                  :vars) -> 'intArrayValue')::bigint as ids
     from grouped_rows
+    where jsonb_path_exists(row,
+                            '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)',
+                            :vars)
+    union
+    select (jsonb_path_query(row,
+                              '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFlowCustomFieldId)',
+                               :vars) -> 'intValue')::bigint as ids
+    from grouped_rows
     where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
+    """;
+
+  public static final String findFilterableValuesByExclusionField = """
+with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
+                                                                                                     proposal_group_uuid,
+                                                                                                     value,
+                                                                                                     field_id
+                        from brs.proposal_version_custom_field_value_vw
+                        where proposal_version_id <= :versionId
+                          and proposal_group_uuid not in (select distinct proposal_group_uuid
+                                                          from brs.proposal_version_custom_field_group
+                                                          where archived is not null
+                                                            and proposal_version_id <= :versionId)
+                        order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
+     grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
+                                                'fields',
+                                                array_to_json(array_agg(jsonb_strip_nulls(
+                                                            jsonb_build_object('fieldId', vv.field_id,
+                                                                               'flowCustomFieldId',
+                                                                               cf.flow_custom_field_id) || vv.value)))
+                                 ) as row
+                      from version_values vv
+                               inner join brs.custom_field cf on cf.id = vv.field_id
+                      group by proposal_group_uuid),
+     filtered as (select jsonb_path_query(row,
+                                          '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                          jsonb_build_object('targetFieldId', :fieldId)) as row
+                  from grouped_rows g
+                           left join lateral jsonb_path_query(row,
+                                                              '$.fields[*] ? (@.fieldId == $filterFieldId || @.flowCustomFieldId == $filterFieldId)',
+                                                              jsonb_build_object('filterFieldId', :filterFieldId)) b
+                                     on true
+                  where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId )',
+                                          jsonb_build_object('targetFieldId', :fieldId))
+                    and (b is null or
+                         jsonb_array_length(
+                                 jsonb_path_query_array(b -> 'intArrayValue',
+                                                        '$[*] ? (@ == $filterFieldValue)',
+                                                        jsonb_build_object('filterFieldValue', :filterFieldValue))) <= 0))
+      select distinct (row -> 'intValue') from filtered
     """;
 
   public static final String findFilterableValuesByFieldId = """
@@ -269,8 +356,9 @@ public class ProposalToolQuery {
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
                                                                 and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id)
-    select (value -> 'intValue')::int
+                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
+    select  distinct unnest(array_remove(array [(value -> 'intValue')::int], null) ||
+              array((select jsonb_array_elements_text(value -> 'intArrayValue')))::int[])
     from version_values;
     """;
 }

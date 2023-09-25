@@ -51,6 +51,8 @@ begin
                                when pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1::numeric
                                  then
                                  case
+                                   when pd.third_party_financing is true then
+                                     pd.first_cash_payment_paid_date
                                    when (pd.project_state_id = 28 and
                                          pd.first_cash_payment_amount >= 1000.00) then
                                      pd.first_cash_payment_paid_date
@@ -63,13 +65,13 @@ begin
            inner join flow.project p on p.id = pd.project_id and p.company_process_id = 1
            left join flow.state s on s.id = pd.project_state_id
            left join brs.residual_project_override_qualified_date rpoqd on rpoqd.project_id = pd.project_id
-    where pd.final_design_signed_date >= v_min_start_date and
-          pd.final_design_signed_date >= '2017-01-01'::date and
-          pd.exclude_from_residuals is not true
-      and pd.closer_user_id = p_closer_user_id
-      and pd.cancelled_date is null
-      and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
-      and pd.final_design_signed_date is not null
+    where pd.closer_user_id = p_closer_user_id
+        and pd.final_design_signed_date >= v_min_start_date and
+          pd.final_design_signed_date >= '2017-01-01'::date
+        and  pd.exclude_from_residuals is not true
+        and pd.cancelled_date is null
+        and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
+        and  ((pd.final_design_signed_date is not null
       and pd.final_design_signed_date <= p_end_of_period_date
       and ((pd.utility_bill_verified_date is not null
       and pd.financial_agreement_signed_date is not null
@@ -80,6 +82,8 @@ begin
       and case
             when pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1.00::numeric then
               case
+                when pd.third_party_financing is true then
+                  pd.first_cash_payment_paid_date is not null
                 when (pd.project_state_id = 28 and
                       pd.first_cash_payment_amount >= 1000.00) then
                   pd.first_cash_payment_paid_date is not null
@@ -97,6 +101,8 @@ begin
                                 when pd.total_cash_down_payment is not null and pd.total_cash_down_payment > 1::numeric
                                   then
                                   case
+                                    when pd.third_party_financing is true then
+                                      pd.first_cash_payment_paid_date
                                     when (pd.project_state_id = 28 and
                                           pd.first_cash_payment_amount >= 1000.00) then
                                       pd.first_cash_payment_paid_date
@@ -105,7 +111,9 @@ begin
                                       pd.first_cash_payment_paid_date
                                     else null end
                                 else null end)) <= p_grace_period_end) or
-          ((pd.substantial_completion_date is not null and pd.substantial_completion_date <=p_grace_period_end ) or rpoqd.project_id is not null));
+          ((pd.substantial_completion_date is not null and pd.substantial_completion_date <=p_grace_period_end ) or rpoqd.project_id is not null))) or
+              (exists (select id from brs.residual_project_qualified_date rpqd
+                                where pd.project_id = rpqd.project_id)));
 END
 $BODY$
   LANGUAGE plpgsql

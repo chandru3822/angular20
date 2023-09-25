@@ -4,124 +4,20 @@ public class UserQuery {
 
   //language=PostgreSQL
   public final static String searchUsers = """
-    with beat_off as (
-             SELECT (value->'orgId')::bigint as org_id,vw.position_id,user_id, hierarchy, user_position_id
-             FROM flow.user_position_hierarchy_vw vw
-                      left join lateral jsonb_array_elements(vw.hierarchy) dr1
-                                on true
-         )
-         select distinct upv.user_id as id,
-                   upv.first_name,
-                   upv.last_name,
-                   upv.company_id,
-                   concat(upv.first_name, ' ', upv.last_name) AS full_name,
-                   upv.email,
-                   upv.primary_flag,
-                   upv.start_date,
-                   upv.end_date,
-                   upv.position,
-                   upv.position_id,
-                   upv.user_position_id,
-                   upv.phone_number,
-                   upv.phone_extension,
-                   upv.user_status_type_id,
-                   ust.user_status_type,
-                   upv.has_access,
-                   uphv.hierarchy
-         from flow.user_positions_vw upv
-               inner join beat_off uphv on uphv.user_id = upv.user_id and uphv.position_id = upv.position_id and uphv.org_id = upv.org_id and uphv.user_position_id = upv.user_position_id
-               inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-         where upv.company_id = :companyId
-           and upv.archived is false
-           and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
-           and upv.first_name ILIKE '%' || :firstName || '%'
-           and upv.last_name ILIKE '%' || :lastName || '%'
-           and coalesce(upv.email, '') ILIKE '%' || :email || '%'
-           and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-           and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
-           and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then upv.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
-           and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id  = any( array[ :positions ]::bigint[] ) else 1=1 end
-           and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id = any( array [ :orgs ]::bigint[] ) else 1=1 end
-         union
-         select u.id,u.first_name,u.last_name,uc.company_id,
-               concat(u.first_name, ' ', u.last_name) AS full_name,
-                u.email,
-                null,null,
-                null,null,null, null,
-                null,null,ust.id as user_status_type_id,
-                ust.user_status_type, ust.has_access,null
-         from flow."user" u
-                  inner join flow.user_company uc on u.id = uc.user_id
-                  inner join flow.user_status_type ust on ust.company_id = uc.company_id
-                  inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
-         where uc.company_id = :companyId
-             and not exists (select up2.id from flow.user_position up2
-                       inner join flow.position p on p.id = up2.position_id
-                     where up2.user_id = u.id
-                       and p.company_id = uc.company_id
-                       and up2.archived is false)
-           and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
-           and u.first_name ILIKE '%' || :firstName || '%'
-           and u.last_name ILIKE '%' || :lastName || '%'
-           and coalesce(u.email, '') ILIKE '%' || :email || '%'
-           and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
-           and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
-           and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then cus.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
-           and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-         order by last_name, first_name, start_date desc
-         limit :limit
-         offset :offset
-       """;
-
-  //language=PostgreSQL
-  public final static String searchUserCount = """
-    with t1 as (
-                   with beat_off as (
-                     SELECT (value->'orgId')::bigint as org_id,vw.position_id,user_id, hierarchy, user_position_id
-                     FROM flow.user_position_hierarchy_vw vw
-                            left join lateral jsonb_array_elements(vw.hierarchy) dr1
-                                      on true
-                   )
-                   select distinct upv.user_id as id
-                   from flow.user_positions_vw upv
-                          inner join beat_off uphv on uphv.user_id = upv.user_id and uphv.position_id = upv.position_id and uphv.org_id = upv.org_id and uphv.user_position_id = upv.user_position_id
-                          inner join flow.user_status_type ust on ust.id = upv.user_status_type_id
-                   where upv.company_id = :companyId
-                     and upv.archived is false
-                     and concat(upv.first_name, ' ', upv.last_name) ILIKE '%' || :query || '%'
-                     and upv.first_name ILIKE '%' || :firstName || '%'
-                     and upv.last_name ILIKE '%' || :lastName || '%'
-                     and coalesce(upv.email, '') ILIKE '%' || :email || '%'
-                     and coalesce(upv.phone_number, '') ILIKE '%' || :phone || '%'
-                     and case when :primaryFlag is true then upv.primary_flag = true else 1=1 end
-                     and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then upv.user_status_type_id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
-                     and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then upv.position_id  = any( array[ :positions ]::bigint[] ) else 1=1 end
-                     and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then upv.org_id = any( array [ :orgs ]::bigint[] ) else 1=1 end
-                   union
-                   select u.id
-                   from flow."user" u
-                          inner join flow.user_company uc on u.id = uc.user_id
-                          inner join flow.user_status_type ust on ust.company_id = uc.company_id
-                          inner join flow.company_user_status cus on cus.user_id = u.id and cus.user_status_type_id = ust.id
-                   where uc.company_id = :companyId
-                     and not exists (select up2.id from flow.user_position up2
-                                                          inner join flow.position p on p.id = up2.position_id
-                                     where up2.user_id = u.id
-                                       and p.company_id = uc.company_id
-                                       and up2.archived is false)
-                     and concat(u.first_name, ' ', u.last_name) ILIKE '%' || :query || '%'
-                     and u.first_name ILIKE '%' || :firstName || '%'
-                     and u.last_name ILIKE '%' || :lastName || '%'
-                     and coalesce(u.email, '') ILIKE '%' || :email || '%'
-                     and case when array_length(ARRAY[ :positions ]::bigint[], 1) > 0 then false else 1=1 end
-                     and case when array_length(ARRAY[ :orgs ]::bigint[], 1) > 0 then false else 1=1 end
-                     and coalesce(u.phone_number, '') ILIKE '%' || :phone || '%'
-                     and case when array_length(ARRAY[ :statuses ]::bigint[], 1) > 0 then ust.id = any ( array[ :statuses ]::bigint[]) else 1 = 1 end
-                 )
-                 select count(distinct id)
-                 from t1
-
-        """;
+        select *
+        from flow.search_users(:query,
+                               :firstName,
+                               :lastName,
+                               :email,
+                               :phone,
+                               :companyId,
+                               :primaryFlag,
+                               array[ :statuses ]::bigint[],
+                               array[ :positions ]::bigint[],
+                               array[ :orgs ]::bigint[],
+                               :limit,
+                               :offset);
+   """;
 
   //language=PostgreSQL
   public final static String updateUser = """
@@ -962,6 +858,7 @@ public class UserQuery {
                                                                                    FROM flow.white_listed_position wlp
                                                                                    WHERE wlp.custom_field_group_assignment_id = cfga.id
                                                                                      AND wlp.white_list_type_id = 2
+                                                                                     AND wlp.company_id = :companyId
                                                                                      AND wlp.archived is not true) wlp), '[]') AS "hiddenWhiteListedPositions"
                                                           FROM flow.custom_field_group_assignment cfga
                                                                  inner join flow.custom_field_group_assignment cfga2 on cfga2.id = cfga.ancillary_custom_field_group_assignment_id
@@ -982,5 +879,19 @@ public class UserQuery {
                inner join flow.attachment_type at on oat.attachment_type_id = at.id
         where oat.id = :id
         and oat.company_id = :companyId
+    """;
+
+  //language=PostgreSQL
+  public final static String getSmsAccess = """
+    select p.sms_enabled
+    from flow.user_position up
+             inner join flow.position p on p.id = up.position_id
+             inner join flow.company_user_status cus on cus.user_id = up.user_id
+             inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+    where up.user_id = :userId
+      and up.primary_flag is true
+      and up.archived is not true
+      and ust.has_access is true
+    limit 1
     """;
 }

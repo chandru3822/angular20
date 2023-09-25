@@ -131,6 +131,8 @@
               res = await postRequest(`/featDb/utility/${this.itemId}/links`, this.link, 'blueraven')
             } else if (this.itemType === 'hoa') {
               res = await postRequest(`/featDb/hoa/${this.itemId}/links`, this.link, 'blueraven')
+            } else if (this.itemType === 'supplier') {
+              res = await postRequest(`/featDb/supplier/${this.itemId}/links`, this.link, 'blueraven')
             } else {
               res = await postRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
             }
@@ -150,6 +152,8 @@
               res = await putRequest(`/featDb/utility/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
             } else if (this.itemType === 'hoa') {
               res = await putRequest(`/featDb/hoa/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
+            } else if (this.itemType === 'supplier') {
+              res = await putRequest(`/featDb/supplier/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
             } else {
               res = await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
             }
@@ -178,6 +182,8 @@
             await putRequest(`/featDb/utility/links/${this.link.id}/archive`, null, 'blueraven')
           }  else if (this.itemType === 'hoa') {
             await putRequest(`/featDb/hoa/links/${this.link.id}/archive`, null, 'blueraven')
+          } else if (this.itemType === 'supplier') {
+            await putRequest(`/featDb/supplier/links/${this.link.id}/archive`, null, 'blueraven')
           } else {
             await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}/archive`, null, 'blueraven')
           }

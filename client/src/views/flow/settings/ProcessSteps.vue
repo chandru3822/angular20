@@ -42,7 +42,10 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              {{ addNew ? 'Cancel' : 'Add New'}}
+              <v-icon v-if="addNew && isMobile">mdi-close</v-icon>
+              <v-icon v-else-if="isMobile">mdi-plus</v-icon>
+              <span v-else>{{ addNew ? 'Cancel' : 'Add New'}}</span>
+
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -67,6 +70,7 @@
               ></v-text-field>
             </v-card-title>
             <v-data-table
+                id="process-steps-table"
               :headers="headers"
               :items="filterProcessSteps()"
               :fixed-header="true"
@@ -74,16 +78,15 @@
               :search="search"
               :footer-props="footerProps"
               hide-default-header
-              class="elevation-1 square-card"
+              class="elevation-1 square-card table-striped"
             >
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left pr-0">
+
+                  <template #item.processStepName="{item}"  class="text-left pr-0">
                     <v-btn small text :to="`/settings/processStep/${item.id}/components`" class="one-hunned process-step-button">
                       {{item.processStepName}}
                     </v-btn>
-                  </td>
-                  <td class="text-right pl-0">
+                  </template>
+                  <template #item.icons="{item}" class="text-right pl-0">
                     <v-btn small text color="primary" :to="`/settings/processStep/${item.id}/components`">
                       <v-icon>edit</v-icon>
                     </v-btn>
@@ -97,9 +100,7 @@
                       </template>
                       <span>{{ getDeleteTooltip(item) }}</span>
                     </v-tooltip>
-                  </td>
-                </tr>
-              </template>
+                  </template>
             </v-data-table>
           </v-card>
         </v-container>
@@ -142,7 +143,7 @@
         ],
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': 'Rows per page:'
+          'items-per-page-text': this.isMobile ? '' : 'Rows per page:'
         },
         psToDelete: null
       }
@@ -158,7 +159,10 @@
     computed: {
       psToDeleteName(){
         return this.psToDelete ? this.psToDelete.processStepName : ''
-      }
+      },
+      isMobile(){
+        return this.$vuetify.breakpoint.smAndDown
+      },
     },
     methods: {
       debounceGetSteps: debounce( function () {
@@ -248,5 +252,36 @@
   .process-step-button .v-btn__content {
     text-transform: none;
     justify-content: flex-start;
+  }
+
+  @media (max-width: 770px) {
+    #process-steps-table {
+      padding-bottom: 12px;
+      div.v-data-footer {
+        display: inline-block;
+        width: 100%;
+        padding-bottom: 12px;
+
+        div.v-data-footer__select {
+          justify-content: center;
+        }
+
+        div.v-data-footer__pagination {
+
+        }
+
+        div.v-data-footer__icons-before {
+          display: inline;
+          margin-left: calc(50% - 36px);
+
+
+        }
+
+        div.v-data-footer__icons-after {
+          display: inline;
+        }
+
+      }
+    }
   }
 </style>

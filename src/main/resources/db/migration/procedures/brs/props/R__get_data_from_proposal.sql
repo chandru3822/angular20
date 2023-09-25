@@ -111,7 +111,7 @@ begin
                           --'custom_fields.Non-Standard Installation Work',
                           --json_build_array(proposal->>'Non-Standard Work 1',proposal->>'Non-Standard Work 2',proposal->>'Non-Standard Work 3'),
                           'custom_fields.Notice of Cancellation Deadline',
-                          (((now() AT TIME ZONE 'US/Mountain') :: DATE) + 3) :: DATE,
+                          (((now() AT TIME ZONE 'US/Mountain') :: DATE) + 10) :: DATE,
                          'custom_fields.Utility Rebate Amount ($ to BRS)',
                           case when cs.state_id = 37 then
                                    coalesce(round(((current_oet_rebate)::numeric),2),0)::bigint
@@ -140,7 +140,11 @@ begin
                           'custom_fields.Solar Rebate for HIC',
                           (solar_rebate_for_hic),
                           'custom_fields.Storage Size',
-                          (storage_size_kwh)
+                          (storage_size_kwh),
+                          'custom_fields.Solar Below the Line Rebates',
+                          (solar_below_the_line_rebates),
+                          'custom_fields.Annual Panel Degradation',
+                          (annual_degradation)
                       ) as results
                from brs.proposal_log_history pl
                  INNER JOIN flow.project p on p.id = pl.project_id

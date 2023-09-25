@@ -175,6 +175,14 @@
                   v-model="newField.resetValuesOnMain"
                 />
                 </div>
+                <div>
+                  <span
+                    class="mr-3">Ignore If Null?</span>
+                  <input
+                    type="checkbox"
+                    v-model="newField.ignoreIfNull"
+                  />
+                </div>
               </div>
             </v-form>
             <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
@@ -282,6 +290,15 @@
                   v-model="item.resetValuesOnMain"
                 />
                 </div>
+                <div>
+                  <span
+                    class="mr-3 disabled-label">Ignore If Null?</span>
+                  <input
+                    disabled readonly
+                    type="checkbox"
+                    v-model="item.ignoreIfNull"
+                  />
+                </div>
               </div>
 
               <v-card color="transparent" flat>
@@ -369,7 +386,15 @@
                         {{ childField.uniqueBehaviorType }} <br/>
                         {{ childField.uniqueBehaviorTypeDescription }}
                       </td>
-                      <td>
+                      <td style="width: 130px;">
+                        <v-tooltip left>
+                          <template v-slot:activator="{ on, attrs }">
+                            <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                          </template>
+                          <span>ID: {{childField.id}}</span>
+                          <div class="text-center">(click to copy)</div>
+                        </v-tooltip>
                         <v-btn small text color="primary" v-if="!childFieldExpanded.includes(childField)"
                                @click="[addChild = false, childFieldExpanded = [childField] ]">
                           <v-icon>edit</v-icon>
@@ -393,6 +418,14 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.fieldToUpdate }}</td>
               <td>
+                <v-tooltip left>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                           v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                  </template>
+                  <span>ID: {{item.id}}</span>
+                  <div class="text-center">(click to copy)</div>
+                </v-tooltip>
                 <v-btn small text color="primary" v-if="!expanded.includes(item)"
                        @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
@@ -444,7 +477,7 @@ export default {
         v => !!v || "Field is required",
         v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
         v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
-        v => (!v || (/^[a-z]+(?:_+[a-z]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start and end with a letter",
+        v => (!v || (/^[a-z]+(?:_+[a-z0-9]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start with a letter",
         v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
         v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
       ],
@@ -488,6 +521,11 @@ export default {
     this.getParentObjects()
   },
   methods: {
+    copyToClipBoard(textValue){
+      navigator.clipboard.writeText(textValue);
+      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
+      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    },
     async getCompanyProcesses() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -530,6 +568,7 @@ export default {
       this.$set(this.newField, 'updateFirstValueOnly', false)
       this.$set(this.newField, 'resetOnNew', false)
       this.$set(this.newField, 'resetValuesOnMain', false)
+      this.$set(this.newField, 'ignoreIfNull', false)
       this.cfgaParentObject = {}
       this.newField.processStepEventId = null
       this.newField.processStepId = null

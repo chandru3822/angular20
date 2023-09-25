@@ -5,19 +5,18 @@ import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.LockedProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.UnapprovedPostalCodeProposalException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalDesignMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalResource;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
-import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
-import com.albatross.api.v1.company.blueraven.models.Proposal;
-import com.albatross.api.v1.company.blueraven.models.ProposalDesign;
-import com.albatross.api.v1.company.blueraven.models.ProposalProject;
+import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.Attachment;
@@ -28,17 +27,20 @@ import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -46,16 +48,15 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URI;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.text.NumberFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 @RequiredArgsConstructor
 public class BlueravenProposalService {
   private static final Long CREATE_PROPOSAL_DESIGN_ID = 3507L;
@@ -122,7 +123,7 @@ public class BlueravenProposalService {
     Long ppsId = insertProjectProcessStep(projectId, CREATE_PROPOSAL_DESIGN_ID);
     log.debug("the new ppsId is: {}", ppsId);
     // upload attachments to the new step
-    if (null != attachments && attachments.size() > 0) {
+    if (null != attachments && !attachments.isEmpty()) {
       for (MultipartFile a : attachments) {
         // Proposal Request Supporting Files
         String displayName = a.getName().substring(0, Integer.min(a.getName().length(), 100));
@@ -130,7 +131,7 @@ public class BlueravenProposalService {
       }
     }
     // upload utility bill attachments to the new step
-    if (null != utilityBillAttachments && utilityBillAttachments.size() > 0) {
+    if (null != utilityBillAttachments && !utilityBillAttachments.isEmpty()) {
       for (MultipartFile a : utilityBillAttachments) {
         String displayName = a.getName().substring(0, Integer.min(a.getName().length(), 100));
         projectService.addAttachment(a, projectId, 47L, displayName); // Utility Bill
@@ -159,6 +160,12 @@ public class BlueravenProposalService {
       projectId, processStepId, null, null, true, 1L, 3L);
   }
 
+  public Optional<Long> getProposalVersionByProposalId(@NonNull Long proposalId) {
+    return sqlCache.queryForObjectOptionalBySql(
+      ProposalQuery.getProposalVersionId,
+      Map.of("proposalId", proposalId), Long.class);
+  }
+
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
     Optional<Proposal> result =
@@ -166,6 +173,8 @@ public class BlueravenProposalService {
         ProposalQuery.get,
         Map.of("proposalId", proposalId),
         new ProposalMapper<>(Proposal.class, om));
+
+    result.ifPresent(this::filterCustomFieldsByVisibility);
 
     // handle custom list of values
     result.ifPresent(
@@ -179,10 +188,21 @@ public class BlueravenProposalService {
         .filter(cfv -> cfv.getCustomFieldId() != null)
         .forEach(cfv -> {
           if (cfv.getHasListValues()) {
-            List<Long> filteredIds = proposalVersionService.getProposalValuesByFieldId(proposal.getProposalVersionId(), cfv.getCustomFieldId());
+            // get list of values available for this custom field
+            // BRS needs to filter out certain things by state so we're hardcoding the check
+            long excludedStateCustomFieldId = 405L;
+            List<Long> customFieldFilteredValues = proposalVersionService.getProposalValueFilterIdsByExclusionCustomField(proposal.getProposalVersionId(), cfv.getCustomFieldId(), excludedStateCustomFieldId, proposal.getStateId())
+              .stream()
+              .filter(Objects::nonNull)
+              .toList();
+
             // only filter if we get some results back... otherwise, we are assuming not filtering is required
-            if (!filteredIds.isEmpty()){
-              List<ListOfValue> listOfValues = cfv.getListOfValues().stream().filter(v -> filteredIds.contains(v.getId())).toList();
+            if (!customFieldFilteredValues.isEmpty()) {
+              List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+                .filter(v -> customFieldFilteredValues.contains(v.getId()))
+                .sorted(Comparator.comparing(ListOfValue::getName))
+                .toList();
+
               cfv.setListOfValues(listOfValues);
             }
           }
@@ -191,10 +211,98 @@ public class BlueravenProposalService {
     return result;
   }
 
-  public Optional<Proposal> updateProposalCustomFieldValues(Long proposalId, List<CustomFieldValue> cfvs) {
+  /**
+   * Filters the custom fields of a proposal based on the visibility of their custom field group assignment
+   *
+   * @param proposal the proposal to filter the custom fields for
+   */
+  private void filterCustomFieldsByVisibility(Proposal proposal) {
+    List<ProposalStepCustomFieldValue> values = getProjectProcessStepValues(proposal.getProjectProcessStepId());
+    log.debug("[Proposals] Found {} custom field values for proposalId={}", values.size(), proposal.getId());
+
+    if (!values.isEmpty()) {
+
+      ProposalJsContext jsContext = new ProposalJsContext(values);
+
+      try (Context ctx = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
+        ctx.getBindings("js").putMember("context", jsContext);
+
+        for (CustomFieldGroup customFieldGroup : proposal.getCustomFieldGroups()) {
+          List<CustomFieldValue> filteredList = customFieldGroup.getCustomFieldValues().stream()
+            .filter(cfv -> {
+              if (cfv.getVisibility() == null || cfv.getVisibility().trim().isEmpty()) {
+                return true;
+              }
+              Value jsEval = ctx.eval("js", cfv.getVisibility());
+              if (!jsEval.isBoolean()) {
+                log.warn("[Proposals] Expression '{}' must evaluate to a boolean", cfv.getVisibility());
+                return true;
+              }
+              return jsEval.asBoolean();
+            })
+            .toList();
+
+          customFieldGroup.setCustomFieldValues(filteredList);
+        }
+      } catch (Exception e) {
+        log.error("[Proposals] Error filtering custom fields", e);
+      }
+    }
+  }
+
+  /**
+   * Retrieves the custom field values associated with a project process step.
+   *
+   * @param projectProcessStepId the ID of the project process step
+   * @return a list of ProposalStepCustomFieldValue objects representing the custom field values
+   */
+  private List<ProposalStepCustomFieldValue> getProjectProcessStepValues(Long projectProcessStepId) {
+    try {
+      TypeReference<List<ProposalStepCustomFieldValue>> typeReference = new TypeReference<>() {
+      };
+
+      Map<String, Object> params = Map.of("ppsId", projectProcessStepId);
+      String retVal = sqlCache.queryForObjectBySql(ProposalQuery.getProjectProcessStepCustomFieldValuesAsJSON, params, String.class);
+
+      return om.readValue(retVal, typeReference);
+    } catch (Exception e) {
+      log.error("[Proposals] Error generating context", e);
+      return List.of();
+    }
+  }
+
+  private static final Long DISCOUNT_AMOUNT_CFGA_ID = 167L;
+  private static final Long SYSTEM_SIZE_CFGA_ID = 140L;
+
+  @Transactional
+  public Optional<Proposal> updateProposalCustomFieldValues(@NonNull Long proposalId, @NonNull List<CustomFieldValue> cfvs) {
     final Proposal unlockedProposal = getUnlockedProposal(proposalId);
+
+    Optional<CustomFieldValue> discountCfv = cfvs.stream()
+      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(DISCOUNT_AMOUNT_CFGA_ID))
+      .filter(cfv -> cfv.getNumericValue() != null)
+      .findFirst();
+
+    discountCfv.ifPresent(customFieldValue -> validateProposalDiscount(customFieldValue.getNumericValue(), unlockedProposal));
+
     blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, unlockedProposal.getId(), ObjectType.PROPOSAL);
+
     return getProposal(proposalId);
+  }
+
+  private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
+    return proposal.getCustomFieldGroups().stream()
+                   .flatMap(cfg -> cfg.getCustomFieldValues().stream())
+                   .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+                   .findFirst();
+  }
+
+  private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
+    //we divide the value in half because the user is only responsible for half, BRS will cover the other part
+    int count = sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
+    if (count == 0) {
+      log.warn("Unable to update commission_forfeited_by_closer amount for projectId={}", projectId);
+    }
   }
 
   public Optional<Proposal> addProposal(Proposal proposal, @NonNull UserAccountDetails currentUser) {
@@ -218,44 +326,36 @@ public class BlueravenProposalService {
   }
 
   public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, Long templateId, ProposalGeneratedType generatedType, boolean isDebug) {
-    return getProposal(proposalId)
-      .map(proposal -> {
-        Map<String, Object> context = new HashMap<>();
-        try {
-          context = getCalculatedProposalValues(proposal.getId(), generatedType, false);
-        } catch (Exception e) {
-          log.error("[BRS PROPOSAL] Error generating proposal", e);
-
-          if (!(e instanceof DataIntegrityViolationException)) {
-            throw new ApiException("Error generating proposal template");
-          }
-        }
-
-        return proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug);
-      });
+    try {
+      Map<String, Object> context = getCalculatedProposalValues(proposalId, generatedType, false);
+      return Optional.of(proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug));
+    } catch (Exception e) {
+      log.error("[BRS PROPOSAL] Error generating proposal", e);
+      throw new ApiException("Error generating proposal template");
+    }
   }
 
-  public Optional<ContentAwareByteArrayOutputStream> generateProposalPDF(Long proposalId, Long templateId, boolean isFinal) throws Exception {
-    final Proposal proposal = getProposal(proposalId)
+  public Optional<ProposalResource> generateProposalPDF(Long proposalId, Long templateId) throws Exception {
+    final var proposal = getSimpleProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
-    final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, isFinal);
-    return Optional.ofNullable(proposalTemplateService.generatePdf(templateId, context, false));
+    final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
+    Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
+    return Optional.of(new ProposalResource(pdf, proposal, context));
   }
 
   private Map<String, Object> getCalculatedProposalValues(
     @NonNull Long proposalId, ProposalGeneratedType proposalGeneratedType, boolean insertPropLogHistory) {
 
-    getProposal(proposalId)
-      .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
-
     Map<String, Object> context = new HashMap<>();
 
     try {
-      context = sqlCache.queryForMapBySql(
-        ProposalQuery.getCalculatedProposalValues,
-        Map.of("proposalId", proposalId, "insertPropLogHistory", insertPropLogHistory,
-          "currentUserId", securityService.getCurrentUser().trueUserId()));
+      Map<String, Object> params = Map.of(
+        "proposalId", proposalId,
+        "insertPropLogHistory", insertPropLogHistory,
+        "currentUserId", securityService.getCurrentUser().trueUserId());
+
+      context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
     } catch (Exception e) {
       log.error("[Proposals] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
     }
@@ -281,17 +381,47 @@ public class BlueravenProposalService {
 
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
+    Proposal unlockedProposal = getUnlockedProposal(proposalId);
+
+    //check to see if the proposal has a discount amount added
+    Optional<CustomFieldValue> discountCfv = getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)
+      .filter(cfv -> cfv.getNumericValue() != null);
+
+    if (discountCfv.isPresent()) {
+      validateProposalDiscount(discountCfv.get().getNumericValue(), unlockedProposal);
+      saveProjectDiscountAmount(unlockedProposal.getProjectId(), discountCfv.get().getNumericValue());
+    }
+
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
+
+    //insert values immediately in to proposal log history
+    getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, true);
+
     return getProposal(proposalId);
+  }
+
+  private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {
+    getCustomFieldValue(proposal, SYSTEM_SIZE_CFGA_ID)
+      .filter(cfv -> cfv.getNumericValue() != null)
+      .filter(cfv -> cfv.getNumericValue().compareTo(BigDecimal.ZERO) > 0)
+      .orElseThrow(() -> new InvalidStateApiException("System size is required for discount amount"));
+
+    BigDecimal maxProposalDiscountAmount = proposal.getMaxDiscountAmount();
+    if (amount != null && (amount.compareTo(BigDecimal.ZERO) <= 0 || amount.compareTo(maxProposalDiscountAmount) > 0)) {
+      String currencyFormat = NumberFormat.getCurrencyInstance().format(maxProposalDiscountAmount);
+      String errorMessage = "Proposal discount must be greater than $0 and less than max of %s".formatted(currencyFormat);
+
+      throw new InvalidStateApiException(errorMessage);
+    }
   }
 
   @Transactional
   public void archiveProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    final Proposal proposal = getProposal(proposalId)
+    final Proposal proposal = getSimpleProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
     if (proposal.isLocked()) {
-      throw new ApiException("Proposal has already been locked");
+      throw new InvalidStateApiException("Proposal has already been locked");
     }
 
     sqlCache.updateBySql(ProposalQuery.setArchived, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
@@ -337,6 +467,13 @@ public class BlueravenProposalService {
 
   private Proposal getUnlockedProposal(@NonNull Long proposalId) {
     return getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+  }
+
+  public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
+    return sqlCache.getBySql(
+      ProposalQuery.simple,
+      Map.of("proposalId", proposalId),
+      new ProposalMapper<>(Proposal.class, om));
   }
 
   private URI buildUri(String uuid, ProposalGeneratedType proposalGeneratedType) {
@@ -390,7 +527,7 @@ public class BlueravenProposalService {
   /**
    * Checks to see if project postal code is in the approved list of postal codes for the current published proposal settings
    *
-   * @return
+   * @return {@link ProposalPostalCodeStatus}
    */
   private ProposalPostalCodeStatus getPostalCodeApprovalStatus(@NonNull Long projectId) {
     final ProposalPostalCodeStatus other = new ProposalPostalCodeStatus();

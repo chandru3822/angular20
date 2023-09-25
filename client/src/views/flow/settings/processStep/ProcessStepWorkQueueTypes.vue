@@ -3,14 +3,15 @@
     <v-col cols="12" class="pt-0 px-0">
       <!--            work queue types -->
       <v-toolbar flat class="wqt-header-bar">
-        <v-toolbar-title class="app-title">Work Queue Types</v-toolbar-title>
+        <v-toolbar-title class="title-large">Work Queue Types</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
           <v-btn text color="primary"
                  @click="[newWorkQueueType = { projectStatuses: [], processStepStatuses: [], eventStatuses: [] }, getWorkQueueTypesForItem(), prepTempStatuses(newWorkQueueType, false), prepTempProcessStepStatuses(newWorkQueueType, false), prepTempEventStatuses(newWorkQueueType, false)]"
                  v-if="userCanAdd">
             <v-icon v-if="!addNewWorkQueueType">add</v-icon>
-            {{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}
+            <v-icon v-else-if="isMobile">close</v-icon>
+            <span v-if="!isMobile">{{ addNewWorkQueueType ? 'Cancel' : 'Add Work Queue Type' }}</span>
           </v-btn>
           <v-btn text @click="expandWqt = !expandWqt">
             <v-icon v-if="!expandWqt">mdi-chevron-down</v-icon>
@@ -162,7 +163,7 @@
             hide-default-footer
             :items-per-page="-1"
             disable-sort
-            class="elevation-1 square-card"
+            class="elevation-1 square-card table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available work queue types</span>
@@ -298,31 +299,30 @@
               </td>
             </template>
 
-            <template #item="{ item, index }">
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
-                <td class="text-left">{{ item.workQueueCategory }}</td>
-                <td class="text-left">
+
+                <template #item.workQueueCategory="{item}" class="clickable text-left">{{ item.workQueueCategory }}</template>
+                <template #item.workQueueType="{item}" class="clickable text-left">
                   <a :href="`/settings/workQueue/type/${item.workQueueTypeId}`">{{ item.workQueueType }}</a>
-                </td>
-                <td class="text-left">
+                </template>
+                <template #item.projectStatus="{item}" class="clickable text-left">
                         <span v-for="(ps, idx) in filterBy(item.projectStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': ps.isRoot}">{{ ps.projectStatusType }}</span>
                         </span>
-                </td>
-                <td class="text-left">
+                </template>
+                <template #item.processStepStatus="{item}" class="clickable text-left">
                         <span v-for="(pss, idx) in filterBy(item.processStepStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': pss.isRoot}">{{ pss.processStepStatusType }}</span>
                         </span>
-                </td>
-                <td class="text-left" v-if="showEventFields">
+                </template>
+                <template #item.eventStatus="{item}" class="clickable text-left" v-if="showEventFields">
                         <span v-for="(pss, idx) in filterBy(item.eventStatuses, false, 'archived')">
                           <span v-if="idx !== 0">, </span>
                           <span :class="{'bold': pss.isRoot}">{{ pss.eventStatusType }}</span>
                         </span>
-                </td>
-                <td class="text-right">
+                </template>
+                <template #item.icons="{item}" class="clickable text-right">
                   <div class="flex-display">
                     <v-btn text color="primary"
                            @click="[expanded = [item], prepTempStatuses(item, true), prepTempProcessStepStatuses(item, true), prepTempEventStatuses(item, true)]"
@@ -333,9 +333,7 @@
                     </v-btn>
                     <v-btn v-if="userCanEdit" text color="primary" @click="workQueueTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
-                </td>
-              </tr>
-            </template>
+                </template>
           </v-data-table>
         </v-card>
       </div>
@@ -420,7 +418,10 @@ export default {
     },
     workQueueTypeToDeleteName(){
       return this.workQueueTypeToDelete ? this.workQueueTypeToDelete.workQueueType : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     if (this.event?.id) {
@@ -560,7 +561,7 @@ export default {
     async getProjectStatusTypesForWorkQueue() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/project/statusesForWqt`)
+        const {data, status} = await getRequest(`/projectStatus/wqt`)
         this.combinedStatuses = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {

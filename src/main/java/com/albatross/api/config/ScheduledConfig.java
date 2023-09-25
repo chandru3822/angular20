@@ -17,6 +17,7 @@ import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -37,6 +38,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final ProjectProcessStepService projectProcessStepService;
   private final MessagingService messagingService;
   private final DataViewService dataViewService;
+  private final OrgService orgService;
   private final SecurityService securityService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
@@ -66,8 +68,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.closeProjectConversations.enabled:false}")
   private boolean closeProjectConversations;
 
+  @Value(value = "${app.cron.closeUserConversations.enabled:false}")
+  private boolean closeUserConversations;
+
   @Value(value = "${app.cron.runDataViewMaintenance.enabled:false}")
   private boolean doViewMaintenance;
+
+  @Value(value = "${app.cron.orgStructureRefresh.enabled:false}")
+  private boolean doOrgStructureRefresh;
 
   @Override
   public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
@@ -101,6 +109,17 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
+  //    every  day at 11pm MST)
+  @Scheduled(cron = "0 0 5 * * *", zone = "UTC")
+  public void doOrgStructureRefresh() {
+    if (doOrgStructureRefresh) {
+      log.info("*** CRON: start org structure refresh ***");
+      setCronUser();
+      orgService.doOrgStructureRefresh();
+      log.info("*** CRON: end org structure refresh ***");
+    }
+  }
+
   //    every  day at midnight zone = "UTC")
   @Scheduled(cron = "0 0 6 * * *", zone = "UTC")
   public void runViewMaintenance() {
@@ -119,8 +138,20 @@ public class ScheduledConfig implements SchedulingConfigurer {
     if (closeProjectConversations) {
       setCronUser();
       log.info("*** CRON: start close SMS project conversations ***");
-      messagingService.closeStaleProjects(SystemSettings.CRON_USER.getId());
+      messagingService.closeStaleProjectConversations(SystemSettings.CRON_USER.getId());
       log.info("*** CRON: end close SMS project conversations ***");
+    }
+  }
+
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  // zone = "America/Denver")
+  public void closeUserConversations() {
+    if (closeUserConversations) {
+      setCronUser();
+      log.info("*** CRON: start close SMS user conversations ***");
+      messagingService.closeStaleUserConversations(SystemSettings.CRON_USER.getId());
+      log.info("*** CRON: end close SMS user conversations ***");
     }
   }
 
@@ -183,6 +214,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     user.setId(cronUser.getId());
     user.setCompanyId(cronUser.getCompanyId());
     user.setHighestCompanyId(cronUser.getCompanyId());
+    user.setUserPositions(new ArrayList<>());
     user.setHighestParentCompanyId(cronUser.getCompanyId());
 
     final UserAccountDetails uad = new UserAccountDetails(user, List.of());

@@ -12,7 +12,7 @@ import lombok.Setter;
 public class DbFunctionParam {
 
   private Long id, dbFunctionId, displayOrder, dataTypeId, parameterTypeId, systemValueId;
-  private String parameterName, dataType, parameterType, systemValue;
-  private Boolean archived;
+  private String parameterName, dataType, parameterType, systemValue, description;
+  private Boolean archived, nullable;
 }
 

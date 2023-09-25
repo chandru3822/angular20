@@ -4,8 +4,8 @@
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
         <v-col class="py-0" cols="12" md="4">
-          <v-select attach v-model="selectedStates"
-                    :items="states"
+          <v-autocomplete attach v-model="selectedStates"
+                    :items="sortedStates"
                     label="States"
                     multiple
                     hide-details
@@ -42,11 +42,11 @@
               slot="prepend-item"
               class="mt-2"
             ></v-divider>
-          </v-select>
+          </v-autocomplete>
         </v-col>
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgTypes"
-                    :items="orgTypes"
+                    :items="sortedOrgTypes"
                     label="Organization Resource Types"
                     multiple
                     type="search"
@@ -59,10 +59,7 @@
                     @blur="filterOrgsAndUsers"
                           attach
           >
-            <template
-                slot="selection"
-                slot-scope="{ item, index }"
-            >
+            <template v-slot:selection="{item, index}">
               <div v-if="index === 0 && selectedOrgTypes.length < 3">
                 <v-chip small close @click:close="selectedOrgTypes.splice(idx, 1)"
                         v-for="(sr, idx) in selectedOrgTypes">
@@ -92,7 +89,7 @@
         <v-col class="py-0" cols="12" md="4">
 
           <v-autocomplete v-model="selectedPositions"
-                    :items="positions"
+                    :items="sortedPositions"
                     label="Position Resource Types"
                     multiple
                     hide-details
@@ -150,7 +147,7 @@
         </v-col>
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgs"
-                    :items="orgs"
+                    :items="sortedOrgs"
                     label="Organization Resources"
                     multiple
                     clearable
@@ -179,7 +176,7 @@
         <v-col class="py-0" cols="12" md="4">
 
           <v-autocomplete v-model="selectedUsers"
-                          :items="users"
+                          :items="sortedUsers"
                           label="User Resources"
                           multiple
                           clearable
@@ -214,7 +211,17 @@
           :color="'primary'"
         ></v-progress-circular>
       </div>
-      <FullCalendar ref="eventCalendar"
+      <div class="d-flex">
+        <v-spacer></v-spacer>
+      <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>
+      <v-menu activator="#day-selection-btn" nudge-bottom="40px">
+        <v-list>
+          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="body-large py-4">{{option.formattedDate}}</span></v-list-item>
+        </v-list>
+      </v-menu>
+      </div>
+      <FullCalendar ref="eventCalendar" id="event-calendar"
+                    :title-format="calendar.options.titleFormat"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
                     :resources="resources"
@@ -238,9 +245,8 @@
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
-      />
+      ></FullCalendar>
     </div>
-
   </div>
 </template>
 
@@ -262,10 +268,12 @@
 
   import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
+  import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
 
   export default {
     name: 'ScheduleCalendar',
     components: {
+      ConfirmationDialog,
       FullCalendar,
     },
     props: {
@@ -276,6 +284,11 @@
     },
     computed: {
       //states
+      sortedStates() {
+        const selectedStates = this.states.filter(state => this.selectedStates.includes(state))
+        const unselectedStates = this.states.filter(state => !this.selectedStates.includes(state))
+        return selectedStates.concat(unselectedStates)
+      },
       selectAllStates () {
         return this.states.length === this.selectedStates.length
       },
@@ -292,6 +305,11 @@
         return 'check_box_outline_blank'
       },
       //org Types
+      sortedOrgTypes() {
+        const selectedOrgTypes = this.orgTypes.filter(orgType => this.selectedOrgTypes.includes(orgType))
+        const unselectedOrgTypes = this.orgTypes.filter(orgType => !this.selectedOrgTypes.includes(orgType))
+        return selectedOrgTypes.concat(unselectedOrgTypes)
+      },
       selectAllOrgTypes () {
         return this.orgTypes.length === this.selectedOrgTypes.length
       },
@@ -308,6 +326,12 @@
         return 'check_box_outline_blank'
       },
       //positions
+      sortedPositions(){
+        const selectedPositions = this.positions.filter(position => this.selectedPositions.includes(position));
+        const unselectedPositions = this.positions.filter(position => !this.selectedPositions.includes(position));
+        return selectedPositions.concat(unselectedPositions)
+
+      },
       selectAllPositions () {
         return this.positions.length === this.selectedPositions.length
       },
@@ -322,6 +346,21 @@
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
+      },
+      //orgs
+      sortedOrgs(){
+        const selectedOrgs = this.orgs.filter(org => this.selectedOrgs.includes(org));
+        const unselectedOrgs = this.orgs.filter(org => !this.selectedOrgs.includes(org));
+        return selectedOrgs.concat(unselectedOrgs)
+      },
+      //users
+      sortedUsers(){
+        const selectedUsers = this.users.filter(user => this.selectedUsers.includes(user));
+        const unselectedUsers = this.users.filter(user => !this.selectedUsers.includes(user));
+        return selectedUsers.concat(unselectedUsers)
+      },
+      firstDayOption(){
+        return moment.utc(this.calendarStartTime).format('dddd MMM Do, YYYY')
       },
     },
     mounted () {
@@ -346,6 +385,16 @@
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
       },
+      calendarStartTime: function (newStartTime, oldStartTime){
+        if(newStartTime !== oldStartTime) {
+          this.getDayOptions()
+        }
+      },
+      calendarEndTime: function (newEndTime, oldEndTime){
+        if(newEndTime !== oldEndTime) {
+          this.getDayOptions()
+        }
+      }
     },
     created() {
       // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []
@@ -403,8 +452,15 @@
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
+        daySelector: false,
+        dayOptions: [],
         calendar: {
           options: {
+            titleFormat:{ month: 'long',
+              year: 'numeric',
+              day: 'numeric',
+              weekday: 'long'
+             },
             slotDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
@@ -456,16 +512,16 @@
               },
               customTimelineDay: {
                 text: 'day',
+                id:'customTimelineDay',
                 click: () => {
                   let calendarApi = this.$refs.eventCalendar.getApi()
-                  this.calendar.options.slotDuration = '00:30:00'
-                  this.calendar.options.minTime = '02:00:00'
-                  this.calendar.options.maxTime = '23:00:00'
-                  this.calendar.options.slotLabelInterval = '01:00:00'
-                  this.calendar.options.slotWidth = 45
-                  calendarApi.changeView('resourceTimelineDay')
-                  this.getEvents(false, true)
-                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+                  if(calendarApi.view.type !== 'resourceTimelineDay') {
+                    this.$refs.daySelectionbtn.$el.click()
+                    //this is very hacky; it would be way better if we could update the library to the version where the weekday header
+                    //click works instead of doing this wacky work around, but that requires a major refactor
+                  } else {
+                    this.switchToDayView()
+                  }
                 }
               },
               customTimelineWeek: {
@@ -476,6 +532,7 @@
                   this.calendar.options.slotDuration = '01:00:00'
                   this.calendar.options.slotLabelInterval = '02:00:00'
                   this.calendar.options.slotWidth = 25
+                  this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
 
                   let calendarApi = this.$refs.eventCalendar.getApi()
                   calendarApi.changeView('resourceTimelineWeek')
@@ -489,6 +546,19 @@
       }
     },
     methods: {
+      switchToDayView(dayOption){
+        let calendarApi = this.$refs.eventCalendar.getApi()
+        this.calendar.options.slotDuration = '00:30:00'
+        this.calendar.options.minTime = '02:00:00'
+        this.calendar.options.maxTime = '23:00:00'
+        this.calendar.options.slotLabelInterval = '01:00:00'
+        this.calendar.options.slotWidth = 45
+        this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
+        let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
+        calendarApi.changeView('resourceTimelineDay', day)
+        this.getEvents(false, true)
+        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+      },
       handleResourceColors() {
         this.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
@@ -507,6 +577,24 @@
             r.color = '#'+hexColorCode
           }
         })
+      },
+      getDayOptions(){
+        let dayOptions = []
+        const startDate = this.calendarApi?.view.activeStart
+        const endDate = this.calendarApi?.view.activeEnd
+
+        if(startDate && endDate) {
+          let i = startDate
+          while (moment(endDate).isAfter(i)) {
+            let dayOption = {
+              rawDate: i,
+              formattedDate: moment.utc(i).format('dddd MMM Do, YYYY')
+            }
+            dayOptions.push(dayOption)
+            i = moment(i).add(1, 'days')
+          }
+        }
+        this.dayOptions = dayOptions
       },
       toggleSelectAllStates () {
         this.$nextTick(() => {
@@ -985,6 +1073,10 @@
   margin: auto;
   background-color: var(--v-secondary-base);
   opacity: .5;
+}
+.invisible-btn{
+  visibility: hidden;
+  height: 0 !important;
 }
 </style>
 

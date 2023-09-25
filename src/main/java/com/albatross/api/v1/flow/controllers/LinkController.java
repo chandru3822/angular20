@@ -29,6 +29,15 @@ public class LinkController {
     return linkService.getLinksForCompany();
   }
 
+  @GetMapping(value = "/buildUrl", produces = MediaType.APPLICATION_JSON_VALUE)
+  public String getLinkUrl (@RequestParam String currentLinkUrl,
+                            @RequestParam(required = false) Long contactId,
+                            @RequestParam(required = false) Long projectId,
+                            @RequestParam(required = false) Long ppsId,
+                            @RequestParam(required = false) Long ppseId) {
+    return linkService.getLinkUrl(currentLinkUrl, contactId, projectId, ppsId, ppseId);
+  }
+
   @PutMapping(value = "/updateOrderInProcessStep", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateOrderInProcessStep(@RequestBody List<ProcessStepLink> links) {
     linkService.updateOrderInProcessStep(links);

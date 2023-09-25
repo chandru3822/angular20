@@ -15,3 +15,20 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"
+    environment:
+      - DEBUG=${DEBUG-}
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - "${LOCALSTACK_VOLUME_DIR:-./localstack-s3-volume}:/var/lib/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  gotenberg:
+    image: gotenberg/gotenberg:7
+    ports:
+      - "4000:3000"

@@ -56,7 +56,9 @@ public class CustomFieldGroupAssignmentQuery {
                                     cf.field_name as "fieldName",
                                     cf.system_readonly as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.required,
@@ -107,7 +109,9 @@ public class CustomFieldGroupAssignmentQuery {
                                     cf.field_name as "fieldName",
                                     cf.system_readonly as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.required,
@@ -137,7 +141,9 @@ public class CustomFieldGroupAssignmentQuery {
                                     coalesce(dvcfc.display_name, dvfc.display_name) as "fieldName",
                                     false as "systemReadonly",
                                     cfga.read_only as "customFieldGroupAssignmentReadOnly",
+                                    cfga.read_only_allow as "customFieldGroupAssignmentReadOnlyAllow",
                                     cfga.hidden as "customFieldGroupAssignmentHidden",
+                                    cfga.hidden_allow as "customFieldGroupAssignmentHiddenAllow",
                                     cfga.show_on_insert as "showOnInsert",
                                     cfga.show_on_user_profile as "showOnUserProfile",
                                     cfga.required,
@@ -168,13 +174,13 @@ public class CustomFieldGroupAssignmentQuery {
   //language=PostgreSQL
   public final static String getCustomFieldsInGroup = """
     select cfga.*,
-         cfg.group_name,
-          cf.field_name,
-              cf.company_data_type_id,
-              cf.date_created,
-              cf.created_by_id,
-              cf.modified_by_id,
-              cf.date_modified
+        cfg.group_name,
+        cf.field_name,
+        cf.company_data_type_id,
+        cf.date_created,
+        cf.created_by_id,
+        cf.modified_by_id,
+        cf.date_modified
        from flow.custom_field_group_assignment cfga
          inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
          inner join flow.custom_field cf on cf.id = cfga.custom_field_id
@@ -197,18 +203,30 @@ public class CustomFieldGroupAssignmentQuery {
 
   //language=PostgreSQL
   public final static String getEventResourceFields = """
-    select cf.id,
-               cf.field_name as "fieldName"
-         from flow.custom_field cf
+      select cf.id,
+             cf.field_name as "fieldName",
+             sl.system_list_type_id
+      from flow.custom_field cf
                inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
                left join flow.company_system_list csl on csl.id = cf.company_system_list_id
-         where cf.company_id = :companyId
-          and cf.archived is not true
-          and cdt.data_type_id = (select required_data_type_id
-           from flow.schedule_field_type
-           where field_code = 'EVENT_RESOURCE')
-          and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
-         order by cf.field_name
+               left join flow.system_list sl on csl.system_list_id = sl.id
+      where cf.company_id = :companyId
+        and cf.archived is not true
+        and cdt.data_type_id = (select required_data_type_id
+                                from flow.schedule_field_type
+                                where field_code = 'EVENT_RESOURCE')
+        and case when cf.company_system_list_id is not null then csl.schedulable is true else 1=1 end
+        and case when :eventId::int is not null then
+          sl.system_list_type_id = (
+              select sl2.system_list_type_id
+              from flow.event e
+                  inner join flow.custom_field cf2 on e.resource_custom_field_id = cf2.id
+                  inner join flow.company_system_list csl2 on cf2.company_system_list_id = csl2.id
+                  inner join flow.system_list sl2 on csl2.system_list_id = sl2.id
+              where e.id = :eventId
+                         )
+        else 1=1 end
+        order by cf.field_name
        """;
 
   //language=PostgreSQL
@@ -422,10 +440,35 @@ public class CustomFieldGroupAssignmentQuery {
         where id = :cfgaId
         """;
 
+    //language=PostgreSQL
+    public final static String saveDisplayOnSnippet = """
+        update flow.custom_field_group_assignment
+        set display_on_snippet = true,
+            date_modified = now(),
+            modified_by_id = :userId
+        where id = :cfgaId
+""";
+
+    //language=PostgreSQL
+    public final static String clearDisplayOnSnippet = """
+      update flow.custom_field_group_assignment
+      set display_on_snippet = false,
+        date_modified = now(),
+        modified_by_id = :userId
+      where id in (select id from flow.custom_field_group_assignment where display_on_snippet = true AND custom_field_group_id IN
+                    (select id from flow.custom_field_group where event_id =
+                      (select cfg.event_id from flow.custom_field_group cfg
+                        join flow.custom_field_group_assignment cfga
+                        on cfg.id = cfga.custom_field_group_id
+                        where cfga.id = :cfgaId)));
+""";
+
+
   //language=PostgreSQL
   public final static String saveReadOnly = """
     update flow.custom_field_group_assignment
           set read_only = :cfgaReadOnly,
+              read_only_allow = :cfgaReadOnlyAllow,
               date_modified = now(),
               modified_by_id = :userId
         where id = :cfgaId
@@ -435,6 +478,7 @@ public class CustomFieldGroupAssignmentQuery {
   public final static String saveHidden = """
     update flow.custom_field_group_assignment
         set hidden = :cfgaHidden,
+            hidden_allow = :cfgaHiddenAllow,
             date_modified = now(),
             modified_by_id = :userId
       where id = :cfgaId
@@ -481,6 +525,18 @@ public class CustomFieldGroupAssignmentQuery {
        where not exists (  select id
                            from flow.white_listed_position
                            where custom_field_group_assignment_id = :cfgaId
+                             and position_id = :positionId
+                             and company_id = :companyId
+                             and white_list_type_id = :whiteListTypeId
+                              and archived is not true)
+       """;
+
+  public final static String insertWhiteListPositionWithNullCfgaId = """
+    insert into flow.white_listed_position(position_id, custom_field_group_assignment_id, white_list_type_id, company_id, created_by_id, date_created, modified_by_id, date_modified)
+       select :positionId, null, :whiteListTypeId, :companyId, :userId, now(), :userId, now()
+       where not exists (  select id
+                           from flow.white_listed_position
+                           where custom_field_group_assignment_id is null
                              and position_id = :positionId
                              and company_id = :companyId
                              and white_list_type_id = :whiteListTypeId

@@ -105,7 +105,14 @@ public class ScheduleQuery {
           s.state,
           pps.company_process_step_status_type_id,
           cpsst.process_step_status_type,
-          cpsst.process_step_status_type_id
+          cpsst.process_step_status_type_id,
+          (select cfga.id
+            from flow.project_process_step_event_custom_field_value ppsecfv
+               inner join flow.custom_field_group_assignment cfga
+                 on ppsecfv.custom_field_group_assignment_id = cfga.id
+                  and cfga.archived is false and cfga.display_on_snippet is true
+               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+            where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValueGroupAssignmentId"
         from flow.project_process_step pps
                inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
                inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
@@ -172,7 +179,7 @@ public class ScheduleQuery {
           p.latitude,
           p.contact_id,
           p.longitude,
-          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
+          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name, ' - ', p.position) end as resource_name,
           p.project_name,
           ps.process_step_name,
           p.company_state_id,
@@ -199,6 +206,7 @@ public class ScheduleQuery {
                inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
                inner join flow.system_list sl on sl.id = csl.system_list_id
                left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+               left join flow.position p on p.id = up.position_id
                left join flow.user u on u.id = up.user_id
                left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
         where case when :isParent
@@ -256,7 +264,7 @@ public class ScheduleQuery {
            p.city,
            p.postal_code,
            s.abbreviation as state_abbreviation,
-           case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
+           case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name, ' - ', po.position) end as resource_name,
            p.project_name,
            ps.process_step_name,
            p.company_state_id,
@@ -285,6 +293,7 @@ public class ScheduleQuery {
            inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
            inner join flow.system_list sl on sl.id = csl.system_list_id
            left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+           left join flow.position po on po.id = up.position_id
            left join flow.user u on u.id = up.user_id
            left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
     where case when :isParent

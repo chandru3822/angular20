@@ -1,50 +1,34 @@
 <template>
-  <v-row id="project-details-container" class="">
-    <v-col cols="12" lg="12" class="text-left pt-0">
-      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-        <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header">
-            <v-toolbar-title class="albatross-header-3">Active Process Steps</v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-              <AddProcessStep
-                v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
-                class="d-inline-block"
-                :project-id="projectId"
-                :process-id="project.processId"
-                :contact-id="project.contactId"
-                @step-added="getProcessSteps"
-              />
-            </v-toolbar-items>
-          </v-toolbar>
-
-          <v-col cols="12" v-if="isProcessStepsLoading">
-            <SpinnerInline :size="20" color="primary"/>
-          </v-col>
-
-          <v-col cols="12" v-else class="py-0">
-            <ActiveProjectProcessStepSnippet
-              :steps="processSteps"
-              :projectId="projectId"
-              :contactId="project.contactId"/>
-          </v-col>
-        </v-row>
-      </v-col>
-
-
-      <v-fade-transition v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-        <v-col
+  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
+                           header="Active Process Steps"
+                           :section-expanded="sectionExpanded"
+                           :is-loading="isProcessStepsLoading"
+  >
+    <template v-slot:tool-btn>
+      <AddProcessStep
+          v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
+          class="d-inline-block"
+          :admin="$store.getters.isFullAdmin"
+          :project-id="projectId"
+          :process-id="project.processId"
+          :contact-id="project.contactId"
+          @step-added="getProcessSteps"
+      />
+    </template>
+    <template v-slot:expanded-content>
+      <ActiveProjectProcessStepSnippet class="px-4"
+                                       :steps="processSteps"
+                                       :projectId="projectId"
+                                       :contactId="project.contactId"/>
+      <v-col
+          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           cols="12"
           class="text-left pt-0"
-        >
-          <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
-
-        </v-col>
-      </v-fade-transition>
-
-    </v-col>
-
-  </v-row>
+      >
+        <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
+      </v-col>
+    </template>
+  </SidePanelExpansionPanel>
 </template>
 
 <script>
@@ -55,10 +39,12 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
+import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ActiveProcessSteps',
   components: {
+    SidePanelExpansionPanel,
     SpinnerInline,
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
@@ -77,6 +63,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
+      sectionExpanded: this.$route.path.includes('processStep'),
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),

@@ -3,7 +3,7 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat>
-          <v-toolbar-title class="app-title">{{ selectedAttachment.attachmentType }}</v-toolbar-title>
+          <v-toolbar-title class="title-large">{{ selectedAttachment.attachmentType }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
 
@@ -14,7 +14,7 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Ancillary Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title class="title-large">Ancillary Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
@@ -40,6 +40,7 @@
             Save
           </v-btn>
           <v-btn
+              color="primary" text
             @click="[newGroup = {}, createNew = false]">
             Cancel
           </v-btn>
@@ -47,6 +48,7 @@
         <v-row>
           <v-col cols="12">
             <v-data-table
+                id="psAttachmentTypeCFGTable"
               :key="componentKey"
               :headers="headers"
               :items="filterCustomFieldGroups()"
@@ -57,7 +59,8 @@
               hide-default-header
               :sort-desc="[false]"
               :sort-by="['groupOrder']"
-              class="elevation-1 fix-column-width-bug attachment-cfg-table square-card"
+              class="elevation-1 attachment-cfg-table square-card"
+                :class="{'clear-display': isMobile}"
             >
               <template #no-data>
                 No custom field groups for this process step attachment type
@@ -68,7 +71,7 @@
               </template>
 
               <template #item="{ item, index }">
-                <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
+                <tr  :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2}">
                   <td style="width: 50px">
                     <v-btn text icon small class="handle" v-if="userCanEdit">
                       <v-icon>drag_handle</v-icon>
@@ -91,7 +94,7 @@
                     <span v-else>{{ item.groupName }}</span>
                   </td>
                   <td class="text-right">
-                    <div class="item-icons">
+                    <div class="item-icons d-flex justify-end">
                       <v-btn v-if="userCanAdd" small text
                              @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]">
                         <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
@@ -126,7 +129,7 @@
                         {{ item.fieldName }}
                       </template>
                     </v-autocomplete>
-                    <v-btn @click="addField = false">Cancel</v-btn>
+                    <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
                   </v-col>
                   <v-col cols="12" class="px-3 py-0 pt-2 justify"
                          v-if="!addField && (!item.customFields || item.customFields.length === 0)">
@@ -277,7 +280,10 @@ export default {
     },
     fieldToDeleteGroupName() {
       return this.customFieldToDelete ? this.customFieldToDelete.groupName : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     await this.getTypeDetails()
@@ -509,7 +515,10 @@ export default {
 </script>
 
 <style lang="scss">
-
+#psAttachmentTypeCFGTable.clear-display > div > table > tbody{
+  display:inline-table !important;
+  width:100%;
+}
 
 </style>
 

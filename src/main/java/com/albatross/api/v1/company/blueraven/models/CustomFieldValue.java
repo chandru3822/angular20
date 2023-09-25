@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.models;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -42,4 +43,10 @@ public class CustomFieldValue {
   private List<ListOfValue> listOfValues;
   private List<Long> systemListOptionIds;
   private List<WhiteListedPosition> whiteListedPositions, hiddenWhiteListedPositions;
+
+  /**
+   * Used in {@link com.albatross.api.v1.company.blueraven.controllers.proposal.BlueravenProposalService}
+   * Allows dynamic visibility based on a provided "context" of values from a process step custom field values
+   */
+  private String visibility;
 }

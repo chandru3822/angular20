@@ -133,7 +133,7 @@ public class PandaDocService {
 
   public JSONArray findTemplatesByName(String name) throws Exception {
     log.debug("PANDADOC: looking for template name='{}'", name);
-    String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
+    String url = "/templates?count=100&q=" + URLEncoder.encode(name, "UTF-8");
     HttpResponse resp = GET(url);
     JSONObject out = resp.getJSON();
     return out.getJSONArray("results");
@@ -661,6 +661,7 @@ public class PandaDocService {
       tokens.put("Proposal.Storage Size", storageSize);
       tokens.put("Proposal.Estimated Backup Days", result.get("custom_fields.Estimated Backup Days"));
       tokens.put("Proposal.Solar Rebate For HIC", result.get("custom_fields.Solar Rebate for HIC"));
+      tokens.put("Proposal.Solar Below the Line Rebates", result.get("custom_fields.Solar Below the Line Rebates"));
 
       Double totalCost =
           Double.parseDouble(
@@ -674,6 +675,16 @@ public class PandaDocService {
                   : result.get("custom_fields.Referral Promotion Amount").toString());
       tokens.put("Deal.Total System Price", totalCost - referralPromotionAmount);
       tokens.put("Project.Total System Price", totalCost - referralPromotionAmount);
+
+      Double annualDegradation =
+        Double.parseDouble(
+          result.get("custom_fields.Annual Panel Degradation") == null
+            ? "0"
+            : result.get("custom_fields.Annual Panel Degradation").toString()) * 100.0;
+
+      // Round to 2 decimals
+      annualDegradation = (double) Math.round(annualDegradation * 100) / 100;
+      tokens.put("Proposal.Annual Panel Degradation", annualDegradation + "%");
 
       Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
       if (deets.getFinancier().equals("Cash")) {

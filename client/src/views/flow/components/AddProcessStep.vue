@@ -6,9 +6,8 @@
     min-width="350"
     :close-on-content-click="false"
 >
-
   <template #activator="{on}">
-    <v-btn text color="primary" class="" x-small v-on="on" @click="[ getSteps() ]" @blur="clear()">
+    <v-btn text color="primary" class="" small v-on="on" @click="[ getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>
     </v-btn>
   </template>
@@ -100,7 +99,19 @@ export default {
               projectId: this.projectId,
             }
           })
-          this.steps = (this.admin) ? data.processStepProcesses : data
+          this.steps = (this.admin) ? data.processStepProcesses : data.filter(ps => {
+            //the query for nonAdminProcessSteps filters on 'non_admin_add is true' so we don't have to check that here
+            let allowAdd = false
+            if(ps.nonAdminAddWhiteListedPositions?.length > 0) {
+              //do any of the user's active positions match the white listed positions
+              allowAdd = ps.nonAdminAddAllow ? this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId)) :
+                  !this.$store.getters.userHasAnyPosition(ps.nonAdminAddWhiteListedPositions?.map(wlp => wlp.positionId))
+            } else {
+              //allow them to add if nonAdminAdd is true and it is set to a deny list and there are no positions
+              allowAdd = ps.nonAdminAdd && !ps.nonAdminAddAllow
+            }
+            return allowAdd
+          })
         } catch (e) {
           logError(e)
           this.snackbar = getSnackbar('ERROR', 'Error fetching process steps')

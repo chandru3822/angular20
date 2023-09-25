@@ -10,9 +10,11 @@ public class ProcessStepEventQuery {
            cest.event_status_type as initial_event_status_type,
            pse.event_id,
            pse.readonly,
+           pse.readonly_allow,
            pse.archived,
            e.event_name,
            e.hidden as eventHidden,
+           e.hidden_allow as eventHiddenAllow,
            pse.display_order,
            coalesce((
                       SELECT array_to_json(array_agg(row_to_json(psea)))
@@ -84,13 +86,26 @@ public class ProcessStepEventQuery {
     where pse.process_step_id = :processStepId
       and e.resource_custom_field_id is not null
       and pse.archived is not true
-      and case when e.hidden and :systemAdmin::boolean is false
+      and case when e.hidden and e.hidden_allow and :systemAdmin::boolean is false
                        then pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
                                              where wlp2.event_id = pse.event_id
                                                and wlp2.white_list_type_id = 17
                                                and wlp2.archived is not true
                                                and wlp2.position_id = any(array[ :userPositions ]::bigint[]) limit 1
             )
+           when e.hidden and not e.hidden_allow and :systemAdmin::boolean  is false
+             then case when ( select wlp2.event_id from flow.white_listed_position wlp2
+                              where wlp2.event_id = pse.event_id
+                                and wlp2.white_list_type_id = 17
+                                and wlp2.archived is not true
+                              limit 1
+           ) is null then true
+                       else pse.event_id = ( select wlp2.event_id from flow.white_listed_position wlp2
+                                             where wlp2.event_id = pse.event_id
+                                               and wlp2.white_list_type_id = 17
+                                               and wlp2.archived is not true
+                                             limit 1
+                       ) end
                    else 1=1 end
       order by pse.display_order
         """;
@@ -135,6 +150,7 @@ public class ProcessStepEventQuery {
                pse.event_id,
                pse.initial_company_event_status_type_id,
                pse.readonly,
+               pse.readonly_allow,
                cest.event_status_type as initialEventStatusType,
                e.event_name,
                pse.archived,
@@ -312,6 +328,7 @@ public class ProcessStepEventQuery {
                                                                                       dfp.data_type_id as "dataTypeId",
                                                                                       dfp.id as "dbFunctionParamId",
                                                                                       dfp.description,
+                                                                                      dfp.nullable,
                                                                                       apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                                                                       apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                                                                       apdv.dynamic_value as "dynamicValue"
@@ -502,6 +519,7 @@ public class ProcessStepEventQuery {
     public final static String saveReadOnly = """
     update flow.process_step_event
          set readonly = :readOnly,
+             readonly_allow = :readOnlyAllow,
              modified_by_id = :userId,
              date_modified = now()
          where id = :processStepEventId
@@ -638,6 +656,7 @@ select  psea.*,
                                                           dfp.data_type_id as "dataTypeId",
                                                           dfp.id as "dbFunctionParamId",
                                                           dfp.description,
+                                                          dfp.nullable,
                                                           apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                                           apdv.dynamic_value as "dynamicValue"
                                                    from flow.db_function_param dfp
@@ -835,7 +854,16 @@ where psea.id = :id
   //language=PostgreSQL
   public final static String addChildFunctionToAction = """
     insert into flow.process_step_event_action_company_function (process_step_event_action_id, company_function_id, display_order, created_by_id, date_created, modified_by_id, date_modified)
-        values (:processStepEventActionId, :companyFunctionId, :displayOrder, :createdById, now(), :createdById, now())
+        values (:processStepEventActionId, :companyFunctionId, (COALESCE((SELECT MAX(display_order) + 1 FROM flow.process_step_event_action_company_function psacf where psacf.process_step_event_action_id = :processStepEventActionId and psacf.archived is false), 1)), :createdById, now(), :createdById, now())
+        """;
+
+  //language=PostgreSQL
+  public final static String updateChildFunctionOrder = """
+    update flow.process_step_event_action_company_function
+        set display_order = :displayOrder,
+            date_modified = now(),
+            modified_by_id = :modifiedById
+      where id = :id
         """;
 
   //language=PostgreSQL
@@ -860,6 +888,7 @@ where psea.id = :id
                                         dfp.data_type_id as "dataTypeId",
                                         dfp.id as "dbFunctionParamId",
                                         dfp.description,
+                                        dfp.nullable,
                                         apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                                         apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                                         apdv.dynamic_value as "dynamicValue"
@@ -920,6 +949,7 @@ where psea.id = :id
                               dfp.data_type_id as "dataTypeId",
                               dfp.id as "dbFunctionParamId",
                               dfp.description,
+                              dfp.nullable,
                               apdv.process_step_action_company_function_id as "processStepActionCompanyFunctionId",
                               apdv.process_step_event_action_company_function_id as "processStepEventActionCompanyFunctionId",
                               apdv.dynamic_value as "dynamicValue"
@@ -945,6 +975,7 @@ where psea.id = :id
                                    ppscfv.numeric_value as "numericValue",
                                    ppscfv.int_value as "intValue",
                                    dfp.system_value_id as "systemValueId",
+                                   dfp.nullable,
                                    apdv.dynamic_value as "dynamicValue"
                             from flow.db_function_param dfp
                                    left join flow.company_function_param cfp on cfp.db_function_param_id = dfp.id and cfp.archived is not true and cfp.company_function_id = cf.id

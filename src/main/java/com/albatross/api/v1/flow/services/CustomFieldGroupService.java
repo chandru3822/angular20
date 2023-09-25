@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.graalvm.shadowed.org.jcodings.util.Hash;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
@@ -153,6 +154,17 @@ public class CustomFieldGroupService {
     sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.saveDetailView, params);
   }
 
+  public void saveDisplayOnSnippet(Long cfgaId){
+      User currentUser = securityService.getCurrentUser();
+
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("userId", currentUser.getId());
+      params.put("cfgaId", cfgaId);
+
+      sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.clearDisplayOnSnippet, params);
+      sqlCache.updateBySql(CustomFieldGroupAssignmentQuery.saveDisplayOnSnippet, params);
+  }
+
   public void saveCfgaAndWhiteList(
       CustomField customField,
       Boolean savingReadOnly,
@@ -164,7 +176,10 @@ public class CustomFieldGroupService {
     params.put("userId", currentUser.trueUserId());
     params.put("companyId", currentUser.getCompanyId());
     params.put("cfgaReadOnly", customField.getCustomFieldGroupAssignmentReadOnly());
+    params.put("cfgaReadOnlyAllow", customField.getCustomFieldGroupAssignmentReadOnlyAllow());
     params.put("cfgaHidden", customField.getCustomFieldGroupAssignmentHidden());
+    //this is pissing me off. setting to true if a value is not passed in since that should be the default
+    params.put("cfgaHiddenAllow", null != customField.getCustomFieldGroupAssignmentHiddenAllow() ? customField.getCustomFieldGroupAssignmentHiddenAllow() : true);
     params.put("cfgaId", customField.getCustomFieldGroupAssignmentId());
     params.put("whiteListTypeId", whiteListTypeId);
 
@@ -240,11 +255,12 @@ public class CustomFieldGroupService {
       CustomFieldGroupAssignmentQuery.getCustomFieldsInGroup, params, CustomField.class);
   }
 
-  public List<CustomField> getEventResourceFields() {
+  public List<CustomField> getEventResourceFields(Long eventId) {
     User currentUser = securityService.getCurrentUser();
 
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
+    params.put("eventId", eventId);
 
     return sqlCache.queryBySql(
       CustomFieldGroupAssignmentQuery.getEventResourceFields, params, CustomField.class);

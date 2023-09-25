@@ -3,6 +3,7 @@
     <v-dialog v-model="showModal" class="square-card">
       <ResidualDetailModal :data="modalData"
                            :title="modalTitle"
+                           :type-id="modalTypeId"
                            :user-full-name="modalUserFullName"
                            @residualDetailModalClosed="showModal = false"
       ></ResidualDetailModal>
@@ -110,7 +111,14 @@
               <td class="text-left">{{item.percentOfResidualEarned | percent(0)}}</td>
               <td class="text-left">{{item.potentialResidual | currency('$', 0)}}</td>
               <td class="text-left">{{item.earnedResidual | currency('$', 0)}}</td>
-              <td class="text-left">{{item.clawback | currency('$', 0)}}</td>
+<!--              <td class="text-left">{{item.currentClawback | currency('$', 0)}}</td>-->
+              <td class="text-left">
+                <a @click="loadModalData(item, 4)">
+                  {{item.currentClawback | currency('$', 0)}}
+                </a>
+              </td>
+              <td class="text-left">{{item.existingClawback | currency('$', 0)}}</td>
+              <td class="text-left">{{item.totalClawback | currency('$', 0)}}</td>
               <td class="text-left">{{item.adjustmentOverride | currency('$', 0)}}</td>
               <td class="text-left">{{item.residualTotal | currency('$', 0)}}</td>
               <td class="text-left">{{item.paidInPeriod ? 'Yes' : 'No'}}</td>
@@ -144,6 +152,7 @@ export default {
       modalUserFullName: '',
       modalData: [],
       modalTitle: '',
+      modalTypeId: null,
       dataLoading: false,
       residualSnapshot: [],
       footerProps: {
@@ -174,7 +183,9 @@ export default {
         {text: '% of Residual Earned', value: 'percentOfResidualEarned', show: true},
         {text: 'Potential Residual', value: 'potentialResidual', show: true},
         {text: 'Earned Residual', value: 'earnedResidual', show: true},
-        {text: 'Clawback', value: 'clawback', show: true},
+        {text: 'Current Clawbacks', value: 'currentClawback', show: true},
+        {text: 'Existing Clawbacks', value: 'existingClawback', show: true},
+        {text: 'Total Clawbacks', value: 'totalClawback', show: true},
         {text: 'Adjustment/Override', value: 'adjustmentOverride', show: true},
         {text: 'Total', value: 'total', show: true},
         {text: 'Paid In Period', value: 'paidInPeriod', show: true},
@@ -407,11 +418,17 @@ export default {
       }
     },
     async loadModalData (residualItem, typeId) {
-      //typeId: 1 = lifetime qualified, 2 = qualified fds in period, 3 = fds not qualified this period
+      //typeId: 1 = lifetime qualified,
+      // 2 = qualified fds in period,
+      // 3 = fds not qualified this period
+      // 4 = current clawbacks/cancelled projects
+      this.modalTypeId = typeId
       this.showModal = false
       this.modalData = []
       this.modalTitle = typeId === 1 ? 'Lifetime Qualified FDC' :
-                        typeId === 2 ? 'Qualified FDC in Period' : 'FDA Not Qualified this Period'
+                        typeId === 2 ? 'Qualified FDC in Period' :
+                        typeId === 3 ? 'FDA Not Qualified this Period'
+                            : 'Cancelled Projects'
       this.modalUserFullName = ''
       try {
         let params = {

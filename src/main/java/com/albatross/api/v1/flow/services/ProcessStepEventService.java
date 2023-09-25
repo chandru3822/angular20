@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
+import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -38,15 +39,73 @@ public class ProcessStepEventService {
 
   private final UserPositionService userPositionService;
 
-  public List<ProcessStepEvent> getStepEvents(Long processStepId) {
+  public List<ProcessStepEvent> getStepEvents(Long processStepId, Boolean adminScreenLoad) {
+    //had to add the adminScreenLoad because the events were being filtered out of the settings screen and couldn't be configured
     User user = securityService.getCurrentUser();
     Boolean systemAdmin = user.getHighestCompanyId() == 1L;
+    Boolean adminLoad = systemAdmin || adminScreenLoad;
     List<Long> userPositionIds = userPositionService.getAllActiveUserPositionIds(user);
     HashMap<String, Object> params = new HashMap<>();
     params.put("processStepId", processStepId);
-    params.put("systemAdmin", systemAdmin);
+    params.put("systemAdmin", adminLoad);
     params.put("userPositions", userPositionIds);
-    return sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    List<ProcessStepEvent> processStepEvents = sqlCache.queryBySql(ProcessStepEventQuery.getStepEvents, params, new ProcessStepEventMapper<>(ProcessStepEvent.class, om));
+    if(!adminLoad) {
+      for (int x = 0; x < processStepEvents.size(); x++) {
+        if (processStepEvents.get(x).getEventHidden()) {
+          boolean hiddenWhiteListed = false;
+          boolean hiddenAllowFlag = processStepEvents.get(x).getEventHiddenAllow();
+
+          //Checks if the user's position is in the whitelist
+          for (int y = 0; y < processStepEvents.get(x).getEventHiddenWhiteListedPositions().size(); y++) {
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (processStepEvents.get(x).getEventHiddenWhiteListedPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                hiddenWhiteListed = true;
+              }
+            }
+          }
+
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if (!hiddenAllowFlag) {
+            hiddenWhiteListed = !hiddenWhiteListed;
+          }
+
+
+          processStepEvents.get(x).getEventHiddenWhiteListedPositions().clear();
+          processStepEvents.get(x).setEventHidden(!hiddenWhiteListed);
+          if (!hiddenWhiteListed) {
+            processStepEvents.remove(x);
+            x--;
+            continue;
+          }
+
+
+        }
+
+        if(processStepEvents.get(x).getReadonly()) {
+          boolean whiteListed = false;
+          boolean allowFlag = processStepEvents.get(x).getReadonlyAllow();
+
+          //Checks if the user's position is in the whitelist
+          for (int y = 0; y < processStepEvents.get(x).getReadonlyWhiteListPositions().size(); y++) {
+            for(int z = 0; z < user.getUserPositions().size(); z++) {
+              if (processStepEvents.get(x).getReadonlyWhiteListPositions().get(y).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                whiteListed = true;
+              }
+            }
+          }
+
+          //If the flag is set to deny, flip the whitelist to be a deny list
+          if (!allowFlag) {
+            whiteListed = !whiteListed;
+          }
+
+          processStepEvents.get(x).getReadonlyWhiteListPositions().clear();
+          processStepEvents.get(x).setReadonly(!whiteListed);
+        }
+      }
+    }
+    return processStepEvents;
   }
 
   public List<ProcessStepEvent> getAvailableEventsForStep(Long processStepId) {
@@ -109,6 +168,7 @@ public class ProcessStepEventService {
       params.put("companyId", currentUser.getCompanyId());
       params.put("processStepEventId", processStepEvent.getId());
       params.put("readOnly", processStepEvent.getReadonly());
+      params.put("readOnlyAllow", processStepEvent.getReadonlyAllow());
       params.put("eventId", processStepEvent.getEventId());
       params.put("processStepId", processStepEvent.getProcessStepId());
       params.put("whiteListTypeId", WhiteListType.PROCESS_STEP_EVENT_READ_ONLY.id);
@@ -310,6 +370,19 @@ public class ProcessStepEventService {
     processStepActionService.handleDynamicValueParams(child.getActionParamDynamicValues(), null, id);
 
     return getActionChildFunction(id);
+  }
+
+  public void updateChildFunctionOrder(Long actionId, List<ProcessStepEventActionChildFunction> childFns) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+
+    for(ProcessStepActionChildFunction child : childFns) {
+      params.put("id", child.getId());
+      params.put("displayOrder", child.getDisplayOrder());
+
+      sqlCache.updateBySql(ProcessStepEventQuery.updateChildFunctionOrder, params);
+    }
   }
 
   public void deleteChildFunctionFromAction(Long childProcessId) {

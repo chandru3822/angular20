@@ -4,7 +4,7 @@
     :disabled="!canPerformAction"
     color="primary"
     class="action-button"
-    @click="completeAction(actionResult)"
+    @click="[canPerformAction = false, completeAction(actionResult)]"
   >
     <div>
       <div class="action-button-name">

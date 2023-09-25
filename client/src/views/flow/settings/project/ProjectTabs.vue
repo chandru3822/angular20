@@ -3,7 +3,7 @@
     <v-row>
       <v-col class="shrink pt-0" cols="12">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title class="app-title">Tabs</v-toolbar-title>
+          <v-toolbar-title class="title-large">Tabs</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newTab ={}]" v-if="userCanAdd">

@@ -136,6 +136,38 @@ public class ContactService {
               contact.get().getOwner().getUserId(),
               com.albatross.api.v1.flow.enums.AttachmentType.USER_IMAGE.id);
       contact.get().getOwner().setPresignedUrl(presignedUrl);
+
+
+      if(contact.get().getOwnerReadOnly()) {
+        boolean ownerWhiteListed = false;
+        boolean ownerAllowFlag = contact.get().getOwnerReadOnlyAllow();
+        boolean breakLoop = false;
+        //Checks if the user's position is in the whitelist
+        for (int x = 0; x < contact.get().getOwnerReadOnlyWhiteListedPositions().size(); x++) {
+          if(!breakLoop) {
+            for (int z = 0; z < user.getUserPositions().size(); z++) {
+               if (contact.get().getOwnerReadOnlyWhiteListedPositions().get(x).getPositionId().equals(user.getUserPositions().get(z).getPositionId())) {
+                ownerWhiteListed = true;
+              }
+
+//              Re-enable Below when BR wants to handle multiple position stuff
+//              else if (!ownerAllowFlag) {
+//                ownerWhiteListed = false;
+//                breakLoop = true;
+//                break;
+//              }
+            }
+          }
+        }
+
+        //If the flag is set to deny, flip the whitelist to be a deny list
+        if (!ownerAllowFlag) {
+          ownerWhiteListed = !ownerWhiteListed;
+        }
+
+        contact.get().getOwnerReadOnlyWhiteListedPositions().clear();
+        contact.get().setOwnerReadOnly(!ownerWhiteListed);
+      }
     }
 
     return contact.orElse(null);
@@ -266,6 +298,8 @@ public class ContactService {
       params.put("contactTypeId", contact.getContactTypeId());
       params.put("modifiedById", currentUser.trueUserId());
       params.put("id", id);
+      params.put("ownerUserPositionId", (contact.getOwnerUserPositionId() != null) ? contact.getOwnerUserPositionId() : existingContact.getOwnerUserPositionId());
+
       // add update when we add that to the UI
       sqlCache.updateBySql(ContactQuery.updateContact, params);
 
@@ -302,21 +336,25 @@ public class ContactService {
         longitude = coordinates.get(0);
       }
 
-      UserPosition userPrimaryPosition =
+      if (contact.getOwnerUserPositionId() != null) {
+        params.put("ownerUserPositionId", contact.getOwnerUserPositionId());
+      } else {
+        UserPosition userPrimaryPosition =
           userPositionService.getUserPrimaryPosition(currentUser.getId(), currentUser.getCompanyId());
-      params.put(
+        params.put(
           "ownerUserPositionId",
           null == userPrimaryPosition || null == userPrimaryPosition.getId()
-              ? null
-              : userPrimaryPosition.getId());
-      if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
-        // todo: come back and remove this at some point
-        log.warn(
+            ? null
+            : userPrimaryPosition.getId());
+        if (null == userPrimaryPosition || null == userPrimaryPosition.getId()) {
+          // todo: come back and remove this at some point
+          log.warn(
             "RANDA: a contact was added and we didn't find the user position id. this shouldnt happen {} {} {} {}",
             currentUser.getId(),
             contact.getFirstName(),
             contact.getLastName(),
             contact.getEmail());
+        }
       }
       params.put("latitude", latitude);
       params.put("longitude", longitude);

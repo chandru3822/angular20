@@ -49,7 +49,7 @@ public class Project {
   private String dateCreated;
   private Owner owner;
   private Contact contact;
-  private Boolean statusReadOnly, ownerReadOnly;
+  private Boolean statusReadOnly, ownerReadOnly, statusReadOnlyAllow, ownerReadOnlyAllow;
   private List<ProjectTag> tags;
   private List<WhiteListedPosition> statusReadOnlyWhiteListedPositions,
       ownerReadOnlyWhiteListedPositions;

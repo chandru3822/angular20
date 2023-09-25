@@ -4,6 +4,7 @@ import com.albatross.api.config.AppProperties;
 import com.albatross.api.config.CachingConfig;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
+import com.albatross.api.pdf.PdfService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalTemplateBlockMapper;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.mappers.ProposalTemplateMapper;
@@ -21,28 +22,20 @@ import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.Value;
 import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Flux;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
@@ -63,25 +56,26 @@ import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 public class ProposalTemplateService {
   private final SqlCache sqlCache;
   private final ObjectMapper objectMapper;
   private final AppProperties appProperties;
   private final freemarker.template.Configuration freemarkerConfiguration;
   private final com.jayway.jsonpath.Configuration jsonPathConfiguration;
-  private final ScriptEngine engine;
+  private final PdfService pdfService;
 
 
   public ProposalTemplateService(
     @Autowired SqlCache sqlCache,
     @Autowired ObjectMapper objectMapper,
+    @Autowired PdfService pdfService,
     @Autowired AppProperties appProperties,
     @Autowired freemarker.template.Configuration freemarkerConfiguration) {
     this.sqlCache = sqlCache;
     this.objectMapper = objectMapper;
     this.appProperties = appProperties;
     this.freemarkerConfiguration = freemarkerConfiguration;
+    this.pdfService = pdfService;
 
     this.jsonPathConfiguration =
       com.jayway.jsonpath.Configuration.builder()
@@ -89,9 +83,6 @@ public class ProposalTemplateService {
         .options(Option.DEFAULT_PATH_LEAF_TO_NULL, Option.SUPPRESS_EXCEPTIONS)
         .mappingProvider(new JacksonMappingProvider())
         .build();
-
-//    NOTE (kaleb): is this the best way to handle this?
-    this.engine = new ScriptEngineManager().getEngineByName("graal.js");
   }
 
   public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType) {
@@ -104,59 +95,69 @@ public class ProposalTemplateService {
   }
 
   public ProposalTemplate getTemplateById(Long templateId, Map<String, Object> context, ProposalGeneratedType proposalGeneratedType, boolean isDebug) {
-    final ProposalTemplate template =
-      sqlCache.getBySql(ProposalTemplateQuery.findById, Map.of("id", templateId), new ProposalTemplateMapper(objectMapper))
-        .orElseThrow(NotFoundException::new);
 
-    Map<Integer, List<ProposalTemplateBlock>> blockHierarchy = template.getBlocks().stream()
-      .filter(p -> p.getParentId() != null)
-      .collect(groupingBy(ProposalTemplateBlock::getParentId, toList()));
+    try (Context ctx = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
+      //set the variables in the context
+      context.forEach((String key, Object val) -> ctx.getBindings("js").putMember(key, val));
 
-    List<ProposalTemplateBlock> hiddenBlocks = template.getBlocks().stream()
-      .filter(block -> {
-        String visibility = block.getVisibility();
-        if (visibility == null || visibility.trim().equals("")) {
-          return false;
-        }
-        try {
-          return !eval(visibility, context);
-        } catch (Exception e) {
-          log.error("Error evaluating visibility for blockId={}, msg={}", block.getId(), e.getMessage());
-          return false;
-        }
-      }).toList();
+      final ProposalTemplate template =
+        sqlCache.getBySql(ProposalTemplateQuery.findById, Map.of("id", templateId), new ProposalTemplateMapper(objectMapper))
+          .orElseThrow(NotFoundException::new);
 
-    List<Integer> hidden = hiddenBlocks.stream()
-      .map(b -> findDescendants(b, blockHierarchy))
-      .flatMap(List::stream)
-      .collect(toList());
+      Map<Integer, List<ProposalTemplateBlock>> blockHierarchy = template.getBlocks().stream()
+        .filter(p -> p.getParentId() != null)
+        .collect(groupingBy(ProposalTemplateBlock::getParentId, toList()));
 
-    hidden.addAll(hiddenBlocks.stream().map(ProposalTemplateBlock::getId).toList());
+      List<ProposalTemplateBlock> hiddenBlocks = template.getBlocks().stream()
+        .filter(block -> {
+          String visibility = block.getVisibility();
+          if (visibility == null || visibility.trim().isEmpty()) {
+            return false;
+          }
+          try {
+            return !eval(ctx, visibility);
+          } catch (Exception e) {
+            log.error("[Proposal] Error evaluating visibility for blockId={}, msg={}", block.getId(), e.getMessage());
+            return false;
+          }
+        }).toList();
 
-    final List<ProposalTemplateBlock> mergedBlocks =
-      template.getBlocks().stream()
-        //filters out any blocks + descendants where the visibility is evaluated as false
-        .filter(block -> !hidden.contains(block.getId()))
-        //sort so the blocks with the same uuid are sorted together with blocks with any visibility take preference (higher sort)
-        .sorted(nullsLast(
-          comparing(ProposalTemplateBlock::getBlockUUID, nullsLast(naturalOrder()))
-            .thenComparing(ProposalTemplateBlock::getVisibility, nullsLast(naturalOrder()))
-        ))
-        //this will create a distinct list of blocks based on the block UUID given the previous sort order
-        .filter(distinctByKey(ProposalTemplateBlock::getBlockUUID))
-        .map(block -> replaceVarFromContext(block, context, isDebug))
-        .map(block -> replaceImageBlockWithURL(block, context, proposalGeneratedType, isDebug))
-        .map(block -> replaceImagePlaceholderFromContext(block, context, isDebug))
-        .map(block -> replaceStylePlaceholder(block, context, proposalGeneratedType, isDebug))
-        .sorted(nullsFirst(
-          comparing(ProposalTemplateBlock::getParentId, nullsFirst(naturalOrder()))
-            .thenComparing(ProposalTemplateBlock::getBlockOrder, nullsFirst(naturalOrder()))
-            .thenComparing(ProposalTemplateBlock::getId)
-        ))
+      List<Integer> hidden = hiddenBlocks.stream()
+        .map(b -> findDescendants(b, blockHierarchy))
+        .flatMap(List::stream)
         .collect(toList());
 
-    template.setBlocks(mergedBlocks);
-    return template;
+      hidden.addAll(hiddenBlocks.stream().map(ProposalTemplateBlock::getId).toList());
+
+      final List<ProposalTemplateBlock> mergedBlocks =
+        template.getBlocks().stream()
+          //filters out any blocks + descendants where the visibility is evaluated as false
+          .filter(block -> !hidden.contains(block.getId()))
+          //sort so the blocks with the same uuid are sorted together with blocks with any visibility take preference (higher sort)
+          .sorted(nullsLast(
+            comparing(ProposalTemplateBlock::getBlockUUID, nullsLast(naturalOrder()))
+              .thenComparing(ProposalTemplateBlock::getVisibility, nullsLast(naturalOrder()))
+          ))
+          //this will create a distinct list of blocks based on the block UUID given the previous sort order
+          .filter(distinctByKey(ProposalTemplateBlock::getBlockUUID))
+          .map(block -> replaceVarFromContext(block, context, isDebug))
+          .map(block -> replaceImageBlockWithURL(block, context, proposalGeneratedType, isDebug))
+          .map(block -> replaceImagePlaceholderFromContext(block, context, isDebug))
+          .map(block -> replaceStylePlaceholder(block, context, proposalGeneratedType, isDebug))
+          .sorted(nullsFirst(
+            comparing(ProposalTemplateBlock::getParentId, nullsFirst(naturalOrder()))
+              .thenComparing(ProposalTemplateBlock::getBlockOrder, nullsFirst(naturalOrder()))
+              .thenComparing(ProposalTemplateBlock::getId)
+          ))
+          .collect(toList());
+
+      template.setBlocks(mergedBlocks);
+      return template;
+
+    } catch (Exception e) {
+      log.error("[Proposal] Error fetching template id={}", templateId, e);
+    }
+    return null;
   }
 
   /**
@@ -182,22 +183,18 @@ public class ProposalTemplateService {
     return descendantIds;
   }
 
-  private boolean eval(String script, Map<String, Object> context) {
-    try {
-      Instant start = Instant.now();
-      Object eval = engine.eval(script, new SimpleBindings(context));
-      Duration between = Duration.between(start, Instant.now());
-      log.debug("GraalJS Eval: `{}` = {} in {}", script, eval, between);
+  private boolean eval(Context ctx, String script) {
+    Instant start = Instant.now();
+    Value eval = ctx.eval("js", script);
+    Duration between = Duration.between(start, Instant.now());
+    log.debug("GraalJS Eval: `{}` = {} in {}", script, eval, between);
 
-      if (eval instanceof Boolean b) {
-        return b;
-      }
-
-      return Objects.nonNull(eval);
-
-    } catch (ScriptException e) {
-      throw new RuntimeException(e);
+    if (eval.isBoolean()) {
+      return eval.asBoolean();
     }
+
+    //not sure what to do here? probably return false
+    return !eval.isNull();
   }
 
   @SuppressWarnings("unchecked")
@@ -363,45 +360,14 @@ public class ProposalTemplateService {
   }
 
 
-  public ContentAwareByteArrayOutputStream generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {
+  public Resource generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {
     final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT, isDebug);
     return generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle());
   }
 
-  private ContentAwareByteArrayOutputStream generatePdf(List<ProposalTemplateBlock> blocks, Object theme) throws IOException, TemplateException {
-
-    final ContentAwareByteArrayOutputStream outputStream = new ContentAwareByteArrayOutputStream();
-
+  private Resource generatePdf(List<ProposalTemplateBlock> blocks, Object theme) throws IOException, TemplateException {
     final String generatedHtml = generateHtml(blocks, theme);
-
-    final Flux<DataBuffer> pdf = WebClient.create()
-      .post()
-      .uri(appProperties.getHtmlToPdfApi())
-      .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-      .accept(MediaType.APPLICATION_PDF)
-      .body(BodyInserters.fromFormData("html", generatedHtml))
-      .exchangeToFlux(response -> {
-
-        response.headers().header(HttpHeaders.CONTENT_LENGTH).stream()
-          .findFirst()
-          .map(Long::valueOf)
-          .ifPresent(outputStream::setContentLength);
-
-        response.headers().header(HttpHeaders.CONTENT_TYPE).stream()
-          .findFirst()
-          .ifPresent(outputStream::setContentType);
-
-        if (response.statusCode() == HttpStatus.OK) {
-          return response.bodyToFlux(DataBuffer.class);
-        }
-        return Flux.empty();
-      })
-      .doOnError((e) -> {
-        log.error("[PDF] Error processing PDF, error={}", e.getMessage());
-      });
-
-    DataBufferUtils.write(pdf, outputStream).blockLast();
-    return outputStream;
+    return pdfService.convert(generatedHtml);
   }
 
   private String generateHtml(List<ProposalTemplateBlock> blocks, Object theme) throws TemplateException, IOException {

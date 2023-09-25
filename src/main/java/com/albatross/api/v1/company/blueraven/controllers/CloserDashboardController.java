@@ -2,10 +2,12 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.CloserDashboardService;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +26,19 @@ public class CloserDashboardController {
 
   @GetMapping(value = "/residuals")
   public String getCloserResiduals(@RequestParam String residualDate) {
-    return closerDashboardService.getCloserResiduals(residualDate);
+    return closerDashboardService.getCloserResiduals(residualDate, null);
+  }
+
+  @GetMapping(value = "/closers")
+  public List<User> getClosers(@RequestParam(required = false) Boolean showInactive) {
+    return closerDashboardService.getClosers(showInactive != null && showInactive);
+  }
+
+  @PreAuthorize("hasFeatureAccessLevel('COMMISSIONS_ADMIN')")
+  @GetMapping(value = "/residuals/{userId}")
+  public String getCloserResidualsForUser(@PathVariable Long userId,
+                                          @RequestParam String residualDate) {
+    return closerDashboardService.getCloserResiduals(residualDate, userId);
   }
 
   @GetMapping(value = "/finalDesignsCompletedDrilldown")
@@ -54,6 +68,11 @@ public class CloserDashboardController {
       @RequestParam Boolean officeFdcRank,
       @RequestParam(required = false) Long selectedOrgId) {
     return closerDashboardService.getCloserTableScores(timeInterval, officeFdcRank, selectedOrgId);
+  }
+
+  @GetMapping(value="/leaderboardBookings")
+  public List<LeaderboardBooking> getLeaderboardBookings(@RequestParam String bookingDate) {
+    return closerDashboardService.getLeaderboardBookings(bookingDate);
   }
 
   @GetMapping(value = "/getBrsProvidedSources")

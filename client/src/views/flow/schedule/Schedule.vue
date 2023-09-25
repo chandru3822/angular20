@@ -226,7 +226,21 @@
               <v-btn color="primary"
                      class="white--text schedule-row-go-button"
                      :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
-                     @click="[fieldsSaving = true, scheduleProject()]">Save</v-btn>
+                     @click="[fieldsSaving = true, checkForSchedulingConflicts()]">Save</v-btn>
+              <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="scheduleProject" @close-dialog="conflictingEvent = null; fieldsSaving = false">
+                <template v-slot:title>Conflict</template>
+                <div>
+                  Resource <b>{{this.selectedProject.resourceName}}</b>
+                  has another event on their calendar on <b>{{this.conflictingEvent.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+                  - {{this.conflictingEvent.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+                  <b></b>
+                </div>
+                <br>
+                <b>Existing Event:</b> {{ conflictingEvent.eventName }} ({{ conflictingEvent.projectName }}, ID: {{ conflictingEvent.projectId }})
+                <template v-slot:no>Cancel</template>
+                <template v-slot:yes>Schedule Anyway</template>
+
+              </ConfirmationDialog>
               <v-dialog
                   v-if="selectedProject.eventStatusTypeId === 2"
                   v-model="selectedProject.unscheduleConfirm"
@@ -311,8 +325,8 @@
               :server-items-length="totalProjects"
               item-key="projectProcessStepEventId"
               :show-select="true"
-              :item-selected="(item, value) => this.zoomToMap(item, value)"
-              :toggle-select-all="(value) => this.zoomToMap(value)"
+              @item-selected="zoomToMap"
+              @toggle-select-all="zoomToMap"
               class="elevation-1 square-card"
           >
             <template #no-data>
@@ -375,7 +389,10 @@
         // they do these coordinates backwards to comply with geoJSON whatever that is.
         //center of the USA
         defaultCenter: [-98.5795, 39.8283],
+        scheduleConflict: false,
+        confirmSchedule: false,
         center: null,
+        conflictingEvent: null,
         startTime: null,
         endTime: null,
         mapResources: [],
@@ -493,7 +510,35 @@
           this.saveInvalid = false
         }
       },
+      async checkForSchedulingConflicts(){
+        this.$refs.calendar.getEvents(false, true)
+        let params = {
+          // orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+          // this was the old way. leaving here in case
+          // userPositionIds: this.getUserPositionIds(),
+          userPositionIds: [this.selectedProject.resource.id],
+          startTime: this.selectedProject.start,
+          endTime: this.selectedProject.end,
+          includeCancelled: false,
+          resourceId: this.selectedProject.resource.id
+        }
+        const {data} = await postRequest(`/schedule`, params);
+        for(let scheduledEvent of data) {
+          if ((scheduledEvent.start >= this.selectedProject.start && scheduledEvent.start <= this.selectedProject.end) || (scheduledEvent.end >= this.selectedProject.start && scheduledEvent.end <= this.selectedProject.end)) {
+            this.conflictingEvent = scheduledEvent;
+            break;
+          }
+          else{
+            this.conflictingEvent = null;
+          }
+        }
+
+        if(this.conflictingEvent == null) {
+          this.scheduleProject();
+        }
+      },
       async scheduleProject() {
+
         this.selectedProject.resourceId = this.selectedProject.resource.id
         this.selectedProject.resourceName = this.selectedProject.resource.name
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -743,6 +788,14 @@
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
+            this.selectedRows.push(this.projects[0])
+            this.zoomToMap({
+              item:{
+                longitude: this.selectedProject.longitude,
+                latitude: this.selectedProject.latitude
+              },
+              value: true
+            })
           }
           this.listLoading = false
         } catch (e) {
@@ -752,10 +805,15 @@
           this.listLoading = false
         }
       },
+      zoomToMap(event) {
+        if(event.value){
+          const item = event.item
+          this.state.mapZoom = 10
+          this.state.mapLongitude = item.longitude
+          this.state.mapLatitude = item.latitude
+        }
+      }
 
-    },
-    zoomToMap(item) {
-      console.log('ZOOM ITEM', item)
     }
   }
 </script>

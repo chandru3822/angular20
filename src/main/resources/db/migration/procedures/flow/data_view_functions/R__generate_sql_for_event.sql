@@ -62,7 +62,7 @@ BEGIN
           p_text_array_alias_columns =
             array_append(p_text_array_alias_columns, (v_value || x.field_to_update)::character varying);
           p_sql = p_sql || $$ flow.get_unique_behavior_value($$ || x.unique_behavior_code || $$,
-                                                              ppse.$$ || z.column_name || $$, ppse.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
+                                                              ppse.$$ || z.column_name || $$::text,0::bigint, ppse.id,$$|| quote_literal('EVENT')||$$)::$$ || x.data_type ||
                   $$ as $$ || x.field_to_update || $$,$$;
         end loop;
       v_field_required = false;

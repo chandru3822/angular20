@@ -88,6 +88,7 @@
           label="Field"
           :items="availableFields"
           item-text="name"
+          :item-value="item =>`${item.name} - ${item.smartlistFieldId} - ${item.customFieldGroupAssignmentId}`"
           return-object
           attach
           @input="[
@@ -671,7 +672,7 @@ export default {
     },
     async getProjectStatusTypes () {
       try {
-        const [result, companyResult] = await Promise.all([getRequest(`/project/status`), getRequest(`/project/companyStatus`)])
+        const [result, companyResult] = await Promise.all([getRequest(`/projectStatus`), getRequest(`/project/companyStatus`)])
         this.projectStatusTypes = result.data
         this.companyProjectStatusTypes = companyResult.data
       } catch (e) {

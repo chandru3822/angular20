@@ -3,12 +3,13 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="req-header-bar">
-          <v-toolbar-title class="app-title">Events</v-toolbar-title>
+          <v-toolbar-title class="title-large">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="[addNewEvent = !addNewEvent, getAvailableEvents()]" text color="primary" v-if="userCanAdd">
               <v-icon v-if="!addNewEvent">add</v-icon>
-              {{ addNewEvent ? 'Cancel' : 'Add Event'}}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewEvent ? 'Cancel' : 'Add Event'}}</span>
             </v-btn>
             <v-btn text color="primary" @click="expandEvents = !expandEvents">
               <v-icon v-if="!expandEvents">mdi-chevron-down</v-icon>
@@ -70,17 +71,11 @@
                   <td class="text-left">{{item.eventName}} </td>
                   <td class="text-left">{{item.initialEventStatusType}}</td>
                   <td>
-                    <div style="display: flex; justify-content: flex-end">
+                    <div class="d-flex justify-end" :class="{'flex-column' : isMobile}">
                       <v-btn small text :to="`/settings/event/${item.eventId}/components`" target="_blank" :style="{'text-decoration': 'none'}"><v-icon color="primary">mdi-cogs</v-icon></v-btn>
-                      <router-link v-if="userCanEdit" class="no-text-decoration pr-3"
-                                   :to="`/settings/processStep/${processStepId}/event/${item.id}`">
-                        <v-btn :disabled="!userCanEdit" small text color="primary">
+                        <v-btn :disabled="!userCanEdit" small text color="primary" @click="$router.push({ path: `/settings/processStep/${processStepId}/event/${item.id}` })">
                           <v-icon>edit</v-icon>
                         </v-btn>
-                      </router-link>
-                      <v-btn v-else :disabled="!userCanEdit" small text color="primary">
-                        <v-icon>edit</v-icon>
-                      </v-btn>
                       <v-btn :disabled="!userCanDelete" small text color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                     </div>
                   </td>
@@ -171,7 +166,11 @@ export default {
       itemToDelete: null
     }
   },
-  computed: {},
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
+  },
   async created() {
     await this.getEvents()
   },
@@ -179,7 +178,7 @@ export default {
     async getEvents() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/processStep/${this.processStepId}/event`)
+        const {data} = await getRequest(`/processStep/${this.processStepId}/event/admin`)
         this.events = data
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {

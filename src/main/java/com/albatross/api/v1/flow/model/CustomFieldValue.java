@@ -24,8 +24,8 @@ public class CustomFieldValue {
   private List<Integer> intArrayValue;
 
   private BigDecimal numericValue;
-  private Boolean booleanValue, hasListValues, readonly, systemReadonly, customFieldGroupAssignmentReadOnly, detailView, sortListValuesAlphabetically,
-    customFieldGroupAssignmentHidden, showOnInsert, requireOnInsert, required, showOnUserProfile, useParentData, allowNow, allowSelectSelf;
+  private Boolean booleanValue, hasListValues, readonly, systemReadonly, customFieldGroupAssignmentReadOnly, customFieldGroupAssignmentReadOnlyAllow, detailView, sortListValuesAlphabetically,
+    customFieldGroupAssignmentHidden, customFieldGroupAssignmentHiddenAllow, showOnInsert, requireOnInsert, required, showOnUserProfile, useParentData, allowNow, allowSelectSelf;
 
   private Timestamp dateValue, timestampValue;
 
