@@ -203,7 +203,7 @@
                           return-object
                           class="mt-2 qa-process-selector"
                 ></v-select>
-                <v-btn text class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
+                <v-btn text color="primary" class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
                   Add Project
                 </v-btn>
               </v-card>
@@ -296,7 +296,7 @@
                             return-object
                             class="mt-2 qa-process-selector"
                   ></v-select>
-                  <v-btn text class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
+                  <v-btn text color="primary" class="body-medium" :disabled="!selectedProcess || !selectedProcess.id" @click="convertToCustomer" id="qa-add-project-button">
                     Add Project
                   </v-btn>
                 </v-card>
