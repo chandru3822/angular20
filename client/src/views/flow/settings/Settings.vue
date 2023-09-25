@@ -48,7 +48,6 @@ import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/hel
 import constants from '@/helpers/constants'
 import SettingsMenu from "./SettingsMenu";
 import {UserMutations} from "../../../stores/UserStore";
-import SettingsMenu from "./SettingsMenu";
 
 export default {
   name: 'Settings',
