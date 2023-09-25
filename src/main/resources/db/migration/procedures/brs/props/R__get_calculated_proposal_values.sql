@@ -2026,7 +2026,7 @@ BEGIN
             coalesce(v_reroof_cost, 0)::numeric +
             coalesce(v_tree_trimming_cost, 0)::numeric +
             coalesce(v_trenching_cost, 0)::numeric +
-            coalesce(v_ac_unit_relocation_cost, 0)::numeric)*(1-v_dealer_fee),
+            coalesce(v_ac_unit_relocation_cost, 0)::numeric)/(1-v_dealer_fee),
             (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
              coalesce(v_structural_upgrade_cost, 0)::numeric +
              coalesce(v_reroof_cost, 0)::numeric +
