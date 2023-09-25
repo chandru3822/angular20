@@ -409,6 +409,7 @@ where p.id = :proposalId
              inner join brs.proposal p on p.project_process_step_id = ppsa.project_process_step_id
     where p.id = :proposalId
       and ppsa.archived is false
+      and a.archived is false
         """;
 
   //language=PostgreSQL
