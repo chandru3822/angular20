@@ -17,7 +17,7 @@
       </slot>
     </v-row>
     <v-row class="split-container" :class="{'full-height':headerHidden}">
-      <v-col id="left-column" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
+      <v-col id="left-column" @click="$emit('end-notes-timer')" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
                                                                                             'collapsed': this.$store.state.project.leftSideSplit,
                                                                                             'narrow': this.leftSmall,
                                                                                             'mobile-overflow': true,
@@ -25,14 +25,16 @@
                                                                                             'white-bg': this.leftSideWhiteBg,
                                                                                             'hide-column-xs': $store.state.project.leftSideSplit}">
         <div class="mobile-padding-menu-button" :class="{'title-collapsed': $store.state.project.leftSideSplit,
-                      'ml-4': !$store.state.project.leftSideSplit}">
+                      'ml-2': !$store.state.project.leftSideSplit}">
           <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
+        <div v-if="!$store.state.project.leftSideSplit">
         <slot name="left-column"></slot>
+        </div>
       </v-col>
-      <v-col class="project-section center-panel pt-0 px-0 auto-overflow mobile-background" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit}">
+      <v-col class="project-section center-panel pt-0 px-0 auto-overflow mobile-background" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit}">
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column px-0 pb-0" :class="{'hidden': this.rightHidden,
@@ -50,7 +52,6 @@
         </slot>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 

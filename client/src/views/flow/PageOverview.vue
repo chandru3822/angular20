@@ -1,6 +1,6 @@
 <template>
 <v-container class="pa-0 mobile-background">
-  <SidePanelExpansionPanel :header="`${pageName} Overview`" :section-expanded="opened">
+  <SidePanelExpansionPanel :header="`${pageName} Overview`" :section-expanded="opened" :remove-header-padding="true">
     <template v-slot:tool-btn>
       <v-btn
           text small color="primary" class="px-0"
