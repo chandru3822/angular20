@@ -49,11 +49,6 @@ BEGIN
     where up.id = p_closer_user_position_id;
   end if;
 
-  RAISE NOTICE 'value %', v_position_id;
-  RAISE NOTICE 'value %', v_org_id;
-  RAISE NOTICE 'value %', v_parent_org_id;
-
-
   --if it is a closer manager, then the regional is in the parent org
   select case when v_position_id = 2 then v_parent_org_id else v_org_id end into v_org_id_to_use;
 
