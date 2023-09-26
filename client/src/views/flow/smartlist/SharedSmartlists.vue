@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col cols="12" class="py-0">
-      <v-card flat class="square-card pb-3 px-3" color="white">
+      <v-card flat class="square-card pb-3 px-3 elevation-1" color="white">
         <v-text-field
           v-model="search"
           prepend-inner-icon="mdi-magnify"
@@ -33,14 +33,14 @@
         <template #item="{item: smartlist}">
           <tr
             class="clickable"
-            @click="router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})"
+            @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})"
           >
             <td class="text-left td-name">{{ smartlist.name }}</td>
             <td class="text-left">{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
             <td class="text-left">{{ `${smartlist.accessLevel.substring(0,1).toUpperCase()}${smartlist.accessLevel.substring(1)} Access` }}</td>
             <td class="td-action">
-              <smartlist-copy :smartlist="smartlist"  v-if="userCanAdd"/>
+              <smartlist-copy :smartlist="smartlist"  v-if="canAdd"/>
             </td>
             <td class="td-action">
               <smartlist-export :smartlist="smartlist" />
@@ -53,14 +53,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue'
+import { ref, onMounted, getCurrentInstance, computed } from 'vue'
 import { getRequest, logError } from '@/helpers/helpers'
 import SmartlistExport from '@/views/flow/smartlist/SmartlistExport.vue'
 import SmartlistCopy from '@/views/flow/smartlist/SmartlistCopy.vue'
 import constants from '@/helpers/constants'
 
 const footerProps = ref({
-  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-options': [25, 50, 100],
   'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 
@@ -79,10 +79,14 @@ const isLoading = ref(false)
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
-const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
-const userCanEdit = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'EDIT')
+const hasAddAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
+const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
 
-let smartlists = ref([])
+const smartlists = ref([])
+
+const canAdd = computed(() => {
+  return hasAddAccess || hasManageAccess
+})
 
 onMounted(async () => await getSmartlists())
 

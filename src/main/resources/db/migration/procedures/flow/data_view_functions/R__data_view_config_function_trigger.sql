@@ -718,6 +718,10 @@ BEGIN
 
     if (old.start_time is null and new.start_time is not null and (TG_OP = 'UPDATE')) then
       new.scheduled_date = now();
+
+      perform flow.add_system_activity((select id from flow.activity where activity_code = 'EVENT_SCHEDULED'),
+                                           1, (select project_id from flow.project_process_step pps where pps.id = new.project_process_step_id),
+                                           new.modified_by_id, new.project_process_step_id, new.id, null, null);
     end if;
 
     select quote_literal(array_agg(coalesce(v_project_id, v_project_id))::text)

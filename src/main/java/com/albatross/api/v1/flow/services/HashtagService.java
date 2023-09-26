@@ -28,6 +28,13 @@ public class HashtagService {
     return sqlCache.queryBySql(HashtagQuery.getAll, params, Hashtag.class);
   }
 
+  public List<Hashtag> getNoteHashtags() {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    return sqlCache.queryBySql(HashtagQuery.getNoteHashtags, params, Hashtag.class);
+  }
+
   public Optional<Hashtag> getHashtag(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);

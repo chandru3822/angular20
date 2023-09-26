@@ -1,11 +1,6 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessDTO;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.*;
 import com.albatross.api.v1.flow.services.report.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,27 +22,26 @@ public class SmartlistController {
 
   private final SmartlistService smartlistService;
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Smartlist> getSmartlistById(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getById(smartlistId), HttpStatus.OK);
+  public ResponseEntity<Smartlist> getSmartlistById(@PathVariable Long smartlistId, @RequestParam(required = false) boolean includeAccessControl) {
+    return new ResponseEntity<>(smartlistService.getById(smartlistId, includeAccessControl), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> addSmartlist(@RequestBody Smartlist smartlist) {
     return new ResponseEntity<>(smartlistService.addSmartlist(smartlist), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Void> updateSmartlist(@RequestBody Smartlist smartlist) {
-
-    smartlistService.updateSmartlist(smartlist);
+  public ResponseEntity<Void> updateSmartlist(@RequestBody ReportDTO report) {
+    smartlistService.updateSmartlist(report.getSmartlist(), report.getFields(), report.getRequirements());
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_DELETE', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @DeleteMapping(value = "/{smartlistId}")
   public ResponseEntity<Void> deleteSmartlist(@PathVariable Long smartlistId) {
     smartlistService.delete(smartlistId);
@@ -131,20 +126,20 @@ public class SmartlistController {
     return new ResponseEntity<>(smartlistService.getRequirements(smartlistId, true), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PostMapping(value = "/{smartlistId}/requirement", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistRequirement> addSmartlistRequirement(@PathVariable Long smartlistId, @RequestBody SmartlistRequirement requirement) {
     return new ResponseEntity<>(smartlistService.addRequirement(smartlistId, requirement), HttpStatus.OK);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}/requirement/{requirementId}", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistRequirement> updateRequirementOfSmartlist(@RequestBody SmartlistRequirement requirement) {
     return new ResponseEntity<>(smartlistService.updateRequirement(requirement), HttpStatus.OK);
   }
 
   @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFieldSmartlistFields(@PathVariable Long smartlistId) {
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFields(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getFields(smartlistId), HttpStatus.OK);
   }
 
@@ -160,14 +155,14 @@ public class SmartlistController {
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}/toggleProjectDetails")
   public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
     smartlistService.updateProjectDetails(smartlistId);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
-  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_EDIT', 'SMARTLIST_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @PutMapping(value = "/{smartlistId}/toggleObjectType", consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Smartlist> updateSmartlistObjectType(@RequestBody Smartlist smartlist) {
     return new ResponseEntity<>(smartlistService.updateObjectType(smartlist), HttpStatus.OK);
@@ -177,5 +172,29 @@ public class SmartlistController {
   @GetMapping(value = "/{smartlistId}/metrics", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<SmartlistMetric>> getSmartlistMetrics(@PathVariable Long smartlistId) {
     return new ResponseEntity<>(smartlistService.getMetrics(smartlistId), HttpStatus.OK);
+  }
+
+
+  @GetMapping(value = "/fields", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAvailableFields(@RequestParam List<Long> objectTypeIds, @RequestParam boolean projectDetails) {
+    return new ResponseEntity<>(smartlistService.getAvailableFields(objectTypeIds, projectDetails), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/adhoc", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<Map<String, Object>>> getAdhocReportData(@RequestBody ReportDTO report, @RequestParam(required = false) Integer limit, @RequestParam(required = false) String timezone) {
+    try {
+      return ResponseEntity.ok(smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), limit, timezone));
+    } catch (Exception e) {
+      //@TODO: #smartlistsv2 - Logging while in QA
+      smartlistService.saveError(report.getSmartlist(), null, report.getFields(), report.getRequirements(), e);
+      throw e;
+    }
+  }
+
+  @PreAuthorize("hasRootLevelAccess()")
+  @PostMapping(value = "/adhoc/query", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<Map<String, Object>> getReportQuery(@RequestBody ReportDTO report) {
+    var result = smartlistService.getAdhocReportData(report.getSmartlist(), report.getFields(), report.getRequirements(), null, null, true);
+    return ResponseEntity.ok(result.get(0));
   }
 }

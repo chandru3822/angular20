@@ -1,5 +1,5 @@
 <template>
-<fragment>
+<span>
   <v-dialog
     v-model="openDialog"
     :width="450"
@@ -45,6 +45,7 @@
             class="px-2 pt-0"
           >
             <v-checkbox
+              v-if="canMakePublic"
               v-model="isPublic"
               label="Make Public"
               :hide-details="true"
@@ -60,76 +61,77 @@
         </v-row>
 
         <v-list class="bordered rounded-lg">
-            <v-list-item>
-              <v-row>
-                <v-col
-                  cols="6"
-                  align-self="center"
-                  class="py-0"
-                >
-                  <span class="default-text-color">{{ smartlist.owner }}</span>
-                  <div class="position">
-                    {{ smartlist.ownerPosition }}
-                  </div>
-                </v-col>
+          <v-list-item>
+            <v-row>
+              <v-col
+                cols="6"
+                align-self="center"
+                class="py-0"
+              >
+                <span class="default-text-color">{{ smartlist.owner }}</span>
+                <div class="position">
+                  {{ smartlist.ownerPosition }}
+                </div>
+              </v-col>
 
-                <v-col
-                  cols="6"
-                  align-self="center"
-                  class="py-0"
-                >
-                  Owner
-                </v-col>
-              </v-row>
-            </v-list-item>
+              <v-col
+                cols="6"
+                align-self="center"
+                class="py-0"
+              >
+                Owner
+              </v-col>
+            </v-row>
+          </v-list-item>
 
-            <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)">
-              <v-row>
-                <v-col
-                  cols="6"
-                  align-self="center"
-                  class="py-0"
-                >
-                  <span class="default-text-color">{{ accessLevel.name }}</span>
-                  <div
-                    v-if="accessLevel.isUser"
-                    class="position"
-                  >{{ accessLevel.position }}</div>
-                </v-col>
+          <v-list-item v-for="(accessLevel) in currentAccess.filter(i => i.deleted !== true)" :key="UUID()">
+            <v-row>
+              <v-col
+                cols="6"
+                align-self="center"
+                class="py-0"
+              >
+                <span class="default-text-color">{{ accessLevel.name }}</span>
+                <div
+                  v-if="accessLevel.isUser"
+                  class="position"
+                >{{ accessLevel.position }}
+                </div>
+              </v-col>
 
-                <v-col
-                  cols="5"
-                  align-self="center"
-                  class="py-0"
+              <v-col
+                cols="5"
+                align-self="center"
+                class="py-0"
+              >
+                <v-select
+                  v-model="accessLevel.accessControlId"
+                  :items="accessLevels"
+                  :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
+                  item-value="accessControlId"
+                  @input="[accessLevel.updated = true, accessLevel.deleted = false]"
                 >
-                  <v-select
-                    v-model="accessLevel.accessControlId"
-                    :items="accessLevels"
-                    :item-text="(i) => `${i.accessLevel.substring(0,1).toUpperCase()}${i.accessLevel.substring(1)} Access`"
-                    item-value="accessControlId"
-                    @input="[accessLevel.updated = true, accessLevel.deleted = false]"
-                  >
-                    <template #append-item>
-                      <v-divider/>
-                      <v-list-item
-                        v-if="accessLevel.isUser"
-                        @click="confirmOwnershipChange(accessLevel)"
-                      >
-                        Transfer Ownership
-                      </v-list-item>
-                    </template>
-                  </v-select>
-                </v-col>
+                  <template #append-item>
+                    <v-divider/>
+                    <v-list-item
+                      v-if="accessLevel.isUser"
+                      @click="confirmOwnershipChange(accessLevel)"
+                    >
+                      Transfer Ownership
+                    </v-list-item>
+                  </template>
+                </v-select>
+              </v-col>
 
-                <v-col
-                  cols="1"
-                  align-self="center"
-                  class="pl-0"
-                >
-                  <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
-                </v-col>
-              </v-row>
-            </v-list-item>
+              <v-col
+                cols="1"
+                align-self="center"
+                class="pl-0"
+              >
+                <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
+              </v-col>
+            </v-row>
+          </v-list-item>
         </v-list>
 
       </v-card-text>
@@ -165,8 +167,8 @@
 
       <v-card-text>
         You will lose ownership and the following user will become the new Owner:
-        <br />
-        <br />
+        <br/>
+        <br/>
         <div class="new-owner-name">{{ `${newOwner.name} - ${newOwner.position}` }}</div>
       </v-card-text>
 
@@ -190,18 +192,18 @@
       </v-card-actions>
     </v-card>
   </v-dialog>
-</fragment>
+</span>
 </template>
 
 <script setup>
 
-import { getRequest, getSnackbar, handleHidingGlobalLoader, logError, postRequest, putRequest } from '@/helpers/helpers'
+import { getRequest, handleHidingGlobalLoader, logError, postRequest, putRequest, UUID } from '@/helpers/helpers'
 import { getCurrentInstance, ref, computed } from 'vue'
 import { AppMutations } from '@/stores/AppStore'
-import { Fragment } from 'vue-frag'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
 const props = defineProps({
   openDialog: {
@@ -220,18 +222,30 @@ const emit = defineEmits([
   'updated-owner'
 ])
 
-//a list of user positions and orgs the smartlist can be shared with
-let sharables = ref([])
+const hasManageAccess = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE')
+const isSmartlistAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
+const isSystemAdmin = store.getters.isFullAdmin
 
-let accessLevels = ref([])
+//a list of user positions and orgs the smartlist can be shared with
+const sharables = ref([])
+
+const accessLevels = ref([])
 
 //a list of user positions and orgs the smartlist is CURRENTLY shared with
-let currentAccess = ref([])
+const currentAccess = ref([])
 
-let newAccess = ref({accessControlId: 1})
-let isPublic = ref(props.smartlist.public)
-let openOwnershipDialog = ref(false)
-let newOwner = ref({})
+const newAccess = ref({accessControlId: 1})
+const isPublic = ref(props.smartlist.public)
+const openOwnershipDialog = ref(false)
+const newOwner = ref({})
+
+const isOwner = computed(() => {
+  return props.smartlist?.ownerId === store.state.user.details.id
+})
+
+const canMakePublic = computed(() => {
+  return (hasManageAccess && isOwner) || isSmartlistAdmin || isSystemAdmin
+})
 
 const filteredSharables = computed(() => {
   if (sharables.value.length === 0) {
@@ -245,7 +259,7 @@ const filteredSharables = computed(() => {
   let filtered = []
 
   sharables.value.forEach(s => {
-    if (s.isUser && !currentAccess.value.find(a => a.userPositionId === s.userPositionId)) {
+    if (s.isUser && s.userId !== props.smartlist.ownerId && !currentAccess.value.find(a => a.userPositionId === s.userPositionId)) {
       filtered.push(s)
     } else if (s.isOrg && !currentAccess.value.find(a => a.orgId === s.orgId)) {
       filtered.push(s)
@@ -310,27 +324,23 @@ const updateAccess = async () => {
     }
   })
 
-  let snackbar
-
   if (Object.keys(payload).length > 0) {
     try {
       store.commit(AppMutations.SET_LOADING, true)
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
-      snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
+      snackbar('SUCCESS', `Smartlist Successfully Shared`)
       emit('dialog-closed')
       if (props.smartlist.public !== isPublic.value) {
         emit('updated-public', isPublic.value)
       }
     } catch (err) {
       logError(err)
-      snackbar = getSnackbar('ERROR', 'Error while Sharing Smartlist')
+      snackbar('ERROR', 'Error while Sharing Smartlist')
     } finally {
       handleHidingGlobalLoader(vueInstance, true)
-      store.commit(AppMutations.SHOW_SNACK, snackbar)
     }
   } else {
-    snackbar = getSnackbar('SUCCESS', `Smartlist Successfully Shared`)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    snackbar('SUCCESS', `Smartlist Successfully Shared`)
     emit('dialog-closed')
   }
 }
@@ -341,25 +351,23 @@ const confirmOwnershipChange = async (accessLevel) => {
 }
 
 const updateOwner = async () => {
-
-  let snackbar
-
   try {
     store.commit(AppMutations.SET_LOADING, true)
     await putRequest(`/smartlist/${props.smartlist.id}/owner`, newOwner.value)
-    snackbar = getSnackbar('SUCCESS', `Ownership successfully transferred`)
+    snackbar('SUCCESS', `Ownership successfully transferred`)
     emit('dialog-closed')
     emit('updated-owner', {
       name: newOwner.value.name,
       position: newOwner.value.position,
+      userId: newOwner.value.userId,
+      userPositionId: newOwner.value.userPositionId,
       smartlistId: props.smartlist.id
     })
   } catch (err) {
     logError(err)
-    snackbar = getSnackbar('ERROR', 'Error while transferring ownership')
+    snackbar('ERROR', 'Error while transferring ownership')
   } finally {
     handleHidingGlobalLoader(vueInstance, true)
-    store.commit(AppMutations.SHOW_SNACK, snackbar)
   }
 }
 

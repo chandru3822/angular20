@@ -6,15 +6,13 @@ import com.albatross.api.v1.flow.model.DataTypeRequirement;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
 import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistSuperField;
-import com.albatross.api.v1.flow.model.smartlistv1.Smartlistv1;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistFieldAssignment;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.SmartlistSuperField;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProcessStepStatus;
 import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.CustomFieldQuery;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -36,8 +34,6 @@ public class ReportEngine {
 
   private final SqlCacheRO sqlCacheRO;
 
-  private final ObjectMapper om;
-
   private boolean isUUID(String str) {
     try {
       UUID.fromString(str);
@@ -48,7 +44,7 @@ public class ReportEngine {
   }
 
   public String buildSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
-    return buildSql(smartlist, fields, requirements, null, null, false);
+    return buildSql(smartlist, fields, requirements, null, null, false, null);
   }
 
   public String buildSql(
@@ -57,8 +53,9 @@ public class ReportEngine {
     List<SmartlistRequirement> requirements,
     String timezone,
     List<Long> installationCrewIds,
-    Boolean addProjectContactIdFields)
-  {
+    Boolean addProjectContactIdFields,
+    Integer limit
+  ) {
 
     //@TODO humes: there is a lot of duplication in this function which could/should be abstracted out
 
@@ -154,47 +151,45 @@ public class ReportEngine {
                  coalesce((
                               SELECT array_to_json(array_agg(row_to_json(notes)))
                               FROM (
-                                       select n.id,
-                                              n.note,
-                                              n.archived,
-                                              n.parent_id as "parentId",
-                                              n.date_created as "dateCreated",
-                                              n.date_modified as "dateModified",
-                                              n.created_by_id as "createdById",
-                                              n.follow_up_date as "followUpDate",
+                                       select pn.id,
+                                              pn.note,
+                                              pn.archived,
+                                              pn.parent_id as "parentId",
+                                              pn.date_created as "dateCreated",
+                                              pn.date_modified as "dateModified",
+                                              pn.created_by_id as "createdById",
+                                              pn.follow_up_date as "followUpDate",
                                               concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                                              n.modified_by_id as "modifiedById",
+                                              pn.modified_by_id as "modifiedById",
                                               pn.project_process_step_id as "projectProcessStepId",
                                               pn.process_step_work_queue_type_id as "processStepWorkQueueTypeId",
                                               coalesce((
                                                            SELECT array_to_json(array_agg(row_to_json(childNotes)))
                                                            FROM (
-                                                                    select n2.id,
-                                                                           n2.note,
-                                                                           n2.archived,
-                                                                           n2.date_created as "dateCreated",
-                                                                           n2.date_modified as "dateModified",
-                                                                           n2.created_by_id as "createdById",
-                                                                           n2.follow_up_date as "followUpDate",
+                                                                    select pn2.id,
+                                                                           pn2.note,
+                                                                           pn2.archived,
+                                                                           pn2.date_created as "dateCreated",
+                                                                           pn2.date_modified as "dateModified",
+                                                                           pn2.created_by_id as "createdById",
+                                                                           pn2.follow_up_date as "followUpDate",
                                                                            concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                                                                           n2.modified_by_id as "modifiedById",
+                                                                           pn2.modified_by_id as "modifiedById",
                                                                            pn2.project_process_step_id as "projectProcessStepId",
                                                                            pn2.process_step_work_queue_type_id as "processStepWorkQueueTypeId"
-                                                                    from flow.note n2
-                                                                             inner join flow.project_process_step_process_step_work_queue_type_note pn2 on pn2.note_id = n2.id
-                                                                             inner join flow.user creator2 on creator2.id = n2.created_by_id
-                                                                    where n2.archived is not true
-                                                                      and n2.parent_id = n.id
-                                                                    order by n2.date_created
+                                                                    from flow.project_process_step_process_step_work_queue_type_note pn2
+                                                                             inner join flow.user creator2 on creator2.id = pn2.created_by_id
+                                                                    where pn2.archived is not true
+                                                                      and pn2.parent_id = pn.id
+                                                                    order by pn2.date_created
                                                                 ) childNotes), '[]') AS "childNotes"
-                                       from flow.note n
-                                                inner join flow.project_process_step_process_step_work_queue_type_note pn on pn.note_id = n.id
-                                                inner join flow.user creator on creator.id = n.created_by_id
-                                       where n.archived is not true
-                                         and n.parent_id is null
+                                       from flow.project_process_step_process_step_work_queue_type_note pn
+                                                inner join flow.user creator on creator.id = pn.created_by_id
+                                       where pn.archived is not true
+                                         and pn.parent_id is null
                                          and pn.project_process_step_id = flow.project_process_step.id
                                          and pn.process_step_work_queue_type_id = pswqt.id
-                                       order by n.date_created desc
+                                       order by pn.date_created desc
                                    ) notes), '[]')                                                                       as "Notes",
           """
       );
@@ -403,7 +398,8 @@ public class ReportEngine {
       }
 
       if (f.getCustomFieldSql() != null && withClause.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        withClause.append(String.format("  \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
+        final String customSql = (f.getCustomFieldSqlSmartlist() != null) ? f.getCustomFieldSqlSmartlist() : f.getCustomFieldSql();
+        withClause.append(String.format("  \"%s\" as  (%s), ", f.getCustomFieldSqlKey(), customSql));
       }
     }
 
@@ -415,7 +411,8 @@ public class ReportEngine {
 
       // If this custom sql is not already in the "with" clause, add it
       if (r.getCustomFieldSql() != null && withClause.indexOf(r.getCustomFieldSqlKey()) == -1) {
-        withClause.append(String.format("  \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), r.getCustomFieldSqlSmartlist()));
+        final String customSql = (r.getCustomFieldSqlSmartlist() != null) ? r.getCustomFieldSqlSmartlist() : r.getCustomFieldSql();
+        withClause.append(String.format("  \"%s\" as  (%s), ", r.getCustomFieldSqlKey(), customSql));
       }
     }
 
@@ -1040,6 +1037,10 @@ public class ReportEngine {
       query.append(" order by \"Days In Queue\" desc ");
     }
 
+    if (limit != null) {
+      query.append(String.format(" limit %s", limit));
+    }
+
     query.append(";");
 
     return query.toString();
@@ -1271,6 +1272,11 @@ public class ReportEngine {
          .append("flow.project_process_step.archived is not true and ")
          .append("flow.project_process_step_event.archived is not true");
 
+    //do work queue cycle filters if a work queue smartlist
+    if(null != smartlist.getWorkQueueTypeId()) {
+      query.append(" and wqc.date_entered_queue is not null and ")
+           .append("wqc.date_exited_queue is null ");
+    }
 
     //apply statuses/categories for any attached work queue types
     if (!smartlist.getEventWorkQueueTypes().isEmpty()) {
@@ -1455,7 +1461,7 @@ public class ReportEngine {
                    .append("flow.company_event_status_type.event_status_type as \"Event Status\", ")
                    .append("flow.process_step.process_step_name as \"Process Step Name\", ")
                    .append("flow.company_process_step_status_type.process_step_status_type as \"Process Step Status\", ")
-                   .append("DATE_PART('day', now() - flow.project_process_step_event.date_created) as \"Days In Queue\", ")
+                   .append("coalesce(extract(days from now()::timestamp - wqc.date_entered_queue), DATE_PART('day', now() - flow.project_process_step_event.date_created)) as \"Days In Queue\", ")
                    .append("flow.process_step_event_work_queue_type.id as \"processStepEventWorkQueueTypeId\", ");
 
       if (timezone != null) {
@@ -1485,49 +1491,47 @@ public class ReportEngine {
         coalesce((
           select array_to_json(array_agg(row_to_json(notes)))
           from (
-            select n.id,
-                   n.note,
-                   n.archived,
-                   n.parent_id as "parentId",
-                   n.date_created as "dateCreated",
-                   n.date_modified as "dateModified",
-                   n.created_by_id as "createdById",
-                   n.follow_up_date as "followUpDate",
+            select pn.id,
+                   pn.note,
+                   pn.archived,
+                   pn.parent_id as "parentId",
+                   pn.date_created as "dateCreated",
+                   pn.date_modified as "dateModified",
+                   pn.created_by_id as "createdById",
+                   pn.follow_up_date as "followUpDate",
                    concat(creator.first_name, ' ', creator.last_name) as "createdBy",
-                   n.modified_by_id as "modifiedById",
+                   pn.modified_by_id as "modifiedById",
                    pn.project_process_step_event_id as "projectProcessStepEventId",
                    pn.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId",
                    coalesce((
                      select array_to_json(array_agg(row_to_json(childNotes)))
                      from (
-                     select n2.id,
-                            n2.note,
-                            n2.archived,
-                            n2.date_created as "dateCreated",
-                            n2.date_modified as "dateModified",
-                            n2.created_by_id as "createdById",
-                            n2.follow_up_date as "followUpDate",
+                     select pn2.id,
+                            pn2.note,
+                            pn2.archived,
+                            pn2.date_created as "dateCreated",
+                            pn2.date_modified as "dateModified",
+                            pn2.created_by_id as "createdById",
+                            pn2.follow_up_date as "followUpDate",
                             concat(creator2.first_name, ' ', creator2.last_name) as "createdBy",
-                            n2.modified_by_id as "modifiedById",
+                            pn2.modified_by_id as "modifiedById",
                             pn2.project_process_step_event_id as "projectProcessStepEventId",
                             pn2.process_step_event_work_queue_type_id as "processStepEventWorkQueueTypeId"
-                     from flow.note n2
-                     inner join flow.pps_event_process_step_event_work_queue_type_note pn2 on pn2.note_id = n2.id
-                     inner join flow.user creator2 on creator2.id = n2.created_by_id
-                     where n2.archived is not true and
-                           n2.parent_id = n.id
-                     order by n2.date_created
+                     from flow.pps_event_process_step_event_work_queue_type_note pn2
+                     inner join flow.user creator2 on creator2.id = pn2.created_by_id
+                     where pn2.archived is not true and
+                           pn2.parent_id = pn.id
+                     order by pn2.date_created
                    ) childNotes), '[]') as "childNotes"
-            from flow.note n
-            inner join flow.pps_event_process_step_event_work_queue_type_note pn on pn.note_id = n.id
-            inner join flow.user creator on creator.id = n.created_by_id
+            from flow.pps_event_process_step_event_work_queue_type_note pn
+            inner join flow.user creator on creator.id = pn.created_by_id
             inner join flow.process_step_event_work_queue_type psewqt on psewqt.id = pn.process_step_event_work_queue_type_id
-            where n.archived is not true and
-                  n.parent_id is null and
+            where pn.archived is not true and
+                  pn.parent_id is null and
                   pn.project_process_step_event_id = flow.project_process_step_event.id and
                   psewqt.process_step_event_id = flow.process_step_event.id and
                   psewqt.work_queue_type_id = %s
-            order by n.date_created desc
+            order by pn.date_created desc
           ) notes), '[]') as "Notes",\040""".formatted(smartlist.getWorkQueueTypeId()));
     } else {
       //process step fields
@@ -1543,11 +1547,11 @@ public class ReportEngine {
     return defaultFields.append(selectQuery).append(query).append(";").toString();
   }
 
-  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
-    return buildProcessStepSql(smartlist, fields, requirements, null, false);
+  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit) {
+    return buildProcessStepSql(smartlist, fields, requirements, null, false, limit);
   }
 
-  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, String timezone, Boolean useEventData) {
+  public String buildProcessStepSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, String timezone, Boolean useEventData, Integer limit) {
 
     final Long companyId = securityService.getCurrentUser().getCompanyId();
 
@@ -1872,7 +1876,8 @@ public class ReportEngine {
 
       //prepend custom field sql queries
       if (f.getCustomFieldSql() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
+        final String customSql = (f.getCustomFieldSqlSmartlist() != null) ? f.getCustomFieldSqlSmartlist() : f.getCustomFieldSql();
+        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), customSql));
       }
     }
 
@@ -1883,7 +1888,6 @@ public class ReportEngine {
     if (usedProcessStepIds.isEmpty()) {
       //at this point, the only fields are project/contact, so this is essentially a project/contact smartlist
       if (smartlist.getObjectTypeId() == 6) {
-        //@TODO: I don't like having a service dealing with controller stuff. Change this someday...
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An event smartlist must have at least 1 event type column");
       } else if (!useEventData) {
         //set smartlist object type to "project" and build sql like usual
@@ -2328,6 +2332,10 @@ public class ReportEngine {
     // remove comma and space from with clause
     query.delete(query.length() - 7, query.length());
 
+    if (limit != null) {
+      query.append(String.format(" limit %s", limit));
+    }
+
     query.append(";");
 
     return query.toString();
@@ -2672,7 +2680,8 @@ public class ReportEngine {
 
       //prepend custom field sql queries
       if (f.getCustomFieldSql() != null && customSqlQueries.indexOf(f.getCustomFieldSqlKey()) == -1) {
-        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), f.getCustomFieldSqlSmartlist()));
+        final String customSql = (f.getCustomFieldSqlSmartlist() != null) ? f.getCustomFieldSqlSmartlist() : f.getCustomFieldSql();
+        customSqlQueries.append(String.format("\"%s\" as (%s), ", f.getCustomFieldSqlKey(), customSql));
       }
     }
     // get PS fields which don't belong an event field
@@ -2692,7 +2701,6 @@ public class ReportEngine {
     if (usedProcessStepEvents.isEmpty()) {
       //at this point, the only fields are project/contact, so this is essentially a project/contact smartlist
       if (smartlist.getObjectTypeId() == 6) {
-        //@TODO: I don't like having a service dealing with controller stuff. Change this someday...
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An event smartlist must have at least 1 event type column");
       } else if (!useEventData) {
         //set smartlist object type to "project" and build sql like usual
@@ -3255,7 +3263,7 @@ public class ReportEngine {
     return query.toString();
   }
 
-  public String buildProjectDetailsSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
+  public String buildProjectDetailsSql(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Integer limit) {
 
     StringBuilder query = new StringBuilder();
 
@@ -3352,6 +3360,10 @@ public class ReportEngine {
 
     // remove the last "and "
     query = query.delete(query.length() - 5, query.length());
+
+    if (limit != null) {
+      query.append(String.format(" limit %s", limit));
+    }
 
     query.append(";");
 
@@ -3553,7 +3565,12 @@ public class ReportEngine {
     if (smartlistObjectTypeId == 4) {
       join += " flow.project_process_step";
     } else if (smartlistObjectTypeId == 6) {
-      join += " flow.project_process_step_event";
+      if(null == workQueueTypeId) {
+        join += " flow.project_process_step_event ";
+      } else {
+        join += " flow.work_queue_cycle wqc ";
+        join += " inner join flow.project_process_step_event on flow.project_process_step_event.id = wqc.project_process_step_event_id ";
+      }
       join += " inner join flow.process_step_event on flow.process_step_event.id = flow.project_process_step_event.process_step_event_id ";
       if (smartlistObjectTypeId == 6 && limitingId != null) {
         join += " and process_step_event.id = " + limitingId;

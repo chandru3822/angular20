@@ -96,6 +96,34 @@
               </v-btn>
             </v-btn-toggle>
           </div>
+          <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2" @click="startReadNotesTimer('Clicked in the notes tab')">
+
+            <v-btn-toggle
+              v-model="toggleTimelineView"
+              mandatory
+              borderless
+              color="primary"
+              class="d-inline-block one-hunned body-medium"
+              style="opacity: 1 !important;"
+            >
+              <v-btn :color="toggleTimelineView === 0 ? 'primary' : 'white'"
+                     :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
+                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
+                     style="width: 50% !important;"
+                     @click="scrollToTop"
+              >
+                Timeline
+              </v-btn>
+              <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
+                     :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
+                     class="text-capitalize  fix-toggle-opacity body-medium"
+                     style="width: 50% !important;"
+                     @click="scrollToTop"
+              >
+                Topic
+              </v-btn>
+            </v-btn-toggle>
+          </div>
           <slot name="collapse-button">
           <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
             <v-icon>mdi-menu</v-icon>
@@ -123,10 +151,13 @@
       <div class="conversation-activity-inner-container hide-xs">
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
-          <ProjectNotes :contact-id="contactId" :user-id="userId"
-                        :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId" v-else-if="selectedOption === 1"></ProjectNotes>
-          <div v-else-if="selectedOption === 2">
+          <ActivitySection :contact-id="contactId" :user-id="userId"
+                           :timeline-view="toggleTimelineView === 0"
+                           :object-type-id="objectTypeId" :project-id="projectId"
+                           :org-id="orgId" v-show="selectedOption === 1"
+                           @scrollToTop="scrollToTop"
+          />
+          <div v-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
                                  :user-id="userId"
                                  :object-type-id="objectTypeId"
@@ -158,7 +189,7 @@
             </v-btn>
           </v-col>
           <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
+            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1); startReadNotesTimer('Clicked in the notes tab')" :dark="selectedOption === 1"
                    :class="{'section-selected': selectedOption===1}">
               <v-icon>mdi-text-long</v-icon>
             </v-btn>
@@ -203,9 +234,9 @@
           <div class="headline-small mobile-contact-header show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Notes</div>
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
           <div class="mobile-content-padding" v-else-if="selectedOption === 1">
-          <ProjectNotes :contact-id="contactId" :user-id="userId"
+          <ActivitySection :contact-id="contactId" :user-id="userId"
                         :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId"></ProjectNotes>
+                        :org-id="orgId"></ActivitySection>
           </div>
           <div v-else-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
@@ -310,7 +341,7 @@
 <script>
 
 import SpinnerInline from '@/components/SpinnerInline'
-import ProjectNotes from '@/views/flow/project/ProjectNotes'
+import ActivitySection from '@/views/flow/components/ActivitySection'
 import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
 import { ProjectMutations } from '@/stores/ProjectStore'
@@ -321,7 +352,7 @@ import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHist
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
-import {endTimer} from "@/services/analyticsService";
+import {endTimer, startTimer} from "@/services/analyticsService";
 
 export default {
   name: 'ProjectActivity',
@@ -332,7 +363,7 @@ export default {
     TeamAssignmentChips,
     SpinnerInline,
     AttachmentsFolderList,
-    ProjectNotes,
+    ActivitySection,
     Messaging
   },
   props: {
@@ -397,6 +428,7 @@ export default {
       conversationIsLoading: true,
       toggleFocused: 0,
       toggleFocusedXs: 0,
+      toggleTimelineView: 0,
     }
   },
   created() {
@@ -427,8 +459,8 @@ export default {
           }
 
         case 1:
-          return this.orgId ? 'Organization Notes' : this.userId ? 'User Notes'
-              : this.contactId ? 'Contact Notes' : this.projectId ? 'Project Notes' : null
+          return this.orgId ? 'Organization Notes & Activities' : this.userId ? 'User Notes & Activities'
+              : this.contactId ? 'Contact Notes & Activities' : this.projectId ? 'Project Notes & Activities' : null
         case 2:
           return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
               : this.projectId ? 'Project Documents' : null
@@ -613,6 +645,9 @@ export default {
     },
     endNotesTimer(endEvent){
       endTimer(endEvent);
+    },
+    startReadNotesTimer(startEvent){
+      startTimer(startEvent);
     }
   }
 }

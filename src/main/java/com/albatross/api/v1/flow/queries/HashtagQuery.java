@@ -15,6 +15,24 @@ public class HashtagQuery {
       inner join flow.hashtag_type ht on ht.id = h.hashtag_type_id
     where company_id = :companyId
     and h.archived is false
+    order by lower(hashtag)
+    """;
+
+  //language=PostgreSQL
+  public final static String getNoteHashtags = """
+    select h.id,
+           hashtag,
+           hashtag_type_id,
+           company_id,
+           ht.hashtag_type,
+           ht.is_system,
+           h.archived
+    from flow.hashtag h
+           inner join flow.hashtag_type ht on ht.id = h.hashtag_type_id
+    where company_id = :companyId
+      and h.hashtag_type_id = 2
+      and h.archived is false
+    order by lower(hashtag);
     """;
 
   //language=PostgreSQL

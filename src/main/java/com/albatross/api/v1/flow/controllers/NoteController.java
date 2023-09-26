@@ -26,60 +26,10 @@ public class NoteController {
   @Autowired
   private NoteService noteService;
 
-  @GetMapping(value = "/getContactNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getContactNotes(@RequestParam Long primaryId) {
-    return noteService.getByPrimaryAndType(ObjectType.CONTACT.id, primaryId);
-  }
-
-  @GetMapping(value = "/getUserNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getUserNotes(@RequestParam Long primaryId) {
-    return noteService.getByPrimaryAndType(ObjectType.USER.id, primaryId);
-  }
-
-  @GetMapping(value = "/getOrgNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getOrgNotes(@RequestParam Long primaryId) {
-    return noteService.getByPrimaryAndType(ObjectType.ORGANIZATION.id, primaryId);
-  }
-
-  @GetMapping(value = "/getProjectNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getProjectNotes(@RequestParam Long primaryId) {
-    return noteService.getByPrimaryAndType(ObjectType.PROJECT.id, primaryId);
-  }
-
-  @GetMapping(value = "/getProjectProcessStepNotes", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Note> getProjectProcessStepNotes(@RequestParam Long primaryId) {
-    return noteService.getByPrimaryAndType(ObjectType.PROCESS_STEP.id, primaryId);
-  }
-
   @GetMapping(value = "/getProjectProcessStepWorkQueueNotes", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<Note> getProjectProcessStepWorkQueueNotes(@RequestParam Long projectProcessStepId,
                                                         @RequestParam Long processStepWorkQueueTypeId) {
     return noteService.getProjectProcessStepWorkQueueNotes(projectProcessStepId, processStepWorkQueueTypeId);
-  }
-
-  @PostMapping(value = "/saveContactNote", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Note saveContactNote(@RequestBody Note note) {
-    return noteService.saveNote(ObjectType.CONTACT.id, note);
-  }
-
-  @PostMapping(value = "/saveUserNote", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Note saveUserNote(@RequestBody Note note) {
-    return noteService.saveNote(ObjectType.USER.id, note);
-  }
-
-  @PostMapping(value = "/saveOrgNote", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Note saveOrgNote(@RequestBody Note note) {
-    return noteService.saveNote(ObjectType.ORGANIZATION.id, note);
-  }
-
-  @PostMapping(value = "/saveProjectNote", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Note> saveProjectNote(@RequestBody Note note) {
-    return new ResponseEntity<>(noteService.saveNote(ObjectType.PROJECT.id, note), HttpStatus.OK);
-  }
-
-  @PostMapping(value = "/saveProjectProcessStepNote", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Note> saveProjectProcessStepNote(@RequestBody Note note) {
-    return new ResponseEntity<>(noteService.saveNote(ObjectType.PROCESS_STEP.id, note), HttpStatus.OK);
   }
 
   @PostMapping(value = "/saveProjectProcessStepWorkQueueNote", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -102,8 +52,18 @@ public class NoteController {
     noteService.saveNoteTimer(noteTimer);
   }
 
-  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteNote(@PathVariable Long id) {
-    noteService.deleteNote(id);
+  @DeleteMapping(value = "/processStepWorkQueue/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletePsWqNote(@PathVariable Long id) {
+    noteService.deleteNote(id, "project_process_step_process_step_work_queue_type_note");
+  }
+
+  @DeleteMapping(value = "/eventWorkQueue/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteEventWqNote(@PathVariable Long id) {
+    noteService.deleteNote(id, "pps_event_process_step_event_work_queue_type_note");
+  }
+
+  @DeleteMapping(value = "/prodStat/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteProdStatNote(@PathVariable Long id) {
+    noteService.deleteNote(id, "project_prod_stats_note");
   }
 }
