@@ -36,7 +36,6 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -55,8 +54,6 @@ import java.net.URI;
 import java.text.NumberFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static java.util.function.Predicate.not;
 
 @Slf4j
 @Service
@@ -163,6 +160,12 @@ public class BlueravenProposalService {
       projectId, processStepId, null, null, true, 1L, 3L);
   }
 
+  public Optional<Long> getProposalVersionByProposalId(@NonNull Long proposalId) {
+    return sqlCache.queryForObjectOptionalBySql(
+      ProposalQuery.getProposalVersionId,
+      Map.of("proposalId", proposalId), Long.class);
+  }
+
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
     Optional<Proposal> result =
@@ -185,13 +188,21 @@ public class BlueravenProposalService {
         .filter(cfv -> cfv.getCustomFieldId() != null)
         .forEach(cfv -> {
           if (cfv.getHasListValues()) {
-            List<Long> filteredIds = proposalVersionService.getProposalValuesByFieldId(proposal.getProposalVersionId(), cfv.getCustomFieldId())
+            // get list of values available for this custom field
+            // BRS needs to filter out certain things by state so we're hardcoding the check
+            long excludedStateCustomFieldId = 405L;
+            List<Long> customFieldFilteredValues = proposalVersionService.getProposalValueFilterIdsByExclusionCustomField(proposal.getProposalVersionId(), cfv.getCustomFieldId(), excludedStateCustomFieldId, proposal.getStateId())
               .stream()
-              .filter(not(Objects::isNull))
+              .filter(Objects::nonNull)
               .toList();
+
             // only filter if we get some results back... otherwise, we are assuming not filtering is required
-            if (!filteredIds.isEmpty()) {
-              List<ListOfValue> listOfValues = cfv.getListOfValues().stream().filter(v -> filteredIds.contains(v.getId())).toList();
+            if (!customFieldFilteredValues.isEmpty()) {
+              List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+                .filter(v -> customFieldFilteredValues.contains(v.getId()))
+                .sorted(Comparator.comparing(ListOfValue::getName))
+                .toList();
+
               cfv.setListOfValues(listOfValues);
             }
           }
@@ -281,9 +292,9 @@ public class BlueravenProposalService {
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
     return proposal.getCustomFieldGroups().stream()
-      .flatMap(cfg -> cfg.getCustomFieldValues().stream())
-      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
-      .findFirst();
+                   .flatMap(cfg -> cfg.getCustomFieldValues().stream())
+                   .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+                   .findFirst();
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
@@ -315,37 +326,26 @@ public class BlueravenProposalService {
   }
 
   public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, Long templateId, ProposalGeneratedType generatedType, boolean isDebug) {
-    return getProposal(proposalId)
-      .map(proposal -> {
-        Map<String, Object> context = new HashMap<>();
-        try {
-          context = getCalculatedProposalValues(proposal.getId(), generatedType, false);
-        } catch (Exception e) {
-          log.error("[BRS PROPOSAL] Error generating proposal", e);
-
-          if (!(e instanceof DataIntegrityViolationException)) {
-            throw new ApiException("Error generating proposal template");
-          }
-        }
-
-        return proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug);
-      });
+    try {
+      Map<String, Object> context = getCalculatedProposalValues(proposalId, generatedType, false);
+      return Optional.of(proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug));
+    } catch (Exception e) {
+      log.error("[BRS PROPOSAL] Error generating proposal", e);
+      throw new ApiException("Error generating proposal template");
+    }
   }
 
   public Optional<ProposalResource> generateProposalPDF(Long proposalId, Long templateId) throws Exception {
-    final var proposal = getProposal(proposalId)
+    final var proposal = getSimpleProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
-    final var context = getCalculatedProposalValues(proposal.getId(), ProposalGeneratedType.PRINT, false);
+    final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
     Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
     return Optional.of(new ProposalResource(pdf, proposal, context));
   }
 
   private Map<String, Object> getCalculatedProposalValues(
     @NonNull Long proposalId, ProposalGeneratedType proposalGeneratedType, boolean insertPropLogHistory) {
-
-    getProposal(proposalId)
-      .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
     Map<String, Object> context = new HashMap<>();
 
@@ -417,7 +417,7 @@ public class BlueravenProposalService {
 
   @Transactional
   public void archiveProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    final Proposal proposal = getProposal(proposalId)
+    final Proposal proposal = getSimpleProposal(proposalId)
       .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
 
     if (proposal.isLocked()) {
@@ -467,6 +467,13 @@ public class BlueravenProposalService {
 
   private Proposal getUnlockedProposal(@NonNull Long proposalId) {
     return getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+  }
+
+  public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
+    return sqlCache.getBySql(
+      ProposalQuery.simple,
+      Map.of("proposalId", proposalId),
+      new ProposalMapper<>(Proposal.class, om));
   }
 
   private URI buildUri(String uuid, ProposalGeneratedType proposalGeneratedType) {

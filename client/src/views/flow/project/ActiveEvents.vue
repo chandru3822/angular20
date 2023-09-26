@@ -1,46 +1,19 @@
 <template>
-  <v-row id="project-details-container">
-    <v-col cols="12" lg="12" class="text-left pt-1 pb-1 pl-2 pr-1"
-           :class="{'pb-0': !sectionExpanded}">
-      <v-col class="py-0" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-        <v-row>
-          <v-toolbar color="transparent" flat class="project-section-header" height="auto">
-            <div class="label-large">Active Events</div>
-            <v-spacer></v-spacer>
-            <v-toolbar-items>
-<!--              <v-btn text color="grey darken-1" class="" x-small @click="sectionExpanded = !sectionExpanded">-->
-<!--                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>-->
-<!--                <v-icon v-else>mdi-chevron-down</v-icon>-->
-<!--              </v-btn>-->
-              <div class="clickable d-flex" @click="sectionExpanded = !sectionExpanded">
-                <v-icon v-if="sectionExpanded">mdi-chevron-up</v-icon>
-                <v-icon v-else>mdi-chevron-down</v-icon>
-              </div>
-            </v-toolbar-items>
-          </v-toolbar>
-
-          <v-col cols="12" class="py-0" v-if="sectionExpanded">
-            <SpinnerInline v-if="activeEventsLoading" :size="20" color="primary"/>
-
-            <ActiveEventSnippet v-else
-              @refresh-upcoming-events="getEvents()"
-              :events="events"
-              :projectId="projectId"/>
-          </v-col>
-        </v-row>
-      </v-col>
-
-      <v-fade-transition v-if="sectionExpanded && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
-        <v-col
+  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')" header="Active Events" :section-expanded="sectionExpanded" :is-loading="activeEventsLoading">
+    <template v-slot:expanded-content>
+      <ActiveEventSnippet class="px-4"
+                          @refresh-upcoming-events="getEvents()"
+                          :events="events"
+                          :projectId="projectId"/>
+      <v-col
+          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
           cols="12"
           class="text-left pt-0 albatross-body-3"
-        >
-          <router-link :to="`/project/${projectId}/events`">View All</router-link>
-        </v-col>
-      </v-fade-transition>
-    </v-col>
-
-  </v-row>
+      >
+        <router-link :to="`/project/${projectId}/events`">View All</router-link>
+      </v-col>
+    </template>
+  </SidePanelExpansionPanel>
 </template>
 
 <script>
@@ -49,10 +22,12 @@ import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
+import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ActiveEvents',
   components: {
+    SidePanelExpansionPanel,
     SpinnerInline,
     EventSnippet,
     ActiveEventSnippet

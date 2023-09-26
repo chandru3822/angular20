@@ -627,7 +627,7 @@ const add = () => {
     requirement.value.availableListOfValues = requirement.value.listOfValues
   }
 
-  requirement.value.isCustomValue = typeof value.value === 'string'
+  requirement.value.isCustomValue = (typeof value.value === 'string' || typeof value.value === 'object')
 
   if (requirement.value.companyId === null) {
     requirement.value.companyId = companyId
