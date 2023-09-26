@@ -5,9 +5,12 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ContactType;
+import com.albatross.api.v1.flow.enums.ObjectType;
+import com.albatross.api.v1.flow.enums.SystemActivity;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepProcess;
 import com.albatross.api.v1.flow.model.project.Project;
+import com.albatross.api.v1.flow.queries.ActivityQuery;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
 import com.albatross.api.v1.flow.queries.ContactQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
@@ -428,6 +431,18 @@ public class ContactService {
         (contact.getOwner() != null) ? contact.getOwner().getUserPositionId() : null;
 
     if (project.isPresent()) {
+      //this will only add the activity if the company has it enabled
+      HashMap<String, Object> actParams = new HashMap<>();
+      actParams.put("activityId", SystemActivity.PROJECT_CREATED.id);
+      actParams.put("objectTypeId", ObjectType.PROJECT.id);
+      actParams.put("userId", currentUser.trueUserId());
+      actParams.put("sourceId", project.get().getId());
+      actParams.put("ppsId", null);
+      actParams.put("ppseId", null);
+      actParams.put("oldStatusId", null);
+      actParams.put("newStatusId", null);
+      sqlCache.queryBySql(ActivityQuery.addSystemActivity, actParams, String.class);
+
       // create all initial project_process_steps - these wont have a userPositionId
       for (ProcessStepProcess step : initialProcessSteps) {
         // the last companyProcessStepStatusTypeId can be null because an initial process step

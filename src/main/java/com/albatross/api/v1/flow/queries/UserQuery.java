@@ -701,8 +701,11 @@ public class UserQuery {
 
   //language=PostgreSQL
   public final static String mentionableUsers = """
-      select u.id, u.first_name, u.last_name,
+      select u.id,
+             u.first_name,
+             u.last_name,
              concat(u.first_name, ' ', u.last_name, ' (', u.email, ')') AS full_name,
+             concat(u.first_name, ' ', u.last_name, ' (', u.email, ')') AS value,
              u.email
       from flow."user" u
                inner join flow.user_company uc on u.id = uc.user_id
@@ -712,7 +715,6 @@ public class UserQuery {
       where (uc.company_id = :companyId or (c.parent_company_id = :parentCompanyId and :parentCompanyId != 1))
         and u.archived = false
         and ust.has_access is true
-      group by u.id, last_name, first_name
       order by last_name, first_name desc
     """;
 

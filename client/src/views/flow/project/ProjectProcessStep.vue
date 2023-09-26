@@ -520,6 +520,8 @@ export default {
           // this.contactId = this.processStep.contactId
           this.existingEvents = this.processStep.projectProcessStepEvents
           this.$store.commit(ProjectMutations.SET_PPS, this.processStep)
+          this.$store.commit(ProjectMutations.SET_LINK_LABEL, `${this.processStep.processStepName} (${this.processStep.projectProcessStepId})`)
+          this.$store.commit(ProjectMutations.SET_LINK_ID, this.processStep.projectProcessStepId)
           if (reloadAll) {
             //dont reload if only doing simple refresh
             this.getAvailableStatuses()
@@ -549,19 +551,6 @@ export default {
         logError(e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Custom Fields')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getNotes() {
-      try {
-        const {data} = await getRequestWithParams(`/note/getProjectProcessStepNotes`, {
-          params: {
-            primaryId: this.projectProcessStepId
-          }
-        })
-        this.notes = data
-      } catch {
-        console.log('suck')
-
       }
     },
     async getAvailableOwners() {

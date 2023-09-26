@@ -460,21 +460,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getNotes() {
-      try {
-        const {data, status} = await getRequestWithParams(`/note/getUserNotes`, {
-          params: {
-            primaryId: this.userId
-          }
-        }, null, [])
-        this.notes = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Notes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getUserStatusTypes(companyId) {
       try {
         let params = {

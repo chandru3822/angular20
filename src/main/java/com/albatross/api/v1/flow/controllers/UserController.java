@@ -264,7 +264,7 @@ public class UserController {
   }
 
   @GetMapping(value = "/mentionableUsers")
-  public List<User> getMentionableUsers() {
+  public List<UserService.MentionableUser> getMentionableUsers() {
     return userService.getMentionableUsers();
   }
 
