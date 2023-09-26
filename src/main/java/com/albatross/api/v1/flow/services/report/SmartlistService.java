@@ -400,7 +400,7 @@ public class SmartlistService {
   public List<SmartlistAccessControl> getAccessById(Long smartlistId) {
     Smartlist smartlist = getById(smartlistId);
 
-    if (!isOwnerOrAdmin(smartlist)) {
+    if (!userHasReadAccess(smartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have access", new AccessDeniedException("You do not have access"));
     }
 

@@ -489,6 +489,7 @@ export default {
       }
     },
     searchByClick(text, id, searchType){
+      this.clearSearch()
       switch (searchType){
         case SearchTypeEnum.USER:
           this.searchText= `User: ${text}`
