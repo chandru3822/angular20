@@ -841,6 +841,8 @@ export default {
           window.document.title = this.project?.id ? `${this.project.projectName} - ${this.selectedEvent.eventName}`
             : `${this.selectedEvent.eventName}`
           this.$store.commit(ProjectMutations.SET_PPS_EVENT, this.selectedEvent)
+          this.$store.commit(ProjectMutations.SET_LINK_LABEL, `${this.selectedEvent.eventName} (${this.selectedEvent.id})`)
+          this.$store.commit(ProjectMutations.SET_LINK_ID, this.selectedEvent.id)
           this.isEventReadonly = this.getIsEventReadonly()
           this.isUploadReadonly = this.getIsUploadReadonly()
           if (data.uniqueBehaviorTypeId === 1) {

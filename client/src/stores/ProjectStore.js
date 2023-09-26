@@ -2,6 +2,8 @@ export const ProjectMutations = {
   INIT: 'storeInt',
   SET_PPS: 'setPps',
   SET_PPS_EVENT: 'setPpsEvent',
+  SET_LINK_LABEL: 'setLinkLabel',
+  SET_LINK_ID: 'setLinkId',
   RESET_PROJECT_STATE: 'resetProjectState',
   RESET_PPS_STATE: 'resetPpsState',
   RESET_PPS_EVENT_STATE: 'resetPpsEventState',
@@ -15,6 +17,7 @@ export const ProjectMutations = {
 export const ProjectStore = {
   state: {
     pps: null,
+    linkLabel: null,
     ppsEvent: null,
     selectedTab: 1,
     forceReloadKey: 0,
@@ -35,6 +38,8 @@ export const ProjectStore = {
     },
     [ProjectMutations.SET_PPS]: (state, pps) => (state.pps = pps),
     [ProjectMutations.SET_PPS_EVENT]: (state, ppsEvent) => (state.ppsEvent = ppsEvent),
+    [ProjectMutations.SET_LINK_LABEL]: (state, linkLabel) => (state.linkLabel = linkLabel),
+    [ProjectMutations.SET_LINK_ID]: (state, linkId) => (state.linkId = linkId),
     [ProjectMutations.RESET_PROJECT_STATE]: (state) => {
       state.pps = {}
       state.ppsEvent = {}

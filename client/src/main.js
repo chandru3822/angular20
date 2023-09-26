@@ -10,6 +10,7 @@ import { NotificationPlugin } from '@/plugins/notifications/NotificationPlugin'
 import { SnackbarPlugin } from '@/plugins/SnackbarPlugin'
 import moment from 'moment-timezone'
 import VueGtag from 'vue-gtag'
+import { createPinia, PiniaVuePlugin } from 'pinia'
 
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor } from '@/helpers/helpers'
@@ -85,9 +86,13 @@ Vue.use(
 
 Vue.use(Chat)
 
+Vue.use(PiniaVuePlugin)
+const pinia = createPinia()
+
 new Vue({
   router,
   store,
   vuetify: Vuetify,
+  pinia,
   render: (h) => h(App)
 }).$mount('#app')

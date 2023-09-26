@@ -8,17 +8,11 @@ import com.albatross.api.utils.SqlCacheRO;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistAccessControl;
-import com.albatross.api.v1.flow.model.smartlist.SmartlistMetric;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistFieldAssignment;
-import com.albatross.api.v1.flow.model.smartlist.Smartlist;
-import com.albatross.api.v1.flow.model.smartlistv1.SmartlistRequirement;
+import com.albatross.api.v1.flow.model.smartlist.*;
 import com.albatross.api.v1.flow.queries.SmartlistQueryv1;
 import com.albatross.api.v1.flow.queries.SmartlistQuery;
 import com.albatross.api.v1.flow.services.OrgService;
-import com.albatross.api.v1.flow.services.SmartlistServicev1;
 import com.albatross.api.v1.flow.services.UserPositionService;
-import com.albatross.api.v1.flow.services.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -66,15 +60,11 @@ public class SmartlistService {
 
   private final ObjectMapper om;
 
-  private final UserService userService;
-
   private final OrgService orgService;
 
   private final UserPositionService userPositionService;
 
   private final ReportEngine reportEngine;
-
-  private final SmartlistServicev1 smartlistServicev1;
 
   private boolean isSmartlistAdmin() {
     User user = securityService.getCurrentUser();
@@ -152,6 +142,11 @@ public class SmartlistService {
     return isOwnerOrAdmin(smartlist) || isSharedWithCurrentUser(smartlist, true);
   }
 
+  /**
+   *
+   * @param id
+   * @return Smartlist or ResponseStatusException
+   */
   public Smartlist getById(Long id) {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = Map.of(
@@ -215,8 +210,8 @@ public class SmartlistService {
       smartlist.setMainProcessSteps(true);
     }
 
-    updateSmartlist(smartlist);
-    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
+    updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
+    sqlCache.updateBySql(SmartlistQuery.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
     return getById(smartlist.getId());
   }
 
@@ -229,17 +224,19 @@ public class SmartlistService {
     }
 
     smartlist.setProjectDetails(!smartlist.isProjectDetails());
-    this.updateSmartlist(smartlist);
+    this.updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
 
-    sqlCache.updateBySql(SmartlistQueryv1.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.updateBySql(SmartlistQuery.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
-    if (!smartlistServicev1.isNameUnique(smartlist.getName())) {
+    User user = securityService.getCurrentUser();
+
+    boolean isNameUnique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", smartlist.getName(), "companyId", user.getCompanyId()), Boolean.class);
+    if (!isNameUnique) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
     }
 
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("ownerId", user.getId());
     params.put("createdById", user.trueUserId());
@@ -247,25 +244,95 @@ public class SmartlistService {
     return getById(smartlistId);
   }
 
-  public void updateSmartlist(Smartlist smartlist) {
+  @Transactional
+  public void updateSmartlist(Smartlist smartlist, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements) {
 
-    var existingSmartlist = getById(smartlist.getId());
+    var existingSmartlist = getById(smartlist.getId(), true);
+
+    // @TODO: #smartlistsv2 - verify user has edit access to smartlist
 
     if (!userHasWriteAccess(existingSmartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
-    final boolean updatingName = !existingSmartlist.getName().trim().equalsIgnoreCase(smartlist.getName().trim().toLowerCase());
+    final boolean updatingName = !existingSmartlist.getName().trim().equals(smartlist.getName().trim());
 
-    if (updatingName && !smartlistServicev1.isNameUnique(smartlist.getName())) {
+    User user = securityService.getCurrentUser();
+    boolean isNameUnique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", smartlist.getName(), "companyId", user.getCompanyId()), Boolean.class);
+
+    if (updatingName && !isNameUnique) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
     }
 
-    User user = securityService.getCurrentUser();
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
     params.put("userId", user.trueUserId());
 
     sqlCache.updateBySql(SmartlistQuery.update, params);
+
+    //update fields
+    if (!fields.isEmpty()) {
+      var deletedFields = fields.stream()
+                                .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.DELETE))
+                                .map(f -> Map.of("id", f.getId(), "userId", user.trueUserId()))
+                                .toList();
+
+      if (!deletedFields.isEmpty()) {
+        sqlCache.updateBatchBySql(SmartlistQuery.deleteField, deletedFields);
+      }
+
+      var addedFields = fields.stream()
+                              .filter(f -> Objects.equals(f.getUpdateType(), FieldUpdateType.ADD))
+                              .toList();
+
+      addedFields.forEach(f -> {
+        f.setCreatedById(user.getId());
+        f.setSmartlistId(smartlist.getId());
+      });
+
+      if (!addedFields.isEmpty()) {
+        sqlCache.updateBatchBySql(SmartlistQuery.addField, addedFields);
+      }
+
+      var displayReorderFields = fields.stream()
+                                       .filter(f -> f.getUpdateType() == null)
+                                       .map(f -> Map.of(
+                                         "id", f.getId(),
+                                         "displayOrder", f.getDisplayOrder(),
+                                         "userId", user.trueUserId()
+                                       ))
+                                       .toList();
+
+      if (!displayReorderFields.isEmpty()) {
+        sqlCache.updateBatchBySql(SmartlistQuery.updateDisplayOrder, displayReorderFields);
+      }
+    }
+
+    //update reqs
+    if (!requirements.isEmpty()) {
+      var addedRequirements = requirements.stream()
+                                             .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.ADD)))
+                                             .toList();
+      addedRequirements.forEach(r -> {
+        r.setCreatedById(user.trueUserId());
+        r.setSmartlistId(smartlist.getId());
+      });
+      sqlCache.updateBatchBySql(SmartlistQuery.addRequirement, addedRequirements);
+
+      var updatedRequirements = requirements.stream()
+                                          .filter(r -> (Objects.equals(r.getUpdateType(), FieldUpdateType.UPDATE)))
+                                          .toList();
+      updatedRequirements.forEach(r -> {
+        r.setModifiedById(user.trueUserId());
+        r.setSmartlistId(smartlist.getId());
+      });
+      sqlCache.updateBatchBySql(SmartlistQuery.updateRequirement, updatedRequirements);
+
+      var deletedRequirements = requirements.stream()
+                                            .filter(r -> Objects.equals(r.getUpdateType(), FieldUpdateType.DELETE))
+                                            .map(r -> Map.of("id", r.getId(), "userId", user.trueUserId()))
+                                            .toList();
+      sqlCache.updateBatchBySql(SmartlistQuery.deleteRequirement, deletedRequirements);
+    }
   }
 
   @Transactional
@@ -309,14 +376,14 @@ public class SmartlistService {
     //give old owner edit access if not system or smartlist admin
     var oldOwnerPosition = userPositionService.getUserPrimaryPosition(smartlist.getOwnerId(), smartlist.getCompanyId());
 
-    if (oldOwnerPosition != null && !user.isSystemAdmin()) {
+    if (oldOwnerPosition != null) {
       try {
         Map<String, Object> params = new HashMap<>();
         params.put("smartlistId", smartlistId);
         params.put("orgId", null);
         params.put("userPositionId", oldOwnerPosition.getId());
         params.put("accessControlId", 2);
-        params.put("userId", user.getId());
+        params.put("userId", oldOwnerPosition.getUserId());
         sqlCache.updateBySqlReturningId(SmartlistQuery.addAccess, params, "id")
                 .longValue();
       } catch (Exception e) {
@@ -455,6 +522,7 @@ public class SmartlistService {
       share.setIsOrg(false);
       share.setName(up.getFullName());
       share.setPosition(up.getPosition());
+      share.setUserId(up.getUserId());
       combinedList.add(share);
     });
 
@@ -472,7 +540,8 @@ public class SmartlistService {
     return combinedList;
   }
 
-  private void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Exception e) {
+  //@TODO: #smartlistsv2 - Made public for more logging during QA
+  public void saveError(Smartlist smartlist, String query, List<SmartlistFieldAssignment> fields, List<SmartlistRequirement> requirements, Exception e) {
     Map<String, Object> params = new HashMap<>();
     params.put("smartlistId", smartlist.getId());
     params.put("createdById", securityService.getCurrentUser().getId());
@@ -533,7 +602,7 @@ public class SmartlistService {
   public String export(Long smartlistId, String timezone) throws JsonProcessingException {
     Smartlist smartlist = this.getById(smartlistId);
 
-    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? smartlistServicev1.getAssignedProjectDetailsFields(smartlistId) : smartlistServicev1.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? getAssignedProjectDetailsFields(smartlistId) : getAssignedFields(smartlistId);
     List<SmartlistRequirement> requirements = getRequirements(smartlist.getId(), false);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
@@ -541,18 +610,18 @@ public class SmartlistService {
     }
 
     if (!smartlist.isProjectDetails()) {
-      fields = smartlistServicev1.prettifyFieldNames(fields);
+      fields = prettifyFieldNames(fields);
     }
 
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
     String query;
 
-    //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
+    //a workqueue report needs to use the buildSql function. It has special functionality for workqueus
     if (smartlist.isProjectDetails()) {
-      query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements);
+      query = reportEngine.buildProjectDetailsSql(smartlist, fields, requirements, null);
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
       if (smartlist.getObjectTypeId() == 4) {
-        query = reportEngine.buildProcessStepSql(smartlist, fields, requirements);
+        query = reportEngine.buildProcessStepSql(smartlist, fields, requirements, null);
       } else {
         query = reportEngine.buildEventSql(smartlist, fields, requirements, null, null);
       }
@@ -560,7 +629,7 @@ public class SmartlistService {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
         query = reportEngine.buildWorkQueueSql(smartlist, fields, true, timezone);
       } else {
-        query = reportEngine.buildSql(smartlist, fields, requirements, timezone, null, false);
+        query = reportEngine.buildSql(smartlist, fields, requirements, timezone, null, false, null);
       }
     }
 
@@ -718,6 +787,122 @@ public class SmartlistService {
     }
   }
 
+  public List<Map<String, Object>> getAdhocReportData(
+    Smartlist report,
+    List<SmartlistFieldAssignment> fields,
+    List<SmartlistRequirement> requirements,
+    Integer limit,
+    String timezone
+  ) {
+    return getAdhocReportData(report, fields, requirements, limit, timezone, false);
+  }
+
+  public List<Map<String, Object>> getAdhocReportData(
+    Smartlist report,
+    List<SmartlistFieldAssignment> fields,
+    List<SmartlistRequirement> requirements,
+    Integer limit,
+    String timezone,
+    Boolean queryOnly
+  ) {
+
+    //if we are working with an existing smartlist, verify read access
+    if (report.getId() != null) {
+      getById(report.getId());
+    }
+
+    if (!List.of(1L,2L,3L,4L,5L,6L).contains(report.getObjectTypeId())) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have a data type");
+    }
+
+    User user = securityService.getCurrentUser();
+
+    //get tables for any fields/reqs using smartlist fields
+    List<Long> usedSmartlistFieldIds = new ArrayList<>(fields.stream()
+                                                             .map(SmartlistFieldAssignment::getSmartlistFieldId)
+                                                             .filter(Objects::nonNull)
+                                                             .toList());
+
+    usedSmartlistFieldIds.addAll(requirements.stream()
+                                             .map(SmartlistRequirement::getSmartlistFieldId)
+                                             .filter(Objects::nonNull)
+                                             .toList()
+    );
+
+    if (!usedSmartlistFieldIds.isEmpty()) {
+      var params = Map.of("companyId", user.getCompanyId(), "ids", usedSmartlistFieldIds);
+      List<SmartlistFieldAssignment> smartlistFields = sqlCacheRO.queryBySql(SmartlistQuery.getSmartlistFieldsByIds, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+
+      fields.forEach(field -> {
+        if (field.getSmartlistFieldId() != null) {
+          var fieldFromDb = smartlistFields.stream()
+                                           .filter(f -> Objects.equals(f.getSmartlistFieldId(), field.getSmartlistFieldId()))
+                                           .findFirst();
+
+          fieldFromDb.ifPresent(f -> {
+            field.setReferenceTable(f.getReferenceTable());
+            field.setReferenceColumn(f.getReferenceColumn());
+            field.setJoinTable(f.getJoinTable());
+            field.setJoinColumn(f.getJoinColumn());
+          });
+        }
+      });
+
+      requirements.forEach(requirement -> {
+        if (requirement.getSmartlistFieldId() != null) {
+          var fieldFromDb = smartlistFields.stream()
+                                           .filter(f -> Objects.equals(f.getSmartlistFieldId(), requirement.getSmartlistFieldId()))
+                                           .findFirst();
+
+          fieldFromDb.ifPresent(f -> {
+            requirement.setReferenceTable(f.getReferenceTable());
+            requirement.setReferenceColumn(f.getReferenceColumn());
+            requirement.setJoinTable(f.getJoinTable());
+            requirement.setJoinColumn(f.getJoinColumn());
+          });
+        }
+      });
+    }
+
+    //@TODO: #smartlistsv2 - ID is used in some cases for fields in report engine. Setting a random ID for now. This has potential to cause conflicts and needs a long term solution
+    fields.forEach(f -> {
+      if (f.getId() == null) {
+        f.setId((long) ((Math.random() * (40000 - 20000)) + 20000));
+      }
+    });
+
+    String query;
+
+    //a workqueue report needs to use the buildSql function. It has special functionality for workqueus
+    if (report.isProjectDetails()) {
+      query = reportEngine.buildProjectDetailsSql(report, fields, requirements, null);
+    } else if (List.of(4L, 6L).contains(report.getObjectTypeId()) && null == report.getWorkQueueTypeId()) {
+      if (report.getObjectTypeId() == 4) {
+        query = reportEngine.buildProcessStepSql(report, fields, requirements, null);
+      } else {
+        query = reportEngine.buildEventSql(report, fields, requirements, null, null);
+      }
+    } else {
+      if (report.getWorkQueueTypeId() != null && report.getObjectTypeId() == 6) {
+        query = reportEngine.buildWorkQueueSql(report, fields, true, timezone);
+      } else {
+        query = reportEngine.buildSql(report, fields, requirements, timezone, null, false, null);
+      }
+    }
+
+    if (Objects.equals(queryOnly, true)) {
+      return List.of(Map.of("query", query));
+    }
+
+    try {
+      return sqlCacheRO.queryBySql(query, null, new ColumnMapRowMapper());
+    } catch (Exception e) {
+      saveError(report, query, fields, requirements, e);
+      throw e;
+    }
+
+  }
+
   public List<SmartlistFieldAssignment> getEventWorkqueueDefaultFields(boolean isCSV) {
     var defaultFields = new ArrayList<SmartlistFieldAssignment>();
     var projectName = new SmartlistFieldAssignment();
@@ -802,9 +987,9 @@ public class SmartlistService {
     List<SmartlistRequirement> requirements;
 
     if (smartlist.isProjectDetails()) {
-      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
     } else {
-      requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistServicev1.SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+      requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
       if (includeListValues) {
         for (SmartlistRequirement r : requirements) {
@@ -844,9 +1029,9 @@ public class SmartlistService {
     Long requirementId = sqlCache.updateBySqlReturningId(SmartlistQueryv1.addRequirement, params, "id").longValue();
 
     if (smartlist.isProjectDetails()) {
-      return smartlistServicev1.getProjectDetailsRequirementById(requirementId);
+      return getProjectDetailsRequirementById(requirementId);
     } else {
-      return smartlistServicev1.getRequirementById(requirementId);
+      return getRequirementById(requirementId);
     }
   }
 
@@ -863,10 +1048,18 @@ public class SmartlistService {
     sqlCache.updateBySql(SmartlistQueryv1.updateRequirement, params);
 
     if (smartlist.isProjectDetails()) {
-      return smartlistServicev1.getProjectDetailsRequirementById(requirement.getId());
+      return getProjectDetailsRequirementById(requirement.getId());
     } else {
-      return smartlistServicev1.getRequirementById(requirement.getId());
+      return getRequirementById(requirement.getId());
     }
+  }
+
+  public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
+    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedFields, Map.of("smartlistId", smartlistId), new SmartlistService.SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  }
+
+  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
+    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedProjectDetailsFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
   // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
@@ -874,10 +1067,63 @@ public class SmartlistService {
     var smartlist = getById(smartlistId);
 
     if (smartlist.isProjectDetails()) {
-      return smartlistServicev1.getAssignedProjectDetailsFields(smartlistId);
+      return getAssignedProjectDetailsFields(smartlistId);
     } else {
-      return smartlistServicev1.getAssignedFields(smartlistId);
+      return getAssignedFields(smartlistId);
     }
+  }
+
+  public List<SmartlistFieldAssignment> getAvailableFields(@NotNull List<Long> objectTypeIds, @NotNull boolean isProjectDetails) {
+    if (isProjectDetails) {
+      //@TODO: #smartlistsv2 - revamp with data view updates
+      return sqlCache.queryBySql(SmartlistQueryv1.getAvailableProjectDetailsFields, null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    } else {
+      Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeIds", objectTypeIds);
+      return sqlCache.queryBySql(SmartlistQuery.getAvailableFields, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    }
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public SmartlistRequirement getRequirementById(Long requirementId) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("requirementId", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    SmartlistRequirement requirement = sqlCache.getBySql(SmartlistQueryv1.getRequirementById, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om))
+                                               .orElse(null);
+
+    if (requirement != null && requirement.getCustomFieldSql() != null) {
+      final String sql = requirement.getCustomFieldSql();
+      if (sql != null) {
+        requirement.setAvailableListOfValues(sqlCache.queryBySql(sql, null, ListOfValue.class));
+      }
+    }
+
+    return requirement;
+  }
+
+  // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
+  public SmartlistRequirement getProjectDetailsRequirementById(Long requirementId) {
+    User user = securityService.getCurrentUser();
+    Boolean inParentCompany = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("id", requirementId, "companyId", user.getCompanyId(), "inParentCompany", inParentCompany);
+    return sqlCache.getBySql(SmartlistQueryv1.getProjectRequirementById, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om))
+                   .orElse(null);
+  }
+
+  /**
+   * Changes event/PS field names into `fieldName (event/PSName)` and truncates to 63 chars
+   */
+  public List<SmartlistFieldAssignment> prettifyFieldNames(List<SmartlistFieldAssignment> fields) {
+    for (SmartlistFieldAssignment f : fields) {
+      if (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6) {
+        f.setName(String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName()));
+
+        if (f.getName().length() > 63) {
+          f.setName(f.getName().substring(0, 60) + "...");
+        }
+      }
+    }
+    return fields;
   }
 
   public static class SmartlistMapper<T> extends BeanPropertyRowMapper<T> {

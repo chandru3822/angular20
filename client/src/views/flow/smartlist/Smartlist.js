@@ -5,14 +5,34 @@ export default class Smartlist {
   /**
    * Determine if current user can edit given smartlist
    *
-   * Current user can edit smartlist if smartlist is shared (with edit access) with user's primary position or an org containing user's primary position
+   * Current user can view/edit smartlist if:
+   *  1) user is owner
+   *  2) user is smartlist or system admin
+   *  3) smartlist is shared (with edit access) with user's primary position
+   *  4) smartlist is shared (with edit access) with an org containing user's primary position
    *
    * @param smartlist
    * @param checkEditAccess
    * @returns boolean
    */
-    static #isSharedWithCurrentUser (smartlist, checkEditAccess) {
-    if (!smartlist || !smartlist.accessControl || smartlist.accessControl.length === 0) {
+  static #isSharedWithCurrentUser (smartlist, checkEditAccess) {
+    if (!smartlist || !smartlist.ownerId) {
+      return false
+    }
+
+    const isOwner = smartlist.ownerId === store.state.user.details.id
+    if (isOwner) {
+      return true
+    }
+
+    const isAdmin = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN') ||
+                    store.getters.isFullAdmin
+
+    if (isAdmin) {
+      return true
+    }
+
+    if (!smartlist.accessControl || smartlist.accessControl.length === 0) {
       return false
     }
 
@@ -51,15 +71,14 @@ export default class Smartlist {
       })
     }
 
-
     return hasAccess
   }
 
   static userCanView(smartlist) {
-      return this.#isSharedWithCurrentUser(smartlist, false)
+    return this.#isSharedWithCurrentUser(smartlist, false)
   }
 
   static userCanEdit(smartlist) {
-      return this.#isSharedWithCurrentUser(smartlist, true)
+    return this.#isSharedWithCurrentUser(smartlist, true)
   }
 }
