@@ -103,7 +103,81 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
-    <ThreeColumnLayout @end-notes-timer="endNotesTimer('Clicked outside right panel')">
+    <ThreeColumnLayoutMobile v-if="isMobile">
+      <template v-slot:header>
+      <v-toolbar flat color="grey lighten-2" :class="{'project-header': project && !project.tags || project.tags.length === 0,
+                                                    'project-header-with-tags': project && project.tags && project.tags.length > 0,
+                                                    'pt-2': project && project.tags && project.tags.length > 0}"
+                 v-if="!projectLoading && project && project.id">
+        <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
+                         :class="{'mt-4': project.tags && project.tags.length > 0}">
+          <div>
+            <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+            <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+            <router-link class="breadcrumb albatross-body-2"
+                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
+              {{ $store.state.project.pps.processStepName }}
+            </router-link>
+          </span>
+            <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+            <router-link class="breadcrumb albatross-body-2"
+                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
+              {{ $store.state.project.ppsEvent.eventName }} Event
+            </router-link>
+          </span>
+          </div>
+          <div class="mt-2">
+            <v-chip v-for="(tag, idx) in project.tags"
+                    small
+                    class="tag-chip"
+                    :color="tag.bgColor"
+                    :text-color="tag.fontColor"
+                    :close="tag.removable"
+                    :class="{'ml-2': idx !== 0}">
+              {{ tag.tagName }}
+            </v-chip>
+          </div>
+        </v-toolbar-title>
+        <v-spacer/>
+        <div v-if="milestones && milestones.length > 0">
+          <div class="milestone-item" v-for="(milestone, idx) in milestones">
+            <v-menu v-model="milestone.menuOpen"
+                    offset-y
+                    rounded="0"
+                    :close-on-content-click="false"
+                    min-width="290px">
+              <template v-slot:activator="{ on }">
+                <StatusTrackerIcon :on="on"
+                                   :clickable="true"
+                                   :milestone="milestone"
+                                   :current-status-id="project.companyProjectStatusTypeId"
+                ></StatusTrackerIcon>
+              </template>
+              <v-card class="pa-5 square-card">
+                <StatusTrackerIcon :clickable="false"
+                                   :milestone="milestone"
+                                   :current-status-id="project.companyProjectStatusTypeId"
+                ></StatusTrackerIcon>
+                {{milestone.projectStatusType}}
+                <div>
+                  <div v-for="field in milestone.assignedFields">
+                    <StatusTrackerItem :field="field"
+                    ></StatusTrackerItem>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <v-btn text color="primary" @click="milestone.menuOpen = false">Done</v-btn>
+                </div>
+              </v-card>
+            </v-menu>
+          </div>
+        </div>
+      </v-toolbar>
+    </template>
+    </ThreeColumnLayoutMobile>
+    <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
       <template v-slot:header>
         <v-toolbar flat color="grey lighten-2" :class="{'project-header': project && !project.tags || project.tags.length === 0,
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
@@ -244,12 +318,13 @@ import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {endTimer, projectOpened} from '@/services/analyticsService'
 import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
-import ThreeColumnLayout from "../../ThreeColumnLayout.vue";
-
+import ThreeColumnLayout from '@/views/ThreeColumnLayout'
+import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
 export default {
   name: 'Project',
   components: {
     ThreeColumnLayout,
+    ThreeColumnLayoutMobile,
     StatusTrackerIcon,
     StatusTrackerItem,
     PageOverview,
@@ -376,7 +451,10 @@ export default {
           value: this.project.owner
         }
       ]
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   mounted() {
   },
