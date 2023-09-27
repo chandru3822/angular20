@@ -8,6 +8,7 @@ export const ProjectMutations = {
   RESET_PPS_STATE: 'resetPpsState',
   RESET_PPS_EVENT_STATE: 'resetPpsEventState',
   SET_SELECTED_TAB: 'setSelectedTab',
+  SET_NOTES_ACTIVITY_VIEW: 'setNotesActivityView',
   INCREMENT_RELOAD_KEY: 'updateReloadKey',
   FLIP_MANUAL_COLUMN_SPLIT: 'flipManualColumnSplit',
   LEFT_SIDE_COLLAPSE: 'leftSideCollapse',
@@ -20,6 +21,7 @@ export const ProjectStore = {
     linkLabel: null,
     ppsEvent: null,
     selectedTab: 1,
+    notesActivityView: 0,
     forceReloadKey: 0,
     manualColumnSplit: false,
     leftSideSplit: false,
@@ -33,6 +35,7 @@ export const ProjectStore = {
     [ProjectMutations.RIGHT_SIDE_COLLAPSE]: (state) => {
       state.rightSideSplit = !state.rightSideSplit},
     [ProjectMutations.SET_SELECTED_TAB]: (state, selectedTab) => (state.selectedTab = selectedTab),
+    [ProjectMutations.SET_NOTES_ACTIVITY_VIEW]: (state, notesActivityView) => (state.notesActivityView = notesActivityView),
     [ProjectMutations.INCREMENT_RELOAD_KEY]: (state) => {
       state.forceReloadKey++
     },
