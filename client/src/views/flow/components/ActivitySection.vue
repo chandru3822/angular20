@@ -342,8 +342,10 @@ export default {
         break
     }
     this.getTopics()
-    //when this page loads for the first time it will always be on timeline view so we dont have to check here. only on watch
     this.getActivities()
+    if(!this.timelineView){
+      this.getActivityTopics()
+    }
     this.getUsers()
   },
   methods: {
