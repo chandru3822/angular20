@@ -27,7 +27,7 @@
 
 <script>
   import constants from '@/helpers/constants'
-  import {getSnackbar} from '@/helpers/helpers'
+  import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequestWithRequestParams} from '@/helpers/helpers'
   import {AppMutations} from '@/stores/AppStore'
 
   export default {
@@ -42,6 +42,12 @@
     created () {
       this.userAgent = window.navigator.userAgent
       this.isMobile = this.userAgent && this.userAgent && ['Android', 'iPhone', 'iPad'].some(v => this.userAgent.includes(v))
+
+      //success check is just a dumb little thing to prevent them from refresh the success screen a bunch and making us re-GET the session from stripe each time
+      if(null != this.$route.query.sessionId && this.$route.query.success !== 'true') {
+        console.log('do stuff')
+        this.setStripePaymentId()
+      }
     },
     methods: {
       doAppLaunch() {
@@ -51,6 +57,24 @@
 
         window.location.replace(appUrl);
       },
+      async setStripePaymentId() {
+        try {
+          let params = {
+            stripeSessionId: this.$route.query.sessionId,
+            projectId: parseInt(this.$route.query.projectId),
+          }
+
+          const {data, status} = await postRequestWithRequestParams('/stripe/setPaymentId', [], params, 'blueraven')
+          //success check is just a dumb little thing to prevent them from refresh the success screen a bunch and making us re-GET the session from stripe each time
+          this.$router.replace(this.$route.fullPath + `&success=true`)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error saving payment ID to process step')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.roundRobinRanksLoading = false
+        }
+      }
     }
   }
 </script>
