@@ -10,6 +10,7 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "app.scheduled.blueraven", value = "enabled", havingValue = "true")
 public class ProposalProcessor {
 
   private static final Long PROPOSAL_ATTACHMENT_TYPE = 37L;
