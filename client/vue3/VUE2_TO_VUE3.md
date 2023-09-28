@@ -134,10 +134,10 @@ onMounted(() => {
 <td>
 
 ```
+import ConfirmationDialog from "@/components/ConfirmationDialog"
 export default {
  components: { ConfirmationDialog }
 }
-import ConfirmationDialog from "@/components/ConfirmationDialog"
 <ConfirmationDialog/>
 ```
 </td>
@@ -189,12 +189,207 @@ const canAdd = computed(() => {
 </tr>
 </table>
 
-### Still need to add:
+### Using Vue Router
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
 ```
-Watchers
-v-deep behavior
-beforeRouteLeave
-beforeRouteEnter
-Props passed into components
-Emits
+this.$router.push('/login')
 ```
+</td>
+<td>
+
+```
+const router = vueInstance.$router
+router.push('/login')
+```
+</td>
+</tr>
+</table>
+
+### Using Route Params
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+this.$route.params.projectId
+```
+</td>
+<td>
+
+```
+vueInstance.$route.params?.projectId
+```
+</td>
+</tr>
+</table>
+
+### Component Props
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+props: {
+  pageName: String
+}
+```
+</td>
+<td>
+
+```
+const props = defineProps({
+  pageName: String
+})
+```
+</td>
+</tr>
+</table>
+
+### Emits
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+this.$emit('clearSearch')
+```
+</td>
+<td>
+
+```
+const emit = defineEmits(['clearSearch'])
+emit('clearSearch')
+```
+</td>
+</tr>
+</table>
+
+### Watchers
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+watch: {
+  options () {
+    //do stuff
+  }
+}
+```
+</td>
+<td>
+
+```
+import { watch } from 'vue'
+watch(options, () => {
+  //do stuff
+})
+```
+</td>
+</tr>
+</table>
+
+### Before Route Leave
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+beforeRouteLeave(to, from, next) {
+  //do stuff
+  next()
+}
+```
+</td>
+<td>
+
+```
+import { onBeforeRouteLeave } from 'vue-router/composables'
+onBeforeRouteLeave(async (to, from, next) => {
+  //do stuff
+  next()
+})
+```
+</td>
+</tr>
+</table>
+
+### Before Route Enter
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+  beforeRouteEnter(to, from, next) {
+    next((vm) => {
+      //do stuff
+    });
+  },
+```
+</td>
+<td>
+
+```
+WIP:
+need to solve when we come to it
+```
+</td>
+</tr>
+</table>
+
+### Deep CSS
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+#title-container ::v-deep .v-toolbar__content {
+  width: 100%;
+}
+```
+</td>
+<td>
+
+```
+#title-container :deep(.v-toolbar__content) {
+  width: 100%;
+}
+```
+</td>
+</tr>
+</table>
