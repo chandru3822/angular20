@@ -386,6 +386,10 @@ where p.id = :proposalId
   and p.archived is false
       """;
 
+  public final static String findVersionByProjectProcessStep = """
+    select get_project_proposal_version from brs.get_project_proposal_version(:ppsId, :currentUserId);
+    """;
+
   //language=PostgreSQL
   public final static String insert = """
     insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id) values(:projectProcessStepId, :userId, :proposalVersionId)

@@ -33,4 +33,10 @@ public class StripeController {
 //        }
 //
 //    }
+
+  @PostMapping(value="/setPaymentId", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void setStripePaymentId(@RequestParam String stripeSessionId,
+                                 @RequestParam Long projectId) {
+    stripeService.setStripePaymentId(stripeSessionId, projectId);
+  }
 }

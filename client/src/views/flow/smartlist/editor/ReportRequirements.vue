@@ -9,7 +9,7 @@
       @added="added"
     />
   </v-col>
-  <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
+  <v-col class="flex-grow-1 flex-shrink-0 overflow-y-auto">
     <v-list>
       <template v-for="(requirement, index) in requirements">
         <v-card
@@ -232,5 +232,9 @@ const added = (newRequirement) => {
 //don't change opacity when the requirement cards are disabled
 :deep(.v-card--disabled > div) {
   opacity: 1 !important;
+}
+
+.overflow-y-auto {
+  overflow-y: auto;
 }
 </style>
