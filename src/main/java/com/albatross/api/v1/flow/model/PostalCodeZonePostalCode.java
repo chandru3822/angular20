@@ -4,15 +4,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @EqualsAndHashCode
 @Data
 @NoArgsConstructor
-public class PostalCodeZone {
+public class PostalCodeZonePostalCode {
 
-  private Long id, metroAreaId;
-  private String zoneName;
+  private Long id, postalCodeZoneId, postalCodeId;
+  private String postalCode;
   private Boolean archived;
-  private List<PostalCodeZonePostalCode> postalCodes;
 }

@@ -71,6 +71,7 @@ public class PostalCodeQuery {
              archived,
              COALESCE((SELECT array_to_json(array_agg(rows))
                 from (SELECT pczpc.id,
+                             pczpc.postal_code_id as "postalCodeId",
                              pc.postal_code as "postalCode",
                              pc.active,
                              pc.archived
@@ -102,6 +103,29 @@ public class PostalCodeQuery {
   public final static String insertPostalCodeZonePostalCode = """
       insert into flow.postal_code_zone_postal_code(postal_code_id, postal_code_zone_id, created_by_id, modified_by_id)
       values (:postalCodeId, :zoneId, :userId, :userId)
+  """;
+
+  //language=PostgreSQL
+  public final static String deletePostalCodeFromZone = """
+    update flow.postal_code_zone_postal_code
+    set archived = true,
+        modified_by_id = :userId,
+        date_modified = now()
+    where id = :id
+  """;
+
+  //language=PostgreSQL
+  public final static String getOnePostalCodeToZone = """
+      select id,
+             postal_code_zone_id,
+             postal_code_id,
+             date_created,
+             date_modified,
+             created_by_id,
+             modified_by_id,
+             archived
+      from flow.postal_code_zone_postal_code
+      where id = :id
   """;
 
   //language=PostgreSQL

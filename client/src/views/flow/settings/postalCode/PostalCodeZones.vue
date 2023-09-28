@@ -48,8 +48,8 @@
             >
 
               <template #item="{ item, index }">
-                <tr class="clickable">
-                  <td class="text-left">
+                <tr class="">
+                  <td class="clickable text-left"  @click="goToZone(item)">
                     {{ item.zoneName }}
                   </td>
                   <td class="text-right">
@@ -111,7 +111,7 @@
         postalCodeZones: [],
         headers: [
           {text: 'Zone Name', value: 'zoneName', show: true},
-          {text: '', value: 'icons', show: true},
+          {text: '', value: 'icons', show: true, width: "100"},
         ],
         showDeleteDialog: false,
         itemToDelete: null

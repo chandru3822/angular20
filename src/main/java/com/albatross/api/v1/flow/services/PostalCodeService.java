@@ -101,14 +101,31 @@ public class PostalCodeService {
     return sqlCache.queryBySql(PostalCodeQuery.getAvailablePostalCodesForZone, params, PostalCode.class);
   }
 
-  public void savePostalCodeToZone(Long zoneId, PostalCode postalCode) {
+  public Optional<PostalCodeZonePostalCode> savePostalCodeToZone(Long zoneId, PostalCode postalCode) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("zoneId", zoneId);
     params.put("postalCodeId", postalCode.getId());
     params.put("userId", user.trueUserId());
 
-    sqlCache.updateBySql(PostalCodeQuery.insertPostalCodeZonePostalCode, params);
+    Long id = sqlCache.updateBySqlReturningId(PostalCodeQuery.insertPostalCodeZonePostalCode, params, "id").longValue();
+    return getOnePostalCodeToZone(id);
+  }
+
+  public void deletePostalCodeFromZone(Long zoneId, Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(PostalCodeQuery.deletePostalCodeFromZone, params);
+  }
+
+  public Optional<PostalCodeZonePostalCode> getOnePostalCodeToZone(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    return sqlCache.getBySql(PostalCodeQuery.getOnePostalCodeToZone, params, PostalCodeZonePostalCode.class);
   }
 
   public static class PostalCodeZoneMapper<T> extends BeanPropertyRowMapper<T> {
@@ -121,7 +138,7 @@ public class PostalCodeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<PostalCode>> postalCodeRef = new TypeReference<>() {};
+      TypeReference<List<PostalCodeZonePostalCode>> postalCodeRef = new TypeReference<>() {};
       bw.registerCustomEditor(
               List.class,
               "postalCodes",
