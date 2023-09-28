@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "app.scheduled", value = "enabled")
+@ConditionalOnProperty(prefix = "app.scheduled.blueraven", value = "enabled", havingValue = "true")
 public class ProposalProcessor {
 
   private static final Long PROPOSAL_ATTACHMENT_TYPE = 37L;
