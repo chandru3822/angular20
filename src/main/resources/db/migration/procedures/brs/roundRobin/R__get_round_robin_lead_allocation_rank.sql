@@ -1,5 +1,5 @@
-drop function if exists brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint, p_run_by_id bigint);
-CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_postal_code_zone_id bigint, p_time_interval bigint, p_run_by_id bigint)
+drop function if exists brs.get_round_robin_lead_allocation_rank(p_round_robin_id bigint, p_time_interval bigint, p_run_by_id bigint);
+CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_round_robin_id bigint, p_time_interval bigint, p_run_by_id bigint)
     RETURNS table
             (
                 user_id              bigint,
@@ -15,11 +15,11 @@ BEGIN
     return query
         with round_robin_users as (
             select pczu.user_id, concat(u.first_name, ' ', u.last_name) as closer_name, pcz.distribution_time_frame_days
-            from flow.postal_code_zone_user pczu
+            from flow.round_robin_user pczu
                      inner join flow.user u on u.id = pczu.user_id
-                     inner join flow.postal_code_zone pcz on pcz.id = pczu.postal_code_zone_id and pcz.archived is false
-            where pcz.id = p_postal_code_zone_id
-              and pczu.postal_code_zone_user_type_id = 1
+                     inner join flow.round_robin pcz on pcz.id = pczu.round_robin_id and pcz.archived is false
+            where pcz.id = p_round_robin_id
+              and pczu.round_robin_user_type_id = 1
               and pczu.archived is false),
              lead_gen_num as (
                  select rru.user_id, count(pd.id) as lead_gen_num
@@ -207,8 +207,8 @@ BEGIN
                                  coalesce(ta.avail, 0)                             as avail,
                                  coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
                                  pczu.manual_allocation
-                          from flow.postal_code_zone pcz
-                                   inner join flow.postal_code_zone_user pczu on pczu.postal_code_zone_id = pcz.id and pczu.archived is false
+                          from flow.round_robin pcz
+                                   inner join flow.round_robin_user pczu on pczu.round_robin_id = pcz.id and pczu.archived is false
                                    inner join flow.user u on u.id = pczu.user_id
                                    left join lead_gen_num lgn on lgn.user_id = pczu.user_id
                                    left join lead_gen_den lgd on lgd.user_id = pczu.user_id
@@ -218,8 +218,8 @@ BEGIN
                                    left join appointment_count ac on ac.user_id = pczu.user_id
                                    left join total_avail ta on ta.user_id = pczu.user_id
                                    left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
-                          where pcz.id = p_postal_code_zone_id
-                            and pczu.postal_code_zone_user_type_id = 1
+                          where pcz.id = p_round_robin_id
+                            and pczu.round_robin_user_type_id = 1
                             and pcz.archived is false
                           group by pczu.user_id, concat(u.first_name, ' ', u.last_name), lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
                                    lgnfdc.lead_gen_num,lgdfdc.lead_gen_den,

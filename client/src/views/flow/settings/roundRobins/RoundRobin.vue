@@ -3,26 +3,26 @@
     <v-breadcrumbs :items="breadcrumbs" class="pl-3 pt-1 pb-3"></v-breadcrumbs>
     <v-toolbar class="elevation-0">
       <v-toolbar-title class="pt-2">
-        {{ zone.zoneName }}
+        {{ roundRobin.roundRobinName }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editZone = !editZone">
+        <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editRoundRobin = !editRoundRobin">
           <v-icon>edit</v-icon>
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
     <v-divider></v-divider>
-    <div v-if="!editZone" class="px-4 py-2">
+    <div v-if="!editRoundRobin" class="px-4 py-2">
       <div class="dtf">
-        Distribution Time Frame: {{ zone.distributionTimeFrameDays }} days
+        Distribution Time Frame: {{ roundRobin.distributionTimeFrameDays }} days
       </div>
       <div class="dtf">
         Schedulable Future Days:
-        <span v-if="zone.schedulableFutureDays">{{ zone.schedulableFutureDays }} days</span>
+        <span v-if="roundRobin.schedulableFutureDays">{{ roundRobin.schedulableFutureDays }} days</span>
         <span v-else>N/A</span>
       </div>
-      <div  class="dtf">{{ zone.timezone }}</div>
+      <div  class="dtf">{{ roundRobin.timezone }}</div>
     </div>
     <div v-else>
       <v-row>
@@ -33,7 +33,7 @@
                 <v-text-field text
                               type="text"
                               label="Name"
-                              v-model="zone.zoneName">
+                              v-model="roundRobin.roundRobinName">
                 </v-text-field>
               </td>
             </tr>
@@ -42,20 +42,20 @@
                 <v-text-field text
                               type="text"
                               label="Distribution Time Frame"
-                              v-model="zone.distributionTimeFrameDays">
+                              v-model="roundRobin.distributionTimeFrameDays">
                 </v-text-field>
               </td>
               <td class="px-2">
                 <v-text-field text
                               type="text"
                               label="Schedulable Future Days"
-                              v-model="zone.schedulableFutureDays">
+                              v-model="roundRobin.schedulableFutureDays">
                 </v-text-field>
               </td>
             </tr>
             <tr>
               <td class="px-2">
-                <v-autocomplete v-model="zone.companyTimezoneId"
+                <v-autocomplete v-model="roundRobin.companyTimezoneId"
                                 :items="companyTimezones"
                                 label="Time Zone"
                                 style="width: 200px;"
@@ -65,8 +65,8 @@
                 ></v-autocomplete>
               </td>
               <td class="pl-5 pb-3">
-                <v-btn color="primary" :disabled="!zone.zoneName || !zone.companyTimezoneId"
-                       class="white--text" @click="saveZoneInfo()">
+                <v-btn color="primary" :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
+                       class="white--text" @click="saveRoundRobinInfo()">
                   Save
                 </v-btn>
               </td>
@@ -99,7 +99,7 @@ import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getReque
 import constants from '@/helpers/constants'
 
 export default {
-  name: 'PostalCode',
+  name: 'RoundRobin',
 
   data() {
     return {
@@ -107,50 +107,50 @@ export default {
       model: '',
       tabs: [{
         label: 'Schedule To',
-        path: `/settings/postalCode/${this.$route.params.id}/scheduleTo`,
+        path: `/settings/roundRobin/${this.$route.params.id}/scheduleTo`,
         display: true
       }, {
         label: 'Schedule By',
-        path: `/settings/postalCode/${this.$route.params.id}/scheduleBy`,
+        path: `/settings/roundRobin/${this.$route.params.id}/scheduleBy`,
         display: true
       }, {
         label: 'Postal Codes',
-        path: `/settings/postalCode/${this.$route.params.id}/codes`,
+        path: `/settings/roundRobin/${this.$route.params.id}/codes`,
         display: true
       }],
-      editZone: false,
+      editRoundRobin: false,
       constants,
       companyTimezones: [],
-      zone: {},
+      roundRobin: {},
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
-      zoneId: this.$route.params.id,
+      roundRobinId: this.$route.params.id,
       dataLoading: true,
       breadcrumbs: [
         {
           text: 'Back to Round Robins',
           disabled: false,
           exact: true,
-          to: `/settings/postalCodes`
+          to: `/settings/roundRobins`
         },
       ]
     }
   },
   async created() {
     this.getCompanyTimezones()
-    await this.getZoneDetails()
+    await this.getRoundRobinDetails()
   },
   methods: {
-    async saveZoneInfo() {
+    async saveRoundRobinInfo() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await postRequest(`/postalCode/zone`, this.zone)
-        this.editZone = false
-        this.snackbar = getSnackbar('SUCCESS', 'Zone Name Saved')
+        const {status} = await postRequest(`/roundRobin`, this.roundRobin)
+        this.editRoundRobin = false
+        this.snackbar = getSnackbar('SUCCESS', 'Round Robin Name Saved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Zone Name')
+        this.snackbar = getSnackbar('ERROR', 'Error Saving Round Robin Name')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -168,11 +168,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getZoneDetails() {
+    async getRoundRobinDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}`)
-        this.zone = data
+        const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}`)
+        this.roundRobin = data
         this.dataLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {

@@ -8,7 +8,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[reloadAvailable(), addCode = !addCode, newCode = {}]">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
@@ -16,16 +16,17 @@
         </v-toolbar>
         <v-divider></v-divider>
         <v-card v-if="addCode" class="square-card text-left pa-5">
-          <v-text-field text
-                        label="Postal Code"
-                        counter
-                        type="number"
-                        maxlength="5"
-                        v-model="newCode">
-          </v-text-field>
+          <v-autocomplete
+              :items="availablePostalCodes"
+              item-value="id"
+              item-text="postalCode"
+              label="Postal Code"
+              return-object
+              v-model="newCode"
+          ></v-autocomplete>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <v-btn color="primary" class="mr-3 white--text" @click="addCodeToZone()"
-                 :disabled="!newCode">
+          <v-btn color="primary" class="mr-3 white--text" @click="addCodeToRoundRobin()"
+                 :disabled="!newCode.id">
             Add
           </v-btn>
         </v-card>
@@ -70,7 +71,7 @@
       </v-col>
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog"
-                                 @confirm="deleteCodeFromZone"
+                                 @confirm="deleteCodeFromRoundRobin"
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to remove this postal code: <strong>{{ itemToDeletePostalCode }}</strong>?
     </ConfirmationDialog>
@@ -83,7 +84,7 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
-    name: 'Codes',
+    name: 'PostalCodes',
     components: {ConfirmationDialog},
     data() {
       return {
@@ -95,10 +96,12 @@
         //per carlin 10-31-22 - users with edit should be able to delete postal codes from a RR
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
-        zoneId: this.$route.params.id,
+        roundRobinId: this.$route.params.id,
         dataLoading: true,
         addCode: false,
-        newCode: '',
+        codeDeleted: false,
+        newCode: {},
+        availablePostalCodes: [],
         codeSearch: '',
         codeHeaders: [
           {text: 'Postal Code', value: 'postalCode', show: true},
@@ -114,16 +117,37 @@
       }
     },
     created () {
-      this.getCodesForZone()
+      this.getCodesAssignedToRoundRobin()
+      this.getAvailablePostalCodes()
     },
     methods: {
+      reloadAvailable() {
+        if(this.codeDeleted) {
+          this.getAvailablePostalCodes()
+        }
+      },
       filterPostalCodes () {
         return this.postalCodes?.length ? this.postalCodes.filter(pc => { return !pc.archived}) : []
       },
-      async getCodesForZone () {
+      async getAvailablePostalCodes () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}/codes`)
+          const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}/availableCodes`)
+          this.availablePostalCodes = data
+          //this makes it reload the available list any time one has been deleted locally
+          this.codeDeleted = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getCodesAssignedToRoundRobin () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}/codes`)
           this.postalCodes = data
           this.dataLoading = false
           handleHidingGlobalLoader(this, status)
@@ -134,12 +158,13 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteCodeFromZone () {
+      async deleteCodeFromRoundRobin () {
         const code = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/postalCode/zone/code/${code.id}`)
+          const {status} = await deleteRequest(`/roundRobin/code/${code.id}`)
           code.archived = true
+          this.codeDeleted = true
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -149,19 +174,19 @@
         }
         this.closeDeleteDialog()
       },
-      async addCodeToZone () {
-        if(this.newCode?.toString()?.length === 5) {
+      async addCodeToRoundRobin () {
+        if(this.newCode.id) {
           this.showError = false
           this.errorMsg = ''
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
-            let params = {
-              postalCodeZoneId: this.zoneId,
-              postalCode: this.newCode
-            }
-            const {data, status} = await postRequest(`/postalCode/zone/addCode`, params)
+            // let params = {
+            //   postalCode:
+            // }
+            const {data, status} = await postRequest(`/roundRobin/${this.roundRobinId}/addCode`, this.newCode)
             this.postalCodes.push(data)
             this.addCode = false
+            this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== this.newCode.id)
             this.newCode = {}
             handleHidingGlobalLoader(this, status)
           } catch (e) {

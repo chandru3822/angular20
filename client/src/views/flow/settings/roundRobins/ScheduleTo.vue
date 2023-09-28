@@ -29,12 +29,12 @@
           <v-autocomplete v-model="newUserCompanyTimezoneId"
                           :items="companyTimezones"
                           label="Time Zone"
-                          v-if="zone.remote"
+                          v-if="roundRobin.remote"
                           item-text="timezone"
                           item-value="id"
                           attach
           ></v-autocomplete>
-          <v-btn color="primary" class="mr-3 mt-5 white--text" @click="addUserToZone(selectedUser)"
+          <v-btn color="primary" class="mr-3 mt-5 white--text" @click="addUserToRoundRobin(selectedUser)"
                  :disabled="!selectedUser.id">
             Add
           </v-btn>
@@ -71,7 +71,7 @@
             <span class="default-text-color">No available users</span>
           </template>
 
-          <template #item.timezone="{ item, index }" class="text-left timezone-column" v-if="zone.remote">
+          <template #item.timezone="{ item, index }" class="text-left timezone-column" v-if="roundRobin.remote">
                 <span v-if="!item.edit">{{item.timezone || '--'}}</span>
                 <v-autocomplete v-if="item.edit"
                                 v-model="item.companyTimezoneId"
@@ -170,7 +170,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromZone" @close-dialog="userToDelete = null">
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromRoundRobin" @close-dialog="userToDelete = null">
       Are you sure you want to delete this user: <strong>{{ userToDeleteName }}</strong>?
     </ConfirmationDialog>
   </v-container>
@@ -194,7 +194,7 @@ export default {
       //per carlin 10-31-22 - users with edit should be able to delete users from a RR
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
-      zoneId: this.$route.params.id,
+      roundRobinId: this.$route.params.id,
       dataLoading: true,
       selectedUser: {},
       users: [],
@@ -208,7 +208,7 @@ export default {
       totalManualAllocation: null,
       totalTargetLeadAllocation: null,
       totalPrescribedAllocation: null,
-      zone: {},
+      roundRobin: {},
       userHeaders: [],
       companyTimezones: [],
       userToDelete: null
@@ -217,16 +217,16 @@ export default {
   async created() {
     //had to add this to determine if zone is remote or not
     this.getScheduleToUsers()
-    await this.getZoneDetails()
+    await this.getRoundRobinDetails()
     this.userHeaders = [
       {text: 'Name', value: 'fullName', show: true},
-      {text: 'Timezone', value: 'timezone', show: this.zone.remote, width: 250},
+      {text: 'Timezone', value: 'timezone', show: this.roundRobin.remote, width: 250},
       {text: 'Prescribed Allocation', value: 'prescribedAllocation', show: true},
       {text: 'Manually Set Allocation', value: 'manuallySetAllocation', width: '175px', show: true},
       {text: 'Adjusted Allocation', value: 'targetLeadAllocation', show: true},
       {text: '', value: 'icons', show: true, align: 'end'},
     ]
-    if (this.zone?.remote) {
+    if (this.roundRobin?.remote) {
       this.getCompanyTimezones()
     }
   },
@@ -281,7 +281,7 @@ export default {
     async getScheduleToUsers() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleTo`)
+        const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}/scheduleTo`)
         this.scheduleToUsers = data
         this.dataLoading = false
         this.getTotalManualAllocation()
@@ -304,7 +304,7 @@ export default {
           r.manualAllocation = r.manualAllocationWhole ? r.manualAllocationWhole / 100 : null
         })
         if (updatedRows?.length > 0) {
-          const {data} = await putRequest(`/postalCode/zone/${this.zoneId}/userAllocation`, updatedRows)
+          const {data} = await putRequest(`/roundRobin/${this.roundRobinId}/userAllocation`, updatedRows)
           this.scheduleToUsers = data
           this.getTotalManualAllocation()
           if (this.is7oaksAdmin) {
@@ -319,11 +319,11 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteUserFromZone() {
+    async deleteUserFromRoundRobin() {
       const user = this.userToDelete
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/postalCode/zone/${this.zoneId}/user/${user.postalCodeZoneUserId}/delete`)
+        const {data, status} = await putRequest(`/roundRobin/${this.roundRobinId}/user/${user.roundRobinUserId}/delete`)
         this.scheduleToUsers = data
         this.getTotalManualAllocation()
         if (this.is7oaksAdmin) {
@@ -337,15 +337,15 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async addUserToZone(selected) {
+    async addUserToRoundRobin(selected) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {
-          postalCodeZoneId: this.zoneId,
+          roundRobinId: this.roundRobinId,
           userId: selected.id,
           companyTimezoneId: this.newUserCompanyTimezoneId
         }
-        const {data, status} = await postRequest(`/postalCode/zone/${this.zoneId}/saveScheduleToUser`, params)
+        const {data, status} = await postRequest(`/roundRobin/${this.roundRobinId}/saveScheduleToUser`, params)
         this.scheduleToUsers = data
         this.newUserCompanyTimezoneId = null
         this.getTotalManualAllocation()
@@ -366,7 +366,7 @@ export default {
       if (this.addUser) {
         this.usersLoading = true
         try {
-          const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/users`)
+          const {data} = await getRequest(`/roundRobin/${this.roundRobinId}/users`)
           this.users = data
           this.usersLoading = false
         } catch (e) {
@@ -376,11 +376,11 @@ export default {
         }
       }
     },
-    async getZoneDetails() {
+    async getRoundRobinDetails() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}`)
-        this.zone = data
+        const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}`)
+        this.roundRobin = data
         this.dataLoading = false
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -393,7 +393,7 @@ export default {
     async saveUserTimezone(user) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await putRequest(`/postalCode/zone/user/${user.postalCodeZoneUserId}`, user)
+        const {data, status} = await putRequest(`/roundRobin/user/${user.roundRobinUserId}`, user)
         user.timezone = data.timezone
         user.edit = false
         this.snackbar = getSnackbar('SUCCESS', 'User Updated')

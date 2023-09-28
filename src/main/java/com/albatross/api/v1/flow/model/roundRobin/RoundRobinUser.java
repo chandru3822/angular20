@@ -1,4 +1,4 @@
-package com.albatross.api.v1.flow.model.postalCode;
+package com.albatross.api.v1.flow.model.roundRobin;
 
 import com.albatross.api.v1.flow.model.UserPosition;
 import lombok.Data;
@@ -10,9 +10,9 @@ import java.util.List;
 @EqualsAndHashCode
 @Data
 @NoArgsConstructor
-public class PostalCodeZoneUser {
+public class RoundRobinUser {
 
-  private Long id, postalCodeZoneId, userId, postalCodeZoneUserTypeId, companyTimezoneId;
+  private Long id, roundRobinId, userId, roundRobinUserTypeId, companyTimezoneId;
   private String firstName, lastName, fullName, position, timezone, title, zoneName;
   private Boolean archived, schedulable, scheduler;
   private List<UserPosition> userPositions;
