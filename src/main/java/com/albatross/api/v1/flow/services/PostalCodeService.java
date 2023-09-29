@@ -43,10 +43,14 @@ public class PostalCodeService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("roundRobinId", postalCode.getRoundRobinId());
+    params.put("callGroupId", postalCode.getCallGroupId());
     params.put("placeName", postalCode.getPlaceName());
     params.put("notes", postalCode.getNotes());
     params.put("active", postalCode.getActive());
     params.put("disqualified", postalCode.getDisqualified());
+    params.put("selfGen", postalCode.getSelfGen());
+    params.put("insideSales", postalCode.getInsideSales());
+    params.put("salesPartners", postalCode.getSalesPartners());
     params.put("userId", user.trueUserId());
     Long id;
 
@@ -80,6 +84,7 @@ public class PostalCodeService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("metroAreaId", postalCodeZone.getMetroAreaId());
+    params.put("adderAmount", postalCodeZone.getAdderAmount());
     params.put("zoneName", postalCodeZone.getZoneName());
     params.put("userId", user.trueUserId());
     Long id;

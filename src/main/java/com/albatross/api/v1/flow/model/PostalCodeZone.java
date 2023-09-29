@@ -12,7 +12,8 @@ import java.util.List;
 public class PostalCodeZone {
 
   private Long id, metroAreaId;
-  private String zoneName;
+  private Double adderAmount;
+  private String zoneName, metroArea;
   private Boolean archived;
   private List<PostalCodeZonePostalCode> postalCodes;
 }

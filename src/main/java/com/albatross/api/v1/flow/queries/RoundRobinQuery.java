@@ -162,11 +162,7 @@ public class RoundRobinQuery {
       from flow.postal_code pc
       where pc.archived is false
       and pc.active is true
-      and pc.id in (select pc.id
-                        from flow.postal_code pc
-                        where pc.round_robin_id is null
-                          and pc.active is true
-                          and pc.archived is false)
+      and pc.round_robin_id is null
        """;
 
   //language=PostgreSQL

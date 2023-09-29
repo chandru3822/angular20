@@ -25,9 +25,19 @@
                 item-value="id"
                 item-text="roundRobinName"
                 clearable
+                hide-details
                 class="mt-5"
                 label="Round Robin"
                 v-model="postalCode.roundRobinId"
+            ></v-autocomplete>
+            <v-autocomplete
+              :items="callGroups"
+              item-value="id"
+              item-text="callGroupName"
+              clearable
+              class="mt-5"
+              label="Call Group"
+              v-model="postalCode.callGroupId"
             ></v-autocomplete>
             <v-checkbox label="Active"
                         class="default-text-color"
@@ -35,6 +45,15 @@
             <v-checkbox label="Disqualified"
                         class="default-text-color"
                         v-model="postalCode.disqualified"/>
+            <v-checkbox label="Self-Gen Only"
+                        class="default-text-color"
+                        v-model="postalCode.selfGen"/>
+            <v-checkbox label="Inside Sales"
+                        class="default-text-color"
+                        v-model="postalCode.insideSales"/>
+            <v-checkbox label="Sales Partners"
+                        class="default-text-color"
+                        v-model="postalCode.salesPartners"/>
             <v-textarea class="body-medium" hide-details
                         auto-grow
                         rows="4"
@@ -69,9 +88,15 @@
         postalCodeId: this.$route.params.id,
         postalCode: {},
         roundRobins: [],
+        callGroups: [],
       }
     },
     computed: {
+    },
+    async created () {
+      this.getPostalCode()
+      this.getRoundRobins()
+      this.getCallGroups()
     },
     methods: {
       async getPostalCode () {
@@ -103,6 +128,19 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
+      async getCallGroups () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/callGroup`, 'blueraven')
+          this.callGroups = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       async savePostalCode () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -118,10 +156,6 @@
         }
       },
     },
-    async created () {
-      this.getPostalCode()
-      this.getRoundRobins()
-    }
   }
 </script>
 

@@ -15,9 +15,26 @@
         </v-toolbar>
         <v-container>
           <v-card class="square-card" elevation="0">
-            <v-text-field
+            <v-text-field class="mt-4"
               v-model="postalCodeZone.zoneName"
               label="Zone Name"
+              hide-details
+            ></v-text-field>
+            <v-autocomplete v-model="postalCodeZone.metroAreaId"
+                            :items="metroAreas"
+                            class="mt-4"
+                            label="Metro Area"
+                            clearable
+                            hide-details
+                            item-text="name"
+                            item-value="id"
+                            autocomplete="off"
+                            attach
+            ></v-autocomplete>
+            <v-text-field  class="my-4"
+              v-model.number="postalCodeZone.adderAmount"
+              label="Adder Amount"
+              type="number"
               hide-details
             ></v-text-field>
             <v-btn class="my-3" @click="[addPostalCode = !addPostalCode, getAvailablePostalCodes()]"
@@ -94,6 +111,8 @@
         postalCodeZone: {},
         selectedPostalCode: {},
         availablePostalCodes: [],
+        metroAreas: [],
+        metroAreaCustomFieldId: 185,
         headers: [
           {text: 'Postal Code', value: 'postalCode', show: true},
           {text: '', value: 'icons', show: true},
@@ -105,7 +124,22 @@
         return this.postalCodeZone?.postalCodes?.filter(o => !o.archived)
       }
     },
+    async created () {
+      this.getMetroAreas()
+      this.getPostalCodeZone()
+    },
     methods: {
+      async getMetroAreas () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/customField/${this.metroAreaCustomFieldId}`)
+          this.metroAreas = data?.listOfValues
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
       async getPostalCodeZone () {
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -195,9 +229,6 @@
         }
       },
     },
-    async created () {
-      this.getPostalCodeZone()
-    }
   }
 </script>
 

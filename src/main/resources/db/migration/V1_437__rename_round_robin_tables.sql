@@ -64,13 +64,13 @@ ALTER TABLE IF EXISTS flow.postal_code_zone_postal_code
 
 --DO THE METRO AREA STUFF
 alter table flow.postal_code
-    add column if not exists metro_area_id bigint references flow.list_of_value(id);
-CREATE INDEX if not exists pc_metro_area_id_idx ON flow.postal_code (metro_area_id);
+    add column if not exists temp_metro_area_id bigint references flow.list_of_value(id);
+-- CREATE INDEX if not exists pc_metro_area_id_idx ON flow.postal_code (temp_metro_area_id);
 
 update flow.postal_code pc
-set metro_area_id = ( select mapc.metro_area_id
+set temp_metro_area_id = ( select mapc.metro_area_id
                        from brs.metro_area_postal_code mapc
-                       where mapc.postal_code = pc.postal_code);
+                       where mapc.postal_code = pc.temp_metro_area_id);
 
 --DROP THE BRS.metro_area_postal_code TABLE...BUT RENAMING IT FOR NOW IN CASE I NEED IT AGAIN
 ALTER TABLE IF EXISTS flow.metro_area_postal_code
@@ -204,3 +204,33 @@ CREATE TABLE if not exists flow.postal_code_zone_postal_code
 
 CREATE INDEX if not exists pczpc_postal_code_zone_id_idx ON flow.postal_code_zone_postal_code (postal_code_zone_id);
 CREATE INDEX if not exists pczpc_postal_code_id_idx ON flow.postal_code_zone_postal_code (postal_code_id);
+
+-- adder amount
+alter table flow.postal_code_zone
+add column if not exists adder_amount numeric(10,2);
+
+-- call group stuff
+alter table flow.postal_code
+add column if not exists call_group_id bigint references brs.call_group(id);
+CREATE INDEX if not exists pc_call_group_id_idx ON flow.postal_code (call_group_id);
+
+--UPDATE THE POSTAL CODE TABLE TO POINT TO THE CALL GROUP TABLE
+update flow.postal_code pc
+set call_group_id = ( select cg.call_group_id
+                      from brs.call_group_postal_code cg
+                        inner join brs.call_group cg2 on cg.call_group_id = cg2.id
+                      where cg.postal_code = pc.postal_code
+                        and cg2.archived is false
+                        and cg.archived is false);
+
+--DROP THE call_group_postal_code TABLE...BUT RENAMING IT FOR NOW IN CASE I NEED IT AGAIN
+ALTER TABLE IF EXISTS brs.call_group_postal_code
+  RENAME TO deprecated_call_group_postal_code;
+
+--other checkbox fields for v2 stuff
+alter table flow.postal_code
+  add column if not exists self_gen boolean not null default false;
+alter table flow.postal_code
+  add column if not exists inside_sales boolean not null default false;
+alter table flow.postal_code
+  add column if not exists sales_partners boolean not null default false;

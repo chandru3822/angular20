@@ -85,7 +85,7 @@ public class GenesysQuery {
 
     caller_id as (select min(cg.call_group_name) call_group_name, min(cgpn.phone_number) phone_number, cgpc.postal_code
                   from brs.call_group cg
-                           left join brs.call_group_postal_code cgpc on cgpc.call_group_id = cg.id
+                           left join flow.postal_code cgpc on cgpc.call_group_id = cg.id
                            left join brs.call_group_phone_number cgpn on cgpn.call_group_id = cg.id
                   where cg.company_id = 3
                     AND cgpc.archived = false

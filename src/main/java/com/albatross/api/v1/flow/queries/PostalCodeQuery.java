@@ -8,7 +8,10 @@ public class PostalCodeQuery {
              postal_code,
              place_name,
              round_robin_id,
-             metro_area_id,
+             disqualified,
+             self_gen,
+             inside_sales,
+             sales_partners,
              archived,
              active
       from flow.postal_code pc
@@ -23,9 +26,12 @@ public class PostalCodeQuery {
              postal_code,
              place_name,
              round_robin_id,
+             call_group_id,
              notes,
-             metro_area_id,
              disqualified,
+             self_gen,
+             inside_sales,
+             sales_partners,
              archived,
              active
       from flow.postal_code pc
@@ -37,9 +43,13 @@ public class PostalCodeQuery {
   public final static String updatePostalCode = """
       update flow.postal_code
         set round_robin_id = :roundRobinId,
+            call_group_id = :callGroupId,
             place_name =  :placeName,
             notes = :notes,
             disqualified = :disqualified,
+            self_gen = :selfGen,
+            inside_sales = :insideSales,
+            sales_partners = :salesPartners,
             active = :active,
             date_modified = now(),
             modified_by_id = :userId
@@ -68,6 +78,7 @@ public class PostalCodeQuery {
       select id,
              zone_name,
              metro_area_id,
+             adder_amount,
              archived,
              COALESCE((SELECT array_to_json(array_agg(rows))
                 from (SELECT pczpc.id,
@@ -88,6 +99,7 @@ public class PostalCodeQuery {
       update flow.postal_code_zone
         set zone_name = :zoneName,
             metro_area_id = :metroAreaId,
+            adder_amount = :adderAmount,
             date_modified = now(),
             modified_by_id = :userId
       where id = :id
@@ -95,8 +107,8 @@ public class PostalCodeQuery {
 
   //language=PostgreSQL
   public final static String insertPostalCodeZone = """
-      insert into flow.postal_code_zone(company_id, zone_name, created_by_id, modified_by_id, metro_area_id)
-      values (:companyId, :zoneName, :userId, :userId, :metroAreaId)
+      insert into flow.postal_code_zone(company_id, zone_name, created_by_id, modified_by_id, metro_area_id, adder_amount)
+      values (:companyId, :zoneName, :userId, :userId, :metroAreaId, :adderAmount)
   """;
 
   //language=PostgreSQL
