@@ -26,6 +26,7 @@ public class PostalCodeQuery {
              postal_code,
              place_name,
              round_robin_id,
+             postal_code_zone_id,
              call_group_id,
              notes,
              disqualified,
@@ -44,6 +45,7 @@ public class PostalCodeQuery {
       update flow.postal_code
         set round_robin_id = :roundRobinId,
             call_group_id = :callGroupId,
+            postal_code_zone_id = :postalCodeZoneId,
             place_name =  :placeName,
             notes = :notes,
             disqualified = :disqualified,

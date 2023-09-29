@@ -42,7 +42,7 @@ alter table flow.postal_code
 add column if not exists round_robin_id bigint references flow.round_robin(id);
 CREATE INDEX if not exists pc_round_robin_id_idx ON flow.postal_code (round_robin_id);
 
---ADD THE MISSING POSTAL CODES THEY HAD MANUALLY ADDED
+--ADD THE MISSING POSTAL CODES THEY HAD MANUALLY ADDED from round robin stuff
 insert into flow.postal_code(country_code, postal_code, place_name, admin_name1, admin_code1, admin_name2, admin_code2, admin_name3, admin_code3, latitude, longitude, accuracy, round_robin_id)
 select 'US', pc.postal_code, 'MIGRATED - PLS NAME', 'MIGRATED', 'MIGRATED', 'MIGRATED', NULL, NULL, NULL, NULL, NULL, NULL, NULL
 from flow.postal_code_zone_postal_code pc

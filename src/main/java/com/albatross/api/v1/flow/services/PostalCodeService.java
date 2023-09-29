@@ -44,6 +44,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("roundRobinId", postalCode.getRoundRobinId());
     params.put("callGroupId", postalCode.getCallGroupId());
+    params.put("postalCodeZoneId", postalCode.getPostalCodeZoneId());
     params.put("placeName", postalCode.getPlaceName());
     params.put("notes", postalCode.getNotes());
     params.put("active", postalCode.getActive());

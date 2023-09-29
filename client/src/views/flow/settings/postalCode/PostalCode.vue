@@ -21,6 +21,16 @@
               hide-details
             ></v-text-field>
             <v-autocomplete
+              :items="zones"
+              item-value="id"
+              item-text="zoneName"
+              clearable
+              hide-details
+              class="mt-5"
+              label="Postal Code Zone"
+              v-model="postalCode.postalCodeZoneId"
+            ></v-autocomplete>
+            <v-autocomplete
                 :items="roundRobins"
                 item-value="id"
                 item-text="roundRobinName"
@@ -87,6 +97,7 @@
         userId: this.$store.state.user.details.id,
         postalCodeId: this.$route.params.id,
         postalCode: {},
+        zones: [],
         roundRobins: [],
         callGroups: [],
       }
@@ -96,6 +107,7 @@
     async created () {
       this.getPostalCode()
       this.getRoundRobins()
+      this.getZones()
       this.getCallGroups()
     },
     methods: {
@@ -120,6 +132,19 @@
         try {
           const {data, status} = await getRequest(`/roundRobin`)
           this.roundRobins = data
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getZones () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/postalCode/zones`)
+          this.zones = data
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
