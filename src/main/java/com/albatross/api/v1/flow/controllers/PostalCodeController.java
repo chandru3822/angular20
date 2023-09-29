@@ -3,13 +3,11 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.PostalCode;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
-import com.albatross.api.v1.flow.model.PostalCodeZonePostalCode;
 import com.albatross.api.v1.flow.services.PostalCodeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -60,7 +58,7 @@ public class PostalCodeController {
   }
 
   @PostMapping(value = "/zone/{id}/postalCode", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<PostalCodeZonePostalCode> savePostalCodeToZone(@PathVariable Long id,
+  public Optional<PostalCode> savePostalCodeToZone(@PathVariable Long id,
                                                                  @RequestBody PostalCode postalCode) {
     return postalCodeService.savePostalCodeToZone(id, postalCode);
   }

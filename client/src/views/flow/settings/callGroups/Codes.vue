@@ -171,9 +171,10 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           this.newCode.callGroupId = this.callGroupId
-          console.log('randalogger',this.newCode)
           const {data, status} = await postRequest(`/callGroup/addCode`, this.newCode, 'blueraven')
           this.postalCodes.push(data)
+          console.log('randalogger', data.id)
+          this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
           this.addCode = false
           this.newCode = {}
           handleHidingGlobalLoader(this, status)

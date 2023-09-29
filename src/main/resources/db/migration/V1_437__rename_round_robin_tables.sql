@@ -175,36 +175,6 @@ where ac.id in (1,2,3,4)
       and access_control_id = ac.id
 );
 
-
---postal code zone postal code stuff
-CREATE TABLE if not exists flow.postal_code_zone_postal_code
-(
-    id             bigserial NOT NULL,
-    postal_code_zone_id     bigint not null,
-    postal_code_id   bigint not null,
-    date_created   timestamp without time zone DEFAULT now(),
-    date_modified  timestamp without time zone DEFAULT now(),
-    created_by_id  integer   not null,
-    modified_by_id integer,
-    archived       boolean   not null          default false,
-    CONSTRAINT flow_postal_code_zone_postal_code_pk PRIMARY KEY (id),
-    CONSTRAINT flow_pczpc_zone_id_fk FOREIGN KEY (postal_code_zone_id)
-        REFERENCES flow.postal_code_zone (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT flow_pczpc_postal_code_id_fk FOREIGN KEY (postal_code_id)
-        REFERENCES flow.postal_code (id) MATCH SIMPLE
-        ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT flow_pczpc_created_by_id_fk FOREIGN KEY (created_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION,
-    CONSTRAINT flow_pczpc_modified_by_id_fk FOREIGN KEY (modified_by_id)
-        REFERENCES flow.user (id) MATCH SIMPLE
-        ON UPDATE NO ACTION ON DELETE NO ACTION
-);
-
-CREATE INDEX if not exists pczpc_postal_code_zone_id_idx ON flow.postal_code_zone_postal_code (postal_code_zone_id);
-CREATE INDEX if not exists pczpc_postal_code_id_idx ON flow.postal_code_zone_postal_code (postal_code_id);
-
 -- adder amount
 alter table flow.postal_code_zone
 add column if not exists adder_amount numeric(10,2);
@@ -234,3 +204,8 @@ alter table flow.postal_code
   add column if not exists inside_sales boolean not null default false;
 alter table flow.postal_code
   add column if not exists sales_partners boolean not null default false;
+
+-- postal code zone id
+alter table flow.postal_code
+add column if not exists postal_code_zone_id bigint references flow.postal_code_zone(id);
+CREATE INDEX if not exists pc_postal_code_zone_id_idx ON flow.postal_code (postal_code_zone_id);

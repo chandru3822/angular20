@@ -163,6 +163,7 @@ public class RoundRobinQuery {
       where pc.archived is false
       and pc.active is true
       and pc.round_robin_id is null
+      order by postal_code
        """;
 
   //language=PostgreSQL

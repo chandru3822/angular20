@@ -185,6 +185,7 @@
             // }
             const {data, status} = await postRequest(`/roundRobin/${this.roundRobinId}/addCode`, this.newCode)
             this.postalCodes.push(data)
+            this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
             this.addCode = false
             this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== this.newCode.id)
             this.newCode = {}

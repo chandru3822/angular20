@@ -15,5 +15,5 @@ public class PostalCodeZone {
   private Double adderAmount;
   private String zoneName, metroArea;
   private Boolean archived;
-  private List<PostalCodeZonePostalCode> postalCodes;
+  private List<PostalCode> postalCodes;
 }

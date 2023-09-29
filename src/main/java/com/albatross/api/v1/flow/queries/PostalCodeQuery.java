@@ -81,14 +81,13 @@ public class PostalCodeQuery {
              adder_amount,
              archived,
              COALESCE((SELECT array_to_json(array_agg(rows))
-                from (SELECT pczpc.id,
-                             pczpc.postal_code_id as "postalCodeId",
+                from (SELECT pc.id,
                              pc.postal_code as "postalCode",
                              pc.active,
                              pc.archived
-                      FROM flow.postal_code_zone_postal_code pczpc
-                           INNER JOIN flow.postal_code pc on pc.id = pczpc.postal_code_id
-                      WHERE pczpc.archived is false
+                      FROM flow.postal_code pc
+                      WHERE pc.archived is false
+                        and pc.postal_code_zone_id = pcz.id
                       ORDER BY pc.postal_code) rows), '[]') as postalCodes
       from flow.postal_code_zone pcz
       where pcz.id = :id
@@ -112,15 +111,18 @@ public class PostalCodeQuery {
   """;
 
   //language=PostgreSQL
-  public final static String insertPostalCodeZonePostalCode = """
-      insert into flow.postal_code_zone_postal_code(postal_code_id, postal_code_zone_id, created_by_id, modified_by_id)
-      values (:postalCodeId, :zoneId, :userId, :userId)
+  public final static String addPostalCodeToZone = """
+      update flow.postal_code
+      set postal_code_zone_id = :zoneId,
+        modified_by_id = :userId,
+        date_modified = now()
+    where id = :postalCodeId
   """;
 
   //language=PostgreSQL
   public final static String deletePostalCodeFromZone = """
-    update flow.postal_code_zone_postal_code
-    set archived = true,
+    update flow.postal_code
+    set postal_code_zone_id = null,
         modified_by_id = :userId,
         date_modified = now()
     where id = :id
@@ -130,13 +132,11 @@ public class PostalCodeQuery {
   public final static String getOnePostalCodeToZone = """
       select id,
              postal_code_zone_id,
-             postal_code_id,
-             date_created,
+             postal_code,
              date_modified,
-             created_by_id,
              modified_by_id,
              archived
-      from flow.postal_code_zone_postal_code
+      from flow.postal_code
       where id = :id
   """;
 
@@ -148,11 +148,7 @@ public class PostalCodeQuery {
     from flow.postal_code pc
     where pc.active is true
     and pc.archived is false
-    and not exists (
-        select id
-        from flow.postal_code_zone_postal_code pczpc
-        where pczpc.archived is false
-          and pczpc.postal_code_id = pc.id
-    )
+    and pc.postal_code_zone_id is null
+    order by postal_code
   """;
 }

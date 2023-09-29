@@ -171,19 +171,6 @@
           }
         }
       },
-      // async getRoundRobins () {
-      //   this.$store.commit(AppMutations.SET_LOADING, true)
-      //   try {
-      //     const {data, status} = await getRequest(`/roundRobin`)
-      //     this.roundRobins = data
-      //     handleHidingGlobalLoader(this, status)
-      //   } catch (e) {
-      //     console.error('*** ERROR ***', e)
-      //     this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-      //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      //     this.$store.commit(AppMutations.SET_LOADING, false)
-      //   }
-      // },
       async savePostalCodeZone () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -203,6 +190,8 @@
         try {
           const {data, status} = await postRequest(`/postalCode/zone/${this.postalCodeZoneId}/postalCode`, this.selectedPostalCode)
           this.postalCodeZone.postalCodes.push(data)
+          this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
+          this.selectedPostalCode = {}
           this.snackbar = getSnackbar('SUCCESS', 'Postal Code Saved to Zone')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
