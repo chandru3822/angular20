@@ -103,12 +103,14 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
-    <ThreeColumnLayoutMobile v-if="isMobile">
-      <template v-slot:header>
-      <v-toolbar flat color="grey lighten-2" :class="{'project-header': project && !project.tags || project.tags.length === 0,
-                                                    'project-header-with-tags': project && project.tags && project.tags.length > 0,
-                                                    'pt-2': project && project.tags && project.tags.length > 0}"
-                 v-if="!projectLoading && project && project.id">
+    <ThreeColumnLayoutMobile v-if="isMobile"
+                             :menu-items="[{itemName:'Overview'}, {itemName:'Project Details', subMenuSlot: true}, {itemName:'Active Process Steps'}, {itemName:'Active Events'}, ]"
+                             headerHeight="64px"
+    >
+      <template v-slot:subMenu_1>
+        <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
+      </template>
+      <template v-slot:header-contents>
         <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
                          :class="{'mt-4': project.tags && project.tags.length > 0}">
           <div>
@@ -174,8 +176,18 @@
             </v-menu>
           </div>
         </div>
-      </v-toolbar>
-    </template>
+      </template>
+      <template v-slot:main-column>
+        <router-view @refresh-upcoming-events="updateEventKey++"
+                     @refresh-upcoming-pps="updatePpsKey++"
+                     @refresh-project-status="getUpdatedProjectStatus()"
+                     ref="childComponent"
+                     :project-tab="selectedTab"
+                     v-if="project && project.id" class="router-view"
+                     :project="project"
+                     :milestones="milestones"
+        />
+      </template>
     </ThreeColumnLayoutMobile>
     <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
       <template v-slot:header>

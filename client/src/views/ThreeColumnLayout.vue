@@ -30,7 +30,7 @@
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit">
+        <div v-if="!$store.state.project.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
         <slot name="left-column"></slot>
         </div>
       </v-col>
@@ -197,6 +197,12 @@ export default {
 .project-section {
   max-height: 100%;
 }
+
+
+.left-panel-scrollable-area {
+  height: calc(100% - 30px);
+}
+
 
 .project-section.left-column,
 .project-section.center-panel {
