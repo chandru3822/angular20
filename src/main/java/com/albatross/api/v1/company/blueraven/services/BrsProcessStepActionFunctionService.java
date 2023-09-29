@@ -75,11 +75,14 @@ public class BrsProcessStepActionFunctionService {
 
   // inverters should maybe be an enum if they start to get used anywhere else in the codebase
   private String getMappedAuroraInverter(String inverter) {
-    var inverterMap = Map.of("IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
+    var inverterMap = Map.of(
+      "IQ 7+ (240V)", "Enphase IQ7+ Microinverters",
       "IQ7-60-2-US (240V)", "Enphase IQ7 Microinverters",
       "IQ7A-72-2-US (240V)", "Enphase IQ7A Microinverters",
       "IQ8PLUS-72-2-US", "Enphase IQ8+ Microinverters",
-      "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters");
+      "IQ7X-96-2-US (240V)", "Enphase IQ7X Microinverters",
+      "IQ8A-72-2-US", "Enphase IQ8A Microinverters"
+    );
     return inverterMap.getOrDefault(inverter, null);
   }
 
