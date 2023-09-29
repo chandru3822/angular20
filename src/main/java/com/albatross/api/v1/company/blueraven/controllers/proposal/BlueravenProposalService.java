@@ -292,9 +292,9 @@ public class BlueravenProposalService {
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
     return proposal.getCustomFieldGroups().stream()
-                   .flatMap(cfg -> cfg.getCustomFieldValues().stream())
-                   .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
-                   .findFirst();
+      .flatMap(cfg -> cfg.getCustomFieldValues().stream())
+      .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(cfgaId))
+      .findFirst();
   }
 
   private void saveProjectDiscountAmount(Long projectId, BigDecimal amount) {
@@ -307,22 +307,21 @@ public class BlueravenProposalService {
 
   public Optional<Proposal> addProposal(Proposal proposal, @NonNull UserAccountDetails currentUser) {
 
+    Long proposalVersionId = getProposalVersion(proposal.getProjectProcessStepId(), currentUser.getTrueUserId());
+
     Map<String, Object> params = new HashMap<>();
-    params.put("companyId", currentUser.getCompanyId());
-
-    Long proposalVersionId =
-      sqlCache.queryForObjectBySql(ProposalQuery.getCurrentVersion, params, Long.class);
-
-    if (proposalVersionId == null) {
-      throw new ApiException("No published proposals available");
-    }
-
     params.put("proposalVersionId", proposalVersionId);
     params.put("projectProcessStepId", proposal.getProjectProcessStepId());
     params.put("userId", currentUser.getId());
 
     Long id = sqlCache.updateBySqlReturningId(ProposalQuery.insert, params, "id").longValue();
     return getProposal(id);
+  }
+
+  private Long getProposalVersion(Long processStepId, Long currentUserId) {
+    Map<String, Object> params = Map.of("ppsId", processStepId, "currentUserId", currentUserId);
+    return sqlCache.queryForObjectOptionalBySql(ProposalQuery.findVersionByProjectProcessStep, params, Long.class)
+      .orElseThrow(() -> new ApiException("No published proposals available"));
   }
 
   public Optional<ProposalTemplate> getProposalTemplate(Long proposalId, Long templateId, ProposalGeneratedType generatedType, boolean isDebug) {

@@ -1257,7 +1257,7 @@ BEGIN
 
   v_no_ancillary_total_loan_amount = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
                                        coalesce(v_equipment_inverter_adder, 0) +
-                                       coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_storage_adder, 0) +
+                                       coalesce(v_equipment_panel_adder, 0) +
                                        coalesce(v_unapproved_zip_code_adder, 0) +
                                        coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
                                        coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_promotion_cost, 0) +
@@ -1538,7 +1538,35 @@ BEGIN
       (284.00::numeric/ (1 - v_dealer_fee)));
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
-  v_required_down_payment =
+  if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
+
+    v_required_down_payment =
+                              greatest(
+                                  (
+                                      (((((coalesce(v_no_ancillary_total_loan_amount, 0) -
+                                           coalesce(v_above_line_rebate, 0) -
+                                           case
+                                             when v_product_id = 293 then (coalesce(v_required_down_payment, 0) +
+                                                                           (coalesce(v_required_down_payment, 0)
+                                                                             * v_initial_payment_factor * 18) /
+                                                                           ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
+                                             else coalesce(v_required_down_payment, 0) end -
+                                           case
+                                             when v_product_id = 293 then (coalesce(v_down_payment_amount, 0) *
+                                                                           v_initial_payment_factor * 18) /
+                                                                          ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+                                             else 0::numeric end) / (1 - v_dealer_fee)) -
+                                         coalesce(v_other_adder_and_discount_amount, 0) +
+                                         (284.00::numeric / (1 - v_dealer_fee)) -
+                                         coalesce(v_admin_discount, 0)) /
+                                        (v_system_size * 1000)) -
+                                       v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
+                                    )*(1-v_dealer_fee)
+                                , 0);
+  end if;
+  raise notice 'v_required_down_payment first one = %',v_required_down_payment;
+
+    v_required_down_payment = coalesce(v_required_down_payment,0) +
     greatest(
       (
           (
@@ -1557,7 +1585,16 @@ BEGIN
                 )
             ) / (1-v_non_solar_cap)
         )
-      ,0);
+      ,0,
+      (((        --this block is ancillary cost
+          coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+          coalesce(v_structural_upgrade_cost, 0)::numeric +
+          coalesce(v_reroof_cost, 0)::numeric +
+          coalesce(v_tree_trimming_cost, 0)::numeric +
+          coalesce(v_trenching_cost, 0)::numeric +
+          coalesce(v_ac_unit_relocation_cost, 0)::numeric
+        )/(1-v_dealer_fee))-(v_system_size*1000*v_maximum_dollar_per_watt_for_solar))*(1-v_dealer_fee));
+
 
   raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
 
@@ -1570,30 +1607,6 @@ BEGIN
                                   )
                                 , 0);
     raise notice 'v_required_down_payment_before_$/Watt_cap = %',v_required_down_payment;
-  elsif v_number_of_batteries = 0 and v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
-    v_required_down_payment = coalesce(v_required_down_payment, 0) +
-                              greatest(
-                                (
-                                    (((((coalesce(v_no_ancillary_total_loan_amount, 0) -
-                                        coalesce(v_above_line_rebate, 0) -
-                                        case
-                                          when v_product_id = 293 then (coalesce(v_required_down_payment, 0) +
-                                                                        (coalesce(v_required_down_payment, 0)
-                                                                          * v_initial_payment_factor * 18) /
-                                                                        ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
-                                          else coalesce(v_required_down_payment, 0) end -
-                                        case
-                                          when v_product_id = 293 then (coalesce(v_down_payment_amount, 0) *
-                                                                        v_initial_payment_factor * 18) /
-                                                                       ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
-                                          else 0::numeric end) / (1 - v_dealer_fee)) -
-                                      coalesce(v_other_adder_and_discount_amount, 0) +
-                                      (284.00::numeric / (1 - v_dealer_fee)) -
-                                      coalesce(v_admin_discount, 0)) /
-                                      (v_system_size * 1000)) -
-                                     v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
-                                  )*(1-v_dealer_fee)
-                                , 0);
   end if;
 
 

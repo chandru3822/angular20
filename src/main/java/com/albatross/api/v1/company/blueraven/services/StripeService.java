@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.stripe.Stripe;
 import com.stripe.model.LineItem;
 import com.stripe.model.Price;
@@ -76,9 +77,12 @@ public class StripeService {
                         .putAllMetadata(metadataMap)
                         .build();
 
+                //set success url
+                String successUrl = frontEndHostUrl + "/stripeSuccess?projectId=" + projectId + "&sessionId={CHECKOUT_SESSION_ID}";
+
                 //populate the session
                 SessionCreateParams sessionParams = SessionCreateParams.builder()
-                        .setSuccessUrl(frontEndHostUrl + "/stripeSuccess")
+                        .setSuccessUrl(successUrl)
                         .addLineItem(lineItem)
                         .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                         .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -99,5 +103,23 @@ public class StripeService {
         }
 
         return null;
+    }
+
+    public void setStripePaymentId(String stripeSessionId, Long projectId) {
+      //the checkout success page can only return the session id.
+      //with that id we need to get the payment id then set that in a custom field on the project (pps?)
+      try {
+        Stripe.apiKey = stripeApiToken;
+
+        Session session = Session.retrieve(stripeSessionId);
+        if(null != session.getPaymentIntent() && null != projectId) {
+          //if there is a payment id then save it to the process step it came from
+          final Map<String, Object> params = Map.of("projectId", projectId, "userId", 99999999,
+            "cfgaId", 26191, "value", session.getPaymentIntent());
+          sqlCache.queryBySql(CustomFieldValueQuery.updateValueUsingFunction, params, String.class);
+        }
+      } catch (StripeException e) {
+        e.printStackTrace();
+      }
     }
 }
