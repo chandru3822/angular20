@@ -798,6 +798,9 @@
         await this.changeImageFilter(true);
        },
       debounceGetUsers: debounce( function () {
+        if(this.filters.search == null){
+          this.filters.search = '';
+        }
         this.getUsers(true)
       }, 500),
       async getAllUsers () {
