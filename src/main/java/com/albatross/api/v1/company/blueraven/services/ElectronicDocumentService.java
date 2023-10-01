@@ -64,6 +64,7 @@ public class ElectronicDocumentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     Optional<String> queryStr;
+    Optional<String> envQueryStr = null;
     JSONArray pandaDocs = new JSONArray();
 
     if (docType == PERMITTING_DOC_TYPE) {
@@ -73,6 +74,12 @@ public class ElectronicDocumentService {
               ElectronicDocumentQuery.getAhjQueryStr,
               params,
               new SingleColumnRowMapper<>(String.class));
+
+      envQueryStr =
+        sqlCache.getBySql(
+          ElectronicDocumentQuery.getEnvQueryStr,
+          params,
+          new SingleColumnRowMapper<>(String.class));
     } else if (docType == UTILITY_DOC_TYPE) {
       // Get the utility document templates
       queryStr =
@@ -90,6 +97,17 @@ public class ElectronicDocumentService {
         pandaDocs = pandaDocService.findTemplatesByName(queryStr.get());
       } catch (Exception e) {
         log.error("ELECTRONIC: find templates error={}", e.getMessage());
+      }
+    }
+    // For Permitting case, append environmental forms
+    if (envQueryStr != null && envQueryStr.isPresent()) {
+      try {
+        JSONArray envDocs = pandaDocService.findTemplatesByName(envQueryStr.get());
+        for (int i = 0; i < envDocs.length(); i++) {
+          pandaDocs.put(envDocs.get(i));
+        }
+      } catch (Exception e) {
+        log.error("ELECTRONIC: find env templates error={}", e.getMessage());
       }
     }
 

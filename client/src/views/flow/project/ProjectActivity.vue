@@ -110,7 +110,7 @@
                      :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
                      class="text-capitalize my-4 fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
-                     @click="scrollToTop"
+                     @click="selectNotesActivityView"
               >
                 Timeline
               </v-btn>
@@ -118,7 +118,7 @@
                      :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
                      class="text-capitalize  fix-toggle-opacity body-medium"
                      style="width: 50% !important;"
-                     @click="scrollToTop"
+                     @click="selectNotesActivityView"
               >
                 Topic
               </v-btn>
@@ -428,7 +428,7 @@ export default {
       conversationIsLoading: true,
       toggleFocused: 0,
       toggleFocusedXs: 0,
-      toggleTimelineView: 0,
+      toggleTimelineView: this.$store.state.project.notesActivityView,
     }
   },
   created() {
@@ -500,6 +500,14 @@ export default {
         this.collapseSide()
         this.$emit('openRight')
       }
+    },
+    selectNotesActivityView(){
+      if(this.toggleTimelineView === 0){
+        this.$store.commit(ProjectMutations.SET_NOTES_ACTIVITY_VIEW, 1)
+      } else {
+        this.$store.commit(ProjectMutations.SET_NOTES_ACTIVITY_VIEW, 0)
+      }
+      this.scrollToTop()
     },
     scrollToTop(){
       //have to get ref of something not stuck behind a v-if, the query down to the actual element we want
