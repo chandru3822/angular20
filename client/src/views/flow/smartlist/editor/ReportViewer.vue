@@ -50,6 +50,7 @@
 
 import { computed, getCurrentInstance, watch } from 'vue'
 import { logError, postRequest, requestInterceptor, responseInterceptor, UUID } from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
 import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
 import axios from 'axios'
@@ -101,6 +102,7 @@ const isUpdateQueued = ref(false)
 watch(
   () => [props.report, props.fields, props.requirements],
   async ([newReport, newFields, newRequirements], [oldReport, oldFields, oldRequirements]) => {
+    store.commit(AppMutations.SET_LOADING, true)
 
     if (isDataLoading.value) {
       return
@@ -148,6 +150,7 @@ const processQueue = async () => {
   } catch (e) {
     //@TODO: #smartlistsv2 - Frontend needs to know backend message here. Want a better way
     const errMessage = e.response.data.message
+    store.commit(AppMutations.SET_LOADING, false)
     if (errMessage.includes('An event smartlist must have at least 1 event type column')) {
       snackbar('ERROR', errMessage)
     } else {
@@ -155,6 +158,7 @@ const processQueue = async () => {
     }
   } finally {
     isDataLoading.value = false
+    store.commit(AppMutations.SET_LOADING, false)
     if (isUpdateQueued.value) {
       processQueue()
     }
