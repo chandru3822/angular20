@@ -475,7 +475,8 @@ BEGIN
            round(v_net_system_cost_115_offset_low_month_pmt),
            round(v_net_cash_price_for_100_percent_offset),
            round(v_net_cash_price_for_85_percent_offset),
-           round(v_net_cash_price_for_115_percent_offset);
+           round(v_net_cash_price_for_115_percent_offset),
+           v_battery_price;
 
 END
 $BODY$
