@@ -3,7 +3,7 @@
          v-on="on"
          :class="{'not-clickable': !clickable }"
          :outlined="currentStatusId !== milestone.id && milestone.btnColor === 'grey'"
-         :color="currentStatusId  === milestone.id ? 'blue' : milestone.btnColor"
+         :color="currentStatusId  === milestone.id ? 'primary lighten-5' : milestone.btnColor"
          elevation="0">
 
     <v-icon :color="currentStatusId  === milestone.id ? 'white' : milestone.iconColor">{{milestone.iconTag || 'blank'}}</v-icon>
