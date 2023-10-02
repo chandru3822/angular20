@@ -102,7 +102,6 @@ const isUpdateQueued = ref(false)
 watch(
   () => [props.report, props.fields, props.requirements],
   async ([newReport, newFields, newRequirements], [oldReport, oldFields, oldRequirements]) => {
-    store.commit(AppMutations.SET_LOADING, true)
 
     if (isDataLoading.value) {
       return
@@ -136,6 +135,7 @@ const headers = computed(() => {
 
 const processQueue = async () => {
   try {
+    store.commit(AppMutations.SET_LOADING, true)
     isDataLoading.value = true
     isUpdateQueued.value = false
     reportData.value = []
