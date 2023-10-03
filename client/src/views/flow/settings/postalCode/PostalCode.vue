@@ -7,6 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text @click="savePostalCode"
+                   :disabled="!postalCode.placeName || !postalCode.stateId"
                    color="primary" v-if="$store.getters.userHasFeatureAccessLevel('POSTAL_CODE', 'EDIT')">
               <v-icon>save</v-icon>
               Save
@@ -18,6 +19,7 @@
             <v-text-field
               v-model="postalCode.placeName"
               label="Place Name"
+              :rules="requiredRules"
               hide-details
             ></v-text-field>
             <v-autocomplete
@@ -29,6 +31,17 @@
               class="mt-5"
               label="Postal Code Zone"
               v-model="postalCode.postalCodeZoneId"
+            ></v-autocomplete>
+            <v-autocomplete
+              :items="states"
+              item-value="id"
+              item-text="state"
+              clearable
+              :rules="requiredRules"
+              hide-details
+              class="mt-5"
+              label="State"
+              v-model="postalCode.stateId"
             ></v-autocomplete>
             <v-autocomplete
                 :items="roundRobins"
@@ -79,6 +92,7 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
+  import {getStates} from '@/services/stateService'
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
@@ -98,72 +112,79 @@
         postalCodeId: this.$route.params.id,
         postalCode: {},
         zones: [],
+        states: [],
         roundRobins: [],
         callGroups: [],
+        requiredRules: constants.BASIC_REQUIRED_RULE,
       }
     },
     computed: {
     },
     async created () {
-      this.getPostalCode()
-      this.getRoundRobins()
-      this.getZones()
-      this.getCallGroups()
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.dataLoading = true
+      Promise.all([
+        this.getPostalCode(),
+        this.getRoundRobins(),
+        this.getZones(),
+        this.getStates(),
+        this.getCallGroups()
+      ]).then(() => {
+        this.$store.commit(AppMutations.SET_LOADING, false);
+        this.dataLoading = false;
+      })
     },
     methods: {
       async getPostalCode () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/postalCode/${this.postalCodeId}`)
           this.postalCode = data
           this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.dataLoading = false
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getStates () {
+        try {
+          const {data, status} = await getStates()
+          this.states = data
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
       async getRoundRobins () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/roundRobin`)
           this.roundRobins = data
-          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getZones () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/postalCode/zones`)
           this.zones = data
-          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async getCallGroups () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/callGroup`, 'blueraven')
           this.callGroups = data
-          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       async savePostalCode () {

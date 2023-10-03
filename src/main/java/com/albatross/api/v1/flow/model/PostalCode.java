@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class PostalCode {
 
-  private Long id, roundRobinId, callGroupId, postalCodeZoneId;
-  private String postalCode, placeName, notes;
+  private Long id, roundRobinId, callGroupId, postalCodeZoneId, stateId;
+  private String postalCode, placeName, notes, stateAbbreviation;
   private Boolean archived, active, disqualified, selfGen, salesPartners, insideSales;
 }

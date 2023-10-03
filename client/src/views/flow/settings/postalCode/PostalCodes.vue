@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Postal Codes</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newPostalCode = {}]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newPostalCode = {}, getStates()]" v-if="userCanAdd">
               <span v-if="!addNew">{{'Add New'}}</span>
               <span v-else>{{'Cancel'}}</span>
             </v-btn>
@@ -24,7 +24,15 @@
                 tabindex=1
                 v-model="newPostalCode.placeName"
             ></v-text-field>
-            <v-btn color="primary" :disabled="!newPostalCode.postalCode || !newPostalCode.placeName"
+            <v-autocomplete
+              :items="states"
+              item-value="id"
+              item-text="state"
+              clearable
+              label="State"
+              v-model="newPostalCode.stateId"
+            ></v-autocomplete>
+            <v-btn color="primary" :disabled="!newPostalCode.postalCode || !newPostalCode.placeName || !newPostalCode.stateId"
                    @click="addPostalCode" class="mb-3">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
@@ -87,6 +95,7 @@
   import {  handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
   import constants from "@/helpers/constants";
+  import {getStates} from "@/services/stateService";
 
   export default {
     name: 'PostalCodes',
@@ -99,6 +108,7 @@
         addNew: false,
         search: null,
         newPostalCode: {},
+        states: [],
         dataLoading: true,
         footerProps: {
           'items-per-page-options': [25, 50, 100, 1000],
@@ -128,6 +138,18 @@
       }
     },
     methods: {
+      async getStates () {
+        if(this.addNew) {
+          try {
+            const {data, status} = await getStates()
+            this.states = data
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          }
+        }
+      },
       filterPostalCodes () {
         return this.postalCodes.filter(pcz => { return !pcz.archived})
       },

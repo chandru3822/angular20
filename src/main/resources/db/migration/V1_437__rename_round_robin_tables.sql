@@ -209,3 +209,13 @@ alter table flow.postal_code
 alter table flow.postal_code
 add column if not exists postal_code_zone_id bigint references flow.postal_code_zone(id);
 CREATE INDEX if not exists pc_postal_code_zone_id_idx ON flow.postal_code (postal_code_zone_id);
+
+-- postal code state stuff
+alter table flow.postal_code
+  add column if not exists state_id bigint references flow.state(id);
+CREATE INDEX if not exists pc_postal_code_state_id_idx ON flow.postal_code (state_id);
+
+update flow.postal_code pc
+set state_id = (select s.id
+                from flow.state s
+                where lower(s.abbreviation) = lower(pc.admin_code1));

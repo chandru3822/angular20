@@ -10,8 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -44,6 +47,7 @@ public class PostalCodeService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("roundRobinId", postalCode.getRoundRobinId());
     params.put("callGroupId", postalCode.getCallGroupId());
+    params.put("stateId", postalCode.getStateId());
     params.put("postalCodeZoneId", postalCode.getPostalCodeZoneId());
     params.put("placeName", postalCode.getPlaceName());
     params.put("notes", postalCode.getNotes());
@@ -61,7 +65,11 @@ public class PostalCodeService {
       sqlCache.updateBySql(PostalCodeQuery.updatePostalCode, params);
     } else {
       params.put("postalCode", postalCode.getPostalCode());
-      id = sqlCache.updateBySqlReturningId(PostalCodeQuery.insertPostalCode, params, "id").longValue();
+      try{
+        id = sqlCache.updateBySqlReturningId(PostalCodeQuery.insertPostalCode, params, "id").longValue();
+      } catch (DuplicateKeyException ex) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Postal Code Already Exists");
+      }
     }
     return getPostalCode(id);
   }

@@ -4,17 +4,20 @@ public class PostalCodeQuery {
 
   //language=PostgreSQL
   public final static String getActivePostalCodes = """
-      select id,
-             postal_code,
-             place_name,
-             round_robin_id,
-             disqualified,
-             self_gen,
-             inside_sales,
-             sales_partners,
-             archived,
-             active
+      select pc.id,
+             pc.postal_code,
+             pc.place_name,
+             pc.round_robin_id,
+             pc.disqualified,
+             pc.state_id,
+             s.abbreviation as state_abbreviation,
+             pc.self_gen,
+             pc.inside_sales,
+             pc.sales_partners,
+             pc.archived,
+             pc.active
       from flow.postal_code pc
+        left join flow.state s on s.id = pc.state_id
       where pc.active is true
       and pc.archived is false
       order by pc.postal_code
@@ -26,6 +29,7 @@ public class PostalCodeQuery {
              postal_code,
              place_name,
              round_robin_id,
+             state_id,
              postal_code_zone_id,
              call_group_id,
              notes,
@@ -45,6 +49,7 @@ public class PostalCodeQuery {
       update flow.postal_code
         set round_robin_id = :roundRobinId,
             call_group_id = :callGroupId,
+            state_id = :stateId,
             postal_code_zone_id = :postalCodeZoneId,
             place_name =  :placeName,
             notes = :notes,
@@ -60,8 +65,8 @@ public class PostalCodeQuery {
 
   //language=PostgreSQL
   public final static String insertPostalCode = """
-      insert into flow.postal_code(country_code, postal_code, place_name, active)
-      values ('US', :postalCode, :placeName, true)
+      insert into flow.postal_code(country_code, postal_code, place_name, active, state_id)
+      values ('US', :postalCode, :placeName, true, :stateId)
   """;
 
   //language=PostgreSQL
