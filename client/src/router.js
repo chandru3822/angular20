@@ -1418,10 +1418,28 @@ const router = new Router({
               }
             }
           } , {
+            path: 'activeprocessSteps',
+            component: () => {
+              if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ActiveProcessSteps.vue')
+              } else {
+                return accessDenied()
+              }
+            }
+          } , {
               path: 'events',
               component: () => {
                 if (store.getters.userHasFeature('PROCESS_STEPS')) {
                   return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/AllEvents.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            }, {
+              path: 'activeevents',
+              component: () => {
+                if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                  return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ActiveEvents.vue')
                 } else {
                   return accessDenied()
                 }

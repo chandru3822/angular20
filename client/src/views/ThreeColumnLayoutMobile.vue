@@ -26,7 +26,6 @@ const emit = defineEmits(['selectMenuItem'])
 
 const showMenu=ref(false)
 const toggleMenu = () => {
-  console.log(props.menuItems)
     showMenu.value = !showMenu.value
   }
 

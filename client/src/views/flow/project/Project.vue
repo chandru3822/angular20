@@ -104,7 +104,7 @@
     </ConfirmationDialog>
     <!--    end dialog -->
     <ThreeColumnLayoutMobile v-if="isMobile"
-                             :menu-items="[pageOverviewMenuItem, {pageName:'Project Details', subMenuSlot: true}, {pageName:'Active Process Steps'}, {pageName:'Active Events'}, ]"
+                             :menu-items="[pageOverviewMenuItem, {pageName:'Project Details', subMenuSlot: true}, {pageName:'Active Process Steps', updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`}, {pageName:'Active Events', updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`} ]"
                              headerHeight="64px"
                              :view-change-callback="changeMobileView"
     >
@@ -192,6 +192,7 @@
                      :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
                      @clickEdit="showEditModal()"
                      :details="overviewDetails"
+                     :updateKey="updateKeyProp"
         />
       </template>
     </ThreeColumnLayoutMobile>
@@ -385,7 +386,8 @@ export default {
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       pageOverviewMenuItem: {
-      }
+      },
+      updateKeyProp: 0
     }
   },
   created() {
@@ -495,6 +497,10 @@ export default {
       }
     },
     changeMobileView(selectedView){
+      this.updateKeyProp = selectedView.updateKey | 0
+      console.log('process step update key', this.updatePpsKey)
+      console.log('event update key', this.updateEventKey)
+      console.log(this.updateKeyProp)
       this.$router.push(selectedView.customPath)
     },
     stateIsActive() {
