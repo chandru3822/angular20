@@ -199,7 +199,8 @@
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Postal Code')
+          let msg = e?.data?.message ? e.data.message : 'Error Adding Postal Code'
+          this.snackbar = getSnackbar('ERROR', msg)
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }

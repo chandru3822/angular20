@@ -219,3 +219,11 @@ update flow.postal_code pc
 set state_id = (select s.id
                 from flow.state s
                 where lower(s.abbreviation) = lower(pc.admin_code1));
+
+-- proposal adder zone stuff for later
+-- select *
+-- from brs.object_type
+-- where object_code = 'PROPOSAL_ZONE_ADDERS';
+-- update brs.object_type
+-- set archived = true
+-- where object_code = 'PROPOSAL_ZONE_ADDERS';
