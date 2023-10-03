@@ -14,6 +14,16 @@ public class ElectronicDocumentQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getEnvQueryStr = """
+    select s.abbreviation || ' - Environmental Attributes'
+        from brs.project_details pd
+        inner join flow.project p on p.id = pd.project_id
+        left outer join flow.company_state cs on cs.id = p.company_state_id
+        left outer join flow.state s on s.id = cs.state_id
+    where pd.project_id = :projectId
+    """;
+
+  //language=PostgreSQL
   public final static String getUtilityQueryStr = """
     select s.abbreviation || ' - ' || au.name
         from brs.project_details pd

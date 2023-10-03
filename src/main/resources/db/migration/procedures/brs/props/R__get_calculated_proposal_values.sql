@@ -1381,9 +1381,9 @@ BEGIN
     v_ill_srec_rebate_amount =
         ((brs.get_system_production_year(v_first_year_production_estimate, v_panel_degradation_factor, 15) *
           v_inverter_efficiency) / 1000) * case
-                                             when v_system_size < 10::numeric then
+                                             when v_system_size <= 10::numeric then
                                                v_il_srec_less_10
-                                             when v_system_size >= 10::numeric and v_system_size < 25::numeric then
+                                             when v_system_size > 10::numeric and v_system_size < 25::numeric then
                                                v_il_srec_between_10_25
                                              when v_system_size >= 25 then
                                                v_il_srec_greater_25 end * v_srec_realization;

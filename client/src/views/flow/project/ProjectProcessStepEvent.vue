@@ -959,6 +959,8 @@ export default {
       this.showRoundRobin = !this.showRoundRobin
     },
     async getAvailableTimeSlots(remote) {
+      //reset this list every search in case there is an error or no results it doesn't confuse the user
+      this.timeSlots = []
       this.mostRecentSearchWasRemote = remote
       try {
         this.remoteSearchLoading = remote
