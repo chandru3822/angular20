@@ -104,8 +104,9 @@
     </ConfirmationDialog>
     <!--    end dialog -->
     <ThreeColumnLayoutMobile v-if="isMobile"
-                             :menu-items="[{itemName:'Overview'}, {itemName:'Project Details', subMenuSlot: true}, {itemName:'Active Process Steps'}, {itemName:'Active Events'}, ]"
+                             :menu-items="[pageOverviewMenuItem, {pageName:'Project Details', subMenuSlot: true}, {pageName:'Active Process Steps'}, {pageName:'Active Events'}, ]"
                              headerHeight="64px"
+                             :view-change-callback="changeMobileView"
     >
       <template v-slot:subMenu_1>
         <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
@@ -186,6 +187,11 @@
                      v-if="project && project.id" class="router-view"
                      :project="project"
                      :milestones="milestones"
+                     page-name="Project"
+                     :isExpandable="false"
+                     :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
+                     @clickEdit="showEditModal()"
+                     :details="overviewDetails"
         />
       </template>
     </ThreeColumnLayoutMobile>
@@ -378,6 +384,8 @@ export default {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
+      pageOverviewMenuItem: {
+      }
     }
   },
   created() {
@@ -386,6 +394,15 @@ export default {
     this.getProject()
     if(this.is7oaksAdmin) {
       this.getMilestones()
+    }
+    this.pageOverviewMenuItem = {
+      archived: false,
+      customPath: `/project/${ this.$route.params.projectId }/projectOverview`,
+      tabName: 'Project Overview',
+      pageName: 'Project Overview',
+      isExpandable: false,
+      details: this.overviewDetails,
+      uniqueIdentifier: 'menu_item_project_overview'
     }
   },
   watch: {
@@ -476,6 +493,9 @@ export default {
       if (buttonClicked && this.$route.name !== 'projectDetails') {
         this.$router.push({name: 'projectDetails', projectId: this.projectId})
       }
+    },
+    changeMobileView(selectedView){
+      this.$router.push(selectedView.customPath)
     },
     stateIsActive() {
       //states is already a list of company states

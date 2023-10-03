@@ -13,26 +13,36 @@
 * and each object should contain the following properties
 
 */
-import { ref, defineProps } from 'vue'
+import { ref, defineProps, defineEmits, onMounted } from 'vue'
 
 const props = defineProps({
   menuItems: Array, //@required
   headerHeight: String, //@optional
   headerColor: String, //@optional
+  viewChangeCallback: Function, //@required
 })
+const emit = defineEmits(['selectMenuItem'])
+
 
 const showMenu=ref(false)
 const toggleMenu = () => {
   console.log(props.menuItems)
     showMenu.value = !showMenu.value
   }
+
+  const selectedViewId=ref(0)
+  const routerView=ref(false)
+const chooseSelectedView = (view, id) => {
+  selectedViewId.value = id
+  props.viewChangeCallback(view, true)
+}
 </script>
 <template>
   <v-container class="pa-0" id="three-column-container">
     <v-navigation-drawer v-model="showMenu" absolute temporary clipped>
       <v-list>
         <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0">
-          <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot">{{ item.itemName }}</v-list-item-title>
+          <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot" @click="chooseSelectedView(item, index)">{{ item.pageName }}</v-list-item-title>
           <slot :name="`subMenu_${index}`"/>
         </v-list-item>
       </v-list>
@@ -46,7 +56,7 @@ const toggleMenu = () => {
     </slot>
     </v-toolbar>
   </v-row>
-  <v-row>
+  <v-row class="mobile-background height-one-hunned">
     <v-col class="auto-overflow">
     <slot name="main-column"/>
     </v-col>

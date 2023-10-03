@@ -1399,6 +1399,15 @@ const router = new Router({
                 return accessDenied()
               }
             }
+          },{
+            path: 'projectOverview',
+            component: () => {
+                if (store.getters.userHasFeature('PROJECTS')) {
+                return import (/* webpackChunkName: "projectAdmin" */ './views/flow/PageOverview.vue')
+              } else {
+                return accessDenied()
+              }
+            }
           }, {
             path: 'processSteps',
             component: () => {
