@@ -615,6 +615,7 @@ BEGIN
          ppscfv12.int_array_value,
          ppscfv13.int_array_value,
          ppscfv14.int_value
+--@randa , ppscfv16.numeric_value
   into
     v_estimated_annual_energy_consumption_kwh,
     v_first_year_production_estimate,
@@ -636,6 +637,7 @@ BEGIN
     v_site_survey_time_adders,
     v_misc_adders_array,
     v_commission_strategy_id
+----@randa   , v_zone_adder
   from flow.project_process_step pps
          inner join flow.project p on pps.project_id = p.id
          inner join flow.company_state cs on p.company_state_id = cs.id
@@ -693,6 +695,8 @@ BEGIN
                                                                            ppscfv15.custom_field_group_assignment_id =
                                                                            23802
          left join brs.feat_db_utility utility15 on utility15.id = ppscfv15.int_value
+  ----@randa          left join brs.project_process_step_custom_field_value ppscfv16 on ppscfv16.project_process_step_id = pps.id and
+--                                                                                      ppscfv16.custom_field_group_assignment_id = 26217
   where pps.id = v_project_process_step_id;
 
   create temp table proposal_value as (with version_values
@@ -1134,6 +1138,7 @@ BEGIN
   end if;
   raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
+--@randa remove all this with the postal code release
   v_postal_code = substring(v_postal_code,1,5);
   with my_zips as (
     select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_name,
