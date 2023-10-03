@@ -280,13 +280,13 @@ BEGIN
   v_cash_price_for_85_percent_offset = v_system_size_kw_85_percent_offset * 2.60 * 1000;
   v_cash_price_for_115_percent_offset = v_system_size_kw_115_percent_offset * 2.60 * 1000;
   v_month_pmt_100_offset_low_dealer_fee =
-      (v_cash_price_for_100_percent_offset / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
+      ((v_cash_price_for_100_percent_offset + v_battery_price) / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
       v_init_pmt_factor_10_year_low_dealer_fee;
   v_month_pmt_85_offset_low_dealer_fee =
-      (v_cash_price_for_85_percent_offset / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
+      ((v_cash_price_for_85_percent_offset + v_battery_price) / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
       v_init_pmt_factor_10_year_low_dealer_fee;
   v_month_pmt_115_offset_low_dealer_fee =
-      (v_cash_price_for_115_percent_offset / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
+      ((v_cash_price_for_115_percent_offset + v_battery_price) / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
       v_init_pmt_factor_10_year_low_dealer_fee;
   v_total_system_cost_100_offset_low_dealer_fee =
     (v_cash_price_for_100_percent_offset / (1 - v_dealer_fee_10_year_low_dealer_fee));
@@ -295,12 +295,12 @@ BEGIN
   v_total_system_cost_115_offset_low_dealer_fee =
     (v_cash_price_for_115_percent_offset / (1 - v_dealer_fee_10_year_low_dealer_fee));
   v_month_pmt_100_offset_low_month_pmt =
-      (v_cash_price_for_100_percent_offset / (1 - v_dealer_fee_25_year_low_payment)) *
+      ((v_cash_price_for_100_percent_offset + v_battery_price) / (1 - v_dealer_fee_25_year_low_payment)) *
       v_init_pmt_factor_25_year_low_payment;
-  v_month_pmt_85_offset_low_month_pmt = (v_cash_price_for_85_percent_offset / (1 - v_dealer_fee_25_year_low_payment)) *
+  v_month_pmt_85_offset_low_month_pmt = ((v_cash_price_for_85_percent_offset + v_battery_price) / (1 - v_dealer_fee_25_year_low_payment)) *
                                         v_init_pmt_factor_25_year_low_payment;
   v_month_pmt_115_offset_low_month_pmt =
-      (v_cash_price_for_115_percent_offset / (1 - v_dealer_fee_25_year_low_payment)) *
+      ((v_cash_price_for_115_percent_offset + v_battery_price) / (1 - v_dealer_fee_25_year_low_payment)) *
       v_init_pmt_factor_25_year_low_payment;
   v_total_system_cost_100_offset_low_month_pmt =
     (v_cash_price_for_100_percent_offset / (1 - v_dealer_fee_25_year_low_payment));
