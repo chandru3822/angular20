@@ -104,15 +104,24 @@
     </ConfirmationDialog>
     <!--    end dialog -->
     <ThreeColumnLayoutMobile v-if="isMobile"
-                             :menu-items="[pageOverviewMenuItem, {pageName:'Project Details', subMenuSlot: true}, {pageName:'Active Process Steps', updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`}, {pageName:'Active Events', updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`} ]"
+                             :menu-items="[pageOverviewMenuItem, {pageName:'Project Details', subMenuSlot: true}, {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`}, {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`} ]"
                              headerHeight="64px"
                              :view-change-callback="changeMobileView"
     >
       <template v-slot:subMenu_1>
         <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
       </template>
+      <template v-slot:subMenu_2>
+        <ActiveProcessSteps :project="project" :update-key="updatePpsKey" :hide-add-btn="true" class="mx-2"></ActiveProcessSteps>
+      </template>
+      <template v-slot:subMenu_3>
+        <ActiveEvents v-if="userHasEventsFeature"
+                      :update-key="updateEventKey"
+                      :projectId="projectId"
+                      class="mx-2"/>
+      </template>
       <template v-slot:header-contents>
-        <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
+        <v-toolbar-title class="title-medium albatross-header-1 align-center mt-3 text-wrap"
                          :class="{'mt-4': project.tags && project.tags.length > 0}">
           <div>
             <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
@@ -143,40 +152,6 @@
             </v-chip>
           </div>
         </v-toolbar-title>
-        <v-spacer/>
-        <div v-if="milestones && milestones.length > 0">
-          <div class="milestone-item" v-for="(milestone, idx) in milestones">
-            <v-menu v-model="milestone.menuOpen"
-                    offset-y
-                    rounded="0"
-                    :close-on-content-click="false"
-                    min-width="290px">
-              <template v-slot:activator="{ on }">
-                <StatusTrackerIcon :on="on"
-                                   :clickable="true"
-                                   :milestone="milestone"
-                                   :current-status-id="project.companyProjectStatusTypeId"
-                ></StatusTrackerIcon>
-              </template>
-              <v-card class="pa-5 square-card">
-                <StatusTrackerIcon :clickable="false"
-                                   :milestone="milestone"
-                                   :current-status-id="project.companyProjectStatusTypeId"
-                ></StatusTrackerIcon>
-                {{milestone.projectStatusType}}
-                <div>
-                  <div v-for="field in milestone.assignedFields">
-                    <StatusTrackerItem :field="field"
-                    ></StatusTrackerItem>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <v-btn text color="primary" @click="milestone.menuOpen = false">Done</v-btn>
-                </div>
-              </v-card>
-            </v-menu>
-          </div>
-        </div>
       </template>
       <template v-slot:main-column>
         <router-view @refresh-upcoming-events="updateEventKey++"
@@ -202,7 +177,7 @@
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                    v-if="!projectLoading && project && project.id">
-          <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
+          <v-toolbar-title class="title-large albatross-header-1 align-center mt-3"
                            :class="{'mt-4': project.tags && project.tags.length > 0}">
             <div>
               <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
@@ -754,7 +729,7 @@ export default {
   padding-right: 0 !important;
 }
 
-.app-title, .breadcrumb {
+.title-large, .breadcrumb {
   a {
     text-decoration-line: none;
   }
