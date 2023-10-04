@@ -1,5 +1,5 @@
 <template>
-  <v-container class="px-5 py-0  d-flex flex-column justify-space-between">
+  <v-container class="px-5 py-0">
     <div v-if="mobileView" class="headline-small pt-3">Notes</div>
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
@@ -680,7 +680,7 @@ export default {
   bottom: 0;
   background-color: white;
   padding: 0px 10px 15px 10px;
-  z-index: 200;
+  z-index: 10;
   margin-left: -10px;
   margin-right: -10px;
 }

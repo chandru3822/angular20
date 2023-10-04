@@ -56,7 +56,7 @@ const chooseSelectedView = (view, id) => {
     </v-toolbar>
   </v-row>
   <v-row class="mobile-background height-one-hunned">
-    <v-col class="auto-overflow">
+    <v-col class="auto-overflow main-column-container">
     <slot name="main-column"/>
     </v-col>
   </v-row>
@@ -81,6 +81,10 @@ const chooseSelectedView = (view, id) => {
 #menu-container {
   width: 100%;
   height: 100%;
+}
+
+.main-column-container {
+  height: 100vh;
 }
 
 .three-column-header {

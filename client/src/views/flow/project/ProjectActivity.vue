@@ -1,7 +1,7 @@
 <template>
 
   <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="flex-column flex-nowrap" no-gutters>
-      <div class="conversation-activity-header-container hide-xs" :class="{'pt-n2':selectedOption === 0}">
+      <div class="conversation-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
 
         <div class="albatross-header-3 pt-0 d-flex align-center conversation-activity-header"
              :class="{'title-collapse': isSidebarCollapsed,
@@ -148,7 +148,7 @@
         <div class="mb-3" v-if="!isSidebarCollapsed"></div>
       </div>
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-      <div class="conversation-activity-inner-container hide-xs">
+      <div class="conversation-activity-inner-container">
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
           <ActivitySection :contact-id="contactId" :user-id="userId"
@@ -157,8 +157,8 @@
                            :org-id="orgId" v-show="selectedOption === 1"
                            @scrollToTop="scrollToTop"
           />
-          <div v-if="selectedOption === 2">
-            <AttachmentsFolderList :contact-id="contactId"
+            <AttachmentsFolderList v-if="selectedOption === 2"
+                                   :contact-id="contactId"
                                  :user-id="userId"
                                  :object-type-id="objectTypeId"
                                  :org-id="orgId"
@@ -170,10 +170,9 @@
                                  :project-process-step-id="projectProcessStepId"
                                    @scrollToTop="scrollToTop"
             />
-          </div>
         </div>
       </div>
-      <div class="footer-container hide-xs"
+      <div class="footer-container"
            :style="{'width': isSidebarCollapsed ? '72px' : '100%',
                       }">
         <v-row
@@ -206,130 +205,6 @@
         :show-join-conversation-dialog.sync="showJoinConversationDialog"
         :teams-associated-to-user="teamsAssociatedToUser"
         @joinConversation="joinConversation" />
-
-    <div class="show-xs">
-      <div class="conversation-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
-        <TeamAssignmentChips
-          v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
-          :sms-team-owners="messageProperties.smsTeamOwners"
-          :team-names-associated-to-user="teamNamesAssociatedToUser"
-          :reloading="conversationIsLoading"
-          :show-assign-to-me-button="!userAssigned && userHasTeam"
-          :project-id="projectId"
-          :user-id="userId"
-          class="pb-1 mt-n1"
-          @updateOwner="loadConversation"
-          @joinConversation="startJoinConversation"
-        />
-
-        <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
-        <div class="mb-3" v-if="!isSidebarCollapsed"></div>
-      </div>
-      <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-      <div v-if="showNotes" class="conversation-activity-inner-container">
-        <div class="scrollable-area">
-          <div class="headline-small hide-xs">Contact Notes</div>
-          <div class="headline-small mobile-contact-header show-xs"><v-icon class="show-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Notes</div>
-          <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :user-assigned="userAssigned" />
-          <div class="mobile-content-padding" v-else-if="selectedOption === 1">
-          <ActivitySection :contact-id="contactId" :user-id="userId"
-                        :object-type-id="objectTypeId" :project-id="projectId"
-                        :org-id="orgId"></ActivitySection>
-          </div>
-          <div v-else-if="selectedOption === 2">
-            <AttachmentsFolderList :contact-id="contactId"
-                                   :user-id="userId"
-                                   :object-type-id="objectTypeId"
-                                   :org-id="orgId"
-                                   :force-show-upload-btn="forceShowUploadBtn"
-                                   :activity-tab="true"
-                                   :focused="toggleFocusedXs === 0"
-                                   :project-id="projectId"
-                                   :reload-on-key-change="true"
-                                   :project-process-step-id="projectProcessStepId"
-                                   @scrollToTop="scrollToTop()"
-            />
-          </div>
-        </div>
-      </div>
-      <div v-else-if="selectedOption === 2">
-        <div class="headline-small mobile-contact-header"><v-icon class="hide-xs mobile-hamburger-menu" @click="openMenu()">mdi-menu</v-icon>Documents</div>
-        <div style="width: 168px;" class="mr-2 mobile-content-padding">
-
-          <v-btn-toggle
-            v-model="toggleFocusedXs"
-            mandatory
-            borderless
-            color="primary"
-            class="d-inline-block one-hunned"
-            style="opacity: 1 !important;"
-          >
-
-
-            <v-btn :color="toggleFocusedXs === 0 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocusedXs === 0, 'primary--text' : toggleFocusedXs === 1}"
-                   class="text-capitalize my-4 fix-toggle-opacity body-medium"
-                   style="width: 50% !important;"
-            >
-              Focused
-            </v-btn>
-            <v-btn :color="toggleFocusedXs === 1 ? 'primary' : 'white'"
-                   :class="{'white--text': toggleFocusedXs === 1, 'primary--text' : toggleFocusedXs === 0}"
-                   class="text-capitalize  fix-toggle-opacity"
-                   style="width: 50% !important;"
-            >
-              All
-            </v-btn>
-          </v-btn-toggle>
-        </div>
-
-        <AttachmentsFolderList :contact-id="contactId"
-                               :user-id="userId"
-                               :object-type-id="objectTypeId"
-                               :org-id="orgId"
-                               :force-show-upload-btn="forceShowUploadBtn"
-                               :activity-tab="true"
-                               :focused="toggleFocusedXs === 0"
-                               :project-id="projectId"
-                               :reload-on-key-change="true"
-                               :project-process-step-id="projectProcessStepId"
-                               @scrollToTop="scrollToTop"
-        />
-      </div>
-      <div class="footer-container hide-xs"
-           :style="{'width': isSidebarCollapsed ? '72px' : '100%',
-                      }">
-        <v-row
-          :value="selectedOption"
-          :style="{'flex-direction': isSidebarCollapsed ? 'column' : 'row',
-                        'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
-          class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
-        >
-          <v-col cols="4" class="px-0">
-            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0)" :dark="selectedOption === 0"
-                   :class="{'section-selected': selectedOption===0}">
-              <v-icon>mdi-forum-outline</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1)" :dark="selectedOption === 1"
-                   :class="{'section-selected': selectedOption===1}">
-              <v-icon>mdi-text-long</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2)" :dark="selectedOption === 2"
-                   :class="{'section-selected': selectedOption===2}">
-              <v-icon>mdi-folder-outline</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </div>
-      <ConfirmAssignmentDialog
-        :show-join-conversation-dialog.sync="showJoinConversationDialog"
-        :teams-associated-to-user="teamsAssociatedToUser"
-        @joinConversation="joinConversation" />
-    </div>
 
   </v-row>
 
@@ -460,7 +335,7 @@ export default {
           return this.orgId ? 'Organization Notes & Activities' : this.userId ? 'User Notes & Activities'
               : this.contactId ? 'Contact Notes & Activities' : this.projectId ? 'Project Notes & Activities' : null
         case 2:
-          return this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
+          return this.isMobile ? 'Documents' : this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
               : this.projectId ? 'Project Documents' : null
       }
     },
