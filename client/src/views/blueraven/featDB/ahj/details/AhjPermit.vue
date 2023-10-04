@@ -81,9 +81,10 @@
           <v-divider></v-divider>
 
           <v-card-text class="pb-0">
-            <v-radio-group v-model="ahjPermit.updateAllInState">
-              <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
-              <v-radio :label="`Save changes to all AHJs in ${ahjPermit.stateName}`" :value="true"></v-radio>
+            <v-radio-group v-model="ahjPermit.updateAllInArea">
+              <v-radio label="Save changes to this AHJ only" :value="''"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjPermit.metroArea}`" :value="'metro'"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjPermit.stateName}`" :value="'state'"></v-radio>
             </v-radio-group>
           </v-card-text>
 
@@ -96,7 +97,7 @@
                    class="cancel-link mr-2"
             >Cancel
             </v-btn>
-            <v-btn v-if="ahjPermit.updateAllInState"
+            <v-btn v-if="ahjPermit.updateAllInArea.length > 0"
                    class="white--text mr-0 save-btn"
                    color="primary"
                    @click="saveConfirmDialog = true"
@@ -265,7 +266,7 @@ export default {
 
         this.ahjPermit = cloneDeep(data)
         window.document.title = `AHJ - ${this.ahjPermit.ahjName}`
-        this.ahjPermit.updateAllInState = false
+        this.ahjPermit.updateAllInArea = ""
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -342,7 +343,8 @@ export default {
     async updateAhjPermit() {
       this.saveDialog = false
       this.saveConfirmDialog = false
-      let updateAllInState = this.ahjPermit.updateAllInState
+      let updateAllInState = (this.ahjPermit.updateAllInArea == 'state');
+      let updateAllInMetro = (this.ahjPermit.updateAllInArea == 'metro');
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -363,6 +365,22 @@ export default {
           }
         }
 
+        else if (updateAllInMetro){
+          try {
+            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/permit/searchAhjsByMetro/${this.ahjPermit.metroAreaId}`, 'blueraven')
+            this.ahjPermit.ahjIds = []
+            this.ahjPermit.permitIds = []
+
+            data.forEach(row => {
+              this.ahjPermit.ahjIds.push(row.ahjId)
+              this.ahjPermit.permitIds.push(row.id)
+            })
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all permits in ' + this.ahjPermit.stateName)
+          }
+        }
+
         this.ahjPermit.customFieldGroups = this.customFieldGroups
         const {
           data,
@@ -370,15 +388,16 @@ export default {
         } = await putRequest(`/featDb/ahj/${this.ahjId}/permit/${this.ahjPermit.id}`, this.ahjPermit, 'blueraven')
 
         this.ahjPermit = cloneDeep(data)
-        this.ahjPermit.updateAllInState = false
+        this.ahjPermit.updateAllInArea = ''
         this.dataWasChanged = false
         this.resetCustomFieldValueWasChangedFlags()
-        let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : 'Permit updated successfully'
+        let successMessage = updateAllInState ? 'All permits in ' + this.ahjPermit.stateName + ' have been updated successfully' : updateAllInMetro ? 'All permits in ' + this.ahjPermit.metroArea + ' have been updated successfully': 'Permit updated successfully'
         this.snackbar = getSnackbar('SUCCESS', successMessage)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.stateName : 'Failed to update permit'
+        let errorMessage = updateAllInState ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.stateName : updateAllInMetro ? 'An error occurred when attempting to update all permits in ' + this.ahjPermit.metroArea : 'Failed to update permit'
         this.snackbar = getSnackbar('ERROR', errorMessage)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

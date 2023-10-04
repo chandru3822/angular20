@@ -66,10 +66,14 @@ public class AhjPermitService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("currentUser", currentUser.trueUserId());
 
+    //Left in for mobile. This top 'if' statement can be removed once mobile has updated to allow update by metro
     if (permit.getUpdateAllInState() != null && permit.getUpdateAllInState() && permit.getAhjIds().size() > 0) {
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_PERMIT, permit.getCustomFieldGroups(), permit.getPermitIds());
-    } else {
+    } else if(permit.getUpdateAllInArea() != null && permit.getUpdateAllInArea().length() > 0 && permit.getAhjIds().size() > 0){
+        blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
+          ObjectType.AHJ_PERMIT, permit.getCustomFieldGroups(), permit.getPermitIds());
+    }else {
       params.put("ahjId", ahjId);
 
       if (permitId == null) {
@@ -87,6 +91,12 @@ public class AhjPermitService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
     return sqlCache.queryBySql(AhjPermitQuery.searchAhjsByState, params, AhjPermit.class);
+  }
+
+  public List<AhjPermit> searchAhjsByMetro(Long metroId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("metroId", metroId);
+    return sqlCache.queryBySql(AhjPermitQuery.searchAhjsByMetro, params, AhjPermit.class);
   }
 
   // CONTACTS

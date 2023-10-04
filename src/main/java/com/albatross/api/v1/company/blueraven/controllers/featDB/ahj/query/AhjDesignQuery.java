@@ -10,7 +10,8 @@ public class AhjDesignQuery {
             ahj.metro_area_id,
             ahj.name as ahj_name,
             cs.state_id,
-            s.state AS "stateName"
+            s.state AS "stateName",
+            lov.name as metro_area
           FROM brs.feat_db_ahj_design d
             INNER JOIN brs.feat_db_ahj ahj ON ahj.id = d.ahj_id
             LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
@@ -34,6 +35,15 @@ public class AhjDesignQuery {
              left join flow.company_state cs on cs.id = ahj.company_state_id
           WHERE cs.state_id = :stateId
             AND ahj.archived IS FALSE
+    """;
+
+  public final static String searchAhjsByMetro = """
+         SELECT d.id, d.ahj_id
+         FROM brs.feat_db_ahj_design d
+           INNER JOIN brs.feat_db_ahj ahj ON ahj.id = d.ahj_id
+           LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+         WHERE lov.id = :metroId
+           AND ahj.archived IS FALSE
     """;
 
 }
