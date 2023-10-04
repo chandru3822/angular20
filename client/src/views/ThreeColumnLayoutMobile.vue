@@ -63,6 +63,12 @@ const chooseSelectedView = (view, id) => {
   </v-container>
 </template>
 
+<style lang="scss">
+#three-column-container > aside{
+  z-index: 12; //to cover the search bar on the Notes page,
+  // which has a z-index of 10 so that the filter dropdown covers cards in the notes/activites list
+}
+</style>
 <style scoped lang="scss">
 #three-column-container {
   width: 100%;
@@ -70,6 +76,7 @@ const chooseSelectedView = (view, id) => {
   max-height: 100% !important;
   padding: 0 !important;
   overflow: hidden;
+  z-index: 12;
 }
 #menu-container {
   width: 100%;

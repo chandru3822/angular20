@@ -104,7 +104,16 @@
     </ConfirmationDialog>
     <!--    end dialog -->
     <ThreeColumnLayoutMobile v-if="isMobile"
-                             :menu-items="[pageOverviewMenuItem, {pageName:'Project Details', subMenuSlot: true}, {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`}, {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`} ]"
+                             :menu-items="[
+                                 pageOverviewMenuItem,
+                                 {pageName:'Project Details', subMenuSlot: true},
+                                 {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`},
+                                 {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`},
+                                 {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity`},
+                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/notesAndActivities`},
+                                 {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity`},
+                                 {pageName: 'Project Admin'}
+                                 ]"
                              headerHeight="64px"
                              :view-change-callback="changeMobileView"
     >
@@ -168,6 +177,8 @@
                      @clickEdit="showEditModal()"
                      :details="overviewDetails"
                      :updateKey="updateKeyProp"
+                     :mobileView="true"
+
         />
       </template>
     </ThreeColumnLayoutMobile>
@@ -473,9 +484,6 @@ export default {
     },
     changeMobileView(selectedView){
       this.updateKeyProp = selectedView.updateKey | 0
-      console.log('process step update key', this.updatePpsKey)
-      console.log('event update key', this.updateEventKey)
-      console.log(this.updateKeyProp)
       this.$router.push(selectedView.customPath)
     },
     stateIsActive() {

@@ -124,7 +124,7 @@
               </v-btn>
             </v-btn-toggle>
           </div>
-          <slot name="collapse-button">
+          <slot name="collapse-button" v-if="!isMobile">
           <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
@@ -209,8 +209,6 @@
 
     <div class="show-xs">
       <div class="conversation-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
-
-
         <TeamAssignmentChips
           v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
           :sms-team-owners="messageProperties.smsTeamOwners"
@@ -471,6 +469,9 @@ export default {
     },
     smsOwnershipEvents() {
       return this.$store.getters.getEventsByTopic('sms_ownership').length
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   methods: {

@@ -1436,10 +1436,27 @@ const router = new Router({
                 }
               }
             }, {
-              path: 'activeevents',
+              path: 'activeevents', //should only be used on mobile
               component: () => {
                 if (store.getters.userHasFeature('PROCESS_STEPS')) {
                   return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ActiveEvents.vue')
+                } else {
+                  return accessDenied()
+                }
+              }
+            },  {
+              path: 'notesAndActivities', //should only be used on mobile
+              component: () => {
+                if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                  return import (/* webpackChunkName: "projectAdmin" */ './views/flow/components/ActivitySection.vue')
+                } else {
+                  return accessDenied()
+                }
+              } },  {
+              path: 'projectActivity', //should only be used on mobile
+              component: () => {
+                if (store.getters.userHasFeature('PROCESS_STEPS')) {
+                  return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectActivity.vue')
                 } else {
                   return accessDenied()
                 }

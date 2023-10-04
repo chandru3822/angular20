@@ -1,5 +1,6 @@
 <template>
-  <v-container class="px-5 py-0">
+  <v-container class="px-5 py-0  d-flex flex-column justify-space-between">
+    <div v-if="mobileView" class="headline-small pt-3">Notes</div>
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -36,7 +37,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
+    <div class="activity-body" :class="{'footer-closed-height': !addActivity && null == editedActivity.id}" @click="startReadNotesTimer('Clicked in the notes tab')">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
@@ -227,6 +228,7 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
+    mobileView:Boolean
   },
   data() {
     return {
@@ -660,7 +662,7 @@ export default {
   top: -1px;
   background-color: white;
   padding: 0 10px;
-  z-index: 200;
+  z-index: 10; //to make sure the filter dropdown is in front of the list of notes/activities
   margin-left: -10px;
   margin-right: -10px;
   align-items: center;
@@ -673,10 +675,6 @@ export default {
   border-color: var(--v-grey-darken1);
 }
 
-.activity-body {
-  min-height: 500px;
-}
-
 .activity-footer {
   position: sticky;
   bottom: 0;
@@ -687,6 +685,14 @@ export default {
   margin-right: -10px;
 }
 
+.activity-body {
+  @media (min-width: 960px) {
+  //min-height: 500px;
+  }
+}
+.footer-closed-height {
+  min-height: calc(100vh - 360px);
+}
 .title-medium:last-of-type {
   padding-top:16px;
 }
