@@ -11,6 +11,7 @@ public class AhjInspectionQuery {
               cs.id as company_state_id,
               cs.state_id,
               s.state AS "stateName",
+              lov.name as metro_area,
               s.abbreviation AS "stateAbbreviation",
               coalesce((
                            SELECT array_to_json(array_agg(row_to_json(contacts)))
@@ -199,6 +200,15 @@ public class AhjInspectionQuery {
                     LEFT JOIN flow.company_state cs on cs.id = ahj.company_state_id
            WHERE cs.state_id = :stateId
              AND ahj.archived IS FALSE
+    """;
+
+  public final static String searchAhjsByMetro = """
+         SELECT i.id, i.ahj_id
+         FROM brs.feat_db_ahj_inspection i
+           INNER JOIN brs.feat_db_ahj ahj ON ahj.id = i.ahj_id
+           LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+         WHERE lov.id = :metroId
+           AND ahj.archived IS FALSE
     """;
 
 

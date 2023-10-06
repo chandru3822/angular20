@@ -10,8 +10,8 @@ import java.util.List;
  */
 @Data
 public class AhjInspection {
-    private Long id, ahjId, stateId, companyStateId;
-    private String stateName, ahjName;
+    private Long id, ahjId, stateId, companyStateId, metroAreaId;
+    private String stateName, ahjName, metroArea, updateAllInArea;
 
     //this is only used for saving custom field groups
     List<CustomFieldGroup> customFieldGroups;

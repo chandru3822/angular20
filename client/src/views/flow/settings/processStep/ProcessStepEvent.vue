@@ -47,49 +47,13 @@
               :allow="selectedEvent.readonlyAllow"
               :contentLoading="positionsLoading"
               :fullSize="true"
+              save-button
+              save-button-text="Save Read Only"
               @selected-changed="startTimeReadOnlySelectedEventListener"
               @allow-changed="startTimeReadOnlyAllowEventListener"
-              @checkbox-changed="startTimeReadOnlyCheckboxEventListener"></multi-select-group>
-<!--          <v-autocomplete-->
-<!--              v-if="selectedEvent.readonly"-->
-<!--            v-model="selectedEvent.readonlyWhiteListPositions"-->
-<!--            :items="positions"-->
-<!--            label="Whitelisted Positions"-->
-<!--            item-text="position"-->
-<!--            item-value="positionId"-->
-<!--              :disabled="!userCanEdit"-->
-<!--            return-object-->
-<!--            multiple-->
-<!--            clearable-->
-<!--          >-->
-<!--            <template v-slot:selection="{item, index}">-->
-<!--              <v-chip small-->
-<!--                      v-if="selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length < 6">-->
-<!--                <span>{{ item.position }}</span>-->
-<!--              </v-chip>-->
-<!--              <span-->
-<!--                  v-if="index === 1 && selectedEvent.readonlyWhiteListPositions && selectedEvent.readonlyWhiteListPositions.length >= 6"-->
-<!--                  class="primary&#45;&#45;text text-caption"-->
-<!--              >{{ selectedEvent.readonlyWhiteListPositions.length }} selected</span>-->
-<!--            </template>-->
-<!--            <template v-slot:prepend-item>-->
-<!--              <v-list-item-->
-<!--                  @click="toggleSelectAllPositions()">-->
-<!--                <v-list-item-action>-->
-<!--                  <v-icon>{{ icon }}</v-icon>-->
-<!--                </v-list-item-action>-->
-<!--                <v-list-item-title>Select All</v-list-item-title>-->
-<!--              </v-list-item>-->
-<!--              <v-divider-->
-<!--                  class="mt-2"-->
-<!--              ></v-divider>-->
-<!--            </template>-->
-<!--          </v-autocomplete>-->
+              @checkbox-changed="startTimeReadOnlyCheckboxEventListener"
+            @save-multi-select="saveReadOnlyWhiteList"/>
           </v-card-text>
-          <v-btn color="primary" v-if="userCanEdit"
-                 @click="saveReadOnlyWhiteList(selectedEvent)"
-          >Save Read Only
-          </v-btn>
         </v-card>
       </v-col>
 
@@ -103,13 +67,16 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn @click="logicStringToggle = !logicStringToggle" text color="primary">
-              {{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}
+              <v-icon v-if="isMobile && logicStringToggle">mdi-numeric</v-icon>
+              <v-icon v-else-if="isMobile">mdi-alphabetical</v-icon>
+              <span v-if="!isMobile">{{ logicStringToggle ? 'View Logic as Numbers' : 'View Logic as Text' }}</span>
             </v-btn>
             <v-btn text color="primary"
                    @click="[addNewEventAction = !addNewEventAction, newEventAction.color = '#1F3C73', newEventAction.bgColor = '#878787']"
                    v-if="userCanAdd">
               <v-icon v-if="!addNewEventAction">add</v-icon>
-              {{ addNewEventAction ? 'Cancel' : 'Add Action' }}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewEventAction ? 'Cancel' : 'Add Action' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -186,12 +153,11 @@
           :items-per-page="-1"
           :sort-desc="[false]"
           :sort-by="['displayOrder']"
-          :mobile-breakpoint="0"
           single-expand
           disable-sort
           :expanded.sync="expanded"
           hide-default-footer
-          class="event-actions-table elevation-1 fix-column-width-bug square-card"
+          class="event-actions-table elevation-1 square-card table-striped"
         >
           <template #no-data>
             <span class="default-text-color">No actions for this event</span>
@@ -241,7 +207,7 @@
                   </template>
                 </v-autocomplete>
 
-                <v-card flat class="pb-5" v-if="[1,2].includes(action.actionTypeId)">
+                <v-card flat class="pb-5" color="transparent" v-if="[1,2].includes(action.actionTypeId)">
                   <div class="title-medium">Options</div>
                   <v-row class="pb-4">
                     <v-col cols="12" md="3">
@@ -317,7 +283,7 @@
                     </v-toolbar-title>
                     <v-spacer></v-spacer>
                     <v-toolbar-items>
-                      <v-btn v-if="!addChildLink && userCanEdit" color="primary"
+                      <v-btn v-if="!addChildLink && userCanEdit" color="primary" text
                              @click="[addChildLink = true, loadLinks(action.id)]">
                         <v-icon>add</v-icon>
                       </v-btn>
@@ -830,18 +796,17 @@
             </td>
           </template>
 
-          <template #item="{ item: action, index }">
-            <tr :class="{'shaded-row': index % 2}">
-              <td style="width: 50px">
+
+              <template #item.draggable="{item}" style="width: 50px">
                 <v-btn text v-if="userCanEdit" icon small color="primary" class="handle">
                   <v-icon>drag_handle</v-icon>
                 </v-btn>
-              </td>
-              <td class="text-left">{{ action.actionName }}</td>
-              <td class="text-left">{{ action.actionType }}</td>
-              <td class="text-left">{{ action.eventStatusType || 'N/A' }}</td>
-              <td class="text-left">{{ action.processStepStatusType || 'N/A' }}</td>
-              <td>
+              </template>
+              <template #item.actionName="{item: action}" class="text-left">{{ action.actionName }}</template>
+              <template #item.actionType="{item: action}" class="text-left">{{ action.actionType }}</template>
+              <template #item.companyEventStatusType="{item: action}" class="text-left">{{ action.eventStatusType || 'N/A' }}</template>
+              <template #item.companyProcessStepStatusType="{item: action}" class="text-left">{{ action.processStepStatusType || 'N/A' }}</template>
+              <template #item.icons="{item: action}">
                 <div style="display: flex; justify-content: flex-end">
                   <v-btn text color="primary" v-if="userCanEdit"
                          @click="duplicateAction(action.id)">
@@ -850,15 +815,16 @@
                   <v-btn text color="primary" @click="[expanded = [action]]" v-if="!expanded.includes(action)">
                     <v-icon>edit</v-icon>
                   </v-btn>
-                  <v-btn text color="primary" @click="expanded = []" v-else>cancel
+                  <v-btn text color="primary" @click="expanded = []" v-else>
+                    <v-icon v-if="isMobile">close</v-icon>
+                    <span v-else>cancel</span>
                   </v-btn>
                   <v-btn small text color="primary" @click="eventActionToDelete = action">
                     <v-icon>delete</v-icon>
                   </v-btn>
                 </div>
-              </td>
-            </tr>
-          </template>
+              </template>
+
         </v-data-table>
       </v-col>
     </v-row>
@@ -1031,6 +997,9 @@ export default {
         return 'indeterminate_check_box'
       }
       return 'check_box_outline_blank'
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     },
   },
   async created() {
@@ -1251,7 +1220,8 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveReadOnlyWhiteList(psEvent) {
+    async saveReadOnlyWhiteList() {
+      const psEvent = this.selectedEvent
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await putRequest(`/processStep/${this.processStepId}/event/${psEvent.eventId}/saveReadOnlyWhiteList?savePositions=${psEvent.positionsChanged ?? false}`, psEvent)

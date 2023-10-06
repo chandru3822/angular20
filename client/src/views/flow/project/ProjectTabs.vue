@@ -1,52 +1,33 @@
 <template>
-  <v-row id="project-details-container" class="mx-6">
-    <v-col cols="12" lg="12" class="text-left pa-0">
-      <v-expansion-panels flat class="py-0">
-        <v-expansion-panel>
-          <v-expansion-panel-header color="transparent" flat class="px-0 project-section-header" height="56">
-            <div class="label-large">Project Details</div>
-            <v-spacer></v-spacer>
-              <v-btn
-                  text color="primary" class="px-0" small
-                  v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
-                  :to="`/projectAdmin/${projectId}`"
-              >
-                <v-icon>mdi-cog</v-icon>
-              </v-btn>
-          </v-expansion-panel-header>
-
-          <v-expansion-panel-content cols="12" class="pa-0 pb-4">
-            <SpinnerInline v-if="tabsLoading" :size="20" color="primary"/>
-            <div v-else>
-              <v-card outlined v-for="tab in tabs"
-                      class="mb-2 pa-2 elevation-0 body-large"
-                      :class="{'active-tab': tabIsActive(tab)}"
-                      @click="changeTabs(tab, true)">
-                {{ tab.tabName }}
-              </v-card>
-            </div>
-          </v-expansion-panel-content>
-        </v-expansion-panel>
-      </v-expansion-panels>
-
-    </v-col>
-
-  </v-row>
+  <SidePanelExpansionPanel header="Project Details">
+    <template v-slot:tool-btn>
+      <v-btn
+          text color="primary" class="px-0" small
+          v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
+          :to="`/projectAdmin/${projectId}`"
+      >
+        <v-icon>mdi-cog</v-icon>
+      </v-btn>
+    </template>
+    <template v-slot:expanded-content>
+      <v-card outlined v-for="tab in tabs"
+              class="mb-2 pa-2 elevation-0 body-large"
+              :class="{'active-tab': tabIsActive(tab)}"
+              @click="changeTabs(tab, true)">
+        {{ tab.tabName }}
+      </v-card>
+    </template>
+  </SidePanelExpansionPanel>
 </template>
-
 <script>
 
 import {getRequestWithParams, logError} from '@/helpers/helpers'
-import SpinnerInline from '@/components/SpinnerInline'
-import Closer from "../../blueraven/closerDashboard/Closer.vue";
-import CloserDashboard from "../../blueraven/closerDashboard/CloserDashboard.vue";
+import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ProjectTabs',
   components: {
-    CloserDashboard,
-    Closer,
-    SpinnerInline,
+    SidePanelExpansionPanel
   },
   props: {
     project: Object,

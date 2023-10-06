@@ -10,6 +10,7 @@ public class AhjPermitQuery {
             ahj.name as ahj_name,
             cs.state_id,
             s.state AS "stateName",
+            lov.name as metro_area,
             coalesce((
               SELECT array_to_json(array_agg(row_to_json(contacts)))
               FROM (
@@ -69,6 +70,15 @@ public class AhjPermitQuery {
            LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
             left join flow.company_state cs on cs.id = ahj.company_state_id
          WHERE cs.state_id = :stateId
+           AND ahj.archived IS FALSE
+    """;
+
+  public final static String searchAhjsByMetro = """
+         SELECT p.id, p.ahj_id
+         FROM brs.feat_db_ahj_permit p
+           INNER JOIN brs.feat_db_ahj ahj ON ahj.id = p.ahj_id
+           LEFT JOIN flow.list_of_value lov ON lov.id = ahj.metro_area_id
+         WHERE lov.id = :metroId
            AND ahj.archived IS FALSE
     """;
 

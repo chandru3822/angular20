@@ -200,7 +200,7 @@ public class BlueravenProposalController {
   }
 
   private Optional<Proposal> getLockedProposal(@NonNull Long proposalId) {
-    return proposalService.getProposal(proposalId)
+    return proposalService.getSimpleProposal(proposalId)
       .map(proposal -> {
         if (!proposal.isLocked()) {
           throw new InvalidStateApiException("Proposal must be locked to continue");
@@ -233,21 +233,18 @@ public class BlueravenProposalController {
                                                                       @RequestParam(value = "inline", defaultValue = "false") boolean inline,
                                                                       HttpServletResponse response) {
 
-    final Proposal proposal = proposalService.getProposal(proposalId)
-      .orElseThrow(() -> new NotFoundException("Proposal not found"));
-
-    final String contentDisposition = String.format(
-      "%s; filename=\"proposal_%s_%s.pdf\"", inline ? "inline" : "attachment", proposal.getProposalNbr(), OffsetDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmssSSSS")));
-
-    response.addHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
-    response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
-    response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
-
     final StreamingResponseBody responseBody = outputStream -> {
       try {
         proposalService.generateProposalPDF(proposalId, templateId)
           .ifPresent(result -> {
             try {
+              final String contentDisposition = String.format(
+                "%s; filename=\"proposal_%s_%s.pdf\"", inline ? "inline" : "attachment", result.proposal().getProposalNbr(), OffsetDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmssSSSS")));
+
+              response.addHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
+              response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
+              response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+
               response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(result.resource().contentLength()));
               IOUtils.copy(result.resource().getInputStream(), outputStream);
             } catch (IOException e) {
@@ -266,8 +263,8 @@ public class BlueravenProposalController {
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
-    final Proposal proposal = proposalService.getProposal(proposalId).orElseThrow(NotFoundException::new);
-    final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposal.getProposalVersionId(), filter);
+    final Long proposalVersionId = proposalService.getProposalVersionByProposalId(proposalId).orElseThrow(NotFoundException::new);
+    final List<Long> filterIds = proposalVersionService.getProposalValuesFilterIds(proposalVersionId, filter);
     return new ProposalFilterResponse(filterIds);
   }
 

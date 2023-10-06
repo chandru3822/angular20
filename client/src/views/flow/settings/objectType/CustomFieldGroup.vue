@@ -316,7 +316,7 @@
                             <span v-if="cf.customFieldGroupAssignmentHidden">(Hidden)</span>
                             <div class="text-left mt-3" v-if="cf.edit">
                               <v-row>
-                                <v-col cols="6">
+                                <v-col cols="10" lg="6">
                                   <v-card flat :color="selectedIndex % 2 ? 'white' : 'primary lighten-9'" class="square-card">
                                     <v-card-text>
                                       <multi-select-group
@@ -336,11 +336,14 @@
                                           @allow-changed="cfgaHiddenAllowEventListener"
                                           @checkbox-changed="cfgaHiddenCheckboxEventListener"></multi-select-group>
                                       <br/>
+                                      <div class="d-flex">
+                                        <v-spacer v-if="isMobile"/>
                                       <v-btn color="primary" dark class="white--text d-inline-block"
                                              @click="saveHiddenAndWhiteList(cf)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Hidden
+                                        <v-icon :class="{'mr-2':!isMobile}">save</v-icon>
+                                        <span v-if="$vuetify.breakpoint.mdAndUp">Save Hidden</span>
                                       </v-btn>
+                                      </div>
                                     </v-card-text>
                                   </v-card>
                                 </v-col>

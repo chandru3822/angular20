@@ -1,34 +1,21 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
-                           header="Active Process Steps"
-                           :section-expanded="sectionExpanded"
-                           :is-loading="isProcessStepsLoading"
-  >
-    <template v-slot:tool-btn>
-      <AddProcessStep
-          v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
-          class="d-inline-block"
-          :admin="$store.getters.isFullAdmin"
-          :project-id="projectId"
-          :process-id="project.processId"
-          :contact-id="project.contactId"
-          @step-added="getProcessSteps"
-      />
-    </template>
-    <template v-slot:expanded-content>
-      <ActiveProjectProcessStepSnippet class="px-4"
-                                       :steps="processSteps"
-                                       :projectId="projectId"
-                                       :contactId="project.contactId"/>
-      <v-col
-          v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
-          cols="12"
-          class="text-left pt-0"
-      >
-        <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
-      </v-col>
-    </template>
-  </SidePanelExpansionPanel>
+  <v-row id="side-panel-expansion-panel-container" class="mx-6">
+    <v-col cols="12" lg="12" class="text-left py-0 px-0">
+      <v-expansion-panels flat class="py-0" :value="sectionExpanded ? 0 : null" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+        <v-expansion-panel>
+          <v-expansion-panel-header color="transparent" flat class="px-0 project-section-header" height="auto">
+            <div class="label-large">{{header}}</div>
+            <v-spacer></v-spacer>
+            <slot name="tool-btn"></slot>
+          </v-expansion-panel-header>
+          <v-expansion-panel-content cols="12" class="py-0 pb-4">
+            <SpinnerInline v-if="isLoading" centered :size="20" color="primary"/>
+            <slot name="expanded-content" class="px-0" v-else>Nothing to see here.</slot>
+          </v-expansion-panel-content>
+        </v-expansion-panel>
+      </v-expansion-panels>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -39,20 +26,22 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
 
 export default {
-  name: 'ActiveProcessSteps',
+  name: 'SidePanelExpansionPanel',
   components: {
-    SidePanelExpansionPanel,
     SpinnerInline,
     ActiveProjectProcessStepSnippet,
     ProjectProcessStepSnippet,
     AddProcessStep,
   },
   props: {
-    project: Object,
-    updateKey: Number
+    header: String,
+    sectionExpanded: {
+      type: Boolean,
+      default: false
+    },
+    isLoading: Boolean,
   },
   watch: {
     updateKey: function () {
@@ -63,7 +52,6 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
-      sectionExpanded: this.$route.path.includes('processStep') ? 0 : null,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -137,16 +125,11 @@ export default {
 </style>
 
 <style lang="scss">
-.process-step-toolbar .v-toolbar__content {
-  padding-left: 10px !important;
+#side-panel-expansion-panel-container div.v-expansion-panel-content__wrap{
+  padding:0;
 }
+</style>
 
-.manage-btn {
+<style scoped lang="scss">
 
-  margin-left: 12px;
-
-  & > .v-btn__content {
-    color: white !important;
-  }
-}
 </style>

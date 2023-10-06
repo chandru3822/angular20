@@ -342,7 +342,7 @@
               </template>
 
               <template #expanded-item="{ headers, item, index }">
-                <td :colspan="headers.length" class="pa-4 elevation-0" :class="shadeRow(item)">
+                <td :colspan="isMobile ? 12 : headers.length" class="pa-4 elevation-0 one-hunned-vw" :class="shadeRow(item)">
                   <div v-if="item.requirementParamDynamicValues && item.requirementParamDynamicValues.length > 0">
                     <h5 class="text-left">Dynamic Function Parameters</h5>
                     <v-card flat color="transparent">
@@ -1280,6 +1280,10 @@ export default {
 .dynamic-field-container {
   width: 80%;
   display: inline-block;
+}
+
+.one-hunned-vw {
+  width: 100vw;
 }
 
 </style>

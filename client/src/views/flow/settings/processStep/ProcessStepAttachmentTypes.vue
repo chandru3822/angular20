@@ -6,9 +6,10 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn @click="[addNewType = !addNewType, getAvailableTypes()]" text v-if="userCanAdd">
+            <v-btn @click="[addNewType = !addNewType, getAvailableTypes()]" text v-if="userCanAdd" color="primary">
               <v-icon v-if="!addNewType">add</v-icon>
-              {{ addNewType ? 'Cancel' : 'Add Attachment Type'}}
+              <v-icon v-else-if="isMobile">close</v-icon>
+              <span v-if="!isMobile">{{ addNewType ? 'Cancel' : 'Add Attachment Type'}}</span>
             </v-btn>
             <v-btn text @click="expandTypes = !expandTypes">
               <v-icon v-if="!expandTypes">mdi-chevron-down</v-icon>
@@ -40,10 +41,9 @@
               :items-per-page="-1"
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
-              :mobile-breakpoint="0"
               hide-default-footer
               disable-sort
-              class="attachment-type-table elevation-1 fix-column-width-bug square-card"
+              class="attachment-type-table elevation-1 square-card table-striped"
             >
               <template #no-data>
                 No attachment types for this process step
@@ -53,30 +53,29 @@
                 No attachment types for this process step
               </template>
 
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
+
 <!--                  <td style="width: 50px">-->
 <!--                    <v-btn text v-if="userCanEdit" icon small class="handle">-->
 <!--                      <v-icon>drag_handle</v-icon>-->
 <!--                    </v-btn>-->
 <!--                  </td>-->
-                  <td class="text-left">{{item.attachmentType}}</td>
-                  <td>
+                  <template #item.attachmentType="{item}" class="text-left">{{item.attachmentType}}</template>
+                  <template #item.allowUpload="{item}">
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.allowUpload"
                                 @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
                     </v-checkbox>
-                  </td>
-                  <td>
+                  </template>
+                  <template #item.linkable="{item}">
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.linkable"
                                 @change="updateType(item)"  :disabled="!userCanEdit" :readonly="!userCanEdit">
                     </v-checkbox>
-                  </td>
-                  <td>
+                  </template>
+                  <template #item.focused="{item}">
                     <v-checkbox type="checkbox" class="ml-3" v-model="item.focused"
                                 @change="updateType(item)" :disabled="!userCanEdit" :readonly="!userCanEdit">
                     </v-checkbox>
-                  </td>
-                  <td>
+                  </template>
+                  <template #item.icons="{item, index}">
                     <div style="display: flex; justify-content: flex-end">
                       <router-link class="no-text-decoration pr-3"
                                    :to="`/settings/processStep/${processStepId}/attachmentType/${item.id}`">
@@ -86,9 +85,8 @@
                       </router-link>
                       <v-btn small color="primary" text @click="attachmentTypeToDelete = item"><v-icon>delete</v-icon></v-btn>
                     </div>
-                  </td>
-                </tr>
-              </template>
+                  </template>
+
             </v-data-table>
           </v-col>
         </v-row>
@@ -169,7 +167,10 @@ export default {
   computed: {
     attachmentTypeToDeleteName(){
       return this.attachmentTypeToDelete ? this.attachmentTypeToDelete.attachmentType : ''
-    }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   async created() {
     await this.getAttachmentTypes()
