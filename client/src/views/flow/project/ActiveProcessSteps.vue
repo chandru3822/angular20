@@ -39,7 +39,7 @@ import ProjectProcessStepSnippet from '@/views/flow/project/ProjectProcessStepSn
 import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
+import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ActiveProcessSteps',
