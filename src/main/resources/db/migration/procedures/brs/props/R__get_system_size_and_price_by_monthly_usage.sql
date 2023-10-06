@@ -467,7 +467,7 @@ BEGIN
            v_apr_low_monthly_option,
            v_term_low_monthly_option,
            v_utility_cost_escalator,
-           round(v_twenty_five_year_savings_cash_100_offset, 2),
+           round(v_twenty_five_year_savings_cash_100_offset),
            round(v_twenty_five_year_savings_cash_85_offset),
            round(v_twenty_five_year_savings_cash_115_offset),
            round(v_twenty_five_year_savings_low_dealer_fee_100_offset),

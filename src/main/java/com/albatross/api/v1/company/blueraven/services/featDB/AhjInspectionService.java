@@ -6,6 +6,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionQuery;
+import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
@@ -73,6 +74,9 @@ public class AhjInspectionService {
           ObjectType.AHJ_INSPECTION,
           inspection.getCustomFieldGroups(),
           inspection.getInspectionIds());
+    }else if(inspection.getUpdateAllInArea() != null && inspection.getUpdateAllInArea().length() > 0 && inspection.getAhjIds().size() > 0){
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
+        ObjectType.AHJ_INSPECTION, inspection.getCustomFieldGroups(), inspection.getInspectionIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -96,6 +100,12 @@ public class AhjInspectionService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
     return sqlCache.queryBySql(AhjInspectionQuery.searchAhjsByState, params, AhjInspection.class);
+  }
+
+  public List<AhjInspection> searchAhjsByMetro(Long metroId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("metroId", metroId);
+    return sqlCache.queryBySql(AhjInspectionQuery.searchAhjsByMetro, params, AhjInspection.class);
   }
 
   // CONTACTS

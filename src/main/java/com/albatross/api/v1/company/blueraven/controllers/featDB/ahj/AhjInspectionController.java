@@ -49,6 +49,11 @@ public class AhjInspectionController {
         return ahjInspectionService.searchAhjsByState(stateId);
     }
 
+    @GetMapping(value = "/searchAhjsByMetro/{metroId}")
+    public List<AhjInspection> searchAhjsByMetro(@PathVariable Long metroId) {
+      return ahjInspectionService.searchAhjsByMetro(metroId);
+    }
+
     // CONTACTS
     @PostMapping(value = "/{inspectionId}/contacts")
     public Optional<FeatDbContact> addAhjContact(@PathVariable Long inspectionId,
