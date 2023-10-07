@@ -610,8 +610,10 @@ export default {
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
         //todo: handle this
         let editedIndex = this.sortedFilteredActivities.findIndex(a => a.id === this.editedActivity.id)
+        let unsortedEditedIndex = this.activities.findIndex(a => a.id === this.editedActivity.id)
         let pinnedEditedIndex = this.pinnedActivitiesOnly.findIndex(a => a.id === this.editedActivity.id)
         this.sortedFilteredActivities[editedIndex] = data
+        this.activities[unsortedEditedIndex] = data
         this.pinnedActivitiesOnly[pinnedEditedIndex] = data
 
 
