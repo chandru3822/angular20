@@ -139,7 +139,7 @@
         </div>
       </v-toolbar-title>
       <v-spacer/>
-      <div v-if="milestones && milestones.length > 0" class = "milestone-container">
+      <div v-if="milestones && milestones.length > 0" class = "milestone-container toolbar-z-index-override">
         <div class="milestone-item" v-for="(milestone, idx) in milestones">
           <v-menu v-model="milestone.menuOpen"
                   offset-y
