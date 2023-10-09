@@ -315,9 +315,7 @@ export default {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
-    if(this.is7oaksAdmin) {
-      this.getMilestones()
-    }
+    this.getMilestones()
   },
   watch: {
     '$route.params.processStepId': async function () {

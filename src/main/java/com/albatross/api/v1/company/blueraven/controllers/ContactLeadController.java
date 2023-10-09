@@ -335,4 +335,9 @@ public class ContactLeadController {
   public void updateContactRemodelWell(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/ecogen", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactEcogen(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

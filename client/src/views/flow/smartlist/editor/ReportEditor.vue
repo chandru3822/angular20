@@ -96,6 +96,7 @@
               placeholder="Data Type"
               :rules="constants.BASIC_REQUIRED_RULE"
               @change="updateObjectType"
+              @click="prevObjectTypeId = report.objectTypeId"
             />
           </v-col>
 
@@ -110,21 +111,6 @@
               hide-details
               :ripple="false"
               class="px-4"
-            />
-          </v-col>
-
-          <v-col
-            class="flex-shrink-1 flex-grow-0 text-no-wrap"
-            v-if="[1,2,4,6].includes(report?.objectTypeId)"
-          >
-            <v-checkbox
-              v-model="report.projectDetails"
-              :disabled="!canEdit"
-              label="Project Details"
-              hide-details
-              :ripple="false"
-              class="px-4"
-              @click="projectDetailsClicked"
             />
           </v-col>
 
@@ -279,7 +265,7 @@
       <v-card-actions class="justify-end">
         <v-btn
           text
-          @click="[report.projectDetails = !report.projectDetails, showDataViewDialog = false]"
+          @click="[revertObjectType(), showDataViewDialog = false]"
         >
           Cancel
         </v-btn>
@@ -357,7 +343,7 @@ const sourceRequirements = ref([])
 const reportTypes = ref([])
 const availableFields = ref([])
 const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
-
+const prevObjectTypeId = ref([])
 /**
  * If editing a report, show only types available to that group
  * project/PS/PSE/contact, org/user
@@ -365,12 +351,12 @@ const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
 const filteredReportTypes = computed(() => {
   if (isEditing.value) {
     let objectTypeIds = []
-    if ([1,2,4].includes(report.value.objectTypeId)) {
-      objectTypeIds = [1,2,4]
+    if ([1,2,4,8].includes(report.value.objectTypeId)) {
+      objectTypeIds = [1,2,4,8]
     } else if ([3,5].includes(report.value.objectTypeId)) {
       objectTypeIds = [3,5]
     } else if (report.value.objectTypeId === 6) {
-      objectTypeIds = [1,2,4,6]
+      objectTypeIds = [1,2,4,6,8]
     }
     return reportTypes.value.filter(t => objectTypeIds.includes(t.objectTypeId))
   } else {
@@ -533,7 +519,7 @@ const save = async () => {
 const getReportTypes = async () => {
   try {
     loadingAvailableFields.value = true
-    const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
+    const {data} = await getRequest(`/smartlist/companyObjectTypes`)
     reportTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
@@ -549,6 +535,10 @@ const getAvailableFields = async (forceUpdate = false) => {
     try {
       loadingAvailableFields.value = true
       const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
+      if (report.value.objectTypeId === 8) {
+        report.value.projectDetails = true
+      }
+
       const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}&projectDetails=${report.value.projectDetails}`)
       availableFields.value = data
     } catch (e) {
@@ -613,7 +603,21 @@ const deleteRequirement = (index) => {
 const updateObjectType = () => {
   const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
   if (selectedType) {
+    // If Object Type is being changed from or to Project Details
+    if (report.value?.id && (selectedType.objectTypeId === 8 || prevObjectTypeId.value === 8)) {
+      showDataViewDialog.value = true
+    }
+    else {
+      report.value.objectTypeId = selectedType.objectTypeId
+    }
+  }
+}
+
+const revertObjectType = () => {
+  const selectedType = reportTypes.value.find(t => t.objectTypeId === prevObjectTypeId.value)
+  if (selectedType) {
     report.value.objectTypeId = selectedType.objectTypeId
+    report.value.companyObjectTypeId = selectedType.companyObjectTypeId
   }
 }
 
@@ -622,10 +626,12 @@ const updateRequirement = (requirement, index) => requirements.value.splice(inde
 const toggleDataView = async () => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await putRequest(`/smartlist/${report.value.id}/toggleProjectDetails`)
+    const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
+    report.value.objectTypeId = selectedType.objectTypeId
+
+    await putRequest(`/smartlist/toggleProjectDetails`, report.value)
     refreshReport(true)
   } catch (e) {
-    report.value.projectDetails = !report.value.projectDetails
     snackbar('ERROR', 'Unable to update project details setting')
   } finally {
     store.commit(AppMutations.SET_LOADING, false)
@@ -653,12 +659,6 @@ const editNameClicked = () => {
   if (canEdit.value) {
     isEditingReportName.value = true
     nextTick(reportNameField.value.focus)
-  }
-}
-
-const projectDetailsClicked = () => {
-  if (report.value?.id) {
-    showDataViewDialog.value = true
   }
 }
 

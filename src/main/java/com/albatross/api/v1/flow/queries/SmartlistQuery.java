@@ -732,6 +732,75 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String getAvailableProjectDetailsFields = """
+    select
+      distinct coalesce(pdc.second_field_to_update, pdc.field_to_update)                   as project_details_column,
+      pdc.display_name                                                            as name,
+      null::bigint                                                                   as process_step_event_id,
+      coalesce(pdc.second_data_type_id, pdc.data_type_id) as data_type_id,
+      case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as has_list_values,
+      cf.custom_field_sql_key,
+      cf.custom_field_sql,
+      cf.custom_field_sql_smartlist,
+      cfga.id  as "customFieldGroupAssignmentId",
+      case
+        when cf.custom_field_sql_smartlist is not null then (
+          select to_jsonb(array_agg(row_to_json(listOfValues)))
+          from (
+            select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+          ) listOfValues
+        )
+      end                                                                         as list_of_values
+    from brs.project_details_config pdc
+    left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+    left join flow.custom_field cf on cfga.custom_field_id = cf.id
+    left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+    where (cfga.archived is not true or cfga.id is null) and
+    pdc.display_name is not null and
+      (coalesce(pdc.second_field_to_update, pdc.field_to_update) not like '%_resource%' or
+    coalesce(pdc.second_field_to_update, pdc.field_to_update) not like '%_start_time' or
+    coalesce(pdc.second_field_to_update, pdc.field_to_update) not like '%_end_time')
+    union
+    select distinct coalesce(pdec.second_field_to_update, pdec.field_to_update) as project_details_column,
+    pdec.display_name                                           as name,
+    pdec.process_step_event_id                                  as process_step_event_id,
+      case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then 6
+      else 2
+    end                                                         as data_type_id,
+      case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
+    end                                                         as has_list_values,
+      null                                                        as custom_field_sql_key,
+      null                                                        as custom_field_sql,
+      null                                                        as custom_field_sql_smartlist,
+      cfga.id  as "customFieldGroupAssignmentId",
+
+                  case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
+      (
+        select to_jsonb(array_agg(row_to_json(listOfValues)))
+    from (
+      select *
+      from flow.get_system_list_options(3, cf.company_system_list_id, true,
+      cf.system_list_option_ids)
+                             ) listOfValues
+                      )
+    end                                                         as list_of_values
+    from brs.project_detail_events_config pdec
+    inner join flow.process_step_event pse on pdec.process_step_event_id = pse.id
+    inner join flow.event e on pse.event_id = e.id
+    inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+    left join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+    where (pse.archived is not true) and
+    pdec.display_name is not null and
+      (coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' or
+    coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_start_time' or
+    coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_end_time')
+    order by name
+  """;
+
+  //language=PostgreSQL
   public final static String addField = """
     insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())

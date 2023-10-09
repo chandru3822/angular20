@@ -5,6 +5,7 @@ import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.utils.SqlCacheRO;
+import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepEventWorkQueueType;
@@ -199,8 +200,6 @@ public class SmartlistService {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
-    smartlist.setProjectDetails(false);
-
     if (!List.of(3, 5).contains(smartlist.getObjectTypeId().intValue())) {
       smartlist.setPrimaryUserPosition(false);
     }
@@ -216,17 +215,21 @@ public class SmartlistService {
   }
 
   @Transactional
-  public void updateProjectDetails(Long smartlistId) {
-    var smartlist = getById(smartlistId);
-
+  public void updateProjectDetails(Smartlist smartlist) {
     if (!userHasWriteAccess(smartlist)) {
       throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access Denied", new AccessDeniedException("Access Denied"));
     }
 
-    smartlist.setProjectDetails(!smartlist.isProjectDetails());
+    if (smartlist.getObjectTypeId().equals(ObjectType.DATA_VIEW.id)) {
+      smartlist.setProjectDetails(true);
+    }
+    else {
+      smartlist.setProjectDetails(false);
+    }
+
     this.updateSmartlist(smartlist, Collections.emptyList(), Collections.emptyList());
 
-    sqlCache.updateBySql(SmartlistQuery.clearFieldsAndRequirements, Map.of("smartlistId", smartlistId, "userId", securityService.getCurrentUser().getId()));
+    sqlCache.updateBySql(SmartlistQuery.clearFieldsAndRequirements, Map.of("smartlistId", smartlist.getId(), "userId", securityService.getCurrentUser().getId()));
   }
 
   public Smartlist addSmartlist(Smartlist smartlist) {
@@ -235,6 +238,10 @@ public class SmartlistService {
     boolean isNameUnique = sqlCache.queryForObjectBySql(SmartlistQuery.isNameUnique, Map.of("name", smartlist.getName(), "companyId", user.getCompanyId()), Boolean.class);
     if (!isNameUnique) {
       throw new ResponseStatusException(HttpStatus.CONFLICT, "Smartlist name already taken", new Exception());
+    }
+
+    if (smartlist.getObjectTypeId().equals(ObjectType.DATA_VIEW.id)) {
+      smartlist.setProjectDetails(true);
     }
 
     HashMap<String, Object> params = om.convertValue(smartlist, HashMap.class);
@@ -811,7 +818,7 @@ public class SmartlistService {
       getById(report.getId());
     }
 
-    if (!List.of(1L,2L,3L,4L,5L,6L).contains(report.getObjectTypeId())) {
+    if (!List.of(1L,2L,3L,4L,5L,6L,8L).contains(report.getObjectTypeId())) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have a data type");
     }
 
@@ -1076,7 +1083,7 @@ public class SmartlistService {
   public List<SmartlistFieldAssignment> getAvailableFields(@NotNull List<Long> objectTypeIds, @NotNull boolean isProjectDetails) {
     if (isProjectDetails) {
       //@TODO: #smartlistsv2 - revamp with data view updates
-      return sqlCache.queryBySql(SmartlistQueryv1.getAvailableProjectDetailsFields, null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+      return sqlCache.queryBySql(SmartlistQuery.getAvailableProjectDetailsFields, null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
     } else {
       Map<String, Object> params = Map.of("companyId", securityService.getCurrentUser().getCompanyId(), "objectTypeIds", objectTypeIds);
       return sqlCache.queryBySql(SmartlistQuery.getAvailableFields, params, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));

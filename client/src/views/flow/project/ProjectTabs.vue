@@ -22,7 +22,7 @@
 <script>
 
 import {getRequestWithParams, logError} from '@/helpers/helpers'
-import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
+import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ProjectTabs',

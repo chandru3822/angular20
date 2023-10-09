@@ -388,7 +388,7 @@ public class PandaDocService {
     customer.put(
         "email",
         tokens.isNull("Deal.Contact.Email")
-            ? "jberns03@gmail.com"
+            ? tokens.get("Project.Email")
             : tokens.get("Deal.Contact.Email"));
     if (hasCustomerRole) {
       customer.put("role", pandaDoc.getCustomerRole());
