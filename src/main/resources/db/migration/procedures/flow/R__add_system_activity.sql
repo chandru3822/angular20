@@ -38,7 +38,8 @@ BEGIN
       --if the activity is for event status changes then check that shiz here
       if p_activity_id = 1 then
         select event_name from flow.event where id =
-          (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+          (select event_id from flow.process_step_event where id =
+            (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id))
         into v_activity_name;
 
         v_prepend_msg = concat(v_activity_name, ' ');
@@ -62,8 +63,9 @@ BEGIN
         where cest.id = p_new_status_id;
 
         select event_name from flow.event where id =
-          (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
-          into v_activity_name;
+          (select event_id from flow.process_step_event where id =
+            (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id))
+        into v_activity_name;
 
         v_prepend_msg = concat(v_activity_name, ' ');
         v_append_msg = concat(' from ', v_old_company_status, ' (', v_old_root_status, ') to ', v_new_company_status, ' (', v_new_root_status, ')');
@@ -91,8 +93,9 @@ BEGIN
                inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
         where cpsst.id = p_new_status_id;
 
-        select process_step_name from flow.process_step where id =
-        (select process_step_id from flow.project_process_step where id = p_pps_id)
+        select event_name from flow.event where id =
+          (select event_id from flow.process_step_event where id =
+            (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id))
         into v_activity_name;
 
         v_prepend_msg = concat(v_activity_name, ' ');
@@ -147,7 +150,8 @@ BEGIN
         where cpst.id = p_new_status_id;
 
         select event_name from flow.event where id =
-                                                (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+          (select event_id from flow.process_step_event where id =
+            (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id))
         into v_activity_name;
 
         v_prepend_msg = concat(v_activity_name, ' ');
@@ -178,8 +182,9 @@ BEGIN
                inner join flow.project_status_type pst on cpst.project_status_type_id = pst.id
         where cpst.id = p_new_status_id;
 
-        select process_step_name from flow.process_step where id =
-                                                              (select process_step_id from flow.project_process_step where id = p_pps_id)
+        select event_name from flow.event where id =
+          (select event_id from flow.process_step_event where id =
+            (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id))
         into v_activity_name;
 
         v_prepend_msg = concat(v_activity_name, ' ');
@@ -208,7 +213,8 @@ BEGIN
         where cpst.id = p_new_status_id;
 
         select event_name from flow.event where id =
-        (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id)
+          (select event_id from flow.process_step_event where id =
+            (select process_step_event_id from flow.project_process_step_event where id = p_ppse_id))
         into v_activity_name;
 
         v_prepend_msg = concat(v_activity_name, ' ');
