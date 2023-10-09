@@ -1418,10 +1418,10 @@ const router = new Router({
                 }
               }
             }, {
-            path: 'dontGoHereRandaSaid',
+            path: 'status',
             // path: 'tracker',
             component: () => {
-              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'GARBAGE')) {
+              if (store.getters.userHasFeature('PROJECTS')) {
                 return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/StatusTracker.vue')
               } else {
                 return accessDenied()

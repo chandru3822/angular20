@@ -22,7 +22,7 @@ import {getRequest, logError} from '@/helpers/helpers'
 import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
-import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
+import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'ActiveEvents',

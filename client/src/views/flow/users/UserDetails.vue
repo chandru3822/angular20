@@ -252,7 +252,7 @@ import constants from "@/helpers/constants";
 import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
-import SidePanelExpansionPanel from "../../../components/SidePanelExpansionPanel.vue";
+import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 export default {
   name: 'User',
