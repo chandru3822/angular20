@@ -1418,6 +1418,7 @@ const router = new Router({
                 }
               }
             }, {
+            name: 'projectStatus',
             path: 'status',
             // path: 'tracker',
             component: () => {
