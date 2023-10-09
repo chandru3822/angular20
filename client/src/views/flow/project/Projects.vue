@@ -50,27 +50,27 @@
           <template #item="{item: project, index}">
             <tr class="clickable"  :class="{'shaded-row': index % 2}">
               <td class="text-left py-0 pl-4">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.id}}
                 </router-link>
               </td>
               <td class="text-left text--black">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.projectName}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.stateAbbreviation}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.projectStatusType}}
                 </router-link>
               </td>
               <td class="text-left">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/details`">
+                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
                 </router-link>
               </td>
@@ -148,7 +148,7 @@
     },
     methods: {
       goToRoute(projectId) {
-        this.$router.push({name: 'projectDetails', params: {projectId: projectId}})
+        this.$router.push({name: 'projectStatus', params: {projectId: projectId}})
       },
       async getProjects() {
         const {page, itemsPerPage} = this.options

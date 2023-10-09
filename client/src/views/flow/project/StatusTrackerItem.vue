@@ -1,5 +1,5 @@
 <template>
-  <div id="status-checkbox">
+  <div id="status-checkbox" style="z-index: 1000">
     <v-checkbox
         :label="fieldName"
         color="success lighten-1"
@@ -9,12 +9,12 @@
         v-model="field.fieldValue"
         class="default-text-color d-inline-block body-large"
     />
-    <div v-if="field.fieldValue != null" class="d-inline-block ml-3 body-large">
-      <!--        i dont think we have to handle ALL data types here. just the common ones, data view fields are pretty normalized -->
-      <span v-if="field.dataTypeId === 1">{{field.fieldValue | formatDate('date', 'D MMM YYYY')}}</span>
-      <span v-else-if="field.dataTypeId === 2">{{field.fieldValue | formatDate('timestamp', 'D MMM YYYY H:mm a')}}</span>
-      <span v-else>{{field.fieldValue}}</span>
-    </div>
+<!--    <div v-if="field.fieldValue != null" class="d-inline-block ml-3 body-large">-->
+<!--      &lt;!&ndash;        i dont think we have to handle ALL data types here. just the common ones, data view fields are pretty normalized &ndash;&gt;-->
+<!--      <span v-if="field.dataTypeId === 1">{{field.fieldValue | formatDate('date', 'D MMM YYYY')}}</span>-->
+<!--      <span v-else-if="field.dataTypeId === 2">{{field.fieldValue | formatDate('timestamp', 'D MMM YYYY H:mm a')}}</span>-->
+<!--      <span v-else>{{field.fieldValue}}</span>-->
+<!--    </div>-->
   </div>
 </template>
 
@@ -40,16 +40,21 @@ export default {
     }
   },
   created() {
-    if (this.field.dataTypeId == 1) {
-      this.fieldName = this.field.fieldName + ':' + this.field.fieldValue.toLocaleDateString('en-US', {
-        day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
-      })
-    } else if (this.field.dataTypeId == 2) {
-      this.fieldName = this.field.fieldName + ':' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
-        day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
-      })//formatDate('timestamp', 'D MMM YYYY H:mm a');
-    } else {
-      this.fieldName = this.field.fieldName
+    if(this.field.fieldValue == null){
+      this.fieldName = this.field.fieldName;
+    }
+    else {
+      if (this.field.dataTypeId == 1) {
+        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue.toLocaleDateString('en-US', {
+          day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
+        })
+      } else if (this.field.dataTypeId == 2) {
+        this.fieldName = this.field.fieldName + ':' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
+          day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
+        })//formatDate('timestamp', 'D MMM YYYY H:mm a');
+      } else {
+        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue;
+      }
     }
   },
   computed: {},
