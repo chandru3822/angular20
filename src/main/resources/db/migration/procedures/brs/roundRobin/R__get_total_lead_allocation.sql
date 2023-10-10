@@ -1,12 +1,12 @@
-drop function if exists brs.get_total_lead_allocation(p_postal_code_zone_id bigint,
+drop function if exists brs.get_total_lead_allocation(p_round_robin_id bigint,
                                                       p_run_manual_allocation boolean ,
                                                       p_remote boolean);
-CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_postal_code_zone_id bigint,
+CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_round_robin_id bigint,
                                                          p_run_manual_allocation boolean default false,
                                                          p_remote boolean default false)
     RETURNS table
             (
-                postal_code_zone_user_id        bigint,
+                round_robin_user_id        bigint,
                 user_id                         bigint,
                 company_timezone_id             bigint,
                 timezone                        varchar,
@@ -25,29 +25,29 @@ CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_postal_code_zone_id b
 AS
 $BODY$
 declare
-  v_postal_code_zone_id bigint;
+  v_round_robin_id bigint;
 BEGIN
 
   if p_remote is false then
     create temp table round_robin_users as (
       select pczu.user_id, pcz.distribution_time_frame_days
-      from flow.postal_code_zone pcz
-             inner join flow.postal_code_zone_user pczu
-                        on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
+      from flow.round_robin pcz
+             inner join flow.round_robin_user pczu
+                        on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
                            pczu.archived is false
              inner join flow.company_user_status cus on cus.user_id = pczu.user_id
              inner join flow.user_status_type ust
                         on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
-      where pcz.id = p_postal_code_zone_id and pcz.remote is false);
+      where pcz.id = p_round_robin_id and pcz.remote is false);
     create index round_robin_users_user_id on round_robin_users(user_id);
     create index round_robin_users_distribution_time_frame_days on round_robin_users(distribution_time_frame_days);
-    v_postal_code_zone_id = p_postal_code_zone_id;
+    v_round_robin_id = p_round_robin_id;
   else
     create temp table round_robin_users as (
       select pczu.user_id, pcz.distribution_time_frame_days
-      from flow.postal_code_zone pcz
-             inner join flow.postal_code_zone_user pczu
-                        on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
+      from flow.round_robin pcz
+             inner join flow.round_robin_user pczu
+                        on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
                            pczu.archived is false
              inner join flow.company_user_status cus on cus.user_id = pczu.user_id
              inner join flow.user_status_type ust
@@ -57,8 +57,8 @@ BEGIN
     create index round_robin_users_user_id on round_robin_users(user_id);
     create index round_robin_users_distribution_time_frame_days on round_robin_users(distribution_time_frame_days);
     select id
-    into v_postal_code_zone_id
-    from flow.postal_code_zone
+    into v_round_robin_id
+    from flow.round_robin
     where archived is false and remote is true;
   end if;
 
@@ -148,7 +148,7 @@ BEGIN
                  from round_robin_users rru
                           left join brs.cached_appointment ca on rru.user_id = ca.user_id
              )
-        select foo3.postal_code_zone_user_id::bigint,
+        select foo3.round_robin_user_id::bigint,
                foo3.user_id::bigint,
                foo3.company_timezone_id::bigint,
                foo3.timezone,
@@ -164,7 +164,7 @@ BEGIN
                foo3.appointment_count::bigint,
                foo3.manual_allocation
         from (
-                 select foo2.postal_code_zone_user_id, foo2.user_id,
+                 select foo2.round_robin_user_id, foo2.user_id,
                         foo2.company_timezone_id, foo2.timezone,
                         foo2.actual_lead_allocation - foo2.total_lead_allocation as distance_from_actual_to_target,
                         case
@@ -183,7 +183,7 @@ BEGIN
                         foo2.appointment_count,
                         foo2.manual_allocation
                  from (
-                          select foo1.postal_code_zone_user_id, foo1.user_id,
+                          select foo1.round_robin_user_id, foo1.user_id,
                                  foo1.company_timezone_id, foo1.timezone,
                                  case
                                      when sum(foo1.score) over () = 0 then
@@ -201,7 +201,7 @@ BEGIN
                                  foo1.manual_allocation,
                                  foo1.sum_manual_allocation
                           from (
-                                   select foo.postal_code_zone_user_id, foo.user_id,
+                                   select foo.round_robin_user_id, foo.user_id,
                                           foo.company_timezone_id, foo.timezone,
                                           case
                                               when foo.lead_gen_den is null or foo.lead_gen_den = 0 then
@@ -239,7 +239,7 @@ BEGIN
                                           foo.manual_allocation,
                                           sum(foo.manual_allocation) over ()                        as sum_manual_allocation
                                    from (
-                                            select pczu.id as postal_code_zone_user_id,
+                                            select pczu.id as round_robin_user_id,
                                                    pczu.user_id,
                                                    pczu.company_timezone_id,
                                                    t.timezone,
@@ -250,7 +250,7 @@ BEGIN
                                                    coalesce(ta.avail, 0)                             as avail,
                                                    coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
                                                    pczu.manual_allocation
-                                            from flow.postal_code_zone_user pczu
+                                            from flow.round_robin_user pczu
                                                    inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                                    inner join flow.user_status_type ust
                                                               on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
@@ -262,8 +262,8 @@ BEGIN
                                                      left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
                                                      left join flow.company_timezone ct on ct.id = pczu.company_timezone_id
                                                      left join flow.timezone t on t.id = ct.timezone_id
-                                            where pczu.postal_code_zone_id = v_postal_code_zone_id and
-                                              pczu.postal_code_zone_user_type_id = 1 and
+                                            where pczu.round_robin_id = v_round_robin_id and
+                                              pczu.round_robin_user_type_id = 1 and
                                               pczu.archived is false
                                             group by pczu.id, pczu.user_id, pczu.company_timezone_id,
                                                      t.timezone, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
@@ -271,12 +271,12 @@ BEGIN
                                                      ta.avail,
                                                      acwi.appointment_count_with_interval,
                                                      pczu.manual_allocation) as foo
-                                   group by foo.postal_code_zone_user_id, foo.user_id, foo.company_timezone_id,
+                                   group by foo.round_robin_user_id, foo.user_id, foo.company_timezone_id,
                                             foo.timezone, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
                                             foo.appointment_count,
                                             foo.avail, foo.appointment_count_with_interval,
                                             foo.manual_allocation) as foo1) as foo2
-                 group by foo2.postal_code_zone_user_id, foo2.user_id, foo2.company_timezone_id,
+                 group by foo2.round_robin_user_id, foo2.user_id, foo2.company_timezone_id,
                           foo2.timezone, foo2.actual_lead_allocation, foo2.total_lead_allocation,
                           foo2.total_lead_allocation, foo2.actual_lead_allocation, foo2.score,
                           foo2.lead_gen_num,

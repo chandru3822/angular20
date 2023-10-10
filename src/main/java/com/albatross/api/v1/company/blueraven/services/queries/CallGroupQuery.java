@@ -16,7 +16,7 @@ public class CallGroupQuery {
             where cgpn2.call_group_id = cg.id
               and cgpn2.active = true and cgpn2.archived = false) as activePhoneNumbersCount,
             (select count(1)
-            from brs.call_group_postal_code cgpc
+            from flow.postal_code cgpc
             where cgpc.call_group_id = cg.id
               and cgpc.archived = false) as postalCodesCount,
            (case when
@@ -43,7 +43,7 @@ public class CallGroupQuery {
        and case when :searchQuery::text is not null then
                     lower(translate(cg.call_group_name, '*,.& ', '')) like '%' || lower(trim(translate(:searchQuery::text, '*,.&', ''))) || '%'
                OR cg.id in (select cgpc.call_group_id
-                   from brs.call_group_postal_code cgpc
+                   from flow.postal_code cgpc
                    where cgpc.archived is not true
                    and cgpc.postal_code like '%' || :searchQuery::text || '%')
            else 1=1 end
@@ -52,15 +52,29 @@ public class CallGroupQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getAvailableCodesForGroup = """
+      select pc.id,
+             pc.postal_code as "postalCode",
+             pc.call_group_id as "callGroupId",
+             pc.active,
+             pc.archived
+      from flow.postal_code pc
+      where pc.archived is false
+      and pc.active is true
+      and pc.call_group_id is null
+      order by postal_code
+    """;
+
+  //language=PostgreSQL
   public final static String getCodesForGroup = """
-    select cgpc.id,
-           cgpc.postal_code as "postalCode",
-           cgpc.call_group_id as "callGroupId",
-           cgpc.archived
-    from brs.call_group_postal_code cgpc
-    where cgpc.call_group_id = :callGroupId
-      and cgpc.archived is not true
-    order by cgpc.postal_code
+      select pc.id,
+             pc.postal_code,
+             pc.call_group_id,
+             pc.archived
+      from flow.postal_code pc
+      where pc.call_group_id = :callGroupId
+        and pc.archived is false
+      order by pc.postal_code
     """;
 
   //language=PostgreSQL
@@ -134,8 +148,11 @@ public class CallGroupQuery {
 
   //language=PostgreSQL
   public final static String addPostalCode = """
-    insert into brs.call_group_postal_code(call_group_id, postal_code, date_created, created_by_id, date_modified, modified_by_id)
-    values (:callGroupId, trim(:postalCode), now(), :createdById, now(), :createdById)
+    update flow.postal_code
+      set call_group_id = :callGroupId,
+          modified_by_id = :userId,
+          date_modified = now()
+    where id = :id
     """;
 
   //language=PostgreSQL
@@ -146,8 +163,8 @@ public class CallGroupQuery {
 
   //language=PostgreSQL
   public final static String deletePostalCode = """
-    update brs.call_group_postal_code
-    set archived = true,
+    update flow.postal_code
+    set call_group_id = null,
         modified_by_id = :modifiedById,
         date_modified = now()
     where id = :id
@@ -168,7 +185,7 @@ public class CallGroupQuery {
            cgpc.call_group_id,
            cgpc.postal_code,
            cgpc.archived
-    from brs.call_group_postal_code cgpc
+    from flow.postal_code cgpc
     where cgpc.id = :id
     """;
 
@@ -185,21 +202,9 @@ public class CallGroupQuery {
     """;
 
   //language=PostgreSQL
-  public final static String checkForExisting = """
-    select cgpc.id,
-           cgpc.call_group_id,
-           cgpc.postal_code,
-           cgpc.archived
-    from brs.call_group_postal_code cgpc
-        inner join brs.call_group cg on cgpc.call_group_id = cg.id
-    where cgpc.postal_code = :postalCode
-      and cg.archived is not true and cgpc.archived is not true
-    """;
-
-  //language=PostgreSQL
   public final static String getLowestCallsCallGroupNumber = """
     with activeNumbers as (select phone_number, cg.id from brs.call_group_phone_number cgpn
-                                                      inner join brs.call_group_postal_code cgpc on cgpn.call_group_id = cgpc.call_group_id
+                                                      inner join flow.postal_code cgpc on cgpn.call_group_id = cgpc.call_group_id
                                                       inner join brs.call_group cg on cg.id = cgpn.call_group_id
                            where cgpc.postal_code = :postalCode and cg.active is true and cgpn.active is true
                              and cg.archived is not true and cgpc.archived is not true),

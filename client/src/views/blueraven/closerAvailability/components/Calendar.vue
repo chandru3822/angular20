@@ -4,17 +4,17 @@
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
         <v-col cols="12" md="6">
-          <v-autocomplete v-model="selectedPostalCodeZones"
-                    :items="postalCodeZones"
+          <v-autocomplete v-model="selectedRoundRobins"
+                    :items="roundRobins"
                     label="Round Robin"
                     multiple
                     class="mr-2"
-                    :loading="postalCodeZonesLoading"
+                    :loading="roundRobinsLoading"
                     hide-details
                     return-object
-                    @input="zoneValueChanged = true"
-                    item-text="zoneName"
-                    @blur="getPostalCodeZoneUsers(selectedPostalCodeZones)"
+                    @input="roundRobinValueChanged = true"
+                    item-text="roundRobinName"
+                    @blur="getRoundRobinUsers(selectedRoundRobins)"
                     item-value="id"
                           attach
           >
@@ -22,66 +22,66 @@
                 slot="selection"
                 slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedPostalCodeZones.length < 3">
-                <v-chip small close @click:close="selectedPostalCodeZones.splice(index, 1)"
-                        v-for="sr in selectedPostalCodeZones">
-                  <span>{{ sr.zoneName }}</span>
+              <div v-if="index === 0 && selectedRoundRobins.length < 3">
+                <v-chip small close @click:close="selectedRoundRobins.splice(index, 1)"
+                        v-for="sr in selectedRoundRobins">
+                  <span>{{ sr.roundRobinName }}</span>
                 </v-chip>
               </div>
               <span
-                  v-if="index === 1 && selectedPostalCodeZones.length >= 3"
+                  v-if="index === 1 && selectedRoundRobins.length >= 3"
                   class="primary--text text-caption"
-              >{{ selectedPostalCodeZones.length }} selected</span>
+              >{{ selectedRoundRobins.length }} selected</span>
             </template>
           </v-autocomplete>
         </v-col>
         <v-col>
           <v-autocomplete ref="pczuSelect"
-                          v-model="selectedPostalCodeZoneUsers"
-                          :items="postalCodeZoneUsers"
+                          v-model="selectedRoundRobinUsers"
+                          :items="roundRobinUsers"
                           label="Users"
                           multiple
                           class="mr-3"
-                          :loading="postalCodeZoneUsersLoading"
+                          :loading="roundRobinUsersLoading"
                           return-object
                           :hide-details="countSelected < maxSelectionAllowed"
                           :error="countSelected >= maxSelectionAllowed"
                           :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                          @input="[postalCodeZoneUserValuesChanged = true, limiter()]"
+                          @input="[roundRobinUserValuesChanged = true, limiter()]"
                           item-text="fullName"
                           item-value="id"
                           attach
           >
             <template slot="item" slot-scope="data">
-              {{ data.item.fullName }} - {{ data.item.zoneName }}
+              {{ data.item.fullName }} - {{ data.item.roundRobinName }}
             </template>
             <template
               slot="selection"
               slot-scope="{ item, index }"
             >
-              <div v-if="index === 0 && selectedPostalCodeZoneUsers.length < 3">
-                <v-chip small close @click:close="[selectedPostalCodeZoneUsers.splice(idx, 1), limiter()]"
-                        v-for="(sr, idx) in selectedPostalCodeZoneUsers">
-                  <span>{{ sr.fullName }} - {{sr.zoneName}}</span>
+              <div v-if="index === 0 && selectedRoundRobinUsers.length < 3">
+                <v-chip small close @click:close="[selectedRoundRobinUsers.splice(idx, 1), limiter()]"
+                        v-for="(sr, idx) in selectedRoundRobinUsers">
+                  <span>{{ sr.fullName }} - {{sr.roundRobinName}}</span>
                 </v-chip>
               </div>
               <span
-                v-if="index === 1 && selectedPostalCodeZoneUsers.length >= 3"
+                v-if="index === 1 && selectedRoundRobinUsers.length >= 3"
                 class="primary--text text-caption"
-              >{{ selectedPostalCodeZoneUsers.length }} selected</span>
+              >{{ selectedRoundRobinUsers.length }} selected</span>
             </template>
             <template v-slot:prepend-item>
               <v-list-item
-                  v-if="postalCodeZoneUsers.length <= 20"
+                  v-if="roundRobinUsers.length <= 20"
                   ripple
-                  @click="toggleSelectAllPostalCodeZoneUsers()">
+                  @click="toggleSelectAllRoundRobinUsers()">
                 <v-list-item-action>
-                  <v-icon>{{ iconPostalCodeZoneUsers }}</v-icon>
+                  <v-icon>{{ iconRoundRobinUsers }}</v-icon>
                 </v-list-item-action>
                 <v-list-item-title>Select All</v-list-item-title>
               </v-list-item>
               <v-divider
-                v-if="postalCodeZoneUsers.length <= 20"
+                v-if="roundRobinUsers.length <= 20"
                 class="mt-2"
               ></v-divider>
             </template>
@@ -100,7 +100,7 @@
       <FullCalendar ref="eventCalendar"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
                     :defaultView="calendar.options.defaultView"
-                    :resources="selectedPostalCodeZoneUsers"
+                    :resources="selectedRoundRobinUsers"
                     theme-system="standard"
                     :resources-initially-expanded="true"
                     :time-zone="calendar.options.timezone"
@@ -155,18 +155,18 @@
       states: {type: Array}
     },
     computed: {
-      //postal code zone users
-      selectAllPostalCodeZoneUsers () {
-        return this.postalCodeZoneUsers.length === this.selectedPostalCodeZoneUsers.length
+      //round robin users
+      selectAllRoundRobinUsers () {
+        return this.roundRobinUsers.length === this.selectedRoundRobinUsers.length
       },
-      selectSomePostalCodeZoneUsers () {
-        return this.selectedPostalCodeZoneUsers.length > 0 && !this.selectAllPostalCodeZoneUsers
+      selectSomeRoundRobinUsers () {
+        return this.selectedRoundRobinUsers.length > 0 && !this.selectAllRoundRobinUsers
       },
-      iconPostalCodeZoneUsers () {
-        if (this.postalCodeZoneUsers.length === this.selectedPostalCodeZoneUsers.length) {
+      iconRoundRobinUsers () {
+        if (this.roundRobinUsers.length === this.selectedRoundRobinUsers.length) {
           return 'check_box'
         }
-        if (this.selectSomePostalCodeZoneUsers) {
+        if (this.selectSomeRoundRobinUsers) {
           return 'indeterminate_check_box'
         }
         return 'check_box_outline_blank'
@@ -187,7 +187,7 @@
         () => this.$refs.pczuSelect.isMenuActive,
         (val) => {
           // if val is false = blur aka the menu is being closed. true = menu is being opened
-          if(!val && this.selectedPostalCodeZoneUsers.length > 0) {
+          if(!val && this.selectedRoundRobinUsers.length > 0) {
             this.getEvents(true)
           }
         })
@@ -196,7 +196,7 @@
       '$store.state.user.details.timezone.value': function () {
         this.calendar.options.timezone = this.$store.state.user.details.timezone.value
       },
-      'selectedPostalCodeZoneUsers': function () {
+      'selectedRoundRobinUsers': function () {
         //clear out selected map resources so we don't orphan map pins when the uncheck a closer
         this.clearSelectedMapResourceEvents()
         this.callback(this.mapResourceEvents)
@@ -204,8 +204,8 @@
       }
     },
     created() {
-      this.getPostalCodeZones()
-      this.getPostalCodeZoneUsers()
+      this.getRoundRobins()
+      this.getRoundRobinUsers()
     },
     data() {
       return {
@@ -224,19 +224,19 @@
             events: [] }
         ],
         events: [],
-        postalCodeZones: [],
-        postalCodeZoneValuesChanged: false,
-        selectedPostalCodeZones: [],
-        postalCodeZonesLoading: true,
-        zoneValueChanged: false,
+        sroundRobin: [],
+        roundRobinValuesChanged: false,
+        selectedRoundRobin: [],
+        roundRobinsLoading: true,
+        roundRobinValueChanged: false,
         initialLoad: true,
-        postalCodeZoneUsers: [],
-        postalCodeZoneUserValuesChanged: false,
+        roundRobinUsers: [],
+        roundRobinUserValuesChanged: false,
         countSelected: 0,
         maxSelectionAllowed: 20,
         countErrorMessage: 'Maximum Selection Reached',
-        selectedPostalCodeZoneUsers: [],
-        postalCodeZoneUsersLoading: true,
+        selectedRoundRobinUsers: [],
+        roundRobinUsersLoading: true,
         resources: [],
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
@@ -334,14 +334,14 @@
     },
     methods: {
       limiter() {
-        this.countSelected = this.selectedPostalCodeZoneUsers?.length
-        this.postalCodeZoneUsers.forEach(u => {
-          let match = this.selectedPostalCodeZoneUsers.find(su => su.id === u.id)
+        this.countSelected = this.selectedRoundRobinUsers?.length
+        this.roundRobinUsers.forEach(u => {
+          let match = this.selectedRoundRobinUsers.find(su => su.id === u.id)
           u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
         })
       },
       handleResourceColors() {
-        this.selectedPostalCodeZoneUsers.forEach((r, index) => {
+        this.selectedRoundRobinUsers.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
           r.eventBorderColor = '#919191'
 
@@ -359,19 +359,19 @@
           }
         })
       },
-      toggleSelectAllPostalCodeZoneUsers () {
-        if (this.selectAllPostalCodeZoneUsers) {
-          this.selectedPostalCodeZoneUsers = []
+      toggleSelectAllRoundRobinUsers () {
+        if (this.selectAllRoundRobinUsers) {
+          this.selectedRoundRobinUsers = []
         } else {
-          this.selectedPostalCodeZoneUsers = cloneDeep(this.postalCodeZoneUsers)
+          this.selectedRoundRobinUsers = cloneDeep(this.roundRobinUsers)
         }
       },
-      async getPostalCodeZones () {
+      async getRoundRobins () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/postalCode/zonesForUser`)
-          this.postalCodeZones = data
-          this.postalCodeZonesLoading = false
+          const {data, status} = await getRequest(`/roundRobin/forUser`)
+          this.roundRobins = data
+          this.roundRobinsLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -380,19 +380,19 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getPostalCodeZoneUsers (zones) {
-        if(this.zoneValueChanged || this.initialLoad) {
-          this.zoneValueChanged = false
+      async getRoundRobinUsers (roundRobins) {
+        if(this.roundRobinValueChanged || this.initialLoad) {
+          this.roundRobinValueChanged = false
           this.initialLoad = false
-          this.postalCodeZoneUsers = []
+          this.roundRobinUsers = []
           this.$store.commit(AppMutations.SET_LOADING, true)
           try {
             let params = {
-              zoneIds: zones?.length > 0 ? zones.map(z => z.id) : null
+              roundRobinIds: roundRobins?.length > 0 ? roundRobins.map(z => z.id) : null
             }
-            const {data, status} = await postRequest(`/postalCode/zone/usersByDownline`, params, null, [])
-            this.postalCodeZoneUsers = data
-            this.postalCodeZoneUsersLoading = false
+            const {data, status} = await postRequest(`/roundRobin/usersByDownline`, params, null, [])
+            this.roundRobinUsers = data
+            this.roundRobinsLoading = false
             handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -405,7 +405,7 @@
       async getAvailability() {
         try {
           let params = {
-            postalCodeZoneUserIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.id) : [],
+            roundRobinUserIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.id) : [],
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime
           }
@@ -424,7 +424,7 @@
           //we do this for every resource, regardless of if they already have an availability or not
           // if they already have one it still works as it should and doesn't block out the time, but if they
           // dont already have one then this will block/grey out the day so it doesn't look like they are available
-          this.selectedPostalCodeZoneUsers.forEach(r => {
+          this.selectedRoundRobinUsers.forEach(r => {
             data.push({
               start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
               end: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
@@ -446,21 +446,10 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      // getUserPositionIds () {
-      //   let userPositionIds = []
-      //   this.selectedPostalCodeZoneUsers?.forEach(su => {
-      //     su.userPositions?.forEach(up => {
-      //       //up.id = userPositionId
-      //       userPositionIds.push(up.id)
-      //     })
-      //   })
-      //   return userPositionIds
-      // },
       async getEvents(reload) {
-        // localStorage.setItem('caUsers', JSON.stringify(this.selectedPostalCodeZoneUsers))
         //dont reload events if they deselected all of one type
         //and only load if the selected values changed
-        if(reload || (this.selectedPostalCodeZoneUsers?.length > 0 && (this.postalCodeZoneUserValuesChanged || this.calendarInitialRender))) {
+        if(reload || (this.selectedRoundRobinUsers?.length > 0 && (this.roundRobinUserValuesChanged || this.calendarInitialRender))) {
           if (reload || !this.calendarInitialRender) {
             this.setCalendarStartAndEndTimes()
           }
@@ -472,7 +461,7 @@
             { name: 'Appt Events',
               events: [] }
           ]
-          if (this.selectedPostalCodeZoneUsers.length > 0) {
+          if (this.selectedRoundRobinUsers.length > 0) {
             //i do this here instead of on its own because all of the code above here has to happen for get availability as well
             this.calendarLoading = true
             await this.getAvailability()
@@ -481,7 +470,7 @@
               let params = {
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedPostalCodeZoneUsers?.length > 0 ? this.selectedPostalCodeZoneUsers.map(u => u.userId) : [],
+                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedvUsers.map(u => u.userId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
@@ -489,7 +478,7 @@
               let additionalRecords = []
               data?.forEach(d => {
                 //get all selected users who match the appt user_id
-                let matchingUsers = this.selectedPostalCodeZoneUsers.filter(r => r.userId === d.userId)
+                let matchingUsers = this.selectedRoundRobinUsers.filter(r => r.userId === d.userId)
 
                 // if there is more than one selected user with that user ID then add another record for the additional user
                 if(matchingUsers?.length > 1) {
@@ -602,7 +591,7 @@
 
       },
       clearSelectedMapResourceEvents () {
-        let selectedResourceIds = this.selectedPostalCodeZoneUsers.map(u => u.id)
+        let selectedResourceIds = this.selectedRoundRobinUsers.map(u => u.id)
         this.mapResourceEvents = this.mapResourceEvents.filter(r => {
           return selectedResourceIds.includes(r.id)
         })
