@@ -74,7 +74,7 @@ set temp_metro_area_id = ( select mapc.metro_area_id
 --i am going to populate this but it is mostly unnecessary because carlin will be sending me a spreadsheet of these. and currently we dont consume the temp_metro_area_id anyway
 
 --DROP THE BRS.metro_area_postal_code TABLE...BUT RENAMING IT FOR NOW IN CASE I NEED IT AGAIN
-ALTER TABLE IF EXISTS flow.metro_area_postal_code
+ALTER TABLE IF EXISTS brs.metro_area_postal_code
     RENAME TO deprecated_metro_area_postal_code;
 
 --add archived for postal code
@@ -186,12 +186,14 @@ add column if not exists call_group_id bigint references brs.call_group(id);
 CREATE INDEX if not exists pc_call_group_id_idx ON flow.postal_code (call_group_id);
 
 --ADD THE MISSING POSTAL CODES THEY HAD MANUALLY ADDED from call group stuff
-insert into flow.postal_code(country_code, postal_code, place_name, admin_name1, admin_code1, admin_name2, admin_code2, admin_name3, admin_code3, latitude, longitude, accuracy, round_robin_id)
-select 'US', pc.postal_code, 'MIGRATED FROM CALL GROUPS - PLS NAME', 'MIGRATED', 'MIGRATED', 'MIGRATED', NULL, NULL, NULL, NULL, NULL, NULL, NULL
+insert into flow.postal_code(country_code, postal_code, place_name, admin_name1, admin_code1, admin_name2, admin_code2, admin_name3, admin_code3, call_group_id)
+select distinct 'US', pc.postal_code, 'MIGRATED FROM CALL GROUPS - PLS NAME', 'MIGRATED', 'MIGRATED', 'MIGRATED', NULL, NULL,
+                NULL, pc.call_group_id
 from brs.call_group_postal_code pc
-where not exists(select p.id
-                 from flow.postal_code p
-                 where p.postal_code = pc.postal_code);
+       inner join brs.call_group cg on pc.call_group_id = cg.id
+where cg.archived is false and not exists(select p.id
+                                          from flow.postal_code p
+                                          where p.postal_code = pc.postal_code);
 
 --UPDATE THE POSTAL CODE TABLE TO POINT TO THE CALL GROUP TABLE
 update flow.postal_code pc
