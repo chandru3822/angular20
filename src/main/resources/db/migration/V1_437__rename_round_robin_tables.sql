@@ -70,7 +70,8 @@ alter table flow.postal_code
 update flow.postal_code pc
 set temp_metro_area_id = ( select mapc.metro_area_id
                        from brs.metro_area_postal_code mapc
-                       where mapc.postal_code = pc.temp_metro_area_id);
+                       where mapc.postal_code = pc.postal_code);
+--i am going to populate this but it is mostly unnecessary because carlin will be sending me a spreadsheet of these. and currently we dont consume the temp_metro_area_id anyway
 
 --DROP THE BRS.metro_area_postal_code TABLE...BUT RENAMING IT FOR NOW IN CASE I NEED IT AGAIN
 ALTER TABLE IF EXISTS flow.metro_area_postal_code
