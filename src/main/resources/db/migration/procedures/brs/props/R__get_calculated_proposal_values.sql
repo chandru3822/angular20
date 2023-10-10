@@ -594,7 +594,7 @@ BEGIN
          left join brs.proposal_custom_field_value pcfv21 on prop.id = pcfv21.proposal_id and
                                                              pcfv21.custom_field_group_assignment_id = 476
          left join brs.proposal_custom_field_value pcfv22 on prop.id = pcfv22.proposal_id and
-                                                             pcfv22.custom_field_group_assignment_id = 479
+                                                             pcfv22.custom_field_group_assignment_id = 480
   where prop.id = p_proposal_id;
 
   select string_agg(lov.name, ',')
@@ -775,7 +775,7 @@ BEGIN
     and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intArrayValue == $intArrayValue ))',
                          jsonb_build_object('field', 341, 'intArrayValue', v_state_id))
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 406, 'intValue', v_dealer)));
+                           jsonb_build_object('targetFieldId', 407, 'intValue', v_dealer)));
 
   -- raise notice 'v_dealer_redline_price = % ',v_dealer_redline_price;
   -- raise notice 'v_dealer_markup = % ',v_dealer_markup;
