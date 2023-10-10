@@ -3,160 +3,160 @@ drop type if exists brs.calculated_proposal_value cascade;
 
 create type brs.calculated_proposal_value as
 (
-  proposal_id                                      bigint,
-  project_id                                       bigint,
-  proposal_archived                                boolean,
-  contact_first_name                               varchar,
-  contact_last_name                                varchar,
-  contact_phone                                    varchar,
-  contact_email                                    varchar,
-  project_name                                     varchar,
-  project_street1                                  varchar,
-  project_street2                                  varchar,
-  city                                             varchar,
-  postal_code                                      varchar,
-  project_state                                    varchar,
-  project_state_abbrev                             varchar,
-  monthly_cost_25_year_average_without_solar       varchar,
-  monthly_cost_30_year_average_without_solar       varchar,
-  monthly_cost_25_year_average_with_solar          varchar,
-  remaining_monthly_electric_bill_25_year_average  varchar,
-  remaining_monthly_electric_bill_30_year_average  varchar,
-  total_cost_25_years                              varchar,
-  total_cost_30_years                              varchar,
-  total_savings_25_years                           varchar,
-  total_savings_30_years                           varchar,
-  monthly_solar_payment                            varchar,
-  monthly_cost_today_without_solar                 varchar,
-  monthly_cost_today_with_solar                    varchar,
-  monthly_cost_today_avg_remaining_electrical_bill varchar,
-  initial_monthly_payment_all_credits_to_loan      varchar,
-  initial_monthly_payment_no_credits_to_loan       varchar,
-  reamortized_monthly_payment_all_credits_to_loan  varchar,
-  reamortized_monthly_payment_no_credits_to_loan   varchar,
-  monthly_payment_all_credits_to_loan_after_term   varchar,
-  monthly_payment_no_credits_to_loan_after_term    varchar,
-  system_size                                      numeric,
-  first_year_production_estimate                   bigint,
-  total_system_cost                                varchar,
-  referral_promotion                               varchar,
-  total_loan_amount                                varchar,
-  federal_tax_incentive_amount                     varchar,
-  federal_tax_incentive_rate                       numeric,
-  net_system_cost                                  varchar,
-  utility_company                                  text,
-  estimated_annual_energy_consumption_kwh          bigint,
-  current_estimated_annual_utility_bill            varchar,
-  current_estimated_cost_per_kwh                   varchar,
-  utility_cost_escalator                           numeric,
-  state_rebate_amount                              varchar,
-  state_rebate                                     numeric,
-  ill_srec_rebate_amount                           varchar,
-  utility_rebate_amount                            varchar, --eto_rebate                                       varchar,
+  proposal_id                                        bigint,
+  project_id                                         bigint,
+  proposal_archived                                  boolean,
+  contact_first_name                                 varchar,
+  contact_last_name                                  varchar,
+  contact_phone                                      varchar,
+  contact_email                                      varchar,
+  project_name                                       varchar,
+  project_street1                                    varchar,
+  project_street2                                    varchar,
+  city                                               varchar,
+  postal_code                                        varchar,
+  project_state                                      varchar,
+  project_state_abbrev                               varchar,
+  monthly_cost_25_year_average_without_solar         varchar,
+  monthly_cost_30_year_average_without_solar         varchar,
+  monthly_cost_25_year_average_with_solar            varchar,
+  remaining_monthly_electric_bill_25_year_average    varchar,
+  remaining_monthly_electric_bill_30_year_average    varchar,
+  total_cost_25_years                                varchar,
+  total_cost_30_years                                varchar,
+  total_savings_25_years                             varchar,
+  total_savings_30_years                             varchar,
+  monthly_solar_payment                              varchar,
+  monthly_cost_today_without_solar                   varchar,
+  monthly_cost_today_with_solar                      varchar,
+  monthly_cost_today_avg_remaining_electrical_bill   varchar,
+  initial_monthly_payment_all_credits_to_loan        varchar,
+  initial_monthly_payment_no_credits_to_loan         varchar,
+  reamortized_monthly_payment_all_credits_to_loan    varchar,
+  reamortized_monthly_payment_no_credits_to_loan     varchar,
+  monthly_payment_all_credits_to_loan_after_term     varchar,
+  monthly_payment_no_credits_to_loan_after_term      varchar,
+  system_size                                        numeric,
+  first_year_production_estimate                     bigint,
+  total_system_cost                                  varchar,
+  referral_promotion                                 varchar,
+  total_loan_amount                                  varchar,
+  federal_tax_incentive_amount                       varchar,
+  federal_tax_incentive_rate                         numeric,
+  net_system_cost                                    varchar,
+  utility_company                                    text,
+  estimated_annual_energy_consumption_kwh            bigint,
+  current_estimated_annual_utility_bill              varchar,
+  current_estimated_cost_per_kwh                     varchar,
+  utility_cost_escalator                             numeric,
+  state_rebate_amount                                varchar,
+  state_rebate                                       numeric,
+  ill_srec_rebate_amount                             varchar,
+  utility_rebate_amount                              varchar, --eto_rebate                                       varchar,
 --csu_rebate                                       varchar,
-  apr                                              numeric,
-  loan_term                                        numeric,
-  assumed_payment_by_month_18                      varchar,
-  panel_degradation_factor                         numeric,
-  system_production_25_year                        text,
-  estimated_offset                                 numeric,
-  led_light_bulbs                                  bigint,
-  smart_thermostat                                 bigint,
-  total_ee_reduction                               numeric,
-  down_payment_amount                              varchar,
-  version_id                                       bigint,
-  project_process_step_id                          bigint,
-  friends_and_family                               boolean,
-  production_factor                                numeric,
-  funding_range                                    numeric,
-  production_factor_range                          numeric,
-  points_off_south_production_factor               numeric,
-  price_change_per_production_point                numeric,
-  calculated_price_adjustment                      numeric,
-  max_price_adjustment                             numeric,
-  adjusted_price_per_wat                           numeric,
-  initial_system_cost                              numeric,
-  promotion_cost                                   numeric,
-  equipment_inverter_adder                         numeric,
-  equipment_panel_adder                            numeric,
-  equipment_storage_adder                          numeric,
-  misc_adders                                      numeric,
-  panel_brand_id                                   bigint,
-  panel_watts                                      bigint,
-  above_line_rebate                                numeric,
-  state_id                                         bigint,
-  utility_company_id                               bigint,
-  dealer_fee                                       numeric,
-  eto_rebate_unit_type_id                          bigint,
-  federal_unit_type_id                             bigint,
-  inverter_efficiency                              numeric,
-  initial_payment_factor                           numeric,
-  reamortization_factor                            numeric,
-  product_id                                       numeric,
-  smart_thermostat_value                           numeric,
-  smart_thermostat_adder                           numeric,
-  led_light_bulbs_value                            numeric,
-  led_light_bulbs_adder                            numeric,
-  energy_efficiency_reduction_light_bulbs          numeric,
-  energy_efficiency_reduction_thermostat           numeric,
-  adjusted_annual_consumption                      numeric,
-  instantly_used                                   numeric,
-  sent_to_grid                                     numeric,
-  after_net_metering                               numeric,
-  adjusted_annual_production                       numeric,
-  instant_use_assumption                           numeric,
-  net_metring_rate                                 numeric,
-  cost_of_solar                                    numeric,
-  monthly_cost_30_year_average_with_solar          varchar,
-  reamortized_payment_factor_without_itc_paydown   numeric,
-  secondary_monthly_payment_no_credits_to_loan     varchar,
-  panel_brand                                      varchar,
-  panel_quantity                                   bigint,
-  inverter_brand_id                                bigint,
-  inverter_brand                                   varchar,
-  aurora_design_id                                 text,
-  product_name                                     varchar,
-  proposal_nbr                                     bigint,
-  other_adder_and_discount                         text,
-  other_adder_and_discount_amount                  varchar,
-  adder_name                                       text,
-  non_solar_cap                                    numeric,
-  required_down_payment                            varchar,
-  required_down_payment_number                     numeric,
-  storage_type_id                                  bigint,
-  storage_type                                     varchar,
-  financier                                        varchar,
-  financier_id                                     bigint,
-  loan_price_storage                               varchar,
-  cash_price_storage                               varchar,
-  main_panel_upgrade_cost                          numeric,
-  structural_upgrade_cost                          numeric,
-  reroof_cost                                      numeric,
-  tree_trimming_cost                               numeric,
-  trenching_cost                                   numeric,
-  ac_unit_relocation_cost                          numeric,
-  total_loan_amount_before_rebate                  numeric,
-  zone_adder                                       numeric,
-  loan_type                                        varchar,
-  unapproved_zip_code_adder                        numeric,
-  csu_rebate_unit_type_id                          integer,
-  financial_option                                 varchar,
-  check_from_br                                    varchar,
-  site_survey_time_estimate                        integer,
-  site_survey_resource_type_yn                     text,
-  site_survey_resource_type                        text,
-  site_survey_items                                text,
-  number_of_batteries                              numeric,
-  estimated_backup_days                            numeric,
-  solar_rebate_for_hic                             numeric,
-  total_square_footage                             numeric,
-  net_payment_from_customer                        varchar,
+  apr                                                numeric,
+  loan_term                                          numeric,
+  assumed_payment_by_month_18                        varchar,
+  panel_degradation_factor                           numeric,
+  system_production_25_year                          text,
+  estimated_offset                                   numeric,
+  led_light_bulbs                                    bigint,
+  smart_thermostat                                   bigint,
+  total_ee_reduction                                 numeric,
+  down_payment_amount                                varchar,
+  version_id                                         bigint,
+  project_process_step_id                            bigint,
+  friends_and_family                                 boolean,
+  production_factor                                  numeric,
+  funding_range                                      numeric,
+  production_factor_range                            numeric,
+  points_off_south_production_factor                 numeric,
+  price_change_per_production_point                  numeric,
+  calculated_price_adjustment                        numeric,
+  max_price_adjustment                               numeric,
+  adjusted_price_per_wat                             numeric,
+  initial_system_cost                                numeric,
+  promotion_cost                                     numeric,
+  equipment_inverter_adder                           numeric,
+  equipment_panel_adder                              numeric,
+  equipment_storage_adder                            numeric,
+  misc_adders                                        numeric,
+  panel_brand_id                                     bigint,
+  panel_watts                                        bigint,
+  above_line_rebate                                  numeric,
+  state_id                                           bigint,
+  utility_company_id                                 bigint,
+  dealer_fee                                         numeric,
+  eto_rebate_unit_type_id                            bigint,
+  federal_unit_type_id                               bigint,
+  inverter_efficiency                                numeric,
+  initial_payment_factor                             numeric,
+  reamortization_factor                              numeric,
+  product_id                                         numeric,
+  smart_thermostat_value                             numeric,
+  smart_thermostat_adder                             numeric,
+  led_light_bulbs_value                              numeric,
+  led_light_bulbs_adder                              numeric,
+  energy_efficiency_reduction_light_bulbs            numeric,
+  energy_efficiency_reduction_thermostat             numeric,
+  adjusted_annual_consumption                        numeric,
+  instantly_used                                     numeric,
+  sent_to_grid                                       numeric,
+  after_net_metering                                 numeric,
+  adjusted_annual_production                         numeric,
+  instant_use_assumption                             numeric,
+  net_metring_rate                                   numeric,
+  cost_of_solar                                      numeric,
+  monthly_cost_30_year_average_with_solar            varchar,
+  reamortized_payment_factor_without_itc_paydown     numeric,
+  secondary_monthly_payment_no_credits_to_loan       varchar,
+  panel_brand                                        varchar,
+  panel_quantity                                     bigint,
+  inverter_brand_id                                  bigint,
+  inverter_brand                                     varchar,
+  aurora_design_id                                   text,
+  product_name                                       varchar,
+  proposal_nbr                                       bigint,
+  other_adder_and_discount                           text,
+  other_adder_and_discount_amount                    varchar,
+  adder_name                                         text,
+  non_solar_cap                                      numeric,
+  required_down_payment                              varchar,
+  required_down_payment_number                       numeric,
+  storage_type_id                                    bigint,
+  storage_type                                       varchar,
+  financier                                          varchar,
+  financier_id                                       bigint,
+  loan_price_storage                                 varchar,
+  cash_price_storage                                 varchar,
+  main_panel_upgrade_cost                            numeric,
+  structural_upgrade_cost                            numeric,
+  reroof_cost                                        numeric,
+  tree_trimming_cost                                 numeric,
+  trenching_cost                                     numeric,
+  ac_unit_relocation_cost                            numeric,
+  total_loan_amount_before_rebate                    numeric,
+  zone_adder                                         numeric,
+  loan_type                                          varchar,
+  unapproved_zip_code_adder                          numeric,
+  csu_rebate_unit_type_id                            integer,
+  financial_option                                   varchar,
+  check_from_br                                      varchar,
+  site_survey_time_estimate                          integer,
+  site_survey_resource_type_yn                       text,
+  site_survey_resource_type                          text,
+  site_survey_items                                  text,
+  number_of_batteries                                numeric,
+  estimated_backup_days                              numeric,
+  solar_rebate_for_hic                               numeric,
+  total_square_footage                               numeric,
+  net_payment_from_customer                          varchar,
   initial_monthly_payment_all_credits_to_loan_bpPlus varchar,
-  below_line_rebate varchar,
-  above_line_rebate_without_odoe  varchar,
-  odoe_rebate varchar,
-  above_line_rebate_without_odoe_number  numeric,
-  odoe_rebate_number numeric
+  below_line_rebate                                  varchar,
+  above_line_rebate_without_odoe                     varchar,
+  odoe_rebate                                        varchar,
+  above_line_rebate_without_odoe_number              numeric,
+  odoe_rebate_number                                 numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -243,221 +243,224 @@ CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
 AS
 $BODY$
 declare
-  v_aurora_design_summary                            jsonb;
-  v_version_id                                       bigint;
-  v_project_process_step_id                          bigint;
-  v_estimated_annual_energy_consumption_kwh          bigint;
-  v_first_year_production_estimate                   bigint;
-  v_friends_and_family                               boolean;
-  v_system_size                                      numeric;
-  v_production_factor                                numeric;
-  v_funding_range                                    numeric;
-  v_production_factor_range                          numeric;
-  v_points_off_south_production_factor               numeric;
-  v_price_change_per_production_point                numeric;
-  v_calculated_price_adjustment                      numeric;
-  v_max_price_adjustment                             numeric;
-  v_initial_system_cost                              numeric;
-  v_promotion_cost                                   numeric;
-  v_equipment_inverter_adder                         numeric;
-  v_equipment_panel_adder                            numeric;
-  v_equipment_storage_adder                          numeric;
-  v_misc_adders                                      numeric;
-  v_panel_brand_id                                   bigint;
-  v_panel_watts                                      bigint;
-  v_above_line_rebate                                numeric;
-  v_state_id                                         bigint;
-  v_utility_company_id                               bigint;
-  v_eto_rebate                                       numeric;
-  v_csu_rebate                                       numeric;
-  v_total_loan_amount                                numeric;
-  v_total_loan_amount_before_rebate                  numeric;
-  v_down_payment_amount                              numeric;
-  v_total_system_cost                                numeric;
-  v_panel_degradation_factor                         numeric;
-  v_federal_tax_incentive_rate                       numeric;
-  v_federal_tax_incentive_amount                     numeric;
-  v_monthly_solar_payment                            numeric;
-  v_monthly_cost_25_year_average_without_solar       numeric;
-  v_monthly_cost_30_year_average_without_solar       numeric;
-  v_monthly_cost_25_year_average_with_solar          numeric;
-  v_remaining_monthly_electric_bill_25_year_average  numeric;
-  v_remaining_monthly_electric_bill_30_year_average  numeric;
-  v_total_cost_25_years                              numeric;
-  v_total_cost_30_years                              numeric;
-  v_total_savings_25_years                           numeric;
-  v_total_savings_30_years                           numeric;
-  v_dealer_fee                                       numeric;
-  v_eto_rebate_unit_type_id                          bigint;
-  v_federal_unit_type_id                             bigint;
-  v_monthly_cost_today_without_solar                 numeric;
-  v_monthly_cost_today_with_solar                    numeric;
-  v_monthly_cost_today_avg_remaining_electrical_bill numeric;
-  v_initial_monthly_payment_all_credits_to_loan      numeric;
-  v_initial_monthly_payment_no_credits_to_loan       numeric;
-  v_reamortized_monthly_payment_all_credits_to_loan  numeric;
-  v_reamortized_monthly_payment_no_credits_to_loan   numeric;
-  v_monthly_payment_all_credits_to_loan_after_term   numeric;
-  v_monthly_payment_no_credits_to_loan_after_term    numeric;
-  v_referral_promotion                               numeric;
-  v_net_system_cost                                  numeric;
-  v_utility_company                                  text;
-  v_current_estimated_cost_per_kwh                   numeric;
-  v_current_estimated_annual_utility_bill            numeric;
-  v_system_production_25_year                        numeric;
-  v_estimated_offset                                 numeric;
-  v_led_light_bulbs                                  bigint;
-  v_apr                                              numeric;
-  v_smart_thermostat                                 bigint;
-  v_loan_term                                        numeric;
-  v_total_ee_reduction                               numeric;
-  v_assumed_payment_by_month_18                      numeric;
-  v_inverter_efficiency                              numeric;
-  v_initial_payment_factor                           numeric;
-  v_col_springs_rebate                               numeric;
-  v_utility_cost_escalator                           numeric;
-  v_state_rebate_amount                              numeric;
-  v_reamortization_factor                            numeric;
-  v_product_id                                       numeric;
-  v_smart_thermostat_value                           numeric;
-  v_smart_thermostat_adder                           numeric;
-  v_led_light_bulbs_value                            numeric;
-  v_led_light_bulbs_adder                            numeric;
-  v_energy_efficiency_reduction_thermostat           numeric;
-  v_energy_efficiency_reduction_light_bulbs          numeric;
-  v_adjusted_annual_consumption                      numeric;
-  v_instantly_used                                   numeric;
-  v_sent_to_grid                                     numeric;
-  v_after_net_metering                               numeric;
-  v_adjusted_annual_production                       numeric;
-  v_instant_use_assumption                           numeric;
-  v_net_metring_rate                                 numeric;
-  v_cost_of_solar                                    numeric;
-  v_monthly_cost_30_year_average_with_solar          numeric;
-  v_reamortized_payment_factor_without_itc_paydown   numeric;
-  v_unit_type_state_rebate                           bigint;
-  v_secondary_monthly_payment_no_credits_to_loan     numeric;
-  v_proposal_id                                      bigint;
-  v_project_id                                       bigint;
-  v_proposal_archived                                boolean;
-  v_contact_first_name                               character varying;
-  v_contact_last_name                                character varying;
-  v_contact_phone                                    character varying;
-  v_contact_email                                    character varying;
-  v_project_name                                     character varying;
-  v_project_street1                                  character varying;
-  v_project_street2                                  character varying;
-  v_city                                             character varying;
-  v_postal_code                                      character varying;
-  v_project_state                                    character varying;
-  v_project_state_abbrev                             character varying;
-  v_panel_brand                                      character varying;
-  v_panel_quantity                                   bigint;
-  v_inverter_brand                                   varchar;
-  v_inverter_brand_id                                bigint;
-  v_aurora_design_id                                 text;
-  v_product_name                                     character varying;
-  v_proposal_nbr                                     bigint;
-  v_display_name                                     varchar;
-  v_other_adder_and_discount                         text;
-  v_other_adder_and_discount_amount                  numeric;
-  v_adder                                            text;
-  v_required_down_payment                            numeric;
-  v_non_solar_cap                                    numeric;
-  v_storage_type_id                                  bigint;
-  v_storage_type                                     varchar;
-  v_financier                                        varchar;
-  v_financier_id                                     bigint;
-  v_cash_price_storage                               numeric;
-  v_loan_price_storage                               numeric;
-  v_main_panel_upgrade_cost                          numeric;
-  v_structural_upgrade_cost                          numeric;
-  v_reroof_cost                                      numeric;
-  v_tree_trimming_cost                               numeric;
-  v_trenching_cost                                   numeric;
-  v_ac_unit_relocation_cost                          numeric;
-  v_zone_adder                                       numeric;
-  v_loan_type                                        varchar;
-  v_unapproved_zip_code_adder                        numeric;
-  v_csu_rebate_unit_type_id                          integer;
-  v_financial_option                                 varchar;
-  v_check_from_br                                    numeric;
-  v_site_survey_time_adders                          bigint[];
-  v_site_survey_time_estimate                        integer;
-  v_site_survey_resource_type_yn                     text;
-  v_site_survey_resource_type                        text;
-  v_site_survey_items                                text;
-  v_number_of_batteries                              numeric;
-  v_estimated_backup_days                            numeric(10, 1);
-  v_solar_rebate_for_hic                             numeric;
-  v_total_square_footage                             numeric;
-  v_net_payment_from_customer                        numeric(10, 2);
-  v_proposal_group_uuid_state_rebate                 uuid;
-  v_state_rebate_cap_amount                          numeric;
-  v_state_rebate_cap_percent_of_total                numeric;
-  v_utility_rebate_cap_amount                        numeric;
-  v_utility_rebate_amount                            numeric;
-  v_unit_type_utility_rebate                         numeric;
-  v_utility_rebate_cap_percent_of_total              numeric;
-  v_total_system_cost_before_rebates                 numeric;
-  v_srec_realization                                 numeric;
-  v_il_srec_greater_25                               numeric;
-  v_il_srec_less_10                                  numeric;
-  v_il_srec_between_10_25                            numeric;
-  v_ill_srec_rebate_amount                           numeric;
-  v_srec_rebate_cap_percent_of_total                 numeric;
-  v_srec_rebate_cap_amount                           numeric;
-  v_financial_product_id                             bigint;
-  v_production_factor_east_west                      numeric;
-  v_production_factor_south                          numeric;
-  v_maximum_funding_amount_per_watt                 numeric;
-  v_minimum_funding_amount_per_watt                 numeric;
-  v_unit_type_id_smart_thermostat                    bigint;
-  v_unit_type_id_led                                 bigint;
-  v_misc_adders_array bigint[];
-  v_panel_unit_type_id   bigint;
-  v_panel_adder_amount numeric;
-  v_panel_states bigint[];
-  v_inverter_unit_type_id   bigint;
-  v_inverter_adder_amount numeric;
-  v_small_system_size_adder_amount numeric;
-  v_small_system_size_adder numeric;
-  v_small_system_size_unit_type_id bigint;
-  v_small_system_size_value numeric;
-  v_rebate_amount numeric;
-  v_rebate_cap_amount numeric;
-  v_rebate_cap_percentage numeric;
-  v_odoe_income_status bigint;
-v_battery_rebate_amount numeric;
-v_battery_rebate_cap_percent_of_total numeric;
-v_battery_rebate_cap_amount numeric;
-v_odoe_rebate numeric;
-v_system_size_cutoff numeric;
-  v_commission_strategy_id bigint;
-v_closer_gen_discount numeric;
-v_red_line_funding_amount numeric;
-v_desired_commission_amount numeric;
-v_source_id bigint;
-v_adjusted_price_per_watt numeric;
-v_lead_source_discount numeric;
-v_redline_markup numeric;
-v_admin_discount numeric;
-v_storage_capacity numeric;
-v_required_down_payment_number numeric;
-v_minimum_tsrf bigint;
-v_utility_rebate_value numeric;
-v_state_rebate_value numeric;
-v_virginia_srec_rebate_amount numeric;
-v_virginia_srec_rate numeric;
-v_is_first_year_rebate_cap bigint;
-v_first_year_rebate_cap numeric;
-v_initial_monthly_payment_all_credits_to_loan_bpPlus numeric;
-v_above_line_rebate_without_odoe numeric;
-v_ancillary_cost_portion_of_loan_before_rebates numeric;
-v_additional_fee_for_exceeding_non_solar_threshold numeric;
-v_non_solar_threshold_for_additional_fee  numeric;
-v_maximum_dollar_per_watt_for_solar  numeric;
-  v_no_ancillary_total_loan_amount numeric;
+  v_aurora_design_summary                              jsonb;
+  v_version_id                                         bigint;
+  v_project_process_step_id                            bigint;
+  v_estimated_annual_energy_consumption_kwh            bigint;
+  v_first_year_production_estimate                     bigint;
+  v_friends_and_family                                 boolean;
+  v_system_size                                        numeric;
+  v_production_factor                                  numeric;
+  v_funding_range                                      numeric;
+  v_production_factor_range                            numeric;
+  v_points_off_south_production_factor                 numeric;
+  v_price_change_per_production_point                  numeric;
+  v_calculated_price_adjustment                        numeric;
+  v_max_price_adjustment                               numeric;
+  v_initial_system_cost                                numeric;
+  v_promotion_cost                                     numeric;
+  v_equipment_inverter_adder                           numeric;
+  v_equipment_panel_adder                              numeric;
+  v_equipment_storage_adder                            numeric;
+  v_misc_adders                                        numeric;
+  v_panel_brand_id                                     bigint;
+  v_panel_watts                                        bigint;
+  v_above_line_rebate                                  numeric;
+  v_state_id                                           bigint;
+  v_utility_company_id                                 bigint;
+  v_eto_rebate                                         numeric;
+  v_csu_rebate                                         numeric;
+  v_total_loan_amount                                  numeric;
+  v_total_loan_amount_before_rebate                    numeric;
+  v_down_payment_amount                                numeric;
+  v_total_system_cost                                  numeric;
+  v_panel_degradation_factor                           numeric;
+  v_federal_tax_incentive_rate                         numeric;
+  v_federal_tax_incentive_amount                       numeric;
+  v_monthly_solar_payment                              numeric;
+  v_monthly_cost_25_year_average_without_solar         numeric;
+  v_monthly_cost_30_year_average_without_solar         numeric;
+  v_monthly_cost_25_year_average_with_solar            numeric;
+  v_remaining_monthly_electric_bill_25_year_average    numeric;
+  v_remaining_monthly_electric_bill_30_year_average    numeric;
+  v_total_cost_25_years                                numeric;
+  v_total_cost_30_years                                numeric;
+  v_total_savings_25_years                             numeric;
+  v_total_savings_30_years                             numeric;
+  v_dealer_fee                                         numeric;
+  v_eto_rebate_unit_type_id                            bigint;
+  v_federal_unit_type_id                               bigint;
+  v_monthly_cost_today_without_solar                   numeric;
+  v_monthly_cost_today_with_solar                      numeric;
+  v_monthly_cost_today_avg_remaining_electrical_bill   numeric;
+  v_initial_monthly_payment_all_credits_to_loan        numeric;
+  v_initial_monthly_payment_no_credits_to_loan         numeric;
+  v_reamortized_monthly_payment_all_credits_to_loan    numeric;
+  v_reamortized_monthly_payment_no_credits_to_loan     numeric;
+  v_monthly_payment_all_credits_to_loan_after_term     numeric;
+  v_monthly_payment_no_credits_to_loan_after_term      numeric;
+  v_referral_promotion                                 numeric;
+  v_net_system_cost                                    numeric;
+  v_utility_company                                    text;
+  v_current_estimated_cost_per_kwh                     numeric;
+  v_current_estimated_annual_utility_bill              numeric;
+  v_system_production_25_year                          numeric;
+  v_estimated_offset                                   numeric;
+  v_led_light_bulbs                                    bigint;
+  v_apr                                                numeric;
+  v_smart_thermostat                                   bigint;
+  v_loan_term                                          numeric;
+  v_total_ee_reduction                                 numeric;
+  v_assumed_payment_by_month_18                        numeric;
+  v_inverter_efficiency                                numeric;
+  v_initial_payment_factor                             numeric;
+  v_col_springs_rebate                                 numeric;
+  v_utility_cost_escalator                             numeric;
+  v_state_rebate_amount                                numeric;
+  v_reamortization_factor                              numeric;
+  v_product_id                                         numeric;
+  v_smart_thermostat_value                             numeric;
+  v_smart_thermostat_adder                             numeric;
+  v_led_light_bulbs_value                              numeric;
+  v_led_light_bulbs_adder                              numeric;
+  v_energy_efficiency_reduction_thermostat             numeric;
+  v_energy_efficiency_reduction_light_bulbs            numeric;
+  v_adjusted_annual_consumption                        numeric;
+  v_instantly_used                                     numeric;
+  v_sent_to_grid                                       numeric;
+  v_after_net_metering                                 numeric;
+  v_adjusted_annual_production                         numeric;
+  v_instant_use_assumption                             numeric;
+  v_net_metring_rate                                   numeric;
+  v_cost_of_solar                                      numeric;
+  v_monthly_cost_30_year_average_with_solar            numeric;
+  v_reamortized_payment_factor_without_itc_paydown     numeric;
+  v_unit_type_state_rebate                             bigint;
+  v_secondary_monthly_payment_no_credits_to_loan       numeric;
+  v_proposal_id                                        bigint;
+  v_project_id                                         bigint;
+  v_proposal_archived                                  boolean;
+  v_contact_first_name                                 character varying;
+  v_contact_last_name                                  character varying;
+  v_contact_phone                                      character varying;
+  v_contact_email                                      character varying;
+  v_project_name                                       character varying;
+  v_project_street1                                    character varying;
+  v_project_street2                                    character varying;
+  v_city                                               character varying;
+  v_postal_code                                        character varying;
+  v_project_state                                      character varying;
+  v_project_state_abbrev                               character varying;
+  v_panel_brand                                        character varying;
+  v_panel_quantity                                     bigint;
+  v_inverter_brand                                     varchar;
+  v_inverter_brand_id                                  bigint;
+  v_aurora_design_id                                   text;
+  v_product_name                                       character varying;
+  v_proposal_nbr                                       bigint;
+  v_display_name                                       varchar;
+  v_other_adder_and_discount                           text;
+  v_other_adder_and_discount_amount                    numeric;
+  v_adder                                              text;
+  v_required_down_payment                              numeric;
+  v_non_solar_cap                                      numeric;
+  v_storage_type_id                                    bigint;
+  v_storage_type                                       varchar;
+  v_financier                                          varchar;
+  v_financier_id                                       bigint;
+  v_cash_price_storage                                 numeric;
+  v_loan_price_storage                                 numeric;
+  v_main_panel_upgrade_cost                            numeric;
+  v_structural_upgrade_cost                            numeric;
+  v_reroof_cost                                        numeric;
+  v_tree_trimming_cost                                 numeric;
+  v_trenching_cost                                     numeric;
+  v_ac_unit_relocation_cost                            numeric;
+  v_zone_adder                                         numeric;
+  v_loan_type                                          varchar;
+  v_unapproved_zip_code_adder                          numeric;
+  v_csu_rebate_unit_type_id                            integer;
+  v_financial_option                                   varchar;
+  v_check_from_br                                      numeric;
+  v_site_survey_time_adders                            bigint[];
+  v_site_survey_time_estimate                          integer;
+  v_site_survey_resource_type_yn                       text;
+  v_site_survey_resource_type                          text;
+  v_site_survey_items                                  text;
+  v_number_of_batteries                                numeric;
+  v_estimated_backup_days                              numeric(10, 1);
+  v_solar_rebate_for_hic                               numeric;
+  v_total_square_footage                               numeric;
+  v_net_payment_from_customer                          numeric(10, 2);
+  v_proposal_group_uuid_state_rebate                   uuid;
+  v_state_rebate_cap_amount                            numeric;
+  v_state_rebate_cap_percent_of_total                  numeric;
+  v_utility_rebate_cap_amount                          numeric;
+  v_utility_rebate_amount                              numeric;
+  v_unit_type_utility_rebate                           numeric;
+  v_utility_rebate_cap_percent_of_total                numeric;
+  v_total_system_cost_before_rebates                   numeric;
+  v_srec_realization                                   numeric;
+  v_il_srec_greater_25                                 numeric;
+  v_il_srec_less_10                                    numeric;
+  v_il_srec_between_10_25                              numeric;
+  v_ill_srec_rebate_amount                             numeric;
+  v_srec_rebate_cap_percent_of_total                   numeric;
+  v_srec_rebate_cap_amount                             numeric;
+  v_financial_product_id                               bigint;
+  v_production_factor_east_west                        numeric;
+  v_production_factor_south                            numeric;
+  v_maximum_funding_amount_per_watt                    numeric;
+  v_minimum_funding_amount_per_watt                    numeric;
+  v_unit_type_id_smart_thermostat                      bigint;
+  v_unit_type_id_led                                   bigint;
+  v_misc_adders_array                                  bigint[];
+  v_panel_unit_type_id                                 bigint;
+  v_panel_adder_amount                                 numeric;
+  v_panel_states                                       bigint[];
+  v_inverter_unit_type_id                              bigint;
+  v_inverter_adder_amount                              numeric;
+  v_small_system_size_adder_amount                     numeric;
+  v_small_system_size_adder                            numeric;
+  v_small_system_size_unit_type_id                     bigint;
+  v_small_system_size_value                            numeric;
+  v_rebate_amount                                      numeric;
+  v_rebate_cap_amount                                  numeric;
+  v_rebate_cap_percentage                              numeric;
+  v_odoe_income_status                                 bigint;
+  v_battery_rebate_amount                              numeric;
+  v_battery_rebate_cap_percent_of_total                numeric;
+  v_battery_rebate_cap_amount                          numeric;
+  v_odoe_rebate                                        numeric;
+  v_system_size_cutoff                                 numeric;
+  v_commission_strategy_id                             bigint;
+  v_closer_gen_discount                                numeric;
+  v_red_line_funding_amount                            numeric;
+  v_desired_commission_amount                          numeric;
+  v_source_id                                          bigint;
+  v_adjusted_price_per_watt                            numeric;
+  v_lead_source_discount                               numeric;
+  v_redline_markup                                     numeric;
+  v_admin_discount                                     numeric;
+  v_storage_capacity                                   numeric;
+  v_required_down_payment_number                       numeric;
+  v_minimum_tsrf                                       bigint;
+  v_utility_rebate_value                               numeric;
+  v_state_rebate_value                                 numeric;
+  v_virginia_srec_rebate_amount                        numeric;
+  v_virginia_srec_rate                                 numeric;
+  v_is_first_year_rebate_cap                           bigint;
+  v_first_year_rebate_cap                              numeric;
+  v_initial_monthly_payment_all_credits_to_loan_bpPlus numeric;
+  v_above_line_rebate_without_odoe                     numeric;
+  v_ancillary_cost_portion_of_loan_before_rebates      numeric;
+  v_additional_fee_for_exceeding_non_solar_threshold   numeric;
+  v_non_solar_threshold_for_additional_fee             numeric;
+  v_maximum_dollar_per_watt_for_solar                  numeric;
+  v_no_ancillary_total_loan_amount                     numeric;
+  v_dealer                                             bigint;
+  v_dealer_markup                                      numeric;
+  v_dealer_redline_price                               numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -501,7 +504,9 @@ BEGIN
          pcfv18.int_value,
          pcfv19.numeric_value,
          d.source,
-         pcfv20.numeric_value
+         pcfv20.numeric_value,
+         pcfv21.int_value,
+         pcfv22.numeric_value
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -539,7 +544,9 @@ BEGIN
     v_odoe_income_status,
     v_desired_commission_amount,
     v_source_id,
-    v_admin_discount
+    v_admin_discount,
+    v_dealer,
+    v_dealer_markup
   from brs.proposal prop
          inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
          inner join flow.project p on pps.project_id = p.id
@@ -584,6 +591,10 @@ BEGIN
                                                              pcfv19.custom_field_group_assignment_id = 454
          left join brs.proposal_custom_field_value pcfv20 on prop.id = pcfv20.proposal_id and
                                                              pcfv20.custom_field_group_assignment_id = 455
+         left join brs.proposal_custom_field_value pcfv21 on prop.id = pcfv21.proposal_id and
+                                                             pcfv21.custom_field_group_assignment_id = 476
+         left join brs.proposal_custom_field_value pcfv22 on prop.id = pcfv22.proposal_id and
+                                                             pcfv22.custom_field_group_assignment_id = 479
   where prop.id = p_proposal_id;
 
   select string_agg(lov.name, ',')
@@ -691,9 +702,10 @@ BEGIN
                    on ppscfv14.project_process_step_id = pps.id and
                       ppscfv14.custom_field_group_assignment_id =
                       26122
-         left join flow.project_process_step_custom_field_value ppscfv15 on ppscfv15.project_process_step_id = pps.id and
-                                                                           ppscfv15.custom_field_group_assignment_id =
-                                                                           23802
+         left join flow.project_process_step_custom_field_value ppscfv15
+                   on ppscfv15.project_process_step_id = pps.id and
+                      ppscfv15.custom_field_group_assignment_id =
+                      23802
          left join brs.feat_db_utility utility15 on utility15.id = ppscfv15.int_value
   ----@randa          left join brs.project_process_step_custom_field_value ppscfv16 on ppscfv16.project_process_step_id = pps.id and
 --                                                                                      ppscfv16.custom_field_group_assignment_id = 26217
@@ -727,9 +739,9 @@ BEGIN
                                                              group by proposal_group_uuid, object_code)
                                        select row ->> 'object_code' as object_code, *
                                        from grouped_rows);
-  raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
-  raise notice 'v_system_size = %',v_system_size;
-  raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
+  -- raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
+  -- raise notice 'v_system_size = %',v_system_size;
+  -- raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
 
   --   create index pv_proposal_group_uuid on proposal_value (proposal_group_uuid);
 --   create index pv_field_id on proposal_value (field_id);
@@ -739,26 +751,40 @@ BEGIN
 --   create index pv_int_value on proposal_value (int_value);
   create index pv_object_code on proposal_value (object_code);
 
-  raise notice 'v_product_id = % ',v_product_id;
-  raise notice 'v_unapproved_zip_code_adder = % ',v_unapproved_zip_code_adder;
-  raise notice 'v_version_id = % ',v_version_id;
-  raise notice 'v_project_process_step_id = % ',v_project_process_step_id;
-  raise notice 'v_friends_and_family = % ',v_friends_and_family;
-  raise notice 'v_panel_watts = % ',v_panel_watts;
-  raise notice 'v_panel_brand_id = % ',v_panel_brand_id;
-  raise notice 'v_state_id = % ',v_state_id;
-  raise notice 'v_postal_code = % ',v_postal_code;
-  raise notice 'v_main_panel_upgrade_cost = % ',v_main_panel_upgrade_cost;
-  raise notice 'v_structural_upgrade_cost = % ',v_structural_upgrade_cost;
-  raise notice 'v_reroof_cost = % ',v_reroof_cost;
-  raise notice 'v_tree_trimming_cost = % ',v_tree_trimming_cost;
-  raise notice 'v_trenching_cost = % ',v_trenching_cost;
-  raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
+  -- raise notice 'v_product_id = % ',v_product_id;
+  -- raise notice 'v_unapproved_zip_code_adder = % ',v_unapproved_zip_code_adder;
+  -- raise notice 'v_version_id = % ',v_version_id;
+  -- raise notice 'v_project_process_step_id = % ',v_project_process_step_id;
+  -- raise notice 'v_friends_and_family = % ',v_friends_and_family;
+  -- raise notice 'v_panel_watts = % ',v_panel_watts;
+  -- raise notice 'v_panel_brand_id = % ',v_panel_brand_id;
+  -- raise notice 'v_state_id = % ',v_state_id;
+  -- raise notice 'v_postal_code = % ',v_postal_code;
+  -- raise notice 'v_main_panel_upgrade_cost = % ',v_main_panel_upgrade_cost;
+  -- raise notice 'v_structural_upgrade_cost = % ',v_structural_upgrade_cost;
+  -- raise notice 'v_reroof_cost = % ',v_reroof_cost;
+  -- raise notice 'v_tree_trimming_cost = % ',v_tree_trimming_cost;
+  -- raise notice 'v_trenching_cost = % ',v_trenching_cost;
+  -- raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
 
+
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 380)') ->> 'value')::numeric
+  into v_dealer_redline_price
+  from proposal_value pv
+  where object_code = 'PROPOSAL_DEALER_REDLINE_PRICING'
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intArrayValue == $intArrayValue ))',
+                         jsonb_build_object('field', 341, 'intArrayValue', v_state_id))
+    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
+                           jsonb_build_object('targetFieldId', 406, 'intValue', v_dealer)));
+
+  -- raise notice 'v_dealer_redline_price = % ',v_dealer_redline_price;
+  -- raise notice 'v_dealer_markup = % ',v_dealer_markup;
+  -- raise notice 'v_dealer = % ',v_dealer;
   v_small_system_size_adder_amount = 0.00::numeric;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as small_system_size_adder,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 132)') ->> 'value')::numeric as small_system_size_value,
+  --todo this query is expecting only one row in the admin table
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric  as small_system_size_adder,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 132)') ->> 'value')::numeric  as small_system_size_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as small_system_size_unit_type_id
   into v_small_system_size_adder,v_small_system_size_value,v_small_system_size_unit_type_id
   from proposal_value pv
@@ -774,25 +800,26 @@ BEGIN
     into v_small_system_size_adder_amount;
   end if;
 
-  raise notice 'v_small_system_size_adder_amount = % ',v_small_system_size_adder_amount;
+  -- raise notice 'v_small_system_size_adder_amount = % ',v_small_system_size_adder_amount;
 
   with t as (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'value')            as adder_name,
                     (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
              from proposal_value pv
              where object_code = 'PROPOSAL_SITE_SURVEY')
-  select string_agg(t.adder_name,',')
+  select string_agg(t.adder_name, ',')
   into v_site_survey_items
   from t
   where val = any (v_site_survey_time_adders);
 
-  select string_agg(trim(v_site_survey_items, E'\n\r\t '),',')::text
-    into v_site_survey_items;
+  select string_agg(trim(v_site_survey_items, E'\n\r\t '), ',')::text
+  into v_site_survey_items;
 
-  raise notice 'v_site_survey_items = %',v_site_survey_items;
+  -- raise notice 'v_site_survey_items = %',v_site_survey_items;
 
   select sum(site_survey_duration::bigint)
   into v_site_survey_time_estimate
-  from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,0)   as site_survey_duration,
+  from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,
+                        0)                                                                        as site_survey_duration,
                (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
                (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
         from proposal_value pv
@@ -801,13 +828,14 @@ BEGIN
           "targetFieldId": 329,
           "value": true
         }'))
-        and not (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
+          and not (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
           "targetFieldId": 337,
           "intValue": 1722
         }'))
         union
         select *
-        from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,0)   as site_survey_duration,
+        from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,
+                              0)                                                                        as site_survey_duration,
                      (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
                      (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
               from proposal_value pv
@@ -817,7 +845,8 @@ BEGIN
               }')) as foo1
         where val = any (v_site_survey_time_adders)
         union
-        select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,0)   as site_survey_duration,
+        select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,
+                        0)                                                                        as site_survey_duration,
                (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
                (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
         from proposal_value pv
@@ -825,7 +854,7 @@ BEGIN
           and jsonb_path_match(row, 'exists($.fields[*] ? (@.intArrayValue == $field))',
                                jsonb_build_object('field', v_state_id))) as foo;
 
-  raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
+  -- raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
 
   select completed_by_surveyor
   into v_site_survey_resource_type_yn
@@ -845,7 +874,7 @@ BEGIN
         }'))) as foo
   where adder_value = any (v_site_survey_time_adders)
   limit 1;
-  raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
+  -- raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
 
   if v_site_survey_resource_type_yn is null then
     select completed_by_surveyor
@@ -869,14 +898,14 @@ BEGIN
   end if;
 
 
-  raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
+  -- raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
   if v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'No' then
     v_site_survey_resource_type = 'Service Tech or Higher';
   elsif v_site_survey_resource_type_yn is not null and v_site_survey_resource_type_yn = 'Yes' then
     v_site_survey_resource_type = 'Site Surveyor';
   end if;
 
-  raise notice 'v_site_survey_resource_type = %',v_site_survey_resource_type;
+  -- raise notice 'v_site_survey_resource_type = %',v_site_survey_resource_type;
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 111)') ->> 'value')::numeric   as apr,
@@ -892,21 +921,18 @@ BEGIN
     v_dealer_fee,v_reamortization_factor,v_financier_id,v_financier,v_initial_payment_factor
   from proposal_value pv
   where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 128
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', v_financial_product_id));
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+     jsonb_build_object('field', 128,'intValue', v_financial_product_id));
 
-  raise notice 'v_apr = %',v_apr;
-  raise notice 'v_financial_option = %',v_financial_option;
-  raise notice 'v_reamortized_payment_factor_without_itc_paydown = % ',v_reamortized_payment_factor_without_itc_paydown;
-  raise notice 'v_loan_term = % ',v_loan_term;
-  raise notice 'v_dealer_fee = %',v_dealer_fee;
-  raise notice 'v_reamortization_factor = %',v_reamortization_factor;
-  raise notice 'v_financier_id = %',v_financier_id;
-  raise notice 'v_financier = %',v_financier;
-  raise notice 'v_initial_payment_factor = %',v_initial_payment_factor;
+  -- raise notice 'v_apr = %',v_apr;
+  -- raise notice 'v_financial_option = %',v_financial_option;
+  -- raise notice 'v_reamortized_payment_factor_without_itc_paydown = % ',v_reamortized_payment_factor_without_itc_paydown;
+  -- raise notice 'v_loan_term = % ',v_loan_term;
+  -- raise notice 'v_dealer_fee = %',v_dealer_fee;
+  -- raise notice 'v_reamortization_factor = %',v_reamortization_factor;
+  -- raise notice 'v_financier_id = %',v_financier_id;
+  -- raise notice 'v_financier = %',v_financier;
+  -- raise notice 'v_initial_payment_factor = %',v_initial_payment_factor;
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 147)') ->> 'value')::numeric as instant_use_assumption,
@@ -917,44 +943,38 @@ BEGIN
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 91)') ->> 'value')::numeric  as minimum_funding_amount_per_watt,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 87)') ->> 'value')::numeric  as current_estimated_cost_per_kwh,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 94)') ->> 'value')::numeric  as utility_cost_escalator,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 380)') ->> 'value')::numeric  as red_line_funding_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 381)') ->> 'value')::numeric  as closer_gen_discount
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 380)') ->> 'value')::numeric as red_line_funding_amount,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 381)') ->> 'value')::numeric as closer_gen_discount
   into v_instant_use_assumption,v_net_metring_rate,v_production_factor_east_west,
     v_production_factor_south,v_maximum_funding_amount_per_watt,v_minimum_funding_amount_per_watt,
     v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_red_line_funding_amount,v_closer_gen_discount
   from proposal_value pv
   where object_code = 'PROPOSAL_PRICING'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 85
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', v_utility_company_id));
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+                         jsonb_build_object('field', 85, 'intValue', v_utility_company_id));
 
 
-  raise notice 'v_instant_use_assumption = %',v_instant_use_assumption;
-  raise notice 'v_net_metring_rate = %',v_net_metring_rate;
-  raise notice 'production_factor_east_west = %',v_production_factor_east_west;
-  raise notice 'production_factor_south = %',v_production_factor_south;
-  raise notice 'maximum_funding_amount_per_watt = %',v_maximum_funding_amount_per_watt;
-  raise notice 'minimum_funding_amount_per_watt = %',v_minimum_funding_amount_per_watt;
+  -- raise notice 'v_instant_use_assumption = %',v_instant_use_assumption;
+  -- raise notice 'v_net_metring_rate = %',v_net_metring_rate;
+  -- raise notice 'production_factor_east_west = %',v_production_factor_east_west;
+  -- raise notice 'production_factor_south = %',v_production_factor_south;
+  -- raise notice 'maximum_funding_amount_per_watt = %',v_maximum_funding_amount_per_watt;
+  -- raise notice 'minimum_funding_amount_per_watt = %',v_minimum_funding_amount_per_watt;
 
-  raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
-  raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
-
+  -- raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
+  -- raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
+--todo test this
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 155)') ->> 'value')::numeric as number_of_batteries,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 157)') ->> 'value')::numeric as cash_price_storage,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 151)') ->> 'value')::numeric as storage_capacity
   into v_number_of_batteries,v_cash_price_storage,v_storage_capacity
   from proposal_value pv
   where object_code = 'PROPOSAL_STORAGE_DETAILS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 160
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', v_storage_type_id));
-  v_number_of_batteries = coalesce(v_number_of_batteries,0);
-  raise notice 'v_number_of_batteries = %',v_number_of_batteries;
-  raise notice 'v_cash_price_storage = %',v_cash_price_storage;
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+                         jsonb_build_object('field', 160, 'intValue', v_storage_type_id));
+  v_number_of_batteries = coalesce(v_number_of_batteries, 0);
+  -- raise notice 'v_number_of_batteries = %',v_number_of_batteries;
+  -- raise notice 'v_cash_price_storage = %',v_cash_price_storage;
 
 
   v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
@@ -962,12 +982,12 @@ BEGIN
   v_after_net_metering = v_sent_to_grid * v_net_metring_rate;
   v_adjusted_annual_production = coalesce(v_instantly_used, 0) + coalesce(v_after_net_metering, 0);
 
-  raise notice 'v_instant_use_assumption = % ',v_instant_use_assumption;
-  raise notice 'v_net_metring_rate = % ',v_net_metring_rate;
-  raise notice 'v_instantly_used = % ',v_instantly_used;
-  raise notice 'v_sent_to_grid = % ',v_sent_to_grid;
-  raise notice 'v_after_net_metering = % ',v_after_net_metering;
-  raise notice 'v_adjusted_annual_production = % ',v_adjusted_annual_production;
+  -- raise notice 'v_instant_use_assumption = % ',v_instant_use_assumption;
+  -- raise notice 'v_net_metring_rate = % ',v_net_metring_rate;
+  -- raise notice 'v_instantly_used = % ',v_instantly_used;
+  -- raise notice 'v_sent_to_grid = % ',v_sent_to_grid;
+  -- raise notice 'v_after_net_metering = % ',v_after_net_metering;
+  -- raise notice 'v_adjusted_annual_production = % ',v_adjusted_annual_production;
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as smart_thermostat_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 145)') ->> 'value')::numeric   as energy_efficiency_reduction_thermostat,
@@ -975,14 +995,10 @@ BEGIN
   into v_smart_thermostat_value,v_energy_efficiency_reduction_thermostat,v_unit_type_id_smart_thermostat
   from proposal_value pv
   where object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 117
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $intValue))', '{
-    "intValue": 536
-  }');
-  raise notice 'v_smart_thermostat_value = % ',v_smart_thermostat_value;
-  raise notice 'v_energy_efficiency_reduction_thermostat = % ',v_energy_efficiency_reduction_thermostat;
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+                         jsonb_build_object('field', 117, 'intValue', 536));
+  -- raise notice 'v_smart_thermostat_value = % ',v_smart_thermostat_value;
+  -- raise notice 'v_energy_efficiency_reduction_thermostat = % ',v_energy_efficiency_reduction_thermostat;
 
   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_EQUIPMENT_ADDERS',
                                      v_smart_thermostat_value::numeric, v_unit_type_id_smart_thermostat::bigint,
@@ -997,10 +1013,8 @@ BEGIN
   into v_led_light_bulbs_value,v_energy_efficiency_reduction_light_bulbs,v_unit_type_id_led
   from proposal_value pv
   where object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 117
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $intValue))', '{
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))', '{
+    "field": 117,
     "intValue": 537
   }');
 
@@ -1011,13 +1025,14 @@ BEGIN
                                      null)
   into v_led_light_bulbs_value;
 
-  raise notice 'v_led_light_bulbs_value = % ',v_led_light_bulbs_value;
-  raise notice 'v_energy_efficiency_reduction_light_bulbs = % ',v_energy_efficiency_reduction_light_bulbs;
+  -- raise notice 'v_led_light_bulbs_value = % ',v_led_light_bulbs_value;
+  -- raise notice 'v_energy_efficiency_reduction_light_bulbs = % ',v_energy_efficiency_reduction_light_bulbs;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 136)') ->> 'value')::numeric as panel_degradation_factor,
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 136)') ->> 'value')::numeric  as panel_degradation_factor,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_id,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_amount,
-         ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 341)') -> 'intArrayValue')))::bigint[] as states
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric  as adder_amount,
+         ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 341)') ->
+                                                 'intArrayValue')))::bigint[]              as states
 
   into v_panel_degradation_factor,v_panel_unit_type_id,v_panel_adder_amount,v_panel_states
   from proposal_value pv
@@ -1027,145 +1042,153 @@ BEGIN
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.value == $value)',
                            jsonb_build_object('targetFieldId', 139, 'value', v_panel_watts)));
 
-  raise notice 'v_panel_degradation_factor = %',v_panel_degradation_factor;
-  raise notice 'v_panel_unit_type_id = %',v_panel_unit_type_id;
-  raise notice 'v_panel_adder_amount = %',v_panel_adder_amount;
-  raise notice 'v_panel_states = %',v_panel_states;
+  -- raise notice 'v_panel_degradation_factor = %',v_panel_degradation_factor;
+  -- raise notice 'v_panel_unit_type_id = %',v_panel_unit_type_id;
+  -- raise notice 'v_panel_adder_amount = %',v_panel_adder_amount;
+  -- raise notice 'v_panel_states = %',v_panel_states;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 142)') ->> 'value')::numeric as inverter_efficiency,
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 142)') ->> 'value')::numeric  as inverter_efficiency,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_id,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_amount
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric  as adder_amount
   into v_inverter_efficiency,v_inverter_unit_type_id,v_inverter_adder_amount
   from proposal_value pv
   where object_code = 'PROPOSAL_INVERTER_DETAILS'
     and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
                            jsonb_build_object('targetFieldId', 131, 'intValue', v_inverter_brand_id)));
 
-  raise notice 'v_inverter_efficiency = %',v_inverter_efficiency;
-  raise notice 'v_inverter_unit_type_id = %',v_inverter_unit_type_id;
-  raise notice 'v_inverter_adder_amount = %',v_inverter_adder_amount;
+  -- raise notice 'v_inverter_efficiency = %',v_inverter_efficiency;
+  -- raise notice 'v_inverter_unit_type_id = %',v_inverter_unit_type_id;
+  -- raise notice 'v_inverter_adder_amount = %',v_inverter_adder_amount;
 
-  raise notice 'v_utility_company_id = % ',v_utility_company_id;
+  -- raise notice 'v_utility_company_id = % ',v_utility_company_id;
 --call first formula
 
 
-  raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
-  raise notice 'v_system_size = %',v_system_size;
+  -- raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
+  -- raise notice 'v_system_size = %',v_system_size;
 
   v_production_factor = v_first_year_production_estimate / (v_system_size * 1000);
-  raise notice 'v_production_factor = %',v_production_factor;
+  -- raise notice 'v_production_factor = %',v_production_factor;
 
   v_funding_range = v_maximum_funding_amount_per_watt - v_minimum_funding_amount_per_watt;
 
-  raise notice 'v_funding_range = %',v_funding_range;
+  -- raise notice 'v_funding_range = %',v_funding_range;
   v_production_factor_range = v_production_factor_south - v_production_factor_east_west;
 
-  raise notice 'v_production_factor_range = %',v_production_factor_range;
+  -- raise notice 'v_production_factor_range = %',v_production_factor_range;
   v_points_off_south_production_factor = v_production_factor - v_production_factor_south;
 
-  raise notice 'v_points_off_south_production_factor = %',v_points_off_south_production_factor;
+  -- raise notice 'v_points_off_south_production_factor = %',v_points_off_south_production_factor;
   v_price_change_per_production_point = coalesce(v_funding_range, 0) / v_production_factor_range;
 
-  raise notice 'v_price_change_per_production_point = %',v_price_change_per_production_point;
+  -- raise notice 'v_price_change_per_production_point = %',v_price_change_per_production_point;
 
   v_calculated_price_adjustment = v_price_change_per_production_point * v_points_off_south_production_factor;
-  raise notice 'v_calculated_price_adjustment = %',v_calculated_price_adjustment;
+  -- raise notice 'v_calculated_price_adjustment = %',v_calculated_price_adjustment;
 
   v_max_price_adjustment = (select least(greatest((v_funding_range * -1), v_calculated_price_adjustment), 0))::numeric -
                            case
                              when v_friends_and_family is true then .5::numeric
                              else 0::numeric
                              end;
-  raise notice 'v_max_price_adjustment = %',v_max_price_adjustment;
+  -- raise notice 'v_max_price_adjustment = %',v_max_price_adjustment;
 
-  if v_commission_strategy_id = 23610 then
-    v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount/1000,0),0);
-    v_redline_markup = greatest(v_desired_commission_amount / 0.68,0);
-    v_lead_source_discount = case when  v_source_id in (523,524) then coalesce(v_closer_gen_discount,0) else 0 end;
-    v_adjusted_price_per_watt = coalesce(v_red_line_funding_amount,0) + coalesce(v_redline_markup,0) - coalesce(v_lead_source_discount,0);
-    raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
-    raise notice 'v_redline_markup = %',v_redline_markup;
-    raise notice 'v_lead_source_discount = %',v_lead_source_discount;
-    raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
-    raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
+  if v_dealer is not null then
+    v_adjusted_price_per_watt = coalesce(v_dealer_redline_price, 0) + coalesce(v_dealer_markup, 0);
+  elsif v_commission_strategy_id = 23610 then
+    v_desired_commission_amount = greatest(coalesce(v_desired_commission_amount / 1000, 0), 0);
+    v_redline_markup = greatest(v_desired_commission_amount / 0.68, 0);
+    v_lead_source_discount = case when v_source_id in (523, 524) then coalesce(v_closer_gen_discount, 0) else 0 end;
+    v_adjusted_price_per_watt =
+          coalesce(v_red_line_funding_amount, 0) + coalesce(v_redline_markup, 0) - coalesce(v_lead_source_discount, 0);
+    -- raise notice 'v_desired_commission_amount = %',v_desired_commission_amount;
+    -- raise notice 'v_redline_markup = %',v_redline_markup;
+    -- raise notice 'v_lead_source_discount = %',v_lead_source_discount;
+    -- raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
+    -- raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
   else
     v_adjusted_price_per_watt =
         v_maximum_funding_amount_per_watt +
         v_max_price_adjustment;
   end if;
 
-  raise notice 'v_commission_strategy_id = %',v_commission_strategy_id;
+  -- raise notice 'v_commission_strategy_id = %',v_commission_strategy_id;
 
 
-  raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
+  -- raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
 
   v_initial_system_cost = v_system_size::numeric * 1000::numeric * v_adjusted_price_per_watt::numeric;
-  raise notice 'v_initial_system_cost = %',v_initial_system_cost;
+  -- raise notice 'v_initial_system_cost = %',v_initial_system_cost;
 
   v_equipment_storage_adder = 0;
 
   v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
   v_loan_price_storage = coalesce(v_cash_price_storage, 0) / (1 - v_dealer_fee);
 
-  raise notice 'v_cash_price_storage = %',v_cash_price_storage;
-  raise notice 'v_loan_price_storage = %',v_loan_price_storage;
+  -- raise notice 'v_cash_price_storage = %',v_cash_price_storage;
+  -- raise notice 'v_loan_price_storage = %',v_loan_price_storage;
 
-  raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
+  -- raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
 
 
   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_PANEL_DETAIL', v_panel_adder_amount::numeric,
-                                     v_panel_unit_type_id::bigint,  0::numeric, v_panel_states, v_state_id)
+                                     v_panel_unit_type_id::bigint, 0::numeric, v_panel_states, v_state_id)
   into v_equipment_panel_adder;
- -- raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
+  -- -- raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
 
-   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_INVERTER_DETAILS',v_inverter_adder_amount::numeric,
-    v_inverter_unit_type_id::bigint, 0::numeric,null,null)
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_INVERTER_DETAILS', v_inverter_adder_amount::numeric,
+                                     v_inverter_unit_type_id::bigint, 0::numeric, null, null)
   into v_equipment_inverter_adder;
- -- raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
+  -- -- raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
 
-  v_misc_adders = brs.get_misc_adder_amount(v_system_size,v_misc_adders_array);
-  raise notice 'v_misc_adders = %',v_misc_adders;
+  v_misc_adders = brs.get_misc_adder_amount(v_system_size, v_misc_adders_array);
+  -- raise notice 'v_misc_adders = %',v_misc_adders;
 
 
   v_smart_thermostat_adder = 0.00::numeric;
   if v_smart_thermostat is not null and v_smart_thermostat_value is not null then
     v_smart_thermostat_adder = v_smart_thermostat * v_smart_thermostat_value;
   end if;
-  raise notice 'v_smart_thermostat_adder = %',v_smart_thermostat_adder;
+  -- raise notice 'v_smart_thermostat_adder = %',v_smart_thermostat_adder;
   v_led_light_bulbs_adder = 0.00::numeric;
   if v_led_light_bulbs is not null and v_led_light_bulbs_value is not null then
     v_led_light_bulbs_adder = v_led_light_bulbs * v_led_light_bulbs_value;
   end if;
-  raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
+  -- raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
 --@randa remove all this with the postal code release
-  v_postal_code = substring(v_postal_code,1,5);
-  with my_zips as (
-    select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric as adder_name,
-           ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 122)') -> 'value')))::bigint[] as postal_codes
-    from proposal_value pv
-    where object_code = 'PROPOSAL_ZONE_ADDERS')
+  v_postal_code = substring(v_postal_code, 1, 5);
+  with my_zips
+         as (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric                                          as adder_name,
+                    ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 122)') -> 'value')))::bigint[] as postal_codes
+             from proposal_value pv
+             where object_code = 'PROPOSAL_ZONE_ADDERS')
   select adder_name
   into v_zone_adder
   from my_zips
-  where v_postal_code::bigint = any(postal_codes);
+  where v_postal_code::bigint = any (postal_codes);
 
 
-  raise notice 'v_zone_adder = %',v_zone_adder;
-  raise notice 'v_equipment_storage_adder = %',v_equipment_storage_adder;
-  raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
-  raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
+  -- raise notice 'v_zone_adder = %',v_zone_adder;
+  -- raise notice 'v_equipment_storage_adder = %',v_equipment_storage_adder;
+  -- raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
+  -- raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
 
   v_promotion_cost = 0.00;
   if v_product_id = 293 then
     v_promotion_cost =
-        ((coalesce(v_initial_system_cost, 0) + coalesce(v_equipment_storage_adder, 0) +
-          coalesce(v_unapproved_zip_code_adder, 0) +
-          coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-          coalesce(v_zone_adder,0) +
-          coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_smart_thermostat_adder, 0) +
-          coalesce(v_led_light_bulbs_adder, 0) +
-          coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+        ((coalesce(v_initial_system_cost, 0) + case
+                                                 when v_dealer is null then
+                                                     coalesce(v_unapproved_zip_code_adder, 0) +
+                                                     coalesce(v_equipment_panel_adder, 0) +
+                                                     coalesce(v_equipment_inverter_adder, 0) +
+                                                     coalesce(v_zone_adder, 0) +
+                                                     coalesce(v_misc_adders, 0) +
+                                                     coalesce(v_small_system_size_adder_amount, 0) +
+                                                     coalesce(v_smart_thermostat_adder, 0) +
+                                                     coalesce(v_led_light_bulbs_adder, 0)
+                                                 else 0::numeric end +
+          coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
           coalesce(v_ac_unit_relocation_cost, 0)::numeric) * v_initial_payment_factor * 18)
@@ -1173,12 +1196,18 @@ BEGIN
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
   elsif v_product_id = 19424 then
     v_promotion_cost =
-        ((coalesce(v_initial_system_cost, 0) + coalesce(v_equipment_storage_adder, 0) +
-          coalesce(v_unapproved_zip_code_adder, 0) +
-          coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-          coalesce(v_zone_adder,0) +
-          coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
-          coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+        ((coalesce(v_initial_system_cost, 0) + case
+                                                 when v_dealer is null then
+                                                     coalesce(v_unapproved_zip_code_adder, 0) +
+                                                     coalesce(v_equipment_panel_adder, 0) +
+                                                     coalesce(v_equipment_inverter_adder, 0) +
+                                                     coalesce(v_zone_adder, 0) +
+                                                     coalesce(v_misc_adders, 0) +
+                                                     coalesce(v_small_system_size_adder_amount, 0) +
+                                                     coalesce(v_smart_thermostat_adder, 0) +
+                                                     coalesce(v_led_light_bulbs_adder, 0)
+                                                 else 0::numeric end +
+          coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
           coalesce(v_ac_unit_relocation_cost, 0)::numeric) *
@@ -1186,12 +1215,13 @@ BEGIN
         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
                             42);
   end if;
-  raise notice 'v_promotion_cost = %',v_promotion_cost;
-  raise notice 'v_down_payment_amount = %',v_down_payment_amount;
+  -- raise notice 'v_promotion_cost = %',v_promotion_cost;
+  -- raise notice 'v_down_payment_amount = %',v_down_payment_amount;
   v_non_solar_cap = 0.00;
   v_non_solar_threshold_for_additional_fee = 0.00;
   v_additional_fee_for_exceeding_non_solar_threshold = 0.00;
   v_maximum_dollar_per_watt_for_solar = 0.00;
+
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 103)') ->> 'value') non_solar_threshold_for_additional_fee,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 107)') ->> 'value') additional_fee_for_exceeding_non_solar_threshold,
@@ -1201,12 +1231,12 @@ BEGIN
     v_maximum_dollar_per_watt_for_solar
   from proposal_value pv
   where object_code = 'PROPOSAL_FINANCIERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', v_financier_id));
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $intValue && @.fieldId == $fieldId))',
+                         jsonb_build_object('intValue', v_financier_id,'fieldId',102));
 
-  raise notice 'v_non_solar_cap = %',v_non_solar_cap;
+  -- raise notice 'v_non_solar_cap = %',v_non_solar_cap;
 
-  raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
+  -- raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
 
 --dealer fee escalator for ancillary costs above threshold
   v_ancillary_cost_portion_of_loan_before_rebates = 0.00;
@@ -1217,57 +1247,72 @@ BEGIN
                                                         coalesce(v_tree_trimming_cost, 0)::numeric +
                                                         coalesce(v_trenching_cost, 0)::numeric +
                                                         coalesce(v_ac_unit_relocation_cost, 0)::numeric
-                                                      )/
+                                                      ) /
                                                     ( --initial system cost + all adders + ancillary costs + promotion amount
                                                         coalesce(v_initial_system_cost, 0) +
-                                                        coalesce(v_equipment_storage_adder, 0) +
-                                                        coalesce(v_unapproved_zip_code_adder, 0) +
-                                                        coalesce(v_equipment_panel_adder, 0) +
-                                                        coalesce(v_equipment_inverter_adder, 0) +
-                                                        coalesce(v_zone_adder,0) +
-                                                        coalesce(v_misc_adders, 0) +
-                                                        coalesce(v_small_system_size_adder_amount,0) +
+                                                        case
+                                                          when v_dealer is null then
+                                                              coalesce(v_unapproved_zip_code_adder, 0) +
+                                                              coalesce(v_equipment_panel_adder, 0) +
+                                                              coalesce(v_equipment_inverter_adder, 0) +
+                                                              coalesce(v_zone_adder, 0) +
+                                                              coalesce(v_misc_adders, 0) +
+                                                              coalesce(v_promotion_cost, 0) +
+                                                              coalesce(v_small_system_size_adder_amount, 0)
+                                                          else 0::numeric end +
                                                         coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+                                                        coalesce(v_equipment_storage_adder, 0) +
                                                         coalesce(v_structural_upgrade_cost, 0)::numeric +
                                                         coalesce(v_reroof_cost, 0)::numeric +
                                                         coalesce(v_tree_trimming_cost, 0)::numeric +
                                                         coalesce(v_trenching_cost, 0)::numeric +
-                                                        coalesce(v_ac_unit_relocation_cost, 0)::numeric +
-                                                        coalesce(v_promotion_cost,0)
+                                                        coalesce(v_ac_unit_relocation_cost, 0)::numeric
                                                       ); -- this gives the percentage of the total cost (excluding rebates) that is made up by ancillary
   if v_ancillary_cost_portion_of_loan_before_rebates > v_non_solar_threshold_for_additional_fee then
     v_dealer_fee = v_dealer_fee + v_additional_fee_for_exceeding_non_solar_threshold;
   end if;
-  raise notice 'v_dealer_fee after = %',v_dealer_fee;
-  raise notice 'v_ancillary_cost_portion_of_loan_before_rebates = %',v_ancillary_cost_portion_of_loan_before_rebates;
-  raise notice 'v_additional_fee_for_exceeding_non_solar_threshold = %',v_additional_fee_for_exceeding_non_solar_threshold;
-  raise notice 'v_non_solar_threshold_for_additional_fee = %',v_non_solar_threshold_for_additional_fee;
+  -- raise notice 'v_dealer_fee after = %',v_dealer_fee;
+  -- raise notice 'v_ancillary_cost_portion_of_loan_before_rebates = %',v_ancillary_cost_portion_of_loan_before_rebates;
+  -- raise notice 'v_additional_fee_for_exceeding_non_solar_threshold = %',v_additional_fee_for_exceeding_non_solar_threshold;
+  -- raise notice 'v_non_solar_threshold_for_additional_fee = %',v_non_solar_threshold_for_additional_fee;
 
-  raise notice 'v_zone_adder = %',v_zone_adder;
+  -- raise notice 'v_zone_adder = %',v_zone_adder;
   v_total_loan_amount_before_rebate = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
-                                       coalesce(v_equipment_inverter_adder, 0) +
-                                       coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_storage_adder, 0) +
-                                       coalesce(v_unapproved_zip_code_adder, 0) +
-                                       coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
+                                       case
+                                         when v_dealer is null then
+                                             coalesce(v_equipment_inverter_adder, 0) +
+                                             coalesce(v_equipment_panel_adder, 0) +
+                                             coalesce(v_unapproved_zip_code_adder, 0) +
+                                             coalesce(v_smart_thermostat_adder, 0) +
+                                             coalesce(v_led_light_bulbs_adder, 0) +
+                                             coalesce(v_misc_adders, 0) +
+                                             coalesce(v_small_system_size_adder_amount, 0) +
+                                             coalesce(v_promotion_cost, 0) +
+                                             coalesce(v_zone_adder, 0)
+                                         else 0::numeric end +
                                        coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+                                       coalesce(v_equipment_storage_adder, 0) +
                                        coalesce(v_structural_upgrade_cost, 0)::numeric +
                                        coalesce(v_reroof_cost, 0)::numeric +
                                        coalesce(v_tree_trimming_cost, 0)::numeric +
                                        coalesce(v_trenching_cost, 0)::numeric +
-                                       coalesce(v_ac_unit_relocation_cost, 0)::numeric +
-                                       coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_promotion_cost, 0) +
-                                       coalesce(v_zone_adder, 0));
-  raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
+                                       coalesce(v_ac_unit_relocation_cost, 0)::numeric);
+  -- raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
 
 
   v_no_ancillary_total_loan_amount = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
-                                       coalesce(v_equipment_inverter_adder, 0) +
-                                       coalesce(v_equipment_panel_adder, 0) +
-                                       coalesce(v_unapproved_zip_code_adder, 0) +
-                                       coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
-                                       coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_promotion_cost, 0) +
-                                       coalesce(v_zone_adder, 0));
-  raise notice 'v_no_ancillary_total_loan_amount = %',v_no_ancillary_total_loan_amount;
+                                      case
+                                        when v_dealer is null then
+                                            coalesce(v_equipment_inverter_adder, 0) +
+                                            coalesce(v_equipment_panel_adder, 0) +
+                                            coalesce(v_unapproved_zip_code_adder, 0) +
+                                            coalesce(v_smart_thermostat_adder, 0) +
+                                            coalesce(v_led_light_bulbs_adder, 0) +
+                                            coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) +
+                                            coalesce(v_promotion_cost, 0) +
+                                            coalesce(v_zone_adder, 0)
+                                        else 0::numeric end);
+  -- raise notice 'v_no_ancillary_total_loan_amount = %',v_no_ancillary_total_loan_amount;
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::bigint as referral_promotion
@@ -1280,68 +1325,60 @@ BEGIN
   }'));
 
   v_referral_promotion = coalesce(v_referral_promotion, 0);
-  raise notice 'v_referral_promotion = %',v_referral_promotion;
+  -- raise notice 'v_referral_promotion = %',v_referral_promotion;
 
 
-  raise notice 'v_proposal_group_uuid_state_rebate***************************** = % ',v_proposal_group_uuid_state_rebate;
+  -- raise notice 'v_proposal_group_uuid_state_rebate***************************** = % ',v_proposal_group_uuid_state_rebate;
 
   v_state_rebate_amount = 0.00::numeric;
-
+--todo really test this
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as state_rebate_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_state_rebate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as state_rebate_cap_amount,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as state_rebate_cap_percent_of_total,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 100)') ->> 'value')::numeric  as first_year_cap,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 99)') ->> 'intValue')::bigint  as is_first_year_cap
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 99)') ->> 'intValue')::bigint as is_first_year_cap
   into v_state_rebate_value,v_unit_type_state_rebate,v_state_rebate_cap_amount,v_state_rebate_cap_percent_of_total,
-  v_first_year_rebate_cap,v_is_first_year_rebate_cap
+    v_first_year_rebate_cap,v_is_first_year_rebate_cap
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 86, 'intValue', v_state_id)))
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-    "targetFieldId": 96,
-    "intValue": 454
-  }'));
+    and (jsonb_path_exists(row, '$.fields[*] ? ((@.fieldId == $targetFieldId && @.intValue == $intValue) && (@.intValue == $intValue1 && @.fieldId == $fieldId1))',
+                           jsonb_build_object('targetFieldId', 86, 'intValue', v_state_id,'intValue1',454,'fieldId1',96)));
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
-  raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
-  raise notice 'v_unit_type_state_rebate***************************** = % ',v_unit_type_state_rebate;
-  raise notice 'v_state_rebate_cap_amount***************************** = % ',v_state_rebate_cap_amount;
-  raise notice 'v_state_rebate_cap_percent_of_total***************************** = % ',v_state_rebate_cap_percent_of_total;
+  -- raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
+  -- raise notice 'v_unit_type_state_rebate***************************** = % ',v_unit_type_state_rebate;
+  -- raise notice 'v_state_rebate_cap_amount***************************** = % ',v_state_rebate_cap_amount;
+  -- raise notice 'v_state_rebate_cap_percent_of_total***************************** = % ',v_state_rebate_cap_percent_of_total;
 
   v_utility_rebate_amount = 0.00::numeric;
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as utility_rebate_value,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_utility_rebate,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as utility_rebate_cap_amount,
          (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as utility_rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 399)') ->> 'value')::text  as minimum_tsrf
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 399)') ->> 'value')::text     as minimum_tsrf
   into v_utility_rebate_value,v_unit_type_utility_rebate,v_utility_rebate_cap_amount,v_utility_rebate_cap_percent_of_total,
-  v_minimum_tsrf
+    v_minimum_tsrf
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 85, 'intValue', v_utility_company_id)))
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-    "targetFieldId": 96,
-    "intValue": 455
-  }'));
+    and (jsonb_path_exists(row, '$.fields[*] ? ((@.fieldId == $targetFieldId && @.intValue == $intValue) && (@.intValue == $intValue1 && @.fieldId == $fieldId1))',
+                           jsonb_build_object('targetFieldId', 85, 'intValue', v_utility_company_id,'intValue1',455,'fieldId1',96)));
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
-  raise notice 'v_utility_rebate_value***************************** = % ',v_utility_rebate_value;
+  -- raise notice 'v_utility_rebate_value***************************** = % ',v_utility_rebate_value;
 
   v_utility_rebate_amount = coalesce(v_utility_rebate_amount, 0);
 
-  raise notice 'v_unit_type_utility_rebate***************************** = % ',v_unit_type_utility_rebate;
-  raise notice 'v_utility_rebate_cap_amount***************************** = % ',v_utility_rebate_cap_amount;
-  raise notice 'v_utility_rebate_cap_percent_of_total***************************** = % ',v_utility_rebate_cap_percent_of_total;
-  raise notice 'v_other_adder_and_discount_amount = %',v_other_adder_and_discount_amount;
+  -- raise notice 'v_unit_type_utility_rebate***************************** = % ',v_unit_type_utility_rebate;
+  -- raise notice 'v_utility_rebate_cap_amount***************************** = % ',v_utility_rebate_cap_amount;
+  -- raise notice 'v_utility_rebate_cap_percent_of_total***************************** = % ',v_utility_rebate_cap_percent_of_total;
+  -- raise notice 'v_other_adder_and_discount_amount = %',v_other_adder_and_discount_amount;
 
   v_total_system_cost_before_rebates =
     (coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0) +
-    coalesce((v_other_adder_and_discount_amount), 0));
-  raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
-  raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
+     coalesce((v_other_adder_and_discount_amount), 0));
+  -- raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
+  -- raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
 
 --illinios
   if v_state_id = 13 then
@@ -1369,14 +1406,14 @@ BEGIN
     }'));
 
 
-    raise notice 'v_il_srec_less_10 = %',v_il_srec_less_10;
-    raise notice 'v_il_srec_between_10_25 = %',v_il_srec_between_10_25;
-    raise notice 'v_il_srec_greater_25 = %',v_il_srec_greater_25;
-    raise notice 'v_srec_realization = %',v_srec_realization;
-    raise notice 'v_srec_rebate_cap_amount***************************** = % ',v_srec_rebate_cap_amount;
-    raise notice 'v_srec_rebate_cap_percent_of_total***************************** = % ',v_srec_rebate_cap_percent_of_total;
+    -- raise notice 'v_il_srec_less_10 = %',v_il_srec_less_10;
+    -- raise notice 'v_il_srec_between_10_25 = %',v_il_srec_between_10_25;
+    -- raise notice 'v_il_srec_greater_25 = %',v_il_srec_greater_25;
+    -- raise notice 'v_srec_realization = %',v_srec_realization;
+    -- raise notice 'v_srec_rebate_cap_amount***************************** = % ',v_srec_rebate_cap_amount;
+    -- raise notice 'v_srec_rebate_cap_percent_of_total***************************** = % ',v_srec_rebate_cap_percent_of_total;
 
--- inverter_efficiency
+    -- inverter_efficiency
 -- ONLY IF THE state is Illinois ((15 year production * inverter_efficiency)/1000) * if system is less then < IL srec 10   else greater then >= 10 and less than 25 else greater than 25 * srec realization
     v_ill_srec_rebate_amount =
         ((brs.get_system_production_year(v_first_year_production_estimate, v_panel_degradation_factor, 15) *
@@ -1394,9 +1431,9 @@ BEGIN
       v_ill_srec_rebate_amount =
         least(v_ill_srec_rebate_amount, v_srec_rebate_cap_percent_of_total * v_total_system_cost_before_rebates);
     end if;
-    raise notice 'v_ill_srec_rebate_amount = %',v_ill_srec_rebate_amount;
+    -- raise notice 'v_ill_srec_rebate_amount = %',v_ill_srec_rebate_amount;
   end if;
-  raise notice 'v_minimum_tsrf = %',v_minimum_tsrf;
+  -- raise notice 'v_minimum_tsrf = %',v_minimum_tsrf;
   if v_minimum_tsrf is not null then
     select *
     into v_utility_rebate_amount
@@ -1422,7 +1459,7 @@ BEGIN
     end if;
   end if;
 
-  raise notice 'v_utility_rebate_amount = %',v_utility_rebate_amount;
+  -- raise notice 'v_utility_rebate_amount = %',v_utility_rebate_amount;
 
 
   --virginia
@@ -1444,10 +1481,10 @@ BEGIN
       "intValue": 1969
     }'));
 
-    raise notice 'v_virginia_srec_rate = %',v_virginia_srec_rate;
+    -- raise notice 'v_virginia_srec_rate = %',v_virginia_srec_rate;
     v_virginia_srec_rebate_amount = v_virginia_srec_rate * v_system_size * 1000;
-    raise notice 'v_virginia_srec_rebate_amount = %',v_virginia_srec_rebate_amount;
-    end if;
+    -- raise notice 'v_virginia_srec_rebate_amount = %',v_virginia_srec_rebate_amount;
+  end if;
 
   --   v_csu_rebate = 0;
 --   if v_utility_company_id = 241 then
@@ -1479,8 +1516,8 @@ BEGIN
 --       v_csu_rebate = v_csu_rebate * v_system_size * 1000;
 -- end if;
 
-  raise notice 'v_csu_rebate = %',v_csu_rebate;
-  raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
+  -- raise notice 'v_csu_rebate = %',v_csu_rebate;
+  -- raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
 
 
   -- select *
@@ -1489,28 +1526,29 @@ BEGIN
 --                              v_inverter_efficiency);
 
 --end if;
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as rebate_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 382)') ->> 'value')::numeric   as battery_rebate_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 383)') ->> 'value')::numeric  as battery_rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 384)') ->> 'value')::numeric  as battery_rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 385)') ->> 'value')::numeric  as system_size_cutoff
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric  as rebate_amount,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric as rebate_cap_amount,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric as rebate_cap_percent_of_total,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 382)') ->> 'value')::numeric as battery_rebate_amount,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 383)') ->> 'value')::numeric as battery_rebate_cap_amount,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 384)') ->> 'value')::numeric as battery_rebate_cap_percent_of_total,
+         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 385)') ->> 'value')::numeric as system_size_cutoff
   into v_rebate_amount,v_rebate_cap_amount,v_rebate_cap_percentage,
     v_battery_rebate_amount,v_battery_rebate_cap_amount,v_battery_rebate_cap_percent_of_total,
     v_system_size_cutoff
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', jsonb_build_object('targetFieldId', 93, 'intValue', v_odoe_income_status)));
+    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
+                           jsonb_build_object('targetFieldId', 93, 'intValue', v_odoe_income_status)));
 
-  raise notice 'v_odoe_income_status % ',v_odoe_income_status;
-  raise notice 'v_rebate_amount % ',v_rebate_amount;
-  raise notice 'v_rebate_cap_amount % ',v_rebate_cap_amount;
-  raise notice 'v_rebate_cap_percentage % ',v_rebate_cap_percentage;
-  raise notice 'v_battery_rebate_amount % ',v_battery_rebate_amount;
-  raise notice 'v_battery_rebate_cap_amount % ',v_battery_rebate_cap_amount;
-  raise notice 'v_battery_rebate_cap_percent_of_total % ',v_battery_rebate_cap_percent_of_total;
-  raise notice 'v_system_size_cutoff % ',v_system_size_cutoff;
+  -- raise notice 'v_odoe_income_status % ',v_odoe_income_status;
+  -- raise notice 'v_rebate_amount % ',v_rebate_amount;
+  -- raise notice 'v_rebate_cap_amount % ',v_rebate_cap_amount;
+  -- raise notice 'v_rebate_cap_percentage % ',v_rebate_cap_percentage;
+  -- raise notice 'v_battery_rebate_amount % ',v_battery_rebate_amount;
+  -- raise notice 'v_battery_rebate_cap_amount % ',v_battery_rebate_cap_amount;
+  -- raise notice 'v_battery_rebate_cap_percent_of_total % ',v_battery_rebate_cap_percent_of_total;
+  -- raise notice 'v_system_size_cutoff % ',v_system_size_cutoff;
 
   select *
   into v_odoe_rebate
@@ -1528,80 +1566,83 @@ BEGIN
                                               v_battery_rebate_amount,
                                               v_cash_price_storage
     );
-  raise notice 'v_odoe_rebate % ',v_odoe_rebate;
+  -- raise notice 'v_odoe_rebate % ',v_odoe_rebate;
 
 
-
-  raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
-  v_above_line_rebate = coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate,0);
+  -- raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
+  v_above_line_rebate =
+      coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate, 0);
   --+ coalesce(v_csu_rebate, 0);  --Judson wanted me to take out this rebate
 
 
   v_total_system_cost =
-      (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
-      coalesce(v_above_line_rebate, 0) +
-      (284.00::numeric/ (1 - v_dealer_fee)));
-  raise notice 'v_total_system_cost = %',v_total_system_cost;
+    (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
+     coalesce(v_above_line_rebate, 0) +
+     case when v_dealer is null then
+     (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end );
+  -- raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
 
     v_required_down_payment =
-                              greatest(
-                                  (
-                                      (((((coalesce(v_no_ancillary_total_loan_amount, 0) -
-                                           coalesce(v_above_line_rebate, 0) -
-                                           case
-                                             when v_product_id = 293 then (coalesce(v_required_down_payment, 0) +
-                                                                           (coalesce(v_required_down_payment, 0)
-                                                                             * v_initial_payment_factor * 18) /
-                                                                           ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
-                                             else coalesce(v_required_down_payment, 0) end -
-                                           case
-                                             when v_product_id = 293 then (coalesce(v_down_payment_amount, 0) *
-                                                                           v_initial_payment_factor * 18) /
-                                                                          ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
-                                             else 0::numeric end) / (1 - v_dealer_fee)) -
-                                         coalesce(v_other_adder_and_discount_amount, 0) +
-                                         (284.00::numeric / (1 - v_dealer_fee)) -
-                                         coalesce(v_admin_discount, 0)) /
-                                        (v_system_size * 1000)) -
-                                       v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
-                                    )*(1-v_dealer_fee)
-                                , 0);
-  end if;
-  raise notice 'v_required_down_payment first one = %',v_required_down_payment;
-
-    v_required_down_payment = coalesce(v_required_down_payment,0) +
-    greatest(
-      (
+      greatest(
           (
-              (        --this block is ancillary cost
-                  coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-                  coalesce(v_structural_upgrade_cost, 0)::numeric +
-                  coalesce(v_reroof_cost, 0)::numeric +
-                  coalesce(v_tree_trimming_cost, 0)::numeric +
-                  coalesce(v_trenching_cost, 0)::numeric +
-                  coalesce(v_ac_unit_relocation_cost, 0)::numeric
-                ) -
-              (
-                  ( --this block is total system cost pre dealer fee plus ancillary cost pre dealer fee
-                      (v_total_system_cost * (1 - v_dealer_fee))
-                    ) * v_non_solar_cap
-                )
-            ) / (1-v_non_solar_cap)
-        )
-      ,0,
-      (((        --this block is ancillary cost
-          coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-          coalesce(v_structural_upgrade_cost, 0)::numeric +
-          coalesce(v_reroof_cost, 0)::numeric +
-          coalesce(v_tree_trimming_cost, 0)::numeric +
-          coalesce(v_trenching_cost, 0)::numeric +
-          coalesce(v_ac_unit_relocation_cost, 0)::numeric
-        )/(1-v_dealer_fee))-(v_system_size*1000*v_maximum_dollar_per_watt_for_solar))*(1-v_dealer_fee));
+              (((((coalesce(v_no_ancillary_total_loan_amount, 0) -
+                   coalesce(v_above_line_rebate, 0) -
+                   case
+                     when v_product_id = 293 then (coalesce(v_required_down_payment, 0) +
+                                                   (coalesce(v_required_down_payment, 0)
+                                                     * v_initial_payment_factor * 18) /
+                                                   ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
+                     else coalesce(v_required_down_payment, 0) end -
+                   case
+                     when v_product_id = 293 then (coalesce(v_down_payment_amount, 0) *
+                                                   v_initial_payment_factor * 18) /
+                                                  ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+                     else 0::numeric end) / (1 - v_dealer_fee)) -
+                 case when v_dealer is null then
+                 coalesce(v_other_adder_and_discount_amount, 0) +
+                 (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end -
+                 coalesce(v_admin_discount, 0)) /
+                (v_system_size * 1000)) -
+               v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
+            ) * (1 - v_dealer_fee)
+        , 0);
+  end if;
+  -- raise notice 'v_required_down_payment first one = %',v_required_down_payment;
+
+  v_required_down_payment = coalesce(v_required_down_payment, 0) +
+                            greatest(
+                              (
+                                  (
+                                      ( --this block is ancillary cost
+                                          coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+                                          coalesce(v_structural_upgrade_cost, 0)::numeric +
+                                          coalesce(v_reroof_cost, 0)::numeric +
+                                          coalesce(v_tree_trimming_cost, 0)::numeric +
+                                          coalesce(v_trenching_cost, 0)::numeric +
+                                          coalesce(v_ac_unit_relocation_cost, 0)::numeric
+                                        ) -
+                                      (
+                                          ( --this block is total system cost pre dealer fee plus ancillary cost pre dealer fee
+                                            (v_total_system_cost * (1 - v_dealer_fee))
+                                            ) * v_non_solar_cap
+                                        )
+                                    ) / (1 - v_non_solar_cap)
+                                )
+                              , 0,
+                              ((( --this block is ancillary cost
+                                    coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+                                    coalesce(v_structural_upgrade_cost, 0)::numeric +
+                                    coalesce(v_reroof_cost, 0)::numeric +
+                                    coalesce(v_tree_trimming_cost, 0)::numeric +
+                                    coalesce(v_trenching_cost, 0)::numeric +
+                                    coalesce(v_ac_unit_relocation_cost, 0)::numeric
+                                  ) / (1 - v_dealer_fee)) -
+                               (v_system_size * 1000 * v_maximum_dollar_per_watt_for_solar)) * (1 - v_dealer_fee));
 
 
-  raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
+  -- raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
 
   if v_number_of_batteries > 0 and v_financier_id = 116 then
     v_required_down_payment = coalesce(v_required_down_payment, 0) +
@@ -1611,40 +1652,49 @@ BEGIN
                                     least(50000::numeric, (2500::numeric * v_storage_capacity))
                                   )
                                 , 0);
-    raise notice 'v_required_down_payment_before_$/Watt_cap = %',v_required_down_payment;
+    -- raise notice 'v_required_down_payment_before_$/Watt_cap = %',v_required_down_payment;
   end if;
 
 
-  raise notice 'v_storage_capacity %',v_storage_capacity;
-  raise notice 'v_required_down_payment = %',v_required_down_payment;
+  -- raise notice 'v_storage_capacity %',v_storage_capacity;
+  -- raise notice 'v_required_down_payment = %',v_required_down_payment;
 
   v_required_down_payment_number = v_required_down_payment;
 
-  raise notice 'v_required_down_payment_number = %',v_required_down_payment_number;
+  -- raise notice 'v_required_down_payment_number = %',v_required_down_payment_number;
 
-  v_total_loan_amount = --todo this will never me done
-      ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0) -
-         case when v_product_id = 293 then (coalesce(v_required_down_payment,0) + (coalesce(v_required_down_payment,0) * v_initial_payment_factor * 18)/((1-v_dealer_fee)-(v_initial_payment_factor * 18))) else coalesce(v_required_down_payment,0) end  -
-        case when v_product_id = 293 then (coalesce(v_down_payment_amount,0) * v_initial_payment_factor * 18)/((1-v_dealer_fee)-(v_initial_payment_factor * 18))  else 0::numeric end ) / (1 - v_dealer_fee)) -
-      coalesce(v_other_adder_and_discount_amount, 0) +
-      (284.00::numeric/ (1 - v_dealer_fee)) - coalesce(v_admin_discount,0);
-  raise notice 'v_total_loan_amount = %',v_total_loan_amount;
-  raise notice 'v_above_line_rebate = %',v_above_line_rebate;
-  raise notice 'v_admin_discount = %',v_admin_discount;
+  v_total_loan_amount =
+          ((coalesce(v_total_loan_amount_before_rebate, 0) - coalesce(v_above_line_rebate, 0) -
+            case
+              when v_product_id = 293 then (coalesce(v_required_down_payment, 0) +
+                                            (coalesce(v_required_down_payment, 0) * v_initial_payment_factor * 18) /
+                                            ((1 - v_dealer_fee) - (v_initial_payment_factor * 18)))
+              else coalesce(v_required_down_payment, 0) end -
+            case
+              when v_product_id = 293 then (coalesce(v_down_payment_amount, 0) * v_initial_payment_factor * 18) /
+                                           ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
+              else 0::numeric end) / (1 - v_dealer_fee)) -
+          coalesce(v_other_adder_and_discount_amount, 0) +
+          case when v_dealer is null then
+          (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end - coalesce(v_admin_discount, 0);
+  -- raise notice 'v_total_loan_amount = %',v_total_loan_amount;
+  -- raise notice 'v_above_line_rebate = %',v_above_line_rebate;
+  -- raise notice 'v_admin_discount = %',v_admin_discount;
 
   v_check_from_br = 0.00::numeric;
   if v_product_id in (293, 19424) then
     v_check_from_br = round((v_total_loan_amount * v_initial_payment_factor)::numeric, 2);
-    v_promotion_cost = v_check_from_br*18;
-    raise notice 'v_promotion_cost = %',v_promotion_cost;
+    v_promotion_cost = v_check_from_br * 18;
+    -- raise notice 'v_promotion_cost = %',v_promotion_cost;
   end if;
 
-  raise notice 'v_check_from_br = %',v_check_from_br;
+  -- raise notice 'v_check_from_br = %',v_check_from_br;
 
-  if v_state_id  = 40 then
+  if v_state_id = 40 then
     select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
                                        v_state_rebate_value::numeric, v_unit_type_state_rebate::bigint,
-                                       (coalesce(v_total_loan_amount,0) + coalesce(v_down_payment_amount,0) + coalesce(v_required_down_payment,0)),
+                                       (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) +
+                                        coalesce(v_required_down_payment, 0)),
                                        null,
                                        null)
     into v_state_rebate_amount;
@@ -1652,7 +1702,9 @@ BEGIN
       v_state_rebate_amount = least(v_state_rebate_amount::numeric, v_state_rebate_cap_amount::numeric);
     elsif v_state_rebate_cap_percent_of_total is not null then
       v_state_rebate_amount =
-        least(v_state_rebate_amount, v_state_rebate_cap_percent_of_total * (coalesce(v_total_loan_amount,0) + coalesce(v_down_payment_amount,0) + coalesce(v_required_down_payment,0)));
+        least(v_state_rebate_amount, v_state_rebate_cap_percent_of_total *
+                                     (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) +
+                                      coalesce(v_required_down_payment, 0)));
     end if;
   else
     select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
@@ -1671,8 +1723,8 @@ BEGIN
 
   end if;
 
-  raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
-  raise notice 'v_unit_type_state_rebate = % ',v_unit_type_state_rebate;
+  -- raise notice 'v_state_rebate_amount = % ',v_state_rebate_amount;
+  -- raise notice 'v_unit_type_state_rebate = % ',v_unit_type_state_rebate;
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric    as federal_tax_incentive_rate,
@@ -1694,11 +1746,11 @@ BEGIN
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 459 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate;
   end if;
-  raise notice 'v_federal_tax_incentive_rate = %',v_federal_tax_incentive_rate;
-  raise notice 'v_federal_tax_incentive_amount = %',v_federal_tax_incentive_amount;
+  -- raise notice 'v_federal_tax_incentive_rate = %',v_federal_tax_incentive_rate;
+  -- raise notice 'v_federal_tax_incentive_amount = %',v_federal_tax_incentive_amount;
 
   v_monthly_solar_payment = coalesce(v_total_loan_amount, 0) * v_initial_payment_factor;
-  raise notice 'v_monthly_solar_payment = %',v_monthly_solar_payment;
+  -- raise notice 'v_monthly_solar_payment = %',v_monthly_solar_payment;
 
 
   v_total_ee_reduction =
@@ -1708,11 +1760,11 @@ BEGIN
               else 0 end) + ---Judson said this should be the least
            (v_energy_efficiency_reduction_light_bulbs * v_led_light_bulbs)),
           v_estimated_annual_energy_consumption_kwh * .2);
-  raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
+  -- raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
 
   v_adjusted_annual_consumption =
       coalesce(v_estimated_annual_energy_consumption_kwh::numeric, 0) - coalesce(v_total_ee_reduction, 0);
-  raise notice 'v_adjusted_annual_consumption = %',v_adjusted_annual_consumption;
+  -- raise notice 'v_adjusted_annual_consumption = %',v_adjusted_annual_consumption;
 
   v_remaining_monthly_electric_bill_25_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
@@ -1721,7 +1773,7 @@ BEGIN
     v_adjusted_annual_production,
     v_panel_degradation_factor,
     25);
-  raise notice 'v_remaining_monthly_electric_bill_25_year_average = %',v_remaining_monthly_electric_bill_25_year_average;
+  -- raise notice 'v_remaining_monthly_electric_bill_25_year_average = %',v_remaining_monthly_electric_bill_25_year_average;
 
   v_remaining_monthly_electric_bill_30_year_average = brs.get_year_avg_remaining_monthly_electric_bill(
     v_current_estimated_cost_per_kwh,
@@ -1730,7 +1782,7 @@ BEGIN
     v_adjusted_annual_production,
     v_panel_degradation_factor,
     30);
-  raise notice 'v_remaining_monthly_electric_bill_30_year_average = %',v_remaining_monthly_electric_bill_30_year_average;
+  -- raise notice 'v_remaining_monthly_electric_bill_30_year_average = %',v_remaining_monthly_electric_bill_30_year_average;
 
   v_monthly_cost_25_year_average_without_solar = brs.get_monthly_cost_average_without_solar(
     v_current_estimated_cost_per_kwh::numeric,
@@ -1738,7 +1790,7 @@ BEGIN
     v_estimated_annual_energy_consumption_kwh::numeric,
     300,
     25);
-  raise notice 'v_monthly_cost_25_year_average_without_solar = %',v_monthly_cost_25_year_average_without_solar;
+  -- raise notice 'v_monthly_cost_25_year_average_without_solar = %',v_monthly_cost_25_year_average_without_solar;
 
   v_monthly_cost_30_year_average_without_solar = brs.get_monthly_cost_average_without_solar(
     v_current_estimated_cost_per_kwh::numeric,
@@ -1746,7 +1798,7 @@ BEGIN
     v_estimated_annual_energy_consumption_kwh::numeric,
     360,
     30);
-  raise notice 'v_monthly_cost_30_year_average_without_solar = %',v_monthly_cost_30_year_average_without_solar;
+  -- raise notice 'v_monthly_cost_30_year_average_without_solar = %',v_monthly_cost_30_year_average_without_solar;
 
   if v_product_id = 19424 then -- this is for interest only
     select *
@@ -1756,29 +1808,32 @@ BEGIN
                                                coalesce(v_federal_tax_incentive_amount, 0) -
                                                coalesce(v_state_rebate_amount, 0) -
                                                coalesce(v_above_line_rebate, 0)):: numeric);
-  else  --TODO judson check to see if we need to subtract the rebates
+  else
     v_reamortized_monthly_payment_all_credits_to_loan =
         (coalesce(v_total_loan_amount, 0) - coalesce(v_federal_tax_incentive_amount, 0) -
-        case when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462 then least(coalesce(v_state_rebate_amount, 0),coalesce(v_first_year_rebate_cap,0)) else coalesce(v_state_rebate_amount, 0)end) * v_reamortization_factor;
+         case
+           when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462 then least(
+             coalesce(v_state_rebate_amount, 0), coalesce(v_first_year_rebate_cap, 0))
+           else coalesce(v_state_rebate_amount, 0) end) * v_reamortization_factor;
   end if;
 
 
-  raise notice 'v_reamortized_monthly_payment_all_credits_to_loan = %',v_reamortized_monthly_payment_all_credits_to_loan;
+  -- raise notice 'v_reamortized_monthly_payment_all_credits_to_loan = %',v_reamortized_monthly_payment_all_credits_to_loan;
 
   v_cost_of_solar = v_reamortized_monthly_payment_all_credits_to_loan * 12 * v_loan_term;
-  raise notice 'v_cost_of_solar = %',v_cost_of_solar;
+  -- raise notice 'v_cost_of_solar = %',v_cost_of_solar;
 
   v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
                                               ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
                                                 v_loan_term) / 300)
     + (v_down_payment_amount / 300);
-  raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
+  -- raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
 
   v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
                                               ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
                                                 v_loan_term) / 360)
     + (v_down_payment_amount / 360);
-  raise notice 'v_monthly_cost_30_year_average_with_solar = %',v_monthly_cost_30_year_average_with_solar;
+  -- raise notice 'v_monthly_cost_30_year_average_with_solar = %',v_monthly_cost_30_year_average_with_solar;
 
 
   v_total_cost_25_years = brs.get_year_cost_by_years(
@@ -1786,34 +1841,34 @@ BEGIN
     v_utility_cost_escalator,
     v_estimated_annual_energy_consumption_kwh,
     25);
-  raise notice 'v_total_cost_25_years = %',v_total_cost_25_years;
+  -- raise notice 'v_total_cost_25_years = %',v_total_cost_25_years;
 
   v_total_cost_30_years = brs.get_year_cost_by_years(
     v_current_estimated_cost_per_kwh,
     v_utility_cost_escalator,
     v_estimated_annual_energy_consumption_kwh,
     30);
-  raise notice 'v_total_cost_30_years = %',v_total_cost_30_years;
+  -- raise notice 'v_total_cost_30_years = %',v_total_cost_30_years;
 
   v_total_savings_25_years = v_total_cost_25_years - (v_monthly_cost_25_year_average_with_solar * 300);
-  raise notice 'v_total_savings_25_years = %',v_total_savings_25_years;
+  -- raise notice 'v_total_savings_25_years = %',v_total_savings_25_years;
 
   v_total_savings_30_years = v_total_cost_30_years - (v_monthly_cost_30_year_average_with_solar * 360);
-  raise notice 'v_total_savings_30_years = %',v_total_savings_30_years;
+  -- raise notice 'v_total_savings_30_years = %',v_total_savings_30_years;
 
   v_monthly_cost_today_without_solar =
         v_estimated_annual_energy_consumption_kwh * v_current_estimated_cost_per_kwh / 12;
-  raise notice 'v_monthly_cost_today_without_solar = %',v_monthly_cost_today_without_solar;
+  -- raise notice 'v_monthly_cost_today_without_solar = %',v_monthly_cost_today_without_solar;
 
   v_estimated_offset = (v_adjusted_annual_production::numeric /
                         (v_adjusted_annual_consumption))::numeric;
-  raise notice 'v_estimated_offset = %',v_estimated_offset;
+  -- raise notice 'v_estimated_offset = %',v_estimated_offset;
 
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
                                                                                 (v_adjusted_annual_consumption -
                                                                                  v_adjusted_annual_production)) /
                                                                                12);
-  raise notice 'v_monthly_cost_today_avg_remaining_electrical_bill = %',v_monthly_cost_today_avg_remaining_electrical_bill;
+  -- raise notice 'v_monthly_cost_today_avg_remaining_electrical_bill = %',v_monthly_cost_today_avg_remaining_electrical_bill;
 
   if v_product_id = 293 then
     v_initial_monthly_payment_all_credits_to_loan_bpPlus = 0::numeric;
@@ -1821,13 +1876,13 @@ BEGIN
     v_initial_monthly_payment_all_credits_to_loan_bpPlus = v_total_loan_amount * v_initial_payment_factor;
   end if;
   v_initial_monthly_payment_all_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
-  raise notice 'v_initial_monthly_payment_all_credits_to_loan = %',v_initial_monthly_payment_all_credits_to_loan;
+  -- raise notice 'v_initial_monthly_payment_all_credits_to_loan = %',v_initial_monthly_payment_all_credits_to_loan;
 
   v_initial_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_initial_payment_factor;
-  raise notice 'v_initial_monthly_payment_no_credits_to_loan = %',v_initial_monthly_payment_no_credits_to_loan;
+  -- raise notice 'v_initial_monthly_payment_no_credits_to_loan = %',v_initial_monthly_payment_no_credits_to_loan;
 
   v_net_payment_from_customer = v_initial_monthly_payment_all_credits_to_loan - v_check_from_br;
-  raise notice 'v_net_payment_from_customer = %',v_net_payment_from_customer;
+  -- raise notice 'v_net_payment_from_customer = %',v_net_payment_from_customer;
   if v_product_id = 19424 then
     select *
     into v_reamortized_monthly_payment_no_credits_to_loan
@@ -1838,16 +1893,16 @@ BEGIN
   end if;
 
 
-  raise notice 'v_reamortized_monthly_payment_no_credits_to_loan = %',v_reamortized_monthly_payment_no_credits_to_loan;
+  -- raise notice 'v_reamortized_monthly_payment_no_credits_to_loan = %',v_reamortized_monthly_payment_no_credits_to_loan;
 
   v_monthly_payment_all_credits_to_loan_after_term = 0.00;
 
-  raise notice 'v_monthly_payment_all_credits_to_loan_after_term = %',v_monthly_payment_all_credits_to_loan_after_term;
+  -- raise notice 'v_monthly_payment_all_credits_to_loan_after_term = %',v_monthly_payment_all_credits_to_loan_after_term;
   v_monthly_payment_no_credits_to_loan_after_term = 0.00;
 
-  raise notice 'v_monthly_payment_no_credits_to_loan_after_term = %',v_monthly_payment_no_credits_to_loan_after_term;
+  -- raise notice 'v_monthly_payment_no_credits_to_loan_after_term = %',v_monthly_payment_no_credits_to_loan_after_term;
 
-  if v_product_id in (293,19424) then
+  if v_product_id in (293, 19424) then
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
                                                    (v_adjusted_annual_consumption -
                                                     v_adjusted_annual_production)) / 12);
@@ -1855,57 +1910,63 @@ BEGIN
     v_monthly_cost_today_with_solar = greatest(0, (v_current_estimated_cost_per_kwh *
                                                    (v_adjusted_annual_consumption -
                                                     v_adjusted_annual_production)) / 12) +
-                                         v_initial_monthly_payment_all_credits_to_loan;
+                                      v_initial_monthly_payment_all_credits_to_loan;
 
   end if;
-  raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
+  -- raise notice 'v_monthly_cost_today_with_solar = %',v_monthly_cost_today_with_solar;
 
   v_net_system_cost =
-        coalesce(v_total_loan_amount,0) + coalesce(v_required_down_payment,0) +
-        coalesce(v_down_payment_amount,0) -
+        coalesce(v_total_loan_amount, 0) + coalesce(v_required_down_payment, 0) +
+        coalesce(v_down_payment_amount, 0) -
         coalesce(v_federal_tax_incentive_amount, 0) -
         coalesce(v_state_rebate_amount, 0) -
-        coalesce(v_virginia_srec_rebate_amount,0);
-  raise notice 'v_net_system_cost = %',v_net_system_cost;
+        coalesce(v_virginia_srec_rebate_amount, 0);
+  -- raise notice 'v_net_system_cost = %',v_net_system_cost;
 
   v_current_estimated_annual_utility_bill =
       v_estimated_annual_energy_consumption_kwh * v_current_estimated_cost_per_kwh;
-  raise notice 'v_current_estimated_annual_utility_bill = %',v_current_estimated_annual_utility_bill;
+  -- raise notice 'v_current_estimated_annual_utility_bill = %',v_current_estimated_annual_utility_bill;
 
   v_system_production_25_year = brs.get_system_production_year(
     v_first_year_production_estimate,
     v_panel_degradation_factor,
     25);
-  raise notice 'v_system_production_25_year = %',v_system_production_25_year;
+  -- raise notice 'v_system_production_25_year = %',v_system_production_25_year;
 
-  raise notice 'v_led_light_bulbs = %',v_led_light_bulbs;
+  -- raise notice 'v_led_light_bulbs = %',v_led_light_bulbs;
 
-  raise notice 'v_smart_thermostat = %',v_smart_thermostat;
+  -- raise notice 'v_smart_thermostat = %',v_smart_thermostat;
 
-  v_secondary_monthly_payment_no_credits_to_loan =   --TODO  find out what this is Michael!!!!
+  v_secondary_monthly_payment_no_credits_to_loan =
       v_reamortized_monthly_payment_no_credits_to_loan -
       (coalesce(v_reamortized_monthly_payment_all_credits_to_loan, 0) -
        coalesce(v_initial_monthly_payment_all_credits_to_loan, 0));
-  raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
+  -- raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
 
-  v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount + case when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462 then least(coalesce(v_state_rebate_amount, 0),coalesce(v_first_year_rebate_cap,0)) else coalesce(v_state_rebate_amount, 0)end;
-  raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
+  v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount + case
+                                                                     when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462
+                                                                       then least(coalesce(v_state_rebate_amount, 0),
+                                                                                  coalesce(v_first_year_rebate_cap, 0))
+                                                                     else coalesce(v_state_rebate_amount, 0) end;
+  -- raise notice 'v_assumed_payment_by_month_18 = %',v_assumed_payment_by_month_18;
 
   v_loan_type = concat(v_financier || ' ' || v_loan_term);
-  raise notice 'v_loan_type = %',v_loan_type;
+  -- raise notice 'v_loan_type = %',v_loan_type;
 
 --   (24 * square root of system size in kWh DC)-(0.0016+(sqrt of system size in kWh DC * 0.00012)) * square footage of house * number of batteries
-  v_estimated_backup_days = case --todo michael
+  v_estimated_backup_days = case
                               when v_system_size is not null then
                                     24 * sqrt(v_system_size) -
                                     (0.0016 + sqrt(v_system_size * 0.00012)) * v_total_square_footage *
                                     v_number_of_batteries end;
-  v_solar_rebate_for_hic =  --todo take out required down payment other discounts and adders Michael
-    coalesce(v_total_system_cost,0) - coalesce(v_down_payment_amount, 0) -
-      coalesce(v_required_down_payment,0) -
+  v_solar_rebate_for_hic =
+      coalesce(v_total_system_cost, 0) - coalesce(v_down_payment_amount, 0) -
+      coalesce(v_required_down_payment, 0) -
       coalesce(v_total_loan_amount, 0);
 
-  v_total_system_cost = coalesce(v_total_loan_amount,0) + coalesce(v_required_down_payment,0) + coalesce(v_down_payment_amount,0) + coalesce(v_above_line_rebate,0) + coalesce(v_other_adder_and_discount_amount,0);
+  v_total_system_cost =
+      coalesce(v_total_loan_amount, 0) + coalesce(v_required_down_payment, 0) + coalesce(v_down_payment_amount, 0) +
+      coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0);
   v_above_line_rebate_without_odoe = (v_above_line_rebate - v_odoe_rebate);
   if p_insert_prop_log_history is true then
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
@@ -1961,16 +2022,16 @@ BEGIN
             v_contact_email,
             v_loan_term,
             v_apr,
-            coalesce(round(v_down_payment_amount,0),0),
-            coalesce(round(v_required_down_payment,0),0),
+            coalesce(round(v_down_payment_amount, 0), 0),
+            coalesce(round(v_required_down_payment, 0), 0),
             v_led_light_bulbs,
             v_smart_thermostat,
             v_current_estimated_cost_per_kwh,
-            coalesce(round(v_promotion_cost,0),0),
+            coalesce(round(v_promotion_cost, 0), 0),
             v_first_year_production_estimate,
             v_panel_quantity,
             v_panel_watts,
-            v_system_size*1000,
+            v_system_size * 1000,
             v_panel_brand,
             v_panel_quantity,
             v_inverter_brand,
@@ -1979,50 +2040,55 @@ BEGIN
             v_estimated_annual_energy_consumption_kwh,
             v_equipment_panel_adder,
             v_equipment_panel_adder * (v_system_size * 1000),
-            (coalesce(v_equipment_storage_adder, 0) + coalesce(v_unapproved_zip_code_adder, 0) +
-             coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
-             coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount,0) + coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0) +
-             coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-             coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
-             coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
-             coalesce(v_ac_unit_relocation_cost, 0)::numeric),
+            case
+              when v_dealer is null then
+                  coalesce(v_unapproved_zip_code_adder, 0) +
+                  coalesce(v_equipment_panel_adder, 0) + coalesce(v_equipment_inverter_adder, 0) +
+                  coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) +
+                  coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0)
+              else 0::numeric end +
+            coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+            coalesce(v_equipment_storage_adder, 0) +
+            coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
+            coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
+            coalesce(v_ac_unit_relocation_cost, 0)::numeric,
             v_adjusted_price_per_watt,
-            round(v_total_loan_amount,0),
-            round(v_total_system_cost,0),
+            round(v_total_loan_amount, 0),
+            round(v_total_system_cost, 0),
             v_estimated_offset,
             v_dealer_fee,
             v_utility_cost_escalator,
             v_panel_degradation_factor,
             v_production_factor,
-            round(v_total_system_cost,0),
+            round(v_total_system_cost, 0),
             (v_down_payment_amount + v_above_line_rebate),
             v_referral_promotion,
             v_initial_system_cost,
-            round(v_total_loan_amount,0),
-            round(v_federal_tax_incentive_amount,0),
-            round(v_state_rebate_amount,0),
-            round(v_monthly_cost_today_without_solar,0),
-            round(v_monthly_solar_payment,0),
-            round(v_monthly_cost_today_avg_remaining_electrical_bill,0),
-            round(v_monthly_cost_today_with_solar,0),
+            round(v_total_loan_amount, 0),
+            round(v_federal_tax_incentive_amount, 0),
+            round(v_state_rebate_amount, 0),
+            round(v_monthly_cost_today_without_solar, 0),
+            round(v_monthly_solar_payment, 0),
+            round(v_monthly_cost_today_avg_remaining_electrical_bill, 0),
+            round(v_monthly_cost_today_with_solar, 0),
             (v_estimated_annual_energy_consumption_kwh / 12),
             (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),
             v_total_ee_reduction,
             v_estimated_annual_energy_consumption_kwh,
             (v_estimated_annual_energy_consumption_kwh - v_total_ee_reduction),
-            round(v_monthly_cost_25_year_average_without_solar,0),
-            round(v_total_cost_25_years,0),
-            round(v_total_savings_25_years,0),
-            round(v_remaining_monthly_electric_bill_25_year_average,0),
-            round(v_reamortized_monthly_payment_all_credits_to_loan,0),
-            round(v_initial_monthly_payment_all_credits_to_loan,0),
-            round(v_reamortized_monthly_payment_all_credits_to_loan,0),
+            round(v_monthly_cost_25_year_average_without_solar, 0),
+            round(v_total_cost_25_years, 0),
+            round(v_total_savings_25_years, 0),
+            round(v_remaining_monthly_electric_bill_25_year_average, 0),
+            round(v_reamortized_monthly_payment_all_credits_to_loan, 0),
+            round(v_initial_monthly_payment_all_credits_to_loan, 0),
+            round(v_reamortized_monthly_payment_all_credits_to_loan, 0),
             now(),
-            coalesce(round(v_promotion_cost,0),0),
+            coalesce(round(v_promotion_cost, 0), 0),
             now(),
             v_proposal_nbr,
             v_proposal_id,
-            coalesce(round(v_promotion_cost,0),0),
+            coalesce(round(v_promotion_cost, 0), 0),
             v_aurora_design_id,
             v_loan_type,
             v_display_name,
@@ -2038,21 +2104,21 @@ BEGIN
             v_desired_commission_amount,
             case when v_product_id = 293 then 18 else 0 end,
             v_product_name,
-            coalesce(round(v_total_loan_amount,0),0),
+            coalesce(round(v_total_loan_amount, 0), 0),
             (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-            coalesce(v_structural_upgrade_cost, 0)::numeric +
-            coalesce(v_reroof_cost, 0)::numeric +
-            coalesce(v_tree_trimming_cost, 0)::numeric +
-            coalesce(v_trenching_cost, 0)::numeric +
-            coalesce(v_ac_unit_relocation_cost, 0)::numeric)/(1-v_dealer_fee),
+             coalesce(v_structural_upgrade_cost, 0)::numeric +
+             coalesce(v_reroof_cost, 0)::numeric +
+             coalesce(v_tree_trimming_cost, 0)::numeric +
+             coalesce(v_trenching_cost, 0)::numeric +
+             coalesce(v_ac_unit_relocation_cost, 0)::numeric) / (1 - v_dealer_fee),
             (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
              coalesce(v_structural_upgrade_cost, 0)::numeric +
              coalesce(v_reroof_cost, 0)::numeric +
              coalesce(v_tree_trimming_cost, 0)::numeric +
              coalesce(v_trenching_cost, 0)::numeric +
              coalesce(v_ac_unit_relocation_cost, 0)::numeric),
-            coalesce(v_promotion_cost,0),
-            round(v_loan_price_storage,0),
+            coalesce(v_promotion_cost, 0),
+            round(v_loan_price_storage, 0),
             v_commission_strategy_id);
   end if;
 
@@ -2071,42 +2137,42 @@ BEGIN
            v_postal_code,
            v_project_state,
            v_project_state_abbrev,
-           to_char(v_monthly_cost_25_year_average_without_solar,'$FM9,999,999')::varchar,
+           to_char(v_monthly_cost_25_year_average_without_solar, '$FM9,999,999')::varchar,
            to_char(v_monthly_cost_30_year_average_without_solar, '$FM9,999,999')::varchar,
-           to_char(v_monthly_cost_25_year_average_with_solar,'$FM9,999,999')::varchar,
-           to_char(v_remaining_monthly_electric_bill_25_year_average,'$FM9,999,999')::varchar,
-           to_char(v_remaining_monthly_electric_bill_30_year_average,'$FM9,999,999')::varchar,
-           to_char(v_total_cost_25_years,'$FM9,999,999')::varchar,
-           to_char(v_total_cost_30_years,'$FM9,999,999')::varchar,
-           to_char(v_total_savings_25_years,'$FM9,999,999')::varchar,
-           to_char(v_total_savings_30_years,'$FM9,999,999')::varchar,
-           to_char(v_monthly_solar_payment,'$FM9,999,999')::varchar,
-           to_char(v_monthly_cost_today_without_solar,'$FM9,999,999')::varchar,
-           to_char(v_monthly_cost_today_with_solar,'$FM9,999,999')::varchar,
-           to_char(v_monthly_cost_today_avg_remaining_electrical_bill,'$FM9,999,999')::varchar,
-           to_char(v_initial_monthly_payment_all_credits_to_loan,'$FM9,999,999')::varchar,
-           to_char(v_initial_monthly_payment_no_credits_to_loan,'$FM9,999,999')::varchar,
-           to_char(v_reamortized_monthly_payment_all_credits_to_loan,'$FM9,999,999')::varchar,
-           to_char(v_reamortized_monthly_payment_no_credits_to_loan,'$FM9,999,999')::varchar,
-           to_char(v_monthly_payment_all_credits_to_loan_after_term,'$FM9,999,999')::varchar,
-           to_char(v_monthly_payment_no_credits_to_loan_after_term,'$FM9,999,999')::varchar,
+           to_char(v_monthly_cost_25_year_average_with_solar, '$FM9,999,999')::varchar,
+           to_char(v_remaining_monthly_electric_bill_25_year_average, '$FM9,999,999')::varchar,
+           to_char(v_remaining_monthly_electric_bill_30_year_average, '$FM9,999,999')::varchar,
+           to_char(v_total_cost_25_years, '$FM9,999,999')::varchar,
+           to_char(v_total_cost_30_years, '$FM9,999,999')::varchar,
+           to_char(v_total_savings_25_years, '$FM9,999,999')::varchar,
+           to_char(v_total_savings_30_years, '$FM9,999,999')::varchar,
+           to_char(v_monthly_solar_payment, '$FM9,999,999')::varchar,
+           to_char(v_monthly_cost_today_without_solar, '$FM9,999,999')::varchar,
+           to_char(v_monthly_cost_today_with_solar, '$FM9,999,999')::varchar,
+           to_char(v_monthly_cost_today_avg_remaining_electrical_bill, '$FM9,999,999')::varchar,
+           to_char(v_initial_monthly_payment_all_credits_to_loan, '$FM9,999,999')::varchar,
+           to_char(v_initial_monthly_payment_no_credits_to_loan, '$FM9,999,999')::varchar,
+           to_char(v_reamortized_monthly_payment_all_credits_to_loan, '$FM9,999,999')::varchar,
+           to_char(v_reamortized_monthly_payment_no_credits_to_loan, '$FM9,999,999')::varchar,
+           to_char(v_monthly_payment_all_credits_to_loan_after_term, '$FM9,999,999')::varchar,
+           to_char(v_monthly_payment_no_credits_to_loan_after_term, '$FM9,999,999')::varchar,
            v_system_size,
            v_first_year_production_estimate,
-           to_char(v_total_system_cost,'$FM9,999,999')::varchar,
-           to_char(v_referral_promotion,'$FM9,999,999')::varchar,
+           to_char(v_total_system_cost, '$FM9,999,999')::varchar,
+           to_char(v_referral_promotion, '$FM9,999,999')::varchar,
            to_char(v_total_loan_amount, '$FM9,999,999')::varchar,
            to_char(v_federal_tax_incentive_amount, '$FM9,999,999')::varchar,
            round(v_federal_tax_incentive_rate, 0) * 100,
-           to_char(v_net_system_cost,'$FM9,999,999')::varchar,
+           to_char(v_net_system_cost, '$FM9,999,999')::varchar,
            v_utility_company,
            v_estimated_annual_energy_consumption_kwh,
-           to_char(v_current_estimated_annual_utility_bill,'$FM9,999,999')::varchar,
+           to_char(v_current_estimated_annual_utility_bill, '$FM9,999,999')::varchar,
            to_char(v_current_estimated_cost_per_kwh, '$FM9,999,999')::varchar,
            round(v_utility_cost_escalator * 100, 2),
-           to_char(v_state_rebate_amount,'$FM9,999,999')::varchar,
+           to_char(v_state_rebate_amount, '$FM9,999,999')::varchar,
            v_state_rebate_amount,
            to_char(v_ill_srec_rebate_amount, '$FM9,999,999')::varchar,
-           to_char(v_utility_rebate_amount,'$FM9,999,999')::varchar,
+           to_char(v_utility_rebate_amount, '$FM9,999,999')::varchar,
            --cast(round(v_eto_rebate, 2) as money)::varchar,
            -- cast(round(v_csu_rebate, 2) as money)::varchar,
            round(v_apr * 100, 2),
@@ -2176,8 +2242,8 @@ BEGIN
            to_char(v_other_adder_and_discount_amount, '$FM9,999,999')::varchar,
            v_adder,
            round(v_non_solar_cap, 2),
-           to_char(v_required_down_payment,'$FM9,999,999')::varchar,
-           round(v_required_down_payment_number,0),
+           to_char(v_required_down_payment, '$FM9,999,999')::varchar,
+           round(v_required_down_payment_number, 0),
            v_storage_type_id,
            v_storage_type,
            v_financier,
@@ -2196,7 +2262,7 @@ BEGIN
            round(v_unapproved_zip_code_adder, 2),
            v_csu_rebate_unit_type_id,
            v_financial_option,
-           to_char(v_check_from_br,'$FM9,999,999')::varchar,
+           to_char(v_check_from_br, '$FM9,999,999')::varchar,
            v_site_survey_time_estimate,
            v_site_survey_resource_type_yn,
            v_site_survey_resource_type,
@@ -2205,7 +2271,7 @@ BEGIN
            v_estimated_backup_days,
            v_solar_rebate_for_hic,
            v_total_square_footage,
-           to_char(v_net_payment_from_customer,'$FM9,999,999')::varchar,
+           to_char(v_net_payment_from_customer, '$FM9,999,999')::varchar,
            to_char(v_initial_monthly_payment_all_credits_to_loan_bpPlus, '$FM9,999,999')::varchar,
            to_char(v_virginia_srec_rebate_amount, '$FM9,999,999')::varchar,
            to_char(v_above_line_rebate_without_odoe, '$FM9,999,999')::varchar,
