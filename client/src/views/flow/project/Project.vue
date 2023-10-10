@@ -139,7 +139,7 @@
         </div>
       </v-toolbar-title>
       <v-spacer/>
-      <div v-if="milestones && milestones.length > 0" class = "milestone-container">
+      <div v-if="milestones && milestones.length > 0" class = "milestone-container toolbar-z-index-override">
         <div class="milestone-item" v-for="(milestone, idx) in milestones">
           <v-menu v-model="milestone.menuOpen"
                   offset-y
@@ -315,9 +315,7 @@ export default {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
-    if(this.is7oaksAdmin) {
-      this.getMilestones()
-    }
+    this.getMilestones()
   },
   watch: {
     '$route.params.processStepId': async function () {
