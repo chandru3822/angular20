@@ -16,7 +16,6 @@ public class SmartlistSuperField {
 
   private String name, objectType, processStepName, eventName, projectDetailsColumn;
 
-  @JsonIgnore
   private String customFieldSqlKey, customFieldSql, customFieldSqlSmartlist;
 
   private Timestamp dateCreated, dateModified;

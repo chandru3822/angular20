@@ -777,25 +777,25 @@ CREATE TRIGGER concrete_project_process_step_event_audit_trg
 EXECUTE PROCEDURE flow.concrete_project_process_step_event_audit();
 
 
-drop function if exists flow.concrete_postal_code_zone_audit() cascade;
-CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_audit()
+drop function if exists flow.concrete_round_robin_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.concrete_round_robin_audit()
   RETURNS TRIGGER AS
 $$
 BEGIN
   IF (TG_OP = 'INSERT') THEN
-    insert into flow.postal_code_zone_audit(postal_code_zone_id, company_id, zone_name, archived, date_created,
+    insert into flow.round_robin_audit(round_robin_id, company_id, round_robin_name, archived, date_created,
                                             date_modified, created_by_id, modified_by_id,
                                             distribution_time_frame_days, schedulable_future_days,
                                             date_zone_created)
-    values (new.id, new.company_id, new.zone_name, new.archived, new.date_created,
+    values (new.id, new.company_id, new.round_robin_name, new.archived, new.date_created,
             new.date_modified, new.created_by_id, new.modified_by_id,
             new.distribution_time_frame_days, new.schedulable_future_days,
             now());
   elsif (TG_OP = 'UPDATE') THEN
-    update flow.postal_code_zone_audit
-    set postal_code_zone_id          = new.id,
+    update flow.round_robin_audit
+    set round_robin_id               = new.id,
         company_id                   = new.company_id,
-        zone_name                    = new.zone_name,
+        round_robin_name             = new.round_robin_name,
         archived                     = new.archived,
         date_created                 = new.date_created,
         date_modified                = new.date_modified,
@@ -807,7 +807,7 @@ BEGIN
                                          when new.archived is true and old.archived is false then
                                            now()
                                          else date_zone_archived end
-    where postal_code_zone_id = new.id;
+    where round_robin_id = new.id;
 
   end if;
 
@@ -817,53 +817,53 @@ END
 $$
   LANGUAGE plpgsql;
 
-drop trigger if exists concrete_postal_code_zone_audit_trg ON flow.postal_code_zone;
-CREATE TRIGGER concrete_postal_code_zone_audit_trg
+drop trigger if exists concrete_round_robin_audit_trg ON flow.round_robin;
+CREATE TRIGGER concrete_round_robin_audit_trg
   after INSERT or update
-  ON flow.postal_code_zone
+  ON flow.round_robin
   FOR EACH ROW
-EXECUTE PROCEDURE flow.concrete_postal_code_zone_audit();
+EXECUTE PROCEDURE flow.concrete_round_robin_audit();
 
 
-drop function if exists flow.concrete_postal_code_zone_user_audit() cascade;
-CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_user_audit()
+drop function if exists flow.concrete_round_robin_user_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.concrete_round_robin_user_audit()
   RETURNS TRIGGER AS
 $$
 BEGIN
   IF (TG_OP = 'INSERT') THEN
-    insert into flow.postal_code_zone_user_audit(postal_code_zone_user_id, postal_code_zone_id, archived, date_created,
+    insert into flow.round_robin_user_audit(round_robin_user_id, round_robin_id, archived, date_created,
                                                  date_modified, created_by_id, modified_by_id,
-                                                 postal_code_zone_user_type_id, user_id, manual_allocation,
+                                                 round_robin_user_type_id, user_id, manual_allocation,
                                                  date_user_created)
-    values (new.id, new.postal_code_zone_id, new.archived, new.date_created,
+    values (new.id, new.round_robin_id, new.archived, new.date_created,
             new.date_modified, new.created_by_id, new.modified_by_id,
-            new.postal_code_zone_user_type_id, new.user_id, new.manual_allocation,
+            new.round_robin_user_type_id, new.user_id, new.manual_allocation,
             now());
   elsif (TG_OP = 'UPDATE') THEN
-    update flow.postal_code_zone_user_audit
-    set postal_code_zone_id           = new.postal_code_zone_id,
+    update flow.round_robin_user_audit
+    set round_robin_id                = new.round_robin_id,
         archived                      = new.archived,
         date_created                  = new.date_created,
         date_modified                 = new.date_modified,
         created_by_id                 = new.created_by_id,
         modified_by_id                = new.modified_by_id,
-        postal_code_zone_user_type_id = new.postal_code_zone_user_type_id,
+        round_robin_user_type_id      = new.round_robin_user_type_id,
         user_id                       = new.user_id,
         manual_allocation             = new.manual_allocation,
         date_user_archived            = case
                                           when new.archived is true and old.archived is false then
                                             now()
                                           else date_user_archived end
-    where postal_code_zone_user_id = new.id;
+    where round_robin_user_id = new.id;
   end if;
   RETURN NULL;
 END
 $$
   LANGUAGE plpgsql;
 
-drop trigger if exists concrete_postal_code_zone_user_audit_trg ON flow.postal_code_zone_user;
-CREATE TRIGGER concrete_postal_code_zone_user_audit_trg
+drop trigger if exists concrete_round_robin_user_audit_trg ON flow.round_robin_user;
+CREATE TRIGGER concrete_round_robin_user_audit_trg
   after INSERT or update
-  ON flow.postal_code_zone_user
+  ON flow.round_robin_user
   FOR EACH ROW
-EXECUTE PROCEDURE flow.concrete_postal_code_zone_user_audit();
+EXECUTE PROCEDURE flow.concrete_round_robin_user_audit();

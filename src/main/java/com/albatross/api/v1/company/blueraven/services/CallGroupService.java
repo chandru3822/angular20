@@ -4,8 +4,8 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CallGroup;
 import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
-import com.albatross.api.v1.company.blueraven.models.CallGroupPostalCode;
 import com.albatross.api.v1.company.blueraven.services.queries.CallGroupQuery;
+import com.albatross.api.v1.flow.model.PostalCode;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,11 +42,18 @@ public class CallGroupService {
     return result.orElse(null);
   }
 
-  public List<CallGroupPostalCode> getCodesForGroup(Long callGroupId) {
+  public List<PostalCode> getAvailableCodesForGroup(Long callGroupId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("callGroupId", callGroupId);
 
-    return sqlCache.queryBySql(CallGroupQuery.getCodesForGroup, params, CallGroupPostalCode.class);
+    return sqlCache.queryBySql(CallGroupQuery.getAvailableCodesForGroup, params, PostalCode.class);
+  }
+
+  public List<PostalCode> getCodesForGroup(Long callGroupId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("callGroupId", callGroupId);
+
+    return sqlCache.queryBySql(CallGroupQuery.getCodesForGroup, params, PostalCode.class);
   }
 
   public List<CallGroupPhoneNumber> getNumbersForGroup(Long callGroupId) {
@@ -98,23 +105,16 @@ public class CallGroupService {
     sqlCache.updateBySql(CallGroupQuery.deleteGroup, params);
   }
 
-  public ResponseEntity addPostalCode(CallGroupPostalCode cgpc) {
+  public ResponseEntity addPostalCode(PostalCode pc) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("callGroupId", cgpc.getCallGroupId());
-    params.put("postalCode", cgpc.getPostalCode());
-    params.put("createdById", user.trueUserId());
+    params.put("callGroupId", pc.getCallGroupId());
+    params.put("id", pc.getId());
+    params.put("userId", user.trueUserId());
 
-    Optional<CallGroupPostalCode> result = sqlCache.getBySql(CallGroupQuery.checkForExisting, params, CallGroupPostalCode.class);
-    if(result.isPresent()) {
-      HashMap<String, Object> errorObj = new HashMap<>();
-      errorObj.put("message", "Error: Postal Code Already In Use");
-      return ResponseEntity.badRequest().body(errorObj);
-    } else {
-      Long id = sqlCache.updateBySqlReturningId(CallGroupQuery.addPostalCode, params, "id").longValue();
-      return ResponseEntity.ok(getPostalCode(id));
-    }
+    Long id = sqlCache.updateBySqlReturningId(CallGroupQuery.addPostalCode, params, "id").longValue();
+    return ResponseEntity.ok(getPostalCode(id));
   }
 
   public void deletePostalCode(Long id) {
@@ -168,11 +168,11 @@ public class CallGroupService {
     sqlCache.updateBySql(CallGroupQuery.deletePhoneNumber, params);
   }
 
-  public CallGroupPostalCode getPostalCode(Long id) {
+  public PostalCode getPostalCode(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<CallGroupPostalCode> result = sqlCache.getBySql(CallGroupQuery.getPostalCode, params, CallGroupPostalCode.class);
+    Optional<PostalCode> result = sqlCache.getBySql(CallGroupQuery.getPostalCode, params, PostalCode.class);
     return result.orElse(null);
   }
 

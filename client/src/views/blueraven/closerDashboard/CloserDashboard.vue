@@ -396,7 +396,7 @@
       async loadRoundRobinLeadAllocationRankData () {
         this.roundRobinRanksLoading = true
         try {
-          const params = {postalCodeZoneId: this.selectedRoundRobin, timeInterval: this.timeInterval}
+          const params = {roundRobinId: this.selectedRoundRobin, timeInterval: this.timeInterval}
           const {data} = await getRequestWithParams('/closerDashboard/getRoundRobinLeadAllocationRank', {params}, 'blueraven')
           this.processRankingData(data, 'Round Robin Lead Allocation Rank')
           this.roundRobinRanksLoading = false

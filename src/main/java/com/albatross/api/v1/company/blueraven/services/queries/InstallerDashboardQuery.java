@@ -40,7 +40,7 @@ public class InstallerDashboardQuery {
 
   //language=PostgreSQL
   public final static String getRoundRobinLeadAllocationRank = """
-    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:roundRboinId::bigint, :timeInterval::bigint, :currentUserId::bigint)
     """;
 
   //language=PostgreSQL
