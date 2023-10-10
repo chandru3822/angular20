@@ -26,7 +26,7 @@
                           autocomplete="off"
                           attach>
           </v-autocomplete>
-          <v-btn color="primary" class="mr-3 white--text" @click="addUserToZone(selectedScheduler)"
+          <v-btn color="primary" class="mr-3 white--text" @click="addUserToRoundRobin(selectedScheduler)"
                  :disabled="!selectedScheduler.id">
             Add
           </v-btn>
@@ -72,7 +72,7 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromZone" @close-dialog="userToDelete = null">
+    <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromRoundRobin" @close-dialog="userToDelete = null">
       Are you sure you want to remove this user: <strong>{{ userToDeleteName }}</strong>?
     </ConfirmationDialog>
   </v-container>
@@ -94,7 +94,7 @@
         //per carlin 10-31-22 - users with edit should be able to delete users from a RR
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
-        zoneId: this.$route.params.id,
+        roundRobinId: this.$route.params.id,
         dataLoading: true,
         selectedScheduler: {},
         schedulers: [],
@@ -123,7 +123,7 @@
       async getScheduleByUsers () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/postalCode/zone/${this.zoneId}/scheduleBy`)
+          const {data, status} = await getRequest(`/roundRobin/${this.roundRobinId}/scheduleBy`)
           this.scheduleByUsers = data
           this.dataLoading = false
           handleHidingGlobalLoader(this, status)
@@ -134,11 +134,11 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteUserFromZone () {
+      async deleteUserFromRoundRobin () {
         const user = this.userToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/postalCode/zone/user/${user.id}`)
+          const {status} = await deleteRequest(`/roundRobin/user/${user.id}`)
           user.archived = true
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -148,14 +148,14 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async addUserToZone (selected) {
+      async addUserToRoundRobin (selected) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let params = {
-            postalCodeZoneId: this.zoneId,
+            roundRobinId: this.roundRobinId,
             userId: selected.id,
           }
-          const {data, status} = await postRequest(`/postalCode/zone/saveScheduleByUser`, params)
+          const {data, status} = await postRequest(`/roundRobin/saveScheduleByUser`, params)
           this.scheduleByUsers.push(data)
           this.addScheduler = false
           this.selectedScheduler = {}
@@ -171,7 +171,7 @@
         if (this.addScheduler) {
           this.schedulersLoading = true
           try {
-            const {data} = await getRequest(`/postalCode/zone/${this.zoneId}/schedulers`)
+            const {data} = await getRequest(`/roundRobin/${this.roundRobinId}/schedulers`)
             this.schedulers = data
             this.schedulersLoading = false
           } catch (e) {

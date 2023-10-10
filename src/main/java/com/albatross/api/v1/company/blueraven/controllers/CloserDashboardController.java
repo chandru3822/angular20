@@ -4,7 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.CloserDashboardService;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
-import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
+import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -47,14 +47,14 @@ public class CloserDashboardController {
   }
 
   @GetMapping(value = "/getRoundRobins")
-  public List<PostalCodeZone> getRoundRobins() {
+  public List<RoundRobin> getRoundRobins() {
     return closerDashboardService.getRoundRobins();
   }
 
   @GetMapping(value = "/getRoundRobinLeadAllocationRank")
   public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(
-      @RequestParam Integer postalCodeZoneId, @RequestParam Integer timeInterval) {
-    return closerDashboardService.getRoundRobinLeadAllocationRank(postalCodeZoneId, timeInterval);
+      @RequestParam Integer roundRobinId, @RequestParam Integer timeInterval) {
+    return closerDashboardService.getRoundRobinLeadAllocationRank(roundRobinId, timeInterval);
   }
 
   @GetMapping(value = "/getCloserOffices")

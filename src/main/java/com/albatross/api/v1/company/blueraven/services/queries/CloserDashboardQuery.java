@@ -116,28 +116,28 @@ public class CloserDashboardQuery {
   public final static String getAllRoundRobins = """
     SELECT pcz.id,
        pcz.company_id,
-       pcz.zone_name,
+       pcz.round_robin_name,
        pcz.archived
-      from flow.postal_code_zone pcz
+      from flow.round_robin pcz
       WHERE pcz.archived IS FALSE
       and pcz.company_id = :companyId
-      ORDER BY pcz.zone_name
+      ORDER BY pcz.round_robin_name
     """;
 
   //language=PostgreSQL
   public final static String getRoundRobins = """
     SELECT pcz.id,
        pcz.company_id,
-       pcz.zone_name,
+       pcz.round_robin_name,
        pczu.archived
-      FROM flow.postal_code_zone_user pczu
-           INNER JOIN flow.postal_code_zone pcz ON pcz.id = pczu.postal_code_zone_id
+      FROM flow.round_robin_user pczu
+           INNER JOIN flow.round_robin pcz ON pcz.id = pczu.round_robin_id
       WHERE pczu.user_id = :userId
         AND pczu.archived IS FALSE
         AND pcz.archived IS FALSE
         and pcz.company_id = 3
-        -- postal_code_zone_user_type_id = 1 means schedule to (2 = schedule by)
-        AND pczu.postal_code_zone_user_type_id = 1
+        -- round_robin_user_type_id = 1 means schedule to (2 = schedule by)
+        AND pczu.round_robin_user_type_id = 1
     """;
 
   //language=PostgreSQL
@@ -167,7 +167,7 @@ public class CloserDashboardQuery {
 
   //language=PostgreSQL
   public final static String getRoundRobinLeadAllocationRank = """
-    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:postalCodeZoneId::bigint, :timeInterval::bigint, :currentUserId::bigint)
+    SELECT * FROM brs.get_round_robin_lead_allocation_rank(:roundRobinId::bigint, :timeInterval::bigint, :currentUserId::bigint)
     """;
 
   //language=PostgreSQL

@@ -175,7 +175,6 @@
     },
     computed: {
       filteredOrgs () {
-        console.log('randaLogger',this.search.inactive)
         return this.orgs.filter(o => { return this.search?.inactive ? true : o.activeFlag})
       },
     },

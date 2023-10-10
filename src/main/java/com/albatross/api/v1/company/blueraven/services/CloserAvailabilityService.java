@@ -29,7 +29,8 @@ public class CloserAvailabilityService {
   public String getBrsCloserAvailability(CloserAvailabilityController.EventSearchParams esp) {
     HashMap<String, Object> params = new HashMap<>();
 
-    params.put("postalCodeZoneUserIds", esp.getPostalCodeZoneUserIds());
+    //cant change the esp.postalCodeZoneUsers cuz that is what mobile passes in
+    params.put("roundRobinUserIds", esp.getPostalCodeZoneUserIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());

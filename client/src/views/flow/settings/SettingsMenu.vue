@@ -76,9 +76,14 @@ export default {
         title: 'States',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/postalCodes',
+        path: '/settings/zip/postalCodes',
+        title: 'Postal Codes',
+        pathMatch: '/settings/zip/postalCodes',
+        show: this.$store.getters.userHasFeature('POSTAL_CODE')
+      }, {
+        path: '/settings/roundRobins',
         title: 'Round Robins',
-        pathMatch: '/settings/postalCode',
+        pathMatch: '/settings/roundRobin',
         show: this.$store.getters.userHasFeature('ROUND_ROBIN')
       }, {
         path: '/settings/callGroups',

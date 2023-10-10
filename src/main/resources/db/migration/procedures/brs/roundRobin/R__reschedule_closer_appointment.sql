@@ -87,9 +87,9 @@ BEGIN
   select coalesce(t.timezone, p.time_zone)
   into v_timezone
   from flow.project p
-         inner join flow.postal_code_zone_postal_code pc on pc.postal_code = substr(
+         inner join flow.postal_code pc on pc.postal_code = substr(
     trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
-         inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id and pcz.archived is false
+         inner join flow.round_robin pcz on pcz.id = pc.round_robin_id and pcz.archived is false
          left join flow.company_timezone ct on pcz.company_timezone_id = ct.id
          left join flow.timezone t on ct.timezone_id = t.id
   where p.id = v_project_id;
