@@ -114,7 +114,7 @@
                     :query="queryText"
                     @reload="getActivities"
       ></ActivityList>
-      <div class="error--text py-4">
+      <div class="error--text py-4" v-if="activities && activities.length >= 49">
         We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent 50 notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.
       </div>
     </div>
