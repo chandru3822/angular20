@@ -3290,10 +3290,7 @@ public class ReportEngine {
     }
 
     // Remove comma and space from last select field
-    query.deleteCharAt(query.length() - 1);
-
-    query.append(" flow.project.id as project_id,");
-    query.append(" flow.project.contact_id as contact_id");
+    query.deleteCharAt(query.length() - 2);
 
     // @TODO: Eventually de-hardcode brs schema
     query.append(" from brs.project_details");
