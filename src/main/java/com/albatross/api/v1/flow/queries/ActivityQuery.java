@@ -42,10 +42,10 @@ public class ActivityQuery {
                                                                    end as "linkLabel",
                                                                pa2.pinned,
                                                                pa2.created_by_id as "createdById",
-                                                               concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                               p.position as "createdByPosition",
-                                                               o.org_name as "createdByPositionOrg",
-                                                               up.org_id as "createdByPositionOrgId",
+                                                               concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+                                                               upv.position as "createdByPosition",
+                                                               upv.org_name as "createdByPositionOrg",
+                                                               upv.org_id as "createdByPositionOrgId",
                                                                pa2.pinned_by_id as "pinnedById",
                                                                concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                                pa2.archived,
@@ -71,10 +71,11 @@ public class ActivityQuery {
                                                                                  and pah3.archived is false) ht), '[]') AS "activityHashtags"
                                                         from flow.project_activity_hashtag pah2
                                                                  inner join flow.project_activity pa2 on pa2.id = pah2.project_activity_id and pa2.project_id = :sourceId and pa2.archived is false
-                                                                 inner join flow."user" u on u.id = pa2.created_by_id
-                                                                 left join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
-                                                                 left join flow.position p on p.id = up.position_id and p.company_id = :companyId
-                                                                 left join flow.org o on o.id = up.org_id
+                                                                 left join flow.user_positions_vw upv on upv.user_id = pa2.created_by_id
+                                                                                                             and upv.position_level = 0
+                                                                                                    and upv.primary_flag is true
+                                                                                                    and upv.archived is false
+                                                                                                    and upv.company_id = :companyId
                                                                  inner join flow."user" mod on mod.id = pa2.modified_by_id
                                                                  left join flow."user" pin on pin.id = pa2.pinned_by_id
                                                         where pa2.activity_type_id = a.id
@@ -121,10 +122,10 @@ public class ActivityQuery {
                                                                    end as "linkLabel",
                                                                pa2.pinned,
                                                                pa2.created_by_id as "createdById",
-                                                               concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                               p.position as "createdByPosition",
-                                                               o.org_name as "createdByPositionOrg",
-                                                               up.org_id as "createdByPositionOrgId",
+                                                               concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+                                                               upv.position as "createdByPosition",
+                                                               upv.org_name as "createdByPositionOrg",
+                                                               upv.org_id as "createdByPositionOrgId",
                                                                pa2.pinned_by_id as "pinnedById",
                                                                concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                                pa2.archived,
@@ -132,10 +133,11 @@ public class ActivityQuery {
                                                                concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
                                                                pa2.activity_type_id as "activityTypeId"
                                                         from flow.project_activity pa2
-                                                                 inner join flow."user" u on u.id = pa2.created_by_id
-                                                                 left join flow.user_position up on up.user_id = u.id and up.primary_flag is true and up.archived is false
-                                                                 left join flow.position p on p.id = up.position_id and p.company_id = :companyId
-                                                                 left join flow.org o on o.id = up.org_id
+                                                                 left join flow.user_positions_vw upv on upv.user_id = pa2.created_by_id
+                                                                                                             and upv.position_level = 0
+                                                                                                             and upv.primary_flag is true
+                                                                                                             and upv.archived is false
+                                                                                                             and upv.company_id = :companyId
                                                                  inner join flow."user" mod on mod.id = pa2.modified_by_id
                                                                  left join flow."user" pin on pin.id = pa2.pinned_by_id
                                                         where pa2.archived is false
