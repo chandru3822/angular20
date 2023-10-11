@@ -114,6 +114,9 @@
                     :query="queryText"
                     @reload="getActivities"
       ></ActivityList>
+      <div class="error--text py-4" v-if="timelineView && activities && activities.length >= 49">
+        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent 50 notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.
+      </div>
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
@@ -449,7 +452,7 @@ export default {
       if (this.primaryId && this.sectionType) {
         try {
           const {data} = await getRequest(`/activity/${this.sectionType}/${this.primaryId}`)
-          this.activities = data
+          this.activities = data.slice(0,49)
         } catch {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
