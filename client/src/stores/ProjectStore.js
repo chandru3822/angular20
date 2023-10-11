@@ -21,7 +21,7 @@ export const ProjectStore = {
     linkLabel: null,
     ppsEvent: null,
     selectedTab: 1,
-    notesActivityView: 0,
+    notesActivityView: 1,
     forceReloadKey: 0,
     manualColumnSplit: false,
     leftSideSplit: false,
