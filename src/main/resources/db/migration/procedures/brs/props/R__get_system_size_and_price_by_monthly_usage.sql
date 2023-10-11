@@ -216,11 +216,8 @@ BEGIN
   into v_utility_rate_kwh,v_utility_cost_escalator
   from proposal_value_avg pv
   where object_code = 'PROPOSAL_PRICING'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 85
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $field))',
-                         jsonb_build_object('field', p_utility_id));
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+                         jsonb_build_object('field', 85,'intValue', p_utility_id));
 
   --------
 
@@ -232,12 +229,8 @@ BEGIN
     v_init_pmt_factor_10_year_low_dealer_fee
   from proposal_value_avg pv
   where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 374
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $intValue))', '{
-    "intValue": 1918
-  }');
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+                         jsonb_build_object('field', 374,'intValue', 1918));
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 111)') ->> 'value')::numeric as v_apr_low_monthly_option,
@@ -247,13 +240,9 @@ BEGIN
   into v_apr_low_monthly_option,v_term_low_monthly_option,
     v_dealer_fee_25_year_low_payment,v_init_pmt_factor_25_year_low_payment
   from proposal_value_avg pv
-  where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-    "field": 374
-  }')
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $intValue))', '{
-    "intValue": 1917
-  }');
+  where object_code = 'PROPOSAL_FINANCE_PRODUCTS' and
+    jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
+                      jsonb_build_object('field', 374,'intValue', 1917));
 
 
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric    as federal_tax_incentive_rate,
