@@ -19,18 +19,19 @@ export default new Vuetify({
     },
       themes: {
           light: {
-              primary: {
-                  base:'#1F3C73',
-                  lighten1:'#2c5893',
-                  lighten2:'#3368a5',
-                  lighten3:'#3c79b6',
-                  lighten4:'#4486c3',
-                  lighten5:'#5796cb',
-                  lighten6:'#6fa7d3',
-                  lighten7:'#94c0e0',
-                  lighten8:'#bbd8ec',
-                  lighten9:'#e3eff7'
-              },
+              // primary: {
+              //     base:'#1F3C73',
+              //     lighten1:'#2c5893',
+              //     lighten2:'#3368a5',
+              //     lighten3:'#3c79b6',
+              //     lighten4:'#4486c3',
+              //     lighten5:'#5796cb',
+              //     lighten6:'#6fa7d3',
+              //     lighten7:'#94c0e0',
+              //     lighten8:'#bbd8ec',
+              //     lighten9:'#e3eff7'
+              // },
+              primary: 'black',
               secondary: '#F6F7F8',
               accent: '#3c79b6',
               error:{

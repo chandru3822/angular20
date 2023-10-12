@@ -27,7 +27,7 @@
             <template v-slot:activator="{ on }">
               <v-btn icon v-on="on" :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
                 <img class="header-logo" v-if="selectedCompany.logoPresignedUrl"
-                     :src="selectedCompany.logoPresignedUrl">
+                     :src="require('../assets/blueraven/halloween-bats-svgrepo-com.svg')">
                 <v-icon v-else>mdi-office-building</v-icon>
               </v-btn>
             </template>
