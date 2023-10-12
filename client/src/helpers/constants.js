@@ -3,7 +3,7 @@ const { VITE_BASE_API, VITE_ENV, VITE_MAPBOX_ACCESS_TOKEN, VITE_MAPBOX_STYLE} = 
 let constants = {}
 
 constants.NOT_FOUND_404_TEXT = 'FAIL_TO_NOT_FOUND_SCREEN'
-constants.LOCAL_COLOR = 'pink'
+constants.LOCAL_COLOR = 'rgb(254, 90, 14)'
 constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
