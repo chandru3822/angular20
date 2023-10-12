@@ -1342,8 +1342,10 @@ BEGIN
     v_first_year_rebate_cap,v_is_first_year_rebate_cap
   from proposal_value pv
   where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? ((@.fieldId == $targetFieldId && @.intValue == $intValue) && (@.intValue == $intValue1 && @.fieldId == $fieldId1))',
-                           jsonb_build_object('targetFieldId', 86, 'intValue', v_state_id,'intValue1',454,'fieldId1',96)));
+    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
+                           jsonb_build_object('targetFieldId', 86, 'intValue', v_state_id)))
+    and (jsonb_path_exists(row, '$.fields[*] ? (@.intValue == $intValue1 && @.fieldId == $fieldId1)',
+                               jsonb_build_object('intValue1',454,'fieldId1',96)));
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
   raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
@@ -2169,7 +2171,7 @@ BEGIN
            v_utility_company,
            v_estimated_annual_energy_consumption_kwh,
            to_char(v_current_estimated_annual_utility_bill, '$FM9,999,999')::varchar,
-           to_char(v_current_estimated_cost_per_kwh, '$FM9,999,999')::varchar,
+           to_char(v_current_estimated_cost_per_kwh, '$FM9,999,999.99')::varchar,
            round(v_utility_cost_escalator * 100, 2),
            to_char(v_state_rebate_amount, '$FM9,999,999')::varchar,
            v_state_rebate_amount,

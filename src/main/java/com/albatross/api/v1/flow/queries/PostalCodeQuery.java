@@ -12,37 +12,58 @@ public class PostalCodeQuery {
              pc.state_id,
              s.abbreviation as state_abbreviation,
              pc.self_gen,
+             pcz.zone_name,
+             rr.round_robin_name,
+             cg.call_group_name,
              pc.inside_sales,
              pc.sales_partners,
              pc.archived,
              pc.active
       from flow.postal_code pc
-        left join flow.state s on s.id = pc.state_id
-      where pc.active is true
-      and pc.archived is false
+          left join flow.round_robin rr on pc.round_robin_id = rr.id
+          left join brs.call_group cg on pc.call_group_id = cg.id
+          left join flow.postal_code_zone pcz on pc.postal_code_zone_id = pcz.id
+          left join flow.state s on s.id = pc.state_id
+      where pc.archived is false
+        and pc.active is true
       order by pc.postal_code
   """;
 
   //language=PostgreSQL
   public final static String getPostalCodeById = """
-      select id,
-             postal_code,
-             place_name,
-             round_robin_id,
-             state_id,
-             postal_code_zone_id,
-             call_group_id,
-             notes,
-             disqualified,
-             self_gen,
-             inside_sales,
-             sales_partners,
-             archived,
-             active
+      select pc.id,
+             pc.postal_code,
+             pc.place_name,
+             pc.round_robin_id,
+             pc.disqualified,
+             pc.state_id,
+             s.abbreviation as state_abbreviation,
+             pc.self_gen,
+             pcz.zone_name,
+             rr.round_robin_name,
+             cg.call_group_name,
+             pc.inside_sales,
+             pc.sales_partners,
+             pc.archived,
+             pc.active
       from flow.postal_code pc
+          left join flow.round_robin rr on pc.round_robin_id = rr.id
+          left join brs.call_group cg on pc.call_group_id = cg.id
+          left join flow.postal_code_zone pcz on pc.postal_code_zone_id = pcz.id
+          left join flow.state s on s.id = pc.state_id
       where pc.archived is false
-      and pc.id = :id
+        and pc.id = :id
   """;
+
+  //language=PostgreSQL
+  public final static String deletePostalCode = """
+      update flow.postal_code
+        set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+      where id = :id
+  """;
+
 
   //language=PostgreSQL
   public final static String updatePostalCode = """

@@ -114,6 +114,9 @@
                     :query="queryText"
                     @reload="getActivities"
       ></ActivityList>
+      <div class="error--text py-4" v-if="timelineView && sortedFilteredActivities && sortedFilteredActivities.length >= 49">
+        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent 50 notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.
+      </div>
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
@@ -300,7 +303,7 @@ export default {
       return result
     },
     sortedFilteredActivities() {
-      return orderBy(this.activities.filter(a => {
+      let sortedList = orderBy(this.activities.filter(a => {
         //filter out archived
         //if search is not empty then filter that stuff here too
         //and ensure the activityTypeId is selected in the filter
@@ -311,6 +314,7 @@ export default {
           && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['dateCreated'], [ this.sortDirection])
+      return sortedList.slice(0, 49)
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
