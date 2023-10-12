@@ -2171,7 +2171,7 @@ BEGIN
            v_utility_company,
            v_estimated_annual_energy_consumption_kwh,
            to_char(v_current_estimated_annual_utility_bill, '$FM9,999,999')::varchar,
-           to_char(v_current_estimated_cost_per_kwh, '$FM9,999,999')::varchar,
+           to_char(v_current_estimated_cost_per_kwh, '$FM9,999,999.99')::varchar,
            round(v_utility_cost_escalator * 100, 2),
            to_char(v_state_rebate_amount, '$FM9,999,999')::varchar,
            v_state_rebate_amount,

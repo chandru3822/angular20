@@ -32,6 +32,11 @@ public class PostalCodeController {
     return postalCodeService.getPostalCode(id);
   }
 
+  @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletePostalCode(@PathVariable Long id) {
+    postalCodeService.deletePostalCode(id);
+  }
+
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<PostalCode> savePostalCode(@RequestBody PostalCode postalCode) {
     return postalCodeService.savePostalCode(postalCode);

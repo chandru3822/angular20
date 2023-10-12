@@ -42,6 +42,15 @@ public class PostalCodeService {
     return sqlCache.getBySql(PostalCodeQuery.getPostalCodeById, params, PostalCode.class);
   }
 
+  public void deletePostalCode(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(PostalCodeQuery.deletePostalCode, params);
+  }
+
   public Optional<PostalCode> savePostalCode(PostalCode postalCode) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
