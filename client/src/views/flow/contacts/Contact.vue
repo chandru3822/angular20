@@ -121,6 +121,14 @@
                           item-text="fullName"
                           return-object
                           autocomplete="off">
+            <template v-slot:prepend>
+              <v-tooltip top small>
+                <template v-slot:activator="{on, attrs}">
+                  <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
+                </template>
+                <span class="albatross-body-3">Select Me</span>
+              </v-tooltip>
+            </template>
           </v-autocomplete>
         </v-card-text>
       </v-form>
@@ -720,11 +728,18 @@ export default {
     getUserPositionIds: function () {
       this.userPositionIds = this.$store.state.user.details.userPositions.map(p => p.positionId)
     },
+    selectSelf() {
+      let match = this.availableOwners.find(o => o.userId === this.$store.state.user.details.id) || {}
+      console.log('randalogger', this.$store.state.user.details.id)
+      console.log('mather', match)
+      this.$set(this.tempContact, 'owner', match)
+    },
     async validateForm() {
       if (this.$refs.contactEditForm.validate()) {
         //these could be combined - just dont have time atm
         this.saveContactAddressFields()
-        this.updateOwner()
+
+        // this.updateOwner()
 
         //set project values if they hit save
         this.contact = cloneDeep(this.tempContact)
@@ -735,6 +750,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         //temp contact holds all the changes in case they cancel. use those values
+        this.tempContact.ownerUserPositionId = this.tempContact.owner.userPositionId
         const {status} = await postRequest(`/contact`, this.tempContact)
         this.snackbar = getSnackbar('SUCCESS', 'Contact Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -861,20 +877,21 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async updateOwner() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //we use tempContact to save values in case they cancel then it repopulates at the end
-        const {status} = await putRequest(`/contact/${this.contactId}/updateOwner`, this.tempContact.owner || {userPositionId: null})
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        this.contact.owner = {}
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+    //this method is extra cuz the saving of the contact also updates the owner
+    // async updateOwner() {
+    //   this.$store.commit(AppMutations.SET_LOADING, true)
+    //   try {
+    //     //we use tempContact to save values in case they cancel then it repopulates at the end
+    //     const {status} = await putRequest(`/contact/${this.contactId}/updateOwner`, this.tempContact.owner || {userPositionId: null})
+    //     handleHidingGlobalLoader(this, status)
+    //   } catch (e) {
+    //     this.contact.owner = {}
+    //     console.error('*** ERROR ***', e)
+    //     this.snackbar = getSnackbar('ERROR', 'Error Saving Owner')
+    //     this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    //     this.$store.commit(AppMutations.SET_LOADING, false)
+    //   }
+    // },
     async getAvailableProcesses() {
       try {
         this.processesLoading = true
