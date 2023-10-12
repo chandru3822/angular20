@@ -730,8 +730,6 @@ export default {
     },
     selectSelf() {
       let match = this.availableOwners.find(o => o.userId === this.$store.state.user.details.id) || {}
-      console.log('randalogger', this.$store.state.user.details.id)
-      console.log('mather', match)
       this.$set(this.tempContact, 'owner', match)
     },
     async validateForm() {

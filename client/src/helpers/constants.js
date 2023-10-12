@@ -65,6 +65,12 @@ constants.POSTAL_CODE_REQUIRED_RULES = [
   v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
 ]
 
+constants.POSTAL_CODE_FIVE_REQUIRED_RULES = [
+  v => !!v || "Field is required",
+  v => (!v || (v && (v.length === 0 || v.length === 5 ))) || 'Must be 5 characters',
+  v => (!v || /^\d{5}(?:[-\s]\d{4})?$/.test(v)) || "Postal Code must be a valid format: ##### or #####-####"
+]
+
 constants.CITY_RULES = [
   v => (!v || (v && (v.length <= 35))) || 'Must be 35 characters or less',
   v => (!v || /^[-.a-zA-Z0-9\s]+$/.test(v)) || "City must only contain alphanumeric, hyphen, period, or whitespace characters"

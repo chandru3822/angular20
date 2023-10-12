@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class PostalCode {
 
   private Long id, roundRobinId, callGroupId, postalCodeZoneId, stateId;
-  private String postalCode, placeName, notes, stateAbbreviation;
+  private String postalCode, placeName, notes, stateAbbreviation, roundRobinName, zoneName, callGroupName;
   private Boolean archived, active, disqualified, selfGen, salesPartners, insideSales;
 }
