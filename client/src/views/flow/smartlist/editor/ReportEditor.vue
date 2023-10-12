@@ -470,6 +470,7 @@ const updateOwner = (newOwner) => {
 
 const copied = async (copiedReport) => {
   await router.push({name: 'reportEditor', params: {reportId: copiedReport.id}})
+  showUnsavedDialog.value = false
   await refreshReport()
 }
 
