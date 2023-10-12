@@ -121,7 +121,7 @@
                           item-text="fullName"
                           return-object
                           autocomplete="off">
-            <template v-slot:prepend>
+            <template v-slot:prepend v-if="!contactOwnerFieldIsReadOnly()">
               <v-tooltip top small>
                 <template v-slot:activator="{on, attrs}">
                   <v-icon @click="selectSelf" class="clickable" color="primary" v-bind="attrs" v-on="on">mdi-account-arrow-right-outline</v-icon>
