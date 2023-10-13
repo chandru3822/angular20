@@ -6,6 +6,9 @@
           <v-toolbar-title class="app-title">Tournaments</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
+            <v-btn text color="primary" @click="showPreviousYears = !showPreviousYears">
+              Show Previous Years
+            </v-btn>
             <v-btn text color="primary" @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
               {{'Add New'}}
             </v-btn>
@@ -107,6 +110,8 @@
 <script>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
+  import moment from 'moment'
+  import orderBy from 'lodash.orderby'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
@@ -124,6 +129,7 @@
       return {
         snackbar: {},
         addNew: false,
+        showPreviousYears: false,
         search: null,
         newTournament: {
           tournamentFormulaFields: []
@@ -136,6 +142,7 @@
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
         tournaments: [],
+        currentYear: moment().year(),
         ownerTypes: [],
         formulas: [],
         headers: [
@@ -168,7 +175,9 @@
         return invalid
       },
       filterTournaments () {
-        return this.tournaments.filter(t => { return !t.archived})
+        return orderBy(this.tournaments.filter(t => {
+          return !t.archived && ( !this.showPreviousYears ? (moment(t.startDate).year() === this.currentYear || moment(t.endDate).year() === this.currentYear) : true )
+        }), [ 'active', 'startDate', 'tournamentName'], ['desc','desc', 'asc'])
       },
       goToTournament(id) {
         this.$router.push({path: `/settings/tournaments/${id}/details`})
