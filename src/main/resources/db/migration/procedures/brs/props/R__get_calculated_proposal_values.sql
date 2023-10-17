@@ -156,7 +156,9 @@ create type brs.calculated_proposal_value as
   above_line_rebate_without_odoe                     varchar,
   odoe_rebate                                        varchar,
   above_line_rebate_without_odoe_number              numeric,
-  odoe_rebate_number                                 numeric
+  odoe_rebate_number                                 numeric,
+  deposit_amount                                     varchar,
+  deposit_amount_number                              numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -461,6 +463,8 @@ declare
   v_dealer                                             bigint;
   v_dealer_markup                                      numeric;
   v_dealer_redline_price                               numeric;
+  v_deposit_amount  numeric;
+v_deposit_amount_number numeric;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -1315,6 +1319,15 @@ BEGIN
   raise notice 'v_no_ancillary_total_loan_amount = %',v_no_ancillary_total_loan_amount;
 
 
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 410)') ->> 'value')::numeric
+  into v_deposit_amount
+  from proposal_value pv
+  where object_code = 'PROPOSAL_DEPOSITS'
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intArrayValue == $intArrayValue ))',
+                         jsonb_build_object('field', 341, 'intArrayValue', v_state_id));
+
+  raise notice 'v_deposit_amount % ',v_deposit_amount;
+
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::bigint as referral_promotion
   into v_referral_promotion
   from proposal_value pv
@@ -1578,12 +1591,12 @@ BEGIN
       coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate, 0);
   --+ coalesce(v_csu_rebate, 0);  --Judson wanted me to take out this rebate
 
-
   v_total_system_cost =
     (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
-     coalesce(v_above_line_rebate, 0) +
+     coalesce(v_above_line_rebate, 0) + coalesce(v_deposit_amount,0) +
      case when v_dealer is null then
-     (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end );
+       case when v_version_id < 74 then
+      (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end  else 0::numeric end );
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
@@ -1605,8 +1618,9 @@ BEGIN
                                                   ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
                      else 0::numeric end) / (1 - v_dealer_fee)) -
                  case when v_dealer is null then
-                 coalesce(v_other_adder_and_discount_amount, 0) +
-                 (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end -
+                   case when v_version_id < 74 then
+                    coalesce(v_other_adder_and_discount_amount, 0) +
+                    (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end else 0::numeric end -
                  coalesce(v_admin_discount, 0)) /
                 (v_system_size * 1000)) -
                v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
@@ -1680,7 +1694,8 @@ BEGIN
               else 0::numeric end) / (1 - v_dealer_fee)) -
           coalesce(v_other_adder_and_discount_amount, 0) +
           case when v_dealer is null then
-          (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end - coalesce(v_admin_discount, 0);
+            case when v_version_id < 74 then
+            (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end else 0::numeric end - coalesce(v_admin_discount, 0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
   raise notice 'v_above_line_rebate = %',v_above_line_rebate;
   raise notice 'v_admin_discount = %',v_admin_discount;
@@ -2281,7 +2296,9 @@ BEGIN
            to_char(v_above_line_rebate_without_odoe, '$FM9,999,999')::varchar,
            to_char(v_odoe_rebate, '$FM9,999,999')::varchar,
            v_above_line_rebate_without_odoe::numeric,
-           v_odoe_rebate::numeric;
+           v_odoe_rebate::numeric,
+           to_char(coalesce(v_deposit_amount,0),'$FM9,999,999')::varchar,
+           coalesce(v_deposit_amount_number,0);
 
   drop table proposal_value;
 
