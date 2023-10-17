@@ -56,7 +56,7 @@ const chooseSelectedView = (view, id) => {
     </v-toolbar>
   </v-row>
   <v-row class="mobile-background height-one-hunned">
-    <v-col class="auto-overflow main-column-container">
+    <v-col class=" py-0 main-column-container">
     <slot name="main-column"/>
     </v-col>
   </v-row>
