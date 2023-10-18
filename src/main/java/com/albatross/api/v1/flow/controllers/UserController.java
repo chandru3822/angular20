@@ -54,6 +54,11 @@ public class UserController {
     userService.saveUserHomePage(user.getHomePageCompanyFeatureId());
   }
 
+  @PostMapping(value = "/updateTestAccounts")
+  public void updateTestUserPasswords(@RequestParam String password) {
+    userService.updateTestUserPasswords(password);
+  }
+
   @PutMapping(value = "")
   public ResponseEntity saveUser(
       @RequestParam(required = false) Boolean userIsAlbatross, @RequestBody User user) {
