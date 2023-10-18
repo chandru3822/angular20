@@ -10,20 +10,41 @@
 *   header-actions
 *   header-second-line
 *   collapse-button-icon
+* props
+*   viewOptions-Array of objects with the following data:
+*       icon
+*   selectedOption-Number representing the index of the selected option in viewOptions,
 *
 *
 */
 
-import {getCurrentInstance, computed, ref} from 'vue'
+import {getCurrentInstance, computed, defineProps, defineEmits} from 'vue'
 import {ProjectMutations} from "@/stores/ProjectStore";
 
-//collapsed or expanded
+//instantiate the store
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+
+//props and emits
+const props = defineProps({
+  viewOptions:[],
+  selectedOption:Number,
+})
+const emit = defineEmits(['selectView'])
+
+//the selected view
+const selectView = (viewOption) => {
+  emit('selectView', viewOption)
+  if (!isSidebarCollapsed) {
+    collapseExpandSide()
+  }
+}
+
+//collapsed or expanded
 const isSidebarCollapsed = computed(() => {
   return store.state.project.rightSideSplit
 })
-const collapseSide = () => {
+const collapseExpandSide = () => {
   store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
 }
 
@@ -31,7 +52,6 @@ const isMobile = computed(() => {
   return vueInstance.$vuetify.breakpoint.smAndDown
 })
 
-const selectedOption=ref(0)
 
 
 </script>
@@ -39,12 +59,19 @@ const selectedOption=ref(0)
 <template>
 
   <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4" no-gutters>
-    <div v-if="!isSidebarCollapsed" class="conversation-activity-header-container d-flex flex-column one-hunned">
+    <div v-if="isSidebarCollapsed" class="pl-3 pt-2">
+      <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
+        <slot name="collapse-button-icon">
+          <v-icon>mdi-menu</v-icon>
+        </slot>
+      </v-btn>
+    </div>
+    <div v-else class="conversation-activity-header-container d-flex flex-column one-hunned">
       <div class="pt-0 pl-6 d-flex align-center conversation-activity-header title-no-collapse headline-small">
           <slot name="title" v-if="!isSidebarCollapsed">Sidebar Title</slot>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <slot name="header-actions" v-if="!isSidebarCollapsed"/>
-        <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseSide()">
+        <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
           <slot name="collapse-button-icon">
             <v-icon>mdi-menu</v-icon>
           </slot>
@@ -55,12 +82,8 @@ const selectedOption=ref(0)
       <div class="mb-3" v-if="!isSidebarCollapsed"></div>
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
     </div>
-    <div v-else class="pl-3 pt-2">
-        <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseSide()">
-          <slot name="collapse-button-icon">
-            <v-icon>mdi-menu</v-icon>
-          </slot>
-        </v-btn>
+    <div v-show="!isSidebarCollapsed" class="conversation-activity-inner-container one-hunned">
+      <slot/>
     </div>
     <div fixed class="footer-container px-0" :class="{'footerAbsolute' : !isMobile, 'footerFixed': isMobile}"
          :style="{'width': isSidebarCollapsed ? '72px' : '100%',
@@ -71,29 +94,15 @@ const selectedOption=ref(0)
                         'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
           class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
       >
-        <v-col cols="4" class="px-0">
-          <v-btn text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 0"
-                 :class="{'section-selected': selectedOption===0}" >
-            <v-icon>mdi-forum-outline</v-icon>
-          </v-btn>
-        </v-col>
-        <v-col cols="4" class="px-0">
-          <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1); startReadNotesTimer('Clicked in the notes tab')" :dark="selectedOption === 1"
-                 :class="{'section-selected': selectedOption===1}">
-            <v-icon>mdi-text-long</v-icon>
-          </v-btn>
-        </v-col>
-        <v-col cols="4" class="px-0">
-          <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 2"
-                 :class="{'section-selected': selectedOption===2}">
-            <v-icon>mdi-folder-outline</v-icon>
+        <v-col v-for="(option, index) in viewOptions" :cols="12/viewOptions.length" class="px-0">
+          <v-btn v-if="option.visible" text :color="selectedOption === index ? 'white' : 'primary'" block elevation="0" @click="selectView(index)" :dark="selectedOption === index"
+                 :class="{'section-selected': selectedOption===index}" >
+            <v-icon>{{option.icon}}</v-icon>
           </v-btn>
         </v-col>
       </v-row>
     </div>
   </v-row>
-
-
 </template>
 
 
@@ -124,9 +133,9 @@ const selectedOption=ref(0)
 }
 
 .conversation-activity-inner-container {
-  max-height: 100%;
+  max-height: calc(100% - 112px);
+  margin-top: -53px;
   overflow: auto;
-  flex-grow: 4;
 }
 
 .conversation-activity-header {

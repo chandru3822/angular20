@@ -15,7 +15,7 @@
     </v-dialog>
     <div class="pa-0 height-one-hunned">
       <div class="project-header">
-        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6">
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar mx-6">
           <v-toolbar-title class="albatross-header-2">{{ projectTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items v-if="projectTab.id !== -1">
@@ -436,7 +436,7 @@ export default {
 
 .project-fields-container {
   overflow: auto;
-  height: calc(100vh - 240px);
+  height: calc(100vh - 175px);
   padding-bottom: 0px !important;
 
   @media (min-width: 960px) {

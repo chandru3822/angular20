@@ -286,6 +286,13 @@
                      :milestones="milestones"
         />
       </template>
+      <template v-slot:right-column>
+        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"
+                         @closeRight="closeRight()"
+                         @click="collapseSide('right')"
+                         @openRight="$store.state.project.rightSideSplit = false">
+        </ProjectActivity>
+      </template>
     </ThreeColumnLayout>
   </div>
 </template>

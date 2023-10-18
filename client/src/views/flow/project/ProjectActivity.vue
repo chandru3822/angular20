@@ -1,138 +1,119 @@
 <template>
+  <CollapsableRightPanel
+      :view-options="[{icon: 'mdi-forum-outline', visible: showSmsTab}, {icon: 'mdi-text-long', visible: true}, {icon: 'mdi-folder-outline', visible: true}]"
+      :selected-option="selectedOption"
+      :showHeaderSecondLine = "selectedOption === 0"
+      @selectView="selectView($event)"
+  >
+    <template v-slot:title>
+      <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
+        <template v-slot:activator="{on, attrs}">
+          <a v-if="!isSidebarCollapsed && messageProperties.projectName"
+             v-bind="attrs" v-on="on"
+             class="d-inline-block clickable conversation-name-link"
+             :href="`/project/${projectId}/details`">
+            {{ messageProperties.projectName }}
+            <v-chip class="customer-chip" style="margin-left: 4px;" small>
+              <span >Customer</span>
+            </v-chip>
+          </a>
 
-  <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="flex-column flex-nowrap" no-gutters>
-      <div class="conversation-activity-header-container" :class="{'pt-n2':selectedOption === 0}">
+          <a v-else
+             v-bind="attrs" v-on="on"
+             class="d-inline-block clickable conversation-name-link"
+             :href="`/user/${userId}/details`">
+            {{ messageProperties.fullName }}
+            <v-chip class="internal-chip" style="margin-left: 4px;" small>
+              <span >Internal</span>
+            </v-chip>
+          </a>
+        </template>
+        <span v-if="messageProperties.projectName" class="albatross-body-3">Go to project</span>
+        <span v-else class="albatross-body-3">Go to user</span>
+      </v-tooltip>
+      <span v-else>{{ sidebarTitle }}</span>
+      <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+        <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
+          <span >Customer</span>
+        </v-chip>
+        <v-chip v-else class="internal-chip" style="margin-left: 4px;" small>
+          <span >Internal</span>
+        </v-chip>
+      </div>
+    </template>
+    <template v-slot:header-actions>
+      <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
+        <v-tooltip bottom small>
+          <template v-slot:activator="{on, attrs}">
+            <v-btn icon color="primary" @click="" v-bind="attrs" v-on="on">
+              <v-icon>mdi-history</v-icon>
+            </v-btn>
+          </template>
+          <span class="albatross-body-3">History</span></v-tooltip>
+      </div>
+      <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
 
-        <div class="albatross-header-3 pt-0 d-flex align-center conversation-activity-header"
-             :class="{'title-collapse': isSidebarCollapsed,
-                      'title-no-collapse': !isSidebarCollapsed,
-                      'ml-2': isSidebarCollapsed && ($route.path.indexOf('project') < 0 && $route.path.indexOf('user') < 0),
-                      'mt-0': ($route.path.indexOf('project') < 0 && $route.path.indexOf('user') < 0),
-                      'headline-small': true}">
-
-          <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
-            <template v-slot:activator="{on, attrs}">
-              <a v-if="!isSidebarCollapsed && messageProperties.projectName"
-                 v-bind="attrs" v-on="on"
-                 class="d-inline-block clickable conversation-name-link"
-                :href="`/project/${projectId}/details`">
-                {{ messageProperties.projectName }}
-                <v-chip class="customer-chip" style="margin-left: 4px;" small>
-                  <span >Customer</span>
-                </v-chip>
-              </a>
-
-              <a v-else
-                 v-bind="attrs" v-on="on"
-                 class="d-inline-block clickable conversation-name-link"
-                 :href="`/user/${userId}/details`">
-                {{ messageProperties.fullName }}
-                <v-chip class="internal-chip" style="margin-left: 4px;" small>
-                  <span >Internal</span>
-                </v-chip>
-              </a>
-            </template>
-            <span v-if="messageProperties.projectName" class="albatross-body-3">Go to project</span>
-            <span v-else class="albatross-body-3">Go to user</span>
-          </v-tooltip>
-          <div v-else-if="!isSidebarCollapsed" >
-            {{sidebarTitle}}
-            <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
-              <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
-                <span >Customer</span>
-              </v-chip>
-              <v-chip v-else class="internal-chip" style="margin-left: 4px;" small>
-                <span >Internal</span>
-              </v-chip>
-            </div>
-          </div>
-          <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
-          <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
-            <v-tooltip bottom small>
-              <template v-slot:activator="{on, attrs}">
-                <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
-                  <v-icon>mdi-history</v-icon>
-                </v-btn>
-              </template>
-              <span class="albatross-body-3">History</span></v-tooltip>
-            <v-dialog v-model="showHistoryDialog" max-width="800px">
-              <OwnershipHistoryDrilldown
-                class="overflow-y-hidden"
-                :conversation-history="this.conversationHistory"
-                @historyDialogClosed="showHistoryDialog = false"
-              ></OwnershipHistoryDrilldown>
-            </v-dialog>
-
-          </div>
-
-          <div v-else-if="selectedOption === 2 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
-
-            <v-btn-toggle
-                v-model="toggleFocused"
-                mandatory
-                borderless
-                color="primary"
-                class="d-inline-block one-hunned body-medium"
-                style="opacity: 1 !important;"
-                id="focused-toggle"
-            >
+        <v-btn-toggle
+            v-model="toggleFocused"
+            mandatory
+            borderless
+            color="primary"
+            class="d-inline-block one-hunned body-medium"
+            style="opacity: 1 !important;"
+            id="focused-toggle"
+        >
 
 
-              <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
-                     id="focused-toggle"
-                     :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
-                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
-                     style="width: 50% !important;"
-              >
-                Focused
-              </v-btn>
-              <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
-                     id="focused-toggle"
-                     :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
-                     class="text-capitalize  fix-toggle-opacity body-medium"
-                     style="width: 50% !important;"
-              >
-                All
-              </v-btn>
-            </v-btn-toggle>
-          </div>
-          <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2" @click="startReadNotesTimer('Clicked in the notes tab')">
-
-            <v-btn-toggle
-              v-model="toggleTimelineView"
-              mandatory
-              borderless
-              color="primary"
-              class="d-inline-block one-hunned body-medium"
-              style="opacity: 1 !important;"
-            >
-              <v-btn :color="toggleTimelineView === 0 ? 'primary' : 'white'"
-                     :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
-                     class="text-capitalize my-4 fix-toggle-opacity body-medium"
-                     style="width: 50% !important;"
-                     @click="selectNotesActivityView"
-              >
-                Timeline
-              </v-btn>
-              <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
-                     :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
-                     class="text-capitalize  fix-toggle-opacity body-medium"
-                     style="width: 50% !important;"
-                     @click="selectNotesActivityView"
-              >
-                Topic
-              </v-btn>
-            </v-btn-toggle>
-          </div>
-          <slot name="collapse-button" v-if="!isMobile">
-          <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed': $store.state.project.rightSideSplit}" small text color="primary" @click="collapseSide()">
-            <v-icon>mdi-menu</v-icon>
+          <v-btn :color="toggleFocused === 0 ? 'primary' : 'white'"
+                 id="focused-toggle"
+                 :class="{'white--text': toggleFocused === 0, 'primary--text' : toggleFocused === 1}"
+                 class="text-capitalize my-4 fix-toggle-opacity body-medium"
+                 style="width: 50% !important;"
+          >
+            Focused
           </v-btn>
-          </slot>
-        </div>
+          <v-btn :color="toggleFocused === 1 ? 'primary' : 'white'"
+                 id="focused-toggle"
+                 :class="{'white--text': toggleFocused === 1, 'primary--text' : toggleFocused === 0}"
+                 class="text-capitalize  fix-toggle-opacity body-medium"
+                 style="width: 50% !important;"
+          >
+            All
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+      <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2" @click="startReadNotesTimer('Clicked in the notes tab')">
 
-        <TeamAssignmentChips
-          v-if="showSmsTab && selectedOption === 0 && !isSidebarCollapsed && userCanViewSms"
+        <v-btn-toggle
+            v-model="toggleTimelineView"
+            mandatory
+            borderless
+            color="primary"
+            class="d-inline-block one-hunned body-medium"
+            style="opacity: 1 !important;"
+        >
+          <v-btn :color="toggleTimelineView === 0 ? 'primary' : 'white'"
+                 :class="{'white--text': toggleTimelineView === 0, 'primary--text' : toggleTimelineView === 1}"
+                 class="text-capitalize my-4 fix-toggle-opacity body-medium"
+                 style="width: 50% !important;"
+                 @click="selectNotesActivityView"
+          >
+            Timeline
+          </v-btn>
+          <v-btn :color="toggleTimelineView === 1 ? 'primary' : 'white'"
+                 :class="{'white--text': toggleTimelineView === 1, 'primary--text' : toggleTimelineView === 0}"
+                 class="text-capitalize  fix-toggle-opacity body-medium"
+                 style="width: 50% !important;"
+                 @click="selectNotesActivityView"
+          >
+            Topic
+          </v-btn>
+        </v-btn-toggle>
+      </div>
+    </template>
+    <template v-slot:header-second-line>
+      <TeamAssignmentChips
+          v-if="showSmsTab && selectedOption === 0 && userCanViewSms"
           :sms-team-owners="messageProperties.smsTeamOwners"
           :team-names-associated-to-user="teamNamesAssociatedToUser"
           :reloading="conversationIsLoading"
@@ -142,78 +123,40 @@
           class="px-6 pb-1 mt-n1"
           @updateOwner="loadConversation"
           @joinConversation="startJoinConversation"
-        />
-
-        <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
-        <div class="mb-3" v-if="!isSidebarCollapsed"></div>
-      </div>
-      <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-      <div class="conversation-activity-inner-container">
-        <div v-show="!isSidebarCollapsed" class="scrollable-area">
-          <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
-          <ActivitySection :contact-id="contactId" :user-id="userId"
-                           :timeline-view="toggleTimelineView === 0"
-                           :object-type-id="objectTypeId" :project-id="projectId"
-                           :org-id="orgId" v-show="selectedOption === 1"
+      />
+    </template>
+    <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
+    <ActivitySection :contact-id="contactId" :user-id="userId"
+                     :timeline-view="toggleTimelineView === 0"
+                     :object-type-id="objectTypeId" :project-id="projectId"
+                     :org-id="orgId" v-show="selectedOption === 1"
+                     @scrollToTop="scrollToTop"
+    />
+    <AttachmentsFolderList v-if="selectedOption === 2"
+                           :contact-id="contactId"
+                           :user-id="userId"
+                           :object-type-id="objectTypeId"
+                           :org-id="orgId"
+                           :force-show-upload-btn="forceShowUploadBtn"
+                           :activity-tab="true"
+                           :focused="toggleFocused === 0"
+                           :project-id="projectId"
+                           :reload-on-key-change="true"
+                           :project-process-step-id="projectProcessStepId"
                            @scrollToTop="scrollToTop"
-          />
-            <AttachmentsFolderList v-if="selectedOption === 2"
-                                   :contact-id="contactId"
-                                 :user-id="userId"
-                                 :object-type-id="objectTypeId"
-                                 :org-id="orgId"
-                                 :force-show-upload-btn="forceShowUploadBtn"
-                                 :activity-tab="true"
-                                 :focused="toggleFocused === 0"
-                                 :project-id="projectId"
-                                 :reload-on-key-change="true"
-                                 :project-process-step-id="projectProcessStepId"
-                                   @scrollToTop="scrollToTop"
-            />
-        </div>
-      </div>
-      <div class="footer-container"
-           :style="{'width': isSidebarCollapsed ? '72px' : '100%',
-                      }">
-        <v-row
-          :value="selectedOption"
-          :style="{'flex-direction': isSidebarCollapsed ? 'column' : 'row',
-                        'width': isSidebarCollapsed ? 'calc(100% - 45px)' : '100%'}"
-          class="section-footer ma-0" :class="{'px-4': !isSidebarCollapsed}"
-        >
-          <v-col cols="4" class="px-0">
-            <v-btn v-if="showSmsTab" text  :color="selectedOption === 0 ? 'white' : 'primary'" block elevation="0" @click="selectView(0); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 0"
-                   :class="{'section-selected': selectedOption===0}" >
-              <v-icon>mdi-forum-outline</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1); startReadNotesTimer('Clicked in the notes tab')" :dark="selectedOption === 1"
-                   :class="{'section-selected': selectedOption===1}">
-              <v-icon>mdi-text-long</v-icon>
-            </v-btn>
-          </v-col>
-          <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 2 ? 'white' : 'primary'" block elevation="0" @click="selectView(2); endNotesTimer('Clicked SMS or document tab')" :dark="selectedOption === 2"
-                   :class="{'section-selected': selectedOption===2}">
-              <v-icon>mdi-folder-outline</v-icon>
-            </v-btn>
-          </v-col>
-        </v-row>
-      </div>
-      <ConfirmAssignmentDialog
-        :show-join-conversation-dialog.sync="showJoinConversationDialog"
-        :teams-associated-to-user="teamsAssociatedToUser"
-        @joinConversation="joinConversation" />
-
-  </v-row>
-
-
+    />
+    <v-dialog v-model="showHistoryDialog" max-width="800px">
+                <OwnershipHistoryDrilldown
+                    class="overflow-y-hidden"
+                    :conversation-history="this.conversationHistory"
+                    @historyDialogClosed="showHistoryDialog = false"
+                ></OwnershipHistoryDrilldown>
+    </v-dialog>
+  </CollapsableRightPanel>
 </template>
 
 <script>
 
-import SpinnerInline from '@/components/SpinnerInline'
 import ActivitySection from '@/views/flow/components/ActivitySection'
 import Messaging from '@/views/flow/components/Messaging'
 import AttachmentsFolderList from '@/views/flow/components/AttachmentsFolderList'
@@ -226,15 +169,16 @@ import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
 import {endTimer, startTimer} from "@/services/analyticsService";
+import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
 
 export default {
   name: 'ProjectActivity',
   components: {
+    CollapsableRightPanel,
     ConfirmAssignmentDialog,
     AddTeamDropdown,
     OwnershipHistoryDrilldown,
     TeamAssignmentChips,
-    SpinnerInline,
     AttachmentsFolderList,
     ActivitySection,
     Messaging
@@ -373,7 +317,6 @@ export default {
       this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
       this.selectedOption = viewOption
       if (this.isSidebarCollapsed) {
-        this.collapseSide()
         this.$emit('openRight')
       }
     },
@@ -510,6 +453,7 @@ export default {
       }
     },
     async openHistoryDrilldown() {
+      debugger
       try {
         let historyUrl = ''
         if (this.projectId) {
