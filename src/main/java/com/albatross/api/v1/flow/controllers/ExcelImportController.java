@@ -299,7 +299,8 @@ public class ExcelImportController {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", permitPack.projectId);
     params.put("source", source);
-    params.put("designLogId", permitPack.designLogId);
+    //note: BR sends in the design log NUMBER in the designLogId field
+    params.put("designLogNumber", permitPack.designLogId);
     params.put("permitPackDate", permitPack.permitPackDate);
     params.put("design", getPGobject(permitPack.design));
     params.put("bom", getPGobject(permitPack.bom));
