@@ -340,4 +340,19 @@ public class ContactLeadController {
   public void updateContactEcogen(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/redventures", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactRedVentures(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/profitise", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactProfitise(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
+
+  @PostMapping(value = "/rhino", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactRhino(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }

@@ -453,7 +453,7 @@
                     :disabled="item.immutable || !userCanEdit"
                     :readonly="item.immutable || !userCanEdit"
                     :items="item.availableListOfValues"
-                    label="Available Values Yo"
+                    label="Available Values"
                     item-text="name"
                     item-value="id"
                   ></v-select>
@@ -1137,6 +1137,8 @@ export default {
           this.newRequirement.processStepEventId = this.processStepEventId
         }
         const {data} = await postRequest(this.apiUrl, this.newRequirement)
+        //this is null sometimes and causing issues with refreshing the list
+        data.customField = data.customField || {}
         this.requirements.push(data)
         this.selectedCustomField = {}
         this.selectedListOfValues = []

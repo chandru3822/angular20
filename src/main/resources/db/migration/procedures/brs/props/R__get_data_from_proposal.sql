@@ -144,7 +144,11 @@ begin
                           'custom_fields.Solar Below the Line Rebates',
                           (solar_below_the_line_rebates),
                           'custom_fields.Annual Panel Degradation',
-                          (annual_degradation)
+                          (annual_degradation),
+                          'custom_fields.System Offset',
+                          (offset_percent),
+                          'custom_fields.Estimated 25 Year Savings',
+                          (lifetime_savings)
                       ) as results
                from brs.proposal_log_history pl
                  INNER JOIN flow.project p on p.id = pl.project_id

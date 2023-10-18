@@ -72,18 +72,18 @@
               </template>
 
               <template #item="{ item, index }">
-                <tr class="clickable">
-                  <td class="text-left"  @click="goToRoundRobin(item)">
+                <tr class="clickable" @click="goToRoundRobin(item)">
+                  <td class="text-left">
                     {{ item.roundRobinName }}
                   </td>
-                  <td class="text-left"  @click="goToRoundRobin(item)">{{item.distributionTimeFrameDays}}</td>
-                  <td class="text-left"  @click="goToRoundRobin(item)">{{ item.schedulableFutureDays }}</td>
+                  <td class="text-left">{{item.distributionTimeFrameDays}}</td>
+                  <td class="text-left">{{ item.schedulableFutureDays }}</td>
 
                   <td class="text-right">
-                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToRoundRobin(item)">
+                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="goToRoundRobin(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
                   </td>
                 </tr>
               </template>
