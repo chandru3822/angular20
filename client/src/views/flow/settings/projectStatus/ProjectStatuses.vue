@@ -269,7 +269,7 @@
         const item = this.itemToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/projectStatus/company/${item.id}`)
+          const {status} = await deleteRequest(`/projectStatus/companyStatus/${item.id}`)
           item.archived = true
           this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

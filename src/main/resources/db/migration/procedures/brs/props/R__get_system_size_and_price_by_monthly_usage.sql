@@ -262,12 +262,12 @@ BEGIN
 
   v_monthly_usage_kwh = p_average_monthly_bill / v_utility_rate_kwh;
   v_annual_usage_kwh = v_monthly_usage_kwh * 12;
-  v_system_size_kw_100_percent_offset = v_annual_usage_kwh / v_average_production_factor / 1000;
-  v_system_size_kw_85_percent_offset = (v_annual_usage_kwh * .85) / v_average_production_factor / 1000;
-  v_system_size_kw_115_percent_offset = (v_annual_usage_kwh * 1.15) / v_average_production_factor / 1000;
-  v_cash_price_for_100_percent_offset = v_system_size_kw_100_percent_offset * 2.60 * 1000;
-  v_cash_price_for_85_percent_offset = v_system_size_kw_85_percent_offset * 2.60 * 1000;
-  v_cash_price_for_115_percent_offset = v_system_size_kw_115_percent_offset * 2.60 * 1000;
+  v_system_size_kw_100_percent_offset = round((v_annual_usage_kwh / v_average_production_factor / 1000), 2);
+  v_system_size_kw_85_percent_offset = round(((v_annual_usage_kwh * .85) / v_average_production_factor / 1000), 2);
+  v_system_size_kw_115_percent_offset = round(((v_annual_usage_kwh * 1.15) / v_average_production_factor / 1000), 2);
+  v_cash_price_for_100_percent_offset = v_system_size_kw_100_percent_offset * 2.52 * 1000;
+  v_cash_price_for_85_percent_offset = v_system_size_kw_85_percent_offset * 2.52 * 1000;
+  v_cash_price_for_115_percent_offset = v_system_size_kw_115_percent_offset * 2.52 * 1000;
   v_month_pmt_100_offset_low_dealer_fee =
       ((v_cash_price_for_100_percent_offset + v_battery_price) / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
       v_init_pmt_factor_10_year_low_dealer_fee;
@@ -420,9 +420,9 @@ BEGIN
            v_utility_rate_kwh,
            round(v_monthly_usage_kwh),
            round(v_annual_usage_kwh),
-           round(v_system_size_kw_100_percent_offset, 1),
-           round(v_system_size_kw_85_percent_offset, 1),
-           round(v_system_size_kw_115_percent_offset, 1),
+           v_system_size_kw_100_percent_offset,
+           v_system_size_kw_85_percent_offset,
+           v_system_size_kw_115_percent_offset,
            round(v_cash_price_for_100_percent_offset + v_battery_price),
            round(v_cash_price_for_100_percent_offset ),
            round(v_cash_price_for_85_percent_offset + v_battery_price),

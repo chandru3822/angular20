@@ -212,7 +212,7 @@ public class PandaDocService {
         documentId,
         projectId,
         templateId);
-    delayedSendDocument(projectId, documentId, tokens);
+    delayedSendDocument(projectId, documentId, tokens, deets.getLeadSource());
 
     // Set as request sent
     return respBody.toString();
@@ -463,8 +463,14 @@ public class PandaDocService {
    * @return
    * @throws Exception
    */
-  private String getNotification(JSONObject tokens) throws Exception {
-    String template = loadEmailTemplate();
+  private String getNotification(JSONObject tokens, String leadSource) throws Exception {
+    String template;
+    if (leadSource.equals("Breeze")) {
+      template = loadBreezeEmailTemplate();
+    }
+    else {
+       template = loadEmailTemplate();
+    }
 
     HashMap<String, Object> ctx = new HashMap<>();
     ctx.put("customerFirstName", tokens.getString("Deal.Name").split(" ")[0]);
@@ -487,6 +493,20 @@ public class PandaDocService {
   }
 
   /**
+   * Retrieve the template for the document notification that PandaDoc will send for Breeze projects.
+   *
+   * @return
+   * @throws IOException
+   */
+  private String loadBreezeEmailTemplate() throws IOException {
+    try (InputStream in =
+           PandaDocService.class.getResourceAsStream(
+             "/communication/templates/pandadoc-breeze-email.ftl.txt")) {
+      return new Scanner(in, "UTF-8").useDelimiter("\\A").next();
+    }
+  }
+
+  /**
    * Queue up a task to send the customer the specified PandaDoc after a configurable amount of
    * time. PandaDoc documents are not available for sending immediately after sending the request to
    * create them, so we need a bit of a delay.
@@ -495,7 +515,7 @@ public class PandaDocService {
    * @param documentId
    * @param tokens
    */
-  public void delayedSendDocument(Long projectId, String documentId, JSONObject tokens) {
+  public void delayedSendDocument(Long projectId, String documentId, JSONObject tokens, String leadSource) {
     if (!pandaDoc.getNotificationEnabled()) {
       log.warn("PANDADOC: not sending document {}: notification disabled", documentId);
       return;
@@ -507,7 +527,7 @@ public class PandaDocService {
               @Override
               public void run() {
                 try {
-                  sendDocument(projectId, documentId, tokens);
+                  sendDocument(projectId, documentId, tokens, leadSource);
                 } catch (Exception ex) {
                   log.error("PANDADOC: failed to send document", ex);
                 }
@@ -525,11 +545,11 @@ public class PandaDocService {
    * @return
    * @throws Exception
    */
-  public String sendDocument(Long projectId, String documentId, JSONObject tokens)
+  public String sendDocument(Long projectId, String documentId, JSONObject tokens, String leadSource)
       throws Exception {
     log.debug("PANDADOC: sending projectId {} document {}", projectId, documentId);
     JSONObject body = new JSONObject();
-    body.put("message", getNotification(tokens));
+    body.put("message", getNotification(tokens, leadSource));
 
     HttpResponse resp = POST("/documents/" + documentId + "/send", body.toString());
     String respBody = resp.getBody();
@@ -685,6 +705,23 @@ public class PandaDocService {
       // Round to 2 decimals
       annualDegradation = (double) Math.round(annualDegradation * 100) / 100;
       tokens.put("Proposal.Annual Panel Degradation", annualDegradation + "%");
+
+      Double twentyFiveYearSavings =
+        Double.parseDouble(
+          result.get("custom_fields.Estimated 25 Year Savings") == null
+            ? "0"
+            : result.get("custom_fields.Estimated 25 Year Savings").toString());
+
+      // Round to 2 decimals
+      twentyFiveYearSavings = (double) Math.round(twentyFiveYearSavings * 100) / 100;
+      tokens.put("Proposal.Estimated 25 Year Savings", twentyFiveYearSavings);
+
+      Double systemOffset =
+        Double.parseDouble(
+          result.get("custom_fields.System Offset") == null
+            ? "0"
+            : result.get("custom_fields.System Offset").toString()) * 100.0;
+      tokens.put("Proposal.System Offset", Math.round(systemOffset) + "%");
 
       Double cashDownPayment = Double.min(1000, (0.10 * (totalCost - referralPromotionAmount)));
       if (deets.getFinancier().equals("Cash")) {
