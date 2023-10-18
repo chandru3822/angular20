@@ -1,3 +1,6 @@
+DROP FUNCTION IF EXISTS brs.get_proposal_version_value(p_proposal_version_id bigint,
+                                                       p_filters ProposalFieldFilter[],
+                                                       p_object_code varchar);
 DROP TYPE IF EXISTS ProposalFieldFilter;
 -- This type is used as a filter in a JSONPath query
 CREATE TYPE ProposalFieldFilter AS
@@ -10,10 +13,7 @@ CREATE TYPE ProposalFieldFilter AS
 -- usage:
 -- select (420, null, 100, null)::ProposalFieldFilter;
 
-DROP FUNCTION IF EXISTS brs.get_proposal_version_value(p_proposal_id bigint,
-                                                       p_filters ProposalFieldFilter[],
-                                                       p_object_code varchar);
-CREATE OR REPLACE FUNCTION brs.get_proposal_version_value(p_proposal_id bigint,
+CREATE OR REPLACE FUNCTION brs.get_proposal_version_value(p_proposal_version_id bigint,
                                                           p_filters ProposalFieldFilter[] default null,
                                                           p_object_code varchar default null)
   RETURNS setof jsonb AS
@@ -29,14 +29,15 @@ DECLARE
   v_proposal_version_id int;
   v_item_data_type      varchar;
 BEGIN
-  select proposal_version_id
-  into v_proposal_version_id
-  from brs.proposal p
-  where p.id = p_proposal_id;
-
-  if v_proposal_version_id is null
+  if p_proposal_version_id is null
   then
-    raise exception 'proposal id=% does not exist', p_proposal_id;
+    raise notice 'no proposal version id; using latest published version';
+    select proposal_version_id
+    into v_proposal_version_id
+    from brs.primary_company_proposal_version p
+    where p.company_id = 3;
+  else
+    v_proposal_version_id := p_proposal_version_id;
   end if;
 
   v_query := format($query$
@@ -126,7 +127,7 @@ BEGIN
   end if;
 
   v_query = replace(v_query, 'V_PROPOSAL_VERSION_ID', v_proposal_version_id::varchar);
---     raise notice 'SQL %', v_query;
+--   raise notice 'SQL %', v_query;
   return query execute v_query;
 END;
 $$
