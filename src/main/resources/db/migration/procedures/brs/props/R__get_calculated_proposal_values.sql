@@ -156,7 +156,10 @@ create type brs.calculated_proposal_value as
   above_line_rebate_without_odoe                     varchar,
   odoe_rebate                                        varchar,
   above_line_rebate_without_odoe_number              numeric,
-  odoe_rebate_number                                 numeric
+  odoe_rebate_number                                 numeric,
+  deposit_amount                                     varchar,
+  deposit_amount_number                              numeric,
+  has_critter_guard boolean
 );
 
 drop type brs.excluded_proposal_value;
@@ -461,6 +464,9 @@ declare
   v_dealer                                             bigint;
   v_dealer_markup                                      numeric;
   v_dealer_redline_price                               numeric;
+  v_deposit_amount  numeric;
+v_deposit_amount_number numeric;
+v_has_critter_guard boolean;
 BEGIN
 
   select prop.id                                   as proposal_id,
@@ -1140,10 +1146,14 @@ BEGIN
                                      v_inverter_unit_type_id::bigint, 0::numeric, null, null)
   into v_equipment_inverter_adder;
   -- raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
+  v_has_critter_guard = false;
+  if 23457 = any(v_misc_adders_array) then
+    v_has_critter_guard = true;
+  end if;
 
   v_misc_adders = brs.get_misc_adder_amount(v_system_size, v_misc_adders_array);
   raise notice 'v_misc_adders = %',v_misc_adders;
-
+  raise notice 'v_has_critter_guard = %',v_has_critter_guard;
 
   v_smart_thermostat_adder = 0.00::numeric;
   if v_smart_thermostat is not null and v_smart_thermostat_value is not null then
@@ -1315,6 +1325,19 @@ BEGIN
   raise notice 'v_no_ancillary_total_loan_amount = %',v_no_ancillary_total_loan_amount;
 
 
+  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 410)') ->> 'value')::numeric
+  into v_deposit_amount
+  from proposal_value pv
+  where object_code = 'PROPOSAL_DEPOSITS'
+    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intArrayValue == $intArrayValue ))',
+                         jsonb_build_object('field', 341, 'intArrayValue', v_state_id));
+
+  raise notice 'v_deposit_amount % ',v_deposit_amount;
+
+  v_deposit_amount_number = coalesce(v_deposit_amount,0);
+
+  raise notice 'v_deposit_amount_number % ',v_deposit_amount_number;
+
   select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::bigint as referral_promotion
   into v_referral_promotion
   from proposal_value pv
@@ -1442,7 +1465,6 @@ BEGIN
     select *
     into v_utility_rebate_amount
     from brs.get_rebate_for_utility_with_tsrf(v_aurora_design_summary,
-                                              v_system_size,
                                               v_utility_rebate_cap_amount,
                                               v_utility_rebate_value,
                                               v_minimum_tsrf);
@@ -1578,12 +1600,12 @@ BEGIN
       coalesce(v_utility_rebate_amount, 0) + coalesce(v_ill_srec_rebate_amount, 0) + coalesce(v_odoe_rebate, 0);
   --+ coalesce(v_csu_rebate, 0);  --Judson wanted me to take out this rebate
 
-
   v_total_system_cost =
     (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
-     coalesce(v_above_line_rebate, 0) +
+     coalesce(v_above_line_rebate, 0) + coalesce(v_deposit_amount,0) +
      case when v_dealer is null then
-     (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end );
+       case when v_version_id < 74 then
+      (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end  else 0::numeric end );
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
@@ -1605,8 +1627,9 @@ BEGIN
                                                   ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
                      else 0::numeric end) / (1 - v_dealer_fee)) -
                  case when v_dealer is null then
-                 coalesce(v_other_adder_and_discount_amount, 0) +
-                 (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end -
+                   case when v_version_id < 74 then
+                    coalesce(v_other_adder_and_discount_amount, 0) +
+                    (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end else 0::numeric end -
                  coalesce(v_admin_discount, 0)) /
                 (v_system_size * 1000)) -
                v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
@@ -1680,7 +1703,8 @@ BEGIN
               else 0::numeric end) / (1 - v_dealer_fee)) -
           coalesce(v_other_adder_and_discount_amount, 0) +
           case when v_dealer is null then
-          (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end - coalesce(v_admin_discount, 0);
+            case when v_version_id < 74 then
+            (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end else 0::numeric end - coalesce(v_admin_discount, 0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
   raise notice 'v_above_line_rebate = %',v_above_line_rebate;
   raise notice 'v_admin_discount = %',v_admin_discount;
@@ -1864,8 +1888,14 @@ BEGIN
         v_estimated_annual_energy_consumption_kwh * v_current_estimated_cost_per_kwh / 12;
   raise notice 'v_monthly_cost_today_without_solar = %',v_monthly_cost_today_without_solar;
 
-  v_estimated_offset = (v_adjusted_annual_production::numeric /
-                        (v_adjusted_annual_consumption))::numeric;
+  if v_state_id = 43 then
+    v_estimated_offset = (v_first_year_production_estimate::numeric /
+                          (v_estimated_annual_energy_consumption_kwh::numeric))::numeric;
+  else
+    v_estimated_offset = (v_adjusted_annual_production::numeric /
+                          (v_adjusted_annual_consumption))::numeric;
+  end if;
+
   raise notice 'v_estimated_offset = %',v_estimated_offset;
 
   v_monthly_cost_today_avg_remaining_electrical_bill = greatest(0.00::numeric, (v_current_estimated_cost_per_kwh *
@@ -1970,7 +2000,9 @@ BEGIN
 
   v_total_system_cost =
       coalesce(v_total_loan_amount, 0) + coalesce(v_required_down_payment, 0) + coalesce(v_down_payment_amount, 0) +
-      coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0);
+      coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0) + coalesce(v_deposit_amount,0);
+
+  raise notice 'v_total_system_cost at the end %',v_total_system_cost;
   v_above_line_rebate_without_odoe = (v_above_line_rebate - v_odoe_rebate);
   if p_insert_prop_log_history is true then
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
@@ -2281,7 +2313,10 @@ BEGIN
            to_char(v_above_line_rebate_without_odoe, '$FM9,999,999')::varchar,
            to_char(v_odoe_rebate, '$FM9,999,999')::varchar,
            v_above_line_rebate_without_odoe::numeric,
-           v_odoe_rebate::numeric;
+           v_odoe_rebate::numeric,
+           to_char(coalesce(v_deposit_amount,0),'$FM9,999,999')::varchar,
+           coalesce(v_deposit_amount_number,0),
+           v_has_critter_guard;
 
   drop table proposal_value;
 

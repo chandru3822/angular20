@@ -85,7 +85,7 @@ public class ExcelImportQuery {
 
   //language=PostgreSQL
   public final static String permitInsert = """
-    insert into brs.permit_pack_log(project_id, design_log_id, permit_pack_date, source, design, bom)
-    values (:projectId, :designLogId, :permitPackDate, :source, :design, :bom)
+    insert into brs.permit_pack_log(project_id, design_log_id, permit_pack_date, source, design, bom, design_nbr)
+    values (:projectId, (select id from brs.design_log where project_id = :projectId and design_nbr = :designLogNumber), :permitPackDate, :source, :design, :bom, :designLogNumber)
     """;
 }
