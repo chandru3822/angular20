@@ -19,7 +19,8 @@ const props = defineProps({
   menuItems: Array, //@required
   headerHeight: String, //@optional
   headerColor: String, //@optional
-  viewChangeCallback: Function, //@required
+  viewChangeCallback: Function, //@required,
+  showRightColumn: {type: Boolean, default: false}//@optional
 })
 const emit = defineEmits(['selectMenuItem'])
 
@@ -57,7 +58,8 @@ const chooseSelectedView = (view, id) => {
   </v-row>
   <v-row class="mobile-background height-one-hunned">
     <v-col class=" py-0 main-column-container">
-    <slot name="main-column"/>
+    <slot v-if="!showRightColumn" name="main-column"/>
+      <slot v-else name="right-column"/>
     </v-col>
   </v-row>
   </v-container>

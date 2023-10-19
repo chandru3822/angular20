@@ -71,7 +71,7 @@ const isMobile = computed(() => {
           <slot name="title" v-if="!isSidebarCollapsed">Sidebar Title</slot>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <slot name="header-actions" v-if="!isSidebarCollapsed"/>
-        <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
+        <v-btn  v-if="!isMobile" class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
           <slot name="collapse-button-icon">
             <v-icon>mdi-menu</v-icon>
           </slot>
@@ -85,7 +85,7 @@ const isMobile = computed(() => {
     <div v-show="!isSidebarCollapsed" class="conversation-activity-inner-container one-hunned">
       <slot/>
     </div>
-    <div fixed class="footer-container px-0" :class="{'footerAbsolute' : !isMobile, 'footerFixed': isMobile}"
+    <div fixed class="footer-container px-0" :class="{'footerAbsolute' : !isMobile}"
          :style="{'width': isSidebarCollapsed ? '72px' : '100%',
                       }">
       <v-row
@@ -132,10 +132,12 @@ const isMobile = computed(() => {
   position: relative;
 }
 
-.conversation-activity-inner-container {
-  max-height: calc(100% - 112px);
-  margin-top: -53px;
-  overflow: auto;
+@media (min-width: 960px) {
+  .conversation-activity-inner-container {
+    max-height: calc(100% - 112px);
+    margin-top: -53px;
+    overflow: auto;
+  }
 }
 
 .conversation-activity-header {

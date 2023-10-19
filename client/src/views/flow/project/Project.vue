@@ -109,12 +109,13 @@
                                  {pageName:'Project Details', subMenuSlot: true},
                                  {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`},
                                  {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`},
-                                 {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity`},
-                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/notesAndActivities`},
-                                 {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity`},
+                                 {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity`, viewOption:2},
+                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity`, viewOption: 1},
+                                 {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity`, viewOption: 0},
                                  {pageName: 'Project Admin'}
                                  ]"
                              headerHeight="64px"
+                             :showRightColumn="showRightColumnMobile"
                              :view-change-callback="changeMobileView"
     >
       <template v-slot:subMenu_1>
@@ -181,10 +182,17 @@
 
         />
       </template>
+      <template v-slot:right-column>
+        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"
+                         @closeRight="closeRight()"
+                         @click="collapseSide('right')"
+                         @openRight="$store.state.project.rightSideSplit = false">
+        </ProjectActivity>
+      </template>
     </ThreeColumnLayoutMobile>
     <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
       <template v-slot:header>
-        <v-toolbar flat color="grey lighten-2" :class="{'project-header': project && !project.tags || project.tags.length === 0,
+        <v-toolbar flat color="grey lighten-2 pl-3" :class="{'project-header': project && !project.tags || project.tags.length === 0,
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                    v-if="!projectLoading && project && project.id">
@@ -380,7 +388,8 @@ export default {
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
       pageOverviewMenuItem: {
       },
-      updateKeyProp: 0
+      updateKeyProp: 0,
+      showRightColumnMobile: false
     }
   },
   created() {
@@ -490,8 +499,17 @@ export default {
       }
     },
     changeMobileView(selectedView){
+      debugger
       this.updateKeyProp = selectedView.updateKey | 0
-      this.$router.push(selectedView.customPath)
+      if(selectedView.viewOption){
+        this.$store.commit(ProjectMutations.SET_SELECTED_TAB, selectedView.viewOption)
+        this.showRightColumnMobile = true
+        if (this.$route.name !== 'projectDetails') {
+          this.$router.push({name: 'projectDetails', projectId: this.projectId})
+        }
+      } else {
+        this.$router.push(selectedView.customPath)
+      }
     },
     stateIsActive() {
       //states is already a list of company states
