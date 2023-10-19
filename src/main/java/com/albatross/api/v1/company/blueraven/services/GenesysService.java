@@ -370,7 +370,7 @@ public class GenesysService {
       // Add contact to LeadLevel_NBS
       String genesysNbsContactlistName = "";
       if (leadLevel.equals("50")) {
-        genesysNbsContactlistName = "Breeze_NBS";
+        genesysNbsContactlistName = "Breeze_All";
       }
       else {
         genesysNbsContactlistName = "LeadLevel_NBS";
