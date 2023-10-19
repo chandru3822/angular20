@@ -1,5 +1,6 @@
 <template>
   <v-container class="px-5 py-0">
+      hi: {{ bottomHitCount }}
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -114,9 +115,14 @@
                     :query="queryText"
                     @reload="getActivities"
       ></ActivityList>
-      <div class="error--text py-4" v-if="timelineView && sortedFilteredActivities && sortedFilteredActivities.length >= 49">
-        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent 50 notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.
-      </div>
+<!--      <div v-if="sortedFilteredActivities">-->
+<!--        sfa: {{ sortedFilteredActivities.length }}-->
+<!--        max: {{ maxInitialLoadLimit }}-->
+<!--      </div>-->
+<!--      <div class="error&#45;&#45;text py-4" v-if="timelineView && sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit">-->
+<!--        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent {{ maxInitialLoadLimit }} notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.-->
+<!--      </div>-->
+        <SpinnerInline v-if="timelineView && (sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit) && !maxSliceHit" :size="20" color="primary"/>
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
@@ -218,10 +224,11 @@ import cloneDeep from "lodash.clonedeep";
 import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import {endTimer, startTimer, writeNoteEndTimer, writeNoteStartTimer} from "@/services/analyticsService";
+import SpinnerInline from "@/components/SpinnerInline.vue";
 
 export default {
   name: 'ActivitySection',
-  components: {ActivityList, ConfirmationDialog, Mentionable},
+  components: {SpinnerInline, ActivityList, ConfirmationDialog, Mentionable},
   mixins: [Vue2Filters.mixin],
   props: {
     contactId: Number,
@@ -230,6 +237,7 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
+    bottomHitCount: Number
   },
   data() {
     return {
@@ -268,6 +276,8 @@ export default {
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       currentUserId:this.$store.state.user.details.id,
       pinnedActivitiesOnly: [],
+      maxInitialLoadLimit: 20,
+      maxSliceHit: false
     }
   },
   watch: {
@@ -314,8 +324,14 @@ export default {
           && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['dateCreated'], [ this.sortDirection])
-      // return sortedList.slice(0, 49)
-      return sortedList.slice(0, 10)
+
+      if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
+        this.maxSliceHit = false
+        return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
+      } else {
+          this.maxSliceHit = true
+          return sortedList
+      }
       // return []
     },
     filterAltered(){
