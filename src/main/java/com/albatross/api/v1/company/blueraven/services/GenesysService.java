@@ -820,7 +820,7 @@ public class GenesysService {
     } else if (leadLevel.equals("10")) {
       return "LeadLevel10_All";
     } else if (leadLevel.equals("50")) {
-      return "Breeze_NBS";
+      return "Breeze_All";
     }
 
     return null;
