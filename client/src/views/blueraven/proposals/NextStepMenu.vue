@@ -37,7 +37,7 @@
                 :color="requiredFields.length === 0 && !proposal.locked ? 'primary' : ''"
                 :disabled="requiredFields.length > 0 || proposal.locked || lockingProposal"
                 :dark="requiredFields.length===0 && !proposal.locked"
-                @click="[lockingProposal = true, lockProposal]"
+                @click="[lockingProposal = true, lockProposal()]"
               >
                 <v-icon v-if="!proposal.locked">mdi-lock-open</v-icon>
                 <span v-if="!proposal.locked">Lock Proposal</span>
