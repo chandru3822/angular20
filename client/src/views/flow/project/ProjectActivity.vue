@@ -148,7 +148,7 @@
         <div class="mb-3" v-if="!isSidebarCollapsed"></div>
       </div>
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
-      <div class="conversation-activity-inner-container hide-xs">
+      <div class="conversation-activity-inner-container hide-xs"  @scroll="onScroll">
         <div v-show="!isSidebarCollapsed" class="scrollable-area">
           <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
           <ActivitySection :contact-id="contactId" :user-id="userId"
@@ -156,6 +156,7 @@
                            :object-type-id="objectTypeId" :project-id="projectId"
                            :org-id="orgId" v-show="selectedOption === 1"
                            @scrollToTop="scrollToTop"
+                           :bottomHitCount="bottomHitCount"
           />
           <div v-if="selectedOption === 2">
             <AttachmentsFolderList :contact-id="contactId"
@@ -429,6 +430,7 @@ export default {
       toggleFocused: 0,
       toggleFocusedXs: 0,
       toggleTimelineView: this.$store.state.project.notesActivityView,
+      bottomHitCount: 1
     }
   },
   created() {
@@ -508,6 +510,11 @@ export default {
         this.$store.commit(ProjectMutations.SET_NOTES_ACTIVITY_VIEW, 0)
       }
       this.scrollToTop()
+    },
+    onScroll ({ target: { scrollTop, clientHeight, scrollHeight }}) {
+      if (scrollTop + clientHeight >= scrollHeight) {
+        this.bottomHitCount++
+      }
     },
     scrollToTop(){
       //have to get ref of something not stuck behind a v-if, the query down to the actual element we want
