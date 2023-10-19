@@ -1204,26 +1204,26 @@ BEGIN
           coalesce(v_ac_unit_relocation_cost, 0)::numeric) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
-  elsif v_product_id = 19424 then
-    v_promotion_cost =
-        ((coalesce(v_initial_system_cost, 0) + case
-                                                 when v_dealer is null then
-                                                     coalesce(v_unapproved_zip_code_adder, 0) +
-                                                     coalesce(v_equipment_panel_adder, 0) +
-                                                     coalesce(v_equipment_inverter_adder, 0) +
-                                                     coalesce(v_zone_adder, 0) +
-                                                     coalesce(v_misc_adders, 0) +
-                                                     coalesce(v_small_system_size_adder_amount, 0) +
-                                                     coalesce(v_smart_thermostat_adder, 0) +
-                                                     coalesce(v_led_light_bulbs_adder, 0)
-                                                 else 0::numeric end +
-          coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
-          coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
-          coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
-          coalesce(v_ac_unit_relocation_cost, 0)::numeric) *
-         (v_reamortization_factor - v_initial_payment_factor) * 42) /
-        (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
-                            42);
+--   elsif v_product_id = 19424 then
+--     v_promotion_cost =
+--         ((coalesce(v_initial_system_cost, 0) + case
+--                                                  when v_dealer is null then
+--                                                      coalesce(v_unapproved_zip_code_adder, 0) +
+--                                                      coalesce(v_equipment_panel_adder, 0) +
+--                                                      coalesce(v_equipment_inverter_adder, 0) +
+--                                                      coalesce(v_zone_adder, 0) +
+--                                                      coalesce(v_misc_adders, 0) +
+--                                                      coalesce(v_small_system_size_adder_amount, 0) +
+--                                                      coalesce(v_smart_thermostat_adder, 0) +
+--                                                      coalesce(v_led_light_bulbs_adder, 0)
+--                                                  else 0::numeric end +
+--           coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
+--           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
+--           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
+--           coalesce(v_ac_unit_relocation_cost, 0)::numeric) *
+--          (v_reamortization_factor - v_initial_payment_factor) * 42) /
+--         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
+--                             42);
   end if;
   raise notice 'v_promotion_cost = %',v_promotion_cost;
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
@@ -2047,7 +2047,8 @@ BEGIN
                                          total_ancillary_cost,
                                          total_promotion_amount,
                                          storage_cost_with_fees,
-                                         commission_strategy_id)
+                                         commission_strategy_id,
+                                         prepay_deposit)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -2155,7 +2156,8 @@ BEGIN
              coalesce(v_ac_unit_relocation_cost, 0)::numeric),
             coalesce(v_promotion_cost, 0),
             round(v_loan_price_storage, 0),
-            v_commission_strategy_id);
+            v_commission_strategy_id,
+            v_deposit_amount_number);
   end if;
 
   return query
