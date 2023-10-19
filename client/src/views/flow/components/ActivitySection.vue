@@ -314,7 +314,9 @@ export default {
           && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['dateCreated'], [ this.sortDirection])
-      return sortedList.slice(0, 49)
+      // return sortedList.slice(0, 49)
+      return sortedList.slice(0, 10)
+      // return []
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
@@ -680,7 +682,8 @@ export default {
 }
 
 .activity-body {
-  min-height: 500px;
+  //min-height: 500px;
+  min-height: 100vh;
 }
 
 .activity-footer {
@@ -721,7 +724,7 @@ export default {
 .note-text-area {
   textarea {
     max-height: 300px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 }
 </style>

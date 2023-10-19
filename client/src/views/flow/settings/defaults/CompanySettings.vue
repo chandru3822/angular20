@@ -52,6 +52,28 @@
         </v-col>
       </v-row>
     </v-form>
+    <v-divider class="mt-3" v-if="is7oaksAdmin"></v-divider>
+    <v-row v-if="is7oaksAdmin">
+      <v-col cols="12" class="pt-0">
+        <v-toolbar flat class="app-toolbar" v-if="$vuetify.breakpoint.smAndUp">
+          <v-toolbar-title class="title-large">Test User Password</v-toolbar-title>
+        </v-toolbar>
+        <div class="px-3">
+          <v-text-field v-model="testUserPassword"
+                        placeholder="Enter a new password"
+                        required
+                        :rules="[passwordRule]"
+                        class="body-large"
+                        label="Test User Password">
+          </v-text-field>
+          <v-btn :large="$vuetify.breakpoint.smAndDown" :disabled="!testUserPassword"
+                 color="primary" @click="saveTestUserPassword">
+            <v-icon :large="$vuetify.breakpoint.smAndDown" class="pr-2">mdi-content-save</v-icon>
+            <span class="body-medium text-capitalize">Save Test User Password</span>
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
     <v-divider class="mt-3 mb-3"></v-divider>
     <v-row>
       <v-col cols="12">
@@ -138,7 +160,7 @@
 <script>
 import { Actions } from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, postRequestWithRequestParams, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -163,6 +185,8 @@ export default {
       ],
       validForm: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+      is7oaksAdmin: this.$store.getters.isFullAdmin,
+      testUserPassword: '',
       companyId: this.$store.state.user.details.companyId,
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
       savingCompanyLogo: false,
@@ -227,6 +251,24 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Company')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async saveTestUserPassword () {
+      if (this.$refs.companyForm.validate()) {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let params = {
+            password: this.testUserPassword
+          }
+          const {status} = await postRequestWithRequestParams(`/user/updateTestAccounts`, null, params)
+          this.testUserPassword = ''
+          this.snackbar = getSnackbar('SUCCESS', 'Test User Password Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       }
     },
     async saveCompany () {

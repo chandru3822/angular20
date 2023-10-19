@@ -97,6 +97,19 @@ public class UserService {
     sqlCache.updateBySql(UserQuery.saveUserHomePage, params);
   }
 
+  public void updateTestUserPasswords(String password) {
+    User user = securityService.getCurrentUser();
+
+    String newPwd = BCrypt.hashpw(password, BCrypt.gensalt(10));
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("password", newPwd);
+    params.put("userId", user.trueUserId());
+    params.put("companyId", user.getCompanyId());
+
+    sqlCache.updateBySql(UserQuery.updateTestUserPasswords, params);
+  }
+
   public boolean emailExists(String email, Long userId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("email", email);
