@@ -368,7 +368,15 @@ public class GenesysService {
     }
     else {
       // Add contact to LeadLevel_NBS
-      contactListId = getContactListId(apiInstance, "LeadLevel_NBS");
+      String genesysNbsContactlistName = "";
+      if (leadLevel.equals("50")) {
+        genesysNbsContactlistName = "Breeze_NBS";
+      }
+      else {
+        genesysNbsContactlistName = "LeadLevel_NBS";
+      }
+
+      contactListId = getContactListId(apiInstance, genesysNbsContactlistName);
       // If no Contact  List is found
       if (contactListId == null || contactListId.isBlank()) {
         return;
@@ -811,6 +819,8 @@ public class GenesysService {
       return "LeadLevel3_All";
     } else if (leadLevel.equals("10")) {
       return "LeadLevel10_All";
+    } else if (leadLevel.equals("50")) {
+      return "Breeze_NBS";
     }
 
     return null;
@@ -825,6 +835,8 @@ public class GenesysService {
       return "SMS Level 3";
     } else if (leadLevel.equals("10")) {
       return "SMS Level 10";
+    } else if (leadLevel.equals("50")) {
+      return "SMS Level 50";
     }
 
     return "";
