@@ -182,12 +182,7 @@
         />
       </template>
       <template v-slot:right-column>
-        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"
-                         :selectedViewOverride="rightViewOverride"
-                         @closeRight="closeRight()"
-                         @click="collapseSide('right')"
-                         @openRight="$store.state.project.rightSideSplit = false">
-        </ProjectActivity>
+        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
       </template>
     </ThreeColumnLayoutMobile>
     <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
@@ -297,11 +292,7 @@
         />
       </template>
       <template v-slot:right-column>
-        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"
-                         @closeRight="closeRight()"
-                         @click="collapseSide('right')"
-                         @openRight="$store.state.project.rightSideSplit = false">
-        </ProjectActivity>
+        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
       </template>
     </ThreeColumnLayout>
   </div>
@@ -505,13 +496,6 @@ export default {
       //states is already a list of company states
       let companyStateIds = this.states.map(s => s.id)
       return companyStateIds.includes(this.tempProject.companyStateId)
-    },
-    collapseSide(side) {
-      if (side === 'left') {
-        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
-      } else {
-        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
-      }
     },
     async showEditModal() {
       //doing all this in a method so we can call it when the page loads if needed

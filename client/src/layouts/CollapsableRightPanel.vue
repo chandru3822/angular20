@@ -29,13 +29,17 @@ const store = vueInstance.$store
 const props = defineProps({
   viewOptions:[],
   selectedOption:Number,
+  allowSidebarCollapse: {
+    type: Boolean,
+    default: true
+  },
 })
-const emit = defineEmits(['selectView'])
+const emit = defineEmits(['selectView', 'collapseClicked'])
 
 //the selected view
 const selectView = (viewOption) => {
   emit('selectView', viewOption)
-  if (!isSidebarCollapsed) {
+  if (isSidebarCollapsed.value) {
     collapseExpandSide()
   }
 }
@@ -44,6 +48,13 @@ const selectView = (viewOption) => {
 const isSidebarCollapsed = computed(() => {
   return store.state.project.rightSideSplit
 })
+const collapseButtonClicked = () => {
+  if(props.allowSidebarCollapse) {
+    collapseExpandSide() }
+  else {
+    emit('collapseClicked')
+  }
+}
 const collapseExpandSide = () => {
   store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
 }
@@ -61,7 +72,7 @@ const isMobile = computed(() => {
   <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4 d-flex flex-column" no-gutters>
     <div v-if="isSidebarCollapsed" class="pl-3 pt-2">
       <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
-        <slot name="collapse-button-icon">
+        <slot name="collapse-btn-icon">
           <v-icon>mdi-menu</v-icon>
         </slot>
       </v-btn>
@@ -71,8 +82,8 @@ const isMobile = computed(() => {
           <slot name="title" v-if="!isSidebarCollapsed">Sidebar Title</slot>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
         <slot name="header-actions" v-if="!isSidebarCollapsed"/>
-        <v-btn  v-if="!isMobile" class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
-          <slot name="collapse-button-icon">
+        <v-btn  v-if="!isMobile" class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseButtonClicked">
+          <slot name="collapse-btn-icon">
             <v-icon>mdi-menu</v-icon>
           </slot>
         </v-btn>

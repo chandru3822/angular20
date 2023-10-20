@@ -241,6 +241,9 @@
         <v-icon>close</v-icon>
       </v-btn>
     </template>
+    <template v-slot:right-column>
+      <ProjectActivity v-if="!thingsLoading" collapseBtnIcon="close" :allowSidebarCollapse="false" @collapseCallback="closeConversation"></ProjectActivity>
+    </template>
   </ThreeColumnLayout>
 </template>
 
@@ -256,10 +259,12 @@ import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignme
 import NewMessageDialog from "./NewMessageDialog";
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import debounce from 'lodash.debounce'
+import ProjectActivity from "@/views/flow/project/ProjectActivity.vue";
 
 export default {
   name: 'Inbox',
   components: {
+    ProjectActivity,
     TeamAssignmentChips,
     ThreeColumnLayout,
     ConfirmAssignmentDialog,
@@ -817,6 +822,9 @@ export default {
         this.clearUserNotification(item.userId)
         this.$router.push({path: `/inbox/inboxConversation/user/${item.userId}`});
       }
+    },
+    closeConversation(){
+      this.$router.push({path: `/inbox`})
     },
     searchConversations: debounce(function() {
       //don't allow searchQuery to be null - causes issues

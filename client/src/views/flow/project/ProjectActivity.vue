@@ -4,6 +4,8 @@
       :selected-option="selectedOption"
       :showHeaderSecondLine = "selectedOption === 0"
       @selectView="selectView($event)"
+      :allowSidebarCollapse = !!allowSidebarCollapse
+      @collapseClicked="$emit('collapseCallback')"
   >
     <template v-slot:title>
       <v-tooltip bottom small v-if="showSmsTab && $route.path.includes('inboxConversation')">
@@ -111,6 +113,7 @@
         </v-btn-toggle>
       </div>
     </template>
+    <template v-if="collapseBtnIcon" v-slot:collapse-btn-icon><v-icon>{{collapseBtnIcon}}</v-icon></template>
     <template v-slot:header-second-line>
       <TeamAssignmentChips
           v-if="showSmsTab && selectedOption === 0 && userCanViewSms"
@@ -198,7 +201,7 @@ export default {
       type: Boolean,
       default: true
     },
-    showNotes: Boolean
+    collapseBtnIcon: String
   },
   watch: {
     // whenever userImage changes, this function will run
@@ -322,9 +325,6 @@ export default {
     selectView: function(viewOption) {
       this.$store.commit(ProjectMutations.SET_SELECTED_TAB, viewOption)
       this.selectedOption = viewOption
-      if (this.isSidebarCollapsed) {
-        this.$emit('openRight')
-      }
     },
     selectNotesActivityView(){
       if(this.toggleTimelineView === 0){
