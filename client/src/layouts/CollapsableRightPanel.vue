@@ -132,11 +132,14 @@ const isMobile = computed(() => {
   position: relative;
 }
 
+.conversation-activity-inner-container {
+  max-height: calc(100% - 175px);
+  margin-top: -45px;
+  overflow: auto;
+
 @media (min-width: 960px) {
-  .conversation-activity-inner-container {
     max-height: calc(100% - 112px);
     margin-top: -53px;
-    overflow: auto;
   }
 }
 
