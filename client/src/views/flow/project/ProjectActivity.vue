@@ -340,9 +340,7 @@ export default {
       }
     },
     scrollToTop(){
-      //have to get ref of something not stuck behind a v-if, the query down to the actual element we want
-      this.$vuetify.goTo(this.$refs.conversationActivityContainer.querySelector('div.scrollable-area'),
-          {container: '.conversation-activity-inner-container'}) //if you don't set the container, it defaults to document.scrollingElement, which is the page scroll, not the component we want to scroll
+      document.querySelector('div.conversation-activity-inner-container').scroll({top:0})
     },
     startJoinConversation() {
       if (this.teamsAssociatedToUser?.length === 1) {

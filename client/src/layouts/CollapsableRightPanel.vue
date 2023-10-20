@@ -58,7 +58,7 @@ const isMobile = computed(() => {
 
 <template>
 
-  <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4" no-gutters>
+  <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4 d-flex flex-column" no-gutters>
     <div v-if="isSidebarCollapsed" class="pl-3 pt-2">
       <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
         <slot name="collapse-button-icon">
@@ -134,12 +134,11 @@ const isMobile = computed(() => {
 
 .conversation-activity-inner-container {
   max-height: calc(100% - 175px);
-  margin-top: -45px;
+  margin-top:0;
   overflow: auto;
 
 @media (min-width: 960px) {
-    max-height: calc(100% - 112px);
-    margin-top: -53px;
+  max-height: calc(100% - 112px);
   }
 }
 
