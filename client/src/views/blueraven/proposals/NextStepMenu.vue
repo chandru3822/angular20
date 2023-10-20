@@ -35,9 +35,9 @@
               <v-btn
                 class="text-capitalize mt-1"
                 :color="requiredFields.length === 0 && !proposal.locked ? 'primary' : ''"
-                :disabled="requiredFields.length > 0 || proposal.locked"
+                :disabled="requiredFields.length > 0 || proposal.locked || lockingProposal"
                 :dark="requiredFields.length===0 && !proposal.locked"
-                @click="lockProposal"
+                @click="[lockingProposal = true, lockProposal()]"
               >
                 <v-icon v-if="!proposal.locked">mdi-lock-open</v-icon>
                 <span v-if="!proposal.locked">Lock Proposal</span>
@@ -183,7 +183,8 @@ export default {
       creditStatus: undefined,
       rules: [
         v => !!v || 'Value is required'
-      ]
+      ],
+      lockingProposal: false
     }
   },
   computed: {
