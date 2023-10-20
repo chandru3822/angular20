@@ -66,6 +66,13 @@ BEGIN
                                                         where company_id = 3
                                                         limit 1)
                             and object_code = 'PROPOSAL_PRICING'
+                            and proposal_group_uuid not in (select distinct proposal_group_uuid
+                                                            from brs.proposal_version_custom_field_group
+                                                            where archived is not null
+                                                              and proposal_version_id <= (select proposal_version_id
+                                                                                          from brs.primary_company_proposal_version
+                                                                                          where company_id = 3
+                                                                                          limit 1))
                           order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
        grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
                                                   'fields',

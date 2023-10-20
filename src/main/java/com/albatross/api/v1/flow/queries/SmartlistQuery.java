@@ -537,6 +537,8 @@ public class SmartlistQuery {
       cdt.data_type_id as "dataTypeId",
       case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
       cdt.allow_multiple as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       case when sf.smartlist_system_list_id is null then '[]' else
         (select to_jsonb(array_agg(row_to_json(rows))) from (
           select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
@@ -570,6 +572,8 @@ public class SmartlistQuery {
       cdt.data_type_id as "dataTypeId",
       case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as "hasListValues",
       cdt.allow_multiple as "allowMultiple",
+      sl.system_list_type_id  as "systemListTypeId",
+      sl.id as "systemListId",
       case
         when cf.custom_field_sql_smartlist is not null then (
           select to_jsonb(array_agg(row_to_json(listOfValues)))
@@ -606,6 +610,8 @@ public class SmartlistQuery {
     left join flow.process_step ps2 on pse.process_step_id = ps2.id
     inner join flow.custom_field cf on cf.id = cfga.custom_field_id
     inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    left join flow.company_system_list csl on csl.id = cf.company_system_list_id
+    left join flow.system_list sl on sl.id = csl.system_list_id
     where
       cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
       cot.company_id = :companyId and
@@ -634,6 +640,8 @@ public class SmartlistQuery {
       null as "dataTypeId",
       null as "hasListValues",
       null as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       null as "listOfValues"
     from flow.process_step ps
     inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
@@ -683,6 +691,8 @@ public class SmartlistQuery {
       null as "dataTypeId",
       null as "hasListValues",
       null as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       null as "listOfValues"
     from flow.process_step ps
     inner join flow.process_step_process psp on ps.id = psp.process_step_id
@@ -714,6 +724,8 @@ public class SmartlistQuery {
       null as "dataTypeId",
       null as "hasListValues",
       null as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       null as "listOfValues"
     from flow.event e
     inner join flow.process_step_event pse on e.id = pse.event_id
