@@ -229,6 +229,13 @@ BEGIN
            inner join flow.user u on up.user_id = u.id
     where up.id = p_value::bigint;
 
+  elsif p_unique_behavior_code = 'USER_POSITION_ORG_ID_TRIGGER' then
+    select up.org_id
+    into v_value
+    from flow.user_position up
+           inner join flow.user u on up.user_id = u.id
+    where up.id = p_value::bigint and up.primary_flag is true;
+
   elsif p_unique_behavior_code = 'CONTACT_TYPE_TRIGGER' then
     select ct.contact_type
     into v_value
