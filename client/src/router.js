@@ -1477,16 +1477,8 @@ const router = new Router({
                   return accessDenied()
                 }
               }
-            },  {
-              path: 'notesAndActivities', //should only be used on mobile
-              component: () => {
-                if (store.getters.userHasFeature('PROCESS_STEPS')) {
-                  return import (/* webpackChunkName: "projectAdmin" */ './views/flow/components/ActivitySection.vue')
-                } else {
-                  return accessDenied()
-                }
-              } },  {
-              path: 'projectActivity', //should only be used on mobile
+            }, {
+              path: 'projectActivity/:viewId', //should only be used on mobile
               component: () => {
                 if (store.getters.userHasFeature('PROCESS_STEPS')) {
                   return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectActivity.vue')

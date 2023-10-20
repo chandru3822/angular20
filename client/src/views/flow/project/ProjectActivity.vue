@@ -216,6 +216,9 @@ export default {
         this.fetchTeamsForUser()
       }
     },
+    '$route.params.viewId': function() {
+      this.selectedOption = parseInt(this.$route.params.viewId)
+    },
     smsOwnershipEvents: debounce(function() {
       this.fetchTeamsForUser()
     }, 800),
@@ -231,7 +234,7 @@ export default {
       userId: this.userIdIn ? this.userIdIn : parseInt(this.$route.params.userId) || null,
       projectProcessStepId: parseInt(this.$route.params.processStepId) || null,
       projectProcessStepEventId: parseInt(this.$route.params.ppsEventId) || null,
-      selectedOption: this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab || (this.$store.state.project.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.$store.state.project.selectedTab,
+      selectedOption: this.$route.params.viewId ? parseInt(this.$route.params.viewId) :  this.showSmsTab && this.$route.path.indexOf('inbox') > 0 ? 0 : (null == this.$store.state.project.selectedTab || (this.$store.state.project.selectedTab === 0 && !this.showSmsTab)) ? 1 : this.$store.state.project.selectedTab,
       userHasTeam: false,
       userAssigned: false,
       showJoinConversationDialog: false,

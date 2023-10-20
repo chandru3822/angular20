@@ -109,13 +109,12 @@
                                  {pageName:'Project Details', subMenuSlot: true},
                                  {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`},
                                  {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`},
-                                 {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity`, viewOption:2},
-                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity`, viewOption: 1},
-                                 {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity`, viewOption: 0},
+                                 {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity/2`},
+                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
+                                 {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
                                  {pageName: 'Project Admin'}
                                  ]"
                              headerHeight="64px"
-                             :showRightColumn="showRightColumnMobile"
                              :view-change-callback="changeMobileView"
     >
       <template v-slot:subMenu_1>
@@ -184,6 +183,7 @@
       </template>
       <template v-slot:right-column>
         <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"
+                         :selectedViewOverride="rightViewOverride"
                          @closeRight="closeRight()"
                          @click="collapseSide('right')"
                          @openRight="$store.state.project.rightSideSplit = false">
@@ -391,7 +391,6 @@ export default {
       pageOverviewMenuItem: {
       },
       updateKeyProp: 0,
-      showRightColumnMobile: false
     }
   },
   created() {
@@ -499,17 +498,8 @@ export default {
       }
     },
     changeMobileView(selectedView){
-      debugger
       this.updateKeyProp = selectedView.updateKey | 0
-      if(selectedView.viewOption){
-        this.$store.commit(ProjectMutations.SET_SELECTED_TAB, selectedView.viewOption)
-        this.showRightColumnMobile = true
-        if (this.$route.name !== 'projectDetails') {
-          this.$router.push({name: 'projectDetails', projectId: this.projectId})
-        }
-      } else {
-        this.$router.push(selectedView.customPath)
-      }
+      this.$router.push(selectedView.customPath)
     },
     stateIsActive() {
       //states is already a list of company states
