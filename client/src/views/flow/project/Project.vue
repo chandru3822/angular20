@@ -243,19 +243,21 @@
                   ></StatusTrackerIcon>
                 </template>
                 <v-card class="pa-5 square-card">
-                  <StatusTrackerIcon :clickable="false"
+                  <div class="label-large">
+                    <StatusTrackerIcon :clickable="false"
                                      :milestone="milestone"
                                      :current-status-id="project.companyProjectStatusTypeId"
                   ></StatusTrackerIcon>
                   {{milestone.projectStatusType}}
-                  <div>
+                  </div>
+                    <div>
                     <div v-for="field in milestone.assignedFields">
                       <StatusTrackerItem :field="field"
                       ></StatusTrackerItem>
                     </div>
                   </div>
                   <div class="text-right">
-                    <v-btn text color="primary" @click="milestone.menuOpen = false">Done</v-btn>
+                    <v-btn text color="primary"class="body-medium" @click="milestone.menuOpen = false">Done</v-btn>
                   </div>
                 </v-card>
               </v-menu>
@@ -396,9 +398,7 @@ export default {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
     this.getProject()
-    if(this.is7oaksAdmin) {
-      this.getMilestones()
-    }
+    this.getMilestones()
     this.pageOverviewMenuItem = {
       archived: false,
       customPath: `/project/${ this.$route.params.projectId }/projectOverview`,
@@ -561,7 +561,7 @@ export default {
           // console.log('A', m.assignedFields.every(f => f.fieldValue))
           // console.log('B', m.assignedFields.every(f => f.hasOwnProperty('fieldValue')))
           if(m.assignedFields.every(f => f.fieldValue)) {
-            m.btnColor = 'green'
+            m.btnColor = 'success lighten-1'
             m.iconColor = 'white'
           } else {
             m.btnColor = 'grey'
@@ -884,10 +884,14 @@ export default {
   font-size: 11px;
 }
 
+.milestone-container{
+  height: 28px;
+}
+
 .milestone-item {
   display: inline-block;
   margin-right: 16px;
-  position:relative
+  position:relative;
 }
 
 .milestone-item:before,

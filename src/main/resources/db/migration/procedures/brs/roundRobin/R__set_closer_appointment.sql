@@ -30,7 +30,7 @@ declare
   v_user_email                                  text;
   v_user_position_id                            bigint;
   v_process_step_id                             bigint;
-  v_postal_code_zone_id                         bigint;
+  v_round_robin_id                         bigint;
   v_user_already_assigned_to_another_project_id bigint;
   v_set_closer_appointment_audit_id             bigint;
 BEGIN
@@ -49,14 +49,14 @@ BEGIN
   end if;
 
     select pcz.id
-    into v_postal_code_zone_id
+    into v_round_robin_id
     from flow.project p
-             inner join flow.postal_code_zone_postal_code pc on pc.postal_code = substr(
+             inner join flow.postal_code pc on pc.postal_code = substr(
             trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
-             inner join flow.postal_code_zone pcz
-                        on pcz.id = pc.postal_code_zone_id and pcz.archived is false
-             inner join flow.postal_code_zone_user pczu
-                        on pczu.postal_code_zone_id = pcz.id and pczu.postal_code_zone_user_type_id = 1 and
+             inner join flow.round_robin pcz
+                        on pcz.id = pc.round_robin_id and pcz.archived is false
+             inner join flow.round_robin_user pczu
+                        on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
                            pczu.archived is false
     where p.id = p_project_id;
 
@@ -101,7 +101,7 @@ BEGIN
                p_current_user_id,
                t.manual_allocation,
                p_project_process_step_event_id
-        from brs.get_total_lead_allocation(v_postal_code_zone_id, true,p_remote) as t
+        from brs.get_total_lead_allocation(v_round_robin_id, true,p_remote) as t
       );
 
     select scau.user_id,scau.id

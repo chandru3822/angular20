@@ -1,6 +1,7 @@
 <template>
   <v-container class="px-5 py-0">
     <div v-if="mobileView" class="headline-small pt-3">Notes</div>
+      hi: {{ bottomHitCount }}
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -115,6 +116,14 @@
                     :query="queryText"
                     @reload="getActivities"
       ></ActivityList>
+<!--      <div v-if="sortedFilteredActivities">-->
+<!--        sfa: {{ sortedFilteredActivities.length }}-->
+<!--        max: {{ maxInitialLoadLimit }}-->
+<!--      </div>-->
+<!--      <div class="error&#45;&#45;text py-4" v-if="timelineView && sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit">-->
+<!--        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent {{ maxInitialLoadLimit }} notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.-->
+<!--      </div>-->
+        <SpinnerInline v-if="timelineView && (sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit) && !maxSliceHit" :size="20" color="primary"/>
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
@@ -216,10 +225,11 @@ import cloneDeep from "lodash.clonedeep";
 import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import {endTimer, startTimer, writeNoteEndTimer, writeNoteStartTimer} from "@/services/analyticsService";
+import SpinnerInline from "@/components/SpinnerInline.vue";
 
 export default {
   name: 'ActivitySection',
-  components: {ActivityList, ConfirmationDialog, Mentionable},
+  components: {SpinnerInline, ActivityList, ConfirmationDialog, Mentionable},
   mixins: [Vue2Filters.mixin],
   props: {
     contactId: Number,
@@ -228,6 +238,7 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
+    bottomHitCount: Number,
     mobileView:Boolean
   },
   data() {
@@ -267,6 +278,8 @@ export default {
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       currentUserId:this.$store.state.user.details.id,
       pinnedActivitiesOnly: [],
+      maxInitialLoadLimit: 20,
+      maxSliceHit: false
     }
   },
   watch: {
@@ -302,7 +315,7 @@ export default {
       return result
     },
     sortedFilteredActivities() {
-      return orderBy(this.activities.filter(a => {
+      let sortedList = orderBy(this.activities.filter(a => {
         //filter out archived
         //if search is not empty then filter that stuff here too
         //and ensure the activityTypeId is selected in the filter
@@ -313,6 +326,15 @@ export default {
           && shownActivityTypes.includes(a.activityTypeId)
 
       }), ['dateCreated'], [ this.sortDirection])
+
+      if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
+        this.maxSliceHit = false
+        return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
+      } else {
+          this.maxSliceHit = true
+          return sortedList
+      }
+      // return []
     },
     filterAltered(){
       return !!(this.activityTypes.find(at => !at.show))
@@ -612,8 +634,10 @@ export default {
         const {data, status} = await putRequest(`/activity/${this.editedActivity.id}/${this.sectionType}`, params)
         //todo: handle this
         let editedIndex = this.sortedFilteredActivities.findIndex(a => a.id === this.editedActivity.id)
+        let unsortedEditedIndex = this.activities.findIndex(a => a.id === this.editedActivity.id)
         let pinnedEditedIndex = this.pinnedActivitiesOnly.findIndex(a => a.id === this.editedActivity.id)
         this.sortedFilteredActivities[editedIndex] = data
+        this.activities[unsortedEditedIndex] = data
         this.pinnedActivitiesOnly[pinnedEditedIndex] = data
 
 
@@ -675,6 +699,11 @@ export default {
   border-color: var(--v-grey-darken1);
 }
 
+.activity-body {
+  //min-height: 500px;
+  min-height: 100vh;
+}
+
 .activity-footer {
   position: sticky;
   bottom: 0;
@@ -721,7 +750,7 @@ export default {
 .note-text-area {
   textarea {
     max-height: 300px;
-    overflow-y: scroll;
+    overflow-y: auto;
   }
 }
 </style>

@@ -49,6 +49,22 @@ public class UserQuery {
     """;
 
   //language=PostgreSQL
+  public final static String updateTestUserPasswords = """
+      update flow."user" u
+          set password = :password,
+              date_modified = now(),
+              modified_by_id = :userId
+      where u.test_user is true
+      and exists (
+        select uc.id
+        from flow.user_company uc
+        where uc.user_id = u.id
+        and uc.company_id = :companyId
+        and uc.archived is false
+      )
+    """;
+
+  //language=PostgreSQL
   public final static String insertUser = """
     insert into flow.user(first_name, last_name, phone_number, email, username, password, created_by_id, date_created, modified_by_id, date_modified)
       values(trim(:firstName), trim(:lastName), trim(:phone), trim(:email), trim(:email), :defaultPassword, :createdById, now(), :createdById, now())

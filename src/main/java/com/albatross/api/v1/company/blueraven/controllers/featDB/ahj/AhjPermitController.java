@@ -49,6 +49,11 @@ public class AhjPermitController {
         return ahjPermitService.searchAhjsByState(stateId);
     }
 
+  @GetMapping(value = "/searchAhjsByMetro/{metroId}")
+  public List<AhjPermit> searchAhjsByMetro(@PathVariable Long metroId) {
+    return ahjPermitService.searchAhjsByMetro(metroId);
+  }
+
     // CONTACTS
     @PostMapping(value = "/{permitId}/contacts")
     public Optional<FeatDbContact> addAhjContact(@PathVariable Long permitId,

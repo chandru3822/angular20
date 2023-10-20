@@ -8,16 +8,18 @@ BEGIN
 
     for r in select pd.id,
                     pd.project_id,
-                    (select metro_area_id from
-                      brs.metro_area_postal_code mapc
-                     where mapc.archived is false
-                       and mapc.postal_code = left(pd.project_postal_code, 5)) as metro_area_id
+                    (select pcz.metro_area_id
+                     from flow.postal_code pc
+                      inner join flow.postal_code_zone pcz on pcz.id = pc.postal_code_zone_id
+                     where pcz.archived is false
+                       and pc.archived is false
+                       and pc.postal_code = left(pd.project_postal_code, 5)) as metro_area_id
              from brs.project_details pd
              where pd.project_created_date > '2022-01-01'
                and pd.metro_area is null
                and left(pd.project_postal_code, 5) in (
                       select postal_code
-                      from brs.metro_area_postal_code
+                      from flow.postal_code
                       where archived is false)
     loop
       --1051 = cfga for metro area on project, this should also auto update project details

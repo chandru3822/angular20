@@ -164,9 +164,10 @@
           <v-divider></v-divider>
 
           <v-card-text class="pb-0">
-            <v-radio-group v-model="ahjInspection.updateAllInState">
-              <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
-              <v-radio :label="`Save changes to all AHJs in ${ahjInspection.stateName}`" :value="true"></v-radio>
+            <v-radio-group v-model="ahjInspection.updateAllInArea">
+              <v-radio label="Save changes to this AHJ only" :value="''"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjInspection.metroArea}`" :value="'metro'"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjInspection.stateName}`" :value="'state'"></v-radio>
             </v-radio-group>
           </v-card-text>
 
@@ -178,7 +179,7 @@
                    class="cancel-link mr-2"
             >Cancel
             </v-btn>
-            <v-btn v-if="ahjInspection.updateAllInState"
+            <v-btn v-if="ahjInspection.updateAllInArea.length > 0"
                    class="white--text mr-0 save-btn"
                    color="primary"
                    @click="saveConfirmDialog = true"
@@ -322,7 +323,7 @@ export default {
         }
 
         this.ahjInspection = cloneDeep(data)
-        this.ahjInspection.updateAllInState = false
+        this.ahjInspection.updateAllInArea = ""
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -382,7 +383,9 @@ export default {
     async updateAhjInspection() {
       this.saveDialog = false
       this.saveConfirmDialog = false
-      let updateAllInState = this.ahjInspection.updateAllInState
+      let updateAllInState = (this.ahjInspection.updateAllInArea == 'state');
+      let updateAllInMetro = (this.ahjInspection.updateAllInArea == 'metro');
+
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -403,21 +406,37 @@ export default {
           }
         }
 
+        else if (updateAllInMetro){
+          try {
+            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/inspection/searchAhjsByMetro/${this.ahjInspection.metroAreaId}`, 'blueraven')
+            this.ahjInspection.ahjIds = []
+            this.ahjInspection.inspectionIds = []
+
+            data.forEach(row => {
+              this.ahjInspection.ahjIds.push(row.ahjId)
+              this.ahjInspection.inspectionIds.push(row.id)
+            })
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all inspections in ' + this.ahjInspection.stateName)
+          }
+        }
+
         this.ahjInspection.customFieldGroups = this.customFieldGroups
         const {
           data,
           status
         } = await putRequest(`/featDb/ahj/${this.ahjId}/inspection/${this.ahjInspection.id}`, this.ahjInspection, 'blueraven')
         this.ahjInspection = cloneDeep(data)
-        this.ahjInspection.updateAllInState = false
+        this.ahjInspection.updateAllInArea = ''
         this.dataWasChanged = false
         this.resetCustomFieldValueWasChangedFlags()
-        let successMessage = updateAllInState ? 'All inspections in ' + this.ahjInspection.stateName + ' have been updated successfully' : 'Inspection updated successfully'
+        let successMessage = updateAllInState ? 'All inspections in ' + this.ahjInspection.stateName + ' have been updated successfully' : updateAllInMetro ? 'All inspections in ' + this.ahjInspection.metroArea + ' have been updated successfully': 'Inspection updated successfully'
         this.snackbar = getSnackbar('SUCCESS', successMessage)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        let errorMessage = updateAllInState ? 'An error occurred when attempting to update all inspections in ' + this.ahjInspection.stateName : 'Failed to update inspection'
+        let errorMessage = updateAllInState ? 'An error occurred when attempting to update all inspections in ' + this.ahjInspection.stateName : updateAllInMetro ? 'An error occurred when attempting to update all inspections in ' + this.ahjInspection.metroArea : 'Failed to update inspection'
         this.snackbar = getSnackbar('ERROR', errorMessage)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

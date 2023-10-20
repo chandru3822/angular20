@@ -6,7 +6,7 @@
           <v-toolbar-title class="title-large">Round Robins</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newZone = {}, getCompanyTimezones()]" v-if="userCanAdd">
+            <v-btn text color="primary" @click="[addNew = !addNew, newRoundRobin = {}, getCompanyTimezones()]" v-if="userCanAdd">
               <span v-if="!addNew">{{'Add New'}}</span>
               <span v-else>{{'Cancel'}}</span>
             </v-btn>
@@ -17,14 +17,14 @@
             <v-text-field
                 label="Round Robin Name"
                 tabindex=1
-                v-model="newZone.zoneName"
+                v-model="newRoundRobin.roundRobinName"
             ></v-text-field>
             <v-text-field
                 label="Distribution Time Frame (Days)"
                 tabindex=1
-                v-model="newZone.distributionTimeFrameDays"
+                v-model="newRoundRobin.distributionTimeFrameDays"
             ></v-text-field>
-            <v-autocomplete v-model="newZone.companyTimezoneId"
+            <v-autocomplete v-model="newRoundRobin.companyTimezoneId"
                             :items="companyTimezones"
                             label="Time Zone"
                             style="width: 200px;"
@@ -32,7 +32,7 @@
                             item-value="id"
                             attach
             ></v-autocomplete>
-            <v-btn color="primary" :disabled="!newZone.zoneName || !newZone.distributionTimeFrameDays || !newZone.distributionTimeFrameDays" @click="addPostalCodeZone" class="mb-3">Save</v-btn>
+            <v-btn color="primary" :disabled="!newRoundRobin.roundRobinName || !newRoundRobin.distributionTimeFrameDays || !newRoundRobin.distributionTimeFrameDays" @click="addRoundRobin" class="mb-3">Save</v-btn>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -40,7 +40,7 @@
               <v-text-field
                 v-model="search"
                 prepend-inner-icon="search"
-                label="Search users and zones"
+                label="Search users and round robins"
                 single-line
                 hide-details
                 @input="debounceSearch"
@@ -48,18 +48,18 @@
             </v-card-title>
             <v-data-table
               :headers="headers"
-              :items="filterPostalCodeZones()"
+              :items="filterRoundRobins()"
               :fixed-header="true"
               :items-per-page="-1"
               disable-sort
               :loading="dataLoading"
-              @click:row="goToPostalCodeZone"
+              @click:row="goToRoundRobin"
               hide-default-footer
               :mobile-breakpoint="770"
               class="elevation-1 round-robin-table table-striped"
             >
 
-              <template #header.zoneName="{ header }">
+              <template #header.roundRobinName="{ header }">
                 <th class="pa-2 text-left">
                   {{ header.text }}
                   <v-text-field outlined
@@ -71,12 +71,23 @@
                 </th>
               </template>
 
-              <template #item.icons="{ item }"class="text-right">
-                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="goToPostalCodeZone(item)">
+              <template #item="{ item, index }">
+                <tr class="clickable" @click="goToRoundRobin(item)">
+                  <td class="text-left">
+                    {{ item.roundRobinName }}
+                  </td>
+                  <td class="text-left">{{item.distributionTimeFrameDays}}</td>
+                  <td class="text-left">{{ item.schedulableFutureDays }}</td>
+
+                  <td class="text-right">
+                    <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="goToRoundRobin(item)">
                       <v-icon>edit</v-icon>
                     </v-btn>
-                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                    <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="[itemToDelete=item, showDeleteDialog=true]"><v-icon>delete</v-icon></v-btn>
+                  </td>
+                </tr>
               </template>
+
             </v-data-table>
           </v-card>
         </v-container>
@@ -84,7 +95,7 @@
     </v-row>
     <ConfirmationDialog
         :open-dialog="showDeleteDialog"
-        @confirm="deletePostalCodeZone"
+        @confirm="deleteRoundRobin"
         @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this round robin: <strong>{{itemToDeleteName}}</strong>
 
@@ -101,7 +112,7 @@
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
   export default {
-    name: 'PostalCodes',
+    name: 'RoundRobins',
     components: {ConfirmationDialog},
     mixins: [Vue2Filters.mixin],
 
@@ -110,19 +121,19 @@
         snackbar: {},
         addNew: false,
         search: null,
-        newZone: {},
+        newRoundRobin: {},
         nameSearch: '',
         dataLoading: true,
-        selectedZoneId: null,
+        selectedRoundRobinId: null,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('ROUND_ROBIN', 'DELETE'),
         companyId: this.$store.state.user.details.companyId,
         userId: this.$store.state.user.details.id,
-        postalCodeZones: [],
-        masterPostalCodeZones: [],
+        roundRobins: [],
+        masterRoundRobins: [],
         headers: [
-          {text: 'Round Robin Name', value: 'zoneName', show: true},
+          {text: 'Round Robin Name', value: 'roundRobinName', show: true},
           {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
           {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
           {text: '', value: 'icons', show: true},
@@ -134,7 +145,7 @@
     },
     computed: {
       itemToDeleteName() {
-        return this.itemToDelete ? this.itemToDelete.zoneName : '';
+        return this.itemToDelete ? this.itemToDelete.roundRobinName : '';
       }
     },
     methods: {
@@ -154,21 +165,21 @@
       debounceSearch: debounce( function () {
         //don't allow search to be null - causes issues
         // this.search = this.search || ''
-        this.getPostalCodeZones()
+        this.getRoundRobins()
       }, 500),
-      filterPostalCodeZones () {
-        return this.postalCodeZones.filter(pcz => { return !pcz.archived})
+      filterRoundRobins () {
+        return this.roundRobins.filter(pcz => { return !pcz.archived})
       },
-      goToPostalCodeZone(zone) {
-        this.$router.push({path: `/settings/postalCode/${zone.id}/scheduleTo`})
+      goToRoundRobin(rr) {
+        this.$router.push({path: `/settings/roundRobin/${rr.id}/scheduleTo`})
       },
-      async getPostalCodeZones () {
+      async getRoundRobins () {
         this.dataLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequestWithParams(`/postalCode/zones`, { params: { searchQuery: this.search}})
-          this.postalCodeZones = data
-          this.masterPostalCodeZones = cloneDeep(data)
+          const {data, status} = await getRequestWithParams(`/roundRobin`, { params: { searchQuery: this.search}})
+          this.roundRobins = data
+          this.masterRoundRobins = cloneDeep(data)
           this.dataLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -179,41 +190,41 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deletePostalCodeZone () {
+      async deleteRoundRobin () {
         this.itemToDelete.archived = true
-        const zoneId = this.itemToDelete.id
+        const roundRobinId = this.itemToDelete.id
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/postalCode/zone/${zoneId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Zone Deleted')
+          const {status} = await deleteRequest(`/roundRobin/${roundRobinId}`)
+          this.snackbar = getSnackbar('SUCCESS', 'Round Robin Deleted')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Zone')
+          this.snackbar = getSnackbar('ERROR', 'Error Deleting Round Robin')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
         this.closeDeleteDialog()
       },
-      async addPostalCodeZone () {
+      async addRoundRobin () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/postalCode/zone`, this.newZone)
-          this.$router.push({path: `/settings/postalCode/${data.id}/scheduleTo`})
-          this.snackbar = getSnackbar('SUCCESS', 'Zone Added')
+          const {data, status} = await postRequest(`/roundRobin`, this.newRoundRobin)
+          this.$router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
+          this.snackbar = getSnackbar('SUCCESS', 'Round Robin Added')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Zone')
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Round Robin')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
       filterResults() {
-        this.postalCodeZones = this.masterPostalCodeZones.filter(pcz => {
-          return pcz?.zoneName?.toLowerCase().includes(this.nameSearch.toLowerCase())
+        this.roundRobins = this.masterRoundRobins.filter(pcz => {
+          return pcz?.roundRobinName?.toLowerCase().includes(this.nameSearch.toLowerCase())
         })
       },
       closeDeleteDialog() {
@@ -222,7 +233,7 @@
       }
     },
     async created () {
-      this.getPostalCodeZones()
+      this.getRoundRobins()
     }
   }
 </script>

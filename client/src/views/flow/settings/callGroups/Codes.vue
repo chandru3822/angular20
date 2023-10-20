@@ -8,26 +8,24 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addCode = !addCode, newCode = '']">
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[reloadAvailable(), addCode = !addCode, newCode = {}]">
               <v-icon v-if="addCode">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
-        <v-card v-if="addCode" class="square-card text-left pa-5">
-          <v-text-field text
-                        label="Postal Code"
-                        counter
-                        type="number"
-                        maxlength="5"
-                        v-model="newCode">
-          </v-text-field>
-          <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <v-btn color="primary" class="mr-3 white--text" @click="addCodeToZone()"
-                 :disabled="!newCode">
-            Add
-          </v-btn>
+        <v-card v-if="addCode" class="square-card text-left pa-5 mt-3">
+          <v-autocomplete
+            :items="availablePostalCodes"
+            item-value="id"
+            item-text="postalCode"
+            clearable
+            return-object
+            label="Postal Code"
+            @change="addCodeToZone()"
+            v-model="newCode"
+          ></v-autocomplete>
         </v-card>
         <v-divider v-if="addCode"></v-divider>
         <v-card-title class="pt-0">
@@ -69,8 +67,8 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!postalCodeToDelete" @confirm="deleteGroupFromZone" @close-dialog="postalCodeToDelete = null">
-      Are you sure you want to delete this call group: <strong>{{postalCodeToDeleteCode}}</strong>?
+    <ConfirmationDialog :open-dialog="!!postalCodeToDelete" @confirm="deleteCodeFromGroup" @close-dialog="postalCodeToDelete = null">
+      Are you sure you want to delete code: <strong>{{postalCodeToDeleteCode}}</strong>?
     </ConfirmationDialog>
   </v-container>
 </template>
@@ -87,15 +85,17 @@
       return {
         snackbar: {},
         postalCodes: [],
+        availablePostalCodes: [],
         showError: false,
+        codeDeleted: false,
         errorMsg: '',
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'),
         userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'),
-        callGroupId: this.$route.params.id,
+        callGroupId: parseInt(this.$route.params.id),
         dataLoading: true,
         addCode: false,
-        newCode: '',
+        newCode: {},
         codeSearch: '',
         codeHeaders: [
           {text: 'Postal Code', value: 'postalCode', show: true},
@@ -111,8 +111,29 @@
     },
     created () {
       this.getCodesForZone()
+      this.getAvailablePostalCodes()
     },
     methods: {
+      reloadAvailable() {
+        if(this.codeDeleted) {
+          this.getAvailablePostalCodes()
+        }
+      },
+      async getAvailablePostalCodes () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}/availableCodes`, 'blueraven')
+          this.availablePostalCodes = data
+          //this makes it reload the available list any time one has been deleted locally
+          this.codeDeleted = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
       filterPostalCodes () {
         return this.postalCodes?.length ? this.postalCodes.filter(pc => { return !pc.archived}) : []
       },
@@ -130,12 +151,13 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteGroupFromZone () {
+      async deleteCodeFromGroup () {
         const code = this.postalCodeToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
           code.archived = true
+          this.codeDeleted = true
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -146,30 +168,22 @@
         this.postalCodeToDelete = null
       },
       async addCodeToZone () {
-        if(this.newCode?.toString()?.length === 5) {
-          this.showError = false
-          this.errorMsg = ''
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            let params = {
-              callGroupId: this.callGroupId,
-              postalCode: this.newCode
-            }
-            const {data, status} = await postRequest(`/callGroup/addCode`, params, 'blueraven')
-            this.postalCodes.push(data)
-            this.addCode = false
-            this.newCode = {}
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
-            this.snackbar = getSnackbar('ERROR', msg)
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        } else {
-          this.showError = true
-          this.errorMsg = 'ERROR: Postal Code must be 5 digits'
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          this.newCode.callGroupId = this.callGroupId
+          const {data, status} = await postRequest(`/callGroup/addCode`, this.newCode, 'blueraven')
+          this.postalCodes.push(data)
+          console.log('randalogger', data.id)
+          this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
+          this.addCode = false
+          this.newCode = {}
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
+          this.snackbar = getSnackbar('ERROR', msg)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
     }

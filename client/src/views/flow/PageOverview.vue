@@ -138,7 +138,7 @@ import constants from '@/helpers/constants'
 import {getStatusColorClass} from "@/services/projectStatusTypeService";
 import {AppMutations} from "@/stores/AppStore";
 import NewMessageDialog from "./settings/inbox/NewMessageDialog";
-import SidePanelExpansionPanel from "../../components/SidePanelExpansionPanel.vue";
+import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
 
 export default {
   name: "PageOverview",

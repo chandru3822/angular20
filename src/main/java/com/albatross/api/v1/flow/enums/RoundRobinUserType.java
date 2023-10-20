@@ -1,19 +1,19 @@
 package com.albatross.api.v1.flow.enums;
 
-public enum PostalCodeZoneUserType {
+public enum RoundRobinUserType {
     SCHEDULE_TO(1L),
     SCHEDULE_BY(2L);
 
 
     public final Long id;
 
-    PostalCodeZoneUserType(Long id) {
+    RoundRobinUserType(Long id) {
         this.id = id;
     }
 
-    public static PostalCodeZoneUserType get(String name) {
+    public static RoundRobinUserType get(String name) {
         name = name.toLowerCase();
-        for (PostalCodeZoneUserType s : values()) {
+        for (RoundRobinUserType s : values()) {
             if (s.toString().equals(name)) {
                 return s;
             }

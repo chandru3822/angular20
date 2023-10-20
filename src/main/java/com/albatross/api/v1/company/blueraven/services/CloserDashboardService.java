@@ -6,7 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CloserDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
-import com.albatross.api.v1.flow.model.postalCode.PostalCodeZone;
+import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +71,7 @@ public class CloserDashboardService {
     return jdbc.queryForObject(sqlQuery, parameters, String.class);
   }
 
-  public List<PostalCodeZone> getRoundRobins() {
+  public List<RoundRobin> getRoundRobins() {
     User user = securityService.getCurrentUser();
     Boolean viewAll =
         securityService.userHasFeatureAccessLevel(
@@ -87,17 +87,17 @@ public class CloserDashboardService {
     params.put("companyId", user.getCompanyId());
 
     if (viewAll) {
-      return sqlCache.queryBySql(CloserDashboardQuery.getAllRoundRobins, params, PostalCodeZone.class);
+      return sqlCache.queryBySql(CloserDashboardQuery.getAllRoundRobins, params, RoundRobin.class);
     }
     else {
-      return sqlCache.queryBySql(CloserDashboardQuery.getRoundRobins, params, PostalCodeZone.class);
+      return sqlCache.queryBySql(CloserDashboardQuery.getRoundRobins, params, RoundRobin.class);
     }
   }
 
   public List<RoundRobinLeadAllocationScores> getRoundRobinLeadAllocationRank(
-      Integer postalCodeZoneId, Integer timeInterval) {
+      Integer roundRobinId, Integer timeInterval) {
     HashMap<String, Object> params = new HashMap<>();
-    params.put("postalCodeZoneId", postalCodeZoneId);
+    params.put("roundRobinId", roundRobinId);
     params.put("timeInterval", timeInterval);
     params.put("currentUserId", securityService.getCurrentUser().getId());
 

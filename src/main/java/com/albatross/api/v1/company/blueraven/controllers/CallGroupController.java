@@ -2,8 +2,8 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.CallGroup;
 import com.albatross.api.v1.company.blueraven.models.CallGroupPhoneNumber;
-import com.albatross.api.v1.company.blueraven.models.CallGroupPostalCode;
 import com.albatross.api.v1.company.blueraven.services.CallGroupService;
+import com.albatross.api.v1.flow.model.PostalCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -32,8 +32,13 @@ public class CallGroupController {
     return callGroupService.getGroupDetails(id);
   }
 
+  @GetMapping(value = "/{id}/availableCodes")
+  public List<PostalCode> getAvailableCodesForGroup(@PathVariable Long id) {
+    return callGroupService.getAvailableCodesForGroup(id);
+  }
+
   @GetMapping(value = "/{id}/codes")
-  public List<CallGroupPostalCode> getCodesForGroup(@PathVariable Long id) {
+  public List<PostalCode> getCodesForGroup(@PathVariable Long id) {
     return callGroupService.getCodesForGroup(id);
   }
 
@@ -58,7 +63,7 @@ public class CallGroupController {
   }
 
   @PostMapping(value = "/addCode")
-  public ResponseEntity addPostalCode(@RequestBody CallGroupPostalCode postalCode) {
+  public ResponseEntity addPostalCode(@RequestBody PostalCode postalCode) {
     return callGroupService.addPostalCode(postalCode);
   }
 

@@ -747,21 +747,54 @@ const router = new Router({
                 },
               ]
             }, {
-              path: 'postalCodes',
+              path: 'roundRobins',
               meta: {title: 'Albatross - Round Robin'},
               component: () => {
                 if (store.getters.userHasFeature('ROUND_ROBIN')) {
-                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/PostalCodes.vue')
+                  return import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/roundRobins/RoundRobins.vue')
                 } else {
                   return accessDenied()
                 }
               },
             }, {
-              path: 'postalCode/:id',
+              path: 'zip',
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('ROUND_ROBIN')) {
-                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/PostalCode.vue')
+                  return import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/ZipContainer.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+              children: [
+                {
+                  path: 'postalCodes',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodes.vue'),
+                },
+                {
+                  path: 'postalCode/:id',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCode.vue'),
+                },
+                {
+                  path: 'zones',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodeZones.vue'),
+                },
+                {
+                  path: 'zone/:id',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodeZone.vue'),
+                },
+              ]
+            },
+            {
+              path: 'roundRobin/:id',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('ROUND_ROBIN')) {
+                  return import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/roundRobins/RoundRobin.vue')
                 } else {
                   return accessDenied()
                 }
@@ -770,13 +803,13 @@ const router = new Router({
                 {
                   path: 'scheduleTo',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/ScheduleTo.vue'),
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/roundRobins/ScheduleTo.vue'),
                 }, {
                   path: 'scheduleBy',
-                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/ScheduleBy.vue'),
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/roundRobins/ScheduleBy.vue'),
                 }, {
                   path: 'codes',
-                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCodeZones/Codes.vue'),
+                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/roundRobins/PostalCodes.vue'),
                 }
               ]
             }, {
@@ -1462,10 +1495,11 @@ const router = new Router({
                 }
               }
             }, {
-            path: 'dontGoHereRandaSaid',
+            name: 'projectStatus',
+            path: 'status',
             // path: 'tracker',
             component: () => {
-              if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'GARBAGE')) {
+              if (store.getters.userHasFeature('PROJECTS')) {
                 return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/StatusTracker.vue')
               } else {
                 return accessDenied()

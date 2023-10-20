@@ -642,7 +642,7 @@ export default {
       if (this.userIsScheduler) {
         this.schedulerLoading = true
         try {
-          const {data} = await getRequestWithParams(`/postalCode/zone/userCanSchedule`, {
+          const {data} = await getRequestWithParams(`/roundRobin/userCanSchedule`, {
             params: {
               postalCode: this.project.postalCode
             }
@@ -662,7 +662,7 @@ export default {
       if (this.userIsScheduler) {
         this.schedulerLoading = true
         try {
-          const {data} = await getRequest(`/postalCode/zone/userCanScheduleRemote`)
+          const {data} = await getRequest(`/roundRobin/userCanScheduleRemote`)
           this.showRemoteSearch = data
         } catch (e) {
           logError(e)
@@ -734,7 +734,7 @@ export default {
     },
     getRoundRobinNumDays: async function () {
       //need to load the round robin Number of days into future for this project
-      const {data} = await getRequestWithParams(`/postalCode/zone/byPostalCode`, {
+      const {data} = await getRequestWithParams(`/roundRobin/byPostalCode`, {
         params: {
           projectId: this.projectId,
           postalCode: this.project.postalCode
@@ -959,6 +959,8 @@ export default {
       this.showRoundRobin = !this.showRoundRobin
     },
     async getAvailableTimeSlots(remote) {
+      //reset this list every search in case there is an error or no results it doesn't confuse the user
+      this.timeSlots = []
       this.mostRecentSearchWasRemote = remote
       try {
         this.remoteSearchLoading = remote

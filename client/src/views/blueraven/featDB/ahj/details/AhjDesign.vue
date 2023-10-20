@@ -40,9 +40,10 @@
           <v-divider></v-divider>
 
           <v-card-text class="pb-0">
-            <v-radio-group v-model="ahjDesign.updateAllInState">
-              <v-radio label="Save changes to this AHJ only" :value="false"></v-radio>
-              <v-radio :label="`Save changes to all AHJs in ${ahjDesign.stateName}`" :value="true"></v-radio>
+            <v-radio-group v-model="ahjDesign.updateAllInArea">
+              <v-radio label="Save changes to this AHJ only" :value="''"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjDesign.metroArea}`" :value="'metro'"></v-radio>
+              <v-radio :label="`Save changes to all AHJs in ${ahjDesign.stateName}`" :value="'state'"></v-radio>
             </v-radio-group>
           </v-card-text>
 
@@ -54,7 +55,7 @@
                    class="cancel-link mr-2"
             >Cancel
             </v-btn>
-            <v-btn v-if="ahjDesign.updateAllInState"
+            <v-btn v-if="ahjDesign.updateAllInArea.length > 0"
                    class="white--text mr-0 save-btn"
                    color="primary"
                    @click="saveConfirmDialog = true"
@@ -170,7 +171,7 @@ export default {
         const {data, status} = await getRequest(`/featDb/ahj/${this.ahjId}/design`, 'blueraven')
         window.document.title = `AHJ - ${data.ahjName}`
         this.ahjDesign = cloneDeep(data)
-        this.ahjDesign.updateAllInState = false
+        this.ahjDesign.updateAllInArea = "";
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -230,7 +231,9 @@ export default {
     async updateAhjDesign() {
       this.saveDialog = false
       this.saveConfirmDialog = false
-      let updateAllInState = this.ahjDesign.updateAllInState
+      let updateAllInState = (this.ahjDesign.updateAllInArea == 'state');
+      let updateAllInMetro = (this.ahjDesign.updateAllInArea == 'metro');
+
 
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -251,17 +254,34 @@ export default {
           }
         }
 
+        else if (updateAllInMetro){
+          try {
+            const {data} = await getRequest(`/featDb/ahj/${this.ahjId}/design/searchAhjsByMetro/${this.ahjDesign.metroAreaId}`, 'blueraven')
+            this.ahjDesign.ahjIds = []
+            this.ahjDesign.designIds = []
+
+            data.forEach(row => {
+              this.ahjDesign.ahjIds.push(row.ahjId)
+              this.ahjDesign.designIds.push(row.id)
+            })
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'An error occurred when preparing to update all designs in ' + this.ahjDesign.stateName)
+          }
+        }
+
         this.ahjDesign.customFieldGroups = this.customFieldGroups
         const {
           data,
           status
         } = await putRequest(`/featDb/ahj/${this.ahjId}/design/${this.ahjDesign.id}`, this.ahjDesign, 'blueraven')
         this.ahjDesign = cloneDeep(data)
-        this.ahjDesign.updateAllInState = false
+        this.ahjDesign.updateAllInArea = ""
         this.dataWasChanged = false
         this.resetCustomFieldValueWasChangedFlags()
-        let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : 'Design updated successfully'
+        let successMessage = updateAllInState ? 'All designs in ' + this.ahjDesign.stateName + ' have been updated successfully' : updateAllInMetro ? 'All designs in ' + this.ahjDesign.metroArea + ' have been updated successfully': 'Design updated successfully'
         this.snackbar = getSnackbar('SUCCESS', successMessage)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

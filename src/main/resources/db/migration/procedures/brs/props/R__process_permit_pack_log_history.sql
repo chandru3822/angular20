@@ -9,6 +9,7 @@ BEGIN
                                           permit_pack_log_id,
                                           permit_pack_log_nbr,
                                           design_log_id,
+                                          design_nbr,
                                           permit_pack_date,
                                           number_of_modules_mp1,
                                           number_of_modules_mp2,
@@ -99,7 +100,7 @@ BEGIN
                                           non_standard_interconnection_items,
                                           bom,
                                           date_created)
-  VALUES (new.project_id, new.id, new.permit_pack_log_nbr, new.design_log_id, new.permit_pack_date,
+  VALUES (new.project_id, new.id, new.permit_pack_log_nbr, new.design_log_id, new.design_nbr, new.permit_pack_date,
           new.design ->> 'Number of Modules_mp1',
           new.design ->> 'Number of Modules_mp2',
           new.design ->> 'Number of Modules_mp3',

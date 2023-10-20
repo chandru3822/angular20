@@ -13,6 +13,13 @@ public class PandaDocQuery {
       (select lov.name
        from flow.list_of_value lov
        where lov.id = pd.primary_financier) as financier,
+       (
+         select lov.name
+         from flow.project_custom_field_value pcfv
+         inner join flow.list_of_value lov on lov.id = pcfv.int_value
+         where pcfv.project_id = p.id and
+               pcfv.custom_field_group_assignment_id = 17280
+       ) as "leadSource",
       (select first_name from flow.user where id = pd.closer_user_id)            AS closer_first_name,
       (select last_name from flow.user where id = pd.closer_user_id)             AS closer_last_name,
       (select email from flow.user where id = pd.closer_user_id) AS closer_email,
@@ -20,7 +27,7 @@ public class PandaDocQuery {
       c.last_name             AS customer_last_name,
       c.email                 AS customer_email,
       s.abbreviation as mailing_state,
-      c.phone,
+      case when c.phone is not null and c.phone <> '' then c.phone else c.mobile end as phone,
       p.city,
       p.street1 as mailing_street1,
       p.street2  as mailing_street2,

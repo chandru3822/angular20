@@ -63,6 +63,9 @@ public class AhjDesignService {
       //todo: this is very slow. needs to be fixed.
       blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
           ObjectType.AHJ_DESIGN, design.getCustomFieldGroups(), design.getDesignIds());
+    } else if(design.getUpdateAllInArea() != null && design.getUpdateAllInArea().length() > 0 && design.getAhjIds().size() > 0){
+      blueravenCustomFieldValueService.bulkHandleSavingCustomFieldValuesUsingGroups(
+        ObjectType.AHJ_DESIGN, design.getCustomFieldGroups(), design.getDesignIds());
     } else {
       params.put("ahjId", ahjId);
 
@@ -82,6 +85,12 @@ public class AhjDesignService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("stateId", stateId);
     return sqlCache.queryBySql(AhjDesignQuery.searchAhjsByState, params, AhjDesign.class);
+  }
+
+  public List<AhjDesign> searchAhjsByMetro(Long metroId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("metroId", metroId);
+    return sqlCache.queryBySql(AhjDesignQuery.searchAhjsByMetro, params, AhjDesign.class);
   }
 
 }

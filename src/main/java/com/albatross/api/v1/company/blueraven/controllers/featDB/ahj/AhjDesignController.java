@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.controllers.featDB.ahj;
 
 import com.albatross.api.v1.company.blueraven.models.featDB.AhjDesign;
 import com.albatross.api.v1.company.blueraven.models.featDB.AhjDesignDetail;
+import com.albatross.api.v1.company.blueraven.models.featDB.AhjPermit;
 import com.albatross.api.v1.company.blueraven.services.featDB.AhjDesignService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,10 @@ public class AhjDesignController {
     @GetMapping(value = "/searchAhjsByState/{stateId}")
     public List<AhjDesign> searchAhjsByState(@PathVariable Long stateId) {
         return ahjDesignService.searchAhjsByState(stateId);
+    }
+
+    @GetMapping(value = "/searchAhjsByMetro/{metroId}")
+    public List<AhjDesign> searchAhjsByMetro(@PathVariable Long metroId) {
+      return ahjDesignService.searchAhjsByMetro(metroId);
     }
 }

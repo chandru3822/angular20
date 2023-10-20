@@ -5,6 +5,6 @@ public class CloserAvailabilityQuery {
   //language=PostgreSQL
   public final static String get = """
     select *
-    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :postalCodeZoneUserIds ]::bigint[], :currentUserId);
+    from brs.get_closer_availability(:startTime::timestamp, :endTime::timestamp, array[ :roundRobinUserIds ]::bigint[], :currentUserId);
     """;
 }
