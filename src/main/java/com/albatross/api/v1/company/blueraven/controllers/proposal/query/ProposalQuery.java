@@ -163,6 +163,11 @@ public class ProposalQuery {
     """;
 
   //language=PostgreSQL
+  public final static String getCommissionDetails = """
+    select * from brs.get_proposal_commission_details(:proposalId::bigint)
+    """;
+
+  //language=PostgreSQL
   public final static String get = """
         select p.id,
            p.proposal_nbr,
