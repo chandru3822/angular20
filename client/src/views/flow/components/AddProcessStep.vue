@@ -7,8 +7,9 @@
     :close-on-content-click="false"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="" small v-on="on" @click="[ getSteps() ]" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize" :small="!largeBtn" :large="largeBtn" v-on="on" @click="[ getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>
+      <span v-if="showBtnText">Add Process Step</span>
     </v-btn>
   </template>
 
@@ -69,6 +70,14 @@ export default {
       type: Number
     },
     contactId: Number,
+    showBtnText: {
+      type: Boolean,
+      default: false
+    },
+    largeBtn: {
+      type: Boolean,
+      default: false
+    }
   },
 
   data () {
