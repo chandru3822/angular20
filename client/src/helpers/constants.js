@@ -18,7 +18,7 @@ constants.SCREEN_WIDTH = window.innerWidth
 // constants.MAX_FILE_SIZE = 104857600 //100 mb
 // constants.MAX_FILE_SIZE = 209715200 //200 mb
 constants.MAX_FILE_SIZE = 1048576000 //1 gb
-
+constants.ACTIVITIES_SHOWN = 20
 
 //dont put spaces in these strings of file extentions
 //all regular image files, plus some one-offs
