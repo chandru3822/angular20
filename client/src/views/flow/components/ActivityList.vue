@@ -70,6 +70,8 @@
         </v-card-actions>
       </v-card>
     <infinite-loading @infinite="infiniteHandler">
+      <span slot="spinner"></span>
+      <span slot="no-more"></span>
       <span slot="no-results"></span>
     </infinite-loading>
     <SpinnerInline :size="20" color="primary" v-if="!hitMax"/>

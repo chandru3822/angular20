@@ -42,19 +42,19 @@
                 {{item.commissionsDollarWatts  | currency('', 2) }}
               </td>
               <td>
-                {{item.totalPpw}}
+                {{item.totalPpw | currency('', 2)}}
               </td>
               <td>
                 {{item.systemSize}}
               </td>
               <td>
-                {{item.cashPrice}}
+                {{item.cashPrice | currency('', 2)}}
               </td>
               <td>
-                {{item.loanAmount}}
+                {{item.loanAmount | currency('', 2)}}
               </td>
               <td>
-                {{item.monthlyPayment}}
+                {{item.monthlyPayment | currency('', 2)}}
               </td>
               <td>
                 {{item.commissionKw}}
