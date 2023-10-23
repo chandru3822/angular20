@@ -11,29 +11,52 @@
 * @props
 * menuItems - Array of Strings to be used as the side menu title; should be in the order in which they should appear,
 * and each object should contain the following properties
+*   pageName: String
+*   subMenuSlot: Boolean //(optional -defaults to false) if true, makes the list item into an expansion panel with dynamic slots available for its children
+*   customPath: (optional)String representing the path
+*   any other data needed for the callback function
+*
+* headerHeight: String, optional
+* headerColor: String, optional
+* viewChangeCallback: callback function when menu item is selected
+* subMenuSelectedView: Object, optional, allows us to close the menu when using a submenu and the route doesn't change
+
 
 */
-import { ref, defineProps, defineEmits, onMounted } from 'vue'
+import {ref, defineProps, defineEmits, onMounted, watch} from 'vue'
 
 const props = defineProps({
   menuItems: Array, //@required
   headerHeight: String, //@optional
   headerColor: String, //@optional
   viewChangeCallback: Function, //@required,
+  subMenuSelectedView: Object //@optional, allows us to close the menu when using a submenu and the route doesn't change
+
 })
 const emit = defineEmits(['selectMenuItem'])
 
 
 const showMenu=ref(false)
-const toggleMenu = () => {
-    showMenu.value = !showMenu.value
+const toggleMenu = (forceClose) => {
+    if(forceClose){
+      showMenu.value = false
+    } else {
+      showMenu.value = !showMenu.value
+    }
   }
+  watch(
+      () => props.subMenuSelectedView,
+      () => {
+        console.log('watcher')
+        toggleMenu(true)
+        //fires only when subMenuSelectedView is replaced
+        //allows us to close the menu when using a submenu and the route doesn't change
+      })
 
   const selectedViewId=ref(0)
   const routerView=ref(false)
 const chooseSelectedView = (view, id) => {
   selectedViewId.value = id
-  toggleMenu()
   props.viewChangeCallback(view, true)
 }
 </script>
@@ -49,7 +72,7 @@ const chooseSelectedView = (view, id) => {
     </v-navigation-drawer>
   <v-row>
     <v-toolbar flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
-    <v-btn small text color="primary" @click="toggleMenu" class="mt-1">
+    <v-btn small text color="primary" @click="toggleMenu(false)" class="mt-1">
       <v-icon>mdi-menu</v-icon>
     </v-btn>
     <slot name="header-contents">

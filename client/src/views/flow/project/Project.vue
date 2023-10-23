@@ -116,6 +116,7 @@
                                  ]"
                              headerHeight="64px"
                              :view-change-callback="changeMobileView"
+                             :subMenuSelectedView="selectedTab"
     >
       <template v-slot:subMenu_1>
         <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
