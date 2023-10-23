@@ -1,5 +1,5 @@
 <template>
-  <v-row no-gutters id="project-details-wq-container" class="py-0 relative height-one-hunned overflow-y-auto">
+  <v-row no-gutters id="project-details-wq-container" class="py-0 relative overflow-y-auto">
     <v-col cols="12" lg="12" class="pa-3">
       <v-toolbar color="transparent" class="elevation-0 project-wq-toolbar">
         <v-toolbar-title class="albatross-header-3">Current Work Queues</v-toolbar-title>
@@ -173,6 +173,11 @@ export default {
   padding-left: 0;
   padding-right: 0;
   padding-top: 0;
+  height: calc(100vh - 192px);
+
+  @media (min-width: 960px) {
+    height: 100%;
+  }
 }
 </style>
 

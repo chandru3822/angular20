@@ -1,6 +1,6 @@
 <template>
   <SidePanelExpansionPanel header="Project Details">
-    <template v-slot:tool-btn>
+    <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
           text color="primary" class="px-0" small
           v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
@@ -31,7 +31,8 @@ export default {
   },
   props: {
     project: Object,
-    tabChangeCallback: Function
+    tabChangeCallback: Function,
+    hideAdminBtn: Boolean,
   },
   watch: {},
   data() {

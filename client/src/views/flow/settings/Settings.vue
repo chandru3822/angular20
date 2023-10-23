@@ -27,7 +27,7 @@
           <SettingsMenu class="pa-3" :title="title" :menu-list="items" :companyObjectItems="companyObjectTypes" @closeMenu="menuOpen=false" @updateTitle="setTitle($event)"></SettingsMenu>
         </v-menu>
         <v-card v-else class=" left-menu square-card d-flex">
-          <SettingsMenu class="px-5 py-2 settings-container" :menu-list="items" :class="{'hidden': leftCollapsed}"></SettingsMenu>
+          <SettingsMenu class="px-5 py-2 settings-container" :menu-list="items" :companyObjectItems="companyObjectTypes" :class="{'hidden': leftCollapsed}"></SettingsMenu>
           <v-btn small text color="primary" @click="collapseMenu" class="py-6">
             <v-icon>mdi-menu</v-icon>
           </v-btn>

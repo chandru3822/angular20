@@ -15,7 +15,7 @@
     </v-dialog>
     <div class="pa-0 height-one-hunned">
       <div class="project-header">
-        <v-toolbar color="secondary" class="elevation-0 process-step-toolbar mx-6">
+        <v-toolbar color="transparent" class="elevation-0 process-step-toolbar mx-6">
           <v-toolbar-title class="albatross-header-2">{{ projectTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items v-if="projectTab.id !== -1">
@@ -51,19 +51,22 @@
                 </template>
               </v-list>
             </v-menu>
-            <v-btn text
+            <v-btn v-if="!isMobile"
+                   text
                    color="primary"
                    @click="setSplitColumnValue()">
               <v-icon v-if="!$store.state.project.manualColumnSplit">mdi-format-columns</v-icon>
               <v-icon v-else>mdi-format-align-justify</v-icon>
             </v-btn>
-            <div>
+            <div class="align-self-center">
               <v-btn
                 v-if="userCanEdit"
                 color="primary"
-                class="mt-3"
+                :icon="isMobile"
                 :disabled="isFieldsLoading || fieldsSaving"
-                @click="updateFieldGroups()">Save Fields
+                @click="updateFieldGroups()">
+                <v-icon v-if="isMobile">save</v-icon>
+                <span v-else>Save Fields</span>
               </v-btn>
             </div>
           </v-toolbar-items>
@@ -217,7 +220,9 @@ export default {
     },
   },
   computed: {
-
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
   },
   beforeRouteUpdate(to, from, next){
     if(this.dirtyCfvs.length === 0){
@@ -431,8 +436,12 @@ export default {
 
 .project-fields-container {
   overflow: auto;
-  height: calc(100% - 65px);
+  height: calc(100vh - 175px);
   padding-bottom: 0px !important;
+
+  @media (min-width: 960px) {
+    height: calc(100% - 65px);
+  }
 }
 
 .project-title {

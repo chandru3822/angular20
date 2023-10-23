@@ -11,18 +11,18 @@
     <!--    <v-toolbar v-if="showMobileBanner && $route.name !== 'login'">-->
     <v-toolbar
       v-if="!dismissMobileToolbar && showMobileBanner && !noNavRoutes.includes($route.name) && $route.path !== '/apps'"
-      class="clickable"
+      class="clickable app-link-header"
       dense>
-      <v-toolbar-title @click="goToApps" class="body-large primary--text">
+      <v-toolbar-title @click="goToApps" class="body-small primary--text">
         Go to App Download Page
-        <v-icon color="primary" class="ml-3">
+        <v-icon small color="primary" class="ml-3">
           mdi-arrow-right
         </v-icon>
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn x-small text color="primary" @click="dismissMobileToolbar = !dismissMobileToolbar">
-          <v-icon>close</v-icon>
+          <v-icon small>close</v-icon>
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
@@ -101,5 +101,10 @@ export default {
       font-size: 35px;
     }
   }
+}
+</style>
+<style lang="scss">
+#app > div > header.app-link-header > div {
+  height: 32px !important;
 }
 </style>
