@@ -27,7 +27,7 @@
           class="text-left pt-0"
       >
         <div @click="saveInteractionEvent('view all')">
-        <router-link class="albatross-body-3" @click="saveInteractionEvent('view all')" :to="`/project/${projectId}/processSteps`">View All</router-link>
+        <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
         </div>
       </v-col>
     </template>
