@@ -3,50 +3,51 @@
       <div v-if="activities?.length === 0" class="body-large">
         No available notes or activities
       </div>
+<!--    <div v-for="a in activities">{{a.note}} <br></div>-->
       <v-card v-else v-for="(a, aIdx) in activities" class="mt-3 pt-3 pb-2 elevation-0 card"
               :class="{'pinned-card': a.pinned && highlightPinnedActivity, 'activity-card':a.activityTypeId === 1}">
-          <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
-            <v-toolbar-title class="body-medium">
-              <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
-              <a @click="searchCallback('uncategorized', -1, SearchTypeEnum.TAG)" class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0" :inner-html.prop="'[uncategorized]' | searchHighlight(query)"></a>
-              <span class="test" v-for="(ah, idx) in a.activityHashtags">
+        <v-toolbar flat color="transparent" class="toolbar-z-index-override-for-menu" id="activity-card-title">
+          <v-toolbar-title class="body-medium">
+            <v-icon small color="#FB8C00" v-if="a.pinned && highlightPinnedActivity" class="mr-2">mdi-pin</v-icon>
+            <a @click="searchCallback('uncategorized', -1, SearchTypeEnum.TAG)" class="uncategorized-text" v-if="!a.activityHashtags || a.activityHashtags?.length === 0" :inner-html.prop="'[uncategorized]' | searchHighlight(query)"></a>
+            <span class="test" v-for="(ah, idx) in a.activityHashtags">
                 <span v-if="idx !== 0">, </span>
                 <a @click="searchCallback('#' + ah.hashtag)" :inner-html.prop="'#' + ah.hashtag | searchHighlight(query)"></a>
               </span>
-              <a v-if="a.linked" @click="goToPath(a)" class="pl-3">
-                <v-icon small color="primary">mdi-link</v-icon>
-                {{a.linkLabel}}
-              </a>
-            </v-toolbar-title>
-            <v-spacer></v-spacer>
-            <v-menu v-model="a.menuOpen" transition="scale-transition" origin="top right" offset-x left attach>
-              <template v-slot:activator="{ on }">
-                <v-btn text small color="primary" v-on="on">
-                  <v-icon>mdi-dots-horizontal</v-icon>
-                </v-btn>
-              </template>
-              <v-list dense class="py-1 body-large">
-                <v-list-item v-if="a.activityTypeId !== 1"
-                             @click="editItem(a)">
-                  <v-list-item-content>
-                    <v-list-item-title>Edit</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item @click="pinActivity(a)">
-                  <v-list-item-content>
-                    <v-list-item-title>{{ a.pinned ? 'Unpin' : 'Pin'}}</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item v-if="a.activityTypeId !== 1"
-                             :disabled="a.createdById !== currentUserId"
-                             @click="activityToDelete = a">
-                  <v-list-item-content>
-                    <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== currentUserId}">Delete</v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-toolbar>
+            <a v-if="a.linked" @click="goToPath(a)" class="pl-3">
+              <v-icon small color="primary">mdi-link</v-icon>
+              {{a.linkLabel}}
+            </a>
+          </v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-menu v-model="a.menuOpen" transition="scale-transition" origin="top right" offset-x left attach>
+            <template v-slot:activator="{ on }">
+              <v-btn text small color="primary" v-on="on">
+                <v-icon>mdi-dots-horizontal</v-icon>
+              </v-btn>
+            </template>
+            <v-list dense class="py-1 body-large">
+              <v-list-item v-if="a.activityTypeId !== 1"
+                           @click="editItem(a)">
+                <v-list-item-content>
+                  <v-list-item-title>Edit</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item @click="pinActivity(a)">
+                <v-list-item-content>
+                  <v-list-item-title>{{ a.pinned ? 'Unpin' : 'Pin'}}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+              <v-list-item v-if="a.activityTypeId !== 1"
+                           :disabled="a.createdById !== currentUserId"
+                           @click="activityToDelete = a">
+                <v-list-item-content>
+                  <v-list-item-title class="error--text" :class="{'grey--text': a.createdById !== currentUserId}">Delete</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </v-toolbar>
 
         <v-card-text class="py-0 default-text-color">
           <!-- don't put a.note on a new line or it adds a space character to the beginning of the note in the UI -->

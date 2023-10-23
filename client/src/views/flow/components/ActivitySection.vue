@@ -100,7 +100,8 @@
         </div>
       </div>
 <!--Timeline View-->
-      <ActivityList v-else-if="!savingActivity"
+      <SpinnerInline :size="20" color="primary" v-else-if="!savingActivity && activitiesLoading"/>
+      <ActivityList v-else-if="!savingActivity && !activitiesLoading"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
                     :contact-id="contactId"
@@ -261,6 +262,7 @@ export default {
       previouslySelectedTopics: [],
       topics: [],
       activities: [],
+      activitiesLoading: true,
       topicsLoading: false,
       savingActivity: false,
       sortDirection: 'desc',
@@ -324,7 +326,7 @@ export default {
 
       }), ['dateCreated'], [ this.sortDirection])
 
-      return sortedList.slice(0, 39)
+      return sortedList.slice(0, 50)
       // if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
       //   this.maxSliceHit = false
       //   return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
@@ -469,6 +471,7 @@ export default {
     },
     getActivities: async function () {
       if (this.primaryId && this.sectionType) {
+        this.activitiesLoading = true
         try {
           const {data} = await getRequest(`/activity/${this.sectionType}/${this.primaryId}`)
           this.activities = data
@@ -476,6 +479,8 @@ export default {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.activitiesLoading = false
         }
       }
     },
