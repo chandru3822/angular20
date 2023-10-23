@@ -33,6 +33,7 @@ const toggleMenu = () => {
   const routerView=ref(false)
 const chooseSelectedView = (view, id) => {
   selectedViewId.value = id
+  toggleMenu()
   props.viewChangeCallback(view, true)
 }
 </script>
