@@ -166,6 +166,14 @@ public class BlueravenProposalService {
       Map.of("proposalId", proposalId), Long.class);
   }
 
+  public List<ProposalCommissionDetail> getProposalCommissionDetails(@NonNull Long proposalId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+
+    List <ProposalCommissionDetail> results = sqlCache.queryBySql(ProposalQuery.getCommissionDetails, params, ProposalCommissionDetail.class);
+    return results;
+  }
+
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
     Optional<Proposal> result =
