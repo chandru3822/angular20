@@ -59,6 +59,7 @@
     "vue-frag": "^1.4.2",
     "vue-gtag": "^1.16.1",
     "vue-html2pdf": "^1.8.0",
+    "vue-infinite-loading": "^2.4.5",
     "vue-json-excel": "0.3.0",
     "vue-mention": "^1.0.0",
     "vue-pdf-embed": "^1.1.4",
