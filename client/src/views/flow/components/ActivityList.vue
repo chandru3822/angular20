@@ -69,6 +69,10 @@
           <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
         </v-card-actions>
       </v-card>
+    <infinite-loading @infinite="infiniteHandler">
+      <span slot="no-results"></span>
+    </infinite-loading>
+    <SpinnerInline :size="20" color="primary" v-if="!hitMax"/>
     <ConfirmationDialog :open-dialog="activityToDelete != null" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
       You won’t be able to recover this note. Are you sure you want to delete it?
     </ConfirmationDialog>
@@ -83,10 +87,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AttachmentsTable from "@/views/flow/components/AttachmentsTable.vue";
 import VueClamp from 'vue-clamp'
 import {SearchTypeEnum} from "./ActivityListConstants";
+import SpinnerInline from '@/components/SpinnerInline'
+import InfiniteLoading from 'vue-infinite-loading'
 
 export default {
   name: 'ActivityList',
-  components: {AttachmentsTable, ConfirmationDialog, VueClamp},
+  components: {AttachmentsTable, ConfirmationDialog, VueClamp, InfiniteLoading, SpinnerInline},
   mixins: [Vue2Filters.mixin],
   props: {
     activities: Array,
@@ -108,9 +114,11 @@ export default {
     return {
       SearchTypeEnum,
       snackbar: {},
+      loaderState: null,
       editedIndex: null,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       activityToDelete: null,
+      hitMax: false
     }
   },
   filters: {
@@ -123,6 +131,20 @@ export default {
   created() {
   },
   methods: {
+    infiniteHandler($state) {
+      this.loaderState = $state
+      this.$emit('bottomHitCount')
+    },
+    infiniteStateLoaded(hitMax) {
+      //the counts are loaded from the parent so we have to wait to set the state here
+      if(hitMax) {
+        this.hitMax = true
+        this.loaderState.complete()
+      }
+      else {
+        this.loaderState.loaded()
+      }
+    },
     editItem(item) {
       //   editedActivity = cloneDeep(a),
       //   editedIndex = aIdx, addActivity = false,
