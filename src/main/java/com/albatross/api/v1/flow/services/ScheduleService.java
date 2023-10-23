@@ -113,6 +113,7 @@ public class ScheduleService {
     params.put("orgIds", esp.getOrgIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
+    params.put("timezone", esp.getTimezone());
 
     String results = sqlCache.queryForObjectBySql(ScheduleQuery.getAvailability, params, String.class);
 

@@ -33,6 +33,7 @@ public class CloserAvailabilityService {
     params.put("roundRobinUserIds", esp.getPostalCodeZoneUserIds());
     params.put("startTime", esp.getStartTime());
     params.put("endTime", esp.getEndTime());
+    params.put("timezone", esp.getTimezone());
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String results = sqlCache.queryForObjectBySql(CloserAvailabilityQuery.get, params, String.class);

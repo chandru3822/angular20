@@ -154,7 +154,7 @@ public class ScheduleQuery {
   //language=PostgreSQL
   public final static String getAvailability = """
     select *
-        from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::bigint[], array[ :userIds ]::bigint[]);
+        from flow.get_availability(:startTime::timestamp, :endTime::timestamp, array[ :orgIds ]::bigint[], array[ :userIds ]::bigint[], :timezone::text);
         """;
 
   //language=PostgreSQL
