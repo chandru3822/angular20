@@ -19,7 +19,7 @@
       <v-col cols="12" class="pb-1 pt-6">
         <v-toolbar color="transparent" height="auto"
                    id="pps-toolbar"
-                   class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
+                   class="elevation-0 cfg-name-toolbar ">
           <v-toolbar-title class="process-step-name albatross-header-2">
             <div>{{ processStep.processStepName }}</div>
             <div v-if="processStep.processStepStatusTypeId"
@@ -415,6 +415,9 @@ export default {
       } else {
         return this.processStep.actions.filter(a => a.canPerform === true)
       }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   beforeRouteUpdate(to, from, next) {
@@ -796,6 +799,7 @@ export default {
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
+  flex-wrap: wrap;
 }
 
 .cfg-name-toolbar .v-toolbar__title {
