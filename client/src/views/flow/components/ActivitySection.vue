@@ -1,6 +1,5 @@
 <template>
   <v-container class="px-5 py-0">
-      hi: {{ bottomHitCount }}
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -122,7 +121,7 @@
 <!--      <div class="error&#45;&#45;text py-4" v-if="timelineView && sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit">-->
 <!--        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent {{ maxInitialLoadLimit }} notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.-->
 <!--      </div>-->
-        <SpinnerInline v-if="timelineView && (sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit) && !maxSliceHit" :size="20" color="primary"/>
+<!--        <SpinnerInline v-if="timelineView && (sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit) && !maxSliceHit" :size="20" color="primary"/>-->
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
@@ -237,7 +236,7 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
-    bottomHitCount: Number
+    // bottomHitCount: Number
   },
   data() {
     return {
@@ -277,7 +276,7 @@ export default {
       currentUserId:this.$store.state.user.details.id,
       pinnedActivitiesOnly: [],
       maxInitialLoadLimit: 20,
-      maxSliceHit: false
+      // maxSliceHit: false
     }
   },
   watch: {
@@ -325,13 +324,14 @@ export default {
 
       }), ['dateCreated'], [ this.sortDirection])
 
-      if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
-        this.maxSliceHit = false
-        return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
-      } else {
-          this.maxSliceHit = true
-          return sortedList
-      }
+      return sortedList.slice(0, 39)
+      // if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
+      //   this.maxSliceHit = false
+      //   return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
+      // } else {
+      //     this.maxSliceHit = true
+      //     return sortedList
+      // }
       // return []
     },
     filterAltered(){
