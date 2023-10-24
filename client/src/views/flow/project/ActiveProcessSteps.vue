@@ -12,6 +12,7 @@
           :project-id="projectId"
           :process-id="project.processId"
           :contact-id="project.contactId"
+          :timer-enabled="true"
           @step-added="getProcessSteps"
       />
     </template>
@@ -25,7 +26,9 @@
           cols="12"
           class="text-left pt-0"
       >
+        <div @click="saveInteractionEvent('view all')">
         <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
+        </div>
       </v-col>
     </template>
   </SidePanelExpansionPanel>
@@ -40,6 +43,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {saveEvent} from "@/services/analyticsService";
 
 export default {
   name: 'ActiveProcessSteps',
@@ -105,6 +109,9 @@ export default {
         this.isProcessStepsLoading = false
       }
     },
+    saveInteractionEvent(event){
+      saveEvent(event);
+    }
   }
 }
 </script>

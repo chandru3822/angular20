@@ -241,6 +241,7 @@
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
+        timezone: this.$store.state.user.details.timezone.value,
         calendar: {
           options: {
             slotDuration: '00:30:00',
@@ -407,7 +408,8 @@
           let params = {
             roundRobinUserIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.id) : [],
             startTime: this.calendarStartTime,
-            endTime: this.calendarEndTime
+            endTime: this.calendarEndTime,
+            timezone: this.timezone
           }
           const {data} = await postRequest(`/closerAvailability`, params, 'blueraven', [])
           data.forEach(d => {

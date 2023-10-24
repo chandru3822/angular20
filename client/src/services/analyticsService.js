@@ -60,3 +60,18 @@ export async function writeNoteEndTimer (endEvent) {
     writeNoteStartTime = null;
   }
 }
+
+export async function saveEvent (event) {
+    let url = `/note/saveProjectNoteTimer`
+    let body = {
+      projectId: null,
+      startTimestamp: new Date(),
+      endTimestamp: new Date(),
+      timerType: event,
+      startEvent: null,
+      endEvent: null
+    }
+    await postRequest(url, body)
+    readNoteStartTime = null;
+    readNoteTimerStartEvent = null;
+}

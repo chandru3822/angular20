@@ -100,7 +100,8 @@
         </div>
       </div>
 <!--Timeline View-->
-      <ActivityList v-else-if="!savingActivity"
+      <SpinnerInline :size="20" color="primary" v-else-if="!savingActivity && activitiesLoading"/>
+      <ActivityList v-else-if="!savingActivity && !activitiesLoading"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
                     :contact-id="contactId"
@@ -112,6 +113,8 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
+                    ref="randaTest"
+                    @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
 <!--      <div v-if="sortedFilteredActivities">-->
@@ -224,6 +227,7 @@ import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import {endTimer, startTimer, writeNoteEndTimer, writeNoteStartTimer} from "@/services/analyticsService";
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import constants from "@/helpers/constants";
 
 export default {
   name: 'ActivitySection',
@@ -261,6 +265,7 @@ export default {
       previouslySelectedTopics: [],
       topics: [],
       activities: [],
+      activitiesLoading: true,
       topicsLoading: false,
       savingActivity: false,
       sortDirection: 'desc',
@@ -275,8 +280,8 @@ export default {
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       currentUserId:this.$store.state.user.details.id,
       pinnedActivitiesOnly: [],
-      maxInitialLoadLimit: 20,
-      // maxSliceHit: false
+      bottomHitCount: 1,
+      activitiesToShow: constants.ACTIVITIES_SHOWN
     }
   },
   watch: {
@@ -324,14 +329,17 @@ export default {
 
       }), ['dateCreated'], [ this.sortDirection])
 
-      return sortedList.slice(0, 39)
-      // if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
-      //   this.maxSliceHit = false
-      //   return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
-      // } else {
-      //     this.maxSliceHit = true
-      //     return sortedList
-      // }
+      if(sortedList.length > (this.activitiesToShow * this.bottomHitCount) ) {
+        if(this.$refs.randaTest) {
+          this.$refs.randaTest.infiniteStateLoaded(false)
+        }
+        return sortedList.slice(0, (this.activitiesToShow * this.bottomHitCount))
+      } else {
+        if(this.$refs.randaTest) {
+          this.$refs.randaTest.infiniteStateLoaded(true)
+        }
+        return sortedList
+      }
       // return []
     },
     filterAltered(){
@@ -377,6 +385,9 @@ export default {
     },
     endWriteNotesTimer(endEvent){
       writeNoteEndTimer(endEvent);
+    },
+    bottomHitCallback() {
+      this.bottomHitCount = this.bottomHitCount + 1
     },
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
@@ -469,6 +480,7 @@ export default {
     },
     getActivities: async function () {
       if (this.primaryId && this.sectionType) {
+        this.activitiesLoading = true
         try {
           const {data} = await getRequest(`/activity/${this.sectionType}/${this.primaryId}`)
           this.activities = data
@@ -476,6 +488,8 @@ export default {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.activitiesLoading = false
         }
       }
     },
