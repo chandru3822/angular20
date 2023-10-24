@@ -4,7 +4,7 @@
       <v-btn
           text color="primary" class="px-0" small
           v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
-          :to="`/projectAdmin/${projectId}`"
+          :to="`/projectAdmin/${projectId}/processSteps`"
       >
         <v-icon>mdi-cog</v-icon>
       </v-btn>

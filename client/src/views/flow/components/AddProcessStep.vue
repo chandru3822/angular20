@@ -9,6 +9,7 @@
   <template #activator="{on}">
     <v-btn text color="primary" class="" small v-on="on" @click="[ saveInteractionEvent('plus'), getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>
+      <span v-if="title != null">{{title}}</span>
     </v-btn>
   </template>
 
@@ -70,7 +71,8 @@ export default {
       type: Number
     },
     contactId: Number,
-    timerEnabled: false
+    timerEnabled: false,
+    title: String
   },
 
   data () {
