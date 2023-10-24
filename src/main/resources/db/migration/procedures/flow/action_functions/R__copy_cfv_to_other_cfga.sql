@@ -10,8 +10,12 @@ CREATE OR REPLACE FUNCTION flow.copy_cfv_to_other_cfga(p_project_id bigint, p_pp
 $BODY$
 declare
   v_from_object_type_id bigint;
+  v_from_has_list_of_values   boolean;
+  v_from_company_data_type_id   bigint;
   v_from_data_type_id   bigint;
   v_to_object_type_id   bigint;
+  v_to_list_of_value_id   bigint;
+  v_to_company_data_type_id     bigint;
   v_to_data_type_id     bigint;
   v_value_to_save       text;
   v_event_id            bigint;
@@ -31,17 +35,19 @@ BEGIN
 
   --check that both cfga's share the same data type - using company_data_type_id also ensures they are from the same company
   --and get the object type for each cfga
-  select cf.company_data_type_id, cot.object_type_id
-  into v_from_data_type_id, v_from_object_type_id
+  select cf.company_data_type_id, cdt.data_type_id, cot.object_type_id, cdt.has_list_values
+  into v_from_company_data_type_id, v_from_data_type_id, v_from_object_type_id, v_from_has_list_of_values
   from flow.custom_field_group_assignment cfga
          inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+         inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
          inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
          inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
   where cfga.id = p_cfga_copy_from;
-  select cf.company_data_type_id, cot.object_type_id, cfg.event_id
-  into v_to_data_type_id, v_to_object_type_id, v_event_id
+  select cf.company_data_type_id, cdt.data_type_id, cot.object_type_id, cfg.event_id, cf.list_of_value_id
+  into v_to_company_data_type_id, v_to_data_type_id, v_to_object_type_id, v_event_id, v_to_list_of_value_id
   from flow.custom_field_group_assignment cfga
          inner join flow.custom_field cf on cfga.custom_field_id = cf.id
+         inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
          inner join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id
          inner join flow.company_object_type cot on cfg.company_object_type_id = cot.id
   where cfga.id = p_cfga_copy_to;
@@ -57,7 +63,7 @@ BEGIN
 
 
   --dont allow if data types aren't the same or if copy_to_cfga is for an event
-  if v_from_data_type_id != v_to_data_type_id OR v_event_request_valid is false then
+  if v_from_company_data_type_id != v_to_company_data_type_id OR v_event_request_valid is false then
     return false;
   else
     --get the value for the first cfga
@@ -65,12 +71,18 @@ BEGIN
     into v_value_to_save
     from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_copy_from);
 
-    --raise notice 'from object type = % ',v_to_object_type_id;
-    --raise notice 'value to save = % ',v_value_to_save;
+    --if the from field is a list of value, then use the returned value and try to find an lov with a matching name in the to field
+    if(v_from_data_type_id = 6 and v_from_has_list_of_values and v_to_list_of_value_id is not null) then
+        select lov.id::text
+        into v_value_to_save
+        from flow.list_of_value lov
+        where lov.parent_id = v_to_list_of_value_id
+        and lov.archived is false
+        and lov.name = ( select lov2.name from flow.list_of_value lov2 where lov2.id = v_value_to_save::int)
+        limit 1;
+    end if;
 
-    --if there was a value then, set the value for the second cfga
-    -- todo: add param for only saving if doesn't already have a value
---     if v_value_to_save is not null then
+    --set the value for the second cfga
       if v_to_object_type_id = 1 then -- PROJECT
         perform flow.set_project_cfv(p_project_id, p_user_id, p_cfga_copy_to, v_value_to_save, p_override_existing);
       elseif v_to_object_type_id = 2 then -- CONTACT

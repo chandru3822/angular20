@@ -2097,7 +2097,11 @@ public class ProjectProcessStepService {
           Contact contact = getContact(contactId, user);
           log.debug("TWILIO: attempting text for contact ID: {}", contactId);
           if (null != contact) {
-            communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, null);
+            Long smsTeamId = null;
+            if(null != smsTemplate.getTeamIds() && smsTemplate.getTeamIds().size() == 1) {
+              smsTeamId = smsTemplate.getTeamIds().get(0);
+            }
+            communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, smsTeamId);
             smsTemplate.getTeamIds().forEach(teamId -> {
               messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
             });
