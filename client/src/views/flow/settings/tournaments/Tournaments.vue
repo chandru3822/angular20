@@ -7,7 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="showPreviousYears = !showPreviousYears">
-              Show Previous Years
+              {{ showPreviousYears ? 'Hide Previous Years' : 'Show Previous Years' }}
             </v-btn>
             <v-btn text color="primary" @click="[addNew = !addNew, newTournament = { tournamentFormulaFields: [] }]" v-if="userCanAdd">
               {{'Add New'}}
