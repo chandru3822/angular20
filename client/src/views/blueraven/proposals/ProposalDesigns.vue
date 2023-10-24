@@ -399,12 +399,12 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, true)
         let values = [
             {
-              textValue: design.designName,
+              textValue: design.tempDesignName,
               customFieldGroupAssignmentId: 26300
             }
           ]
         const {data, status} = await postRequest(`/customFieldValues/project/${design.projectId}/processStep/${design.projectProcessStepId}`, values)
-        d.designName = d.tempDesignName
+        design.designName = design.tempDesignName
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)

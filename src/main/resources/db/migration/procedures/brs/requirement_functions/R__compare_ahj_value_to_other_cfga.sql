@@ -97,6 +97,15 @@ BEGIN
         from flow.custom_field_group_assignment cfga
           inner join flow.custom_field cf on cf.id = cfga.custom_field_id
         where cfga.id = p_cfga_copy_to;
+
+        --populate the 2nd one here too
+        select lov.name
+        into v_second_value_to_check
+        from flow.list_of_value lov
+                 inner join flow.custom_field cf on lov.parent_id = cf.list_of_value_id
+                 inner join flow.custom_field_group_assignment cfga on cf.id = cfga.custom_field_id and cfga.id = p_cfga_copy_to
+        where lov.name = v_text_value_to_save;
+
       elseif v_from_has_list_of_values is true and v_from_data_type_id = 7 then
         --special handling for list of values - multiselect
         select (select array_agg(lov.id)::text
@@ -108,14 +117,14 @@ BEGIN
         from flow.custom_field_group_assignment cfga
                inner join flow.custom_field cf on cf.id = cfga.custom_field_id
         where cfga.id = p_cfga_copy_to;
+      else
+          --get the 2nd value here for non-list values
+          select *
+          into v_second_value_to_check
+          from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_copy_to);
       end if;
 
-      --get the 2nd value here
-      select *
-      into v_second_value_to_check
-      from flow.get_cfv_value_as_text(p_project_id::bigint, p_ppse_id::bigint, p_cfga_copy_to);
-
-      --coalesce handles null checks
+    --coalesce handles null checks
       return coalesce(v_text_value_to_save, '') = coalesce(v_second_value_to_check, '');
   end if;
 
