@@ -13,7 +13,7 @@ public class ProposalDesign {
   private Long projectId, projectProcessStepId, processStepId, processStepStatusTypeId;
   private Long offset, imageIndex = 0L;
   private OffsetDateTime dateCreated, dateModified;
-  private String dueDate, processStepName, companyProcessStepStatusType, comments;
+  private String dueDate, processStepName, companyProcessStepStatusType, comments, designName;
   private List<Proposal> proposals;
   private List<Attachment> attachments;
 }

@@ -29,6 +29,19 @@
               height="535"
               class="pa-4 proposal-card">
 
+        <div class="d-flex">
+          <v-text-field class="pt-0"
+                        v-model="d.tempDesignName"
+                        label="Design Name"
+                        :readonly="!d.edit"
+                        :disabled="!d.edit"
+            ></v-text-field>
+          <div class="d-flex mt-2">
+            <v-btn x-small text color="primary" v-if="!d.edit" @click="d.edit = true"><v-icon>edit</v-icon></v-btn>
+            <v-btn x-small text color="primary" v-if="d.edit" @click="[d.tempDesignName = d.designName, d.edit = false]"><v-icon>close</v-icon></v-btn>
+            <v-btn x-small text color="primary" v-if="d.edit" @click="saveDesignField(d)"><v-icon>save</v-icon></v-btn>
+          </div>
+        </div>
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <img-proxy
             name="designImg"
@@ -242,6 +255,7 @@ import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
 import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
+import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
 
 const dateSortFn = (prop = 'dateCreated') => {
   return (a, b) => {
@@ -261,6 +275,7 @@ const dateSortFn = (prop = 'dateCreated') => {
 export default {
   name: 'ProposalDesigns',
   components: {
+    CustomValueInput,
     DatetimePickerInput,
     ImgProxy
   },
@@ -379,6 +394,23 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async saveDesignField(design) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        let values = [
+            {
+              textValue: design.designName,
+              customFieldGroupAssignmentId: 26300
+            }
+          ]
+        const {data, status} = await postRequest(`/customFieldValues/project/${design.projectId}/processStep/${design.projectProcessStepId}`, values)
+        d.designName = d.tempDesignName
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCompletedProposalDesigns() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -389,6 +421,11 @@ export default {
             return d
           })
           ?.sort(dateSortFn('dateModified'))
+
+        designs.forEach(d => {
+          d.tempDesignName = d.designName
+          d.edit = false
+        })
 
         this.designs = designs
         handleHidingGlobalLoader(this, status)
