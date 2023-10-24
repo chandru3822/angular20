@@ -517,8 +517,9 @@ export default {
         if (conditionalOn.length > 0) {
 
           //clear out any already selected fields when data changes for conditional fields
+          //unless there was already a saved value then we still need to clear it out
           const existingFieldIds = conditionalOn.map(c => c.customFieldId)
-          this.dirtyCfvs = this.dirtyCfvs.filter(cfv => !existingFieldIds.includes(cfv.customFieldId))
+          this.dirtyCfvs = this.dirtyCfvs.filter(cfv => (!existingFieldIds.includes(cfv.customFieldId) || cfv.id != null))
 
           this.loading = true
           const allFilters = conditionalOn.map(({customFieldId, flowCustomFieldId}) => {
@@ -539,7 +540,20 @@ export default {
                 .then(({data}) => {
                   const {ids: filterValues} = data
                   this.filters[customFieldId] = (val) => filterValues?.indexOf(val?.id) > -1
+
+                  conditionalOn.forEach(c => {
+                    if(c.customFieldId === customFieldId && c.intValue != null && !filterValues.includes(c.intValue)) {
+                      //if one of the conditional fields has a selected value that is now an unavailable value, unset it and add to dirty fields
+                      console.log('intValue', c.intValue)
+                      c.intValue = null
+                      let match = this.dirtyCfvs.find(f => (null !== f.customFieldId && f.customFieldId === customFieldId))
+                      if(!match) {
+                        this.dirtyCfvs.push(c)
+                      }
+                    }
+                  })
                 })
+
             }
 
             return Promise.resolve()
