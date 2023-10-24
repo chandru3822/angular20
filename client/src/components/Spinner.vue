@@ -5,7 +5,7 @@
 <!--        :size="size"-->
 <!--        :color="spinnerColor"-->
 <!--    ></v-progress-circular>-->
-    <img :src="require('../assets/blueraven/pumpkinCat.gif')"/>
+    <img :src="require('../assets/blueraven/Cauldron.gif')" width="500" height="500"/>
   </v-col>
 </template>
 
