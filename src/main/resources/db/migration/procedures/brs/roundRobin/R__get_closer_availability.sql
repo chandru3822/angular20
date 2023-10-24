@@ -36,10 +36,12 @@ BEGIN
                       union all
                       --this portion is for slot schedules
                       select pczu.id                                                                 as "resourceId",
-                             case when (extract(dow from (((concat(d.date, ' ', rsa.start_time))::timestamp) at time zone 'UTC') at time zone p_timezone)) != rsa.day_of_week_id
-                                      then (concat((d.date + interval '1 day')::date, ' ', rsa.start_time))::timestamp else (concat(d.date, ' ', rsa.start_time))::timestamp end as "start",
-                             case when (extract(dow from (((concat(d.date, ' ', rsa.end_time))::timestamp) at time zone 'UTC') at time zone p_timezone)) != rsa.day_of_week_id
-                                      then (concat((d.date + interval '1 day')::date, ' ', rsa.end_time))::timestamp else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
+--                              case when (extract(dow from (((concat(d.date, ' ', rsa.start_time))::timestamp) at time zone 'UTC') at time zone p_timezone)) != rsa.day_of_week_id
+--                                       then (concat((d.date + interval '1 day')::date, ' ', rsa.start_time))::timestamp else (concat(d.date, ' ', rsa.start_time))::timestamp end as "start",
+--                              case when (extract(dow from (((concat(d.date, ' ', rsa.end_time))::timestamp) at time zone 'UTC') at time zone p_timezone)) != rsa.day_of_week_id
+--                                       then (concat((d.date + interval '1 day')::date, ' ', rsa.end_time))::timestamp else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
+                             ((concat(d.date, ' ', rst.start_time))::timestamp at time zone t.timezone) as "start",
+                             ((concat(d.date, ' ', rst.end_time))::timestamp at time zone t.timezone)   as "end",
                              rsa.day_of_week_id,
                              false                                                                      as "allDay",
                              null                                                                       as title,
