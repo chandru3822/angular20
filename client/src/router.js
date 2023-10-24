@@ -1463,17 +1463,26 @@ const router = new Router({
             }
           }
           ]
-        },        {
+        }, {
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
           component: () => {
             //dont change this permission unless double checking with rn and cj. we have been back and forth on this 100 times
             if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')) {
-              return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
+              return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/admin/ProjectAdmin.vue')
             } else {
               return accessDenied()
             }
-          }
+          },
+          children: [
+            {
+              path: 'processSteps',
+              component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/project/admin/ProcessSteps.vue')
+            }, {
+              path: 'tags',
+              component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/project/admin/Tags.vue')
+            }
+          ]
         }, {
           path: 'contacts',
           name: 'contacts',

@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.Tag;
+import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,8 +44,19 @@ public class TagController {
 
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProjectTag> getProjectTags(@PathVariable Long projectId) {
-    //i wrote this to allow for tag types but for now there is only one
     return tagService.getProjectTags(projectId);
+  }
+
+  @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Optional<ProjectTag> addProjectTag(@PathVariable Long projectId,
+                                             @RequestBody Tag tag) {
+    return tagService.addProjectTag(projectId, tag);
+  }
+
+  @DeleteMapping(value = "/project/{projectId}/{projectTagId}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void removeProjectTag(@PathVariable Long projectId,
+                               @PathVariable Long projectTagId) {
+    tagService.removeProjectTag(projectId, projectTagId);
   }
 
 }

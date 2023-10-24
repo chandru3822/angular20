@@ -71,4 +71,36 @@ public class TagQuery {
     where pt.project_id = :projectId
     and pt.archived is false
     """;
+
+  //language=PostgreSQL
+  public final static String projectTag = """
+    select pt.id,
+           pt.project_id,
+           pt.tag_id,
+           t.tag_name,
+           t.bg_color,
+           t.font_color,
+           pt.archived
+    from flow.project_tag pt
+      inner join flow.tag t on t.id = pt.tag_id
+    where pt.id = :projectTagId
+    and pt.archived is false
+    """;
+
+  //language=PostgreSQL
+  public final static String insertProjectTag = """
+    insert into flow.project_tag (project_id, tag_id, date_created, date_modified, created_by_id, modified_by_id)
+    values (:projectId, :tagId, now(), now(), :userId, :userId)
+    on conflict( project_id, tag_id ) where archived is false do nothing;
+    """;
+
+
+  //language=PostgreSQL
+  public final static String removeProjectTag = """
+    update flow.project_tag
+      set archived = true,
+      date_modified = now(),
+      modified_by_id = :userId
+    where id = :projectTagId
+    """;
 }
