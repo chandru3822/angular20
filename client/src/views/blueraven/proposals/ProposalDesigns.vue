@@ -404,6 +404,7 @@ export default {
             }
           ]
         const {data, status} = await postRequest(`/customFieldValues/project/${design.projectId}/processStep/${design.projectProcessStepId}`, values)
+        design.edit = false
         design.designName = design.tempDesignName
         handleHidingGlobalLoader(this, status)
       } catch (e) {
