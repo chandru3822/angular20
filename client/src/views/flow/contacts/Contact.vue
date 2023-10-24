@@ -748,7 +748,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         //temp contact holds all the changes in case they cancel. use those values
-        this.tempContact.ownerUserPositionId = this.tempContact.owner.userPositionId
+        this.tempContact.ownerUserPositionId = this.tempContact.owner?.userPositionId || null
         const {status} = await postRequest(`/contact`, this.tempContact)
         this.snackbar = getSnackbar('SUCCESS', 'Contact Updated')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
