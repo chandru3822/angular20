@@ -1,42 +1,24 @@
 <template>
-  <div id="project-admin-container">
-    <v-toolbar flat color="#E3E3E3" class="project-header">
-      <div class="app-title albatross-header-1">
-        <router-link :to="`/project/${projectId}/details`">{{ project.projectName }}</router-link>
-      </div>
-      <v-spacer></v-spacer>
-      <v-btn color="primary" dark class=" float-right white--text" @click="deleteProjectConfirm=true">
-        Delete Project
-      </v-btn>
-      <ConfirmationDialog
-          :open-dialog="deleteProjectConfirm"
-          @confirm="deleteProject"
-          @close-dialog="deleteProjectConfirm = false"
-      >
-        <span class="error--text">WARNING:</span>
-        This cannot be undone. Are you sure you want to delete this project?
-      </ConfirmationDialog>
-    </v-toolbar>
+  <div>
+
     <v-row v-if="userIsAdmin">
 
-      <v-col cols="12">
+        <v-col cols="12" class="pt-0">
 
-        <v-col cols="12" class="text-left">
-          <router-link :to="`/project/${projectId}/details`">Back to Project</router-link>
-        </v-col>
-
-        <v-col cols="12" class="text-left">
-
-          <AddProcessStep
-            v-if="process.id"
-            :admin="true"
-            :project-id="projectId"
-            :process-id="process.id"
-            @step-added="getProjectProcessSteps"
-          />
-        </v-col>
-
-        <v-col cols="12">
+          <v-toolbar flat dense class="project-header">
+            <v-toolbar-title>Assigned Process Steps</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <AddProcessStep
+                  v-if="processId"
+                  :admin="true"
+                  title="Add Process Step"
+                  :project-id="projectId"
+                  :process-id="processId"
+                  @step-added="getProjectProcessSteps"
+              />
+            </v-toolbar-items>
+          </v-toolbar>
 
           <v-data-table
             class="elevation-1"
@@ -44,10 +26,10 @@
             :items="projectProcessSteps"
             fixed-header
             multi-sort
+            dense
             :sort-by="['processStepName', 'lastUpdated']"
             :sort-desc="[false, true]"
             hide-default-footer
-            dense
             :loading="isProjectProcessStepsLoading"
             disable-pagination
           >
@@ -144,7 +126,6 @@
             <template v-slot:no>Close</template>
           </ConfirmationDialog>
         </v-col>
-      </v-col>
     </v-row>
 
     <ProjectProcessStepStatus
@@ -185,15 +166,18 @@ import {
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import {v4 as uuid} from 'uuid'
-import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable'
-import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AddProcessStep from '@/views/flow/components/AddProcessStep.vue'
+import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable.vue'
+import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus.vue'
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const NEW_STATUS_TO_USE = {id: null}
 
 export default {
-  name: 'ProjectAdmin.vue',
+  name: 'ProcessSteps.vue',
+  props: {
+    processId: Number
+  },
   data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
@@ -202,9 +186,7 @@ export default {
       projectProcessSteps: [],
       showPpsHistory: false,
       selectedPpsHistory: [],
-      process: {},
       snackbar: {},
-      deleteProjectConfirm: false,
       displayDropdown: false,
       displayChangeOwner: false,
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE'),
@@ -244,23 +226,10 @@ export default {
     },
   },
   async created() {
-    await this.getProject()
-    this.getProcess()
     // await this.getAvailableStatuses()
     this.getProjectProcessSteps()
   },
   methods: {
-    getProject: async function () {
-      try {
-        const {data} = await getRequest(`/project/${this.projectId}`)
-        this.project = data
-        window.document.title = `${this.project.projectName} - Admin`
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching project')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
     getProjectProcessSteps: async function () {
       try {
         this.isProjectProcessStepsLoading = true
@@ -277,20 +246,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.isProjectProcessStepsLoading = false
-      }
-    },
-    getProcess: async function () {
-      try {
-        const {data} = await getRequestWithParams(`/processes/${this.project.processId}`, {
-          params: {
-            projectId: this.projectId
-          }
-        })
-        this.process = data
-      } catch (e) {
-        this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        logError(e)
       }
     },
     async getAvailableStatuses(pps) {
@@ -392,21 +347,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteProject() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/project/${this.projectId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Project Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$router.push('/projects')
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting project')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getPpsHistory(pps) {
       try {
         this.showPpsHistory = false
@@ -428,14 +368,7 @@ export default {
 
 <style scoped lang="scss">
 
-@import "@/styles/main.scss";
-
-#project-admin-container {
-  width: 100%;
-  height: 100%;
-  max-height: 100% !important;
-  padding: 0 !important;
-}
+@import "@/styles/main";
 
 .project-header {
   border-bottom: solid 1px #EAEAF4;
