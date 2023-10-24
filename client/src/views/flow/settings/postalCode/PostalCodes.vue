@@ -62,7 +62,6 @@
               :fixed-header="true"
               :options.sync="options"
               :footer-props="footerProps"
-              disable-sort
               :mobile-breakpoint="0"
               :loading="dataLoading"
               class="elevation-1 round-robin-table table-striped"
@@ -70,25 +69,35 @@
 
               <template #item="{ item, index }">
                 <tr class="clickable">
-                  <td class="text-left" @click="goToPostalCode(item)">
-                    {{ item.postalCode }}
-                  </td>
-                  <td class="text-left" @click="goToPostalCode(item)">{{ item.placeName }}</td>
-                  <td class="text-left" @click="goToPostalCode(item)">{{ item.zoneName }}</td>
-                  <td class="text-left" @click="goToPostalCode(item)">{{ item.stateAbbreviation }}</td>
-                  <td class="text-left" @click="goToPostalCode(item)">{{ item.roundRobinName }}</td>
-                  <td class="text-left" @click="goToPostalCode(item)">{{ item.callGroupName }}</td>
                   <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.disqualified">{{ item.disqualified }}</v-checkbox>
+                    <router-link :to="`/settings/zip/postalCode/${item.id}`">{{ item.postalCode }}</router-link>
                   </td>
                   <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.selfGenOnly">{{ item.selfGenOnly }}</v-checkbox>
+                    <router-link :to="`/settings/zip/postalCode/${item.id}`">{{ item.placeName }}</router-link>
                   </td>
                   <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.insideSales">{{ item.insideSales }}</v-checkbox>
+                    <router-link :to="`/settings/zip/zone/${item.postalCodeZoneId}`">{{ item.zoneName }}</router-link>
                   </td>
                   <td class="text-left">
-                    <v-checkbox disabled readonly v-model="item.salesPartners">{{ item.salesPartners }}</v-checkbox>
+                    {{ item.stateAbbreviation }}
+                  </td>
+                  <td class="text-left">
+                    <router-link :to="`/settings/roundRobin/${item.roundRobinId}/codes`">{{ item.roundRobinName }}</router-link>
+                  </td>
+                  <td class="text-left">
+                    <router-link :to="`/settings/callGroup/${item.callGroupId}/codes`">{{ item.callGroupName }}</router-link>
+                  </td>
+                  <td class="text-left">
+                    <v-checkbox disabled readonly v-model="item.disqualified"></v-checkbox>
+                  </td>
+                  <td class="text-left">
+                    <v-checkbox disabled readonly v-model="item.selfGen"></v-checkbox>
+                  </td>
+                  <td class="text-left">
+                    <v-checkbox disabled readonly v-model="item.insideSales"></v-checkbox>
+                  </td>
+                  <td class="text-left">
+                    <v-checkbox disabled readonly v-model="item.salesPartners"></v-checkbox>
                   </td>
                   <td class="text-right">
                     <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
@@ -205,9 +214,6 @@ export default {
       return this.postalCodes.filter(pcz => {
         return !pcz.archived
       })
-    },
-    goToPostalCode(pc) {
-      this.$router.push({path: `/settings/zip/postalCode/${pc.id}`})
     },
     async getPostalCodes() {
       this.dataLoading = true

@@ -760,8 +760,8 @@ const router = new Router({
               path: 'zip',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('ROUND_ROBIN')) {
-                  return import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/ZipContainer.vue')
+                if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/ZipContainer.vue')
                 } else {
                   return accessDenied()
                 }
@@ -770,22 +770,22 @@ const router = new Router({
                 {
                   path: 'postalCodes',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodes.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCodes.vue'),
                 },
                 {
                   path: 'postalCode/:id',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCode.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCode.vue'),
                 },
                 {
                   path: 'zones',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodeZones.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCodeZones.vue'),
                 },
                 {
                   path: 'zone/:id',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodeZone.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCodeZone.vue'),
                 },
               ]
             },
