@@ -5,7 +5,7 @@
 
         <v-col cols="12" class="pt-0">
 
-          <v-toolbar flat dense class="project-header">
+          <v-toolbar flat class="project-header">
             <v-toolbar-title>Assigned Process Steps</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
