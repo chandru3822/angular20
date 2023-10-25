@@ -7,7 +7,7 @@
         readonly
         hide-details
         v-model="field.fieldValue"
-        class="default-text-color d-inline-block body-large"
+        class="default-text-color d-inline-block body-large milestone-checkbox"
     />
 <!--    <div v-if="field.fieldValue != null" class="d-inline-block ml-3 body-large">-->
 <!--      &lt;!&ndash;        i dont think we have to handle ALL data types here. just the common ones, data view fields are pretty normalized &ndash;&gt;-->
@@ -40,6 +40,7 @@ export default {
     }
   },
   created() {
+    console.log(this.field);
     if(this.field.fieldValue == null){
       this.fieldName = this.field.fieldName;
     }
@@ -48,7 +49,7 @@ export default {
         this.fieldName = this.field.fieldName + ':' + this.field.fieldValue.toLocaleDateString('en-US', {
           day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
         })
-      } else if (this.field.dataTypeId == 2) {
+      } else if (this.field.dataTypeId == 2 || this.field.dataTypeId == 3) {
         this.fieldName = this.field.fieldName + ':' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
           day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
         })//formatDate('timestamp', 'D MMM YYYY H:mm a');
@@ -74,9 +75,22 @@ export default {
   @media (min-width: 960px) {
     line-height: 1.6;  }
 }
+
 </style>
 
 <style lang="scss">
+
+#status-checkbox input:hover{
+  cursor: default !important;
+}
+
+#status-checkbox label:hover{
+  cursor: default !important;
+}
+
+#status-checkbox:hover{
+  cursor: default !important;
+}
 
 #status-checkbox .v-label{
   font-family: lato;
@@ -85,4 +99,14 @@ export default {
   font-size: 1rem;
   color: #000000 !important;
 }
+
+#status-checkbox .v-input__slot:hover{
+  cursor: default !important;
+
+}
+#status-checkbox :hover{
+  cursor: default !important;
+
+}
+
 </style>
