@@ -153,7 +153,7 @@
                                  :current-status-id="project.companyProjectStatusTypeId"
               ></StatusTrackerIcon>
             </template>
-            <v-card class="pa-5 square-card">
+            <v-card class="pa-5 square-card milestone-card">
               <div class="label-large">
               <StatusTrackerIcon :clickable="false"
                                  :milestone="milestone"
@@ -163,12 +163,12 @@
               </div>
               <div>
                 <div v-for="field in milestone.assignedFields">
-                  <StatusTrackerItem :field="field"
+                  <StatusTrackerItem :field="field" :cancelled="project.projectStatusType == 'Cancelled'"
                   ></StatusTrackerItem>
                 </div>
               </div>
               <div class="text-right">
-                <v-btn text color="primary" class="body-medium" @click="milestone.menuOpen = false">Done</v-btn>
+                <v-btn text color="primary" class="body-medium milestone-button" @click="milestone.menuOpen = false">Done</v-btn>
               </div>
             </v-card>
           </v-menu>
@@ -314,8 +314,7 @@ export default {
   created() {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
-    this.getProject()
-    this.getMilestones()
+    this.loadProject();
   },
   watch: {
     '$route.params.processStepId': async function () {
@@ -397,6 +396,10 @@ export default {
   mounted() {
   },
   methods: {
+    async loadProject(){
+      await this.getProject()
+      await this.getMilestones()
+    },
     changeTabs(selectedTab, buttonClicked) {
       this.selectedTab = selectedTab
       if (buttonClicked && this.$route.name !== 'projectDetails') {
@@ -431,6 +434,8 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        console.log(this.project.projectStatusType);
+
         window.document.title = `${this.project.projectName} - Project Details`
         if (this.checkAddress) {
           this.showEditModal()
@@ -450,13 +455,21 @@ export default {
         this.milestones = data
         let statusCompleted = false;
         for(let x = this.milestones.length - 1; x >= 0; x--){
+          if(this.project.projectStatusType == 'Cancelled'){
+            this.milestones[x].btnColor = 'grey'
+            this.milestones[x].iconColor = 'grey'
+            continue;
+          }
           if(statusCompleted || this.milestones[x].assignedFields.every(f => f.fieldValue)) {
-            statusCompleted = true;
             this.milestones[x].btnColor = 'success lighten-1'
             this.milestones[x].iconColor = 'white'
           } else {
             this.milestones[x].btnColor = 'grey'
             this.milestones[x].iconColor = 'grey'
+          }
+
+          if(this.project.projectStatusType == this.milestones[x].projectStatusType){
+            statusCompleted = true;
           }
         }
       } catch (e) {
@@ -804,6 +817,16 @@ export default {
 .milestone-item:first-of-type:before,
 .milestone-item:last-of-type:after {
   display:none;
+}
+
+.milestone-button{
+  margin-top: 12px;
+  text-transform: unset !important;
+}
+
+.milestone-card{
+  padding: 16px !important;
+  border-radius: 4px !important;
 }
 
 </style>
