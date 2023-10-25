@@ -19,7 +19,7 @@
                 <v-btn icon color="primary" v-bind="attrs"
                        v-on="on"><v-icon>mdi-information</v-icon></v-btn>
               </template>
-              <span>description: {{ milestone.description }} .....needs work</span>
+              <span>{{ milestone.description }}</span>
             </v-tooltip>
           </div>
         <v-card class="px-3 mt-2 ml-10 pb-3" v-if="milestone.assignedFields?.length > 0">

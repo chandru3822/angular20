@@ -78,7 +78,6 @@
                 :items="filterTournaments()"
                 :fixed-header="true"
                 :items-per-page="100"
-                disable-sort
                 :loading="dataLoading"
                 class="elevation-1 round-robin-table table-striped"
             >

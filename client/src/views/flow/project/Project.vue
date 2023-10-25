@@ -448,18 +448,17 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/statusFields`)
         this.milestones = data
-        this.milestones.forEach(m => {
-          // if(m.assignedFields.every(f => f.hasOwnProperty('fieldValue'))) {
-          // console.log('A', m.assignedFields.every(f => f.fieldValue))
-          // console.log('B', m.assignedFields.every(f => f.hasOwnProperty('fieldValue')))
-          if(m.assignedFields.every(f => f.fieldValue)) {
-            m.btnColor = 'success lighten-1'
-            m.iconColor = 'white'
+        let statusCompleted = false;
+        for(let x = this.milestones.length - 1; x >= 0; x--){
+          if(statusCompleted || this.milestones[x].assignedFields.every(f => f.fieldValue)) {
+            statusCompleted = true;
+            this.milestones[x].btnColor = 'success lighten-1'
+            this.milestones[x].iconColor = 'white'
           } else {
-            m.btnColor = 'grey'
-            m.iconColor = 'grey'
+            this.milestones[x].btnColor = 'grey'
+            this.milestones[x].iconColor = 'grey'
           }
-        })
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Tracker Details')
