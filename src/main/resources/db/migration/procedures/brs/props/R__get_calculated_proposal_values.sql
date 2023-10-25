@@ -1770,7 +1770,7 @@ BEGIN
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate * v_system_size * 1000;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 458 then
     v_federal_tax_incentive_amount =
-        (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + v_deposit_amount) * v_federal_tax_incentive_rate;
+        (v_total_loan_amount + v_down_payment_amount + v_required_down_payment + coalesce(v_deposit_amount, 0)) * v_federal_tax_incentive_rate;
   elsif v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 459 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate;
   end if;
