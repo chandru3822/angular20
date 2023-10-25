@@ -896,7 +896,9 @@ export default {
 
       await postRequest(`/schedule`, paramsForAvailability).then(response => {
         for(let scheduledEvent of response.data) {
-          if ((scheduledEvent.start >= this.selectedEvent.startTime && scheduledEvent.start <= this.selectedEvent.endTime) || (scheduledEvent.end >= this.selectedEvent.startTime && scheduledEvent.end <= this.selectedEvent.endTime)) {
+          console.log(scheduledEvent.projectProcessStepEventId);
+          console.log(this.selectedEvent.id);
+          if (((scheduledEvent.start >= this.selectedEvent.startTime && scheduledEvent.start <= this.selectedEvent.endTime) || (scheduledEvent.end >= this.selectedEvent.startTime && scheduledEvent.end <= this.selectedEvent.endTime)) && !(this.selectedEvent.projectProcessStepEventId == scheduledEvent.id) ) {
             this.conflictingEvent = scheduledEvent;
             break;
           }
