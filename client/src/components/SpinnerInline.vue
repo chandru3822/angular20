@@ -1,11 +1,12 @@
 <template>
   <v-col class="spinner-container" :class="{'transparent': transparent, 'centered': centered}">
     {{text}}
-    <v-progress-circular
-        indeterminate
-        :size="size"
-        :color="spinnerColor"
-    ></v-progress-circular>
+<!--    <v-progress-circular-->
+<!--        indeterminate-->
+<!--        :size="size"-->
+<!--        :color="spinnerColor"-->
+<!--    ></v-progress-circular>-->
+    <img :src="require('../assets/blueraven/Cauldron.gif')" width="300" height="300"/>
   </v-col>
 </template>
 

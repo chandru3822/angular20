@@ -5,7 +5,7 @@
 <!--        :size="size"-->
 <!--        :color="spinnerColor"-->
 <!--    ></v-progress-circular>-->
-    <img :src="require('../assets/blueraven/Pumpkin and Skull_4.gif')" width="300" height="300"/>
+    <img :src="require('../assets/blueraven/Cauldron.gif')" width="500" height="500"/>
   </v-col>
 </template>
 
@@ -31,8 +31,7 @@ export default {
   left: 0;
   right: 0;
   margin: auto;
-  color:white;
   //background-color: var(--v-secondary-base);
-  //opacity: .5;
+  opacity: .5;
 }
 </style>
