@@ -1,13 +1,29 @@
 <template>
   <div id="status-checkbox" style="z-index: 1000">
     <v-checkbox
+      v-if="!cancelled"
         :label="fieldName"
         color="success lighten-1"
         :ripple="false"
         readonly
         hide-details
         v-model="field.fieldValue"
-        class="default-text-color d-inline-block body-large milestone-checkbox"
+        class="default-text-color d-inline-block body-large milestone-checkbox milestone-completed"
+        :class="{'milestone-completed': field.fieldValue != null}">
+      <template v-slot:label>
+        <span class="milestone-completed">Label Content</span>
+      </template>
+    </v-checkbox>
+
+    <v-checkbox
+      v-else
+      :label="fieldName"
+      color="grey"
+      :ripple="false"
+      readonly
+      hide-details
+      v-model="field.fieldValue"
+      class="default-text-color d-inline-block body-large milestone-checkbox"
     />
 <!--    <div v-if="field.fieldValue != null" class="d-inline-block ml-3 body-large">-->
 <!--      &lt;!&ndash;        i dont think we have to handle ALL data types here. just the common ones, data view fields are pretty normalized &ndash;&gt;-->
@@ -32,6 +48,7 @@ export default {
   },
   props: {
     field: Object,
+    cancelled: false
   },
   data() {
     return {
@@ -40,7 +57,6 @@ export default {
     }
   },
   created() {
-    console.log(this.field);
     if(this.field.fieldValue == null){
       this.fieldName = this.field.fieldName;
     }
@@ -107,6 +123,10 @@ export default {
 #status-checkbox :hover{
   cursor: default !important;
 
+}
+
+.milestone-completed{
+  color: var(--v-grey-darken4);
 }
 
 </style>

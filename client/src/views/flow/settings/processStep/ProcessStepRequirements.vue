@@ -530,7 +530,7 @@
                            :readonly="requirementIsReadonly(item)"
                            :disabled="requirementIsReadonly(item)">
                   </div>
-                  <v-btn v-if="userCanEdit && !item.immutable" @click="updateRequirement(item)" color="primary">
+                  <v-btn v-if="!requirementIsReadonly(item)" @click="updateRequirement(item)" color="primary">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>
