@@ -43,6 +43,7 @@ public class ProposalQuery {
            pps.date_created,
            pps.date_modified,
            ppscfv.timestamp_value                                                 as proposal_due_date,
+           ppscfv2.text_value as design_name,
            coalesce((select array_to_json(array_agg(rows))
                      from (select p.id,
                                   p.proposal_nbr                                as "proposalNbr",
@@ -87,6 +88,9 @@ public class ProposalQuery {
              left join flow.project_process_step_custom_field_value ppscfv
                        on ppscfv.project_process_step_id = pps.id
                            and ppscfv.custom_field_group_assignment_id = 22678
+             left join flow.project_process_step_custom_field_value ppscfv2
+                                on ppscfv2.project_process_step_id = pps.id
+                                    and ppscfv2.custom_field_group_assignment_id = 26300
     where pps.process_step_id = 3507 --create proposal design
       and p.id = :projectId
       and p.archived is false
