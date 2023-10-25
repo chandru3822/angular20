@@ -339,3 +339,8 @@ export default {
   padding-right: 41px;
 }
 </style>
+<style lang="scss">
+#header > div > div.v-tabs.theme--dark > .v-tabs-bar .v-tab:not(.v-tab--active) {
+  color: rgb(255, 255, 255, .90)
+}
+</style>
