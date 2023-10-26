@@ -469,11 +469,5 @@ BEGIN
             END IF;
         END LOOP;
 
-
-    insert into flow.company_function_log(function_name, db_function_id, parameters)
-    values ('Populate Permit Pack System Fields', 9999, 'p_project_id: ' || p_project_id || --SET 9999 TO THE CORRECT db_fucntion_id -- FIX THIS
-                                                        ' p_process_step_id: '|| p_process_step_id ||
-                                                        ' p_project_process_step_id: ' || p_project_process_step_id);
-
 END
 $function$
