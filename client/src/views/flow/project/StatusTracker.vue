@@ -11,6 +11,8 @@
           <span :class="{'cancelled-text': cancelled}">{{currentStatus.projectStatusType}}
           </span>
         </div>
+        <div class="relative">
+        <div id="vertical-line"></div>
         <div v-for="(milestone, idx) in milestones" class="mb-3 stage-section">
           <div class="flex-display flex-align-items-center">
             <StatusTrackerIcon :clickable="false"
@@ -34,7 +36,7 @@
             ></StatusTrackerItem>
             </v-card>
           </div>
-        </v-card>
+        </div>
         </div>
       </div>
     </v-col>
@@ -114,6 +116,13 @@ export default {
   margin-bottom: 24px !important;
 }
 
+#vertical-line {
+  height: 100%;
+  border-left: solid 1px #9E9E9E;
+  position: absolute;
+  top: 5px;
+  left: 13px;
+}
 </style>
 
 <style lang="scss">
