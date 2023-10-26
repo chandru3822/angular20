@@ -103,7 +103,7 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
-    <v-toolbar flat color="grey lighten-2" :class="{'project-header': project && !project.tags || project.tags.length === 0,
+    <v-toolbar flat color="grey lighten-2" class="match-lower-width" :class="{'project-header': project && !project.tags || project.tags.length === 0,
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                v-if="!projectLoading && project && project.id">
@@ -652,6 +652,10 @@ export default {
 </script>
 
 <style lang="scss">
+.match-lower-width .v-toolbar__content {
+  padding: 4px 8px 4px 24px;
+}
+
 #tag-toolbar {
   height: 35px !important;
 
