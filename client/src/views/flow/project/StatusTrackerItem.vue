@@ -12,7 +12,7 @@
 >
       <template v-slot:label>
         <span class="milestone-checkbox-label"
-              :class="{'milestone-completed': field.fieldValue != null}">Label Content</span>
+              :class="{'milestone-completed': field.fieldValue != null}">{{fieldName}}</span>
       </template>
     </v-checkbox>
 
@@ -63,15 +63,15 @@ export default {
     }
     else {
       if (this.field.dataTypeId == 1) {
-        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue.toLocaleDateString('en-US', {
+        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue.toLocaleDateString('en-US', {
           day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
         })
       } else if (this.field.dataTypeId == 2 || this.field.dataTypeId == 3) {
-        this.fieldName = this.field.fieldName + ':' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
+        this.fieldName = this.field.fieldName + ': ' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
           day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
         })//formatDate('timestamp', 'D MMM YYYY H:mm a');
       } else {
-        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue;
+        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue;
       }
     }
   },
