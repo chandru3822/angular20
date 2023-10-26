@@ -1,10 +1,10 @@
 <template>
   <v-col cols="12" class="spinner-container">
-<!--    <v-progress-circular-->
-<!--        indeterminate-->
-<!--        :size="size"-->
-<!--        :color="spinnerColor"-->
-<!--    ></v-progress-circular>-->
+    <!--    <v-progress-circular-->
+    <!--        indeterminate-->
+    <!--        :size="size"-->
+    <!--        :color="spinnerColor"-->
+    <!--    ></v-progress-circular>-->
     <img :src="require('../assets/blueraven/PumpkinSkull.gif')" width="300" height="300"/>
   </v-col>
 </template>
