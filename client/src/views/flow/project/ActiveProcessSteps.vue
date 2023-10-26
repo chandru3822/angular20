@@ -1,5 +1,5 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
+  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
                            header="Active Process Steps"
                            :section-expanded="sectionExpanded"
                            :is-loading="isProcessStepsLoading"
