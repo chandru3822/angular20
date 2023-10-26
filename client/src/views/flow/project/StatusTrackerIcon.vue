@@ -3,6 +3,7 @@
          width="28px"
          v-on="on"
          :class="{'not-clickable': !clickable }"
+         :style="{'background-color': '#F5F5F5'}"
          :outlined="currentStatusId !== milestone.id && milestone.btnColor === 'grey'"
          :color="currentStatusId  === milestone.id ? 'primary lighten-5' : milestone.btnColor"
          elevation="0">

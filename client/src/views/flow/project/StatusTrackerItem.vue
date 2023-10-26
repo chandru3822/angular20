@@ -8,17 +8,18 @@
         readonly
         hide-details
         v-model="field.fieldValue"
-        class="default-text-color d-inline-block body-large milestone-checkbox milestone-completed"
-        :class="{'milestone-completed': field.fieldValue != null}">
+        class="default-text-color d-inline-block body-large milestone-checkbox"
+>
       <template v-slot:label>
-        <span class="milestone-completed">Label Content</span>
+        <span class="milestone-checkbox-label"
+              :class="{'milestone-completed': field.fieldValue != null}">{{fieldName}}</span>
       </template>
     </v-checkbox>
 
     <v-checkbox
       v-else
       :label="fieldName"
-      color="grey"
+      color="grey-base"
       :ripple="false"
       readonly
       hide-details
@@ -62,15 +63,15 @@ export default {
     }
     else {
       if (this.field.dataTypeId == 1) {
-        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue.toLocaleDateString('en-US', {
+        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue.toLocaleDateString('en-US', {
           day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
         })
       } else if (this.field.dataTypeId == 2 || this.field.dataTypeId == 3) {
-        this.fieldName = this.field.fieldName + ':' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
+        this.fieldName = this.field.fieldName + ': ' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
           day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
         })//formatDate('timestamp', 'D MMM YYYY H:mm a');
       } else {
-        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue;
+        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue;
       }
     }
   },
@@ -95,6 +96,9 @@ export default {
 </style>
 
 <style lang="scss">
+#status-checkbox .mdi-checkbox-blank-outline {
+  color: var(--v-grey-base);
+}
 
 #status-checkbox input:hover{
   cursor: default !important;
@@ -123,6 +127,10 @@ export default {
 #status-checkbox :hover{
   cursor: default !important;
 
+}
+
+.milestone-checkbox-label {
+  color: var(--v-grey-darken1);
 }
 
 .milestone-completed{
