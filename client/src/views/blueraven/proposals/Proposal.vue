@@ -35,6 +35,34 @@
           </v-chip>
           <v-spacer/>
           <v-toolbar-items>
+          <v-menu v-model="versionMenu"
+                  v-if="proposal && proposal.projectId"
+                  transition="slide-x-transition"
+                  :close-on-content-click="false"
+                  :offset-y="true"
+                  :z-index="250"
+                  :max-width="375">
+            <template #activator="{on, attrs }">
+              <v-btn text v-on="on" v-bind="attrs" :disabled="!userIsAdmin"
+                     @click="loadProposalVersions()">
+                v.{{proposal.version}}
+              </v-btn>
+            </template>
+            <v-card flat color="transparent" class="px-4 pb-4" :elevation="0">
+              <v-autocomplete
+                  :items="versions"
+                  item-value="id"
+                  item-text="version"
+                  :loading="loadingVersions"
+                  hide-details
+                  class="mt-5"
+                  label="Select a version..."
+                  v-model="proposal.proposalVersionId"
+              ></v-autocomplete>
+              <v-btn color="primary" class="mt-3" :disabled="!userIsAdmin || !proposal.proposalVersionId"
+                     @click="updateProposalVersion()">Save</v-btn>
+            </v-card>
+          </v-menu>
             <next-step-menu v-if="proposal.id"
                             :disabled="dirtyCfvs.length > 0"
                             :proposal="proposal"
@@ -105,7 +133,7 @@
             </div>
           </v-card>
         </v-col>
-        <v-col cols="12" sm="8">
+        <v-col cols="12" sm="8" v-if="false">
           <v-card class="proposal-container">
             <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
                  v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
@@ -194,7 +222,8 @@ import {
   getRequestWithParams,
   handleHidingGlobalLoader,
   logError,
-  postRequest
+  postRequest,
+  putRequest
 } from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import CustomValueInput from '@/views/flow/components/CustomValueInput'
@@ -232,7 +261,11 @@ export default {
       currentCommissionValue: null,
       isIntersecting: false,
       loading: false,
+      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN'),
       proposalId: parseInt(this.$route.params.proposalId),
+      versionMenu: false,
+      loadingVersions: true,
+      versions: [],
       proposal: {
         customFieldGroups: []
       },
@@ -384,6 +417,31 @@ export default {
         this.saveCustomFieldValues()
       } else {
         this.$snackbar('ERROR', 'Missing Required Fields')
+      }
+    },
+    async loadProposalVersions() {
+      try {
+        this.loadingVersions = true
+        const {data, status} = await getRequest(`/proposal/versions?size=50&page=0`, 'blueraven')
+        this.versions = data.content
+      } catch (e) {
+        this.$snackbar('ERROR', 'Error loading proposal versions')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.loadingVersions = false
+      }
+    },
+    async updateProposalVersion() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        await putRequest(`/proposal/${this.proposalId}/version/${this.proposal.proposalVersionId}`, {},'blueraven')
+        //fully reload page due to implications of changing a proposals version
+        //todo: probably should put in a v-dialog warning thing when they try to save
+        window.location.reload()
+      } catch (e) {
+        this.$snackbar('ERROR', 'Error updating proposal versions')
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async saveCustomFieldValues() {

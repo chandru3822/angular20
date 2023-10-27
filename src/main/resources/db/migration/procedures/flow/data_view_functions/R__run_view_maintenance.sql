@@ -99,7 +99,7 @@ BEGIN
           ($$ || v_sql || $$);$$;
           raise notice 'v_insert_sql: %', v_insert_sql;
           --raise notice 'v_sql: %', v_sql;
-          --execute v_insert_sql;
+          execute v_insert_sql;
         end if;
       end if;
       update flow.data_view_maintenance dvm2
@@ -142,7 +142,7 @@ BEGIN
         execute v_sql;
       end if;
     end loop;
-  --call flow.process_data_view_updates();
+  call flow.process_data_view_updates();
 END
 $BODY$
   LANGUAGE plpgsql;
