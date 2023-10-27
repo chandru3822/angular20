@@ -172,6 +172,15 @@ public class ProposalQuery {
     """;
 
   //language=PostgreSQL
+  public final static String updateProposalVersion = """
+    update brs.proposal
+    set proposal_version_id = :versionId,
+        date_modified = now(),
+        modified_by_id = :userId
+    where id = :proposalId;
+  """;
+
+  //language=PostgreSQL
   public final static String get = """
         select p.id,
            p.proposal_nbr,

@@ -39,6 +39,7 @@ BEGIN
     end loop;
 
   delete from flow.data_view_update;
+  commit;
 
   ALTER SEQUENCE flow.data_view_update_id_seq RESTART WITH 1;
 
