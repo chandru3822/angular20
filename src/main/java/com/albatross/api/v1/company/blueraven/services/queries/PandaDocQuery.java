@@ -60,4 +60,12 @@ public class PandaDocQuery {
            JOIN flow.company_process cp on cp.id = p.company_process_id
     WHERE p.id = :projectId and plh.proposal_nbr = :proposalNbr
     """;
+
+  //language=PostgreSQL
+  public final static String hasDolphinPortalAccess = """
+    select :currentUserId in
+      (select unnest(string_to_array(value, ',')::bigint[])
+         from flow.company_configuration_value
+      where code = 'DOLPHIN_USER_IDS')
+    """;
 }

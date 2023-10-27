@@ -306,10 +306,14 @@ public class InstallAgreementService {
         }
       } else if (loanType.toLowerCase().contains("sunpower")) {
         Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, proposalNbr);
-        final HashSet<Long> betaUserIds = new HashSet<>(Arrays.asList(2419024L, 2413520L, 2424722L, 2393253L, 2356764L));
         try {
           User user = securityService.getCurrentUser();
-          if (betaUserIds.contains(user.trueUserId())) {
+          Optional<Boolean> hasDolphinAccess =
+            sqlCache.getBySql(
+              PandaDocQuery.hasDolphinPortalAccess,
+              Map.of("currentUserId", user.trueUserId()),
+              new SingleColumnRowMapper<>(Boolean.class));
+          if (hasDolphinAccess.isPresent() && hasDolphinAccess.get()) {
             return sunpowerService.openDolphinLoanApp(propLogDetail.get());
           }
           else {
