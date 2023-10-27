@@ -178,6 +178,16 @@ public class BlueravenProposalService {
     return result;
   }
 
+  public void updateProposalVersion(@NonNull Long proposalId, @NonNull Long versionId, @NonNull UserAccountDetails details) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    params.put("versionId", versionId);
+    params.put("userId", details.getTrueUserId());
+
+    sqlCache.updateBySql(ProposalQuery.updateProposalVersion, params);
+  }
+
+
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
     Optional<Proposal> result =
