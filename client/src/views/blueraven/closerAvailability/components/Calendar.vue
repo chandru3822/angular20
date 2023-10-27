@@ -472,7 +472,7 @@
               let params = {
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedvUsers.map(u => u.userId) : [],
+                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedUsers.map(u => u.userId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }
