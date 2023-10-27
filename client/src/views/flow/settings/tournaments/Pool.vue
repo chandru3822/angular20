@@ -133,11 +133,7 @@
               <tr class="text-left" :class="{'shaded-row': pool.positions.indexOf(item) % 2}">
                 <td class="text-left">{{ item.position }}</td>
                 <td class="text-right">
-                  <confirm-delete-dialog
-                      label="this position: "
-                      :item-to-delete="item.position"
-                      @confirm="deletePositionFromPool(item)"
-                  ></confirm-delete-dialog>
+                  <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
                 </td>
               </tr>
             </template>
@@ -213,6 +209,9 @@
     <ConfirmationDialog :open-dialog="!!userToDelete" @confirm="deleteUserFromPool" @close-dialog="userToDelete=null">
       Are you sure you want to delete this user: <strong>{{userToDeleteName}}</strong>?
     </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!positionToDelete" @confirm="deletePositionFromPool" @close-dialog="positionToDelete=null">
+      Are you sure you want to delete this position?
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -243,6 +242,7 @@
       return {
         constants,
         snackbar: {},
+        positionToDelete: null,
         edit: false,
         pool: {},
         userSearch: '',
@@ -363,17 +363,20 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deletePositionFromPool(position) {
+      async deletePositionFromPool() {
+        const position = this.positionToDelete
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/tournament/${this.tournamentId}/pool/${this.pool.id}/deletePosition/${position.id}`, 'blueraven')
           position.archived = true
           handleHidingGlobalLoader(this, status)
+          this.positionToDelete=null
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.positionToDelete=null
         }
       },
       filterPositions () {

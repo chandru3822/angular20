@@ -76,6 +76,8 @@
           v-model.number="field.numericValue"
           @change="callback(field)"
           autocomplete="off"
+          :append-icon="appendIcon ? appendIcon : null"
+          @click:append="appendCallback(field.numericValue)"
         />
 
         <!--        12 is the new SYSTEM_readonly field. but i think we can use this same field as id=10 will ALWAYS be readonly and (never required i think)-->
@@ -353,7 +355,9 @@ export default {
     //had to add filledStyle to allow the AHJ screens to use the custom value input but keep its same style. that makes me super happy
     filledStyle: Boolean,
     callback: Function,
-    customClass: String
+    customClass: String,
+    appendIcon: String,
+    appendCallback: Function
   },
   components: {
     DatetimePickerInput,

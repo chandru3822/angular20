@@ -28,7 +28,7 @@ public class CloserAvailabilityController {
   @Data
   public static class EventSearchParams {
     private List<Long> userIds, orgIds, eventTypeIds, userPositionIds, postalCodeZoneUserIds;
-    private String startTime, endTime, search;
+    private String startTime, endTime, search, timezone;
     private Long companyStateId,
         projectId,
         eventTypeId,

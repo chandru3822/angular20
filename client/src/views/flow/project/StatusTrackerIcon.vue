@@ -1,12 +1,14 @@
 <template>
-  <v-btn fab x-small
+  <v-btn fab height="28px"
+         width="28px"
          v-on="on"
          :class="{'not-clickable': !clickable }"
+         :style="{'background-color': '#F5F5F5'}"
          :outlined="currentStatusId !== milestone.id && milestone.btnColor === 'grey'"
          :color="currentStatusId  === milestone.id ? 'primary lighten-5' : milestone.btnColor"
          elevation="0">
 
-    <v-icon :color="currentStatusId  === milestone.id ? 'white' : milestone.iconColor">{{milestone.iconTag || 'blank'}}</v-icon>
+    <v-icon size="16" :color="currentStatusId  === milestone.id ? 'white' : milestone.iconColor">{{milestone.iconTag || 'blank'}}</v-icon>
   </v-btn>
 </template>
 

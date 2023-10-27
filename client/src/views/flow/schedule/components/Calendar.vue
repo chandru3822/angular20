@@ -454,6 +454,7 @@
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
         dayOptions: [],
+        timezone: this.$store.state.user.details.timezone.value,
         calendar: {
           options: {
             titleFormat:{ month: 'long',
@@ -713,7 +714,8 @@
             orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
             userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
             startTime: this.calendarStartTime,
-            endTime: this.calendarEndTime
+            endTime: this.calendarEndTime,
+            timezone: this.timezone
           }
           const {data} = await postRequest(`/schedule/availability`, params)
           data?.forEach(d => {

@@ -376,6 +376,10 @@ public class ReportEngine {
         }
       }
 
+      if (f.getName().contains("\"")) {
+        f.setName(f.getName().replaceAll("\"",""));
+      }
+
       if (Objects.equals(f.getReferenceTable(), "flow.process_step")) {
         if (smartlist.getObjectTypeId() == 4) {
           query.append(String.format("  (select %s from %s where %s.id = %s) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getProcessStepId(), f.getName()));

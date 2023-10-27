@@ -1,7 +1,5 @@
 <template>
   <v-container class="px-5 py-0">
-    <div v-if="mobileView" class="headline-small pt-3">Notes</div>
-      hi: {{ bottomHitCount }}
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -38,7 +36,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="activity-body" :class="{'footer-closed-height': !addActivity && null == editedActivity.id}" @click="startReadNotesTimer('Clicked in the notes tab')">
+    <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
@@ -102,7 +100,8 @@
         </div>
       </div>
 <!--Timeline View-->
-      <ActivityList v-else-if="!savingActivity"
+      <SpinnerInline :size="20" color="primary" v-else-if="!savingActivity && activitiesLoading"/>
+      <ActivityList v-else-if="!savingActivity && !activitiesLoading"
                     :activities="sortedFilteredActivities"
                     :project-id="projectId"
                     :contact-id="contactId"
@@ -114,6 +113,8 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
+                    ref="randaTest"
+                    @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
 <!--      <div v-if="sortedFilteredActivities">-->
@@ -123,7 +124,7 @@
 <!--      <div class="error&#45;&#45;text py-4" v-if="timelineView && sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit">-->
 <!--        We are currently investigating an issue with load times. Until a better solution can be implemented, only the most recent {{ maxInitialLoadLimit }} notes and activities will be displayed in the timeline view. To view the remaining notes, please navigate to the Topic view.-->
 <!--      </div>-->
-        <SpinnerInline v-if="timelineView && (sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit) && !maxSliceHit" :size="20" color="primary"/>
+<!--        <SpinnerInline v-if="timelineView && (sortedFilteredActivities && sortedFilteredActivities.length >= maxInitialLoadLimit) && !maxSliceHit" :size="20" color="primary"/>-->
     </div>
     <div class="activity-footer">
       <v-divider class="my-3 activity-hr"></v-divider>
@@ -226,6 +227,7 @@ import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
 import {endTimer, startTimer, writeNoteEndTimer, writeNoteStartTimer} from "@/services/analyticsService";
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import constants from "@/helpers/constants";
 
 export default {
   name: 'ActivitySection',
@@ -238,8 +240,7 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
-    bottomHitCount: Number,
-    mobileView:Boolean
+    // bottomHitCount: Number
   },
   data() {
     return {
@@ -264,6 +265,7 @@ export default {
       previouslySelectedTopics: [],
       topics: [],
       activities: [],
+      activitiesLoading: true,
       topicsLoading: false,
       savingActivity: false,
       sortDirection: 'desc',
@@ -278,8 +280,8 @@ export default {
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
       currentUserId:this.$store.state.user.details.id,
       pinnedActivitiesOnly: [],
-      maxInitialLoadLimit: 20,
-      maxSliceHit: false
+      bottomHitCount: 1,
+      activitiesToShow: constants.ACTIVITIES_SHOWN
     }
   },
   watch: {
@@ -327,12 +329,16 @@ export default {
 
       }), ['dateCreated'], [ this.sortDirection])
 
-      if(sortedList.length > (this.maxInitialLoadLimit * this.bottomHitCount) ) {
-        this.maxSliceHit = false
-        return sortedList.slice(0, (this.maxInitialLoadLimit * this.bottomHitCount))
+      if(sortedList.length > (this.activitiesToShow * this.bottomHitCount) ) {
+        if(this.$refs.randaTest) {
+          this.$refs.randaTest.infiniteStateLoaded(false)
+        }
+        return sortedList.slice(0, (this.activitiesToShow * this.bottomHitCount))
       } else {
-          this.maxSliceHit = true
-          return sortedList
+        if(this.$refs.randaTest) {
+          this.$refs.randaTest.infiniteStateLoaded(true)
+        }
+        return sortedList
       }
       // return []
     },
@@ -379,6 +385,9 @@ export default {
     },
     endWriteNotesTimer(endEvent){
       writeNoteEndTimer(endEvent);
+    },
+    bottomHitCallback() {
+      this.bottomHitCount = this.bottomHitCount + 1
     },
     getLinkLabel() {
       return this.editedActivity.linked && null != this.editedActivity.linkLabel ? `Link ${this.editedActivity.linkLabel}` : `Link ${this.$store.state.project.linkLabel}`
@@ -471,6 +480,7 @@ export default {
     },
     getActivities: async function () {
       if (this.primaryId && this.sectionType) {
+        this.activitiesLoading = true
         try {
           const {data} = await getRequest(`/activity/${this.sectionType}/${this.primaryId}`)
           this.activities = data
@@ -478,6 +488,8 @@ export default {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error loading notes')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.activitiesLoading = false
         }
       }
     },
@@ -686,7 +698,7 @@ export default {
   top: -1px;
   background-color: white;
   padding: 0 10px;
-  z-index: 10; //to make sure the filter dropdown is in front of the list of notes/activities
+  z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
   align-items: center;
@@ -709,19 +721,11 @@ export default {
   bottom: 0;
   background-color: white;
   padding: 0px 10px 15px 10px;
-  z-index: 10;
+  z-index: 200;
   margin-left: -10px;
   margin-right: -10px;
 }
 
-.activity-body {
-  @media (min-width: 960px) {
-  //min-height: 500px;
-  }
-}
-.footer-closed-height {
-  min-height: calc(100vh - 360px);
-}
 .title-medium:last-of-type {
   padding-top:16px;
 }

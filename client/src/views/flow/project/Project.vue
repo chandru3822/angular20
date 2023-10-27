@@ -103,185 +103,113 @@
       <template v-slot:yes>Save</template>
     </ConfirmationDialog>
     <!--    end dialog -->
-    <ThreeColumnLayoutMobile v-if="isMobile"
-                             :menu-items="[
-                                 pageOverviewMenuItem,
-                                 {pageName:'Project Details', subMenuSlot: true},
-                                 {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`},
-                                 {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`},
-                                 {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity/2`},
-                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
-                                 {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
-                                 {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}`}
-                                 ]"
-                             headerHeight="64px"
-                             :view-change-callback="changeMobileView"
-                             :subMenuSelectedView="selectedTab"
-    >
-      <template v-slot:subMenu_1>
-        <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
-      </template>
-      <template v-slot:subMenu_2>
-        <ActiveProcessSteps :project="project" :update-key="updatePpsKey" :hide-add-btn="true" class="mx-2"></ActiveProcessSteps>
-      </template>
-      <template v-slot:subMenu_3>
-        <ActiveEvents v-if="userHasEventsFeature"
-                      :update-key="updateEventKey"
-                      :projectId="projectId"
-                      class="mx-2"/>
-      </template>
-      <template v-slot:header-contents>
-        <v-toolbar-title class="title-medium albatross-header-1 align-center mt-3 text-wrap"
-                         :class="{'mt-4': project.tags && project.tags.length > 0}">
-          <div>
-            <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
-            <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
-              {{ $store.state.project.pps.processStepName }}
-            </router-link>
-          </span>
-            <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
-            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
-            <router-link class="breadcrumb albatross-body-2"
-                         :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
-              {{ $store.state.project.ppsEvent.eventName }} Event
-            </router-link>
-          </span>
-          </div>
-          <div class="mt-2">
-            <v-chip v-for="(tag, idx) in project.tags"
-                    small
-                    class="tag-chip"
-                    :color="tag.bgColor"
-                    :text-color="tag.fontColor"
-                    :close="tag.removable"
-                    :class="{'ml-2': idx !== 0}">
-              {{ tag.tagName }}
-            </v-chip>
-          </div>
-        </v-toolbar-title>
-      </template>
-      <template v-slot:main-column>
-        <router-view @refresh-upcoming-events="updateEventKey++"
-                     @refresh-upcoming-pps="updatePpsKey++"
-                     @refresh-project-status="getUpdatedProjectStatus()"
-                     ref="childComponent"
-                     :project-tab="selectedTab"
-                     v-if="project && project.id" class="router-view"
-                     :project="project"
-                     :milestones="milestones"
-                     page-name="Project"
-                     :isExpandable="false"
-                     :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
-                     @clickEdit="showEditModal()"
-                     :details="overviewDetails"
-                     :updateKey="updateKeyProp"
-                     :mobileView="true"
-
-        />
-      </template>
-      <template v-slot:right-column>
-        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
-      </template>
-    </ThreeColumnLayoutMobile>
-    <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
-      <template v-slot:header>
-        <v-toolbar flat color="grey lighten-2 pl-3" :class="{'project-header': project && !project.tags || project.tags.length === 0,
+    <v-toolbar flat color="grey lighten-2" class="match-lower-width" :class="{'project-header': project && !project.tags || project.tags.length === 0,
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
-                   v-if="!projectLoading && project && project.id">
-          <v-toolbar-title class="title-large albatross-header-1 align-center mt-3"
-                           :class="{'mt-4': project.tags && project.tags.length > 0}">
-            <div>
-              <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
-              <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
+               v-if="!projectLoading && project && project.id">
+      <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
+                       :class="{'mt-4': project.tags && project.tags.length > 0}">
+        <div>
+          <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+          <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
                          :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}`">
               {{ $store.state.project.pps.processStepName }}
             </router-link>
           </span>
-              <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
+          <span v-if="$store.state.project && $store.state.project.ppsEvent && $store.state.project.ppsEvent.eventName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
                          :to="`/project/${project.id}/processStep/${$store.state.project.pps.projectProcessStepId}/event/${$store.state.project.ppsEvent.id}`">
               {{ $store.state.project.ppsEvent.eventName }} Event
             </router-link>
           </span>
-            </div>
-            <div class="mt-2">
-              <v-chip v-for="(tag, idx) in project.tags"
-                      small
-                      class="tag-chip"
-                      :color="tag.bgColor"
-                      :text-color="tag.fontColor"
-                      :close="tag.removable"
-                      :class="{'ml-2': idx !== 0}">
-                {{ tag.tagName }}
-              </v-chip>
-            </div>
-          </v-toolbar-title>
-          <v-spacer/>
-          <div v-if="milestones && milestones.length > 0">
-            <div class="milestone-item" v-for="(milestone, idx) in milestones">
-              <v-menu v-model="milestone.menuOpen"
-                      offset-y
-                      rounded="0"
-                      :close-on-content-click="false"
-                      min-width="290px">
-                <template v-slot:activator="{ on }">
-                  <StatusTrackerIcon :on="on"
-                                     :clickable="true"
-                                     :milestone="milestone"
-                                     :current-status-id="project.companyProjectStatusTypeId"
-                  ></StatusTrackerIcon>
-                </template>
-                <v-card class="pa-5 square-card">
-                  <div class="label-large">
-                    <StatusTrackerIcon :clickable="false"
-                                     :milestone="milestone"
-                                     :current-status-id="project.companyProjectStatusTypeId"
-                  ></StatusTrackerIcon>
-                  {{milestone.projectStatusType}}
-                  </div>
-                    <div>
-                    <div v-for="field in milestone.assignedFields">
-                      <StatusTrackerItem :field="field"
-                      ></StatusTrackerItem>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <v-btn text color="primary"class="body-medium" @click="milestone.menuOpen = false">Done</v-btn>
-                  </div>
-                </v-card>
-              </v-menu>
-            </div>
-          </div>
-        </v-toolbar>
-      </template>
-      <template v-slot:left-column>
-        <div v-if="project && project.id">
-        <PageOverview
+        </div>
+        <div class="mt-2">
+          <v-chip v-for="(tag, idx) in project.tags"
+                  small
+                  class="tag-chip"
+                  :color="tag.bgColor"
+                  :text-color="tag.fontColor"
+                  :close="tag.removable"
+                  :class="{'ml-2': idx !== 0}">
+            {{ tag.tagName }}
+          </v-chip>
+        </div>
+      </v-toolbar-title>
+      <v-spacer/>
+      <div v-if="milestones && milestones.length > 0" class = "milestone-container toolbar-z-index-override">
+        <div class="milestone-item" v-for="(milestone, idx) in milestones">
+          <v-menu v-model="milestone.menuOpen"
+                  offset-y
+                  rounded="0"
+                  :close-on-content-click="false"
+                  min-width="290px">
+            <template v-slot:activator="{ on }">
+              <StatusTrackerIcon :on="on"
+                                 :clickable="true"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+            </template>
+            <v-card class="pa-5 square-card milestone-card">
+              <div class="label-large">
+              <StatusTrackerIcon :clickable="false"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+              {{milestone.projectStatusType}}
+              </div>
+              <div>
+                <div v-for="field in milestone.assignedFields">
+                  <StatusTrackerItem :field="field" :cancelled="project.projectStatusType == 'Cancelled'"
+                  ></StatusTrackerItem>
+                </div>
+              </div>
+              <div class="text-right">
+                <v-btn text color="primary" class="body-medium milestone-button" @click="milestone.menuOpen = false">Done</v-btn>
+              </div>
+            </v-card>
+          </v-menu>
+        </div>
+      </div>
+    </v-toolbar>
+    <v-row class="project-split-container" :class="{'split-container-no-tags': project && !project.tags || project.tags.length === 0,
+                                                    'split-container-with-tags': project && project.tags && project.tags.length > 0}">
+      <div class="white-bg project-section px-0 left-panel"
+           :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}"
+             @click="endNotesTimer('Clicked outside right panel')">
+          <v-btn small text color="primary" @click="collapseSide('left')">
+            <v-icon>mdi-menu</v-icon>
+          </v-btn>
+        </div>
+        <div v-if="!$store.state.project.leftSideSplit && project && project.id"
+             class="left-panel-scrollable-area overflow-y-auto">
+          <PageOverview
             page-name="Project"
             :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
             :details="overviewDetails"
-        />
-        <v-divider/>
-        <ProjectTabs :project="project" :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
-        <v-divider/>
-        <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
-        <v-divider/>
-        <ActiveEvents v-if="userHasEventsFeature"
-                      :update-key="updateEventKey"
-                      :projectId="projectId"
-                      class="mx-2"/>
-        <v-divider class="mb-3"/>
+          />
+          <v-divider/>
+          <ProjectTabs :project="project" :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
+          <v-divider/>
+          <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
+          <v-divider/>
+          <ActiveEvents v-if="userHasEventsFeature"
+                        :update-key="updateEventKey"
+                        :projectId="projectId"
+                        class="mx-2"/>
+          <v-divider class="mb-3"/>
         </div>
-      </template>
-      <template v-slot:main-column>
+      </div>
+      <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
+                                                                 'center-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
+                                                                 'center-width-right-side-collapse': !$store.state.project.leftSideSplit && $store.state.project.rightSideSplit,
+                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}"
+           @click="endNotesTimer('Clicked outside right panel')">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
                      @refresh-project-status="getUpdatedProjectStatus()"
@@ -291,11 +219,15 @@
                      :project="project"
                      :milestones="milestones"
         />
-      </template>
-      <template v-slot:right-column>
-        <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
-      </template>
-    </ThreeColumnLayout>
+      </div>
+      <div class="project-section px-0 white-bg "
+           :class="{'col-5': !$store.state.project.rightSideSplit && !$store.state.project.leftSideSplit,
+                    'right-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
+                    'collapse-right text-center': $store.state.project.rightSideSplit}">
+        <ProjectActivity v-if="!projectLoading" :show-sms-tab="true"
+                         @openRight="$store.state.project.rightSideSplit = false"/>
+      </div>
+    </v-row>
   </div>
 </template>
 
@@ -332,13 +264,10 @@ import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {endTimer, projectOpened} from '@/services/analyticsService'
 import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
-import ThreeColumnLayout from '@/views/ThreeColumnLayout'
-import ThreeColumnLayoutMobile from '@/views/ThreeColumnLayoutMobile'
+
 export default {
   name: 'Project',
   components: {
-    ThreeColumnLayout,
-    ThreeColumnLayoutMobile,
     StatusTrackerIcon,
     StatusTrackerItem,
     PageOverview,
@@ -380,25 +309,12 @@ export default {
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userHasEventsFeature: this.$store.getters.userHasFeature('EVENTS'),
-      pageOverviewMenuItem: {
-      },
-      updateKeyProp: 0,
     }
   },
   created() {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
-    this.getProject()
-    this.getMilestones()
-    this.pageOverviewMenuItem = {
-      archived: false,
-      customPath: `/project/${ this.$route.params.projectId }/projectOverview`,
-      tabName: 'Project Overview',
-      pageName: 'Project Overview',
-      isExpandable: false,
-      details: this.overviewDetails,
-      uniqueIdentifier: 'menu_item_project_overview'
-    }
+    this.loadProject();
   },
   watch: {
     '$route.params.processStepId': async function () {
@@ -475,28 +391,32 @@ export default {
           value: this.project.owner
         }
       ]
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
+    }
   },
   mounted() {
   },
   methods: {
+    async loadProject(){
+      await this.getProject()
+      await this.getMilestones()
+    },
     changeTabs(selectedTab, buttonClicked) {
       this.selectedTab = selectedTab
       if (buttonClicked && this.$route.name !== 'projectDetails') {
         this.$router.push({name: 'projectDetails', projectId: this.projectId})
       }
     },
-    changeMobileView(selectedView){
-      this.updateKeyProp = selectedView.updateKey | 0
-      this.$router.push(selectedView.customPath)
-    },
     stateIsActive() {
       //states is already a list of company states
       let companyStateIds = this.states.map(s => s.id)
       return companyStateIds.includes(this.tempProject.companyStateId)
+    },
+    collapseSide(side) {
+      if (side === 'left') {
+        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+      } else {
+        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
+      }
     },
     async showEditModal() {
       //doing all this in a method so we can call it when the page loads if needed
@@ -514,6 +434,8 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+        console.log(this.project.projectStatusType);
+
         window.document.title = `${this.project.projectName} - Project Details`
         if (this.checkAddress) {
           this.showEditModal()
@@ -531,18 +453,25 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/statusFields`)
         this.milestones = data
-        this.milestones.forEach(m => {
-          // if(m.assignedFields.every(f => f.hasOwnProperty('fieldValue'))) {
-          // console.log('A', m.assignedFields.every(f => f.fieldValue))
-          // console.log('B', m.assignedFields.every(f => f.hasOwnProperty('fieldValue')))
-          if(m.assignedFields.every(f => f.fieldValue)) {
-            m.btnColor = 'success lighten-1'
-            m.iconColor = 'white'
-          } else {
-            m.btnColor = 'grey'
-            m.iconColor = 'grey'
+        let statusCompleted = false;
+        for(let x = this.milestones.length - 1; x >= 0; x--){
+          if(this.project.projectStatusType == 'Cancelled'){
+            this.milestones[x].btnColor = 'grey'
+            this.milestones[x].iconColor = 'grey'
+            continue;
           }
-        })
+          if(statusCompleted || this.milestones[x].assignedFields.every(f => f.fieldValue)) {
+            this.milestones[x].btnColor = 'success lighten-1'
+            this.milestones[x].iconColor = 'white'
+          } else {
+            this.milestones[x].btnColor = 'grey'
+            this.milestones[x].iconColor = 'grey'
+          }
+
+          if(this.project.projectStatusType == this.milestones[x].projectStatusType){
+            statusCompleted = true;
+          }
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Tracker Details')
@@ -723,6 +652,10 @@ export default {
 </script>
 
 <style lang="scss">
+.match-lower-width .v-toolbar__content {
+  padding: 4px 8px 4px 24px;
+}
+
 #tag-toolbar {
   height: 35px !important;
 
@@ -737,7 +670,7 @@ export default {
   padding-right: 0 !important;
 }
 
-.title-large, .breadcrumb {
+.app-title, .breadcrumb {
   a {
     text-decoration-line: none;
   }
@@ -888,6 +821,16 @@ export default {
 .milestone-item:first-of-type:before,
 .milestone-item:last-of-type:after {
   display:none;
+}
+
+.milestone-button{
+  margin-top: 12px;
+  text-transform: unset !important;
+}
+
+.milestone-card{
+  padding: 16px !important;
+  border-radius: 4px !important;
 }
 
 </style>

@@ -1,6 +1,7 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.config.AppProperties;
+import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
@@ -17,16 +18,17 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.models.Propos
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.*;
+import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
+import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.UserAccountDetails;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
+import com.albatross.api.v1.flow.services.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -35,11 +37,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -164,6 +168,14 @@ public class BlueravenProposalService {
     return sqlCache.queryForObjectOptionalBySql(
       ProposalQuery.getProposalVersionId,
       Map.of("proposalId", proposalId), Long.class);
+  }
+
+  public Optional<ProposalCommission> getProposalCommissionDetails(@NonNull Long proposalId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+
+    Optional <ProposalCommission> result = sqlCache.getBySql(ProposalQuery.getCommissionDetails, params,  new ProposalCommissionMapper<>(ProposalCommission.class, om));
+    return result;
   }
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
@@ -544,6 +556,26 @@ public class BlueravenProposalService {
   public void setProcessingErrorMessage(Long proposalId, String errorMessage, Long modifiedBy) {
     sqlCache.updateBySql(ProposalQuery.setProcessingErrorMessage,
       Map.of("id", proposalId, "errorMsg", errorMessage, "modifiedById", modifiedBy));
+  }
+
+  public static class ProposalCommissionMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProposalCommissionMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<ProposalCommissionDetail>> commissionDetailRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(
+              List.class,
+              "commissionDetails",
+              new JsonCollectionDeserializer(commissionDetailRef, objectMapper));
+
+    }
   }
 
 }

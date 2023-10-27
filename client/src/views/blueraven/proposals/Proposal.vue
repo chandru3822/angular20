@@ -47,6 +47,12 @@
     <v-form ref="proposalForm">
       <v-row>
         <v-col cols="12" sm="4">
+          <v-dialog v-model="showCommissionModal" class="square-card">
+            <CommissionDetailsModal :proposal-id="this.proposalId"
+                                    :current-commission-value="currentCommissionValue"
+                                    :select-callback="saveDesiredCommissionAmountValue"
+                                    @commissionDetailModalClosed="showCommissionModal = false"></CommissionDetailsModal>
+          </v-dialog>
           <v-card class="proposal-container">
             <div>
               <div class="proposal-container-header">
@@ -57,17 +63,23 @@
                 :key="index"
               >
                 <div class="configuration-group-title">{{ cfg.groupName }}</div>
-                <CustomValueInput
-                  v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
-                  :key="idx"
-                  :required="field.required"
-                  :callback="populateDirtyCfvs"
-                  :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
-                  :field="field"
-                  :show-field-name="false"
-                  :list-of-value-filter="filters[field.customFieldId]"
-                  :hint="getHint(field)"
-                />
+                <div v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
+                     :key="idx">
+                  <CustomValueInput
+                    :required="field.required"
+                    :callback="populateDirtyCfvs"
+                    :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
+                    :field="field"
+                    :append-icon="field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null"
+                    :append-callback="(value) => changeShowCommissionModal(value)"
+                    :show-field-name="false"
+                    :list-of-value-filter="filters[field.customFieldId]"
+                    :hint="getHint(field)"
+                  />
+<!--                  <v-btn v-if="field.customFieldGroupAssignmentId === 454" @click="showCommissionModal = true">-->
+<!--                    <v-icon>mdi-information</v-icon>-->
+<!--                  </v-btn>-->
+                </div>
               </div>
             </div>
             <div class="configuration-save-container" v-if="canEdit && !proposal.locked">
@@ -193,6 +205,8 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import {mapState} from 'vuex'
 import Vue2Filters from 'vue2-filters'
+import CommissionDetailsModal from "@/views/blueraven/proposals/CommissionDetailsModal.vue";
+import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
 
 const USD = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -203,6 +217,8 @@ export default {
   name: 'Proposal',
   mixins: [Vue2Filters.mixin],
   components: {
+    ResidualDetailModal,
+    CommissionDetailsModal,
     CustomValueInput,
     ProposalTemplate,
     ConfirmDialog,
@@ -212,9 +228,11 @@ export default {
   data() {
     return {
       proposalExists: false,
+      showCommissionModal: false,
+      currentCommissionValue: null,
       isIntersecting: false,
       loading: false,
-      proposalId: this.$route.params.proposalId,
+      proposalId: parseInt(this.$route.params.proposalId),
       proposal: {
         customFieldGroups: []
       },
@@ -223,9 +241,15 @@ export default {
     }
   },
   created() {
-    this.getProposalDetails()
-    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
-    window.addEventListener('beforeunload', this.beforeWindowUnload)
+    let skip = false
+    if(skip) {
+      this.proposalExists = true
+      this.proposal.id = this.proposalId
+    } else {
+      this.getProposalDetails()
+      this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
+      window.addEventListener('beforeunload', this.beforeWindowUnload)
+    }
   },
   beforeDestroy() {
     window.removeEventListener('beforeunload', this.beforeWindowUnload)
@@ -262,6 +286,18 @@ export default {
     })
   },
   methods: {
+    changeShowCommissionModal (fieldValue) {
+      this.currentCommissionValue = fieldValue
+      this.showCommissionModal = !this.showCommissionModal
+    },
+    saveDesiredCommissionAmountValue (value) {
+      let field = this.sortedCustomFieldGroups.find(cfg => cfg.id === 39)?.customFieldValues?.find(f => f.customFieldGroupAssignmentId === 454)
+      if(field) {
+        field.numericValue = value
+        this.populateDirtyCfvs(field)
+      }
+      this.showCommissionModal = false
+    },
     getHint(field) {
       if (!field) {
         return undefined
@@ -481,8 +517,9 @@ export default {
         if (conditionalOn.length > 0) {
 
           //clear out any already selected fields when data changes for conditional fields
+          //unless there was already a saved value then we still need to clear it out
           const existingFieldIds = conditionalOn.map(c => c.customFieldId)
-          this.dirtyCfvs = this.dirtyCfvs.filter(cfv => !existingFieldIds.includes(cfv.customFieldId))
+          this.dirtyCfvs = this.dirtyCfvs.filter(cfv => (!existingFieldIds.includes(cfv.customFieldId) || cfv.id != null))
 
           this.loading = true
           const allFilters = conditionalOn.map(({customFieldId, flowCustomFieldId}) => {
@@ -503,7 +540,20 @@ export default {
                 .then(({data}) => {
                   const {ids: filterValues} = data
                   this.filters[customFieldId] = (val) => filterValues?.indexOf(val?.id) > -1
+
+                  conditionalOn.forEach(c => {
+                    if(c.customFieldId === customFieldId && c.intValue != null && !filterValues.includes(c.intValue)) {
+                      //if one of the conditional fields has a selected value that is now an unavailable value, unset it and add to dirty fields
+                      console.log('intValue', c.intValue)
+                      c.intValue = null
+                      let match = this.dirtyCfvs.find(f => (null !== f.customFieldId && f.customFieldId === customFieldId))
+                      if(!match) {
+                        this.dirtyCfvs.push(c)
+                      }
+                    }
+                  })
                 })
+
             }
 
             return Promise.resolve()

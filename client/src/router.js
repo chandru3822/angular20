@@ -760,8 +760,8 @@ const router = new Router({
               path: 'zip',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeature('ROUND_ROBIN')) {
-                  return import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/ZipContainer.vue')
+                if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                  return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/ZipContainer.vue')
                 } else {
                   return accessDenied()
                 }
@@ -770,22 +770,22 @@ const router = new Router({
                 {
                   path: 'postalCodes',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodes.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCodes.vue'),
                 },
                 {
                   path: 'postalCode/:id',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCode.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCode.vue'),
                 },
                 {
                   path: 'zones',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodeZones.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCodeZones.vue'),
                 },
                 {
                   path: 'zone/:id',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import (/* webpackChunkName: "roundRobins" */ './views/flow/settings/postalCode/PostalCodeZone.vue'),
+                  component: () => import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/PostalCodeZone.vue'),
                 },
               ]
             },
@@ -1499,17 +1499,26 @@ const router = new Router({
             }
           }
           ]
-        },        {
+        }, {
           name: 'projectAdmin',
           path: '/projectAdmin/:projectId',
           component: () => {
             //dont change this permission unless double checking with rn and cj. we have been back and forth on this 100 times
             if (store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')) {
-              return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/ProjectAdmin.vue')
+              return import (/* webpackChunkName: "projectAdmin" */ './views/flow/project/admin/ProjectAdmin.vue')
             } else {
               return accessDenied()
             }
-          }
+          },
+          children: [
+            {
+              path: 'processSteps',
+              component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/project/admin/ProcessSteps.vue')
+            }, {
+              path: 'tags',
+              component: () => import (/* webpackChunkName: "eventSettings" */ './views/flow/project/admin/Tags.vue')
+            }
+          ]
         }, {
           path: 'contacts',
           name: 'contacts',

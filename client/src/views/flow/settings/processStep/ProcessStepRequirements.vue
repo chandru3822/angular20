@@ -370,23 +370,23 @@
                         <div class="dynamic-field-container">
                           <v-text-field
                             v-if="fp.dataTypeId === 1"
-                            :readonly="item.immutable || !userCanEdit"
-                            :disabled="item.immutable || !userCanEdit"
+                            :readonly="requirementIsReadonly(item)"
+                            :disabled="requirementIsReadonly(item)"
                             placeholder="Enter a date"
                             type="date"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
                             v-else-if="fp.dataTypeId === 2"
-                            :readonly="item.immutable || !userCanEdit"
-                            :disabled="item.immutable || !userCanEdit"
+                            :readonly="requirementIsReadonly(item)"
+                            :disabled="requirementIsReadonly(item)"
                             placeholder="Enter a timestamp"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-checkbox
                             v-else-if="fp.dataTypeId === 3"
-                            :readonly="item.immutable || !userCanEdit"
-                            :disabled="item.immutable || !userCanEdit"
+                            :readonly="requirementIsReadonly(item)"
+                            :disabled="requirementIsReadonly(item)"
                             :value-comparator="function (a, b) {
                                       return fp.dynamicValue === 'true'
                                     }"
@@ -395,15 +395,15 @@
                             :label="fp.parameterName"></v-checkbox>
                           <v-text-field
                             v-else-if="fp.dataTypeId === 4"
-                            :readonly="item.immutable || !userCanEdit"
-                            :disabled="item.immutable || !userCanEdit"
+                            :readonly="requirementIsReadonly(item)"
+                            :disabled="requirementIsReadonly(item)"
                             placeholder="Enter a number"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
                             v-else-if="fp.dataTypeId === 6"
-                            :readonly="item.immutable || !userCanEdit"
-                            :disabled="item.immutable || !userCanEdit"
+                            :readonly="requirementIsReadonly(item)"
+                            :disabled="requirementIsReadonly(item)"
                             placeholder="Enter an integer"
                             type="number"
                             step="1"
@@ -411,8 +411,8 @@
                             :label="fp.parameterName"></v-text-field>
                           <v-text-field
                             v-else
-                            :readonly="item.immutable || !userCanEdit"
-                            :disabled="item.immutable || !userCanEdit"
+                            :readonly="requirementIsReadonly(item)"
+                            :disabled="requirementIsReadonly(item)"
                             placeholder="Enter a dynamic value"
                             v-model="fp.dynamicValue"
                             :label="fp.parameterName"></v-text-field>
@@ -424,8 +424,8 @@
                             :items="operatorTypes"
                             class="one-hunned"
                             label="Operator"
-                            :readonly="(newRequirement.operatorTypeId === 5 && (selectedCustomField.dataTypeId === 7 || selectedCustomField.dataTypeId === 8)) || item.immutable || !userCanEdit"
-                            :disabled="(newRequirement.operatorTypeId === 5 && (selectedCustomField.dataTypeId === 7 || selectedCustomField.dataTypeId === 8)) || item.immutable || !userCanEdit"
+                            :readonly="(newRequirement.operatorTypeId === 5 && (selectedCustomField.dataTypeId === 7 || selectedCustomField.dataTypeId === 8)) || requirementIsReadonly(item)"
+                            :disabled="(newRequirement.operatorTypeId === 5 && (selectedCustomField.dataTypeId === 7 || selectedCustomField.dataTypeId === 8)) || requirementIsReadonly(item)"
                             item-text="operatorType"
                             @change="operatorDataTypeCheck(item)"
                             item-value="id"
@@ -440,8 +440,8 @@
                   <v-text-field
                     v-if="item.customValue && item.processStepRequirementTypeId !== 7 && (!item.listOfValues || item.listOfValues.length === 0) && !item.listOfValueId && !item.customFieldSql && !item.systemListId && !item.companySystemListId "
                     v-model="item.requirementValue"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     placeholder="Enter a value"
                     label="Value">
                   </v-text-field>
@@ -450,8 +450,8 @@
                     v-else-if="!item.customField.companySystemListId && item.customValue && item.customField && ![7,8,9,10,11].includes(item.processStepRequirementTypeId)
                             && ((item.customField.listOfValueId !== null || item.customField.customFieldSql !== null) && !item.customField.allowMultiple)"
                     v-model="item.listOfValueId"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     item-text="name"
@@ -460,8 +460,8 @@
                   <v-autocomplete
                     v-else-if="item.operatorTypeId && [7,8,9,10,11].includes(item.processStepRequirementTypeId)"
                     v-model="item.listOfValues"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     multiple
@@ -473,8 +473,8 @@
                   <v-select
                     v-else-if="(item.customValue && item.systemListId) || item.companySystemListId"
                     v-model="item.systemListOptionId"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     item-text="name"
@@ -484,8 +484,8 @@
                   <v-select
                     v-else-if="item.customValue && item.customFieldSql"
                     v-model="item.listOfValueId"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     item-text="name"
@@ -495,8 +495,8 @@
                   <v-select
                     v-else-if="item.customValue && item.customField && item.customField.allowMultiple"
                     v-model="item.listOfValues"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     :items="item.availableListOfValues"
                     label="Available Values"
                     item-text="name"
@@ -507,8 +507,8 @@
                     v-else
                     v-model="item.dataTypeRequirement"
                     :items="dataTypeRequirements"
-                    :disabled="item.immutable || !userCanEdit"
-                    :readonly="item.immutable || !userCanEdit"
+                    :disabled="requirementIsReadonly(item)"
+                    :readonly="requirementIsReadonly(item)"
                     label="Available Values"
                     item-text="dataTypeValue"
                     item-value="id"
@@ -518,8 +518,8 @@
                                 type="number"
                                 v-model="item.secondaryRequirementValue"
                                 placeholder="Enter a value"
-                                :disabled="item.immutable || !userCanEdit"
-                                :readonly="item.immutable || !userCanEdit"
+                                :disabled="requirementIsReadonly(item)"
+                                :readonly="requirementIsReadonly(item)"
                                 label="Value">
                   </v-text-field>
                   <div
@@ -527,10 +527,10 @@
                     <label>Fail if no
                       <strong>{{ item.referenceProcessStepName }}</strong> steps are found:</label>
                     <input type="checkbox" class="ml-3 mb-4" v-model="item.failIfNoReferenceStepFound"
-                           :readonly="item.immutable || !userCanEdit"
-                           :disabled="item.immutable || !userCanEdit">
+                           :readonly="requirementIsReadonly(item)"
+                           :disabled="requirementIsReadonly(item)">
                   </div>
-                  <v-btn v-if="userCanEdit && !item.immutable" @click="updateRequirement(item)" color="primary">
+                  <v-btn v-if="!requirementIsReadonly(item)" @click="updateRequirement(item)" color="primary">
                     <v-icon>save</v-icon>
                     Save
                   </v-btn>
@@ -640,7 +640,8 @@ import {
   getRequestWithParams,
   getSnackbar
 } from '@/helpers/helpers'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog"
+import constants from "@/helpers/constants";
 
 export default {
   name: 'ProcessStepRequirements',
@@ -728,12 +729,15 @@ export default {
     this.getRequirements()
   },
   methods: {
+    requirementIsReadonly(requirement) {
+      return (requirement.immutable && !constants.BYPASS_REQUIREMENT_IMMUTABLE_TYPE_IDS.includes(requirement.processStepRequirementTypeId)) || !this.userCanEdit
+    },
     shadeRow(item){
       return item.requirementNbr % 2 === 0 ? 'shaded-row' : ''
     },
     //requirements
     changeBooleanValue(e, fp) {
-      this.$set(fp, 'dynamicValue', e == null ? 'fa$lse' : e.toString())
+      this.$set(fp, 'dynamicValue', e == null ? 'false' : e.toString())
     },
     async getRequirements() {
       this.$store.commit(AppMutations.SET_LOADING, true)
