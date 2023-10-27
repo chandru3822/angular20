@@ -1,4 +1,4 @@
-drop function brs.closer_assigned_redline_commission(p_project_id integer);
+drop function if exists brs.closer_assigned_redline_commission(p_project_id integer);
 CREATE OR REPLACE FUNCTION brs.closer_assigned_redline_commission(p_project_id integer)
   returns boolean AS
 $BODY$
