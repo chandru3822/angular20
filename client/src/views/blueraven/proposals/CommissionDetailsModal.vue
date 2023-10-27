@@ -2,7 +2,7 @@
   <v-container class="pa-0">
     <v-toolbar>
       <v-toolbar-title>
-        Customer Current Monthly Payment  Loan Term APR
+        Customer Current Monthly Payment {{ proposalCommission.monthlyCostTodayWithoutSolar }},  Loan Term {{ proposalCommission.loanTerm }}, APR {{ proposalCommission.apr }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
@@ -17,7 +17,7 @@
       <v-card-text>
         <v-data-table
             :headers="headers"
-            :items="details"
+            :items="proposalCommission.commissionDetails"
             :fixed-header="true"
             :items-per-page="-1"
             hide-default-footer
@@ -25,45 +25,48 @@
             class="elevation-1"
         >
           <template #item="{ item, index }">
-            <tr :class="{'shaded-row': index % 2, 'selected-row': item.commissionKw === currentCommissionValue}">
+            <tr :class="{'shaded-row': index % 2, 'selected-row': item.commission_kw === currentCommissionValue}">
               <td>
-                {{item.redlineAmount}}
+                {{item.redline_amount}}
               </td>
               <td>
-                {{item.sourceDiscount}}
+                {{item.source_discount}}
               </td>
               <td>
-                {{item.addersDollarWatts | currency('', 2) }}
+                {{item.adders_dollar_watts | currency('', 2) }}
               </td>
               <td>
-                {{item.basePrice}}
+                {{item.base_price | currency('', 2)}}
               </td>
               <td>
-                {{item.commissionsDollarWatts  | currency('', 2) }}
+                {{item.commissions_dollar_watts  | currency('', 2) }}
               </td>
               <td>
-                {{item.totalPpw | currency('', 2)}}
+                {{item.total_ppw | currency('', 2)}}
               </td>
               <td>
-                {{item.systemSize}}
+                {{item.system_size}}
               </td>
               <td>
-                {{item.cashPrice | currency('', 2)}}
+                {{item.cash_price | currency('', 2)}}
               </td>
               <td>
-                {{item.loanAmount | currency('', 2)}}
+                {{item.above_line_rebate | currency('', 2)}}
               </td>
               <td>
-                {{item.monthlyPayment | currency('', 2)}}
+                {{item.loan_amount | currency('', 2)}}
               </td>
               <td>
-                {{item.commissionKw}}
+                {{item.monthly_payment | currency('', 2)}}
               </td>
               <td>
-                {{item.totalCommissions}}
+                {{item.commission_kw}}
               </td>
               <td>
-                <v-btn v-if="currentCommissionValue !== item.commissionKw" @click="selectCommission(item)">Select</v-btn>
+                {{item.total_commissions | currency('', 2)}}
+              </td>
+              <td>
+                <v-btn v-if="currentCommissionValue !== item.commission_kw" @click="selectCommission(item)">Select</v-btn>
               </td>
             </tr>
           </template>
@@ -97,20 +100,21 @@
       return {
         snackbar: {},
         detailsLoading: true,
-        details: [],
+        proposalCommission: {},
         headers: [
-          {text: 'Redline', value: 'redlineAmount', show: true},
-          {text: 'Source Discount', value: 'sourceDiscount', show: true},
-          {text: 'Adders in $/Watt', value: 'addersDollarWatts', show: true},
-          {text: 'Base Price', value: 'basePrice', show: true},
-          {text: 'Commission in $/Watt', value: 'commissionsDollarWatts', show: true},
-          {text: 'Total PPW', value: 'totalPpw', show: true},
-          {text: 'System Size', value: 'systemSize', show: true},
-          {text: 'Cash Price', value: 'cashPrice', show: true},
-          {text: 'Loan Amount', value: 'loanAmount', show: true},
-          {text: 'Monthly Payment', value: 'monthlyPayment', show: true},
-          {text: 'Commission in $/kW', value: 'commissionKw', show: true},
-          {text: 'Total Commission', value: 'totalCommissions', show: true},
+          {text: 'Redline', value: 'redline_amount', show: true},
+          {text: 'Source Discount', value: 'source_discount', show: true},
+          {text: 'Adders in $/Watt', value: 'adders_dollar_watts', show: true},
+          {text: 'Base Price', value: 'base_price', show: true},
+          {text: 'Commission in $/Watt', value: 'commissions_dollar_watts', show: true},
+          {text: 'Total PPW', value: 'total_ppw', show: true},
+          {text: 'System Size', value: 'system_size', show: true},
+          {text: 'Cash Price', value: 'cash_price', show: true},
+          {text: 'Above Line Rebate', value: 'above_line_rebate', show: true},
+          {text: 'Loan Amount', value: 'loan_amount', show: true},
+          {text: 'Monthly Payment', value: 'monthly_payment', show: true},
+          {text: 'Commission in $/kW', value: 'commission_kw', show: true},
+          {text: 'Total Commission', value: 'total_commissions', show: true},
           {text: null, value: 'icons', show: true},
         ],
       }
@@ -120,7 +124,7 @@
         try {
           this.detailsLoading = true
           const {data} = await getRequest(`/proposal/${this.proposalId}/commissionDetails`, 'blueraven', [])
-          this.details = data
+          this.proposalCommission = data
           this.detailsLoading = false
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -129,7 +133,7 @@
         }
       },
       async selectCommission (item) {
-        this.selectCallback(item.commissionKw)
+        this.selectCallback(item.commission_kw)
       },
     }
   }

@@ -168,7 +168,7 @@ public class ProposalQuery {
 
   //language=PostgreSQL
   public final static String getCommissionDetails = """
-    select * from brs.get_proposal_commission_details(:proposalId::bigint)
+    select * from brs.get_calculated_proposal_values(:proposalId::bigint, false, true)
     """;
 
   //language=PostgreSQL
