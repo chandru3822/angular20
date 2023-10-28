@@ -354,7 +354,6 @@ export default {
       this.metricsLoading = true
       try {
         let url = `/workQueue/metrics`
-        // let url = `/workQueue/randaTestCrap`
         //use the same cancel token as loading cards so that this all works
         const {data, status} = await getRequestWithParams(url, {
           source: this.source,
