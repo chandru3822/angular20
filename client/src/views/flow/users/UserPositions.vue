@@ -394,8 +394,12 @@
       },
       isSameLevelAsPosition(f, item) {
         // get hierarchy level to show on screen
+        console.log('pos list',this.positions)
+        console.log('effer',f)
+        console.log('item',item)
         let selectedPosition = this.positions.find(p => p.id === item.positionId)
-        return f.level === selectedPosition.level
+        console.log('selected',selectedPosition)
+        return selectedPosition && f.level === selectedPosition.level
 
       },
       validatePositionFields(item) {
