@@ -113,7 +113,7 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
-                    ref="randaTest"
+                    ref="activityList"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
@@ -330,13 +330,13 @@ export default {
       }), ['dateCreated'], [ this.sortDirection])
 
       if(sortedList.length > (this.activitiesToShow * this.bottomHitCount) ) {
-        if(this.$refs.randaTest) {
-          this.$refs.randaTest.infiniteStateLoaded(false)
+        if(this.$refs.activityList) {
+          this.$refs.activityList.infiniteStateLoaded(false)
         }
         return sortedList.slice(0, (this.activitiesToShow * this.bottomHitCount))
       } else {
-        if(this.$refs.randaTest) {
-          this.$refs.randaTest.infiniteStateLoaded(true)
+        if(this.$refs.activityList) {
+          this.$refs.activityList.infiniteStateLoaded(true)
         }
         return sortedList
       }

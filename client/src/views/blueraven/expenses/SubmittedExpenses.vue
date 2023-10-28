@@ -379,7 +379,6 @@ export default {
   },
   methods: {
     changeRange() {
-      console.log('got here')
       this.rangeChanged = true
     },
     toggleSelectAllExpenses() {
