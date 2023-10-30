@@ -103,7 +103,7 @@
         </v-row>
       </div>
       <div class="fixed-toolbar padding-left-1">
-        <v-toolbar flat color="secondary" class="cfg-name-toolbar px-0">
+        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar px-0">
           <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>
