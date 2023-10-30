@@ -25,10 +25,10 @@ public class OrgActivityQuery {
                                                     pa2.date_created as "dateCreated",
                                                     pa2.pinned,
                                                     pa2.created_by_id as "createdById",
-                                                    concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                    case when ups.user_position_id is not null then ups.position end as "createdByPosition", 
-                                                    case when ups.user_position_id is not null then ups.org_name end as "createdByPositionOrg", 
-                                                    case when ups.user_position_id is not null then ups.org_id end as "createdByPositionOrgId",
+                                                    concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+                                                    upv.position as "createdByPosition",
+                                                    upv.org_name as "createdByPositionOrg",
+                                                    upv.org_id as "createdByPositionOrgId",
                                                     pa2.pinned_by_id as "pinnedById",
                                                     concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                     pa2.archived,
@@ -54,15 +54,13 @@ public class OrgActivityQuery {
                                                             and pah3.archived is false) ht), '[]') AS "activityHashtags"
                                              from flow.org_activity_hashtag pah2
                                                     inner join flow.org_activity pa2 on pa2.id = pah2.org_activity_id and pa2.org_id = :sourceId and pa2.archived is false
-                                                    inner join flow."user" u on u.id = pa2.created_by_id
                                                     inner join flow."user" mod on mod.id = pa2.modified_by_id
                                                     left join flow."user" pin on pin.id = pa2.pinned_by_id
-                                                    left JOIN (SELECT DISTINCT up.id as user_position_id, up.user_id, p.position, o.org_name, o.id as org_id
-                                                                              from flow.user_position up
-                                                                                       inner join flow.position p on p.id = up.position_id and p.company_id = :companyId
-                                                                                       inner join flow.org o on o.id = up.org_id and o.company_id = :companyId
-                                                                              where up.primary_flag is true
-                                                                                and up.archived is false) AS ups ON ups.user_id = pa2.created_by_id
+                                                    left join flow.user_positions_vw upv on upv.user_id = pa2.created_by_id
+                                                                                                and upv.position_level = 0
+                                                                                       and upv.primary_flag is true
+                                                                                       and upv.archived is false
+                                                                                       and upv.company_id = :companyId
                                              where pa2.activity_type_id = a.id
                                                and pah2.archived is false
                                                and pa2.archived is false
@@ -90,10 +88,10 @@ public class OrgActivityQuery {
                                                            pa2.date_created as "dateCreated",
                                                            pa2.pinned,
                                                            pa2.created_by_id as "createdById",
-                                                           concat(u.first_name, ' ', u.last_name) as "createdBy",
-                                                           case when ups.user_position_id is not null then ups.position end as "createdByPosition", 
-                                                    case when ups.user_position_id is not null then ups.org_name end as "createdByPositionOrg", 
-                                                    case when ups.user_position_id is not null then ups.org_id end as "createdByPositionOrgId",
+                                                           concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+                                                           upv.position as "createdByPosition",
+                                                           upv.org_name as "createdByPositionOrg",
+                                                           upv.org_id as "createdByPositionOrgId",
                                                            pa2.pinned_by_id as "pinnedById",
                                                            concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
                                                            pa2.archived,
@@ -101,15 +99,13 @@ public class OrgActivityQuery {
                                                            concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
                                                            pa2.activity_type_id as "activityTypeId"
                                                     from flow.org_activity pa2
-                                                           inner join flow."user" u on u.id = pa2.created_by_id
                                                            inner join flow."user" mod on mod.id = pa2.modified_by_id
                                                            left join flow."user" pin on pin.id = pa2.pinned_by_id
-                                                           left JOIN (SELECT DISTINCT up.id as user_position_id, up.user_id, p.position, o.org_name, o.id as org_id
-                                                                                     from flow.user_position up
-                                                                                              inner join flow.position p on p.id = up.position_id and p.company_id = :companyId
-                                                                                              inner join flow.org o on o.id = up.org_id and o.company_id = :companyId
-                                                                                     where up.primary_flag is true
-                                                                                       and up.archived is false) AS ups ON ups.user_id = pa2.created_by_id
+                                                           left join flow.user_positions_vw upv on upv.user_id = pa2.created_by_id
+                                                                                               and upv.position_level = 0
+                                                                                      and upv.primary_flag is true
+                                                                                      and upv.archived is false
+                                                                                      and upv.company_id = :companyId
                                                     where pa2.archived is false
                                                       and pa2.org_id = :sourceId
                                                       and pa2.activity_type_id = a.id
@@ -144,10 +140,10 @@ public class OrgActivityQuery {
              pa.date_created,
              pa.pinned,
              pa.created_by_id,
-             concat(u.first_name, ' ', u.last_name) as "createdBy",
-             ups.position  as "createdByPosition",
-             ups.org_name  as "createdByPositionOrg",
-             ups.org_id        as "createdByPositionOrgId",
+             concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+             upv.position as "createdByPosition",
+             upv.org_name as "createdByPositionOrg",
+             upv.org_id as "createdByPositionOrgId",
              pa.pinned_by_id as "pinnedById",
              concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
@@ -172,15 +168,13 @@ public class OrgActivityQuery {
                                                   where pah.org_activity_id = pa.id
                                                   and pah.archived is false) ht), '[]') AS "activityHashtags"
       from flow.org_activity pa
-        inner join flow."user" u on u.id = pa.created_by_id
         inner join flow."user" mod on mod.id = pa.modified_by_id
         left join flow."user" pin on pin.id = pa.pinned_by_id
-        left JOIN (SELECT DISTINCT up.id as user_position_id, up.user_id, p.position, o.org_name, o.id as org_id
-                                  from flow.user_position up
-                                           inner join flow.position p on p.id = up.position_id and p.company_id = :companyId
-                                           inner join flow.org o on o.id = up.org_id and o.company_id = :companyId
-                                  where up.primary_flag is true
-                                    and up.archived is false) AS ups ON ups.user_id = pa.created_by_id
+        left join flow.user_positions_vw upv on upv.user_id = pa.created_by_id
+                                                      and upv.position_level = 0
+                                             and upv.primary_flag is true
+                                             and upv.archived is false
+                                             and upv.company_id = :companyId
       where pa.archived is false
        and pa.org_id = :sourceId
     """;
@@ -213,8 +207,8 @@ public class OrgActivityQuery {
              pa.pinned,
              pa.date_created,
              pa.created_by_id,
-             concat(u.first_name, ' ', u.last_name) as "createdBy",
-             case when ups.user_position_id is not null then concat(ups.position, ' (', ups.org_name, ')') end as "createdByPosition",
+             concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+             case when upv.user_position_id is not null then concat(upv.position, ' (', upv.org_name, ')') end as "createdByPosition",
              pa.pinned_by_id as "pinnedById",
              concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
              pa.modified_by_id,
@@ -239,15 +233,13 @@ public class OrgActivityQuery {
                                                   where pah.org_activity_id = pa.id
                                                   and pah.archived is false) ht), '[]') AS "activityHashtags"
       from flow.org_activity pa
-        inner join flow."user" u on u.id = pa.created_by_id
         inner join flow."user" mod on mod.id = pa.modified_by_id
         left join flow."user" pin on pin.id = pa.pinned_by_id
-        left JOIN (SELECT DISTINCT up.id as user_position_id, up.user_id, p.position, o.org_name, o.id as org_id
-                                  from flow.user_position up
-                                           inner join flow.position p on p.id = up.position_id and p.company_id = :companyId
-                                           inner join flow.org o on o.id = up.org_id and o.company_id = :companyId
-                                  where up.primary_flag is true
-                                    and up.archived is false) AS ups ON ups.user_id = pa.created_by_id
+        left join flow.user_positions_vw upv on upv.user_id = pa.created_by_id
+                                                        and upv.position_level = 0
+                                               and upv.primary_flag is true
+                                               and upv.archived is false
+                                               and upv.company_id = :companyId
       where pa.archived is false
        and pa.id = :id
     """;

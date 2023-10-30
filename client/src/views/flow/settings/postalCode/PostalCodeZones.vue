@@ -52,6 +52,9 @@
                   <td class="clickable text-left"  @click="goToZone(item)">
                     {{ item.zoneName }}
                   </td>
+                  <td class="clickable text-left"  @click="goToZone(item)">
+                    {{ item.metroArea }}
+                  </td>
                   <td class="text-right">
                     <v-btn small icon @click="goToZone(item)"
                            :large="$vuetify.breakpoint.smAndDown" color="primary">
@@ -111,6 +114,7 @@
         postalCodeZones: [],
         headers: [
           {text: 'Zone Name', value: 'zoneName', show: true},
+          {text: 'Metro Area', value: 'metroArea', show: true},
           {text: '', value: 'icons', show: true, width: "100"},
         ],
         showDeleteDialog: false,

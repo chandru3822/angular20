@@ -110,6 +110,20 @@ public class BlueravenProposalController {
     return proposalService.getProposal(proposalId);
   }
 
+  @GetMapping(value = "/{proposalId}/commissionDetails")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
+  public Optional<ProposalCommission> getProposalCommissionDetails(@PathVariable Long proposalId) {
+    return proposalService.getProposalCommissionDetails(proposalId);
+  }
+
+  @PutMapping(value = "/{proposalId}/version/{versionId}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  public void updateProposalVersion(@PathVariable Long proposalId,
+                                    @PathVariable Long versionId,
+                                    @AuthenticationPrincipal UserAccountDetails details) {
+    proposalService.updateProposalVersion(proposalId, versionId, details);
+  }
+
   @PostMapping(value = "/{proposalId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
   public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody @Size(min = 1) List<CustomFieldValue> cfvs) {

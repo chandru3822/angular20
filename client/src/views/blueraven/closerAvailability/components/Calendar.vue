@@ -8,6 +8,7 @@
                     :items="roundRobins"
                     label="Round Robin"
                     multiple
+                    type="search"
                     class="mr-2"
                     :loading="roundRobinsLoading"
                     hide-details
@@ -224,9 +225,9 @@
             events: [] }
         ],
         events: [],
-        sroundRobin: [],
+        roundRobins: [],
         roundRobinValuesChanged: false,
-        selectedRoundRobin: [],
+        selectedRoundRobins: [],
         roundRobinsLoading: true,
         roundRobinValueChanged: false,
         initialLoad: true,
@@ -241,6 +242,7 @@
         mapResourceEvents: [],
         calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
+        timezone: this.$store.state.user.details.timezone.value,
         calendar: {
           options: {
             slotDuration: '00:30:00',
@@ -392,7 +394,7 @@
             }
             const {data, status} = await postRequest(`/roundRobin/usersByDownline`, params, null, [])
             this.roundRobinUsers = data
-            this.roundRobinsLoading = false
+            this.roundRobinUsersLoading = false
             handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -405,9 +407,11 @@
       async getAvailability() {
         try {
           let params = {
-            roundRobinUserIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.id) : [],
+            //can't change postalCodeZoneUserIds name because that is what mobile sends in
+            postalCodeZoneUserIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.id) : [],
             startTime: this.calendarStartTime,
-            endTime: this.calendarEndTime
+            endTime: this.calendarEndTime,
+            timezone: this.timezone
           }
           const {data} = await postRequest(`/closerAvailability`, params, 'blueraven', [])
           data.forEach(d => {
@@ -470,7 +474,7 @@
               let params = {
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedvUsers.map(u => u.userId) : [],
+                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.userId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }

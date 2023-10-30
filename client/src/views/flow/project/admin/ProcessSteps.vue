@@ -1,51 +1,37 @@
 <template>
-  <v-container class="pa-0" id="project-admin-container">
-    <v-row>
-    <v-toolbar flat color="#E3E3E3" class="project-header px-4">
-      <v-toolbar-title class="headline-medium">
-        <v-icon color="primary">mdi-menu-left</v-icon>
-        <router-link :to="`/project/${projectId}/details`">{{ project.projectName }}</router-link>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <AddProcessStep
-          v-if="process.id"
-          :admin="true"
-          :project-id="projectId"
-          :process-id="process.id"
-          :showBtnText="!isMobile"
-          :largeBtn="true"
-          @step-added="getProjectProcessSteps"
-      />
-      <v-btn :icon="isMobile" color="primary" dark class="float-right white--text text-capitalize" :class="{'ml-2':!isMobile}" @click="deleteProjectConfirm=true">
-        <v-icon v-if="isMobile">delete</v-icon>
-        <span v-else>Delete Project</span>
-      </v-btn>
-      <ConfirmationDialog
-          :open-dialog="deleteProjectConfirm"
-          @confirm="deleteProject"
-          @close-dialog="deleteProjectConfirm = false"
-      >
-        <span class="error--text">WARNING:</span>
-        This cannot be undone. Are you sure you want to delete this project?
-      </ConfirmationDialog>
-    </v-toolbar>
-    </v-row>
+  <div>
+
     <v-row v-if="userIsAdmin" class="admin-body">
-       <v-col cols="12" class="px-6 pt-6 headline-small ">
-          Project Process Steps
+
+        <v-col cols="12" class="px-6 pt-6 headline-small">
+
+          <v-toolbar flat class="project-header">
+            <v-toolbar-title>Assigned Process Steps</v-toolbar-title>
+            <v-spacer></v-spacer>
+            <v-toolbar-items>
+              <AddProcessStep
+                  v-if="processId"
+                  :admin="true"
+                  title="Add Process Step"
+                  :project-id="projectId"
+                  :process-id="processId"
+                  @step-added="getProjectProcessSteps"
+              />
+            </v-toolbar-items>
+          </v-toolbar>
         </v-col>
 
-        <v-col cols="12" class="px-6">
+      <v-col cols="12" class="px-6">
           <v-data-table
             class="elevation-1 table-striped"
             :headers="displayedHeaders"
             :items="projectProcessSteps"
             fixed-header
             multi-sort
+            dense
             :sort-by="['processStepName', 'lastUpdated']"
             :sort-desc="[false, true]"
             hide-default-footer
-            dense
             :loading="isProjectProcessStepsLoading"
             disable-pagination
           >
@@ -136,7 +122,6 @@
             <template v-slot:no>Close</template>
           </ConfirmationDialog>
         </v-col>
-      </v-col>
     </v-row>
 
     <ProjectProcessStepStatus
@@ -177,15 +162,18 @@ import {
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
 import {v4 as uuid} from 'uuid'
-import AddProcessStep from '@/views/flow/components/AddProcessStep'
-import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable'
-import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus'
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AddProcessStep from '@/views/flow/components/AddProcessStep.vue'
+import PpsHistoryTable from '@/views/flow/components/PpsHistoryTable.vue'
+import ProjectProcessStepStatus from '@/views/flow/project/ProjectProcessStepStatus.vue'
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 const NEW_STATUS_TO_USE = {id: null}
 
 export default {
-  name: 'ProjectAdmin.vue',
+  name: 'ProcessSteps.vue',
+  props: {
+    processId: Number
+  },
   data() {
     return {
       projectId: parseInt(this.$route.params.projectId),
@@ -194,9 +182,7 @@ export default {
       projectProcessSteps: [],
       showPpsHistory: false,
       selectedPpsHistory: [],
-      process: {},
       snackbar: {},
-      deleteProjectConfirm: false,
       displayDropdown: false,
       displayChangeOwner: false,
       userCanDelete: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE'),
@@ -239,23 +225,10 @@ export default {
     }
   },
   async created() {
-    await this.getProject()
-    this.getProcess()
     // await this.getAvailableStatuses()
     this.getProjectProcessSteps()
   },
   methods: {
-    getProject: async function () {
-      try {
-        const {data} = await getRequest(`/project/${this.projectId}`)
-        this.project = data
-        window.document.title = `${this.project.projectName} - Admin`
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching project')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
     getProjectProcessSteps: async function () {
       try {
         this.isProjectProcessStepsLoading = true
@@ -272,20 +245,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       } finally {
         this.isProjectProcessStepsLoading = false
-      }
-    },
-    getProcess: async function () {
-      try {
-        const {data} = await getRequestWithParams(`/processes/${this.project.processId}`, {
-          params: {
-            projectId: this.projectId
-          }
-        })
-        this.process = data
-      } catch (e) {
-        this.snackbar = getSnackbar('ERROR', 'Error fetching available process steps')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        logError(e)
       }
     },
     async getAvailableStatuses(pps) {
@@ -387,21 +346,6 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteProject() {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await deleteRequest(`/project/${this.projectId}`)
-        this.snackbar = getSnackbar('SUCCESS', 'Project Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$router.push('/projects')
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error deleting project')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } finally {
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async getPpsHistory(pps) {
       try {
         this.showPpsHistory = false
@@ -423,7 +367,7 @@ export default {
 
 <style scoped lang="scss">
 
-@import "@/styles/main.scss";
+@import "@/styles/main";
 
 #project-admin-container {
   width: 100vw;

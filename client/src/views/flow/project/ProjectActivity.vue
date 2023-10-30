@@ -134,7 +134,6 @@
                      :object-type-id="objectTypeId" :project-id="projectId"
                      :org-id="orgId" v-show="selectedOption === 1"
                      @scrollToTop="scrollToTop"
-                     :bottomHitCount="bottomHitCount"
 
     />
     <AttachmentsFolderList v-if="selectedOption === 2"
@@ -254,7 +253,6 @@ export default {
       toggleFocused: 0,
       toggleFocusedXs: 0,
       toggleTimelineView: this.$store.state.project.notesActivityView,
-      bottomHitCount: 1
     }
   },
   created() {
@@ -333,11 +331,6 @@ export default {
         this.$store.commit(ProjectMutations.SET_NOTES_ACTIVITY_VIEW, 0)
       }
       this.scrollToTop()
-    },
-    onScroll ({ target: { scrollTop, clientHeight, scrollHeight }}) {
-      if (scrollTop + clientHeight >= scrollHeight) {
-        this.bottomHitCount++
-      }
     },
     scrollToTop(){
       document.querySelector('div.conversation-activity-inner-container').scroll({top:0})

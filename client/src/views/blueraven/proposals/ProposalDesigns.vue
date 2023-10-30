@@ -26,9 +26,21 @@
       <v-card v-for="(d, idx) in designs"
               :key="idx"
               width="355"
-              height="535"
+              :height="cardHeight"
               class="pa-4 proposal-card">
 
+        <div class="d-flex">
+          <v-text-field v-model="d.tempDesignName"
+                        label="Design Name"
+                        :readonly="!d.edit"
+                        :disabled="!d.edit"
+            ></v-text-field>
+          <div class="d-flex mt-4">
+            <v-btn x-small text color="primary" v-if="!d.edit" @click="d.edit = true"><v-icon>edit</v-icon></v-btn>
+            <v-btn x-small text color="primary" v-if="d.edit" @click="[d.tempDesignName = d.designName, d.edit = false]"><v-icon>close</v-icon></v-btn>
+            <v-btn x-small text color="primary" v-if="d.edit" @click="saveDesignField(d)"><v-icon>save</v-icon></v-btn>
+          </div>
+        </div>
         <div v-if="d.attachments.length > 0" style="position: relative;" class="design-image">
           <img-proxy
             name="designImg"
@@ -107,7 +119,7 @@
       </v-card>
       <v-card
         width="355"
-        height="535"
+        :height="cardHeight"
         class="proposal-card request-new"
         :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
 
@@ -242,6 +254,7 @@ import moment from 'moment'
 import DatetimePickerInput from '@/components/DatetimePickerInput'
 import constants from '@/helpers/constants'
 import ImgProxy from '@/components/ImgProxy'
+import CustomValueInput from "@/views/flow/components/CustomValueInput.vue";
 
 const dateSortFn = (prop = 'dateCreated') => {
   return (a, b) => {
@@ -261,12 +274,14 @@ const dateSortFn = (prop = 'dateCreated') => {
 export default {
   name: 'ProposalDesigns',
   components: {
+    CustomValueInput,
     DatetimePickerInput,
     ImgProxy
   },
   data() {
     return {
       designs: [],
+      cardHeight: 575,
       minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
       offset: 0,
       numberToDisplay: 3,
@@ -379,6 +394,24 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
+    async saveDesignField(design) {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        let values = [
+            {
+              textValue: design.tempDesignName,
+              customFieldGroupAssignmentId: 26300
+            }
+          ]
+        const {data, status} = await postRequest(`/customFieldValues/project/${design.projectId}/processStep/${design.projectProcessStepId}`, values)
+        design.edit = false
+        design.designName = design.tempDesignName
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        logError(e)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async getCompletedProposalDesigns() {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
@@ -389,6 +422,11 @@ export default {
             return d
           })
           ?.sort(dateSortFn('dateModified'))
+
+        designs.forEach(d => {
+          d.tempDesignName = d.designName
+          d.edit = false
+        })
 
         this.designs = designs
         handleHidingGlobalLoader(this, status)

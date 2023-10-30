@@ -62,9 +62,6 @@
               label="Call Group"
               v-model="postalCode.callGroupId"
             ></v-autocomplete>
-            <v-checkbox label="Active"
-                        class="default-text-color"
-                        v-model="postalCode.active"/>
             <v-checkbox label="Disqualified"
                         class="default-text-color"
                         v-model="postalCode.disqualified"/>

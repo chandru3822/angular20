@@ -1,8 +1,8 @@
 --DROP FUNCTION IF EXISTS flow.get_availability(bigint, bigint, boolean, bigint[]);
 drop function if exists flow.get_availability(p_start_time timestamp, p_end_time timestamp, p_org_ids bigint[],
-                                              p_user_ids bigint[]);
+                                              p_user_ids bigint[], p_timezone text);
   CREATE OR REPLACE FUNCTION flow.get_availability(p_start_time timestamp, p_end_time timestamp, p_org_ids bigint[],
-                                                 p_user_ids bigint[])
+                                                 p_user_ids bigint[], p_timezone text)
   RETURNS setof json AS
 $$
 DECLARE
@@ -42,12 +42,18 @@ BEGIN
                         where p_start_time::date + d.date BETWEEN p_start_time::date and p_end_time::date - interval '1 day'
                       )
                       select coalesce(rs.user_id, rs.org_id)                           as "resourceId",
-                             (concat(d.date, ' ', rsa.start_time))::timestamp          as "start",
-                             case
-                               when (concat(d.date, ' ', rsa.start_time))::timestamp >
-                                    (concat(d.date, ' ', rsa.end_time))::timestamp
-                                 then (concat((d.date + interval '1 day')::date, ' ', rsa.end_time))::timestamp
-                               else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
+--                              (concat(d.date, ' ', rsa.start_time))::timestamp          as "start",
+                             case when (extract(dow from (((concat(d.date, ' ', rsa.start_time))::timestamp) at time zone 'UTC') at time zone p_timezone)) != rsa.day_of_week_id
+                                      then (concat((d.date + interval '1 day')::date, ' ', rsa.start_time))::timestamp else (concat(d.date, ' ', rsa.start_time))::timestamp end as "start",
+--                              case
+--                                when (concat(d.date, ' ', rsa.start_time))::timestamp >
+--                                     (concat(d.date, ' ', rsa.end_time))::timestamp
+--                                  then (concat((d.date + interval '1 day')::date, ' ', rsa.end_time))::timestamp
+--                                else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
+--                           --i dont think we need to check the > start time thing anymore with this new way with the timezone
+                             case when (extract(dow from (((concat(d.date, ' ', rsa.end_time))::timestamp) at time zone 'UTC') at time zone p_timezone)) != rsa.day_of_week_id
+                                      then (concat((d.date + interval '1 day')::date, ' ', rsa.end_time))::timestamp else (concat(d.date, ' ', rsa.end_time))::timestamp end as "end",
+
                              rsa.day_of_week_id                                        as "dayOfWeekId",
                              false                                                     as "allDay",
                              null                                                      as title,

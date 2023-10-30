@@ -1,5 +1,8 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.ProjectTag;
@@ -21,6 +24,7 @@ public class TagService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final PubSubService pubSubService;
 
   public List<Tag> getTagsByType(Long tagTypeId) {
     User user = securityService.getCurrentUser();
@@ -70,6 +74,45 @@ public class TagService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectId", projectId);
     return sqlCache.queryBySql(TagQuery.projectTags, params, ProjectTag.class);
+  }
+
+  public Optional<ProjectTag> getOneProjectTag(Long projectTagId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectTagId", projectTagId);
+    return sqlCache.getBySql(TagQuery.projectTag, params, ProjectTag.class);
+  }
+
+  public Optional<ProjectTag> addProjectTag(Long projectId, Tag tag) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("tagId", tag.getId());
+    params.put("userId", user.getId());
+
+    Long id = sqlCache.updateBySqlReturningId(TagQuery.insertProjectTag, params, "id").longValue();
+
+    publishTagEvent(projectId);
+
+    return getOneProjectTag(id);
+  }
+
+  public void removeProjectTag(Long projectId, Long projectTagId) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectTagId", projectTagId);
+    params.put("userId", user.getId());
+
+    sqlCache.updateBySql(TagQuery.removeProjectTag, params);
+
+    publishTagEvent(projectId);
+
+  }
+
+  public void publishTagEvent(Long projectId) {
+    //do the tag update so all users see the new tag changes
+    ProjectTagMessage ptm = new ProjectTagMessage();
+    ptm.setProjectId(projectId);
+    pubSubService.publish(EventChannel.NOTIFICATION, ptm);
   }
 
 }

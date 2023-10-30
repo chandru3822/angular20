@@ -8,6 +8,8 @@ public class PostalCodeQuery {
              pc.postal_code,
              pc.place_name,
              pc.round_robin_id,
+             pc.postal_code_zone_id,
+             pc.call_group_id,
              pc.disqualified,
              pc.state_id,
              s.abbreviation as state_abbreviation,
@@ -78,7 +80,6 @@ public class PostalCodeQuery {
             self_gen = :selfGen,
             inside_sales = :insideSales,
             sales_partners = :salesPartners,
-            active = :active,
             date_modified = now(),
             modified_by_id = :userId
       where id = :id
@@ -92,11 +93,13 @@ public class PostalCodeQuery {
 
   //language=PostgreSQL
   public final static String getPostalCodeZones = """
-      select id,
-             zone_name,
-             metro_area_id,
-             archived
+      select pcz.id,
+             pcz.zone_name,
+             pcz.metro_area_id,
+             lov.name as metro_area,
+             pcz.archived
       from flow.postal_code_zone pcz
+      left join flow.list_of_value lov on pcz.metro_area_id = lov.id
       where pcz.archived is false
       order by pcz.zone_name
   """;

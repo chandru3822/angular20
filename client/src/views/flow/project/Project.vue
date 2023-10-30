@@ -188,7 +188,7 @@
     </ThreeColumnLayoutMobile>
     <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
       <template v-slot:header>
-        <v-toolbar flat color="grey lighten-2 pl-3" :class="{'project-header': project && !project.tags || project.tags.length === 0,
+        <v-toolbar flat color="grey lighten-2 pl-3" class="match-lower-width" :class="{'project-header': project && !project.tags || project.tags.length === 0,
                                                     'project-header-with-tags': project && project.tags && project.tags.length > 0,
                                                     'pt-2': project && project.tags && project.tags.length > 0}"
                    v-if="!projectLoading && project && project.id">
@@ -210,60 +210,60 @@
               {{ $store.state.project.ppsEvent.eventName }} Event
             </router-link>
           </span>
-            </div>
-            <div class="mt-2">
-              <v-chip v-for="(tag, idx) in project.tags"
-                      small
-                      class="tag-chip"
-                      :color="tag.bgColor"
-                      :text-color="tag.fontColor"
-                      :close="tag.removable"
-                      :class="{'ml-2': idx !== 0}">
-                {{ tag.tagName }}
-              </v-chip>
-            </div>
-          </v-toolbar-title>
-          <v-spacer/>
-          <div v-if="milestones && milestones.length > 0">
-            <div class="milestone-item" v-for="(milestone, idx) in milestones">
-              <v-menu v-model="milestone.menuOpen"
-                      offset-y
-                      rounded="0"
-                      :close-on-content-click="false"
-                      min-width="290px">
-                <template v-slot:activator="{ on }">
-                  <StatusTrackerIcon :on="on"
-                                     :clickable="true"
-                                     :milestone="milestone"
-                                     :current-status-id="project.companyProjectStatusTypeId"
-                  ></StatusTrackerIcon>
-                </template>
-                <v-card class="pa-5 square-card">
-                  <div class="label-large">
-                    <StatusTrackerIcon :clickable="false"
-                                     :milestone="milestone"
-                                     :current-status-id="project.companyProjectStatusTypeId"
-                  ></StatusTrackerIcon>
-                  {{milestone.projectStatusType}}
-                  </div>
-                    <div>
-                    <div v-for="field in milestone.assignedFields">
-                      <StatusTrackerItem :field="field"
-                      ></StatusTrackerItem>
-                    </div>
-                  </div>
-                  <div class="text-right">
-                    <v-btn text color="primary"class="body-medium" @click="milestone.menuOpen = false">Done</v-btn>
-                  </div>
-                </v-card>
-              </v-menu>
-            </div>
-          </div>
-        </v-toolbar>
+        </div>
+        <div class="mt-2">
+          <v-chip v-for="(tag, idx) in project.tags"
+                  small
+                  class="tag-chip"
+                  :color="tag.bgColor"
+                  :text-color="tag.fontColor"
+                  :close="tag.removable"
+                  :class="{'ml-2': idx !== 0}">
+            {{ tag.tagName }}
+          </v-chip>
+        </div>
+      </v-toolbar-title>
+      <v-spacer/>
+      <div v-if="milestones && milestones.length > 0" class = "milestone-container toolbar-z-index-override">
+        <div class="milestone-item" v-for="(milestone, idx) in milestones">
+          <v-menu v-model="milestone.menuOpen"
+                  offset-y
+                  rounded="0"
+                  :close-on-content-click="false"
+                  min-width="290px">
+            <template v-slot:activator="{ on }">
+              <StatusTrackerIcon :on="on"
+                                 :clickable="true"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+            </template>
+            <v-card class="pa-5 square-card milestone-card">
+              <div class="label-large">
+              <StatusTrackerIcon :clickable="false"
+                                 :milestone="milestone"
+                                 :current-status-id="project.companyProjectStatusTypeId"
+              ></StatusTrackerIcon>
+              {{milestone.projectStatusType}}
+              </div>
+              <div>
+                <div v-for="field in milestone.assignedFields">
+                  <StatusTrackerItem :field="field" :cancelled="project.projectStatusType == 'Cancelled'"
+                  ></StatusTrackerItem>
+                </div>
+              </div>
+              <div class="text-right">
+                <v-btn text color="primary" class="body-medium milestone-button" @click="milestone.menuOpen = false">Done</v-btn>
+              </div>
+            </v-card>
+          </v-menu>
+        </div>
+      </div>
+    </v-toolbar>
       </template>
-      <template v-slot:left-column>
-        <div v-if="project && project.id">
-        <PageOverview
+        <template v-slot:left-column>
+          <div v-if="project && project.id">
+          <PageOverview
             page-name="Project"
             :show-edit-btn="($store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT') && userCanEdit)"
             @clickEdit="showEditModal()"
@@ -388,8 +388,7 @@ export default {
   created() {
     //have to reset this on creation in case there is already a state then they go to the project url directly
     this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
-    this.getProject()
-    this.getMilestones()
+    this.loadProject();
     this.pageOverviewMenuItem = {
       archived: false,
       customPath: `/project/${ this.$route.params.projectId }/projectOverview`,
@@ -483,6 +482,10 @@ export default {
   mounted() {
   },
   methods: {
+    async loadProject(){
+      await this.getProject()
+      await this.getMilestones()
+    },
     changeTabs(selectedTab, buttonClicked) {
       this.selectedTab = selectedTab
       if (buttonClicked && this.$route.name !== 'projectDetails') {
@@ -514,6 +517,7 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
+
         window.document.title = `${this.project.projectName} - Project Details`
         if (this.checkAddress) {
           this.showEditModal()
@@ -531,18 +535,25 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/statusFields`)
         this.milestones = data
-        this.milestones.forEach(m => {
-          // if(m.assignedFields.every(f => f.hasOwnProperty('fieldValue'))) {
-          // console.log('A', m.assignedFields.every(f => f.fieldValue))
-          // console.log('B', m.assignedFields.every(f => f.hasOwnProperty('fieldValue')))
-          if(m.assignedFields.every(f => f.fieldValue)) {
-            m.btnColor = 'success lighten-1'
-            m.iconColor = 'white'
-          } else {
-            m.btnColor = 'grey'
-            m.iconColor = 'grey'
+        let statusCompleted = false;
+        for(let x = this.milestones.length - 1; x >= 0; x--){
+          if(this.project.projectStatusType == 'Cancelled'){
+            this.milestones[x].btnColor = 'grey'
+            this.milestones[x].iconColor = 'grey'
+            continue;
           }
-        })
+          if(statusCompleted || this.milestones[x].assignedFields.every(f => f.fieldValue)) {
+            this.milestones[x].btnColor = 'success lighten-1'
+            this.milestones[x].iconColor = 'white'
+          } else {
+            this.milestones[x].btnColor = 'grey'
+            this.milestones[x].iconColor = 'grey'
+          }
+
+          if(this.project.projectStatusType == this.milestones[x].projectStatusType){
+            statusCompleted = true;
+          }
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Tracker Details')
@@ -723,6 +734,10 @@ export default {
 </script>
 
 <style lang="scss">
+.match-lower-width .v-toolbar__content {
+  padding: 4px 8px 4px 24px;
+}
+
 #tag-toolbar {
   height: 35px !important;
 
@@ -888,6 +903,16 @@ export default {
 .milestone-item:first-of-type:before,
 .milestone-item:last-of-type:after {
   display:none;
+}
+
+.milestone-button{
+  margin-top: 12px;
+  text-transform: unset !important;
+}
+
+.milestone-card{
+  padding: 16px !important;
+  border-radius: 4px !important;
 }
 
 </style>

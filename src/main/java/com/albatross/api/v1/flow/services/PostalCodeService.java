@@ -27,7 +27,6 @@ import java.util.Optional;
 public class PostalCodeService {
 
   private final SqlCache sqlCache;
-  private final SqlArrayService sqlArrayService;
   private final SecurityService securityService;
   private final ObjectMapper om;
 
@@ -60,7 +59,6 @@ public class PostalCodeService {
     params.put("postalCodeZoneId", postalCode.getPostalCodeZoneId());
     params.put("placeName", postalCode.getPlaceName());
     params.put("notes", postalCode.getNotes());
-    params.put("active", postalCode.getActive());
     params.put("disqualified", postalCode.getDisqualified());
     params.put("selfGen", postalCode.getSelfGen());
     params.put("insideSales", postalCode.getInsideSales());

@@ -7,9 +7,9 @@
     :close-on-content-click="false"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="text-capitalize" :small="!largeBtn" :large="largeBtn" v-on="on" @click="[ getSteps() ]" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize" small="!largeBtn" :large="largeBtn" v-on="on" @click="[ saveInteractionEvent('plus'), getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>
-      <span v-if="showBtnText">Add Process Step</span>
+      <span v-if="title != null">{{title}}</span>
     </v-btn>
   </template>
 
@@ -55,6 +55,7 @@
 import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getActiveAssignedToProcessStep, getCancelledCompanyStatusTypesAssignedToProcessStep} from '@/services/processStepStatusTypeService'
+import {saveEvent} from '@/services/analyticsService'
 
 export default {
   name: 'AddProcessStep',
@@ -70,6 +71,8 @@ export default {
       type: Number
     },
     contactId: Number,
+    timerEnabled: false,
+    title: String,
     showBtnText: {
       type: Boolean,
       default: false
@@ -194,6 +197,11 @@ export default {
     clear(){
       this.selectedStep = null
       this.newPps = {}
+    },
+    saveInteractionEvent(event){
+      if(this.timerEnabled) {
+        saveEvent(event);
+      }
     }
   }
 }

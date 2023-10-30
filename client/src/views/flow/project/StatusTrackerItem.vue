@@ -1,13 +1,30 @@
 <template>
   <div id="status-checkbox" style="z-index: 1000">
     <v-checkbox
+      v-if="!cancelled"
         :label="fieldName"
         color="success lighten-1"
         :ripple="false"
         readonly
         hide-details
         v-model="field.fieldValue"
-        class="default-text-color d-inline-block body-large"
+        class="default-text-color d-inline-block body-large milestone-checkbox"
+>
+      <template v-slot:label>
+        <span class="milestone-checkbox-label"
+              :class="{'milestone-completed': field.fieldValue != null}">{{fieldName}}</span>
+      </template>
+    </v-checkbox>
+
+    <v-checkbox
+      v-else
+      :label="fieldName"
+      color="grey-base"
+      :ripple="false"
+      readonly
+      hide-details
+      v-model="field.fieldValue"
+      class="default-text-color d-inline-block body-large milestone-checkbox"
     />
 <!--    <div v-if="field.fieldValue != null" class="d-inline-block ml-3 body-large">-->
 <!--      &lt;!&ndash;        i dont think we have to handle ALL data types here. just the common ones, data view fields are pretty normalized &ndash;&gt;-->
@@ -32,6 +49,7 @@ export default {
   },
   props: {
     field: Object,
+    cancelled: false
   },
   data() {
     return {
@@ -45,15 +63,15 @@ export default {
     }
     else {
       if (this.field.dataTypeId == 1) {
-        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue.toLocaleDateString('en-US', {
+        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue.toLocaleDateString('en-US', {
           day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
         })
-      } else if (this.field.dataTypeId == 2) {
-        this.fieldName = this.field.fieldName + ':' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
+      } else if (this.field.dataTypeId == 2 || this.field.dataTypeId == 3) {
+        this.fieldName = this.field.fieldName + ': ' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
           day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
         })//formatDate('timestamp', 'D MMM YYYY H:mm a');
       } else {
-        this.fieldName = this.field.fieldName + ':' + this.field.fieldValue;
+        this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue;
       }
     }
   },
@@ -74,9 +92,25 @@ export default {
   @media (min-width: 960px) {
     line-height: 1.6;  }
 }
+
 </style>
 
 <style lang="scss">
+#status-checkbox .mdi-checkbox-blank-outline {
+  color: var(--v-grey-base);
+}
+
+#status-checkbox input:hover{
+  cursor: default !important;
+}
+
+#status-checkbox label:hover{
+  cursor: default !important;
+}
+
+#status-checkbox:hover{
+  cursor: default !important;
+}
 
 #status-checkbox .v-label{
   font-family: lato;
@@ -85,4 +119,22 @@ export default {
   font-size: 1rem;
   color: #000000 !important;
 }
+
+#status-checkbox .v-input__slot:hover{
+  cursor: default !important;
+
+}
+#status-checkbox :hover{
+  cursor: default !important;
+
+}
+
+.milestone-checkbox-label {
+  color: var(--v-grey-darken1);
+}
+
+.milestone-completed{
+  color: var(--v-grey-darken4);
+}
+
 </style>
