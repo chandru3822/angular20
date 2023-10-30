@@ -102,9 +102,9 @@ const chooseSelectedView = (view, id) => {
   overflow: hidden;
   z-index: 12;
 }
-#menu-container {
-  width: 100%;
-  height: 100%;
+
+#three-column-container > aside{
+  height: 95% !important;
 }
 
 .main-column-container {
