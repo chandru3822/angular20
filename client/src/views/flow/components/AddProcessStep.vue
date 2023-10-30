@@ -7,7 +7,7 @@
     :close-on-content-click="false"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="" small v-on="on" @click="[ saveInteractionEvent('plus'), getSteps() ]" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize" small="!largeBtn" :large="largeBtn" v-on="on" @click="[ saveInteractionEvent('plus'), getSteps() ]" @blur="clear()">
       <v-icon>add</v-icon>
       <span v-if="title != null">{{title}}</span>
     </v-btn>
@@ -72,7 +72,15 @@ export default {
     },
     contactId: Number,
     timerEnabled: false,
-    title: String
+    title: String,
+    showBtnText: {
+      type: Boolean,
+      default: false
+    },
+    largeBtn: {
+      type: Boolean,
+      default: false
+    }
   },
 
   data () {

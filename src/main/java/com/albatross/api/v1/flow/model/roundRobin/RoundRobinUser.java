@@ -13,7 +13,7 @@ import java.util.List;
 public class RoundRobinUser {
 
   private Long id, roundRobinId, userId, roundRobinUserTypeId, companyTimezoneId;
-  private String firstName, lastName, fullName, position, timezone, title, zoneName;
+  private String firstName, lastName, fullName, position, timezone, title, roundRobinName;
   private Boolean archived, schedulable, scheduler;
   private List<UserPosition> userPositions;
 }

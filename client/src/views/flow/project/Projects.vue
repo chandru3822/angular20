@@ -18,6 +18,7 @@
             v-model="searchQuery"
             @input="searchProjects"
             @click:clear="searchProjects()"
+            :keyup.enter="closeKeyboard"
           />
 
           <v-spacer/>
@@ -37,6 +38,7 @@
           :server-items-length="totalProjects"
           :loading="isProjectsLoading"
           :class="{'fix-column-width-bug': !isMobile}"
+          @click:row="goToRoute"
         >
 
           <template #no-data>
@@ -68,9 +70,7 @@
                 </router-link>
               </template>
               <template #item.dateCreated="{item: project, index}" class="text-left clickable">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
-                  {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
-                </router-link>
+                 <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>
               </template>
         </v-data-table>
       </v-col>
@@ -148,8 +148,8 @@
       }
     },
     methods: {
-      goToRoute(projectId) {
-        this.$router.push({name: 'projectStatus', params: {projectId: projectId}})
+      goToRoute(project) {
+        this.$router.push({name: 'projectStatus', params: {projectId: project.id}})
       },
       async getProjects() {
         const {page, itemsPerPage} = this.options
@@ -185,7 +185,10 @@
         this.searchQuery = this.searchQuery || ''
         localStorage.setItem('projectSearch', this.searchQuery)
         this.getProjects()
-      }, 500)
+      }, 500),
+      closeKeyboard(){
+        document.activeElement.blur()
+      }
     }
   }
 </script>

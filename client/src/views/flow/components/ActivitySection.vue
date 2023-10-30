@@ -1,5 +1,7 @@
 <template>
   <v-container class="px-5 py-0">
+    <div v-if="mobileView" class="headline-small pt-3">Notes</div>
+      hi: {{ bottomHitCount }}
     <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
       <v-text-field
         prepend-inner-icon="search"
@@ -113,7 +115,7 @@
                     :search-callback="searchByClick"
                     :highlightPinnedActivity = false
                     :query="queryText"
-                    ref="randaTest"
+                    ref="activityList"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
@@ -240,7 +242,8 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
-    // bottomHitCount: Number
+    // bottomHitCount: Number,
+    mobileView:Boolean
   },
   data() {
     return {
@@ -330,13 +333,13 @@ export default {
       }), ['dateCreated'], [ this.sortDirection])
 
       if(sortedList.length > (this.activitiesToShow * this.bottomHitCount) ) {
-        if(this.$refs.randaTest) {
-          this.$refs.randaTest.infiniteStateLoaded(false)
+        if(this.$refs.activityList) {
+          this.$refs.activityList.infiniteStateLoaded(false)
         }
         return sortedList.slice(0, (this.activitiesToShow * this.bottomHitCount))
       } else {
-        if(this.$refs.randaTest) {
-          this.$refs.randaTest.infiniteStateLoaded(true)
+        if(this.$refs.activityList) {
+          this.$refs.activityList.infiniteStateLoaded(true)
         }
         return sortedList
       }

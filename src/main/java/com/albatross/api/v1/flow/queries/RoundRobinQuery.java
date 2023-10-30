@@ -464,8 +464,11 @@ public class RoundRobinQuery {
         from flow.round_robin_user pczu
                inner join flow.round_robin pcz on pcz.id = pczu.round_robin_id
                inner join flow."user" u on u.id = pczu.user_id
+               INNER JOIN flow.company_user_status cus on cus.user_id = pczu.user_id
+                        INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = pcz.company_id
         where pczu.archived is not true
           and pcz.archived is not true
+          and ust.has_access is true
           and pcz.company_id = :companyId
           and pczu.round_robin_user_type_id = 1
           and ((cast(:roundRobinIds as int[]) is null) OR pczu.round_robin_id = any (:roundRobinIds))
