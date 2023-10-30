@@ -33,12 +33,17 @@ public class BlueravenProposalVersionController {
 
   @GetMapping
   public Page<ProposalVersion> getProposalVersions(Pageable pageable) {
-    return proposalVersionService.getProposalVersions(pageable);
+    return proposalVersionService.getProposalVersions(pageable, false);
   }
 
   @GetMapping(value = "/{id}")
   public Optional<ProposalVersion> getProposalVersion(@PathVariable Long id) {
     return proposalVersionService.getProposalVersion(id);
+  }
+
+  @GetMapping(value="/published")
+  public Page<ProposalVersion> getPublishedProposalVersions(Pageable pageable) {
+    return proposalVersionService.getProposalVersions(pageable, true);
   }
 
   @PostMapping(value = "/{id}/publish")

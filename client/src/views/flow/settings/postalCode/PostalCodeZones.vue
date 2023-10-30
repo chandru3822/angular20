@@ -167,19 +167,19 @@
         this.closeDeleteDialog()
       },
       async addPostalCodeZone () {
-        // this.$store.commit(AppMutations.SET_LOADING, true)
-        // try {
-        //   const {data, status} = await postRequest(`/roundRobin`, this.newZone)
-        //   this.$router.push({path: `/settings/roundRobin/${data.id}/scheduleTo`})
-        //   this.snackbar = getSnackbar('SUCCESS', 'Round Robin Added')
-        //   this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        //   handleHidingGlobalLoader(this, status)
-        // } catch (e) {
-        //   console.error('*** ERROR ***', e)
-        //   this.snackbar = getSnackbar('ERROR', 'Error Adding Round Robin')
-        //   this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        //   this.$store.commit(AppMutations.SET_LOADING, false)
-        // }
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const {data, status} = await postRequest(`/postalCode/zone`, this.newZone)
+          this.goToZone(data)
+          this.snackbar = getSnackbar('SUCCESS', 'Postal Code Zone Added')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Adding Postal Code Zone')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       closeDeleteDialog() {
         this.showDeleteDialog = false;
