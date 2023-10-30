@@ -30,13 +30,12 @@
               class="pa-4 proposal-card">
 
         <div class="d-flex">
-          <v-text-field class="pt-0"
-                        v-model="d.tempDesignName"
+          <v-text-field v-model="d.tempDesignName"
                         label="Design Name"
                         :readonly="!d.edit"
                         :disabled="!d.edit"
             ></v-text-field>
-          <div class="d-flex mt-2">
+          <div class="d-flex mt-4">
             <v-btn x-small text color="primary" v-if="!d.edit" @click="d.edit = true"><v-icon>edit</v-icon></v-btn>
             <v-btn x-small text color="primary" v-if="d.edit" @click="[d.tempDesignName = d.designName, d.edit = false]"><v-icon>close</v-icon></v-btn>
             <v-btn x-small text color="primary" v-if="d.edit" @click="saveDesignField(d)"><v-icon>save</v-icon></v-btn>
