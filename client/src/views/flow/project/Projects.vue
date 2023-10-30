@@ -18,6 +18,7 @@
             v-model="searchQuery"
             @input="searchProjects"
             @click:clear="searchProjects()"
+            :keyup.enter="closeKeyboard"
           />
 
           <v-spacer/>
@@ -184,7 +185,10 @@
         this.searchQuery = this.searchQuery || ''
         localStorage.setItem('projectSearch', this.searchQuery)
         this.getProjects()
-      }, 500)
+      }, 500),
+      closeKeyboard(){
+        document.activeElement.blur()
+      }
     }
   }
 </script>
