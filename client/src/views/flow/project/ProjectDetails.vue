@@ -19,11 +19,11 @@
           <v-toolbar-title class="albatross-header-2">{{ projectTab.tabName }}</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items v-if="projectTab.id !== -1">
-            <v-menu data-app right
+            <v-menu data-app :right="!isMobile" :left="isMobile"
                     offset-y
                     v-model="attachmentMenuOpen"
                     max-height="350"
-                    :close-on-content-click="true">
+                    :close-on-content-click="!isMobile">
               <template v-slot:activator="{ on }">
                 <v-btn text color="primary" @click="loadProjectAttachmentTypes()" v-on="on">
                   <v-icon>mdi-tray-arrow-up</v-icon>
@@ -42,7 +42,7 @@
                       type="file"
                       :multiple="!item.hasFieldsAssigned"
                       :accept="acceptedFileTypes"
-                      @change='doUpload($event.target.files, item)'
+                      @change='[doUpload($event.target.files, item), attachmentMenuOpen = false]'
                       style="display: none"
                       @click.stop=""
                       :ref="`menuFileInput${item.attachmentTypeId}`"
