@@ -139,6 +139,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     final User user = new User();
     user.setId(brSystemUser.getId());
     user.setCompanyId(brSystemUser.getCompanyId());
+    user.setAwsBucket(brSystemUser.getAwsBucket());
     user.setHighestCompanyId(brSystemUser.getCompanyId());
     user.setHighestParentCompanyId(brSystemUser.getCompanyId());
 
