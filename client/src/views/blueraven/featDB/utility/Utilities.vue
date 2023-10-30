@@ -55,10 +55,10 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': !(index % 2),
-                         'strike-thru': item.archived }" @click="goToRoute(item.id)" class="clickable text-sm-left row-hover">
-              <td class="text-left" :class="{}">{{ item.name ? item.name : '' }}</td>
-              <td class="text-left">{{ item.metroArea ? item.metroArea : '' }}</td>
-              <td class="text-left">{{ item.state ? item.state : '' }}</td>
+                         'strike-thru': item.archived }" class="clickable text-sm-left row-hover">
+              <td class="text-left" @click="goToRoute(item.id)" :class="{}">{{ item.name ? item.name : '' }}</td>
+              <td class="text-left" @click="goToRoute(item.id)" >{{ item.metroArea ? item.metroArea : '' }}</td>
+              <td class="text-left" @click="goToRoute(item.id)" >{{ item.state ? item.state : '' }}</td>
               <td class="text-right">
                 <v-btn :to="`/database/utility/${item.id}/details`" text x-small fab>
                   <v-icon>mdi-arrow-right</v-icon>
