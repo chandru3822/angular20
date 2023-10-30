@@ -45,7 +45,6 @@
 
       //success check is just a dumb little thing to prevent them from refresh the success screen a bunch and making us re-GET the session from stripe each time
       if(null != this.$route.query.sessionId && this.$route.query.success !== 'true') {
-        console.log('do stuff')
         this.setStripePaymentId()
       }
     },

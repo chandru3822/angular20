@@ -26,7 +26,7 @@
       <v-card v-for="(d, idx) in designs"
               :key="idx"
               width="355"
-              height="535"
+              :height="cardHeight"
               class="pa-4 proposal-card">
 
         <div class="d-flex">
@@ -120,7 +120,7 @@
       </v-card>
       <v-card
         width="355"
-        height="535"
+        :height="cardHeight"
         class="proposal-card request-new"
         :class="{'disable-new': lockNewRequests || hasActiveDesign || !requestSuccessful}">
 
@@ -282,6 +282,7 @@ export default {
   data() {
     return {
       designs: [],
+      cardHeight: 575,
       minDate: moment().format('YYYY-MM-DDTHH:mm:ssZ'),
       offset: 0,
       numberToDisplay: 3,

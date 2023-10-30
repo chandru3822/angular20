@@ -8,6 +8,7 @@
                     :items="roundRobins"
                     label="Round Robin"
                     multiple
+                    type="search"
                     class="mr-2"
                     :loading="roundRobinsLoading"
                     hide-details
@@ -224,9 +225,9 @@
             events: [] }
         ],
         events: [],
-        sroundRobin: [],
+        roundRobins: [],
         roundRobinValuesChanged: false,
-        selectedRoundRobin: [],
+        selectedRoundRobins: [],
         roundRobinsLoading: true,
         roundRobinValueChanged: false,
         initialLoad: true,
@@ -393,7 +394,7 @@
             }
             const {data, status} = await postRequest(`/roundRobin/usersByDownline`, params, null, [])
             this.roundRobinUsers = data
-            this.roundRobinsLoading = false
+            this.roundRobinUsersLoading = false
             handleHidingGlobalLoader(this, status)
           } catch (e) {
             console.error('*** ERROR ***', e)
@@ -406,7 +407,8 @@
       async getAvailability() {
         try {
           let params = {
-            roundRobinUserIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.id) : [],
+            //can't change postalCodeZoneUserIds name because that is what mobile sends in
+            postalCodeZoneUserIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.id) : [],
             startTime: this.calendarStartTime,
             endTime: this.calendarEndTime,
             timezone: this.timezone
@@ -472,7 +474,7 @@
               let params = {
                 // this was the old way. leaving here in case
                 // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedUsers.map(u => u.userId) : [],
+                userIds: this.selectedRoundRobinUsers?.length > 0 ? this.selectedRoundRobinUsers.map(u => u.userId) : [],
                 startTime: this.calendarStartTime,
                 endTime: this.calendarEndTime
               }

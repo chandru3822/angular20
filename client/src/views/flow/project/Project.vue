@@ -434,7 +434,6 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}`)
         this.project = data
-        console.log(this.project.projectStatusType);
 
         window.document.title = `${this.project.projectName} - Project Details`
         if (this.checkAddress) {
