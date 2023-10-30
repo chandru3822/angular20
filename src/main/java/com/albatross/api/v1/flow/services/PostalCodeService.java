@@ -72,11 +72,7 @@ public class PostalCodeService {
       sqlCache.updateBySql(PostalCodeQuery.updatePostalCode, params);
     } else {
       params.put("postalCode", postalCode.getPostalCode());
-      try{
-        id = sqlCache.updateBySqlReturningId(PostalCodeQuery.insertPostalCode, params, "id").longValue();
-      } catch (DuplicateKeyException ex) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Postal Code Already Exists");
-      }
+      id = sqlCache.updateBySqlReturningId(PostalCodeQuery.insertPostalCode, params, "id").longValue();
     }
     return getPostalCode(id);
   }
@@ -102,6 +98,7 @@ public class PostalCodeService {
     params.put("metroAreaId", postalCodeZone.getMetroAreaId());
     params.put("adderAmount", postalCodeZone.getAdderAmount());
     params.put("zoneName", postalCodeZone.getZoneName());
+    params.put("companyId", user.getCompanyId());
     params.put("userId", user.trueUserId());
     Long id;
 
