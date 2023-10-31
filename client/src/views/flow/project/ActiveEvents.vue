@@ -45,7 +45,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
-      sectionExpanded: this.$route.path.includes('processStep') ? 0 : null,
+      sectionExpanded: this.$route.path.includes('processStep'),
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
