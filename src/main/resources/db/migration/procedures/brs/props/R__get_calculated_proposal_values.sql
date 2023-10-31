@@ -1,4 +1,5 @@
 drop function if exists brs.get_calculated_proposal_values(bigint, boolean, bigint);
+drop function if exists brs.get_calculated_proposal_values(bigint, boolean, boolean);
 drop type if exists brs.calculated_proposal_value cascade;
 
 create type brs.calculated_proposal_value as
@@ -159,7 +160,8 @@ create type brs.calculated_proposal_value as
   odoe_rebate_number                                 numeric,
   deposit_amount                                     varchar,
   deposit_amount_number                              numeric,
-  has_critter_guard boolean
+  has_critter_guard boolean,
+  commission_details json
 );
 
 drop type brs.excluded_proposal_value;
@@ -236,7 +238,7 @@ create type brs.excluded_proposal_value as
 CREATE OR REPLACE FUNCTION brs.get_calculated_proposal_values(
   p_proposal_id bigint,
   p_insert_prop_log_history boolean default false,
-  p_run_by_id bigint default 99999999
+  p_run_details boolean default false
 )
 
   RETURNS TABLE
@@ -464,55 +466,71 @@ declare
   v_dealer                                             bigint;
   v_dealer_markup                                      numeric;
   v_dealer_redline_price                               numeric;
-  v_deposit_amount  numeric;
-v_deposit_amount_number numeric;
-v_has_critter_guard boolean;
+  v_deposit_amount                                     numeric;
+  v_deposit_amount_number                              numeric;
+  v_has_critter_guard                                  boolean;
 BEGIN
 
-  select prop.id                                   as proposal_id,
-         proposal_version_id,
-         prop.project_process_step_id,
-         coalesce(pcfv3.boolean_value, false),
-         coalesce(pcfv4.numeric_value, 0),
-         pcfv5.int_value,
-         lov.name,
-         p.id                                      as project_id,
-         prop.archived,
-         c.first_name,
-         c.last_name,
-         p.project_name,
-         p.street1,
-         p.street2,
-         p.city,
-         p.postal_code,
-         s.state,
-         s.abbreviation                            as state_abbreviation,
-         c.mobile,
-         c.email,
-         (pcfv7.numeric_value),
-         lov6.name,
-         pcfv8.int_value,
-         lov2.name,
-         pcfv10.numeric_value,
-         pcfv11.numeric_value,
-         pcfv12.numeric_value,
-         pcfv13.numeric_value,
-         pcfv14.numeric_value,
-         pcfv15.numeric_value,
-         pcfv16.numeric_value,
-         prop.proposal_nbr,
-         coalesce(prop.name, 'New Proposal') ||
-         case
-           when prop.revision_number = 0 then ''
-           else ' (' || prop.revision_number::varchar || ')' end
-           || ' - ' || prop.proposal_nbr || '.pdf' as display_name,
-         pcfv17.int_value,
-         pcfv18.int_value,
-         pcfv19.numeric_value,
-         d.source,
-         pcfv20.numeric_value,
-         pcfv21.int_value,
-         pcfv22.numeric_value
+  select proposal_id,
+         version_id,
+         project_process_step_id,
+         friends_and_family,
+         down_payment_amount,
+         product_id,
+         product_name,
+         project_id,
+         proposal_archived,
+         contact_first_name,
+         contact_last_name,
+         project_name,
+         project_street1,
+         project_street2,
+         city,
+         postal_code,
+         project_state,
+         project_state_abbrev,
+         contact_phone,
+         contact_email,
+         other_adder_and_discount_amount,
+         other_adder_and_discount,
+         storage_type_id,
+         storage_type,
+         main_panel_upgrade_cost,
+         structural_upgrade_cost,
+         reroof_cost,
+         tree_trimming_cost,
+         trenching_cost,
+         ac_unit_relocation_cost,
+         total_square_footage,
+         proposal_nbr,
+         display_name,
+         financial_product_id,
+         odoe_income_status,
+         desired_commission_amount,
+         source_id,
+         admin_discount,
+         dealer,
+         dealer_markup,
+         estimated_annual_energy_consumption_kwh,
+         first_year_production_estimate,
+         system_size,
+         panel_watts,
+         panel_brand_id,
+         panel_brand,
+         state_id,
+         utility_company_id,
+         utility_company,
+         aurora_design_summary,
+         led_light_bulbs,
+         smart_thermostat,
+         panel_quantity,
+         inverter_brand_id,
+         inverter_brand,
+         aurora_design_id,
+         unapproved_zip_code_adder,
+         site_survey_time_adders,
+         misc_adders_array,
+         commission_strategy_id
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -552,88 +570,7 @@ BEGIN
     v_source_id,
     v_admin_discount,
     v_dealer,
-    v_dealer_markup
-  from brs.proposal prop
-         inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
-         inner join flow.project p on pps.project_id = p.id
-         inner join brs.project_details d on d.project_id = p.id
-         inner join flow.contact c on p.contact_id = c.id
-         inner join flow.company_state cs on p.company_state_id = cs.id
-         inner join flow.state s on cs.state_id = s.id
-         left join brs.proposal_custom_field_value pcfv3 on prop.id = pcfv3.proposal_id and
-                                                            pcfv3.custom_field_group_assignment_id = 169
-         left join brs.proposal_custom_field_value pcfv4 on prop.id = pcfv4.proposal_id and
-                                                            pcfv4.custom_field_group_assignment_id = 134
-         left join brs.proposal_custom_field_value pcfv5 on prop.id = pcfv5.proposal_id and
-                                                            pcfv5.custom_field_group_assignment_id = 147
-         left join brs.proposal_custom_field_value pcfv6 on prop.id = pcfv6.proposal_id and
-                                                            pcfv6.custom_field_group_assignment_id = 165
-         left join brs.list_of_value lov6 on lov6.id = pcfv6.int_value
-         left join brs.proposal_custom_field_value pcfv7 on prop.id = pcfv7.proposal_id and
-                                                            pcfv7.custom_field_group_assignment_id = 167
-         left join flow.list_of_value lov on lov.id = pcfv5.int_value
-         left join brs.proposal_custom_field_value pcfv8 on prop.id = pcfv8.proposal_id and
-                                                            pcfv8.custom_field_group_assignment_id = 200
-         left join brs.list_of_value lov2 on lov2.id = pcfv8.int_value
-         left join brs.proposal_custom_field_value pcfv10 on prop.id = pcfv10.proposal_id and
-                                                             pcfv10.custom_field_group_assignment_id = 201
-         left join brs.proposal_custom_field_value pcfv11 on prop.id = pcfv11.proposal_id and
-                                                             pcfv11.custom_field_group_assignment_id = 202
-         left join brs.proposal_custom_field_value pcfv12 on prop.id = pcfv12.proposal_id and
-                                                             pcfv12.custom_field_group_assignment_id = 203
-         left join brs.proposal_custom_field_value pcfv13 on prop.id = pcfv13.proposal_id and
-                                                             pcfv13.custom_field_group_assignment_id = 204
-         left join brs.proposal_custom_field_value pcfv14 on prop.id = pcfv14.proposal_id and
-                                                             pcfv14.custom_field_group_assignment_id = 205
-         left join brs.proposal_custom_field_value pcfv15 on prop.id = pcfv15.proposal_id and
-                                                             pcfv15.custom_field_group_assignment_id = 206
-         left join brs.proposal_custom_field_value pcfv16 on prop.id = pcfv16.proposal_id and
-                                                             pcfv16.custom_field_group_assignment_id = 389
-         left join brs.proposal_custom_field_value pcfv17 on prop.id = pcfv17.proposal_id and
-                                                             pcfv17.custom_field_group_assignment_id = 155
-         left join brs.proposal_custom_field_value pcfv18 on prop.id = pcfv18.proposal_id and
-                                                             pcfv18.custom_field_group_assignment_id = 447
-         left join brs.proposal_custom_field_value pcfv19 on prop.id = pcfv19.proposal_id and
-                                                             pcfv19.custom_field_group_assignment_id = 454
-         left join brs.proposal_custom_field_value pcfv20 on prop.id = pcfv20.proposal_id and
-                                                             pcfv20.custom_field_group_assignment_id = 455
-         left join brs.proposal_custom_field_value pcfv21 on prop.id = pcfv21.proposal_id and
-                                                             pcfv21.custom_field_group_assignment_id = 476
-         left join brs.proposal_custom_field_value pcfv22 on prop.id = pcfv22.proposal_id and
-                                                             pcfv22.custom_field_group_assignment_id = 480
-  where prop.id = p_proposal_id;
-
-  select string_agg(lov.name, ',')
-  into v_adder
-  from brs.proposal prop
-         inner join brs.proposal_custom_field_value pcfv on prop.id = pcfv.proposal_id and
-                                                            pcfv.custom_field_group_assignment_id = 146
-         inner join brs.list_of_value lov on lov.id = any (pcfv.int_array_value)
-  where prop.id = p_proposal_id;
-
-
-  select ppscfv.int_value,
-         ppscfv2.int_value,
-         ppscfv3.numeric_value,
-         ppscfv4.int_value,
-         ppscfv5.int_value,
-         lov.name,
-         cs.state_id,
-         ppscfv15.int_value,
-         utility15.name,
-         ppscfv6.json_value,
-         ppscfv7.int_value,
-         ppscfv8.int_value,
-         ppscfv9.int_value,
-         ppscfv10.int_value,
-         lov1.name,
-         ppscfv11.text_value,
-         pd.unapproved_zip_code_adder,
-         ppscfv12.int_array_value,
-         ppscfv13.int_array_value,
-         ppscfv14.int_value
---@randa , ppscfv16.numeric_value
-  into
+    v_dealer_markup,
     v_estimated_annual_energy_consumption_kwh,
     v_first_year_production_estimate,
     v_system_size,
@@ -654,109 +591,19 @@ BEGIN
     v_site_survey_time_adders,
     v_misc_adders_array,
     v_commission_strategy_id
-----@randa   , v_zone_adder
-  from flow.project_process_step pps
-         inner join flow.project p on pps.project_id = p.id
-         inner join flow.company_state cs on p.company_state_id = cs.id
-         inner join brs.project_details pd on pd.project_id = p.id
-         left join flow.project_process_step_custom_field_value ppscfv on pps.id = ppscfv.project_process_step_id and
-                                                                          ppscfv.custom_field_group_assignment_id =
-                                                                          22573
-         left join flow.project_process_step_custom_field_value ppscfv2 on ppscfv2.project_process_step_id = pps.id and
-                                                                           ppscfv2.custom_field_group_assignment_id =
-                                                                           22563
-         left join flow.project_process_step_custom_field_value ppscfv3 on ppscfv3.project_process_step_id = pps.id and
-                                                                           ppscfv3.custom_field_group_assignment_id =
-                                                                           22561
-         left join flow.project_process_step_custom_field_value ppscfv4 on ppscfv4.project_process_step_id = pps.id and
-                                                                           ppscfv4.custom_field_group_assignment_id =
-                                                                           22675
-         left join flow.project_process_step_custom_field_value ppscfv5 on ppscfv5.project_process_step_id = pps.id and
-                                                                           ppscfv5.custom_field_group_assignment_id =
-                                                                           22564
-         left join flow.list_of_value lov on lov.id = ppscfv5.int_value
-         left join flow.project_process_step_custom_field_value ppscfv6 on ppscfv6.project_process_step_id = pps.id and
-                                                                           ppscfv6.custom_field_group_assignment_id =
-                                                                           22682
-         left join flow.project_process_step_custom_field_value ppscfv7 on ppscfv7.project_process_step_id = pps.id and
-                                                                           ppscfv7.custom_field_group_assignment_id =
-                                                                           22566
-         left join flow.project_process_step_custom_field_value ppscfv8 on ppscfv8.project_process_step_id = pps.id and
-                                                                           ppscfv8.custom_field_group_assignment_id =
-                                                                           22567
-         left join flow.project_process_step_custom_field_value ppscfv9 on ppscfv9.project_process_step_id = pps.id and
-                                                                           ppscfv9.custom_field_group_assignment_id =
-                                                                           22562
-         left join flow.project_process_step_custom_field_value ppscfv10
-                   on ppscfv10.project_process_step_id = pps.id and
-                      ppscfv10.custom_field_group_assignment_id =
-                      22565
-         left join flow.list_of_value lov1 on lov1.id = ppscfv10.int_value
-         left join flow.project_process_step_custom_field_value ppscfv11
-                   on ppscfv11.project_process_step_id = pps.id and
-                      ppscfv11.custom_field_group_assignment_id =
-                      22560
-         left join flow.project_process_step_custom_field_value ppscfv12
-                   on ppscfv12.project_process_step_id = pps.id and
-                      ppscfv12.custom_field_group_assignment_id =
-                      25023
-         left join flow.project_process_step_custom_field_value ppscfv13
-                   on ppscfv13.project_process_step_id = pps.id and
-                      ppscfv13.custom_field_group_assignment_id =
-                      25981
-         left join flow.project_process_step_custom_field_value ppscfv14
-                   on ppscfv14.project_process_step_id = pps.id and
-                      ppscfv14.custom_field_group_assignment_id =
-                      26122
-         left join flow.project_process_step_custom_field_value ppscfv15
-                   on ppscfv15.project_process_step_id = pps.id and
-                      ppscfv15.custom_field_group_assignment_id =
-                      23802
-         left join brs.feat_db_utility utility15 on utility15.id = ppscfv15.int_value
-  ----@randa          left join brs.project_process_step_custom_field_value ppscfv16 on ppscfv16.project_process_step_id = pps.id and
---                                                                                      ppscfv16.custom_field_group_assignment_id = 26217
-  where pps.id = v_project_process_step_id;
+  from brs.get_proposal_details(p_proposal_id);
 
-  create temp table proposal_value as (with version_values
-                                              as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
-                                                                                                                               proposal_group_uuid,
-                                                                                                                               value,
-                                                                                                                               field_id,
-                                                                                                                               object_code
-                                                  from brs.proposal_version_custom_field_value_vw v
-                                                  where v.proposal_version_id <= v_version_id
-                                                    and proposal_group_uuid not in (select distinct proposal_group_uuid
-                                                                                    from brs.proposal_version_custom_field_group
-                                                                                    where archived is not null
-                                                                                      and proposal_version_id <= v_version_id)
-                                                  order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
-                                            grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
-                                                                                       'object_code', object_code,
-                                                                                       'fields',
-                                                                                       array_to_json(array_agg(jsonb_strip_nulls(
-                                                                                           jsonb_build_object('fieldId',
-                                                                                                              vv.field_id,
-                                                                                                              'flowCustomFieldId',
-                                                                                                              cf.flow_custom_field_id) ||
-                                                                                           vv.value)))
-                                                                      ) as row
-                                                             from version_values vv
-                                                                    inner join brs.custom_field cf on cf.id = vv.field_id
-                                                             group by proposal_group_uuid, object_code)
-                                       select row ->> 'object_code' as object_code, *
-                                       from grouped_rows);
+  select string_agg(lov.name, ',')
+  into v_adder
+  from brs.proposal prop
+         inner join brs.proposal_custom_field_value pcfv on prop.id = pcfv.proposal_id and
+                                                            pcfv.custom_field_group_assignment_id = 146
+         inner join brs.list_of_value lov on lov.id = any (pcfv.int_array_value)
+  where prop.id = p_proposal_id;
+
   raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
   raise notice 'v_system_size = %',v_system_size;
   raise notice 'v_estimated_annual_energy_consumption_kwh = %',v_estimated_annual_energy_consumption_kwh;
-
-  --   create index pv_proposal_group_uuid on proposal_value (proposal_group_uuid);
---   create index pv_field_id on proposal_value (field_id);
---   create index pv_field_name on proposal_value (field_name);
---   create index pv_data_type_id on proposal_value (data_type_id);
---   create index pv_value on proposal_value (value);
---   create index pv_int_value on proposal_value (int_value);
-  create index pv_object_code on proposal_value (object_code);
-
   raise notice 'v_product_id = % ',v_product_id;
   raise notice 'v_unapproved_zip_code_adder = % ',v_unapproved_zip_code_adder;
   raise notice 'v_version_id = % ',v_version_id;
@@ -773,29 +620,20 @@ BEGIN
   raise notice 'v_trenching_cost = % ',v_trenching_cost;
   raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
 
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 380)') ->> 'value')::numeric
+  select dealer_redline_price
   into v_dealer_redline_price
-  from proposal_value pv
-  where object_code = 'PROPOSAL_DEALER_REDLINE_PRICING'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intArrayValue == $intArrayValue ))',
-                         jsonb_build_object('field', 341, 'intArrayValue', v_state_id))
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 407, 'intValue', v_dealer)));
+  from brs.get_proposal_dealer_redline_pricing(v_version_id, v_state_id, coalesce(v_dealer,0));
 
   raise notice 'v_dealer_redline_price = % ',v_dealer_redline_price;
   raise notice 'v_dealer_markup = % ',v_dealer_markup;
   raise notice 'v_dealer = % ',v_dealer;
+
   v_small_system_size_adder_amount = 0.00::numeric;
-
-  --todo this query is expecting only one row in the admin table
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric  as small_system_size_adder,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 132)') ->> 'value')::numeric  as small_system_size_value,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as small_system_size_unit_type_id
+  select small_system_size_adder,
+         small_system_size_value,
+         small_system_size_unit_type_id
   into v_small_system_size_adder,v_small_system_size_value,v_small_system_size_unit_type_id
-  from proposal_value pv
-  where object_code = 'PROPOSAL_SMALL_SYSTEM_ADDERS';
-
+  from brs.get_proposal_small_system_adders(v_version_id);
 
   if v_system_size < v_small_system_size_value then
     select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_SMALL_SYSTEM_ADDERS',
@@ -808,10 +646,8 @@ BEGIN
 
   raise notice 'v_small_system_size_adder_amount = % ',v_small_system_size_adder_amount;
 
-  with t as (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'value')            as adder_name,
-                    (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
-             from proposal_value pv
-             where object_code = 'PROPOSAL_SITE_SURVEY')
+  with t as (select adder_name, val
+             from brs.get_proposal_site_survey_adders(v_version_id))
   select string_agg(t.adder_name, ',')
   into v_site_survey_items
   from t
@@ -824,82 +660,46 @@ BEGIN
 
   select sum(site_survey_duration::bigint)
   into v_site_survey_time_estimate
-  from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,
-                        0)                                                                        as site_survey_duration,
-               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
-               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
-        from proposal_value pv
-        where object_code = 'PROPOSAL_SITE_SURVEY'
-          and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.value == $value)', '{
-          "targetFieldId": 329,
-          "value": true
-        }'))
-          and not (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-          "targetFieldId": 337,
-          "intValue": 1722
-        }'))
-        union
-        select *
-        from (select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,
-                              0)                                                                        as site_survey_duration,
-                     (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
-                     (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
-              from proposal_value pv
-              where object_code = 'PROPOSAL_SITE_SURVEY'
-                and not jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field))', '{
-                "field": 329
-              }')) as foo1
+  from (with t as (select site_survey_duration, val
+                   from brs.get_proposal_site_survey_adders(v_version_id))
+        select site_survey_duration::bigint
+        from brs.get_proposal_site_survey_adders(v_version_id)
+        where applied_by_default is true
+          and states is null
+        union all
+        select site_survey_duration
+        from t
         where val = any (v_site_survey_time_adders)
-        union
-        select coalesce((select jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 339)') ->> 'value')::integer,
-                        0)                                                                        as site_survey_duration,
-               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value,
-               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as val
-        from proposal_value pv
-        where object_code = 'PROPOSAL_SITE_SURVEY'
-          and jsonb_path_match(row, 'exists($.fields[*] ? (@.intArrayValue == $field))',
-                               jsonb_build_object('field', v_state_id))) as foo;
+        union all
+        select site_survey_duration
+        from (SELECT ARRAY(SELECT jsonb_array_elements_text(states)) as states, site_survey_duration
+              from brs.get_proposal_site_survey_adders(v_version_id)
+              where states is not null) as foo
+        where v_state_id = any (foo.states::int[])) as foo;
 
   raise notice 'v_site_survey_time_estimate = %',v_site_survey_time_estimate;
 
-  select completed_by_surveyor
+  with t as (select *
+             from brs.get_proposal_site_survey_adders(v_version_id))
+  select can_be_completed_by_surveyor
   into v_site_survey_resource_type_yn
-  from (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == $targetFieldId)', '{
-    "targetFieldId": 338
-  }') ->> 'value')                                                                                   completed_by_surveyor,
-               (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value
-        from proposal_value pv
-        where object_code = 'PROPOSAL_SITE_SURVEY'
-          and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-          "targetFieldId": 338,
-          "intValue": 1731
-        }'))
-          and not (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.value == $value)', '{
-          "targetFieldId": 329,
-          "value": true
-        }'))) as foo
-  where adder_value = any (v_site_survey_time_adders)
+  from t
+  where can_be_completed_by_surveyor = 'No'
+    and val = any (v_site_survey_time_adders)
+    and applied_by_default is null
   limit 1;
   raise notice 'v_site_survey_resource_type_yn = %',v_site_survey_resource_type_yn;
 
+
   if v_site_survey_resource_type_yn is null then
-    select completed_by_surveyor
+    with t as (select *
+               from brs.get_proposal_site_survey_adders(v_version_id))
+    select can_be_completed_by_surveyor
     into v_site_survey_resource_type_yn
-    from (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == $targetFieldId)', '{
-      "targetFieldId": 338
-    }') ->> 'value')                                                                                   completed_by_surveyor,
-                 (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 340)') ->> 'intValue')::bigint as adder_value
-          from proposal_value pv
-          where object_code = 'PROPOSAL_SITE_SURVEY'
-            and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-            "targetFieldId": 338,
-            "intValue": 1730
-          }'))
-            and not (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.value == $value)', '{
-            "targetFieldId": 329,
-            "value": true
-          }'))) as foo
-    where adder_value = any (v_site_survey_time_adders)
+    from t
+    where can_be_completed_by_surveyor = 'Yes'
+      and val = any (v_site_survey_time_adders)
+      and applied_by_default is null
     limit 1;
   end if;
 
@@ -913,22 +713,19 @@ BEGIN
 
   raise notice 'v_site_survey_resource_type = %',v_site_survey_resource_type;
 
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 111)') ->> 'value')::numeric   as apr,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 320)') ->> 'value')::text      as financial_option,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 148)') ->> 'value')::numeric   as reamortized_payment_factor_without_itc_paydown,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 110)') ->> 'value')::numeric   as loan_term,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 114)') ->> 'value')::numeric   as dealer_fee,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 116)') ->> 'value')::numeric   as reamortization_factor,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 102)') ->> 'intValue')::bigint as financier_id,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 102)') ->> 'value')::text      as financier,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 115)') ->> 'value')::numeric   as initial_payment_factor
+  select apr,
+         financial_option,
+         reamortized_payment_factor_without_itc_paydown,
+         loan_term,
+         dealer_fee,
+         reamortization_factor,
+         financier_id,
+         financier,
+         initial_payment_factor
   into v_apr,v_financial_option,v_reamortized_payment_factor_without_itc_paydown,v_loan_term,
     v_dealer_fee,v_reamortization_factor,v_financier_id,v_financier,v_initial_payment_factor
-  from proposal_value pv
-  where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-     jsonb_build_object('field', 128,'intValue', v_financial_product_id));
+  from brs.get_proposal_finance_products(v_version_id, v_financial_product_id);
+
 
   raise notice 'v_apr = %',v_apr;
   raise notice 'v_financial_option = %',v_financial_option;
@@ -940,24 +737,20 @@ BEGIN
   raise notice 'v_financier = %',v_financier;
   raise notice 'v_initial_payment_factor = %',v_initial_payment_factor;
 
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 147)') ->> 'value')::numeric as instant_use_assumption,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 92)') ->> 'value')::numeric  as net_metring_rate,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 88)') ->> 'value')::numeric  as production_factor_east_west,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 89)') ->> 'value')::numeric  as production_factor_south,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 90)') ->> 'value')::numeric  as maximum_funding_amount_per_watt,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 91)') ->> 'value')::numeric  as minimum_funding_amount_per_watt,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 87)') ->> 'value')::numeric  as current_estimated_cost_per_kwh,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 94)') ->> 'value')::numeric  as utility_cost_escalator,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 380)') ->> 'value')::numeric as red_line_funding_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 381)') ->> 'value')::numeric as closer_gen_discount
+  select instant_use_assumption,
+         net_metring_rate,
+         production_factor_east_west,
+         production_factor_south,
+         maximum_funding_amount_per_watt,
+         minimum_funding_amount_per_watt,
+         current_estimated_cost_per_kwh,
+         utility_cost_escalator,
+         red_line_funding_amount,
+         closer_gen_discount
   into v_instant_use_assumption,v_net_metring_rate,v_production_factor_east_west,
     v_production_factor_south,v_maximum_funding_amount_per_watt,v_minimum_funding_amount_per_watt,
     v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_red_line_funding_amount,v_closer_gen_discount
-  from proposal_value pv
-  where object_code = 'PROPOSAL_PRICING'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-                         jsonb_build_object('field', 85, 'intValue', v_utility_company_id));
+  from brs.get_proposal_pricing(v_version_id, v_utility_company_id);
 
 
   raise notice 'v_instant_use_assumption = %',v_instant_use_assumption;
@@ -969,19 +762,18 @@ BEGIN
 
   raise notice 'v_current_estimated_cost_per_kwh = %',v_current_estimated_cost_per_kwh;
   raise notice 'v_utility_cost_escaltor = %',v_utility_cost_escalator;
---todo test this
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 155)') ->> 'value')::numeric as number_of_batteries,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 157)') ->> 'value')::numeric as cash_price_storage,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 151)') ->> 'value')::numeric as storage_capacity
+  --raise notice 'v_storage_type_id = %',v_storage_type_id;
+  -- --todo test this
+
+  select number_of_batteries,
+         cash_price_storage,
+         storage_capacity
   into v_number_of_batteries,v_cash_price_storage,v_storage_capacity
-  from proposal_value pv
-  where object_code = 'PROPOSAL_STORAGE_DETAILS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-                         jsonb_build_object('field', 160, 'intValue', v_storage_type_id));
+  from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0));
+
   v_number_of_batteries = coalesce(v_number_of_batteries, 0);
   raise notice 'v_number_of_batteries = %',v_number_of_batteries;
   raise notice 'v_cash_price_storage = %',v_cash_price_storage;
-
 
   v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
   v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used, 0);
@@ -995,14 +787,13 @@ BEGIN
   raise notice 'v_after_net_metering = % ',v_after_net_metering;
   raise notice 'v_adjusted_annual_production = % ',v_adjusted_annual_production;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as smart_thermostat_value,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 145)') ->> 'value')::numeric   as energy_efficiency_reduction_thermostat,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::numeric as unit_type_id_smart_thermostat
+  select smart_thermostat_value,
+         energy_efficiency_reduction_thermostat,
+         unit_type_id_smart_thermostat
   into v_smart_thermostat_value,v_energy_efficiency_reduction_thermostat,v_unit_type_id_smart_thermostat
-  from proposal_value pv
-  where object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-                         jsonb_build_object('field', 117, 'intValue', 536));
+  from brs.get_proposal_equipment_adders(v_version_id)
+  where equipment_type_id = 536;
+
   raise notice 'v_smart_thermostat_value = % ',v_smart_thermostat_value;
   raise notice 'v_energy_efficiency_reduction_thermostat = % ',v_energy_efficiency_reduction_thermostat;
 
@@ -1013,16 +804,13 @@ BEGIN
                                      null)
   into v_smart_thermostat_value;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric   as led_light_bulbs_value,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 145)') ->> 'value')::numeric   as energy_efficiency_reduction_light_bulbs,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::numeric as unit_type_id_led
+  select smart_thermostat_value,
+         energy_efficiency_reduction_thermostat,
+         unit_type_id_smart_thermostat
   into v_led_light_bulbs_value,v_energy_efficiency_reduction_light_bulbs,v_unit_type_id_led
-  from proposal_value pv
-  where object_code = 'PROPOSAL_EQUIPMENT_ADDERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))', '{
-    "field": 117,
-    "intValue": 537
-  }');
+  from brs.get_proposal_equipment_adders(v_version_id)
+  where equipment_type_id = 537;
+
 
   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_EQUIPMENT_ADDERS',
                                      v_led_light_bulbs_value::numeric, v_unit_type_id_led::bigint,
@@ -1034,41 +822,31 @@ BEGIN
   raise notice 'v_led_light_bulbs_value = % ',v_led_light_bulbs_value;
   raise notice 'v_energy_efficiency_reduction_light_bulbs = % ',v_energy_efficiency_reduction_light_bulbs;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 136)') ->> 'value')::numeric  as panel_degradation_factor,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_id,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric  as adder_amount,
-         ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 341)') ->
-                                                 'intArrayValue')))::bigint[]              as states
-
+  select panel_degradation_factor,
+         panel_unit_type_id,
+         panel_adder_amount,
+         panel_states
   into v_panel_degradation_factor,v_panel_unit_type_id,v_panel_adder_amount,v_panel_states
-  from proposal_value pv
-  where object_code = 'PROPOSAL_PANEL_DETAIL'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 138, 'intValue', v_panel_brand_id)))
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.value == $value)',
-                           jsonb_build_object('targetFieldId', 139, 'value', v_panel_watts)));
+  from brs.get_proposal_panel_details(v_version_id, v_panel_brand_id, v_panel_watts);
+
 
   raise notice 'v_panel_degradation_factor = %',v_panel_degradation_factor;
   raise notice 'v_panel_unit_type_id = %',v_panel_unit_type_id;
   raise notice 'v_panel_adder_amount = %',v_panel_adder_amount;
   raise notice 'v_panel_states = %',v_panel_states;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 142)') ->> 'value')::numeric  as inverter_efficiency,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_id,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric  as adder_amount
+  select inverter_efficiency,
+         inverter_unit_type_id,
+         inverter_adder_amount
   into v_inverter_efficiency,v_inverter_unit_type_id,v_inverter_adder_amount
-  from proposal_value pv
-  where object_code = 'PROPOSAL_INVERTER_DETAILS'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 131, 'intValue', v_inverter_brand_id)));
+  from brs.get_proposal_inverter_details(v_version_id, v_inverter_brand_id);
 
   raise notice 'v_inverter_efficiency = %',v_inverter_efficiency;
   raise notice 'v_inverter_unit_type_id = %',v_inverter_unit_type_id;
   raise notice 'v_inverter_adder_amount = %',v_inverter_adder_amount;
 
   raise notice 'v_utility_company_id = % ',v_utility_company_id;
---call first formula
-
+  --call first formula
 
   raise notice 'v_first_year_production_estimate = %',v_first_year_production_estimate;
   raise notice 'v_system_size = %',v_system_size;
@@ -1119,15 +897,12 @@ BEGIN
   end if;
 
   raise notice 'v_commission_strategy_id = %',v_commission_strategy_id;
-
-
   raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
 
   v_initial_system_cost = v_system_size::numeric * 1000::numeric * v_adjusted_price_per_watt::numeric;
   raise notice 'v_initial_system_cost = %',v_initial_system_cost;
 
   v_equipment_storage_adder = 0;
-
   v_equipment_storage_adder = coalesce(v_cash_price_storage, 0);
   v_loan_price_storage = coalesce(v_cash_price_storage, 0) / (1 - v_dealer_fee);
 
@@ -1135,7 +910,6 @@ BEGIN
   raise notice 'v_loan_price_storage = %',v_loan_price_storage;
 
   raise notice 'v_storage adder based on loan type = %',v_equipment_storage_adder;
-
 
   select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_PANEL_DETAIL', v_panel_adder_amount::numeric,
                                      v_panel_unit_type_id::bigint, 0::numeric, v_panel_states, v_state_id)
@@ -1147,11 +921,12 @@ BEGIN
   into v_equipment_inverter_adder;
   -- raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
   v_has_critter_guard = false;
-  if 23457 = any(v_misc_adders_array) then
+  if 23457 = any (v_misc_adders_array) then
     v_has_critter_guard = true;
   end if;
 
-  v_misc_adders = brs.get_misc_adder_amount(v_system_size, v_misc_adders_array);
+  --todo change this back to not include the 1
+  v_misc_adders = brs.get_misc_adder_amount(v_version_id,v_system_size, v_misc_adders_array);
   raise notice 'v_misc_adders = %',v_misc_adders;
   raise notice 'v_has_critter_guard = %',v_has_critter_guard;
 
@@ -1166,14 +941,11 @@ BEGIN
   end if;
   raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
---@randa remove all this with the postal code release
+  --@randa remove all this with the postal code release
   v_postal_code = substring(v_postal_code, 1, 5);
   with my_zips
-         as (select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 119)') ->> 'value')::numeric                                          as adder_name,
-                    ARRAY(SELECT jsonb_array_elements_text((jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 122)') -> 'value')))::bigint[] as postal_codes
-             from proposal_value pv
-             where object_code = 'PROPOSAL_ZONE_ADDERS')
-  select adder_name
+         as (select adder_value,postal_codes from brs.get_proposal_zone_adders(v_version_id))
+  select adder_value
   into v_zone_adder
   from my_zips
   where v_postal_code::bigint = any (postal_codes);
@@ -1204,26 +976,26 @@ BEGIN
           coalesce(v_ac_unit_relocation_cost, 0)::numeric) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
---   elsif v_product_id = 19424 then
---     v_promotion_cost =
---         ((coalesce(v_initial_system_cost, 0) + case
---                                                  when v_dealer is null then
---                                                      coalesce(v_unapproved_zip_code_adder, 0) +
---                                                      coalesce(v_equipment_panel_adder, 0) +
---                                                      coalesce(v_equipment_inverter_adder, 0) +
---                                                      coalesce(v_zone_adder, 0) +
---                                                      coalesce(v_misc_adders, 0) +
---                                                      coalesce(v_small_system_size_adder_amount, 0) +
---                                                      coalesce(v_smart_thermostat_adder, 0) +
---                                                      coalesce(v_led_light_bulbs_adder, 0)
---                                                  else 0::numeric end +
---           coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
---           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
---           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
---           coalesce(v_ac_unit_relocation_cost, 0)::numeric) *
---          (v_reamortization_factor - v_initial_payment_factor) * 42) /
---         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
---                             42);
+    --   elsif v_product_id = 19424 then
+    --     v_promotion_cost =
+    --         ((coalesce(v_initial_system_cost, 0) + case
+    --                                                  when v_dealer is null then
+    --                                                      coalesce(v_unapproved_zip_code_adder, 0) +
+    --                                                      coalesce(v_equipment_panel_adder, 0) +
+    --                                                      coalesce(v_equipment_inverter_adder, 0) +
+    --                                                      coalesce(v_zone_adder, 0) +
+    --                                                      coalesce(v_misc_adders, 0) +
+    --                                                      coalesce(v_small_system_size_adder_amount, 0) +
+    --                                                      coalesce(v_smart_thermostat_adder, 0) +
+    --                                                      coalesce(v_led_light_bulbs_adder, 0)
+    --                                                  else 0::numeric end +
+    --           coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
+    --           coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
+    --           coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
+    --           coalesce(v_ac_unit_relocation_cost, 0)::numeric) *
+    --          (v_reamortization_factor - v_initial_payment_factor) * 42) /
+    --         (1 - v_dealer_fee - (v_reamortization_factor - v_initial_payment_factor) *
+    --                             42);
   end if;
   raise notice 'v_promotion_cost = %',v_promotion_cost;
   raise notice 'v_down_payment_amount = %',v_down_payment_amount;
@@ -1232,23 +1004,19 @@ BEGIN
   v_additional_fee_for_exceeding_non_solar_threshold = 0.00;
   v_maximum_dollar_per_watt_for_solar = 0.00;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 106)') ->> 'value') asnon_solar_cap,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 103)') ->> 'value') non_solar_threshold_for_additional_fee,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 107)') ->> 'value') additional_fee_for_exceeding_non_solar_threshold,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 105)') ->> 'value') maximum_dollar_per_watt_for_solar
+  select non_solar_cap,
+         non_solar_threshold_for_additional_fee,
+         additional_fee_for_exceeding_non_solar_threshold,
+         maximum_dollar_per_watt_for_solar
   into v_non_solar_cap,v_non_solar_threshold_for_additional_fee,
     v_additional_fee_for_exceeding_non_solar_threshold,
     v_maximum_dollar_per_watt_for_solar
-  from proposal_value pv
-  where object_code = 'PROPOSAL_FINANCIERS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.intValue == $intValue && @.fieldId == $fieldId))',
-                         jsonb_build_object('intValue', v_financier_id,'fieldId',102));
+  from brs.get_proposal_financiers(v_version_id, v_financier_id);
 
   raise notice 'v_non_solar_cap = %',v_non_solar_cap;
-
   raise notice 'v_maximum_dollar_per_watt_for_solar = %',v_maximum_dollar_per_watt_for_solar;
 
---dealer fee escalator for ancillary costs above threshold
+  --dealer fee escalator for ancillary costs above threshold
   v_ancillary_cost_portion_of_loan_before_rebates = 0.00;
   v_ancillary_cost_portion_of_loan_before_rebates = ( --ancillary costs in this block
                                                         coalesce(v_main_panel_upgrade_cost, 0)::numeric +
@@ -1309,7 +1077,6 @@ BEGIN
                                        coalesce(v_ac_unit_relocation_cost, 0)::numeric);
   raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
 
-
   v_no_ancillary_total_loan_amount = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
                                       case
                                         when v_dealer is null then
@@ -1324,51 +1091,35 @@ BEGIN
                                         else 0::numeric end);
   raise notice 'v_no_ancillary_total_loan_amount = %',v_no_ancillary_total_loan_amount;
 
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 410)') ->> 'value')::numeric
+  select deposit_amount
   into v_deposit_amount
-  from proposal_value pv
-  where object_code = 'PROPOSAL_DEPOSITS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intArrayValue == $intArrayValue ))',
-                         jsonb_build_object('field', 341, 'intArrayValue', v_state_id));
+  from brs.get_proposal_deposits(v_version_id, v_state_id);
 
   raise notice 'v_deposit_amount % ',v_deposit_amount;
-
-  v_deposit_amount_number = coalesce(v_deposit_amount,0);
-
+  v_deposit_amount_number = coalesce(v_deposit_amount, 0);
   raise notice 'v_deposit_amount_number % ',v_deposit_amount_number;
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::bigint as referral_promotion
+  select rebate_amount
   into v_referral_promotion
-  from proposal_value pv
-  where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-    "targetFieldId": 93,
-    "intValue": 535
-  }'));
+  from brs.get_proposal_rebates(v_version_id)
+  where rebate_id = 535;
 
   v_referral_promotion = coalesce(v_referral_promotion, 0);
   raise notice 'v_referral_promotion = %',v_referral_promotion;
-
-
   raise notice 'v_proposal_group_uuid_state_rebate***************************** = % ',v_proposal_group_uuid_state_rebate;
-
   v_state_rebate_amount = 0.00::numeric;
---todo really test this
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as state_rebate_value,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_state_rebate,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as state_rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as state_rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 100)') ->> 'value')::numeric  as first_year_cap,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 99)') ->> 'intValue')::bigint as is_first_year_cap
+
+  select rebate_amount,
+         unit_type_id,
+         rebate_cap_amount,
+         rebate_cap_percent_of_total,
+         max_amount_captured_first_year,
+         first_year_cap_on_rebate
   into v_state_rebate_value,v_unit_type_state_rebate,v_state_rebate_cap_amount,v_state_rebate_cap_percent_of_total,
     v_first_year_rebate_cap,v_is_first_year_rebate_cap
-  from proposal_value pv
-  where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 86, 'intValue', v_state_id)))
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.intValue == $intValue1 && @.fieldId == $fieldId1)',
-                               jsonb_build_object('intValue1',454,'fieldId1',96)));
+  from brs.get_proposal_rebates(v_version_id)
+  where state_id = v_state_id and
+      rebate_type_id = 454;
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
   raise notice 'v_state_rebate_amount***************************** = % ',v_state_rebate_amount;
@@ -1377,19 +1128,16 @@ BEGIN
   raise notice 'v_state_rebate_cap_percent_of_total***************************** = % ',v_state_rebate_cap_percent_of_total;
 
   v_utility_rebate_amount = 0.00::numeric;
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric   as utility_rebate_value,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::bigint as unit_type_utility_rebate,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric  as utility_rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric  as utility_rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 399)') ->> 'value')::text     as minimum_tsrf
+  select rebate_amount,
+         unit_type_id,
+         rebate_cap_amount,
+         rebate_cap_percent_of_total,
+         minimum_tsrf_for_qualification
   into v_utility_rebate_value,v_unit_type_utility_rebate,v_utility_rebate_cap_amount,v_utility_rebate_cap_percent_of_total,
     v_minimum_tsrf
-  from proposal_value pv
-  where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 85, 'intValue', v_utility_company_id)))
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.intValue == $intValue1 && @.fieldId == $fieldId1)',
-                           jsonb_build_object('intValue1',455,'fieldId1',96)));
+  from brs.get_proposal_rebates(v_version_id)
+  where utility_company_id = v_utility_company_id
+    and rebate_type_id = 455;
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
   raise notice 'v_utility_rebate_value***************************** = % ',v_utility_rebate_value;
@@ -1405,33 +1153,22 @@ BEGIN
     (coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0) +
      coalesce((v_other_adder_and_discount_amount), 0));
   raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
-  raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
 
---illinios
+
+  --illinios
   if v_state_id = 13 then
-    select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 369)') ->> 'value')::numeric as il_srec_less_10,
-           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 370)') ->> 'value')::numeric as il_srec_between_10_25,
-           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 371)') ->> 'value')::numeric as il_srec_greater_25,
-           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 372)') ->> 'value')::numeric as il_srec_greater_25,
-           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')          as srec_rebate_cap_amount,
-           (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')          as srec_rebate_cap_percent_of_total
+    select srec_less_10,
+           srec_between_10_25,
+           srec_greater_25,
+           srec_realization,
+           rebate_cap_amount,
+           rebate_cap_percent_of_total
     into v_il_srec_less_10,v_il_srec_between_10_25,v_il_srec_greater_25,v_srec_realization,
       v_srec_rebate_cap_amount,v_srec_rebate_cap_percent_of_total
-    from proposal_value pv
-    where object_code = 'PROPOSAL_REBATE'
-      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-      "targetFieldId": 86,
-      "intValue": 13
-    }'))
-      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-      "targetFieldId": 96,
-      "intValue": 1911
-    }'))
-      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-      "targetFieldId": 93,
-      "intValue": 1905
-    }'));
-
+    from brs.get_proposal_rebates(v_version_id)
+    where state_id = 13 and
+        rebate_type_id = 1911 and
+        rebate_id = 1905;
 
     raise notice 'v_il_srec_less_10 = %',v_il_srec_less_10;
     raise notice 'v_il_srec_between_10_25 = %',v_il_srec_between_10_25;
@@ -1441,7 +1178,7 @@ BEGIN
     raise notice 'v_srec_rebate_cap_percent_of_total***************************** = % ',v_srec_rebate_cap_percent_of_total;
 
     -- inverter_efficiency
--- ONLY IF THE state is Illinois ((15 year production * inverter_efficiency)/1000) * if system is less then < IL srec 10   else greater then >= 10 and less than 25 else greater than 25 * srec realization
+    -- ONLY IF THE state is Illinois ((15 year production * inverter_efficiency)/1000) * if system is less then < IL srec 10   else greater then >= 10 and less than 25 else greater than 25 * srec realization
     v_ill_srec_rebate_amount =
         ((brs.get_system_production_year(v_first_year_production_estimate, v_panel_degradation_factor, 15) *
           v_inverter_efficiency) / 1000) * case
@@ -1461,6 +1198,7 @@ BEGIN
     raise notice 'v_ill_srec_rebate_amount = %',v_ill_srec_rebate_amount;
   end if;
   raise notice 'v_minimum_tsrf = %',v_minimum_tsrf;
+
   if v_minimum_tsrf is not null then
     select *
     into v_utility_rebate_amount
@@ -1487,25 +1225,14 @@ BEGIN
 
   raise notice 'v_utility_rebate_amount = %',v_utility_rebate_amount;
 
-
   --virginia
   if v_state_id = 46 then
-    select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric as srec_rate
+    select rebate_amount
     into v_virginia_srec_rate
-    from proposal_value pv
-    where object_code = 'PROPOSAL_REBATE'
-      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-      "targetFieldId": 86,
-      "intValue": 46
-    }'))
-      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-      "targetFieldId": 96,
-      "intValue": 1911
-    }'))
-      and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-      "targetFieldId": 93,
-      "intValue": 1969
-    }'));
+    from brs.get_proposal_rebates(v_version_id)
+    where state_id = 46 and
+        rebate_type_id = 1911 and
+        rebate_id = 1969;
 
     raise notice 'v_virginia_srec_rate = %',v_virginia_srec_rate;
     v_virginia_srec_rebate_amount = v_virginia_srec_rate * v_system_size * 1000;
@@ -1513,59 +1240,57 @@ BEGIN
   end if;
 
   --   v_csu_rebate = 0;
---   if v_utility_company_id = 241 then
---     with proposal_group_uuid as (select proposal_group_uuid
---                                  from proposal_value
---                                  where field_id = 85
---                                    and object_code = 'PROPOSAL_REBATE'
---                                    and int_value::bigint = v_utility_company_id)
--- select value::numeric
--- into v_csu_rebate
--- from proposal_value pv
---        inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
--- where field_id = 98
---   and object_code = 'PROPOSAL_REBATE';
---
--- with proposal_group_uuid as (select proposal_group_uuid
---                              from proposal_value
---                              where field_id = 85
---                                and object_code = 'PROPOSAL_REBATE'
---                                and int_value::bigint = v_utility_company_id)
--- select int_value
--- into v_csu_rebate_unit_type_id
--- from proposal_value pv
---        inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
--- where field_id = 97
---   and object_code = 'PROPOSAL_REBATE';
---
--- if v_csu_rebate_unit_type_id = 460 then
---       v_csu_rebate = v_csu_rebate * v_system_size * 1000;
--- end if;
+  --   if v_utility_company_id = 241 then
+  --     with proposal_group_uuid as (select proposal_group_uuid
+  --                                  from proposal_value
+  --                                  where field_id = 85
+  --                                    and object_code = 'PROPOSAL_REBATE'
+  --                                    and int_value::bigint = v_utility_company_id)
+  -- select value::numeric
+  -- into v_csu_rebate
+  -- from proposal_value pv
+  --        inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
+  -- where field_id = 98
+  --   and object_code = 'PROPOSAL_REBATE';
+  --
+  -- with proposal_group_uuid as (select proposal_group_uuid
+  --                              from proposal_value
+  --                              where field_id = 85
+  --                                and object_code = 'PROPOSAL_REBATE'
+  --                                and int_value::bigint = v_utility_company_id)
+  -- select int_value
+  -- into v_csu_rebate_unit_type_id
+  -- from proposal_value pv
+  --        inner join proposal_group_uuid pgu on pgu.proposal_group_uuid = pv.proposal_group_uuid
+  -- where field_id = 97
+  --   and object_code = 'PROPOSAL_REBATE';
+  --
+  -- if v_csu_rebate_unit_type_id = 460 then
+  --       v_csu_rebate = v_csu_rebate * v_system_size * 1000;
+  -- end if;
 
   raise notice 'v_csu_rebate = %',v_csu_rebate;
   raise notice 'v_csu_rebate_unit_type_id = %',v_csu_rebate_unit_type_id;
 
 
   -- select *
--- into v_col_springs_rebate
--- from brs.get_colorado_rebate(v_aurora_design_summary, v_csu_rebate,
---                              v_inverter_efficiency);
+  -- into v_col_springs_rebate
+  -- from brs.get_colorado_rebate(v_aurora_design_summary, v_csu_rebate,
+  --                              v_inverter_efficiency);
+  --end if;
 
---end if;
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric  as rebate_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 101)') ->> 'value')::numeric as rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 133)') ->> 'value')::numeric as rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 382)') ->> 'value')::numeric as battery_rebate_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 383)') ->> 'value')::numeric as battery_rebate_cap_amount,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 384)') ->> 'value')::numeric as battery_rebate_cap_percent_of_total,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 385)') ->> 'value')::numeric as system_size_cutoff
+  select rebate_amount,
+         rebate_cap_amount,
+         rebate_cap_percent_of_total,
+         odoe_battery_rebate_amount,
+         odoe_battery_rebate_cap_amount,
+         odoe_battery_rebate_percent_total,
+         odoe_system_size_cutoff
   into v_rebate_amount,v_rebate_cap_amount,v_rebate_cap_percentage,
     v_battery_rebate_amount,v_battery_rebate_cap_amount,v_battery_rebate_cap_percent_of_total,
     v_system_size_cutoff
-  from proposal_value pv
-  where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)',
-                           jsonb_build_object('targetFieldId', 93, 'intValue', v_odoe_income_status)));
+  from brs.get_proposal_rebates(v_version_id)
+  where rebate_id = v_odoe_income_status;
 
   raise notice 'v_odoe_income_status % ',v_odoe_income_status;
   raise notice 'v_rebate_amount % ',v_rebate_amount;
@@ -1591,7 +1316,7 @@ BEGIN
                                               v_battery_rebate_cap_amount,
                                               v_battery_rebate_amount,
                                               v_cash_price_storage
-    );
+       );
   raise notice 'v_odoe_rebate % ',v_odoe_rebate;
 
 
@@ -1602,14 +1327,17 @@ BEGIN
 
   v_total_system_cost =
     (((coalesce(v_total_loan_amount_before_rebate, 0) + coalesce(v_down_payment_amount, 0)) / (1 - v_dealer_fee)) +
-     coalesce(v_above_line_rebate, 0) + coalesce(v_deposit_amount,0) +
-     case when v_dealer is null then
-       case when v_version_id < 74 then
-      (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end  else 0::numeric end );
+     coalesce(v_above_line_rebate, 0) + coalesce(v_deposit_amount, 0) +
+     case
+       when v_dealer is null then
+         case
+           when v_version_id < 74 then
+             (284.00::numeric / (1 - v_dealer_fee))
+           else 0::numeric end
+       else 0::numeric end);
   raise notice 'v_total_system_cost = %',v_total_system_cost;
 
   if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
-
     v_required_down_payment =
       greatest(
           (
@@ -1626,10 +1354,14 @@ BEGIN
                                                    v_initial_payment_factor * 18) /
                                                   ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
                      else 0::numeric end) / (1 - v_dealer_fee)) -
-                 case when v_dealer is null then
-                   case when v_version_id < 74 then
-                    coalesce(v_other_adder_and_discount_amount, 0) +
-                    (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end else 0::numeric end -
+                 case
+                   when v_dealer is null then
+                     case
+                       when v_version_id < 74 then
+                           coalesce(v_other_adder_and_discount_amount, 0) +
+                           (284.00::numeric / (1 - v_dealer_fee))
+                       else 0::numeric end
+                   else 0::numeric end -
                  coalesce(v_admin_discount, 0)) /
                 (v_system_size * 1000)) -
                v_maximum_dollar_per_watt_for_solar) * v_system_size * 1000
@@ -1668,7 +1400,6 @@ BEGIN
                                   ) / (1 - v_dealer_fee)) -
                                (v_system_size * 1000 * v_maximum_dollar_per_watt_for_solar)) * (1 - v_dealer_fee));
 
-
   raise notice 'v_required_down_payment before batteries = %',v_required_down_payment;
 
   if v_number_of_batteries > 0 and v_financier_id = 116 then
@@ -1702,9 +1433,13 @@ BEGIN
                                            ((1 - v_dealer_fee) - (v_initial_payment_factor * 18))
               else 0::numeric end) / (1 - v_dealer_fee)) -
           coalesce(v_other_adder_and_discount_amount, 0) +
-          case when v_dealer is null then
-            case when v_version_id < 74 then
-            (284.00::numeric / (1 - v_dealer_fee)) else 0::numeric end else 0::numeric end - coalesce(v_admin_discount, 0);
+          case
+            when v_dealer is null then
+              case
+                when v_version_id < 74 then
+                  (284.00::numeric / (1 - v_dealer_fee))
+                else 0::numeric end
+            else 0::numeric end - coalesce(v_admin_discount, 0);
   raise notice 'v_total_loan_amount = %',v_total_loan_amount;
   raise notice 'v_above_line_rebate = %',v_above_line_rebate;
   raise notice 'v_admin_discount = %',v_admin_discount;
@@ -1755,16 +1490,11 @@ BEGIN
   raise notice 'v_unit_type_state_rebate = % ',v_unit_type_state_rebate;
 
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric    as federal_tax_incentive_rate,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::numeric as federal_unit_type_id
+  select rebate_amount,
+         unit_type_id
   into v_federal_tax_incentive_rate,v_federal_unit_type_id
-  from proposal_value pv
-  where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-    "targetFieldId": 96,
-    "intValue": 453
-  }'));
-
+  from brs.get_proposal_rebates(v_version_id)
+  where rebate_type_id = 453;
 
   if v_federal_tax_incentive_rate is not null and v_federal_unit_type_id = 460 then
     v_federal_tax_incentive_amount = v_federal_tax_incentive_rate * v_system_size * 1000;
@@ -1780,14 +1510,13 @@ BEGIN
   v_monthly_solar_payment = coalesce(v_total_loan_amount, 0) * v_initial_payment_factor;
   raise notice 'v_monthly_solar_payment = %',v_monthly_solar_payment;
 
-
   v_total_ee_reduction =
     least(((v_estimated_annual_energy_consumption_kwh *
             case
-              when v_smart_thermostat > 0 then v_energy_efficiency_reduction_thermostat
+              when coalesce(v_smart_thermostat,0) > 0 then coalesce(v_energy_efficiency_reduction_thermostat,0)
               else 0 end) + ---Judson said this should be the least
-           (v_energy_efficiency_reduction_light_bulbs * v_led_light_bulbs)),
-          v_estimated_annual_energy_consumption_kwh * .2);
+           (coalesce(v_energy_efficiency_reduction_light_bulbs,0) * coalesce(v_led_light_bulbs,0))),
+          coalesce(v_estimated_annual_energy_consumption_kwh,0) * .2);
   raise notice 'v_total_ee_reduction = %',v_total_ee_reduction;
 
   v_adjusted_annual_consumption =
@@ -1845,7 +1574,6 @@ BEGIN
            else coalesce(v_state_rebate_amount, 0) end) * v_reamortization_factor;
   end if;
 
-
   raise notice 'v_reamortized_monthly_payment_all_credits_to_loan = %',v_reamortized_monthly_payment_all_credits_to_loan;
 
   v_cost_of_solar = v_reamortized_monthly_payment_all_credits_to_loan * 12 * v_loan_term;
@@ -1853,8 +1581,7 @@ BEGIN
 
   v_monthly_cost_25_year_average_with_solar = v_remaining_monthly_electric_bill_25_year_average +
                                               ((v_reamortized_monthly_payment_all_credits_to_loan * 12 *
-                                                v_loan_term) / 300)
-    + (v_down_payment_amount / 300);
+                                                v_loan_term) / 300) + (v_down_payment_amount / 300);
   raise notice 'v_monthly_cost_25_year_average_with_solar = %',v_monthly_cost_25_year_average_with_solar;
 
   v_monthly_cost_30_year_average_with_solar = v_remaining_monthly_electric_bill_30_year_average +
@@ -1862,7 +1589,6 @@ BEGIN
                                                 v_loan_term) / 360)
     + (v_down_payment_amount / 360);
   raise notice 'v_monthly_cost_30_year_average_with_solar = %',v_monthly_cost_30_year_average_with_solar;
-
 
   v_total_cost_25_years = brs.get_year_cost_by_years(
     v_current_estimated_cost_per_kwh,
@@ -1926,7 +1652,6 @@ BEGIN
     v_reamortized_monthly_payment_no_credits_to_loan = v_total_loan_amount * v_reamortization_factor;
   end if;
 
-
   raise notice 'v_reamortized_monthly_payment_no_credits_to_loan = %',v_reamortized_monthly_payment_no_credits_to_loan;
 
   v_monthly_payment_all_credits_to_loan_after_term = 0.00;
@@ -1987,7 +1712,7 @@ BEGIN
   v_loan_type = concat(v_financier || ' ' || v_loan_term);
   raise notice 'v_loan_type = %',v_loan_type;
 
---   (24 * square root of system size in kWh DC)-(0.0016+(sqrt of system size in kWh DC * 0.00012)) * square footage of house * number of batteries
+  --   (24 * square root of system size in kWh DC)-(0.0016+(sqrt of system size in kWh DC * 0.00012)) * square footage of house * number of batteries
   v_estimated_backup_days = case
                               when v_system_size is not null then
                                     24 * sqrt(v_system_size) -
@@ -2000,7 +1725,7 @@ BEGIN
 
   v_total_system_cost =
       coalesce(v_total_loan_amount, 0) + coalesce(v_required_down_payment, 0) + coalesce(v_down_payment_amount, 0) +
-      coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0) + coalesce(v_deposit_amount,0);
+      coalesce(v_above_line_rebate, 0) + coalesce(v_other_adder_and_discount_amount, 0) + coalesce(v_deposit_amount, 0);
 
   raise notice 'v_total_system_cost at the end %',v_total_system_cost;
   v_above_line_rebate_without_odoe = (v_above_line_rebate - v_odoe_rebate);
@@ -2318,9 +2043,27 @@ BEGIN
            v_odoe_rebate::numeric,
            to_char(coalesce(v_deposit_amount,0),'$FM9,999,999')::varchar,
            coalesce(v_deposit_amount_number,0),
-           v_has_critter_guard;
-
-  drop table proposal_value;
+           v_has_critter_guard,
+           case when p_run_details is true then
+           (SELECT array_to_json(array_agg(row_to_json(proposal_commission_details)))
+            FROM (
+                   select *
+                   from brs.get_proposal_commission_details(v_financial_product_id,
+                                                            v_source_id ,
+                                                            v_system_size ,
+                                                            v_unapproved_zip_code_adder ,
+                                                            v_red_line_funding_amount ,
+                                                            v_closer_gen_discount ,
+                                                            v_equipment_panel_adder ,
+                                                            v_equipment_inverter_adder ,
+                                                            v_zone_adder ,
+                                                            v_misc_adders ,
+                                                            v_small_system_size_adder_amount ,
+                                                            v_dealer_fee ,
+                                                            v_initial_payment_factor,
+                                                            v_above_line_rebate)
+                 ) proposal_commission_details)
+            else '{}'::json end;
 
 END
 $BODY$

@@ -142,6 +142,15 @@ public class PostalCodeQuery {
   """;
 
   //language=PostgreSQL
+  public final static String deletePostalCodeZone = """
+      update flow.postal_code_zone
+        set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
+      where id = :id
+  """;
+
+  //language=PostgreSQL
   public final static String insertPostalCodeZone = """
       insert into flow.postal_code_zone(company_id, zone_name, created_by_id, modified_by_id, metro_area_id, adder_amount)
       values (:companyId, :zoneName, :userId, :userId, :metroAreaId, :adderAmount)
