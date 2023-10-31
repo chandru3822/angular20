@@ -71,8 +71,8 @@ const chooseSelectedView = (view, id) => {
       </v-list>
     </v-navigation-drawer>
   <v-row>
-    <v-toolbar flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
-    <v-btn small text color="primary" @click="toggleMenu(false)" class="mt-1">
+    <v-toolbar id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
+    <v-btn small text color="primary" @click="toggleMenu(false)" class="">
       <v-icon>mdi-menu</v-icon>
     </v-btn>
     <slot name="header-contents">
@@ -116,7 +116,15 @@ const chooseSelectedView = (view, id) => {
   background-color: var(--v-grey-lighten2) !important;
 }
 
+
+
 .white-bg {
   background-color: #fff;
+}
+</style>
+<style lang="scss">
+#three-column-header > div.v-toolbar__content {
+  align-items: flex-start;
+  padding-top: 16px;
 }
 </style>

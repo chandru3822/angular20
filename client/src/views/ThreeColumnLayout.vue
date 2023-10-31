@@ -1,8 +1,8 @@
 <template>
   <v-container class="pa-0" id="three-column-container">
     <v-row>
+      <v-toolbar v-if="!headerHidden" flat :height="headerHeight" class="three-column-header px-5">
       <slot name="header">
-        <v-toolbar v-if="!headerHidden" flat class="three-column-header px-4">
           <v-toolbar-title class="headline-medium d-flex align-center mr-6">
             <slot name="back-btn"></slot>
             {{ headerText }}
@@ -13,8 +13,8 @@
             <slot name="header-btn">
             </slot>
           </v-toolbar-items>
-        </v-toolbar>
       </slot>
+      </v-toolbar>
     </v-row>
     <v-row class="split-container" :class="{'full-height':headerHidden}">
       <v-col id="left-column" @click="$emit('end-notes-timer')" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
@@ -71,6 +71,10 @@ export default {
     headerText: String,
     headerBtnText: String,
     headerHidden: Boolean,
+    headerHeight: {
+      type: String,
+      default: '64px'
+    },
     leftCollapsed: Boolean,
     leftSmall: Boolean,
     leftHidden: Boolean,
@@ -178,7 +182,7 @@ export default {
 }
 
 .three-column-header {
-  height: 64px;
+  min-height: 64px;
   background-color: var(--v-grey-lighten2) !important;
 }
 
