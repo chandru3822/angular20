@@ -15,7 +15,7 @@
               <a v-if="!isSidebarCollapsed && messageProperties.projectName"
                  v-bind="attrs" v-on="on"
                  class="d-inline-block clickable conversation-name-link"
-                :href="`/project/${projectId}/details`">
+                :href="`/project/${projectId}/status`">
                 {{ messageProperties.projectName }}
                 <v-chip class="customer-chip" style="margin-left: 4px;" small>
                   <span >Customer</span>
