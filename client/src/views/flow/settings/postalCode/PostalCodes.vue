@@ -101,7 +101,7 @@
                   </td>
                   <td class="text-right">
                     <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           @click="goToPostalCode(item)">
+                           :to="`/settings/zip/postalCode/${item.id}`">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-btn v-if="userCanDelete" icon :large="$vuetify.breakpoint.smAndDown" color="primary"

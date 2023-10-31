@@ -72,6 +72,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
       User systemUser = new User();
       systemUser.setId(id);
       systemUser.setCompanyId(brSystemUser.getCompanyId());
+      systemUser.setAwsBucket(brSystemUser.getAwsBucket());
       systemUser.setHighestCompanyId(brSystemUser.getCompanyId());
       systemUser.setParentCompanyId(brSystemUser.getCompanyId());
       systemUser.setHighestParentCompanyId(brSystemUser.getCompanyId());
