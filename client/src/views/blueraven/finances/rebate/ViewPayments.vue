@@ -80,7 +80,7 @@
               {{ it.projectName ? it.projectName : '' }}</a></td>
             <td class="text-left" v-else>{{ it.projectName ? it.projectName : '' }}</td>
             <td class="text-left">
-              <router-link :to="`/project/${it.projectId}/details`">{{ it.projectId }}</router-link>
+              <router-link :to="`/project/${it.projectId}/status`">{{ it.projectId }}</router-link>
             </td>
             <td class="text-left">{{ it.substantialCompletionDate | formatDate('date') }}</td>
             <td class="text-left">{{ it.financier ? it.financier : '' }}</td>
