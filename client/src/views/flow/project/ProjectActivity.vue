@@ -96,7 +96,7 @@
               </v-btn>
             </v-btn-toggle>
           </div>
-          <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2" @click="startReadNotesTimer('Clicked in the notes tab')">
+          <div v-else-if="selectedOption === 1 && !isSidebarCollapsed" style="width: 168px;" class="mr-2">
 
             <v-btn-toggle
               v-model="toggleTimelineView"
@@ -189,7 +189,7 @@
             </v-btn>
           </v-col>
           <v-col cols="4" class="px-0">
-            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1); startReadNotesTimer('Clicked in the notes tab')" :dark="selectedOption === 1"
+            <v-btn text :color="selectedOption === 1 ? 'white' : 'primary'" block elevation="0" @click="selectView(1);" :dark="selectedOption === 1"
                    :class="{'section-selected': selectedOption===1}">
               <v-icon>mdi-text-long</v-icon>
             </v-btn>
