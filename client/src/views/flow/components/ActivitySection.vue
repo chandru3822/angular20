@@ -1,6 +1,6 @@
 <template>
   <v-container class="px-5 py-0">
-    <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
+    <div class="activity-header">
       <v-text-field
         prepend-inner-icon="search"
         text
@@ -36,7 +36,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
+    <div class="activity-body">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
@@ -72,7 +72,7 @@
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
                       <v-icon small v-else>mdi-arrow-down</v-icon>
                     </v-btn>
-                    <v-btn v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0)" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
+                    <v-btn v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0)" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ];">
                       + Add note
                     </v-btn>
                   </v-row>
@@ -132,7 +132,7 @@
              class="one-hunned text-capitalize"
              v-if="!addActivity && null == editedActivity.id"
              :loading="topicsLoading"
-             @click="[addActivity = true, selectedTopics = [] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
+             @click="[addActivity = true, selectedTopics = [] ];">
         <v-icon small>mdi-plus</v-icon>
         Add note
       </v-btn>
@@ -194,7 +194,7 @@
           </v-btn>
           <v-btn color="primary" class="text-capitalize flex-grow-1"
                  :loading="savingActivity"
-                 @click="saveActivity(null == editedActivity.id); endWriteNotesTimer('Saved Note')"
+                 @click="saveActivity(null == editedActivity.id);"
                  :disabled="!editedActivity.note">
             Save
           </v-btn>
@@ -225,7 +225,6 @@ import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
 import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
-import {endTimer, startTimer, writeNoteEndTimer, writeNoteStartTimer} from "@/services/analyticsService";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import constants from "@/helpers/constants";
 
@@ -380,12 +379,6 @@ export default {
   },
   methods: {
     cloneDeep,
-    startReadNotesTimer(startEvent){
-      startTimer(startEvent);
-    },
-    endWriteNotesTimer(endEvent){
-      writeNoteEndTimer(endEvent);
-    },
     bottomHitCallback() {
       this.bottomHitCount = this.bottomHitCount + 1
     },
@@ -669,12 +662,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.savingActivity = false
       }
-    },
-    endReadNotesTimer(endEvent){
-      endTimer(endEvent);
-    },
-    startWriteNotesTimer(startEvent){
-      writeNoteStartTimer(startEvent);
     },
     removeDeletedActivity(activityId){
       const deletedActivity = this.activities.find(a => a.id === activityId)

@@ -156,7 +156,7 @@
                   <template v-slot:activator="{ on }">
                     <v-btn x-small text v-on="on"
                            target="_blank"
-                           :to="`/project/${selectedProject.projectId}/details`"><v-icon>mdi-chevron-right</v-icon></v-btn>
+                           :to="`/project/${selectedProject.projectId}/status`"><v-icon>mdi-chevron-right</v-icon></v-btn>
                   </template>
                   <span>Go to Project</span>
                 </v-tooltip>

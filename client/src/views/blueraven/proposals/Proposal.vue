@@ -98,7 +98,7 @@
                     :callback="populateDirtyCfvs"
                     :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
                     :field="field"
-                    :append-icon="field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null"
+                    :append-icon="getAppendIcon(field)"
                     :append-callback="(value) => changeShowCommissionModal(value)"
                     :show-field-name="false"
                     :list-of-value-filter="filters[field.customFieldId]"
@@ -319,6 +319,9 @@ export default {
     })
   },
   methods: {
+    getAppendIcon(field) {
+      return this.userIsAdmin && field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null
+    },
     changeShowCommissionModal (fieldValue) {
       this.currentCommissionValue = fieldValue
       this.showCommissionModal = !this.showCommissionModal
@@ -528,17 +531,19 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        const {data} = await apiRequest('blueraven', {
+        const {data, headers} = await apiRequest('blueraven', {
           method: 'get',
           url: `/proposal/${this.proposalId}/pdf`,
           responseType: 'blob'
         })
+        const contentDisposition = headers['content-disposition'];
+        const filename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9).replace(/['"]+/g, '');
 
         if (data) {
           const pdfFile = URL.createObjectURL(new Blob([data], {type: 'application/pdf'}))
           const docUrl = document.createElement('a')
           docUrl.href = pdfFile
-          docUrl.setAttribute('download', `proposal-${this.proposalId}.pdf`)
+          docUrl.setAttribute('download', filename)
           document.body.appendChild(docUrl)
           docUrl.click()
           setTimeout(() => {

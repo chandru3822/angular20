@@ -6,7 +6,7 @@
 
       <dt class="left-align">Project ID:</dt>
       <dd>
-        <router-link :to="`/project/${rebateDetails.project_id}/details`">{{rebateDetails.project_id}}</router-link>
+        <router-link :to="`/project/${rebateDetails.project_id}/status`">{{rebateDetails.project_id}}</router-link>
         <br/>
       </dd>
       <dt class="left-align">Customer Address:</dt>

@@ -15,7 +15,6 @@
                       auto-grow
                       rows="4"
                       @change="dirtyNote = true"
-                      @click="endReadNoteTimer('Started writing note'); startWriteNoteTimer('Started writing note')"
                       background-color="grey lighten-4"
                       filled v-model="note.note">
           </v-textarea>
@@ -51,7 +50,7 @@
         <div class="text-left mb-2 mt-5">
           <v-btn color="primary" class="white--text"
                  :disabled="!note.note || savingNote"
-                 @click="saveNote(note); endWriteNoteTimer('Saved note')">Save
+                 @click="saveNote(note);">Save
           </v-btn>
           <v-btn text color="primary" v-if="note.note" @click="[note={}, dirtyNote = false]">
             <span>cancel</span>
@@ -140,7 +139,7 @@
             <td class="py-2 note-column left-column-mobile">
               <pre class="app-pre-wrapper">{{ item.note }}</pre>
               <div v-if="item.childNotes && item.childNotes.length > 0 && !expanded.includes(item)"
-                   @click="expanded=[item]; startReadNoteTimer('Opened comments')" class="pl-4 note-see-comments clickable label-small">
+                   @click="expanded=[item];" class="pl-4 note-see-comments clickable label-small">
                 See {{ item.childNotes.length }} comment{{ item.childNotes.length > 1 ? 's' : '' }}...
               </div>
               <div v-else-if="item.childNotes && item.childNotes.length > 0 && expanded.includes(item)"
@@ -164,7 +163,7 @@
                   </v-btn>
                 </template>
                 <v-list>
-                  <v-list-item @click="[item.showReply = true, expanded=[item]]; endReadNoteTimer('Started adding comment'); startWriteNoteTimer('Started adding comment')">
+                  <v-list-item @click="[item.showReply = true, expanded=[item]];">
                     <v-list-item-title>Add Comment</v-list-item-title>
                   </v-list-item>
                   <v-list-item v-if="item.createdById === userId || $store.getters.isFullAdmin"
@@ -212,7 +211,7 @@
                 </template>
               </Mentionable>
               <div class="text-left py-2">
-                <v-btn color="primary white--text" @click="saveNote(item); endWriteNoteTimer('Saved comment')"
+                <v-btn color="primary white--text" @click="saveNote(item);"
                        :disabled="!item.reply"
                 >
                   Save
@@ -317,12 +316,6 @@ import Vue2Filters from "vue2-filters"
 import {Mentionable} from 'vue-mention'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import {
-  startTimer,
-  endTimer,
-  writeNoteStartTimer,
-  writeNoteEndTimer
-} from '@/services/analyticsService'
 
 export default {
   name: 'NotesAndActivityContent',
@@ -493,18 +486,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    startReadNoteTimer(startEvent){
-      startTimer(startEvent);
-    },
-    endReadNoteTimer(endEvent){
-      endTimer(endEvent);
-    },
-    startWriteNoteTimer(startEvent){
-      writeNoteStartTimer(startEvent);
-    },
-    endWriteNoteTimer(endEvent){
-      writeNoteEndTimer(endEvent);
     },
   }
 }
