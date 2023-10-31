@@ -69,12 +69,12 @@
           <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
         </v-card-actions>
       </v-card>
-    <infinite-loading @infinite="infiniteHandler">
+    <infinite-loading v-if="useInfiniteLoader" @infinite="infiniteHandler">
       <span slot="spinner"></span>
       <span slot="no-more"></span>
       <span slot="no-results"></span>
     </infinite-loading>
-    <SpinnerInline :size="20" color="primary" v-if="!hitMax"/>
+    <SpinnerInline :size="20" color="primary" v-if="!hitMax && useInfiniteLoader"/>
     <ConfirmationDialog :open-dialog="activityToDelete != null" @confirm="deleteActivity(activityToDelete)" @close-dialog="activityToDelete = null">
       You won’t be able to recover this note. Are you sure you want to delete it?
     </ConfirmationDialog>
@@ -110,7 +110,11 @@ export default {
       type: Boolean,
       default: true,
     },
-    query: String
+    query: String,
+    useInfiniteLoader: {
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -141,10 +145,10 @@ export default {
       //the counts are loaded from the parent so we have to wait to set the state here
       if(hitMax) {
         this.hitMax = true
-        this.loaderState.complete()
+        this.loaderState?.complete()
       }
       else {
-        this.loaderState.loaded()
+        this.loaderState?.loaded()
       }
     },
     editItem(item) {

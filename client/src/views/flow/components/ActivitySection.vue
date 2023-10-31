@@ -49,6 +49,8 @@
                       :edit-callback="setEditedActivity"
                       :search-callback="searchByClick"
                       @reload="getActivities"
+                      ref="pinnedActivityList"
+                      :use-infinite-loader="false"
                       @remove-deleted="removeDeletedActivity"
         />
       </div>
@@ -114,6 +116,7 @@
                     :highlightPinnedActivity = false
                     :query="queryText"
                     ref="activityList"
+                    :use-infinite-loader="true"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
