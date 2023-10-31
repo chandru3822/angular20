@@ -42,6 +42,8 @@ public class PostalCodeQuery {
              s.abbreviation as state_abbreviation,
              pc.self_gen,
              pcz.zone_name,
+             pc.notes,
+             pc.postal_code_zone_id,
              rr.round_robin_name,
              cg.call_group_name,
              pc.inside_sales,
