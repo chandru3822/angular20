@@ -98,7 +98,7 @@
                     :callback="populateDirtyCfvs"
                     :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
                     :field="field"
-                    :append-icon="field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null"
+                    :append-icon="getAppendIcon(field)"
                     :append-callback="(value) => changeShowCommissionModal(value)"
                     :show-field-name="false"
                     :list-of-value-filter="filters[field.customFieldId]"
@@ -319,6 +319,9 @@ export default {
     })
   },
   methods: {
+    getAppendIcon(field) {
+      return this.userIsAdmin && field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null
+    },
     changeShowCommissionModal (fieldValue) {
       this.currentCommissionValue = fieldValue
       this.showCommissionModal = !this.showCommissionModal
