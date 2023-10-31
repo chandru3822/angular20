@@ -110,7 +110,7 @@
       <v-toolbar-title class="app-title albatross-header-1 align-center mt-3"
                        :class="{'mt-4': project.tags && project.tags.length > 0}">
         <div>
-          <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+          <router-link :to="`/project/${project.id}/status`">{{ project.projectName }}</router-link>
           <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
