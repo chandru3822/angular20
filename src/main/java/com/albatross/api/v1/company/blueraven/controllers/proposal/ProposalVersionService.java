@@ -94,12 +94,14 @@ public class ProposalVersionService {
     return sqlCache.getBySql(ProposalToolQuery.findById, Map.of("id", id), ProposalVersion.class);
   }
 
-  public Page<ProposalVersion> getProposalVersions(Pageable pageable) {
+  public Page<ProposalVersion> getProposalVersions(Pageable pageable, Boolean publishedOnly) {
     final var currentUser = securityService.getCurrentUser();
     final Map<String, Object> params =
       Map.of(
         "companyId",
         currentUser.getCompanyId(),
+        "publishedOnly",
+        publishedOnly,
         "limit",
         pageable.getPageSize(),
         "offset",

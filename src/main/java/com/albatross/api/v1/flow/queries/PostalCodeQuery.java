@@ -89,6 +89,12 @@ public class PostalCodeQuery {
   public final static String insertPostalCode = """
       insert into flow.postal_code(country_code, postal_code, place_name, active, state_id)
       values ('US', :postalCode, :placeName, true, :stateId)
+      on conflict (postal_code)  do update
+      set active = true,
+          archived = false,
+          place_name = :placeName,
+          state_id = :stateId
+      returning id
   """;
 
   //language=PostgreSQL
@@ -132,6 +138,15 @@ public class PostalCodeQuery {
             adder_amount = :adderAmount,
             date_modified = now(),
             modified_by_id = :userId
+      where id = :id
+  """;
+
+  //language=PostgreSQL
+  public final static String deletePostalCodeZone = """
+      update flow.postal_code_zone
+        set archived = true,
+        date_modified = now(),
+        modified_by_id = :userId
       where id = :id
   """;
 

@@ -52,6 +52,11 @@ public class PostalCodeController {
     return postalCodeService.getPostalCodeZone(id);
   }
 
+  @DeleteMapping(value = "/zone/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deletePostalCodeZone(@PathVariable Long id) {
+    postalCodeService.deletePostalCodeZone(id);
+  }
+
   @PostMapping(value = "/zone", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<PostalCodeZone> savePostalCodeZone(@RequestBody PostalCodeZone postalCodeZone) {
     return postalCodeService.savePostalCodeZone(postalCodeZone);

@@ -746,9 +746,7 @@ export default {
       this.defaultValuesChanged = true
       //if it is the closer event then auto populate the end time with (start time + 1 hour)
       if (this.selectedEvent?.uniqueBehaviorTypeId === 1 && this.selectedEvent?.startTime != null) {
-        console.log('STARTER TOWN', this.selectedEvent.startTime)
         this.selectedEvent.endTime = moment.utc(this.selectedEvent.startTime).add(90, 'm').format('YYYY-MM-DDTHH:mm:ssZ')
-        console.log('END TOWN', this.selectedEvent.endTime)
       }
     },
     userIsWhitelisted(){
