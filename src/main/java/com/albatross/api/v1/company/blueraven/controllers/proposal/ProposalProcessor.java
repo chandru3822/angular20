@@ -15,15 +15,17 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 @Slf4j
 @Component
@@ -36,7 +38,6 @@ public class ProposalProcessor {
   private final ProjectService projectService;
   private final SecurityService securityService;
 
-  @Transactional
   @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
   public void doGenerateFinalPDF() {
     // system needs to be aware of a user to access methods
@@ -49,55 +50,51 @@ public class ProposalProcessor {
     proposalService.getLockedProposalsBatchForProcessing().stream()
       .map(proposalService::getProposal)
       .flatMap(Optional::stream)
-      .forEach(proposal -> {
-        log.info("[Proposal] Generating final PDF for proposalId={}", proposal.getId());
+      .forEach(processProposalPDF(count));
 
-        try {
-          proposalService.generateProposalPDF(proposal.getId(), 1L)
-            .ifPresent(result -> {
-              handleResult(result);
-              count.getAndIncrement();
-            });
-        } catch (Exception e) {
-          log.error("[Proposal] Error processing final PDF for proposalId={}", proposal.getId(), e);
-          proposalService.setProcessingErrorMessage(proposal.getId(), e.getMessage(), SystemSettings.BR_SYSTEM_USER.getId());
-        }
-      });
-
-    Instant endTime = Instant.now();
     if (count.get() > 0) {
-      log.info("[Proposal] Generating PDF batch took {}ms to generate {} files",
-        TimeUnit.MILLISECONDS.convert(
-          endTime.toEpochMilli() - startTime.toEpochMilli(),
-          TimeUnit.MILLISECONDS)
-        , count.get());
+      Duration duration = Duration.between(startTime, Instant.now());
+      log.info("[Proposal] Generating PDF batch took {}ms to generate {} files", duration.toMillis(), count.get());
     }
+  }
+
+  private Consumer<Proposal> processProposalPDF(AtomicInteger count) {
+    return proposal -> {
+      log.debug("[Proposal] Generating final PDF for proposalId={}", proposal.getId());
+
+      try {
+        proposalService.generateProposalPDF(proposal.getId(), 1L)
+          .ifPresent(result -> {
+            handleResult(result);
+            count.getAndIncrement();
+          });
+      } catch (Exception e) {
+        log.error("[Proposal] Error processing final PDF for proposalId={}", proposal.getId(), e);
+        proposalService.setProcessingErrorMessage(proposal.getId(), e.getMessage(), SystemSettings.BR_SYSTEM_USER.getId());
+      }
+    };
   }
 
   private void handleResult(ProposalResource result) {
     try {
       Proposal proposal = result.proposal();
-      log.info("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
+      log.debug("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
-      Map<String, Object> context = result.context();
-
-      String financier = context.getOrDefault("financier", "").toString();
-      String loanTerm = context.getOrDefault("loan_term", "").toString();
-      String product = context.getOrDefault("product_name", "").toString();
-
-      String displayName = String.format("%s %s %s %s", proposal.getDisplayName(), financier, loanTerm, product).trim();
+      String displayName = getDisplayName(result);
       String filename = String.format("%s.pdf", displayName);
 
       Resource resource = result.resource();
 
-      projectService.addAttachment(
-        proposal.getProjectId(),
-        PROPOSAL_ATTACHMENT_TYPE,
-        resource.contentLength(),
-        MediaType.APPLICATION_PDF_VALUE,
-        filename,
-        resource.getInputStream(),
-        displayName);
+      try (InputStream attachmentStream = resource.getInputStream()) {
+        projectService.addAttachment(
+          proposal.getProjectId(),
+          PROPOSAL_ATTACHMENT_TYPE,
+          resource.contentLength(),
+          MediaType.APPLICATION_PDF_VALUE,
+          filename,
+          attachmentStream,
+          displayName);
+      }
 
       log.debug("[Proposal] Setting proposal as processed for projectId={}", proposal.getId());
       proposalService.setProposalAsProcessed(proposal.getId());
@@ -105,6 +102,17 @@ public class ProposalProcessor {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  private String getDisplayName(ProposalResource result) {
+    Proposal proposal = result.proposal();
+    Map<String, Object> context = result.context();
+
+    String financier = context.getOrDefault("financier", "").toString();
+    String loanTerm = context.getOrDefault("loan_term", "").toString();
+    String product = context.getOrDefault("product_name", "").toString();
+
+    return String.format("%s %s %s %s", proposal.getDisplayName(), financier, loanTerm, product).trim();
   }
 
   private void setBlueravenSystemUser() {

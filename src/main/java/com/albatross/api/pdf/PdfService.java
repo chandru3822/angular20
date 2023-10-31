@@ -38,7 +38,7 @@ public class PdfService {
       Instant startTime = Instant.now();
       Resource htmlToPdf = convertHtmlToPdf(List.of(resource));
       Duration duration = Duration.between(startTime, Instant.now());
-      log.info("Generated PDF in {}", duration);
+      log.debug("Generated PDF in {}", duration);
       return htmlToPdf;
     } catch (IOException e) {
       throw new RuntimeException(e);
