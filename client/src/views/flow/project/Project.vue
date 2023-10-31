@@ -159,7 +159,8 @@
                                  :milestone="milestone"
                                  :current-status-id="project.companyProjectStatusTypeId"
               ></StatusTrackerIcon>
-              {{milestone.projectStatusType}}
+                <span class="ml-2 label-large active-status">{{milestone.projectStatusType}}</span>
+
               </div>
               <div>
                 <div v-for="field in milestone.assignedFields">
@@ -459,7 +460,7 @@ export default {
             this.milestones[x].iconColor = 'grey'
             continue;
           }
-          if(statusCompleted || this.milestones[x].assignedFields.every(f => f.fieldValue)) {
+          if(statusCompleted || (this.milestones[x].assignedFields.length > 0 && this.milestones[x].assignedFields.every(f => f.fieldValue))) {
             this.milestones[x].btnColor = 'success lighten-1'
             this.milestones[x].iconColor = 'white'
           } else {
@@ -677,6 +678,10 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+.active-status {
+  color: #000000;
+}
+
 #project-container {
   width: 100%;
   height: 100%;

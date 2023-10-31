@@ -137,4 +137,8 @@ export default {
   color: var(--v-grey-darken4);
 }
 
+.milestone-checkbox{
+  margin-top: 10px;
+}
+
 </style>
