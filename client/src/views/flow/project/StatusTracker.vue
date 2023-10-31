@@ -23,7 +23,7 @@
 
             <v-tooltip left>
               <template v-slot:activator="{ on, attrs }">
-                <v-btn icon class="information-icon"  color='grey-base' v-bind="attrs"
+                <v-btn icon class="information-icon"  color='var(--v-grey-base)' v-bind="attrs"
                        v-on="on"><v-icon size="18">mdi-information</v-icon></v-btn>
               </template>
               <span>{{ milestone.description }}</span>
@@ -31,7 +31,7 @@
           </div>
 <!--        <v-card class="px-3 mt-2 ml-10 pb-3" v-if="milestone.assignedFields?.length > 0">-->
           <div v-for="field in milestone.assignedFields">
-            <v-card class="px-3 mt-2 ml-10 pb-3" v-if="milestone.assignedFields?.length > 0">
+            <v-card class="px-3 mt-2 ml-10 pb-3 milestone-card" :elevation="0" v-if="milestone.assignedFields?.length > 0">
             <StatusTrackerItem :field="field" :cancelled="cancelled"
             ></StatusTrackerItem>
             </v-card>
@@ -79,7 +79,7 @@ export default {
       try {
         const {data, status} = await getRequest(`/project/${this.projectId}/status`)
         this.currentStatus = data
-        if(this.currentStatus.projectStatusType == 'Cancelled'){
+        if(this.currentStatus.projectStatusTypeId == 2){
           this.cancelled = true;
         }
       } catch (e) {
@@ -94,7 +94,7 @@ export default {
 
 <style lang="scss" scoped>
 .active-status {
-  color: blue;
+  color: #000000;
 }
 
 .cancelled-text{
@@ -102,13 +102,11 @@ export default {
 }
 
 .information-icon{
-  //color: var(--v-grey-base);
-  color: blue;
-  width: 50px;
+  width: 36px;
 }
 
 .stage-header{
-  padding-top: 24px;
+  padding-top: 12px;
   padding-bottom: 16px;
 }
 
@@ -117,11 +115,17 @@ export default {
 }
 
 #vertical-line {
-  height: 100%;
+  height: calc(100% - 9px);
   border-left: solid 1px #9E9E9E;
   position: absolute;
   top: 5px;
   left: 13px;
+}
+
+.milestone-card{
+  margin-top: 12px !important;
+  box-shadow: none;
+  border: 1px solid var(--v-grey-lighten1);
 }
 </style>
 
