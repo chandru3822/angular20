@@ -114,7 +114,7 @@
                                  {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
                                  {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}`}
                                  ]"
-                             :headerHeight="project.tags?.length > 0 ? '86px' : '64px'"
+                             :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
                              :view-change-callback="changeMobileView"
                              :subMenuSelectedView="selectedTab"
     >
@@ -131,7 +131,7 @@
                       class="mx-2"/>
       </template>
       <template v-slot:header-contents>
-        <v-toolbar-title class="title-medium align-center text-wrap">
+        <v-toolbar-title class="title-medium text-wrap">
           <div>
             <router-link :to="`/project/${project.id}/details`" class="no-text-decoration">{{ project.projectName }}</router-link>
             <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">

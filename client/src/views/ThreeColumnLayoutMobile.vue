@@ -72,7 +72,7 @@ const chooseSelectedView = (view, id) => {
     </v-navigation-drawer>
   <v-row>
     <v-toolbar id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
-    <v-btn small text color="primary" @click="toggleMenu(false)" class="">
+    <v-btn small text color="primary" @click="toggleMenu(false)" >
       <v-icon>mdi-menu</v-icon>
     </v-btn>
     <slot name="header-contents">
