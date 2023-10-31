@@ -221,7 +221,7 @@
               <div>
                 <v-card flat v-for="p in contact.projects"
                         class="project-button albatross-body-1"
-                        :to="`/project/${p.id}/details`">
+                        :to="`/project/${p.id}/status`">
                   <div class="body-large" >{{ p.projectName }} </div>
                   <div class="body-small" :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
                 </v-card>
@@ -314,7 +314,7 @@
           <div class="mx-2 mobile-content-padding">
             <v-card flat v-for="p in contact.projects"
                     class="project-button albatross-body-1"
-                    :to="`/project/${p.id}/details`">
+                    :to="`/project/${p.id}/status`">
               <div class="body-large" >{{ p.projectName }} </div>
               <div :class="getStatusClass(p.projectStatusTypeId)">{{ p.projectStatusType }}</div>
               <!--            <div class="ps-owner albatross-body-2" v-if="ps && ps.owner && ps.owner.fullName">{{ ps.owner.fullName }}</div>-->
@@ -922,7 +922,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         // this.$router.push({name: 'projectDetails', params: {projectId: data.id}, query: { checkAddress: true }})
         // ^^ i cant figure out why but doing the routing by name, param, query doesn't load the proper modal on the project screen when needed but it work by hard-coded path
-        let path = data.companyStateId ? `/project/${data.id}/details` : `/project/${data.id}/details?checkAddress=true`
+        let path = data.companyStateId ? `/project/${data.id}/status` : `/project/${data.id}/status?checkAddress=true`
         this.$router.push(path)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
