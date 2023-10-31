@@ -180,8 +180,7 @@
                                                     'split-container-with-tags': project && project.tags && project.tags.length > 0}">
       <div class="white-bg project-section px-0 left-panel"
            :class="{'col-2': !$store.state.project.leftSideSplit, 'collapse-left': $store.state.project.leftSideSplit}">
-        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}"
-             @click="endNotesTimer('Clicked outside right panel')">
+        <div class="left-expander-button ml-3" :class="{'title-collapsed': $store.state.project.leftSideSplit}">
           <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
@@ -209,8 +208,7 @@
       <div class="project-section center-panel pt-0 px-0" :class="{'col-5': !$store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                                                                  'center-width-left-side-collapse': $store.state.project.leftSideSplit && !$store.state.project.rightSideSplit,
                                                                  'center-width-right-side-collapse': !$store.state.project.leftSideSplit && $store.state.project.rightSideSplit,
-                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}"
-           @click="endNotesTimer('Clicked outside right panel')">
+                                                                 'center-width-both-collapse': $store.state.project.leftSideSplit && $store.state.project.rightSideSplit}">
         <router-view @refresh-upcoming-events="updateEventKey++"
                      @refresh-upcoming-pps="updatePpsKey++"
                      @refresh-project-status="getUpdatedProjectStatus()"
@@ -262,7 +260,6 @@ import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
-import {endTimer, projectOpened} from '@/services/analyticsService'
 import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 
@@ -331,10 +328,6 @@ export default {
         await this.getProjectTags()
       }
     }
-  },
-  beforeRouteLeave(to, from, next) {
-    this.endNotesTimer("Clicked outside right panel");
-    next();
   },
   computed: {
     projectTagEvents() {
@@ -441,7 +434,6 @@ export default {
           this.showEditModal()
         }
         this.projectLoading = false
-        projectOpened(this.projectId);
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.projectLoading = false
@@ -644,9 +636,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    endNotesTimer(endEvent) {
-      endTimer(endEvent);
-    }
   }
 }
 </script>
