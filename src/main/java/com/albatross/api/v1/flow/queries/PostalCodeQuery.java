@@ -43,6 +43,7 @@ public class PostalCodeQuery {
              pc.self_gen,
              pcz.zone_name,
              pc.notes,
+             pc.call_group_id,
              pc.postal_code_zone_id,
              rr.round_robin_name,
              cg.call_group_name,
