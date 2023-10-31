@@ -92,6 +92,15 @@ public class PostalCodeService {
     return sqlCache.getBySql(PostalCodeQuery.getPostalCodeZoneById, params, new PostalCodeZoneMapper<>(PostalCodeZone.class, om));
   }
 
+  public void deletePostalCodeZone(Long id) {
+    User user = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+    params.put("userId", user.trueUserId());
+
+    sqlCache.updateBySql(PostalCodeQuery.deletePostalCodeZone, params);
+  }
+
   public Optional<PostalCodeZone> savePostalCodeZone(PostalCodeZone postalCodeZone) {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
