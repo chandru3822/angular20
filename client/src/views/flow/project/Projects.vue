@@ -6,8 +6,8 @@
           <v-toolbar-title>Projects</v-toolbar-title>
         </v-toolbar>
 
-        <v-toolbar
-          class="white elevation-1 mt-3"
+        <v-card
+          class="white elevation-1 mt-3 px-3 pt-1 square-card"
         >
           <v-text-field
             class="pt-3"
@@ -22,7 +22,7 @@
           />
 
           <v-spacer/>
-        </v-toolbar>
+        </v-card>
 
         <v-divider/>
         <v-data-table
