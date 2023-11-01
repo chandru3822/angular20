@@ -362,6 +362,9 @@ public class ProposalTemplateService {
 
   public Resource generatePdf(Long templateId, Map<String, Object> context, boolean isDebug) throws Exception {
     final ProposalTemplate proposalTemplate = getTemplateById(templateId, context, ProposalGeneratedType.PRINT, isDebug);
+    if (proposalTemplate == null) {
+      throw new ApiException("Proposal template with id=" + templateId + " not found");
+    }
     return generatePdf(proposalTemplate.getBlocks(), proposalTemplate.getTheme().getThemeStyle());
   }
 

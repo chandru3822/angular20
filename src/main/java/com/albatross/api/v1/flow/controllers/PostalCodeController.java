@@ -4,6 +4,7 @@ package com.albatross.api.v1.flow.controllers;
 import com.albatross.api.v1.flow.model.PostalCode;
 import com.albatross.api.v1.flow.model.PostalCodeZone;
 import com.albatross.api.v1.flow.services.PostalCodeService;
+import com.albatross.api.v1.flow.services.RoundRobinService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class PostalCodeController {
 
   private final PostalCodeService postalCodeService;
+  private final RoundRobinService roundRobinService;
 
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -51,6 +53,20 @@ public class PostalCodeController {
   public Optional<PostalCodeZone> getPostalCodeZone(@PathVariable Long id) {
     return postalCodeService.getPostalCodeZone(id);
   }
+
+  //  todo: get mobile to hit the /roundRobin/userCanScheduleRemote then take this endpoint out
+  @GetMapping(value = "/zone/userCanSchedule", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Boolean userCanSchedule(@RequestParam String postalCode) {
+    return roundRobinService.userCanSchedule(postalCode);
+  }
+
+  //  todo: get mobile to hit the /roundRobin/userCanScheduleRemote then take this endpoint out
+  @GetMapping(value = "/zone/userCanScheduleRemote", produces = MediaType.APPLICATION_JSON_VALUE)
+  public Boolean userCanScheduleRemote() {
+    return roundRobinService.userCanScheduleRemote();
+  }
+
+
 
   @DeleteMapping(value = "/zone/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deletePostalCodeZone(@PathVariable Long id) {

@@ -531,17 +531,19 @@ export default {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
 
-        const {data} = await apiRequest('blueraven', {
+        const {data, headers} = await apiRequest('blueraven', {
           method: 'get',
           url: `/proposal/${this.proposalId}/pdf`,
           responseType: 'blob'
         })
+        const contentDisposition = headers['content-disposition'];
+        const filename = contentDisposition.substring(contentDisposition.indexOf('filename=') + 9).replace(/['"]+/g, '');
 
         if (data) {
           const pdfFile = URL.createObjectURL(new Blob([data], {type: 'application/pdf'}))
           const docUrl = document.createElement('a')
           docUrl.href = pdfFile
-          docUrl.setAttribute('download', `proposal-${this.proposalId}.pdf`)
+          docUrl.setAttribute('download', filename)
           document.body.appendChild(docUrl)
           docUrl.click()
           setTimeout(() => {

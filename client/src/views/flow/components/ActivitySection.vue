@@ -553,6 +553,7 @@ export default {
       this.search={}
     },
     setEditedActivity(item) {
+      this.addActivity = false
       this.editedActivity = cloneDeep(item)
       this.populateSelectedTopics(item)
     },

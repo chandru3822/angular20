@@ -18,17 +18,16 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.models.Propos
 import com.albatross.api.v1.company.blueraven.controllers.proposal.query.ProposalQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.*;
-import com.albatross.api.v1.company.blueraven.models.CustomFieldGroup;
-import com.albatross.api.v1.company.blueraven.models.CustomFieldValue;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldGroupService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.Attachment;
+import com.albatross.api.v1.flow.model.ListOfValue;
+import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.queries.customFieldValues.CustomFieldValueQuery;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import com.albatross.api.v1.flow.services.ProjectService;
-import com.albatross.api.v1.flow.services.UserService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
@@ -46,6 +45,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -125,7 +125,7 @@ public class BlueravenProposalService {
 
     // create new "create proposal design" step (active, cancel others)
     Long ppsId = insertProjectProcessStep(projectId, CREATE_PROPOSAL_DESIGN_ID);
-    log.debug("the new ppsId is: {}", ppsId);
+//    log.debug("the new ppsId is: {}", ppsId);
     // upload attachments to the new step
     if (null != attachments && !attachments.isEmpty()) {
       for (MultipartFile a : attachments) {
@@ -174,8 +174,7 @@ public class BlueravenProposalService {
     Map<String, Object> params = new HashMap<>();
     params.put("proposalId", proposalId);
 
-    Optional <ProposalCommission> result = sqlCache.getBySql(ProposalQuery.getCommissionDetails, params,  new ProposalCommissionMapper<>(ProposalCommission.class, om));
-    return result;
+    return sqlCache.getBySql(ProposalQuery.getCommissionDetails, params, new ProposalCommissionMapper<>(ProposalCommission.class, om));
   }
 
   public void updateProposalVersion(@NonNull Long proposalId, @NonNull Long versionId, @NonNull UserAccountDetails details) {
@@ -186,7 +185,6 @@ public class BlueravenProposalService {
 
     sqlCache.updateBySql(ProposalQuery.updateProposalVersion, params);
   }
-
 
   public Optional<Proposal> getProposal(@NonNull Long proposalId) {
 
@@ -240,7 +238,7 @@ public class BlueravenProposalService {
    */
   private void filterCustomFieldsByVisibility(Proposal proposal) {
     List<ProposalStepCustomFieldValue> values = getProjectProcessStepValues(proposal.getProjectProcessStepId());
-    log.debug("[Proposals] Found {} custom field values for proposalId={}", values.size(), proposal.getId());
+    log.debug("[Proposal] Found {} custom field values for proposalId={}", values.size(), proposal.getId());
 
     if (!values.isEmpty()) {
 
@@ -257,7 +255,7 @@ public class BlueravenProposalService {
               }
               Value jsEval = ctx.eval("js", cfv.getVisibility());
               if (!jsEval.isBoolean()) {
-                log.warn("[Proposals] Expression '{}' must evaluate to a boolean", cfv.getVisibility());
+                log.warn("[Proposal] Expression '{}' must evaluate to a boolean", cfv.getVisibility());
                 return true;
               }
               return jsEval.asBoolean();
@@ -267,7 +265,7 @@ public class BlueravenProposalService {
           customFieldGroup.setCustomFieldValues(filteredList);
         }
       } catch (Exception e) {
-        log.error("[Proposals] Error filtering custom fields", e);
+        log.error("[Proposal] Error filtering custom fields", e);
       }
     }
   }
@@ -288,7 +286,7 @@ public class BlueravenProposalService {
 
       return om.readValue(retVal, typeReference);
     } catch (Exception e) {
-      log.error("[Proposals] Error generating context", e);
+      log.error("[Proposal] Error generating context", e);
       return List.of();
     }
   }
@@ -323,7 +321,7 @@ public class BlueravenProposalService {
     //we divide the value in half because the user is only responsible for half, BRS will cover the other part
     int count = sqlCache.updateBySql(ProposalQuery.updateProposalDiscountAmount, Map.of("projectId", projectId, "amount", amount.divide(new BigDecimal(2), RoundingMode.HALF_UP)));
     if (count == 0) {
-      log.warn("Unable to update commission_forfeited_by_closer amount for projectId={}", projectId);
+      log.warn("[Proposal] Unable to update commission_forfeited_by_closer amount for projectId={}", projectId);
     }
   }
 
@@ -351,18 +349,23 @@ public class BlueravenProposalService {
       Map<String, Object> context = getCalculatedProposalValues(proposalId, generatedType, false);
       return Optional.of(proposalTemplateService.getTemplateById(templateId, context, generatedType, isDebug));
     } catch (Exception e) {
-      log.error("[BRS PROPOSAL] Error generating proposal", e);
+      log.error("[Proposal] Error generating proposal", e);
       throw new ApiException("Error generating proposal template");
     }
   }
 
-  public Optional<ProposalResource> generateProposalPDF(Long proposalId, Long templateId) throws Exception {
-    final var proposal = getSimpleProposal(proposalId)
-      .orElseThrow(() -> new NotFoundException("Proposal id=%s does not exist".formatted(proposalId)));
-
-    final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
-    Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
-    return Optional.of(new ProposalResource(pdf, proposal, context));
+  public Optional<ProposalResource> generateProposalPDF(Long proposalId, Long templateId) {
+    return getSimpleProposal(proposalId)
+      .flatMap(proposal -> {
+        try {
+          final var context = getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, false);
+          Resource pdf = proposalTemplateService.generatePdf(templateId, context, false);
+          return Optional.of(new ProposalResource(pdf, proposal, context));
+        } catch (Exception e) {
+          log.error("[Proposal] Error generating proposal", e);
+          throw new ApiException("Error generating proposal");
+        }
+      });
   }
 
   private Map<String, Object> getCalculatedProposalValues(
@@ -378,7 +381,7 @@ public class BlueravenProposalService {
 
       context = sqlCache.queryForMapBySql(ProposalQuery.getCalculatedProposalValues, params);
     } catch (Exception e) {
-      log.error("[Proposals] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
+      log.error("[Proposal] Error generating calculated values for proposalId={}, msg={}", proposalId, e.getMessage());
     }
 
     try {
@@ -395,7 +398,7 @@ public class BlueravenProposalService {
       context.putAll(proposalAttachments);
 
     } catch (Exception e) {
-      log.error("[Proposals] Error fetching attachments for proposalId={}, msg={}", proposalId, e.getMessage());
+      log.error("[Proposal] Error fetching attachments for proposalId={}, msg={}", proposalId, e.getMessage());
     }
     return context;
   }
@@ -535,7 +538,7 @@ public class BlueravenProposalService {
   @Transactional
   public Optional<ProposalDesign> requestPostalCodeApproval(@NonNull Long projectId, String comments, @NonNull Long userId) {
     final Long ppsId = insertProjectProcessStep(projectId, ZIP_CODE_APPROVAL_ID);
-    log.debug("Requested Postal Code Approval - PPS #{}", ppsId);
+    log.debug("[Proposal] Requested Postal Code Approval - PPS #{}", ppsId);
 
     if (comments != null) {
 //    Zip Code Approval Notes
@@ -562,7 +565,7 @@ public class BlueravenProposalService {
     return sqlCache.queryBySql(ProposalQuery.getLockedProposalsForProcessing, Map.of(), new SingleColumnRowMapper<>(Long.class));
   }
 
-  @Transactional
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void setProcessingErrorMessage(Long proposalId, String errorMessage, Long modifiedBy) {
     sqlCache.updateBySql(ProposalQuery.setProcessingErrorMessage,
       Map.of("id", proposalId, "errorMsg", errorMessage, "modifiedById", modifiedBy));
@@ -581,11 +584,9 @@ public class BlueravenProposalService {
       TypeReference<List<ProposalCommissionDetail>> commissionDetailRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(
-              List.class,
-              "commissionDetails",
-              new JsonCollectionDeserializer(commissionDetailRef, objectMapper));
-
+        List.class,
+        "commissionDetails",
+        new JsonCollectionDeserializer(commissionDetailRef, objectMapper));
     }
   }
-
 }

@@ -60,6 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "https://*.myblueraven.com",
             "https://*blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));
+    configuration.setExposedHeaders(List.of("Content-Disposition"));
     configuration.setAllowedMethods(List.of("*"));
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
