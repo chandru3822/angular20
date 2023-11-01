@@ -291,7 +291,7 @@ export default {
 <style lang="scss" scoped>
 
 .unassigned-join-button {
-  background-color: var(--v-primary-base)  !important;
+  background-color: #1F3C73 !important;
 }
 .assigned-join-button {
   background-color: #C0C0C0;
