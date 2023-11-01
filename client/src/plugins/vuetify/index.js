@@ -31,10 +31,7 @@ export default new Vuetify({
               //     lighten8:'#bbd8ec',
               //     lighten9:'#e3eff7'
               // },
-              primary: {
-                  base: '#602749',
-                  lighten9:'#F2E3ED',
-              },
+              primary: 'black',
               secondary: '#F6F7F8',
               accent: '#3c79b6',
               error:{
@@ -54,7 +51,7 @@ export default new Vuetify({
 
               },
               active:'#e3eff7',
-              anchor: '#602749',
+              anchor: '#2c5893',
               grey: {
                 base: '#9E9E9E',
                 lighten1: '#BDBDBD',
