@@ -109,16 +109,19 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" small @click="setSplitColumnValue()" class="px-0">
+            <v-btn text color="primary" small @click="setSplitColumnValue()" v-if="!isMobile" class="px-0">
               <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
               <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
             </v-btn>
             <div>
-              <v-btn class="white--text mt-3 ml-2"
+              <v-btn class="white--text ml-2 mt-1"
+                     :class="{'mt-3': !isMobile}"
                      @click="checkFieldsForUnique()"
                      :disabled="!userCanEdit || getIsEventReadonly()"
+                     :icon="isMobile"
                      color="primary">
-                Save Fields
+                <v-icon v-if="isMobile">save</v-icon>
+                <span v-else>Save Fields</span>
               </v-btn>
             </div>
           </v-toolbar-items>
@@ -511,6 +514,9 @@ export default {
       } else {
         return 'Round Robin'
       }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   methods: {
