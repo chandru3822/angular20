@@ -1,11 +1,10 @@
 <template>
   <v-col cols="12" class="spinner-container">
-<!--    <v-progress-circular-->
-<!--        indeterminate-->
-<!--        :size="size"-->
-<!--        :color="spinnerColor"-->
-<!--    ></v-progress-circular>-->
-    <img :src="require('../assets/blueraven/pumpkinCat.gif')"/>
+    <v-progress-circular
+        indeterminate
+        :size="size"
+        :color="spinnerColor"
+    ></v-progress-circular>
   </v-col>
 </template>
 
@@ -31,7 +30,7 @@ export default {
   left: 0;
   right: 0;
   margin: auto;
-  //background-color: var(--v-secondary-base);
+  background-color: var(--v-secondary-base);
   opacity: .5;
 }
 </style>
