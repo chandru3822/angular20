@@ -40,7 +40,8 @@
           </v-menu>
           <v-btn icon v-else to="/home"
                  :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-            <img class="header-logo" :src="require('../assets/blueraven/batIcon.svg')">
+            <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
+            <v-icon v-else>mdi-office-building</v-icon>
           </v-btn>
           <v-spacer v-if="isMobile"></v-spacer>
           <v-menu v-if="isMobile" data-app left
