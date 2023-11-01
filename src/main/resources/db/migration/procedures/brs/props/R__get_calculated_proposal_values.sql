@@ -469,6 +469,8 @@ declare
   v_deposit_amount                                     numeric;
   v_deposit_amount_number                              numeric;
   v_has_critter_guard                                  boolean;
+  v_storage_name                                       text;
+  v_storage_brand                                      text;
 BEGIN
 
   select proposal_id,
@@ -767,13 +769,16 @@ BEGIN
 
   select number_of_batteries,
          cash_price_storage,
-         storage_capacity
-  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity
-  from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0));
+         storage_capacity,
+         storage_name,
+         storage_brand
+  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,v_storage_name,v_storage_brand
+  from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
 
   v_number_of_batteries = coalesce(v_number_of_batteries, 0);
   raise notice 'v_number_of_batteries = %',v_number_of_batteries;
   raise notice 'v_cash_price_storage = %',v_cash_price_storage;
+  raise notice 'v_storage_name = %',v_storage_name;
 
   v_instantly_used = v_first_year_production_estimate * v_instant_use_assumption;
   v_sent_to_grid = v_first_year_production_estimate - coalesce(v_instantly_used, 0);
@@ -1773,7 +1778,10 @@ BEGIN
                                          total_promotion_amount,
                                          storage_cost_with_fees,
                                          commission_strategy_id,
-                                         prepay_deposit)
+                                         prepay_deposit,
+                                         storage_brand,
+                                         storage_size_kwh,
+                                         storage_name)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1882,7 +1890,10 @@ BEGIN
             coalesce(v_promotion_cost, 0),
             round(v_loan_price_storage, 0),
             v_commission_strategy_id,
-            v_deposit_amount_number);
+            v_deposit_amount_number,
+            v_storage_brand,
+            v_storage_capacity,
+            v_storage_name);
   end if;
 
   return query
