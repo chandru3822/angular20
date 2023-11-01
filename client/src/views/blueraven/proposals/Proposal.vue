@@ -48,14 +48,14 @@
                 v.{{proposal.version}}
               </v-btn>
             </template>
-            <v-card flat color="transparent" class="px-4 pb-4" :elevation="0">
+            <v-card flat color="white" class="pa-4" :elevation="0">
               <v-autocomplete
                   :items="versions"
                   item-value="id"
                   item-text="version"
                   :loading="loadingVersions"
                   hide-details
-                  class="mt-5"
+                  class="mt-0"
                   label="Select a version..."
                   v-model="proposal.proposalVersionId"
               ></v-autocomplete>
@@ -422,7 +422,7 @@ export default {
     async loadProposalVersions() {
       try {
         this.loadingVersions = true
-        const {data, status} = await getRequest(`/proposal/versions?size=50&page=0`, 'blueraven')
+        const {data, status} = await getRequest(`/proposal/versions/published?size=50&page=0`, 'blueraven')
         this.versions = data.content
       } catch (e) {
         this.$snackbar('ERROR', 'Error loading proposal versions')

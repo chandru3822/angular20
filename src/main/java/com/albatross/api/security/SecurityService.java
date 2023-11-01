@@ -101,6 +101,7 @@ public class SecurityService implements UserDetailsService {
           user = new User();
           user.setCompanyId(3L);
           user.setHighestCompanyId(3L);
+          user.setAwsBucket("blueraven");
           user.setParentCompanyId(3L);
           user.setHighestParentCompanyId(3L);
           user.setUserPositions(new ArrayList<>());

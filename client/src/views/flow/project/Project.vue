@@ -114,7 +114,7 @@
                                  {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
                                  {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}`}
                                  ]"
-                             headerHeight="64px"
+                             :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
                              :view-change-callback="changeMobileView"
                              :subMenuSelectedView="selectedTab"
     >
@@ -131,8 +131,7 @@
                       class="mx-2"/>
       </template>
       <template v-slot:header-contents>
-        <v-toolbar-title class="title-medium align-center mt-3 text-wrap"
-                         :class="{'mt-4': project.tags && project.tags.length > 0}">
+        <v-toolbar-title class="title-medium text-wrap">
           <div>
             <router-link :to="`/project/${project.id}/details`" class="no-text-decoration">{{ project.projectName }}</router-link>
             <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
@@ -186,14 +185,11 @@
         <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
       </template>
     </ThreeColumnLayoutMobile>
-    <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')">
+    <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')" :headerLarge="project.tags?.length > 0">
       <template v-slot:header>
-        <v-toolbar flat color="grey lighten-2 pl-3" class="match-lower-width" :class="{'project-header': project && !project.tags || project.tags.length === 0,
-                                                    'project-header-with-tags': project && project.tags && project.tags.length > 0,
-                                                    'pt-2': project && project.tags && project.tags.length > 0}"
-                   v-if="!projectLoading && project && project.id">
-          <v-toolbar-title class="title-large albatross-header-1 align-center mt-3"
-                           :class="{'mt-4': project.tags && project.tags.length > 0}">
+
+          <v-toolbar-title class="title-large albatross-header-1 align-center "
+                           >
             <div>
               <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
               <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
@@ -259,7 +255,6 @@
           </v-menu>
         </div>
       </div>
-    </v-toolbar>
       </template>
         <template v-slot:left-column>
           <div v-if="project && project.id">
@@ -735,7 +730,7 @@ export default {
 
 <style lang="scss">
 .match-lower-width .v-toolbar__content {
-  padding: 4px 8px 4px 24px;
+  padding: 4px 8px 4px 0px;
 }
 
 #tag-toolbar {

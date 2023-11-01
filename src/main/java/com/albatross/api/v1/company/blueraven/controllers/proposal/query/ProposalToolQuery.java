@@ -9,6 +9,7 @@ public class ProposalToolQuery {
              inner join flow.user cu on v.created_by_id = cu.id
              inner join flow.user mu on v.modified_by_id = mu.id
     where v.company_id = :companyId
+    and case when :publishedOnly::boolean is true then v.proposal_version_status_id = 2 else true end
     """;
 
   //language=PostgreSQL
@@ -23,6 +24,7 @@ public class ProposalToolQuery {
              left join brs.primary_company_proposal_version pcpv
                        on v.id = pcpv.proposal_version_id and v.company_id = pcpv.company_id
     where v.company_id = :companyId
+    and case when :publishedOnly::boolean is true then v.proposal_version_status_id = 2 else true end
     order by v.id desc
     limit :limit
     offset :offset

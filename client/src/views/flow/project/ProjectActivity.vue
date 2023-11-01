@@ -47,7 +47,7 @@
       <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
         <v-tooltip bottom small>
           <template v-slot:activator="{on, attrs}">
-            <v-btn icon color="primary" @click="" v-bind="attrs" v-on="on">
+            <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
               <v-icon>mdi-history</v-icon>
             </v-btn>
           </template>
@@ -63,6 +63,7 @@
             class="d-inline-block one-hunned body-medium"
             style="opacity: 1 !important;"
             id="focused-toggle"
+            v-if="!isMobile"
         >
 
 
@@ -251,7 +252,7 @@ export default {
       myOwner: [],
       conversationHistory: [],
       conversationIsLoading: true,
-      toggleFocused: 0,
+      toggleFocused: this.isMobile ? 1 : 0,
       toggleFocusedXs: 0,
       toggleTimelineView: this.$store.state.project.notesActivityView,
     }
