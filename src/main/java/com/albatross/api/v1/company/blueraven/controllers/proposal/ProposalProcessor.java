@@ -108,11 +108,19 @@ public class ProposalProcessor {
     Proposal proposal = result.proposal();
     Map<String, Object> context = result.context();
 
-    String financier = context.getOrDefault("financier", "").toString();
-    String loanTerm = context.getOrDefault("loan_term", "").toString();
-    String product = context.getOrDefault("product_name", "").toString();
+    Object financier = getDefaultValue(context, "financier", "");
+    Object loanTerm = getDefaultValue(context, "loan_term", "");
+    Object product = getDefaultValue(context, "product_name", "");
 
     return String.format("%s %s %s %s", proposal.getDisplayName(), financier, loanTerm, product).trim();
+  }
+
+  private String getDefaultValue(Map<String, Object> context, String key, String defaultValue) {
+    Object result = context.getOrDefault(key, defaultValue);
+    if (result == null) {
+      return defaultValue;
+    }
+    return result.toString();
   }
 
   private void setBlueravenSystemUser() {
