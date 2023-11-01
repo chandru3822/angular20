@@ -125,6 +125,7 @@ const chooseSelectedView = (view, id) => {
 <style lang="scss">
 #three-column-header > div.v-toolbar__content {
   align-items: flex-start;
+  height: auto;
   padding-top: 16px;
 }
 </style>

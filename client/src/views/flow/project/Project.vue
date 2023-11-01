@@ -149,19 +149,17 @@
             </router-link>
           </span>
           </div>
-      <v-col cols="12" class="pa-0">
-        <div>
-          <v-chip v-for="(tag, idx) in project.tags"
-                  small
-                  class="tag-chip"
-                  :color="tag.bgColor"
-                  :text-color="tag.fontColor"
-                  :close="tag.removable"
-                  :class="{'ml-2': idx !== 0}">
-            {{ tag.tagName }}
-          </v-chip>
-        </div>
-      </v-col>
+          <div class="mt-2">
+            <v-chip v-for="(tag, idx) in project.tags"
+                    small
+                    class="tag-chip"
+                    :color="tag.bgColor"
+                    :text-color="tag.fontColor"
+                    :close="tag.removable"
+                    :class="{'ml-2': idx !== 0}">
+              {{ tag.tagName }}
+            </v-chip>
+          </div>
         </v-toolbar-title>
       </template>
       <template v-slot:main-column>
@@ -732,7 +730,7 @@ export default {
 
 <style lang="scss">
 .match-lower-width .v-toolbar__content {
-  padding: 4px 8px 4px 24px;
+  padding: 4px 8px 4px 0px;
 }
 
 #tag-toolbar {

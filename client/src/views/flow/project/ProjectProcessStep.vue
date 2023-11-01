@@ -800,6 +800,9 @@ export default {
   padding-left: 0 !important;
   padding-right: 0 !important;
   flex-wrap: wrap;
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
 }
 
 .cfg-name-toolbar .v-toolbar__title {
