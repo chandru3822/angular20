@@ -47,7 +47,7 @@
       <div v-if="showSmsTab && selectedOption === 0 && userCanViewSms && !isSidebarCollapsed">
         <v-tooltip bottom small>
           <template v-slot:activator="{on, attrs}">
-            <v-btn icon color="primary" @click="" v-bind="attrs" v-on="on">
+            <v-btn icon color="primary" @click="openHistoryDrilldown" v-bind="attrs" v-on="on">
               <v-icon>mdi-history</v-icon>
             </v-btn>
           </template>
@@ -455,7 +455,6 @@ export default {
       }
     },
     async openHistoryDrilldown() {
-      debugger
       try {
         let historyUrl = ''
         if (this.projectId) {
