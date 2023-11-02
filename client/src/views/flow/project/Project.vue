@@ -185,7 +185,7 @@
         <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"></ProjectActivity>
       </template>
     </ThreeColumnLayoutMobile>
-    <ThreeColumnLayout v-else @end-notes-timer="endNotesTimer('Clicked outside right panel')" :headerLarge="project.tags?.length > 0">
+    <ThreeColumnLayout v-else :headerLarge="project.tags?.length > 0">
       <template v-slot:header>
 
           <v-toolbar-title class="title-large albatross-header-1 align-center "
