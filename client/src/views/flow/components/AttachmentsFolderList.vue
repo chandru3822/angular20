@@ -42,11 +42,11 @@
                v-if="compare">
           Cancel Comparison
         </v-btn>
-        <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare"
+        <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare "
                :disabled="selectedAttachmentsForCompare.length === 0">
           Confirm Comparison
         </v-btn>
-        <v-btn small color="primary" class="my-4" @click="compare = true" v-else>
+        <v-btn small color="primary" class="my-4" @click="compare = true" v-else-if="!isMobile">
           Compare
         </v-btn>
       </div>

@@ -19,17 +19,13 @@
             <span class="default-text-color">No active events</span>
           </template>
 
-          <template #item="{ item, index }">
-            <tr>
-              <td class="text-left">
-                <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`">{{ item.id }}</router-link>
-              </td>
-              <td class="text-left">{{item.eventName}}</td>
-              <td class="text-left">{{ item.startTime | formatDate('timestamp') }}</td>
-              <td class="text-left">{{item.resource}}</td>
-              <td class="text-left">{{ item.eventStatusType }}</td>
-            </tr>
+          <template #item.id="{item}" class="text-left">
+            <router-link :to="`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`">{{ item.id }}</router-link>
           </template>
+          <template #item.eventName="{item}" class="text-left">{{item.eventName}}</template>
+          <template #item.start="{item}" class="text-left">{{ item.startTime | formatDate('timestamp') }}</template>
+          <template #item.resourceName="{item}" class="text-left">{{item.resource}}</template>
+          <template #item.eventStatusType="{item}" class="text-left">{{ item.eventStatusType }}</template>
 
         </v-data-table>
       </v-card>
@@ -48,7 +44,7 @@
       return {
         headers: [
           {text: 'ID', value: 'id', show: true, width: 80},
-          {text: 'Type', value: 'processStepName', show: true},
+          {text: 'Type', value: 'eventName', show: true},
           {text: 'Start', value: 'start', show: true},
           {text: 'Resource', value: 'resourceName', show: true},
           {text: 'Status', value: 'eventStatusType', show: true},

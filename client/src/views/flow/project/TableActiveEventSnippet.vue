@@ -7,6 +7,7 @@
           :items="events"
           :fixed-header="true"
           :items-per-page="-1"
+          @click:row="goToEvent"
           id="qa-process-step-table"
           hide-default-footer
           disable-sort
@@ -20,17 +21,13 @@
             <span class="default-text-color">No upcoming or past due events</span>
           </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable" @click="goToPath(`/project/${projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`)">
-              <td class="text-left" id="qa-event-link">
-                {{ item.id }}
-              </td>
-              <td class="text-left" id="qa-event-name">{{item.eventName}}</td>
-              <td class="text-left" id="qa-event-start">{{ item.startTime | formatDate('timestamp') }}</td>
-              <td class="text-left">{{item.resource}}</td>
-              <td class="text-left" id="qa-event-status">{{item.eventStatusType}}</td>
-            </tr>
+          <template #item.id="{item}" class="text-left" id="qa-event-link">
+            {{ item.id }}
           </template>
+          <template #item.eventName="{item}" class="text-left" id="qa-event-name">{{item.eventName}}</template>
+          <template #item.startTime="{item}" class="text-left" id="qa-event-start">{{ item.startTime | formatDate('timestamp') }}</template>
+          <template #item.resource="{item}" class="text-left">{{item.resource}}</template>
+          <template #item.companyEventStatusType="{item}" class="text-left" id="qa-event-status">{{item.eventStatusType}}</template>
 
         </v-data-table>
       </v-card>
@@ -60,6 +57,9 @@ export default {
     goToPath(path) {
       this.$router.push(path)
     },
+    goToEvent(item) {
+      this.goToPath(`/project/${this.projectId}/processStep/${item.projectProcessStepId}/event/${item.id}`)
+    }
   }
 }
 </script>

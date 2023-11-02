@@ -9,7 +9,7 @@
   <template #activator="{on}">
     <v-btn text color="primary" class="text-capitalize" :small="!largeBtn" :large="largeBtn" v-on="on" @click="getSteps()" @blur="clear()">
       <v-icon>add</v-icon>
-      <span v-if="title != null">{{title}}</span>
+      <span v-if="title != null && !isMobile">{{title}}</span>
     </v-btn>
   </template>
 
@@ -97,6 +97,11 @@ export default {
   created () {
     // this.getSteps()
     // this.getCancelledStatuses()
+  },
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    }
   },
   methods: {
     getSteps: async function () {
