@@ -43,7 +43,7 @@
                     label="Round Robin"
                     v-model="selectedRoundRobin"
                     :items="roundRobins"
-                    item-text="zoneName"
+                    item-text="roundRobinName"
                     item-value="id"
                     no-data-text="No Round Robins available"
                     outlined

@@ -240,7 +240,8 @@
                                  :milestone="milestone"
                                  :current-status-id="project.companyProjectStatusTypeId"
               ></StatusTrackerIcon>
-              {{milestone.projectStatusType}}
+                <span class="ml-2 label-large active-status">{{milestone.projectStatusType}}</span>
+
               </div>
               <div>
                 <div v-for="field in milestone.assignedFields">
@@ -324,7 +325,6 @@ import {ProjectMutations} from "@/stores/ProjectStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
-import {endTimer, projectOpened} from '@/services/analyticsService'
 import StatusTrackerIcon from "@/views/flow/project/StatusTrackerIcon";
 import StatusTrackerItem from "@/views/flow/project/StatusTrackerItem";
 import ThreeColumnLayout from '@/views/ThreeColumnLayout'
@@ -408,10 +408,6 @@ export default {
         await this.getProjectTags()
       }
     }
-  },
-  beforeRouteLeave(to, from, next) {
-    this.endNotesTimer("Clicked outside right panel");
-    next();
   },
   computed: {
     projectTagEvents() {
@@ -518,7 +514,6 @@ export default {
           this.showEditModal()
         }
         this.projectLoading = false
-        projectOpened(this.projectId);
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         this.projectLoading = false
@@ -537,7 +532,7 @@ export default {
             this.milestones[x].iconColor = 'grey'
             continue;
           }
-          if(statusCompleted || this.milestones[x].assignedFields.every(f => f.fieldValue)) {
+          if(statusCompleted || (this.milestones[x].assignedFields.length > 0 && this.milestones[x].assignedFields.every(f => f.fieldValue))) {
             this.milestones[x].btnColor = 'success lighten-1'
             this.milestones[x].iconColor = 'white'
           } else {
@@ -721,9 +716,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    endNotesTimer(endEvent) {
-      endTimer(endEvent);
-    }
   }
 }
 </script>
@@ -755,6 +747,10 @@ export default {
 </style>
 
 <style lang="scss" scoped>
+.active-status {
+  color: #000000;
+}
+
 #project-container {
   width: 100%;
   height: 100%;

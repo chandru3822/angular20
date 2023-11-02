@@ -173,7 +173,6 @@ import OwnershipHistoryDrilldown from '@/views/flow/settings/inbox/OwnershipHist
 import AddTeamDropdown from '@/views/flow/settings/inbox/AddTeamDropdown'
 import ConfirmAssignmentDialog from '@/views/flow/settings/inbox/ConfirmAssignmentDialog'
 import debounce from 'lodash.debounce'
-import {endTimer, startTimer} from "@/services/analyticsService";
 import CollapsableRightPanel from "@/layouts/CollapsableRightPanel.vue";
 
 export default {
@@ -473,12 +472,6 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    endNotesTimer(endEvent){
-      endTimer(endEvent);
-    },
-    startReadNotesTimer(startEvent){
-      startTimer(startEvent);
-    }
   }
 }
 </script>

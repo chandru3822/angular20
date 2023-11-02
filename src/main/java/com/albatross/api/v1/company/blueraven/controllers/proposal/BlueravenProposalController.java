@@ -3,10 +3,7 @@ package com.albatross.api.v1.company.blueraven.controllers.proposal;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.InvalidStateApiException;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalGeneratedType;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalPostalCodeStatus;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalTemplate;
-import com.albatross.api.v1.company.blueraven.controllers.proposal.models.ProposalValueFilter;
+import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.InstallAgreementService;
 import com.albatross.api.v1.flow.model.Attachment;
@@ -39,8 +36,7 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,6 +47,8 @@ import java.util.Optional;
 @RequestMapping(value = "/api/v1/company/blueraven/proposal", produces = MediaType.APPLICATION_JSON_VALUE)
 @PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
 public class BlueravenProposalController {
+
+  private static final String CACHE_CONTROL_VALUE = "no-store, no-cache, must-revalidate, max-age=0";
 
   private final BlueravenProposalService proposalService;
   private final ProposalVersionService proposalVersionService;
@@ -175,26 +173,11 @@ public class BlueravenProposalController {
 
     return getLockedProposal(proposalId)
       .map(proposal -> {
-        final InstallAgreementRequest request = new InstallAgreementRequest();
-        request.setProjectId(proposal.getProjectId());
-        request.setProposalNbr(proposal.getProposalNbr());
-        request.setIsSpanish(docRequest.isSpanish());
-
-        switch (docRequest.docType()) {
-          case FINANCE_DOCS -> {
-            request.setSendLoanDocs(true);
-            request.setSendInstallationAgreement(false);
-          }
-          case INSTALLATION_AGREEMENT -> {
-            request.setSendInstallationAgreement(true);
-            request.setSendLoanDocs(false);
-          }
-        }
-
         try {
+          final InstallAgreementRequest request = getInstallAgreementRequest(docRequest, proposal);
           final String saveRequest = installAgreementService.saveRequest(request);
 
-          if (saveRequest == null || saveRequest.trim().equals("")) {
+          if (saveRequest == null || saveRequest.trim().isEmpty()) {
             proposalService.setDocsAsSubmitted(proposalId, docRequest.docType, details);
             return new DocRequestResponse(true, "Request successfully submitted");
           }
@@ -204,6 +187,25 @@ public class BlueravenProposalController {
           throw new ApiException(e);
         }
       });
+  }
+
+  private InstallAgreementRequest getInstallAgreementRequest(SendDocRequest docRequest, Proposal proposal) {
+    final InstallAgreementRequest request = new InstallAgreementRequest();
+    request.setProjectId(proposal.getProjectId());
+    request.setProposalNbr(proposal.getProposalNbr());
+    request.setIsSpanish(docRequest.isSpanish());
+
+    switch (docRequest.docType()) {
+      case FINANCE_DOCS -> {
+        request.setSendLoanDocs(true);
+        request.setSendInstallationAgreement(false);
+      }
+      case INSTALLATION_AGREEMENT -> {
+        request.setSendInstallationAgreement(true);
+        request.setSendLoanDocs(false);
+      }
+    }
+    return request;
   }
 
   @GetMapping(value = "/{proposalId}/loanStatus")
@@ -246,31 +248,43 @@ public class BlueravenProposalController {
                                                                       @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId,
                                                                       @RequestParam(value = "inline", defaultValue = "false") boolean inline,
                                                                       HttpServletResponse response) {
-
     final StreamingResponseBody responseBody = outputStream -> {
       try {
-        proposalService.generateProposalPDF(proposalId, templateId)
-          .ifPresent(result -> {
-            try {
-              final String contentDisposition = String.format(
-                "%s; filename=\"proposal_%s_%s.pdf\"", inline ? "inline" : "attachment", result.proposal().getProposalNbr(), OffsetDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmssSSSS")));
+        ProposalResource result = proposalService.generateProposalPDF(proposalId, templateId)
+          .orElseThrow(() -> new ApiException("Proposal not found"));
 
-              response.addHeader(HttpHeaders.CACHE_CONTROL, "no-store, no-cache, must-revalidate, max-age=0");
-              response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
-              response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+        Proposal proposal = result.proposal();
+        final String contentDisposition = getContentDisposition(proposal, inline);
 
-              response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(result.resource().contentLength()));
-              IOUtils.copy(result.resource().getInputStream(), outputStream);
-            } catch (IOException e) {
-              throw new ApiException(e);
-            }
-          });
+        response.addHeader(HttpHeaders.CACHE_CONTROL, CACHE_CONTROL_VALUE);
+        response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
+        response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);
+        response.addHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(result.resource().contentLength()));
+
+        try (InputStream inputStream = result.resource().getInputStream()) {
+          IOUtils.copy(inputStream, outputStream);
+        }
       } catch (Exception e) {
         throw new ApiException(e);
       }
     };
 
     return ResponseEntity.ok(responseBody);
+  }
+
+  private String getContentDisposition(Proposal proposal, boolean inline) {
+    String cleanedFilename = getCleanFilename(proposal);
+    return String.format(
+      "%s; filename=\"%s%sproposal.pdf\"",
+      inline ? "inline" : "attachment",
+      cleanedFilename,
+      proposal.isLocked() ? "_" : "_DRAFT_");
+  }
+
+  private String getCleanFilename(Proposal proposal) {
+    return proposal.getDisplayName().trim()
+      .replace("- ", "")
+      .replace(" ", "_");
   }
 
   @GetMapping(value = "/{proposalId}/filter")
@@ -312,9 +326,8 @@ public class BlueravenProposalController {
   public record LoanStatusUpdate(String applicationUrl, String type) {
   }
 
-  record ProposalErrorMessage(String message) {
+  public record ProposalErrorMessage(String message) {
   }
-
 
   @Data
   public static class DesignRequest {
