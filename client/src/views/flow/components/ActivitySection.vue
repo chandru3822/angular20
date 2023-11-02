@@ -1,6 +1,7 @@
 <template>
   <v-container class="px-5 py-0">
-    <div class="activity-header">
+    <div v-if="mobileView" class="headline-small pt-3">Notes</div>
+    <div class="activity-header" >
       <v-text-field
         prepend-inner-icon="search"
         text
@@ -36,7 +37,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="activity-body">
+    <div class="activity-body" :class="{'footer-closed-height': !addActivity && null == editedActivity.id}">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
@@ -242,7 +243,8 @@ export default {
     projectId: Number,
     objectTypeId: Number,
     timelineView: Boolean,
-    // bottomHitCount: Number
+    // bottomHitCount: Number,
+    mobileView:Boolean
   },
   data() {
     return {
@@ -689,7 +691,7 @@ export default {
   top: -1px;
   background-color: white;
   padding: 0 10px;
-  z-index: 200;
+  z-index: 10; //to make sure the filter dropdown is in front of the list of notes/activities
   margin-left: -10px;
   margin-right: -10px;
   align-items: center;
@@ -712,11 +714,19 @@ export default {
   bottom: 0;
   background-color: white;
   padding: 0px 10px 15px 10px;
-  z-index: 200;
+  z-index: 10;
   margin-left: -10px;
   margin-right: -10px;
 }
 
+.activity-body {
+  @media (min-width: 960px) {
+  //min-height: 500px;
+  }
+}
+.footer-closed-height {
+  min-height: calc(100vh - 360px);
+}
 .title-medium:last-of-type {
   padding-top:16px;
 }

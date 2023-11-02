@@ -19,7 +19,7 @@
       <v-col cols="12" class="pb-1 pt-6">
         <v-toolbar color="transparent" height="auto"
                    id="pps-toolbar"
-                   class="elevation-0 cfg-name-toolbar toolbar-z-index-override">
+                   class="elevation-0 cfg-name-toolbar ">
           <v-toolbar-title class="process-step-name albatross-header-2">
             <div>{{ processStep.processStepName }}</div>
             <div v-if="processStep.processStepStatusTypeId"
@@ -175,8 +175,8 @@
       </v-col>
       <v-col cols="12" class="pa-0" v-if="processStep.hasAttachmentTypesAssigned">
         <div>
-          <v-toolbar flat color="secondary" class="cfg-detail-header px-3">
-            <v-toolbar-title class="albatross-header-3">
+          <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header px-3">
+            <v-toolbar-title class="albatross-header-3" >
               Process Step Documents
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -203,23 +203,27 @@
           </v-col>
         </div>
       </v-col>
-      <v-toolbar flat color="secondary" class="cfg-detail-header fixed-toolbar px-3">
+      <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header fixed-toolbar px-3">
         <v-toolbar-title class="albatross-header-3">
            Process Step Details
         </v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text color="primary" @click="setSplitColumnValue()" class="px-0">
+          <v-btn text color="primary" @click="setSplitColumnValue()" v-if="!isMobile" class="px-0">
             <v-icon v-if="!$store.state.project.manualColumnSplit" class="px-0">mdi-format-columns</v-icon>
             <v-icon v-else class="px-0">mdi-format-align-justify</v-icon>
           </v-btn>
           <div>
             <v-btn
               color="primary"
-              class="mt-3 ml-2"
+              class="ml-2 mt-1"
+              :class="{'mt-3': !isMobile}"
+              :icon="isMobile"
               :disabled="fieldsSaving || getReadOnly()"
               @click="[fieldsSaving = true, checkFields()]"
-            >Save Fields
+            >
+              <v-icon v-if="isMobile">save</v-icon>
+              <span v-else>Save Fields</span>
             </v-btn>
           </div>
         </v-toolbar-items>
@@ -415,6 +419,9 @@ export default {
       } else {
         return this.processStep.actions.filter(a => a.canPerform === true)
       }
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   beforeRouteUpdate(to, from, next) {
@@ -796,6 +803,13 @@ export default {
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
+  flex-wrap: wrap;
+}
+
+#pps-toolbar.cfg-name-toolbar .v-toolbar__content {
+  @media (max-width: 600px) {
+    flex-direction: column;
+  }
 }
 
 .cfg-name-toolbar .v-toolbar__title {

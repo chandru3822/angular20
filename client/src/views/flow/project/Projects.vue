@@ -6,8 +6,8 @@
           <v-toolbar-title>Projects</v-toolbar-title>
         </v-toolbar>
 
-        <v-toolbar
-          class="white elevation-1 mt-3"
+        <v-card
+          class="white elevation-1 mt-3 px-3 pt-1 square-card"
         >
           <v-text-field
             class="pt-3"
@@ -18,14 +18,15 @@
             v-model="searchQuery"
             @input="searchProjects"
             @click:clear="searchProjects()"
+            :keyup.enter="closeKeyboard"
           />
 
           <v-spacer/>
-        </v-toolbar>
+        </v-card>
 
         <v-divider/>
         <v-data-table
-          class="elevation-1 fix-column-width-bug"
+          class="elevation-1 table-striped"
           :headers="headers"
           :items="projects"
           fixed-header
@@ -33,10 +34,11 @@
           :page.sync="page"
           :options.sync="options"
           disable-sort
-          :mobile-breakpoint="0"
           :footer-props="footerProps"
           :server-items-length="totalProjects"
           :loading="isProjectsLoading"
+          :class="{'fix-column-width-bug': !isMobile}"
+          @click:row="goToRoute"
         >
 
           <template #no-data>
@@ -47,35 +49,29 @@
             <span class="default-text-color">No available projects</span>
           </template>
 
-          <template #item="{item: project, index}">
-            <tr class="clickable"  :class="{'shaded-row': index % 2}">
-              <td class="text-left py-0 pl-4">
+              <template #item.id="{item: project, index}" class="text-left py-0 pl-4 clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.id}}
                 </router-link>
-              </td>
-              <td class="text-left text--black">
+              </template>
+              <template #item.projectName="{item: project, index}" class="text-left text--black clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.projectName}}
                 </router-link>
-              </td>
-              <td class="text-left">
+              </template>
+              <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.stateAbbreviation}}
                 </router-link>
-              </td>
-              <td class="text-left">
+              </template>
+              <template #item.projectStatusType="{item: project, index}" class="text-left clickable">
                 <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
                   {{project.projectStatusType}}
                 </router-link>
-              </td>
-              <td class="text-left">
-                <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">
-                  {{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}
-                </router-link>
-              </td>
-            </tr>
-          </template>
+              </template>
+              <template #item.dateCreated="{item: project, index}" class="text-left clickable">
+                 <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>
+              </template>
         </v-data-table>
       </v-col>
     </v-row>
@@ -146,9 +142,14 @@
         this.$vuetify.goTo(table, {container: wrapper}); // to header
       }
     },
+    computed: {
+      isMobile(){
+        return this.$vuetify.breakpoint.smAndDown
+      }
+    },
     methods: {
-      goToRoute(projectId) {
-        this.$router.push({name: 'projectStatus', params: {projectId: projectId}})
+      goToRoute(project) {
+        this.$router.push({name: 'projectStatus', params: {projectId: project.id}})
       },
       async getProjects() {
         const {page, itemsPerPage} = this.options
@@ -184,7 +185,10 @@
         this.searchQuery = this.searchQuery || ''
         localStorage.setItem('projectSearch', this.searchQuery)
         this.getProjects()
-      }, 500)
+      }, 500),
+      closeKeyboard(){
+        document.activeElement.blur()
+      }
     }
   }
 </script>

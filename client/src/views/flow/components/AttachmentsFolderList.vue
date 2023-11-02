@@ -36,7 +36,6 @@
           single-line
           hide-details
         ></v-text-field>
-
         <v-btn class="my-4 mr-3"  :color="compare ? 'white' : 'primary'"
                :class="{'primary--text': compare, 'white--text' : !compare}"
                small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
@@ -287,6 +286,9 @@ export default {
         })?.length > 0
       }) : this.attachmentTypes
     },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    }
   },
   mounted() {
     if (this.loadLinked) {
