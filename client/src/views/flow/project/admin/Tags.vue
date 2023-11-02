@@ -19,7 +19,7 @@
                 <template #activator="{on}">
                   <v-btn text color="primary" class="" small v-on="on" @click="[ getAllTags() ]">
                     <v-icon>add</v-icon>
-                    Add Project Tag
+                    <span v-if="!isMobile">Add Project Tag</span>
                   </v-btn>
                 </template>
 
@@ -100,6 +100,9 @@ export default {
         return !this.filteredProjectTags.map(pt => pt.tagId).includes(t.id)
       })
     },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    }
   },
   async created() {
     await this.getProjectTags()

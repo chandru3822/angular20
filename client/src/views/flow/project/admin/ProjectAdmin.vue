@@ -5,8 +5,9 @@
         <router-link :to="`/project/${projectId}/status`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
-      <v-btn color="primary" dark class=" float-right white--text" @click="deleteProjectConfirm=true">
-        Delete Project
+      <v-btn color="primary" dark class=" float-right white--text mr-1" :icon="isMobile" @click="deleteProjectConfirm=true">
+        <v-icon v-if="isMobile" class="mt-2">delete</v-icon>
+        <span v-else>Delete Project</span>
       </v-btn>
     </v-toolbar>
     <ConfirmationDialog
@@ -78,6 +79,9 @@ export default {
           path: `/projectAdmin/${this.projectId}/tags`,
         }
       ]
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   async created () {
@@ -121,6 +125,7 @@ export default {
   height: 100%;
   max-height: 100% !important;
   padding: 0 !important;
+  overflow-x:clip;
 }
 
 .tabs-bar {
