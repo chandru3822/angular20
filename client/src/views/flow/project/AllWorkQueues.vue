@@ -22,7 +22,7 @@
           :items-per-page="-1"
           :loading="dataLoading"
           dense
-          class="elevation-1"
+          class="elevation-1 table-striped"
         >
 
           <template #no-data>
@@ -33,15 +33,12 @@
             No current work queues
           </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{ item.workQueueCategory }}</td>
-              <td class="text-left">{{ item.workQueueType }}</td>
-              <td class="text-left">{{ item.daysInQueue }}</td>
-              <td class="text-left">{{ item.processStepName }}</td>
-              <td class="text-left">{{ item.eventName }}</td>
-            </tr>
-          </template>
+          <template #item.workQueueCategory="{item}" class="text-left">{{ item.workQueueCategory }}</template>
+          <template #item.workQueueType="{item}" class="text-left">{{ item.workQueueType }}</template>
+          <template #item.daysInQueue="{item}" class="text-left">{{ item.daysInQueue }}</template>
+          <template #item.processStepName="{item}" class="text-left">{{ item.processStepName }}</template>
+          <template #item.eventName="{item}" class="text-left">{{ item.eventName }}</template>
+
         </v-data-table>
       </v-card>
 
@@ -65,7 +62,7 @@
           hide-default-footer
           :loading="dataLoading"
           dense
-          class="elevation-1"
+          class="elevation-1 table-striped"
         >
 
           <template #no-data>
@@ -76,15 +73,12 @@
             No current work queues
           </template>
 
-          <template #item="{ item, index }">
-            <tr class="clickable" :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{ item.workQueueCategory }}</td>
-              <td class="text-left">{{ item.workQueueType }}</td>
-              <td class="text-left">{{ item.daysInQueue }}</td>
-              <td class="text-left">{{ item.processStepName }}</td>
-              <td class="text-left">{{ item.eventName }}</td>
-            </tr>
-          </template>
+          <template #item.workQueueCategory="{item}" class="text-left">{{ item.workQueueCategory }}</template>
+          <template #item.workQueueType="{item}" class="text-left">{{ item.workQueueType }}</template>
+          <template #item.daysInQueue="{item}" class="text-left">{{ item.daysInQueue }}</template>
+          <template #item.processStepName="{item}" class="text-left">{{ item.processStepName }}</template>
+          <template #item.eventName="{item}" class="text-left">{{ item.eventName }}</template>
+
         </v-data-table>
       </v-card>
     </v-col>

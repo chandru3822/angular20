@@ -1,8 +1,7 @@
 <template>
   <v-container class="px-5 py-0">
     <div v-if="mobileView" class="headline-small pt-3">Notes</div>
-      hi: {{ bottomHitCount }}
-    <div class="activity-header" @click="startReadNotesTimer('Clicked in the notes tab')">
+    <div class="activity-header" >
       <v-text-field
         prepend-inner-icon="search"
         text
@@ -38,7 +37,7 @@
         </v-list>
       </v-menu>
     </div>
-    <div class="activity-body" @click="startReadNotesTimer('Clicked in the notes tab')">
+    <div class="activity-body" :class="{'footer-closed-height': !addActivity && null == editedActivity.id}">
       <div v-if="pinnedActivitiesOnly.length > 0 && !searchText" :class="{'pb-7': !timelineView}">
         <ActivityList v-if=!savingActivity
                       :activities="pinnedActivitiesOnly"
@@ -51,6 +50,8 @@
                       :edit-callback="setEditedActivity"
                       :search-callback="searchByClick"
                       @reload="getActivities"
+                      ref="pinnedActivityList"
+                      :use-infinite-loader="false"
                       @remove-deleted="removeDeletedActivity"
         />
       </div>
@@ -74,7 +75,7 @@
                       <v-icon small v-if="h.sortDirection === 'desc'">mdi-arrow-up</v-icon>
                       <v-icon small v-else>mdi-arrow-down</v-icon>
                     </v-btn>
-                    <v-btn v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0)" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
+                    <v-btn v-if="open && type.id !== 1 && h.hashtagId !== -1 && !(addActivity && selectedTopics.filter(t => t.id == h.hashtagId).length > 0)" text color="primary" class="text-capitalize pa-2" @click.native.stop="[addActivity = true, selectedTopics = [topics.find(t => t.id === h.hashtagId)] ];">
                       + Add note
                     </v-btn>
                   </v-row>
@@ -116,6 +117,7 @@
                     :highlightPinnedActivity = false
                     :query="queryText"
                     ref="activityList"
+                    :use-infinite-loader="true"
                     @bottomHitCount="bottomHitCallback"
                     @reload="getActivities"
       ></ActivityList>
@@ -134,7 +136,7 @@
              class="one-hunned text-capitalize"
              v-if="!addActivity && null == editedActivity.id"
              :loading="topicsLoading"
-             @click="[addActivity = true, selectedTopics = [] ]; endReadNotesTimer('Started writing note'); startWriteNotesTimer('Started writing note')">
+             @click="[addActivity = true, selectedTopics = [] ];">
         <v-icon small>mdi-plus</v-icon>
         Add note
       </v-btn>
@@ -196,7 +198,7 @@
           </v-btn>
           <v-btn color="primary" class="text-capitalize flex-grow-1"
                  :loading="savingActivity"
-                 @click="saveActivity(null == editedActivity.id); endWriteNotesTimer('Saved Note')"
+                 @click="saveActivity(null == editedActivity.id);"
                  :disabled="!editedActivity.note">
             Save
           </v-btn>
@@ -227,7 +229,6 @@ import orderBy from "lodash.orderby";
 import cloneDeep from "lodash.clonedeep";
 import {Mentionable} from 'vue-mention'
 import {SearchTypeEnum} from "./ActivityListConstants";
-import {endTimer, startTimer, writeNoteEndTimer, writeNoteStartTimer} from "@/services/analyticsService";
 import SpinnerInline from "@/components/SpinnerInline.vue";
 import constants from "@/helpers/constants";
 
@@ -383,12 +384,6 @@ export default {
   },
   methods: {
     cloneDeep,
-    startReadNotesTimer(startEvent){
-      startTimer(startEvent);
-    },
-    endWriteNotesTimer(endEvent){
-      writeNoteEndTimer(endEvent);
-    },
     bottomHitCallback() {
       this.bottomHitCount = this.bottomHitCount + 1
     },
@@ -560,6 +555,7 @@ export default {
       this.search={}
     },
     setEditedActivity(item) {
+      this.addActivity = false
       this.editedActivity = cloneDeep(item)
       this.populateSelectedTopics(item)
     },
@@ -673,12 +669,6 @@ export default {
         this.savingActivity = false
       }
     },
-    endReadNotesTimer(endEvent){
-      endTimer(endEvent);
-    },
-    startWriteNotesTimer(startEvent){
-      writeNoteStartTimer(startEvent);
-    },
     removeDeletedActivity(activityId){
       const deletedActivity = this.activities.find(a => a.id === activityId)
       if(deletedActivity) {
@@ -701,7 +691,7 @@ export default {
   top: -1px;
   background-color: white;
   padding: 0 10px;
-  z-index: 200;
+  z-index: 10; //to make sure the filter dropdown is in front of the list of notes/activities
   margin-left: -10px;
   margin-right: -10px;
   align-items: center;
@@ -724,11 +714,19 @@ export default {
   bottom: 0;
   background-color: white;
   padding: 0px 10px 15px 10px;
-  z-index: 200;
+  z-index: 10;
   margin-left: -10px;
   margin-right: -10px;
 }
 
+.activity-body {
+  @media (min-width: 960px) {
+  //min-height: 500px;
+  }
+}
+.footer-closed-height {
+  min-height: calc(100vh - 360px);
+}
 .title-medium:last-of-type {
   padding-top:16px;
 }

@@ -7,6 +7,7 @@
         :items="sortedSteps"
         :fixed-header="true"
         :items-per-page="-1"
+        @click:row="goToProjectProcessStep"
         id="qa-process-step-table"
         hide-default-footer
         disable-sort
@@ -20,17 +21,13 @@
           <span class="default-text-color">No active process steps</span>
         </template>
 
-        <template #item="{ item, index }">
-          <tr class="clickable" @click="goToPath(`/project/${projectId}/processStep/${item.projectProcessStepId}`)">
-            <td class="text-left" id="qa-process-link">
-              {{ item.projectProcessStepId }}
-            </td>
-            <td class="text-left" id="qa-process-step-name">{{item.processStepName}}</td>
-            <td class="text-left" id="qa-process-date-created">{{ item.dateCreated | formatDate('timestamp') }}</td>
-            <td class="text-left" id="qa-process-owner-name">{{ item.owner && item.owner.fullName }}</td>
-            <td class="text-left" id="qa-process-status">{{item.processStepStatusType}}</td>
-          </tr>
+        <template #item.id="{item}" class="text-left" id="qa-process-link">
+          {{ item.projectProcessStepId }}
         </template>
+        <template #item.processStepName="{item}" class="text-left" id="qa-process-step-name">{{item.processStepName}}</template>
+        <template #item.dateCreated="{item}" class="text-left" id="qa-process-date-created">{{ item.dateCreated | formatDate('timestamp') }}</template>
+        <template #item.owner="{item}" class="text-left" id="qa-process-owner-name">{{ item.owner && item.owner.fullName }}</template>
+        <template #item.processStepStatusType="{item}" class="text-left" id="qa-process-status">{{item.processStepStatusType}}</template>
 
       </v-data-table>
     </v-card>
@@ -67,6 +64,9 @@ export default {
     goToPath(path) {
       this.$router.push(path)
     },
+    goToProjectProcessStep(processStep){
+      this.goToPath(`/project/${this.projectId}/processStep/${processStep.projectProcessStepId}`)
+    }
   }
 }
 </script>

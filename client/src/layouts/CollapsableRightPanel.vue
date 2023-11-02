@@ -96,7 +96,7 @@ const isMobile = computed(() => {
     <div v-show="!isSidebarCollapsed" class="conversation-activity-inner-container one-hunned">
       <slot/>
     </div>
-    <div fixed class="footer-container px-0" :class="{'footerAbsolute' : !isMobile}"
+    <div v-if="!isMobile" fixed class="footer-container px-0" :class="{'footerAbsolute' : !isMobile}"
          :style="{'width': isSidebarCollapsed ? '72px' : '100%',
                       }">
       <v-row
@@ -144,7 +144,7 @@ const isMobile = computed(() => {
 }
 
 .conversation-activity-inner-container {
-  max-height: calc(100% - 175px);
+  max-height: calc(100% - 85px);
   margin-top:0;
   overflow: auto;
 

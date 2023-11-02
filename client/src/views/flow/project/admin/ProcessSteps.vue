@@ -146,6 +146,7 @@
       @updateStatus="updateMain"
       @dialogClosed="[showMainDialog = false, selectedPps.main = false, selectedPps.newStatusToUse = {NEW_STATUS_TO_USE}]"
     />
+  </div>
 </template>
 
 <script>

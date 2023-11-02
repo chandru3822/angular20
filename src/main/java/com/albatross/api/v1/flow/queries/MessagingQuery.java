@@ -550,6 +550,8 @@ public class MessagingQuery {
     insert into flow.project_message_team
     (project_id, sms_team_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:projectId, :teamId, :createdById, now(), :createdById, now())
+    on conflict (project_id, sms_team_id) WHERE archived is false
+        do nothing
     """;
 
   //language=PostgreSQL

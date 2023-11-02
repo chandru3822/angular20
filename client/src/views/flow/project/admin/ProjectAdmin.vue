@@ -2,11 +2,12 @@
   <div id="project-admin-container">
     <v-toolbar flat color="#E3E3E3" class="project-header">
       <div class="app-title albatross-header-1">
-        <router-link :to="`/project/${projectId}/details`">{{ project.projectName }}</router-link>
+        <router-link :to="`/project/${projectId}/status`">{{ project.projectName }}</router-link>
       </div>
       <v-spacer></v-spacer>
-      <v-btn color="primary" dark class=" float-right white--text" @click="deleteProjectConfirm=true">
-        Delete Project
+      <v-btn color="primary" dark class=" float-right white--text mr-1" :icon="isMobile" @click="deleteProjectConfirm=true">
+        <v-icon v-if="isMobile" class="mt-2">delete</v-icon>
+        <span v-else>Delete Project</span>
       </v-btn>
     </v-toolbar>
     <ConfirmationDialog
@@ -19,7 +20,7 @@
     </ConfirmationDialog>
     <v-row>
       <v-col cols="12" class="relative">
-        <v-btn text class="pl-1 pr-2 anchor" :to="`/project/${projectId}/details`">
+        <v-btn text class="pl-1 pr-2 anchor" :to="`/project/${projectId}/status`">
           <v-icon>arrow_left</v-icon>
           <span>Back to Project</span>
         </v-btn>
@@ -78,6 +79,9 @@ export default {
           path: `/projectAdmin/${this.projectId}/tags`,
         }
       ]
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   async created () {
@@ -121,6 +125,7 @@ export default {
   height: 100%;
   max-height: 100% !important;
   padding: 0 !important;
+  overflow-x:clip;
 }
 
 .tabs-bar {

@@ -760,7 +760,7 @@ const router = new Router({
               path: 'zip',
               meta: {title: 'Albatross - Settings'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')) {
+                if (store.getters.userHasFeature('POSTAL_CODE')) {
                   return import (/* webpackChunkName: "postalCodes" */ './views/flow/settings/postalCode/ZipContainer.vue')
                 } else {
                   return accessDenied()
