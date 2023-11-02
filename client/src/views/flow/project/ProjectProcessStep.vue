@@ -800,10 +800,13 @@ export default {
   align-items: flex-start;
 }
 
+.cfg-name-toolbar {
+  z-index:10;
+}
+
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
   padding-right: 0 !important;
-  flex-wrap: wrap;
 }
 
 #pps-toolbar.cfg-name-toolbar .v-toolbar__content {

@@ -227,6 +227,17 @@ export default {
 
 @media (min-width: 960px) {
   .left-column {
+    width: calc((3 / 12) * 100%); //col-3
+    max-width: calc((3 / 12) * 100%); //col-3
+  }
+
+  #right-column{
+    width: calc((4 / 12) * 100%); //col-4
+    max-width: calc((4 / 12) * 100%); //col-4
+  }
+}
+@media (min-width: 1200px){
+  .left-column {
     width: calc((2 / 12) * 100%); //col-2
     max-width: calc((2 / 12) * 100%); //col-2
   }
