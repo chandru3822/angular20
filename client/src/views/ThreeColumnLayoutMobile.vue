@@ -64,7 +64,7 @@ const chooseSelectedView = (view, id) => {
   <v-container class="pa-0" id="three-column-container">
     <v-navigation-drawer v-model="showMenu" absolute temporary clipped>
       <v-list>
-        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0">
+        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot}">
           <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot" @click="chooseSelectedView(item, index)">{{ item.pageName }}</v-list-item-title>
           <slot :name="`subMenu_${index}`"/>
         </v-list-item>
