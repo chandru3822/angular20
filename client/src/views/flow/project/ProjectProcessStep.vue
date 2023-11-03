@@ -6,13 +6,13 @@
   </v-main>
   <v-main ref="ppsFieldsContainer" v-else-if="!processStepLoading"
           class="py-0 px-6 relative height-one-hunned overflow-y-auto">
-    <!--  error save dialog -->
     <v-row>
       <v-col class="text-left px-5 py-0">
+    <!--  error save dialog -->
         <ConfirmationDialog :open-dialog="unsavedFieldsModal" @confirm="[navigationOverride = true, goToPath(toPath, query)]" @close-dialog="unsavedFieldsModal = false">
           <template v-slot:title>Confirm</template>
           You have unsaved fields. Are you sure you want to continue without saving?
-          <template v-slot:yes>Continue and Discard Changes</template>
+          <template v-slot:yes>Continue Without Saving</template>
         </ConfirmationDialog>
       </v-col>
 
