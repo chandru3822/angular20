@@ -102,8 +102,8 @@
           </v-col>
         </v-row>
       </div>
-      <div class="fixed-toolbar padding-left-1">
-        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar px-0">
+      <div class="fixed-toolbar">
+        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar">
           <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>

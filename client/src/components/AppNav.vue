@@ -44,6 +44,7 @@
             <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
             <v-icon v-else>mdi-office-building</v-icon>
           </v-btn>
+          <v-btn v-if="showMobileBanner && $route.path !== '/apps'" @click="goToApps" icon class="text-capitalize bold px-0"><v-icon>mdi-download-circle</v-icon></v-btn>
           <v-spacer v-if="isMobile"></v-spacer>
           <v-menu v-if="isMobile" data-app left
                   offset-y
@@ -141,6 +142,8 @@ export default {
       companies: [],
       companyTools: [],
       model: '',
+      hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
+      showMobileBanner: false,
       headerColor: VITE_ENV === 'local' ? constants.LOCAL_COLOR :
         VITE_ENV === 'dev' || VITE_ENV === 'stage' ? constants.STAGE_COLOR :
           VITE_ENV === 'flux' ? constants.FLUX_COLOR :
@@ -197,6 +200,12 @@ export default {
         feature: 'SMARTLIST',
         show: true
       })
+    }
+
+    let userAgent = window.navigator.userAgent
+    if (!this.hideMobileBanner && userAgent && ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))) {
+      //the hideMobileBanner prop is used so that the mobile app can disable the mobile banner when displaying web views inside the app
+      this.showMobileBanner = true
     }
   },
   computed: {
@@ -269,6 +278,9 @@ export default {
     },
     goToPath(path) {
       this.$router.push({ path: `${path}` })
+    },
+    async goToApps() {
+      this.$router.push('/apps')
     },
     async clearMasquerade() {
       this.$store.commit(AppMutations.SET_LOADING, true)
