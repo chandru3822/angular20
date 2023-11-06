@@ -537,7 +537,7 @@ const getSystemListValues = async () => {
     const {data} = await getRequest(url)
 
     requirement.value.isCustomValue = true
-    requirement.value.hasListOfValues = true
+    requirement.value.hasListValues = true
     //Event data return correctly and doesn't need manipulation
     requirement.value.listOfValues = (requirement.value.objectTypeId === 6) ? data : data.map(v => ({id: v.userPositionId, name: v.fullName}))
   } catch (e) {
@@ -623,7 +623,7 @@ const add = () => {
     requirement.value.secondaryRequirementValue = secondaryValue.value.trim()
   }
 
-  if (requirement.value.hasListOfValues) {
+  if (requirement.value.hasListValues) {
     requirement.value.availableListOfValues = requirement.value.listOfValues
   }
 
@@ -662,6 +662,10 @@ onMounted(() => {
     operator.value = {
       id: requirement.value.operatorTypeId,
       operatorType: requirement.value.operatorType
+    }
+
+    if (requirement.value.hasListValues) {
+      requirement.value.availableListOfValues = requirement.value.listOfValues
     }
 
     if (requirement.value.dataTypeRequirementId) {
