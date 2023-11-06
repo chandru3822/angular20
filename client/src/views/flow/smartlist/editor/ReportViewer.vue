@@ -118,10 +118,10 @@ watch(
         isUpdateQueued.value = true
         emit('queued')
       } else {
-
         // If data type is changed, only call processQueue if we aren't switching to/from Project Details
-        if (oldReport.objectType != newReport.objectType &&
-          !(oldReport.objectType == 'Data View' || newReport.objectType == 'Data View')) {
+        if (oldReport.objectType == newReport.objectType ||
+          (oldReport.objectType != newReport.objectType &&
+          !(oldReport.objectType == 'Data View' || newReport.objectType == 'Data View'))) {
           processQueue()
         }
       }
