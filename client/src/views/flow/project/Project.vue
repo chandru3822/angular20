@@ -112,7 +112,7 @@
                                  {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity/2`},
                                  {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
                                  {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
-                                 {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}`}
+                                 {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
                                  ]"
                              :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
                              :view-change-callback="changeMobileView"
