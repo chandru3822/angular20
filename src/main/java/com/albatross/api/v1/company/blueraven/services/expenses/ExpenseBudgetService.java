@@ -171,6 +171,8 @@ public class ExpenseBudgetService {
   }
 
   public Optional<ExpenseBudget> updateBudget(ExpenseBudget expenseBudget) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
 
     params.put("budgetTypeId", expenseBudget.getBudgetTypeId());
@@ -178,8 +180,8 @@ public class ExpenseBudgetService {
     params.put("startDate", expenseBudget.getStartDate());
     params.put("endDate", expenseBudget.getEndDate());
     params.put("userId", expenseBudget.getUserId());
-    params.put("updatedById", expenseBudget.getUserId());
-    params.put("createdById", expenseBudget.getUserId());
+    params.put("updatedById", currentUser.trueUserId());
+    params.put("createdById", currentUser.trueUserId());
     params.put("notes", expenseBudget.getNotes());
 
     Long budgetIdToReturn = null;
