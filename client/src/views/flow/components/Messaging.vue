@@ -410,7 +410,7 @@ a.chatLink {
 
 .message-container {
   min-height: 400px;
-  height: calc(100% - 10px);
+  height: 90%;
   margin-top: 5px;
 }
 

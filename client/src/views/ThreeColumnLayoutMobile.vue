@@ -112,7 +112,7 @@ const chooseSelectedView = (view, id) => {
 }
 
 .main-column-container {
-  height: 80%;
+  height: 95%;
 }
 
 .three-column-header {

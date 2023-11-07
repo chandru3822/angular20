@@ -533,7 +533,7 @@ export default {
 <style lang="scss" scoped>
 .sticky-compare-bar {
   position: sticky;
-  top: 0;
+  top: -2px;
   z-index: 2;
   background: white;
 }
