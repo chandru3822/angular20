@@ -73,7 +73,7 @@
         </div>
       </div>
       <div v-if="selectedEvent.hasAttachmentTypesAssigned">
-        <v-toolbar flat color="secondary" class="cfg-detail-header">
+        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header">
           <v-toolbar-title class="albatross-header-3">
             Event Documents
           </v-toolbar-title>
