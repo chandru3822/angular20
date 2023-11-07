@@ -35,7 +35,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['selectMenuItem'])
 
-
 const showMenu=ref(false)
 const toggleMenu = (forceClose) => {
     if(forceClose){
@@ -59,12 +58,13 @@ const chooseSelectedView = (view, id) => {
   selectedViewId.value = id
   props.viewChangeCallback(view, true)
 }
+
 </script>
 <template>
   <v-container class="pa-0" id="three-column-container">
     <v-navigation-drawer v-model="showMenu" absolute temporary clipped>
       <v-list>
-        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot}">
+        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot, 'active': item.customPath && $route.path.includes(item.customPath)}">
           <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot" @click="chooseSelectedView(item, index)">{{ item.pageName }}</v-list-item-title>
           <slot :name="`subMenu_${index}`"/>
         </v-list-item>
@@ -104,7 +104,7 @@ const chooseSelectedView = (view, id) => {
 }
 
 #three-column-container > aside{
-  height: 95% !important;
+  height: 100% !important;
 }
 
 .main-column-container {
@@ -116,7 +116,9 @@ const chooseSelectedView = (view, id) => {
   background-color: var(--v-grey-lighten2) !important;
 }
 
-
+.active {
+  background-color: var(--v-primary-lighten9);
+}
 
 .white-bg {
   background-color: #fff;
