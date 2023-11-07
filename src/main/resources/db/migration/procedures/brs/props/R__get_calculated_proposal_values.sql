@@ -1320,8 +1320,8 @@ BEGIN
                                               v_battery_rebate_cap_percent_of_total,
                                               v_battery_rebate_cap_amount,
                                               v_battery_rebate_amount,
-                                              v_cash_price_storage
-       );
+                                              v_cash_price_storage,
+                                                                  v_minimum_tsrf);
   raise notice 'v_odoe_rebate % ',v_odoe_rebate;
 
 
