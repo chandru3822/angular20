@@ -68,6 +68,10 @@ const chooseSelectedView = (view, id) => {
           <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot" @click="chooseSelectedView(item, index)">{{ item.pageName }}</v-list-item-title>
           <slot :name="`subMenu_${index}`"/>
         </v-list-item>
+      <v-list-item class="px-0 my-1">
+<!--this is an empty list item to hopefully fix the fact that stupid iphones cover the bottom of the webpage and you can't scroll down to see Project Admin-->
+          <v-list-item-title class="mx-6 label-large"></v-list-item-title>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
   <v-row>
