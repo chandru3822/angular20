@@ -69,7 +69,7 @@ const isMobile = computed(() => {
 
 <template>
 
-  <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4 d-flex flex-column" no-gutters>
+  <v-row id="conversation-activity-container" ref="conversationActivityContainer" class="pa-0 pt-4 d-flex flex-column flex-nowrap" no-gutters>
     <div v-if="isSidebarCollapsed" class="pl-3 pt-2">
       <v-btn class="d-inline-block align-self-center" :class="{'title-collapsed':isSidebarCollapsed}" small text color="primary" @click="collapseExpandSide()">
         <slot name="collapse-btn-icon">
@@ -77,7 +77,7 @@ const isMobile = computed(() => {
         </slot>
       </v-btn>
     </div>
-    <div v-else class="conversation-activity-header-container d-flex flex-column one-hunned">
+    <div v-else class="conversation-activity-header-container d-flex flex-column  one-hunned">
       <div class="pt-0 pl-6 d-flex align-center conversation-activity-header title-no-collapse headline-small">
           <slot name="title" v-if="!isSidebarCollapsed">Sidebar Title</slot>
         <v-spacer v-if="!isSidebarCollapsed"></v-spacer>
@@ -90,7 +90,7 @@ const isMobile = computed(() => {
       </div>
       <slot v-if="!isSidebarCollapsed" name="header-second-line"/>
       <!-- i show this line regardless of selected tab so that the mb-3 sticks around. otherwise need to add it to the element above for only options 0 & 1-->
-      <div class="mb-3" v-if="!isSidebarCollapsed"></div>
+<!--      <div class="mb-3" v-if="!isSidebarCollapsed"></div>-->
       <v-divider v-if="selectedOption === 0 && !isSidebarCollapsed"></v-divider>
     </div>
     <div v-show="!isSidebarCollapsed" class="conversation-activity-inner-container one-hunned">
@@ -142,7 +142,9 @@ const isMobile = computed(() => {
   width: 100%;
   position: relative;
 }
-
+.conversation-activity-header-container {
+  height: fit-content;
+}
 .conversation-activity-inner-container {
   max-height: calc(100% - 85px);
   margin-top:0;
