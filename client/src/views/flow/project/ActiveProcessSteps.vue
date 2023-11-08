@@ -6,7 +6,7 @@
   >
     <template v-slot:tool-btn>
       <AddProcessStep
-          v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD')"
+          v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
           class="d-inline-block"
           :admin="$store.getters.isFullAdmin"
           :project-id="projectId"
@@ -54,7 +54,11 @@ export default {
   },
   props: {
     project: Object,
-    updateKey: Number
+    updateKey: Number,
+    hideAddBtn: {
+      type: Boolean,
+      default: false
+    }
   },
   watch: {
     updateKey: function () {

@@ -50,6 +50,9 @@ export default {
 .action-button > .v-btn__content {
   color: white !important;
   text-transform: none;
+  //the next two lines allow the button text to wrap on mobile when names are very long
+  white-space: normal;
+  flex: auto;
 }
 .multi-link-button > .v-btn__content {
   color: var(--v-primary-base) !important;

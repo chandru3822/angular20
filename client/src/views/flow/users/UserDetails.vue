@@ -70,7 +70,7 @@
                        :auto-overflow-left="false">
       <template v-slot:left-column>
         <div v-if="!$store.state.project.leftSideSplit && user && user.id"
-             class="px-2 height-one-hunned overflow-y-auto">
+             class="height-one-hunned overflow-y-auto">
           <PageOverview
             page-name="User"
             :show-edit-btn="userCanEdit"

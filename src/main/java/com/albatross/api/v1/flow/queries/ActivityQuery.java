@@ -42,7 +42,7 @@ public class ActivityQuery {
                                                                    end as "linkLabel",
                                                                pa2.pinned,
                                                                pa2.created_by_id as "createdById",
-                                                               concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+                                                               concat(cb.first_name, ' ', cb.last_name) as "createdBy",
                                                                upv.position as "createdByPosition",
                                                                upv.org_name as "createdByPositionOrg",
                                                                upv.org_id as "createdByPositionOrgId",
@@ -71,9 +71,9 @@ public class ActivityQuery {
                                                                                  and pah3.archived is false) ht), '[]') AS "activityHashtags"
                                                         from flow.project_activity_hashtag pah2
                                                                  inner join flow.project_activity pa2 on pa2.id = pah2.project_activity_id and pa2.project_id = :sourceId and pa2.archived is false
-                                                                 left join flow.user_positions_vw upv on upv.user_id = pa2.created_by_id
+                                                                 inner join flow."user" cb on cb.id = pa2.created_by_id
+                                                                 left join flow.user_positions_vw upv on upv.user_position_id = pa2.created_by_user_position_id
                                                                                                              and upv.position_level = 0
-                                                                                                    and upv.primary_flag is true
                                                                                                     and upv.archived is false
                                                                                                     and upv.company_id = :companyId
                                                                  inner join flow."user" mod on mod.id = pa2.modified_by_id
@@ -122,7 +122,7 @@ public class ActivityQuery {
                                                                    end as "linkLabel",
                                                                pa2.pinned,
                                                                pa2.created_by_id as "createdById",
-                                                               concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+                                                               concat(cb.first_name, ' ', cb.last_name) as "createdBy",
                                                                upv.position as "createdByPosition",
                                                                upv.org_name as "createdByPositionOrg",
                                                                upv.org_id as "createdByPositionOrgId",
@@ -133,13 +133,13 @@ public class ActivityQuery {
                                                                concat(mod.first_name, ' ', mod.last_name) as "modifiedBy",
                                                                pa2.activity_type_id as "activityTypeId"
                                                         from flow.project_activity pa2
-                                                                 left join flow.user_positions_vw upv on upv.user_id = pa2.created_by_id
+                                                                 inner join flow."user" mod on mod.id = pa2.modified_by_id
+                                                                 inner join flow."user" cb on cb.id = pa.created_by_id
+                                                                 left join flow."user" pin on pin.id = pa2.pinned_by_id
+                                                                 left join flow.user_positions_vw upv on upv.user_position_id = pa2.created_by_user_position_id
                                                                                                              and upv.position_level = 0
-                                                                                                             and upv.primary_flag is true
                                                                                                              and upv.archived is false
                                                                                                              and upv.company_id = :companyId
-                                                                 inner join flow."user" mod on mod.id = pa2.modified_by_id
-                                                                 left join flow."user" pin on pin.id = pa2.pinned_by_id
                                                         where pa2.archived is false
                                                           and pa2.project_id = :sourceId
                                                           and pa2.activity_type_id = a.id
@@ -190,7 +190,7 @@ public class ActivityQuery {
                  end                                                 as link_label,
              pa.pinned,
              pa.created_by_id,
-             concat(upv.first_name, ' ', upv.last_name)                  as "createdBy",
+             concat(cb.first_name, ' ', cb.last_name)                  as "createdBy",
              upv.position  as "createdByPosition",
              upv.org_name  as "createdByPositionOrg",
              upv.org_id        as "createdByPositionOrgId",
@@ -219,10 +219,10 @@ public class ActivityQuery {
                                and pah.archived is false) ht), '[]') AS "activityHashtags"
       from flow.project_activity pa
                inner join flow."user" mod on mod.id = pa.modified_by_id
+               inner join flow."user" cb on cb.id = pa.created_by_id
                left join flow."user" pin on pin.id = pa.pinned_by_id
-               left join flow.user_positions_vw upv on upv.user_id = pa.created_by_id
+               left join flow.user_positions_vw upv on upv.user_position_id = pa.created_by_user_position_id
                                                                     and upv.position_level = 0
-                                                                    and upv.primary_flag is true
                                                                     and upv.archived is false
                                                                     and upv.company_id = :companyId
       where pa.archived is false
@@ -274,7 +274,7 @@ public class ActivityQuery {
             end as link_label,
            pa.date_created,
            pa.created_by_id,
-           concat(upv.first_name, ' ', upv.last_name) as "createdBy",
+           concat(cb.first_name, ' ', cb.last_name) as "createdBy",
            case when upv.user_position_id is not null then concat(upv.position, ' (', upv.org_name, ')') end as "createdByPosition",
            pa.pinned_by_id as "pinnedById",
            concat(pin.first_name, ' ', pin.last_name) as "pinnedBy",
@@ -301,10 +301,10 @@ public class ActivityQuery {
                                                 and pah.archived is false) ht), '[]') AS "activityHashtags"
       from flow.project_activity pa
       inner join flow."user" mod on mod.id = pa.modified_by_id
+      inner join flow."user" cb on cb.id = pa.created_by_id
       left join flow."user" pin on pin.id = pa.pinned_by_id
-      left join flow.user_positions_vw upv on upv.user_id = pa.created_by_id
+      left join flow.user_positions_vw upv on upv.user_position_id = pa.created_by_user_position_id
                                                                                                                and upv.position_level = 0
-                                                                                                               and upv.primary_flag is true
                                                                                                                and upv.archived is false
                                                                                                                and upv.company_id = :companyId
       where pa.archived is false
@@ -313,8 +313,8 @@ public class ActivityQuery {
 
   //language=PostgreSQL
   public final static String addProjectActivity = """
-      insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id, archived, activity_type_id, linked, linked_pps_id,linked_ppse_id)
-      values (:sourceId, now(), :note, now(), :userId, :userId, false, :activityTypeId, :linked, :linkedPpsId, :linkedPpseId);
+      insert into flow.project_activity(project_id, date_modified, note, date_created, created_by_id, modified_by_id, archived, activity_type_id, linked, linked_pps_id,linked_ppse_id, created_by_user_position_id)
+      values (:sourceId, now(), :note, now(), :userId, :userId, false, :activityTypeId, :linked, :linkedPpsId, :linkedPpseId, :userPositionId);
     """;
 
   //language=PostgreSQL

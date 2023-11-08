@@ -1,8 +1,8 @@
 <template>
   <v-container class="pa-0" id="three-column-container">
     <v-row>
+      <v-toolbar v-if="!headerHidden" flat :height="headerLarge ? '94px' : '64px'" class="three-column-header px-5">
       <slot name="header">
-        <v-toolbar v-if="!headerHidden" flat class="three-column-header px-4">
           <v-toolbar-title class="headline-medium d-flex align-center mr-6">
             <slot name="back-btn"></slot>
             {{ headerText }}
@@ -13,11 +13,11 @@
             <slot name="header-btn">
             </slot>
           </v-toolbar-items>
-        </v-toolbar>
       </slot>
+      </v-toolbar>
     </v-row>
-    <v-row class="split-container" :class="{'full-height':headerHidden}">
-      <v-col id="left-column" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
+    <v-row class="split-container" :class="{'full-height':headerHidden, 'tall-header': headerLarge}">
+      <v-col id="left-column" @click="$emit('end-notes-timer')" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
                                                                                             'collapsed': this.$store.state.project.leftSideSplit,
                                                                                             'narrow': this.leftSmall,
                                                                                             'mobile-overflow': true,
@@ -25,17 +25,19 @@
                                                                                             'white-bg': this.leftSideWhiteBg,
                                                                                             'hide-column-xs': $store.state.project.leftSideSplit}">
         <div class="mobile-padding-menu-button" :class="{'title-collapsed': $store.state.project.leftSideSplit,
-                      'ml-4': !$store.state.project.leftSideSplit}">
+                      'ml-2': !$store.state.project.leftSideSplit}">
           <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
+        <div v-if="!$store.state.project.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
         <slot name="left-column"></slot>
+        </div>
       </v-col>
-      <v-col class="project-section center-panel pt-0 px-0 auto-overflow mobile-background" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit}">
+      <v-col class="project-section center-panel py-0 px-0" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit}">
         <slot name="main-column"></slot>
       </v-col>
-      <v-col id="right-column" class="project-section right-column px-0 pb-0" :class="{'hidden': this.rightHidden,
+      <v-col id="right-column" class="project-section right-column pa-0" :class="{'hidden': this.rightHidden,
                                                                                                   'halvsies': this.leftHidden,
                                                                                                   'collapsed': this.$store.state.project.rightSideSplit && showRightCollapseBtn,
                                                                                                   'white-bg': this.rightSideWhiteBg,
@@ -50,7 +52,6 @@
         </slot>
       </v-col>
     </v-row>
-
   </v-container>
 </template>
 
@@ -70,6 +71,7 @@ export default {
     headerText: String,
     headerBtnText: String,
     headerHidden: Boolean,
+    headerLarge: Boolean,
     leftCollapsed: Boolean,
     leftSmall: Boolean,
     leftHidden: Boolean,
@@ -177,7 +179,7 @@ export default {
 }
 
 .three-column-header {
-  height: 64px;
+  min-height: 64px;
   background-color: var(--v-grey-lighten2) !important;
 }
 
@@ -191,11 +193,20 @@ export default {
   &.full-height {
     height: 100%
   }
+  &.tall-header {
+    height: calc(100% - 94px);
+  }
 }
 
 .project-section {
   max-height: 100%;
 }
+
+
+.left-panel-scrollable-area {
+  height: calc(100% - 30px);
+}
+
 
 .project-section.left-column,
 .project-section.center-panel {
@@ -215,6 +226,17 @@ export default {
 }
 
 @media (min-width: 960px) {
+  .left-column {
+    width: calc((3 / 12) * 100%); //col-3
+    max-width: calc((3 / 12) * 100%); //col-3
+  }
+
+  #right-column{
+    width: calc((4 / 12) * 100%); //col-4
+    max-width: calc((4 / 12) * 100%); //col-4
+  }
+}
+@media (min-width: 1200px){
   .left-column {
     width: calc((2 / 12) * 100%); //col-2
     max-width: calc((2 / 12) * 100%); //col-2

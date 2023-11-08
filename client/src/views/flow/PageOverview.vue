@@ -1,6 +1,6 @@
 <template>
 <v-container class="pa-0 mobile-background">
-  <SidePanelExpansionPanel :header="`${pageName} Overview`" :section-expanded="opened">
+  <SidePanelExpansionPanel :header="`${pageName} Overview`" :is-disabled="!isExpandable" :section-expanded="opened">
     <template v-slot:tool-btn>
       <v-btn
           text small color="primary" class="px-0"
@@ -144,6 +144,10 @@ export default {
   name: "PageOverview",
   props: {
     pageName: String,
+    isExpandable: {
+      type: Boolean,
+      default: true
+    },
     showEditBtn: Boolean,
     dense: {
       type: Boolean,

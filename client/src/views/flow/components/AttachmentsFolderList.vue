@@ -36,18 +36,17 @@
           single-line
           hide-details
         ></v-text-field>
-
         <v-btn class="my-4 mr-3"  :color="compare ? 'white' : 'primary'"
                :class="{'primary--text': compare, 'white--text' : !compare}"
                small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
                v-if="compare">
           Cancel Comparison
         </v-btn>
-        <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare"
+        <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare "
                :disabled="selectedAttachmentsForCompare.length === 0">
           Confirm Comparison
         </v-btn>
-        <v-btn small color="primary" class="my-4" @click="compare = true" v-else>
+        <v-btn small color="primary" class="my-4" @click="compare = true" v-else-if="!isMobile">
           Compare
         </v-btn>
       </div>
@@ -287,6 +286,9 @@ export default {
         })?.length > 0
       }) : this.attachmentTypes
     },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    }
   },
   mounted() {
     if (this.loadLinked) {
@@ -531,7 +533,7 @@ export default {
 <style lang="scss" scoped>
 .sticky-compare-bar {
   position: sticky;
-  top: 0;
+  top: -2px;
   z-index: 2;
   background: white;
 }

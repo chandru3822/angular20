@@ -565,7 +565,7 @@ public class BlueravenProposalService {
     return sqlCache.queryBySql(ProposalQuery.getLockedProposalsForProcessing, Map.of(), new SingleColumnRowMapper<>(Long.class));
   }
 
-  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  @Transactional
   public void setProcessingErrorMessage(Long proposalId, String errorMessage, Long modifiedBy) {
     sqlCache.updateBySql(ProposalQuery.setProcessingErrorMessage,
       Map.of("id", proposalId, "errorMsg", errorMessage, "modifiedById", modifiedBy));

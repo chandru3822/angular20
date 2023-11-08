@@ -7,9 +7,9 @@
     :close-on-content-click="false"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="" small v-on="on" @click="getSteps()" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize" :small="!largeBtn" :large="largeBtn" v-on="on" @click="getSteps()" @blur="clear()">
       <v-icon>add</v-icon>
-      <span v-if="title != null">{{title}}</span>
+      <span v-if="title != null && !isMobile">{{title}}</span>
     </v-btn>
   </template>
 
@@ -70,7 +70,15 @@ export default {
       type: Number
     },
     contactId: Number,
-    title: String
+    title: String,
+    showBtnText: {
+      type: Boolean,
+      default: false
+    },
+    largeBtn: {
+      type: Boolean,
+      default: false
+    }
   },
 
   data () {
@@ -89,6 +97,11 @@ export default {
   created () {
     // this.getSteps()
     // this.getCancelledStatuses()
+  },
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    }
   },
   methods: {
     getSteps: async function () {

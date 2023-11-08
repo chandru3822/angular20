@@ -11,6 +11,20 @@ drop function if exists brs.get_rebate_for_standard_low_income(p_aurora_design_s
                                                                p_battery_rebate_cap_amount numeric,
                                                                p_battery_rebate_amount numeric,
                                                                p_cash_price_storage numeric);
+drop function if exists brs.get_rebate_for_standard_low_income(p_aurora_design_summary jsonb,
+                                                               p_system_size numeric,
+                                                               p_rebate_cap_dollar_amount numeric,
+                                                               p_rebate_cap_percentage_of_total numeric,
+                                                               p_total_system_cost_before_rebates numeric,
+                                                               p_panel_wattage numeric,
+                                                               p_rebate_rate numeric,
+                                                               p_system_size_cutoff numeric,
+                                                               p_number_of_batteries numeric,
+                                                               p_battery_rebate_cap_percent_of_total numeric,
+                                                               p_battery_rebate_cap_amount numeric,
+                                                               p_battery_rebate_amount numeric,
+                                                               p_cash_price_storage numeric,
+                                                               p_minimum_tsrf bigint);
 CREATE OR REPLACE FUNCTION brs.get_rebate_for_standard_low_income(p_aurora_design_summary jsonb,
                                                                    p_system_size numeric,
                                                                    p_rebate_cap_dollar_amount numeric,
@@ -23,7 +37,8 @@ CREATE OR REPLACE FUNCTION brs.get_rebate_for_standard_low_income(p_aurora_desig
                                                                    p_battery_rebate_cap_percent_of_total numeric,
                                                                    p_battery_rebate_cap_amount numeric,
                                                                    p_battery_rebate_amount numeric,
-                                                                   p_cash_price_storage numeric)
+                                                                   p_cash_price_storage numeric,
+                                                                   p_minimum_tsrf bigint)
   returns numeric AS
 $BODY$
 declare
@@ -71,7 +86,7 @@ BEGIN
           from (select sum(panel_count * total_solar_resource_fraction) fraction, sum(panel_count) count
                 from calculations mc
                        inner join multiple_faces mf on mf.face = mc.face) as foo) as foo1
-    where foo1.total_solar_resource_fraction > 80;
+    where foo1.total_solar_resource_fraction > p_minimum_tsrf;
 
     with single_faces as (select face
                           from calculations
@@ -82,7 +97,7 @@ BEGIN
     from (select sum(panel_count) as panel_count
           from calculations mc
                  inner join single_faces mf on mf.face = mc.face
-          where total_solar_resource_fraction > 80) as foo;
+          where total_solar_resource_fraction > p_minimum_tsrf) as foo;
     v_plane_rebate_amount = coalesce(v_multiple_plane_rebate_amount, 0) + coalesce(v_single_plane_rebate_amount, 0);
 
     raise notice 'v_plane_rebate_amount %',v_plane_rebate_amount;
