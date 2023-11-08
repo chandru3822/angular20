@@ -134,7 +134,7 @@ public class ActivityQuery {
                                                                pa2.activity_type_id as "activityTypeId"
                                                         from flow.project_activity pa2
                                                                  inner join flow."user" mod on mod.id = pa2.modified_by_id
-                                                                 inner join flow."user" cb on cb.id = pa.created_by_id
+                                                                 inner join flow."user" cb on cb.id = pa2.created_by_id
                                                                  left join flow."user" pin on pin.id = pa2.pinned_by_id
                                                                  left join flow.user_positions_vw upv on upv.user_position_id = pa2.created_by_user_position_id
                                                                                                              and upv.position_level = 0
