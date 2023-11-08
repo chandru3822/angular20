@@ -409,9 +409,11 @@ a.chatLink {
 }
 
 .message-container {
-  min-height: 400px;
   height: 90%;
   margin-top: 5px;
+  @media (min-width: 960px) {
+    min-height: 400px;
+  }
 }
 
 .sc-message {
