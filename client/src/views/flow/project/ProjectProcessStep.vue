@@ -834,6 +834,7 @@ export default {
 .process-step-name {
   font-weight: normal;
   font-size: 1.25rem;
+  white-space: normal;
 }
 
 .owner-image {
