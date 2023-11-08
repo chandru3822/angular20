@@ -25,6 +25,7 @@ public class CleanString {
     cleanFilename = cleanFilename.replaceAll("“", "\"");
     cleanFilename = cleanFilename.replaceAll("”", "\"");
     cleanFilename = cleanFilename.replaceAll("\u2006", " "); //replaces Six-Per-Em Space (cuz we had 25)
+    cleanFilename = cleanFilename.replaceAll("\u200B", " "); //replaces a space that doesn't consume any width (cuz we had 1)
     cleanFilename = cleanFilename.replaceAll("\u202F", " "); //replaces Narrow NBSP cuz WTF
     cleanFilename = cleanFilename.replaceAll("\u00A0", " "); //replaces NBSP
     cleanFilename = cleanFilename.replaceAll("\t", " ");
