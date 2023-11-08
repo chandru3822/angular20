@@ -19,7 +19,7 @@
       <v-row v-for="(item, index) in filterBy(drillDownAttachments, false, 'archived')" class="text-left attachment hover-effect"
              :key="item.processStepId" @click="selectFile(item)" >
 
-        <v-col cols="10" class="text-left pt-0 height-one-hunned">
+        <v-col  cols="9" md="10" class="text-left pt-0 height-one-hunned">
           <div class="file-column">
             <div @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false">
             <v-checkbox v-if="compare" @change="selectFileToCompare($event, item)"
@@ -50,7 +50,7 @@
 <!--            item.dateCreated | formatDate('timestamp', 'M/D/YY')-->
 <!--          }}-->
 <!--        </v-col>-->
-        <v-col cols="2" class="text-right pa-0 height-one-hunned">
+        <v-col cols="3" md="2" class="text-right pa-0 height-one-hunned">
           <v-btn icon v-if="!allowUpload && !loadLinked && displayType.linkable && !item.linkedToSelected"
                  :disabled="performingLink"
                  text color="neurtal" @click="linkAttachment(item, true)"  @mouseover="buttonHovered = true" @mouseleave="buttonHovered = false" class="px-0 button-position">
