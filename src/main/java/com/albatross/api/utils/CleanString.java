@@ -20,8 +20,7 @@ public class CleanString {
     if (filename == null){
       return null;
     }
-    String cleanFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8); //this removes some special javascript formatting like turning \n into %0A, then we can handle the \n normally after
-    cleanFilename = cleanFilename.replaceAll(",", "");
+    String cleanFilename = filename.replaceAll(",", "");
     cleanFilename = cleanFilename.replaceAll("’", "'");
     cleanFilename = cleanFilename.replaceAll("“", "\"");
     cleanFilename = cleanFilename.replaceAll("”", "\"");
@@ -30,6 +29,7 @@ public class CleanString {
     cleanFilename = cleanFilename.replaceAll("\u00A0", " "); //replaces NBSP
     cleanFilename = cleanFilename.replaceAll("\t", " ");
     cleanFilename = cleanFilename.replaceAll("\n", " ");
+    cleanFilename = cleanFilename.replaceAll("%0A", " ");
     cleanFilename = cleanFilename.replaceAll("\r", " ");
     return cleanFilename;
   }
