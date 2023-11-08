@@ -1,5 +1,7 @@
 package com.albatross.api.utils;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /**
@@ -18,10 +20,15 @@ public class CleanString {
     if (filename == null){
       return null;
     }
-    String cleanFilename = filename.replace(",", "");
-    cleanFilename = cleanFilename.replace("’", "'");
-    cleanFilename = cleanFilename.replace("“", "\"");
-    cleanFilename = cleanFilename.replace("”", "\"");
+    String cleanFilename = URLDecoder.decode(filename, StandardCharsets.UTF_8); //this removes some special javascript formatting like turning \n into %0A, then we can handle the \n normally after
+    cleanFilename = cleanFilename.replaceAll(",", "");
+    cleanFilename = cleanFilename.replaceAll("’", "'");
+    cleanFilename = cleanFilename.replaceAll("“", "\"");
+    cleanFilename = cleanFilename.replaceAll("”", "\"");
+    cleanFilename = cleanFilename.replaceAll("\u00A0", " "); //replaces NBSP
+    cleanFilename = cleanFilename.replaceAll("\t", " ");
+    cleanFilename = cleanFilename.replaceAll("\n", " ");
+    cleanFilename = cleanFilename.replaceAll("\r", " ");
     return cleanFilename;
   }
 
