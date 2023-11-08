@@ -203,7 +203,7 @@
           </v-col>
         </div>
       </v-col>
-      <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header fixed-toolbar px-3">
+      <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header fixed-toolbar px-3 z-3">
         <v-toolbar-title class="albatross-header-3">
            Process Step Details
         </v-toolbar-title>
@@ -800,9 +800,6 @@ export default {
   align-items: flex-start;
 }
 
-.cfg-name-toolbar {
-  z-index:10;
-}
 
 .cfg-name-toolbar .v-toolbar__content {
   padding-left: 0 !important;
@@ -817,6 +814,10 @@ export default {
 
 .cfg-name-toolbar .v-toolbar__title {
   font-size: 14px;
+}
+
+.cfg-detail-header {
+  z-index: 10;
 }
 
 .cfg-detail-header .v-toolbar__content {
