@@ -86,7 +86,7 @@
                 >
                   <v-icon class="child-drag-elements" color="primary">upload</v-icon>
                 </v-row>
-                <v-row no-gutters class="align-center" :class="{'bold' : open}">
+                <v-row no-gutters class="align-center flex-nowrap" :class="{'bold' : open}">
                   <v-icon class="mr-3" :color="dragTypeId===type.attachmentTypeId ? 'grey lighten-1' : 'grey darken-1'">
                     folder
                   </v-icon>
