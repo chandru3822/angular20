@@ -111,10 +111,11 @@
                     key="1"
                   >
                 </span>
-                  <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)"
-                         elevation="0" text color="primary" class="text-capitalize"
+                  <v-btn v-if="allowUpload || forceShowUploadBtn" @click.native.stop="selectFile(type.attachmentTypeId)" :icon="isMobile"
+                         elevation="0" text color="primary" class="text-capitalize" :class="{'mr-4': isMobile}"
                          :disabled="dragTypeId === type.attachmentTypeId">
-                    Upload
+                    <v-icon v-if="isMobile">mdi-tray-arrow-up</v-icon>
+                    <span v-else>Upload</span>
                   </v-btn>
                 </v-row>
               </template>
