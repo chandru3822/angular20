@@ -13,7 +13,7 @@
       :items="conversationHistory"
       :items-per-page="10"
       disable-sort
-      class="elevation-0 height-one-hunned"
+      class="elevation-0 height-one-hunned table-striped"
     >
       <template #no-data>
         <span class="default-text-color">No history available</span>
@@ -24,18 +24,15 @@
       </template>
 
       <template v-slot:header.team_name="{ header }"><th class="pl-2">{{header.text}}</th></template>
-      <template #item="{ item, index }">
-        <tr>
-          <td class="text-left pl-6">{{item.team_name }}</td>
-          <td class="text-left">{{item.userName }}</td>
-          <td class="text-left">{{item.date_created | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
+
+          <template #item.team_name="{ item }" class="text-left pl-6">{{item.team_name }}</template>
+          <template #item.userName="{ item }" class="text-left">{{item.userName }}</template>
+          <template #item.date_created="{ item }" class="text-left">{{item.date_created | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
             <br/> <span class="performed-span">performed by {{item.addedBy }}</span>
-          </td>
-          <td class="text-left">{{item.date_removed | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
+          </template>
+          <template #item.date_removed="{ item }" class="text-left">{{item.date_removed | formatDate('timestamp', 'M/D/YYYY h:mm a')}}
             <div v-if="item.date_removed"><span class="performed-span">performed by {{item.removedBy }}</span></div>
-          </td>
-        </tr>
-      </template>
+          </template>
     </v-data-table>
   </v-card>
 </template>
@@ -74,7 +71,48 @@
 </script>
 
 <style lang="scss">
+@media (max-width: 770px) {
+  #stats-drilldown > div.v-card__title.albatross-header-4 {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: white;
+    border-bottom: var(--v-grey-lighten3) 1px;
 
+  }
+  #stats-drilldown {
+    overflow-y: clip !important;
+
+    div.v-data-footer {
+      display: inline-flex;
+      width: 100%;
+      justify-content: center;
+      height: fit-content;
+
+      div.v-data-footer__select {
+        justify-content: center;
+        margin-left: 0;
+        margin-right: 0;
+      }
+
+      div.v-data-footer__pagination {
+        margin: 0 16px 0 16px !important;
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: 16px;
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
 </style>
 
 <style lang="scss" scoped>
