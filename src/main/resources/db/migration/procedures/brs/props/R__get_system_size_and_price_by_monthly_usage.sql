@@ -125,7 +125,6 @@ declare
   v_remaining_mon_electric_bill_25_year_average_115    numeric;
   v_utility_cost_escalator                             numeric;
   v_twenty_five_year_savings_cash_100_offset           numeric;
-  v_monthly_cash_payment                               numeric;
   v_twenty_five_year_savings_cash_85_offset            numeric;
   v_twenty_five_year_savings_cash_115_offset           numeric;
   v_total_cost_25_years                                numeric;
@@ -147,6 +146,8 @@ declare
   v_federal_tax_incentive_amount_85_low_mon_pay        numeric;
   v_federal_tax_incentive_amount_115_low_mon_pay       numeric;
   v_battery_price numeric;
+  v_version_id        bigint;
+  v_dealer_redline_price numeric;
 
 BEGIN
   select sapf.average_production_factor, s.id
@@ -180,82 +181,38 @@ BEGIN
     end if;
   end if;
 
+  select max(version::bigint)
+  into v_version_id
+  from brs.proposal_version p
+  where proposal_version_status_id = 2;
 
-  create temp table proposal_value_avg on commit drop as
-  with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
-                                                                                                       proposal_group_uuid,
-                                                                                                       value,
-                                                                                                       field_id,
-                                                                                                       object_code
-                          from brs.proposal_version_custom_field_value_vw v
-                                 inner join brs.primary_company_proposal_version pcpv on pcpv.company_id = 3
-                          where v.proposal_version_id <= pcpv.proposal_version_id
-                            and v.object_code in ('PROPOSAL_PRICING', 'PROPOSAL_FINANCE_PRODUCTS', 'PROPOSAL_REBATE')
-                            and proposal_group_uuid not in (select distinct proposal_group_uuid
-                                                            from brs.proposal_version_custom_field_group
-                                                            where archived is not null
-                                                              and proposal_version_id <= pcpv.proposal_version_id)
-                          order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
-       grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
-                                                  'object_code', object_code,
-                                                  'fields',
-                                                  array_to_json(array_agg(jsonb_strip_nulls(
-                                                      jsonb_build_object('fieldId', vv.field_id,
-                                                                         'flowCustomFieldId',
-                                                                         cf.flow_custom_field_id) || vv.value)))
-                                 ) as row
-                        from version_values vv
-                               inner join brs.custom_field cf on cf.id = vv.field_id
-                        group by proposal_group_uuid, object_code)
-  select row ->> 'object_code' as object_code, *
-  from grouped_rows;
+  select gp.dealer_redline_price
+  into v_dealer_redline_price
+  from brs.get_proposal_dealer_redline_pricing(v_version_id,v_state_id,2035) as gp;
 
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 87)') ->> 'value')::numeric as v_utility_rate_kwh,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 94)') ->> 'value')::numeric as utility_cost_escalator
+  select gp.current_estimated_cost_per_kwh,gp.utility_cost_escalator
   into v_utility_rate_kwh,v_utility_cost_escalator
-  from proposal_value_avg pv
-  where object_code = 'PROPOSAL_PRICING'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-                         jsonb_build_object('field', 85,'intValue', p_utility_id));
-
+  from brs.get_proposal_pricing(v_version_id,p_utility_id) as gp;
   --------
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 111)') ->> 'value')::numeric as v_apr_low_dealer_fee_option,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 110)') ->> 'value')::numeric as v_term_low_dealer_fee_option,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 114)') ->> 'value')::numeric as v_dealer_fee_10_year_low_dealer_fee,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 115)') ->> 'value')::numeric as v_init_pmt_factor_10_year_low_dealer_fee
+  select gp.apr,loan_term,gp.dealer_fee,gp.initial_payment_factor
   into v_apr_low_dealer_fee_option,v_term_low_dealer_fee_option,v_dealer_fee_10_year_low_dealer_fee,
     v_init_pmt_factor_10_year_low_dealer_fee
-  from proposal_value_avg pv
-  where object_code = 'PROPOSAL_FINANCE_PRODUCTS'
-    and jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-                         jsonb_build_object('field', 374,'intValue', 1918));
+  from brs.get_proposal_finance_products(v_version_id,0,1918) as gp;
 
-
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 111)') ->> 'value')::numeric as v_apr_low_monthly_option,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 110)') ->> 'value')::numeric as v_term_low_monthly_option,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 114)') ->> 'value')::numeric as v_dealer_fee_25_year_low_payment,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 115)') ->> 'value')::numeric as v_init_pmt_factor_25_year_low_payment
+  select gp.apr,gp.loan_term,gp.dealer_fee,gp.initial_payment_factor
   into v_apr_low_monthly_option,v_term_low_monthly_option,
     v_dealer_fee_25_year_low_payment,v_init_pmt_factor_25_year_low_payment
-  from proposal_value_avg pv
-  where object_code = 'PROPOSAL_FINANCE_PRODUCTS' and
-    jsonb_path_match(row, 'exists($.fields[*] ? (@.fieldId == $field && @.intValue == $intValue))',
-                      jsonb_build_object('field', 374,'intValue', 1917));
+  from brs.get_proposal_finance_products(v_version_id,0,1917) as gp;
 
 
-  select (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 98)') ->> 'value')::numeric    as federal_tax_incentive_rate,
-         (jsonb_path_query(row, '$.fields[*] ? (@.fieldId == 97)') ->> 'intValue')::numeric as federal_unit_type_id
+  select gp.rebate_amount,
+         gp.unit_type_id
   into v_federal_tax_incentive_rate,v_federal_unit_type_id
-  from proposal_value_avg pv
-  where object_code = 'PROPOSAL_REBATE'
-    and (jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId && @.intValue == $intValue)', '{
-    "targetFieldId": 96,
-    "intValue": 453
-  }'));
+  from brs.get_proposal_rebates(v_version_id) as gp
+  where gp.rebate_type_id = 453;
 
-  --   raise notice 'v_cash_price_for_100_percent_offset %',v_cash_price_for_100_percent_offset;
+--   raise notice 'v_cash_price_for_100_percent_offset %',v_cash_price_for_100_percent_offset;
 --   raise notice 'v_federal_tax_incentive_rate %',v_federal_tax_incentive_rate;
 --   raise notice 'v_federal_tax_incentive_amount_100_cash %',v_federal_tax_incentive_amount_100_cash;
 
@@ -265,9 +222,9 @@ BEGIN
   v_system_size_kw_100_percent_offset = round((v_annual_usage_kwh / v_average_production_factor / 1000), 2);
   v_system_size_kw_85_percent_offset = round(((v_annual_usage_kwh * .85) / v_average_production_factor / 1000), 2);
   v_system_size_kw_115_percent_offset = round(((v_annual_usage_kwh * 1.15) / v_average_production_factor / 1000), 2);
-  v_cash_price_for_100_percent_offset = v_system_size_kw_100_percent_offset * 2.52 * 1000;
-  v_cash_price_for_85_percent_offset = v_system_size_kw_85_percent_offset * 2.52 * 1000;
-  v_cash_price_for_115_percent_offset = v_system_size_kw_115_percent_offset * 2.52 * 1000;
+  v_cash_price_for_100_percent_offset = v_system_size_kw_100_percent_offset * coalesce(v_dealer_redline_price,2.52) * 1000;
+  v_cash_price_for_85_percent_offset = v_system_size_kw_85_percent_offset * coalesce(v_dealer_redline_price,2.52) * 1000;
+  v_cash_price_for_115_percent_offset = v_system_size_kw_115_percent_offset * coalesce(v_dealer_redline_price,2.52) * 1000;
   v_month_pmt_100_offset_low_dealer_fee =
       ((v_cash_price_for_100_percent_offset + v_battery_price) / (1 - v_dealer_fee_10_year_low_dealer_fee)) *
       v_init_pmt_factor_10_year_low_dealer_fee;

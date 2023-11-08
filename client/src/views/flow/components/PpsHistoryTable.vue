@@ -1,11 +1,13 @@
 <template>
   <v-data-table
+      id="pps-history-table"
     :headers="historyHeaders"
     :items="selectedPpsHistory"
     disable-sort
     :fixed-header="true"
     :items-per-page="-1"
-    class="elevation-1">
+      :footer-props="footerProps"
+    class="elevation-1 table-striped">
 
     <template #no-data>
       <span class="default-text-color">No available history data</span>
@@ -15,25 +17,22 @@
       <span class="default-text-color">No available history data</span>
     </template>
 
-    <template #item="{ item, index }">
-      <tr :class="{'shaded-row': index % 2}">
-        <td class="text-left">{{item.owner}}</td>
-        <td class="text-left">{{item.companyProcessStepStatusType}}</td>
-        <td class="text-left">{{item.main ? 'Yes' : 'No'}}</td>
-        <td class="text-left">
+
+        <template #item.owner="{ item }" class="text-left">{{item.owner}}</template>
+        <template #item.processStepStatusType="{ item }" class="text-left">{{item.companyProcessStepStatusType}}</template>
+        <template #item.main="{ item }" class="text-left">{{item.main ? 'Yes' : 'No'}}</template>
+        <template #item.dateCreated="{ item, index }" class="text-left">
           <div v-if="index === 0">
             {{item.dateCreated | formatDate('timestamp', 'M/D/YYYY h:mm:ss a')}}
           </div>
-        </td>
-        <td class="text-left">
+        </template>
+        <template #item.createdBy="{ item, index }" class="text-left">
           <div v-if="index === 0">
             {{item.createdBy}}
           </div>
-        </td>
-        <td class="text-left">{{item.dateModified | formatDate('timestamp', 'M/D/YYYY h:mm:ss a')}}</td>
-        <td class="text-left">{{item.modifiedBy}}</td>
-      </tr>
-    </template>
+        </template>
+        <template #item.dateModified="{ item }" class="text-left">{{item.dateModified | formatDate('timestamp', 'M/D/YYYY h:mm:ss a')}}</template>
+        <template #item.modifiedBy="{ item }" class="text-left">{{item.modifiedBy}}</template>
   </v-data-table>
 </template>
 
@@ -54,6 +53,9 @@ export default {
         {text: 'Date Modified', value: 'dateModified'},
         {text: 'Modified By', value: 'modifiedBy'},
       ],
+      footerProps: {
+        'items-per-page-text': this.isMobile ? '' : 'Rows per page: '
+      },
     }
   },
   created () {
@@ -61,6 +63,11 @@ export default {
   },
   methods: {
 
+  },
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    }
   }
 }
 </script>
@@ -69,4 +76,41 @@ export default {
 .add-process-step-btn > .v-btn__content {
   color: white !important;
 }
+#pps-history-table > div.v-data-table__wrapper {
+  max-height: 55vh;
+}
+
+@media (max-width: 770px) {
+  #pps-history-table {
+    div.v-data-footer {
+      display: inline-flex;
+      width: 100%;
+      justify-content: center;
+      height: fit-content;
+
+      div.v-data-footer__select {
+        justify-content: center;
+        margin-left:0;
+        margin-right:0;
+      }
+
+      div.v-data-footer__pagination {
+        margin: 0 16px 0 16px !important;
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        //margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
 </style>
+

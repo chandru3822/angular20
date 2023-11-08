@@ -35,7 +35,6 @@ const props = defineProps({
 })
 const emit = defineEmits(['selectMenuItem'])
 
-
 const showMenu=ref(false)
 const toggleMenu = (forceClose) => {
     if(forceClose){
@@ -59,14 +58,19 @@ const chooseSelectedView = (view, id) => {
   selectedViewId.value = id
   props.viewChangeCallback(view, true)
 }
+
 </script>
 <template>
   <v-container class="pa-0" id="three-column-container">
     <v-navigation-drawer v-model="showMenu" absolute temporary clipped>
       <v-list>
-        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot}">
+        <v-list-item v-for="(item, index) in menuItems" :key="index" class="px-0" :class="{'my-1': !item.subMenuSlot, 'active': item.customPath && $route.path.includes(item.customPath)}">
           <v-list-item-title class="mx-6 label-large" v-if="!item.subMenuSlot" @click="chooseSelectedView(item, index)">{{ item.pageName }}</v-list-item-title>
           <slot :name="`subMenu_${index}`"/>
+        </v-list-item>
+      <v-list-item class="px-0 my-1" style="height: 100px">
+<!--this is an empty list item to hopefully fix the fact that stupid iphones cover the bottom of the webpage and you can't scroll down to see Project Admin-->
+          <v-list-item-title class="mx-6 label-large"></v-list-item-title>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -104,11 +108,11 @@ const chooseSelectedView = (view, id) => {
 }
 
 #three-column-container > aside{
-  height: 95% !important;
+  height: 100% !important;
 }
 
 .main-column-container {
-  height: 80%;
+  height: 95%;
 }
 
 .three-column-header {
@@ -116,16 +120,24 @@ const chooseSelectedView = (view, id) => {
   background-color: var(--v-grey-lighten2) !important;
 }
 
-
+.active {
+  background-color: var(--v-primary-lighten9);
+}
 
 .white-bg {
   background-color: #fff;
 }
 </style>
 <style lang="scss">
-#three-column-header > div.v-toolbar__content {
-  align-items: flex-start;
-  height: auto;
-  padding-top: 16px;
+
+#three-column-header {
+  height: fit-content !important;
+
+  div.v-toolbar__content {
+    align-items: flex-start;
+    height: fit-content !important;
+    padding-top: 16px;
+    padding-bottom: 12px;
+  }
 }
 </style>
