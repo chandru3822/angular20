@@ -1,7 +1,5 @@
 package com.albatross.api.utils;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 /**
@@ -30,7 +28,7 @@ public class CleanString {
     cleanFilename = cleanFilename.replaceAll("\u00A0", " "); //replaces NBSP
     cleanFilename = cleanFilename.replaceAll("\t", " ");
     cleanFilename = cleanFilename.replaceAll("\n", " ");
-    cleanFilename = cleanFilename.replaceAll("%0A", " ");
+    cleanFilename = cleanFilename.replaceAll("%0A", " "); //this is a newline code as encoded by javascript (we cant url decode though because that causes issues when a filename has a valid % sign in the name)
     cleanFilename = cleanFilename.replaceAll("\r", " ");
     return cleanFilename;
   }
