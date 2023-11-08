@@ -13,9 +13,9 @@
       You have unsaved fields. Are you sure you want to continue without saving?
       <template v-slot:yes>Continue and Don't Save</template>
     </ConfirmationDialog>
-    <div v-if="selectedEvent.id" class="pt-6 px-6">
+    <div v-if="selectedEvent.id" class="pt-6">
       <v-toolbar color="transparent" height="auto"
-                 class="elevation-0 cfg-name-toolbar px-0" id="event-header">
+                 class="elevation-0 cfg-name-toolbar px-6" id="event-header">
         <v-toolbar-title class="albatross-header-2">
           <div>{{ selectedEvent.eventName }}</div>
           <div :class="getStatusClass(selectedEvent.eventStatusTypeId)">({{ selectedEvent.eventStatusType }})</div>
@@ -37,7 +37,7 @@
           </ConfirmationDialog>
         </v-toolbar-items>
       </v-toolbar>
-      <div class="pb-4 px-0">
+      <div class="pb-4 px-6">
         <div class="mt-2" v-if="selectedEvent && selectedEvent.eventBanners && selectedEvent.eventBanners.length > 0">
           <v-card class="square-card" :class="{'mt-2': idx !== 0}"
                   v-for="(b, idx) in filterBy(selectedEvent.eventBanners, true, 'canPerform')">
@@ -72,7 +72,7 @@
           />
         </div>
       </div>
-      <div v-if="selectedEvent.hasAttachmentTypesAssigned">
+      <div v-if="selectedEvent.hasAttachmentTypesAssigned" class="px-6">
         <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header">
           <v-toolbar-title class="albatross-header-3">
             Event Documents
@@ -103,7 +103,7 @@
         </v-row>
       </div>
       <div class="fixed-toolbar">
-        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar">
+        <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar event-details-header px-6">
           <v-toolbar-title class="albatross-header-3">
             Event Details
           </v-toolbar-title>
@@ -150,7 +150,7 @@
         project screen and update.
       </v-card>
 
-      <v-form ref="eventFieldForm" class="px-0" v-else>
+      <v-form ref="eventFieldForm" class="px-6" v-else>
         <div class="albatross-header-4 d-flex align-baseline">Overview
           <a small text color="anchor" v-if="$store.getters.userHasFeature('SCHEDULE')"
              class="px-0 d-flex align-baseline" target="_blank"
@@ -1129,6 +1129,10 @@ export default {
 #event-header .v-toolbar__content {
   display: flex;
   align-items: flex-start;
+}
+
+.event-details-header {
+  z-index: 10;
 }
 
 .cfg-name-toolbar .v-toolbar__content {

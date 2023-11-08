@@ -173,6 +173,9 @@ export default {
       opened:true //opens this expansion panel by default
     }
   },
+  created() {
+    this.fetchTeamsForUser()
+  },
   methods: {
     formatDate(value){
       return this.$filters.formatDate(value, 'date')

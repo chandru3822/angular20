@@ -78,7 +78,7 @@ public class SupplierQuery {
                                         c.hours
                                     FROM brs.feat_db_contact c
                                              INNER JOIN brs.feat_db_supplier_contact auc ON c.id = auc.feat_db_contact_id
-                                    WHERE auc.feat_db_supplier_id = h.id AND c.archived IS FALSE AND c.contact_type_id = 12
+                                    WHERE auc.feat_db_supplier_id = h.id AND c.archived IS FALSE AND c.contact_type_id = 11
                                 ) contacts), '[]') AS contacts,
               coalesce((
                            SELECT array_to_json(array_agg(row_to_json(links)))
@@ -93,7 +93,7 @@ public class SupplierQuery {
                                         aul.notes
                                     FROM brs.feat_db_supplier_link aul
                                     WHERE aul.archived IS FALSE
-                                      AND aul.link_type_id = 14
+                                      AND aul.link_type_id = 13
                                       AND aul.feat_db_supplier_id = h.id) links
                        ), '[]') AS links
           FROM brs.feat_db_supplier h
