@@ -512,6 +512,7 @@ export default {
 
 .coversheet-pane-height-with-tabs {
   height: calc(100% - 50px);
+  align-content: flex-start;
 }
 
 .bottom-toolbar-container {
