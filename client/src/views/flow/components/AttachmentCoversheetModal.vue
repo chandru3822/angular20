@@ -489,6 +489,11 @@ export default {
 .coversheet-container {
   height: 90vh;
   max-height: 90vh;
+  @media (min-width: 960px) {
+    height: 75vh;
+    align-content: flex-start;
+  }
+
 }
 
 
@@ -512,7 +517,6 @@ export default {
 
 .coversheet-pane-height-with-tabs {
   height: calc(100% - 50px);
-  align-content: flex-start;
 }
 
 .bottom-toolbar-container {
