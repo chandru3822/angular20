@@ -123,7 +123,7 @@ public class ActivityService {
   public Optional<Activity> addActivityByObject(Long objectTypeId, Long sourceId, Activity newActivity) {
     User user = securityService.getCurrentUser();
 
-    UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(user.getId(), user.getCompanyId());
+    UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(user.trueUserId(), user.getCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("note", newActivity.getNote());
