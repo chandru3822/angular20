@@ -377,10 +377,11 @@ BEGIN
                                and cfga.archived is false and cf.archived is false and cfg.archived is false
                                and cf.company_id = v_company_id
                                and cfg.process_step_id = p_process_step_id),( case when (v_loan_type = 'Cash' and plh.loan_amount::numeric is null) then 0.00::numeric
-                                                                                      when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric
-                                                                                      when (v_loan_type != 'Cash' and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
-                                                                                      when (v_loan_type != 'Cash' and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
-                                                                                      else 0.00::numeric end)) as me
+                                                                                   when (v_loan_type = 'Cash' and plh.loan_amount::numeric > 0.00::numeric) then coalesce(round(plh.loan_amount::numeric,2),0)::numeric +
+                                                                                                                                                                 coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
+                                                                                   when (v_loan_type != 'Cash' and optional_down_payment::numeric is null and required_down_payment is null) then 0.00::numeric
+                                                                                   when (v_loan_type != 'Cash' and (optional_down_payment::numeric > 0.00::numeric or required_down_payment > 0.00::numeric)) then coalesce(round(optional_down_payment::numeric,2),0)::numeric + coalesce(round(required_down_payment::numeric,2),0)::numeric
+                                                                                   else 0.00::numeric end)) as me
                  from brs.proposal_log_history plh
                  inner join brs.project_details pd on pd.project_id = plh.project_id
                  where plh.id = v_proposal_history_id) as t

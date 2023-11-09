@@ -18,10 +18,18 @@ public class CleanString {
     if (filename == null){
       return null;
     }
-    String cleanFilename = filename.replace(",", "");
-    cleanFilename = cleanFilename.replace("’", "'");
-    cleanFilename = cleanFilename.replace("“", "\"");
-    cleanFilename = cleanFilename.replace("”", "\"");
+    String cleanFilename = filename.replaceAll(",", "");
+    cleanFilename = cleanFilename.replaceAll("’", "'");
+    cleanFilename = cleanFilename.replaceAll("“", "\"");
+    cleanFilename = cleanFilename.replaceAll("”", "\"");
+    cleanFilename = cleanFilename.replaceAll("\u2006", " "); //replaces Six-Per-Em Space (cuz we had 25)
+    cleanFilename = cleanFilename.replaceAll("\u200B", " "); //replaces a space that doesn't consume any width (cuz we had 1)
+    cleanFilename = cleanFilename.replaceAll("\u202F", " "); //replaces Narrow NBSP cuz WTF
+    cleanFilename = cleanFilename.replaceAll("\u00A0", " "); //replaces NBSP
+    cleanFilename = cleanFilename.replaceAll("\t", " ");
+    cleanFilename = cleanFilename.replaceAll("\n", " ");
+    cleanFilename = cleanFilename.replaceAll("%0A", " "); //this is a newline code as encoded by javascript (we cant url decode though because that causes issues when a filename has a valid % sign in the name)
+    cleanFilename = cleanFilename.replaceAll("\r", " ");
     return cleanFilename;
   }
 
