@@ -226,7 +226,15 @@ public class BlueravenProposalService {
 
           //BRS needs to filter out dealers by associated org
           if (dealerFieldId.equals(cfv.getCustomFieldId()) && userOrgId.isPresent()) {
-            filterValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, allowedOrgFieldId, userOrgId.get());
+            List<Long> ids = filterDealersByOrg(proposal.getProposalVersionId(), userOrgId.get());
+            if (!ids.isEmpty()) {
+              List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+                .filter(v -> ids.contains(v.getId()))
+                .sorted(Comparator.comparing(ListOfValue::getName))
+                .toList();
+
+              cfv.setListOfValues(listOfValues);
+            }
           }
 
           if (rebatesFieldId.equals(cfv.getCustomFieldId())) {
@@ -256,6 +264,14 @@ public class BlueravenProposalService {
       }));
 
     return result;
+  }
+
+  private List<Long> filterDealersByOrg(@NonNull Long proposalVersionId, Long orgId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalVersionId", proposalVersionId);
+    params.put("orgId", orgId);
+
+    return sqlCache.queryBySql(ProposalQuery.filterProposalDealerOrgs, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   private List<Long> filterRebatesByStateAndUtility(@NonNull Long proposalVersionId, Long stateId, Long utilityId) {

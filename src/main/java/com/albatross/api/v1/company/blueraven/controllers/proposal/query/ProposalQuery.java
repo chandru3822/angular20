@@ -615,6 +615,13 @@ where p.id = :proposalId
       limit 1
     """;
 
+  public static final String filterProposalDealerOrgs = """
+    select jsonb_path_query(a, '$.fields[*] ? (@.fieldId == 407).intValue')::integer
+    from brs.get_proposal_version_value(:proposalVersionId, null::proposalfieldfilter[], 'PROPOSAL_DEALER_ORGS') a
+    where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 413) ? (@.intValue == $orgId)',
+                            jsonb_build_object('orgId', :orgId))
+    """;
+
   public static final String filterRebatesByStateAndUtility = """
       select jsonb_path_query(a, '$.fields[*] ? (@.fieldId == 93).intValue')::integer
       from brs.get_proposal_version_value(:proposalVersionId, null::proposalfieldfilter[], 'PROPOSAL_REBATE') a
