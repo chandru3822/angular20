@@ -11,6 +11,7 @@ public class RoundRobinQuery {
             pcz.company_timezone_id,
             pcz.distribution_time_frame_days,
             pcz.schedulable_future_days,
+            pcz.uses_total_lead_allocation,
             pcz.archived
         from flow.round_robin pcz
         where pcz.company_id = :companyId
@@ -52,6 +53,7 @@ public class RoundRobinQuery {
                 pcz.company_timezone_id,
                 pcz.distribution_time_frame_days,
                 pcz.schedulable_future_days,
+                pcz.uses_total_lead_allocation,
                 pcz.archived
          from flow.round_robin pcz
          where pcz.company_id = :companyId
@@ -103,7 +105,8 @@ public class RoundRobinQuery {
           pcz.remote,
           pcz.company_timezone_id,
           distribution_time_frame_days,
-          schedulable_future_days
+          schedulable_future_days,
+          pcz.uses_total_lead_allocation
        from flow.round_robin pcz
            inner join flow.postal_code pc on pcz.id = pc.round_robin_id
        where company_id = :companyId
@@ -207,6 +210,7 @@ public class RoundRobinQuery {
                pcz.company_timezone_id,
                t.timezone,
                pcz.round_robin_name,
+               pcz.uses_total_lead_allocation,
                pcz.archived
         from flow.round_robin pcz
           left join flow.company_timezone ct on pcz.company_timezone_id = ct.id
@@ -216,8 +220,8 @@ public class RoundRobinQuery {
 
   //language=PostgreSQL
   public final static String insertRoundRobin = """
-    insert into flow.round_robin(company_id, round_robin_name, distribution_time_frame_days, schedulable_future_days, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified)
-        values (:companyId, :roundRobinName, :distributionTimeFrameDays, :schedulableFutureDays, :companyTimezoneId, :createdById, now(), :createdById, now())
+    insert into flow.round_robin(company_id, round_robin_name, distribution_time_frame_days, schedulable_future_days, company_timezone_id, created_by_id, date_created, modified_by_id, date_modified, uses_total_lead_allocation)
+        values (:companyId, :roundRobinName, :distributionTimeFrameDays, :schedulableFutureDays, :companyTimezoneId, :createdById, now(), :createdById, now(), :usesTotalLeadAllocation)
         """;
 
   //language=PostgreSQL
@@ -227,6 +231,7 @@ public class RoundRobinQuery {
             company_timezone_id = :companyTimezoneId,
             distribution_time_frame_days = :distributionTimeFrameDays,
             schedulable_future_days = :schedulableFutureDays,
+            uses_total_lead_allocation = :usesTotalLeadAllocation,
             modified_by_id = :modifiedById,
             date_modified = now()
         where id = :id

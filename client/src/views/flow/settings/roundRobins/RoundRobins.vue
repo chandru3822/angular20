@@ -78,6 +78,9 @@
                   </td>
                   <td class="text-left">{{item.distributionTimeFrameDays}}</td>
                   <td class="text-left">{{ item.schedulableFutureDays }}</td>
+                  <td class="text-left">
+                    <input type="checkbox" readonly disabled v-model="item.usesTotalLeadAllocation"/>
+                  </td>
 
                   <td class="text-right">
                     <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click.stop="goToRoundRobin(item)">
@@ -136,6 +139,7 @@
           {text: 'Round Robin Name', value: 'roundRobinName', show: true},
           {text: 'Distribution Time Frame (Days)', value: 'distributionTimeFrameDays', show: true},
           {text: 'Schedulable Future Days', value: 'schedulableFutureDays', show: true},
+          {text: 'Uses Total Lead Allocation', value: 'usesTotalLeadAllocation', show: true},
           {text: '', value: 'icons', show: true},
         ],
         companyTimezones: [],

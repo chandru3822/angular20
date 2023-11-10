@@ -11,5 +11,5 @@ public class RoundRobin {
 
   private Long id, companyId, distributionTimeFrameDays, schedulableFutureDays, companyTimezoneId;
   private String roundRobinName, timezone;
-  private Boolean archived, remote;
+  private Boolean archived, remote, usesTotalLeadAllocation;
 }
