@@ -28,7 +28,13 @@ export const FEAT_DB_TABS = [
     path: '/database/supplier',
     pathMatches: ['/supplier'],
     display: true
-  }
+  },
+    {
+        label: 'Incentives',
+        path: '/database/incentive',
+        pathMatches: ['/incentive'],
+        display: true
+    }
 ]
 
 export const FILTER_DEFAULTS = {

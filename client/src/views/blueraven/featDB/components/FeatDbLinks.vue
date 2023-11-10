@@ -127,15 +127,13 @@
         if (newLink) {
           try {
             let res = null
-            if (this.itemType === 'utility') {
-              res = await postRequest(`/featDb/utility/${this.itemId}/links`, this.link, 'blueraven')
-            } else if (this.itemType === 'hoa') {
-              res = await postRequest(`/featDb/hoa/${this.itemId}/links`, this.link, 'blueraven')
-            } else if (this.itemType === 'supplier') {
-              res = await postRequest(`/featDb/supplier/${this.itemId}/links`, this.link, 'blueraven')
-            } else {
+            //changed to not require updates when a new feat_db gets added
+            if (['permit', 'inspection', 'design'].includes(this.itemType)) {
               res = await postRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
+            } else {
+              res = await postRequest(`/featDb/${this.itemType}/${this.itemId}/links`, this.link, 'blueraven')
             }
+
             this.linksCopy.push(cloneDeep(res.data))
             this.snackbar = getSnackbar('SUCCESS', 'Link added')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
@@ -148,15 +146,13 @@
         } else {
           try {
             let res = null
-            if (this.itemType === 'utility') {
-              res = await putRequest(`/featDb/utility/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
-            } else if (this.itemType === 'hoa') {
-              res = await putRequest(`/featDb/hoa/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
-            } else if (this.itemType === 'supplier') {
-              res = await putRequest(`/featDb/supplier/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
-            } else {
+            //changed to not require updates when a new feat_db gets added
+            if (['permit', 'inspection', 'design'].includes(this.itemType)) {
               res = await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
+            } else {
+              res = await putRequest(`/featDb/${this.itemType}/${this.itemId}/links/${this.link.id}`, this.link, 'blueraven')
             }
+
             let updatedLinkIndex = this.linksCopy.findIndex(i => i.id === res.data.id)
             this.linksCopy[updatedLinkIndex].name = res.data.name
             this.linksCopy[updatedLinkIndex].link = res.data.link
@@ -178,15 +174,13 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         try {
-          if (this.itemType === 'utility') {
-            await putRequest(`/featDb/utility/links/${this.link.id}/archive`, null, 'blueraven')
-          }  else if (this.itemType === 'hoa') {
-            await putRequest(`/featDb/hoa/links/${this.link.id}/archive`, null, 'blueraven')
-          } else if (this.itemType === 'supplier') {
-            await putRequest(`/featDb/supplier/links/${this.link.id}/archive`, null, 'blueraven')
-          } else {
+          //changed to not require updates when a new feat_db gets added
+          if (['permit', 'inspection', 'design'].includes(this.itemType)) {
             await putRequest(`/featDb/ahj/${this.ahjId}/${this.itemType}/${this.itemId}/links/${this.link.id}/archive`, null, 'blueraven')
+          } else {
+            await putRequest(`/featDb/${this.itemType}/links/${this.link.id}/archive`, null, 'blueraven')
           }
+
           let deletedLinkIndex = this.linksCopy.findIndex(i => i.id === this.link.id)
           this.linksCopy.splice(deletedLinkIndex, 1)
           this.snackbar = getSnackbar('SUCCESS', 'Link deleted')
