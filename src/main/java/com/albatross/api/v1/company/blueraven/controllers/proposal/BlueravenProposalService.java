@@ -185,7 +185,7 @@ public class BlueravenProposalService {
       return Optional.empty();
     }
 
-    return sqlCache.getBySql(ProposalQuery.findUserOrgId, Map.of("userId", userId), Long.class);
+    return sqlCache.getBySql(ProposalQuery.findUserOrgId, Map.of("userId", userId), new SingleColumnRowMapper<>(Long.class));
   }
 
   private static final Long excludedStateCustomFieldId = 405L;
