@@ -45,7 +45,7 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/proposal", produces = MediaType.APPLICATION_JSON_VALUE)
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('PROPOSALS')")
+@PreAuthorize("hasFeatureAccess('PROPOSALS')")
 public class BlueravenProposalController {
 
   private static final String CACHE_CONTROL_VALUE = "no-store, no-cache, must-revalidate, max-age=0";
@@ -104,8 +104,9 @@ public class BlueravenProposalController {
 
   @GetMapping(value = "/{proposalId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public Optional<Proposal> getProposal(@PathVariable Long proposalId) {
-    return proposalService.getProposal(proposalId);
+  public Optional<Proposal> getProposal(@PathVariable Long proposalId,
+                                        @AuthenticationPrincipal UserAccountDetails details) {
+    return proposalService.getProposal(proposalId, details.getId());
   }
 
   @GetMapping(value = "/{proposalId}/commissionDetails")
@@ -124,8 +125,10 @@ public class BlueravenProposalController {
 
   @PostMapping(value = "/{proposalId}")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
-  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId, @RequestBody @Size(min = 1) List<CustomFieldValue> cfvs) {
-    return proposalService.updateProposalCustomFieldValues(proposalId, cfvs);
+  public Optional<Proposal> updateProposalCustomFieldValues(@PathVariable Long proposalId,
+                                                            @RequestBody @Size(min = 1) List<CustomFieldValue> cfvs,
+                                                            @AuthenticationPrincipal UserAccountDetails details) {
+    return proposalService.updateProposalCustomFieldValues(proposalId, cfvs, details);
   }
 
   @DeleteMapping(value = "/{proposalId}")
@@ -136,7 +139,9 @@ public class BlueravenProposalController {
 
   @PostMapping(value = "/{proposalId}/name")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
-  public Proposal updateProposalName(@PathVariable Long proposalId, @Valid @RequestBody ProposalNameUpdateRequest nameUpdateRequest, @AuthenticationPrincipal UserAccountDetails details) {
+  public Proposal updateProposalName(@PathVariable Long proposalId,
+                                     @Valid @RequestBody ProposalNameUpdateRequest nameUpdateRequest,
+                                     @AuthenticationPrincipal UserAccountDetails details) {
     return proposalService.setProposalName(proposalId, nameUpdateRequest.name(), details);
   }
 
@@ -169,7 +174,9 @@ public class BlueravenProposalController {
 
   @PostMapping(value = "/{proposalId}/sendDocs")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
-  public Optional<DocRequestResponse> sendDocs(@PathVariable Long proposalId, @Valid @RequestBody SendDocRequest docRequest, @AuthenticationPrincipal UserAccountDetails details) {
+  public Optional<DocRequestResponse> sendDocs(@PathVariable Long proposalId,
+                                               @Valid @RequestBody SendDocRequest docRequest,
+                                               @AuthenticationPrincipal UserAccountDetails details) {
 
     return getLockedProposal(proposalId)
       .map(proposal -> {
@@ -327,12 +334,5 @@ public class BlueravenProposalController {
   }
 
   public record ProposalErrorMessage(String message) {
-  }
-
-  @Data
-  public static class DesignRequest {
-    private Long projectId;
-    private String description, dueDate;
-    private List<Attachment> attachments;
   }
 }

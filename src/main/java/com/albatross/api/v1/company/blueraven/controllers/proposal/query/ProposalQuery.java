@@ -182,7 +182,7 @@ public class ProposalQuery {
 
   //language=PostgreSQL
   public final static String get = """
-        select p.id,
+    select p.id,
            p.proposal_nbr,
            p.proposal_version_id,
            p.name,
@@ -200,7 +200,8 @@ public class ProposalQuery {
            p.credit_check_submitted_tsz is not null               as credit_check_submitted,
            p.finance_docs_sent_tsz is not null                    as finance_docs_sent,
            p.installation_agreement_sent_tsz is not null          as installation_agreement_sent,
-           md                                                     as max_discount_amount,
+           brs.get_max_proposal_discount_amount(p.id)             as max_discount_amount,
+           util_ppscfv.int_value                                  as utility_company_id,
            coalesce((SELECT array_to_json(array_agg(row_to_json(cfgs)))
                      FROM (select cfg.id,
                                   cfg.group_name                                          as "groupName",
@@ -374,7 +375,9 @@ public class ProposalQuery {
              inner join flow.company_state cs on cs.id = prj.company_state_id
              inner join flow.contact c on prj.contact_id = c.id
              inner join brs.proposal_version pv on pv.id = p.proposal_version_id
-             left join lateral brs.get_max_proposal_discount_amount(p.id) md on true
+             left join flow.project_process_step_custom_field_value util_ppscfv
+                       on pps.id = util_ppscfv.project_process_step_id
+                           and util_ppscfv.custom_field_group_assignment_id = 23802
     where p.id = :proposalId
       and p.archived is false
         """;
@@ -558,7 +561,7 @@ where p.id = :proposalId
       and p.processed_tsz is null
       and p.error_msg is null
     order by locked_tsz
-    LIMIT 10 FOR UPDATE SKIP LOCKED
+    LIMIT 10
     """;
 
   //language=PostgreSQL
@@ -597,4 +600,46 @@ where p.id = :proposalId
              inner join flow.data_type dt on cdt.data_type_id = dt.id
     where pps.id = :ppsId
         """;
+
+  public static final String findUserOrgId = """
+          select vw.org_id
+      from flow.user_positions_vw vw
+               inner join flow.org o on vw.org_id = o.id
+               inner join flow.org_type ot on o.org_type_id = ot.id
+      where ot.id = 126
+        and vw.user_id = :userId
+        and vw.archived is not true
+        and vw.user_archived is false
+        and ((vw.end_date is null and vw.start_date <= now()) or now() between vw.start_date and vw.end_date)
+        and vw.has_access is true
+      limit 1
+    """;
+
+  public static final String filterRebatesByStateAndUtility = """
+      select jsonb_path_query(a, '$.fields[*] ? (@.fieldId == 93).intValue')::integer
+      from brs.get_proposal_version_value(:proposalVersionId, null::proposalfieldfilter[], 'PROPOSAL_REBATE') a
+      where jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 414 && @.value == true)')
+        and (
+              (
+                      not jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 85)')
+                      and not jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 86)')
+                  )
+              or (
+                      not jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 86)') -- state id
+                      and jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 85) ? (@.intValue == $utilityId)',
+                                            jsonb_build_object('utilityId', :utilityId))
+                  )
+              or (
+                      not jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 85)') -- state id
+                      and jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 86) ? (@.intValue == $stateId)',
+                                            jsonb_build_object('stateId', :stateId))
+                  )
+              or (
+                      jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 85 && @.intValue == $utilityId)',
+                                        jsonb_build_object('utilityId', :utilityId))
+                      and jsonb_path_exists(a, '$.fields[*] ? (@.fieldId == 86 && @.intValue == $stateId)',
+                                            jsonb_build_object('stateId', :stateId))
+                  )
+          )
+    """;
 }

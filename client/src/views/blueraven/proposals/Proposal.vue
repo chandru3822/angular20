@@ -35,21 +35,21 @@
           </v-chip>
           <v-spacer/>
           <v-toolbar-items>
-          <v-menu v-model="versionMenu"
-                  v-if="proposal && proposal.projectId"
-                  transition="slide-x-transition"
-                  :close-on-content-click="false"
-                  :offset-y="true"
-                  :z-index="250"
-                  :max-width="375">
-            <template #activator="{on, attrs }">
-              <v-btn text v-on="on" v-bind="attrs" :disabled="!userIsAdmin"
-                     @click="loadProposalVersions()">
-                v.{{proposal.version}}
-              </v-btn>
-            </template>
-            <v-card flat color="white" class="pa-4" :elevation="0">
-              <v-autocomplete
+            <v-menu v-model="versionMenu"
+                    v-if="proposal && proposal.projectId"
+                    transition="slide-x-transition"
+                    :close-on-content-click="false"
+                    :offset-y="true"
+                    :z-index="250"
+                    :max-width="375">
+              <template #activator="{on, attrs }">
+                <v-btn text v-on="on" v-bind="attrs" :disabled="!userIsAdmin"
+                       @click="loadProposalVersions()">
+                  v.{{ proposal.version }}
+                </v-btn>
+              </template>
+              <v-card flat color="white" class="pa-4" :elevation="0">
+                <v-autocomplete
                   :items="versions"
                   item-value="id"
                   item-text="version"
@@ -58,11 +58,13 @@
                   class="mt-0"
                   label="Select a version..."
                   v-model="proposal.proposalVersionId"
-              ></v-autocomplete>
-              <v-btn color="primary" class="mt-3" :disabled="!userIsAdmin || !proposal.proposalVersionId"
-                     @click="updateProposalVersion()">Save</v-btn>
-            </v-card>
-          </v-menu>
+                />
+                <v-btn color="primary" class="mt-3" :disabled="!userIsAdmin || !proposal.proposalVersionId"
+                       @click="updateProposalVersion()">
+                  Save
+                </v-btn>
+              </v-card>
+            </v-menu>
             <next-step-menu v-if="proposal.id"
                             :disabled="dirtyCfvs.length > 0"
                             :proposal="proposal"
@@ -91,8 +93,9 @@
                 :key="index"
               >
                 <div class="configuration-group-title">{{ cfg.groupName }}</div>
-                <div v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
-                     :key="idx">
+                <div
+                  v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
+                  :key="idx">
                   <CustomValueInput
                     :required="field.required"
                     :callback="populateDirtyCfvs"
@@ -104,9 +107,6 @@
                     :list-of-value-filter="filters[field.customFieldId]"
                     :hint="getHint(field)"
                   />
-<!--                  <v-btn v-if="field.customFieldGroupAssignmentId === 454" @click="showCommissionModal = true">-->
-<!--                    <v-icon>mdi-information</v-icon>-->
-<!--                  </v-btn>-->
                 </div>
               </div>
             </div>
@@ -237,6 +237,8 @@ import Vue2Filters from 'vue2-filters'
 import CommissionDetailsModal from "@/views/blueraven/proposals/CommissionDetailsModal.vue";
 import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
 
+const autoSelectFieldIds = [407, 102, 81]
+
 const USD = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
@@ -274,15 +276,9 @@ export default {
     }
   },
   created() {
-    let skip = false
-    if(skip) {
-      this.proposalExists = true
-      this.proposal.id = this.proposalId
-    } else {
-      this.getProposalDetails()
-      this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
-      window.addEventListener('beforeunload', this.beforeWindowUnload)
-    }
+    this.getProposalDetails()
+    this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})
+    window.addEventListener('beforeunload', this.beforeWindowUnload)
   },
   beforeDestroy() {
     window.removeEventListener('beforeunload', this.beforeWindowUnload)
@@ -322,13 +318,13 @@ export default {
     getAppendIcon(field) {
       return this.userIsAdmin && field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null
     },
-    changeShowCommissionModal (fieldValue) {
+    changeShowCommissionModal(fieldValue) {
       this.currentCommissionValue = fieldValue
       this.showCommissionModal = !this.showCommissionModal
     },
-    saveDesiredCommissionAmountValue (value) {
-      let field = this.sortedCustomFieldGroups.find(cfg => cfg.id === 39)?.customFieldValues?.find(f => f.customFieldGroupAssignmentId === 454)
-      if(field) {
+    saveDesiredCommissionAmountValue(value) {
+      const field = this.sortedCustomFieldGroups.find(cfg => cfg.id === 39)?.customFieldValues?.find(f => f.customFieldGroupAssignmentId === 454)
+      if (field) {
         field.numericValue = value
         this.populateDirtyCfvs(field)
       }
@@ -397,9 +393,40 @@ export default {
           ?.filter(f => f.conditionalOnId !== null)
           ?.map(f => f.conditionalOnId)
 
-        fields
+        const filters = fields
           ?.filter(f => conditionalOnFields.includes(f.customFieldGroupAssignmentId))
-          ?.forEach(this.buildFilters)
+          ?.map(this.buildFilters)
+
+        //wait for all the filters to run initially
+        await Promise.allSettled(filters)
+
+        //preselect certain fields _after_ we've built the filters
+        //todo order might matter at some point
+        fields
+          .filter(f => autoSelectFieldIds.includes(f.customFieldId))
+          .filter(f => f.listOfValues?.length > 0)
+          .filter(f => f.intValue === null || f.intValue === undefined)
+          .filter(f => {
+            //if we don't have a conditional field don't filter it out
+            if (!f.conditionalOnId) {
+              return true
+            }
+            //if we do we need to have a value set
+            return fields
+              ?.filter(x => x?.customFieldGroupAssignmentId === f.conditionalOnId)
+              ?.every(x => x.intValue !== null)
+          })
+          .forEach(field => {
+            const filter = this.filters[field.customFieldId]
+            const listOfValues = (filter) ? field.listOfValues.filter(filter) : field.listOfValues
+            const initialValue = listOfValues[0]
+
+            //only pre-select if we have one option available
+            if (listOfValues.length === 1 && initialValue) {
+              field.intValue = initialValue.id
+              this.populateDirtyCfvs(field)
+            }
+          })
 
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -425,7 +452,7 @@ export default {
     async loadProposalVersions() {
       try {
         this.loadingVersions = true
-        const {data, status} = await getRequest(`/proposal/versions/published?size=50&page=0`, 'blueraven')
+        const {data} = await getRequest(`/proposal/versions/published?size=50&page=0`, 'blueraven')
         this.versions = data.content
       } catch (e) {
         this.$snackbar('ERROR', 'Error loading proposal versions')
@@ -437,7 +464,7 @@ export default {
     async updateProposalVersion() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/proposal/${this.proposalId}/version/${this.proposal.proposalVersionId}`, {},'blueraven')
+        await putRequest(`/proposal/${this.proposalId}/version/${this.proposal.proposalVersionId}`, {}, 'blueraven')
         //fully reload page due to implications of changing a proposals version
         //todo: probably should put in a v-dialog warning thing when they try to save
         window.location.reload()
@@ -605,12 +632,11 @@ export default {
                   this.filters[customFieldId] = (val) => filterValues?.indexOf(val?.id) > -1
 
                   conditionalOn.forEach(c => {
-                    if(c.customFieldId === customFieldId && c.intValue != null && !filterValues.includes(c.intValue)) {
+                    if (c.customFieldId === customFieldId && c.intValue != null && !filterValues.includes(c.intValue)) {
                       //if one of the conditional fields has a selected value that is now an unavailable value, unset it and add to dirty fields
-                      console.log('intValue', c.intValue)
                       c.intValue = null
-                      let match = this.dirtyCfvs.find(f => (null !== f.customFieldId && f.customFieldId === customFieldId))
-                      if(!match) {
+                      const match = this.dirtyCfvs.find(f => (null !== f.customFieldId && f.customFieldId === customFieldId))
+                      if (!match) {
                         this.dirtyCfvs.push(c)
                       }
                     }

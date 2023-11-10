@@ -89,6 +89,7 @@
           item-value="id"
           @change="changer"
           placeholder="Please select a type"
+          autocomplete="off"
         />
         <fragment v-if="isDraft">
           <v-btn v-if="hasChanges" text
@@ -135,6 +136,7 @@
           :search="search"
           :custom-filter="filterItems"
           :footer-props="footerProps"
+          :items-per-page="50"
           @update:sort-by="sortValues"
           @update:sort-desc="sortValues"
           class="elevation-1"
@@ -229,6 +231,13 @@ let headerSort = (a, b) => {
   return 0
 }
 
+const dateTimeFormat = new Intl.DateTimeFormat('default', {
+  dateStyle: 'short',
+  timeStyle: 'short'
+})
+
+const numberFormat = new Intl.NumberFormat('default')
+
 export default {
   name: 'ProposalDetail',
   components: {ConfirmationDialog, NewProposalValueDialog, Fragment},
@@ -242,10 +251,8 @@ export default {
       if (!value){
         return
       }
-      return new Intl.DateTimeFormat('default', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-      }).format(new Date(value))
+
+      return dateTimeFormat.format(new Date(value))
     },
     customValueFormatter: ({value, type}) => {
       if (Array.isArray(value)) {
@@ -253,10 +260,15 @@ export default {
       }
 
       if (type === 'timestamp') {
-        return new Intl.DateTimeFormat('default', {
-          dateStyle: 'short',
-          timeStyle: 'short'
-        }).format(new Date(value))
+        return dateTimeFormat.format(new Date(value))
+      }
+
+      if (!isNaN(value) && (type === 'numeric' || type === 'integer')){
+        return numberFormat.format(value)
+      }
+
+      if (type === 'boolean'){
+        return value ? '✔' : ''
       }
       return value
     }
@@ -282,7 +294,7 @@ export default {
       modifiedOnlyFilter: false,
       undoDraftChanges: false,
       footerProps: {
-        'items-per-page-options': [1, 5, 10, 20, 50, -1]
+        'items-per-page-options': [10, 20, 50, -1],
       },
       selectedDeleteItem: undefined,
       publishNote: undefined,
