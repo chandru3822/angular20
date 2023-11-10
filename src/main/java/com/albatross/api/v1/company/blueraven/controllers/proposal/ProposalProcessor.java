@@ -47,9 +47,7 @@ public class ProposalProcessor {
 
     AtomicInteger count = new AtomicInteger();
 
-    proposalService.getLockedProposalsBatchForProcessing().stream()
-      .map(proposalService::getProposal)
-      .flatMap(Optional::stream)
+    proposalService.getLockedProposalsBatchForProcessing()
       .forEach(processProposalPDF(count));
 
     if (count.get() > 0) {
@@ -58,19 +56,19 @@ public class ProposalProcessor {
     }
   }
 
-  private Consumer<Proposal> processProposalPDF(AtomicInteger count) {
-    return proposal -> {
-      log.debug("[Proposal] Generating final PDF for proposalId={}", proposal.getId());
+  private Consumer<Long> processProposalPDF(AtomicInteger count) {
+    return proposalId -> {
+      log.debug("[Proposal] Generating final PDF for proposalId={}", proposalId);
 
       try {
-        proposalService.generateProposalPDF(proposal.getId(), 1L)
+        proposalService.generateProposalPDF(proposalId, 1L)
           .ifPresent(result -> {
             handleResult(result);
             count.getAndIncrement();
           });
       } catch (Exception e) {
-        log.error("[Proposal] Error processing final PDF for proposalId={}", proposal.getId(), e);
-        proposalService.setProcessingErrorMessage(proposal.getId(), e.getMessage(), SystemSettings.BR_SYSTEM_USER.getId());
+        log.error("[Proposal] Error processing final PDF for proposalId={}", proposalId, e);
+        proposalService.setProcessingErrorMessage(proposalId, e.getMessage(), SystemSettings.BR_SYSTEM_USER.getId());
       }
     };
   }
