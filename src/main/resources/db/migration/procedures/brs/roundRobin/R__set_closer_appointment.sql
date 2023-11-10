@@ -33,6 +33,7 @@ declare
   v_round_robin_id                         bigint;
   v_user_already_assigned_to_another_project_id bigint;
   v_set_closer_appointment_audit_id             bigint;
+  v_uses_total_lead_allocation          boolean;
 BEGIN
 
   select process_step_id
@@ -47,9 +48,9 @@ BEGIN
             99999999);
     raise exception 'Unable to schedule closer appointment.  Call support to complete.';
   end if;
-
-    select pcz.id
-    into v_round_robin_id
+  v_uses_total_lead_allocation = false;
+    select pcz.id,pcz.uses_total_lead_allocation
+    into v_round_robin_id,v_uses_total_lead_allocation
     from flow.project p
              inner join flow.postal_code pc on pc.postal_code = substr(
             trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
@@ -109,7 +110,10 @@ BEGIN
     from brs.set_closer_appointment_audit scau
     where project_process_step_id = p_project_process_step_id
       and scau.user_id = any (p_users)
-    order by distance_from_actual_to_target
+      order by
+        case when v_uses_total_lead_allocation is true then total_lead_allocation end desc nulls last,
+        case when v_uses_total_lead_allocation is false then distance_from_actual_to_target end asc nulls last
+
     limit 1;
   end if;
 
