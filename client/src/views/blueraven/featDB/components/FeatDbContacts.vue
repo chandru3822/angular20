@@ -6,12 +6,13 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit">
-        <v-icon v-show="!addMode && !editMode" @click.stop="addContact" class="white--text">add</v-icon>
-        <v-icon v-show="addMode || editMode"
-                @click.stop="hideCtrls" class="white--text">remove</v-icon>
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit" @click.stop="handleAddBtnClick(!addMode && !editMode)">
+        <v-icon v-show="!addMode && !editMode" class="white--text">add</v-icon>
+        <v-icon v-show="addMode || editMode" class="white--text">remove</v-icon>
       </v-btn>
-      <v-icon v-if="showExpanded" class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="showExpanded">
+        <v-icon class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
+      </v-btn>
     </v-toolbar>
     <v-card-text v-if="expanded">
     <v-form v-show="addMode || editMode"
@@ -153,6 +154,14 @@
       }
     },
     methods: {
+      handleAddBtnClick(add) {
+        //without this method it would only show the "add" section if you clicked right on the icon and not if you were inside the button but outside the icon. was causing issues
+        if(add) {
+          this.addContact()
+        } else {
+          this.hideCtrls()
+        }
+      },
       hideCtrls() {
         this.$refs.contactForm.reset()
         this.addMode = false
