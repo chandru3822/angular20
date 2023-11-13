@@ -40,6 +40,7 @@ public class ActivityService {
   private final ContactService contactService;
   private final ProjectService projectService;
   private final UserService userService;
+  private final UserPositionService userPositionService;
 
   @Value("${app.home_url}")
   private String homeUrl;
@@ -122,6 +123,7 @@ public class ActivityService {
   public Optional<Activity> addActivityByObject(Long objectTypeId, Long sourceId, Activity newActivity) {
     User user = securityService.getCurrentUser();
 
+    UserPosition userPrimaryPosition = userPositionService.getUserPrimaryPosition(user.getId(), user.getCompanyId());
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("note", newActivity.getNote());
@@ -130,6 +132,9 @@ public class ActivityService {
     params.put("linkedPpsId", newActivity.getLinkedPpsId());
     params.put("linkedPpseId", newActivity.getLinkedPpseId());
     params.put("userId", user.trueUserId());
+    params.put("userPositionId", null == userPrimaryPosition || null == userPrimaryPosition.getId()
+            ? null
+            : userPrimaryPosition.getId());
     //parameterizing for future use
     params.put("activityTypeId", 2);
     String sql = objectTypeId.equals(ObjectType.PROJECT.id) ? ActivityQuery.addProjectActivity :
