@@ -403,7 +403,8 @@ public class UserQuery {
   public final static String updateLoginAttempts = """
     update flow."user"
            set login_attempts = :loginAttempts,
-               date_modified = now()
+               date_modified = now(),
+               modified_by_id = :userId
        where id = :userId
        """;
 
@@ -695,7 +696,8 @@ public class UserQuery {
   public final static String saveUserPassword = """
       update flow."user"
       set password = :password,
-          date_modified = now()
+          date_modified = now(),
+          modified_by_id = :id
       where id = :id
     """;
 
