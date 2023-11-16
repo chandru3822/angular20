@@ -140,7 +140,7 @@
           />
         </div>
       </v-col>
-      <v-col cols="12" class="text-left pt-0">
+      <v-col cols="12" class="text-left pt-0" id="pps-actions">
         <div class="pps-subheader headline-small"
              v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
