@@ -1,8 +1,8 @@
 <template>
-<v-col v-if="links.length > 0" class="pt-0">
+<v-col v-if="links.length > 0" class="pt-4">
   <v-row>
     <v-col class="text-left pa-0">
-      <v-toolbar color="transparent" class="elevation-0">
+      <v-toolbar dense color="transparent" class="elevation-0 mb-n2">
         <v-toolbar-title class="headline-small">Links</v-toolbar-title>
       </v-toolbar>
       <v-row v-for="(l, index) in links" class="px-7">
