@@ -451,6 +451,8 @@ declare
   v_storage_capacity                                   numeric;
   v_required_down_payment_number                       numeric;
   v_minimum_tsrf                                       bigint;
+  v_minimum_odoe_tsrf                                  bigint;
+  v_odoe_rebate_id                                     bigint;
   v_utility_rebate_value                               numeric;
   v_state_rebate_value                                 numeric;
   v_virginia_srec_rebate_amount                        numeric;
@@ -1298,13 +1300,17 @@ BEGIN
          odoe_battery_rebate_amount,
          odoe_battery_rebate_cap_amount,
          odoe_battery_rebate_percent_total,
-         odoe_system_size_cutoff
+         odoe_system_size_cutoff,
+         minimum_tsrf_for_qualification,
+         rebate_id
   into v_rebate_amount,v_rebate_cap_amount,v_rebate_cap_percentage,
     v_battery_rebate_amount,v_battery_rebate_cap_amount,v_battery_rebate_cap_percent_of_total,
-    v_system_size_cutoff
+    v_system_size_cutoff, v_minimum_odoe_tsrf, v_odoe_rebate_id
   from brs.get_proposal_rebates(v_version_id)
   where rebate_id = v_odoe_income_status;
 
+  raise notice 'v_minimum_odoe_tsrf % ',v_minimum_odoe_tsrf;
+  raise notice 'v_odoe_rebate_id % ',v_odoe_rebate_id;
   raise notice 'v_odoe_income_status % ',v_odoe_income_status;
   raise notice 'v_rebate_amount % ',v_rebate_amount;
   raise notice 'v_rebate_cap_amount % ',v_rebate_cap_amount;
@@ -1314,24 +1320,27 @@ BEGIN
   raise notice 'v_battery_rebate_cap_percent_of_total % ',v_battery_rebate_cap_percent_of_total;
   raise notice 'v_system_size_cutoff % ',v_system_size_cutoff;
 
-  select *
-  into v_odoe_rebate
-  from brs.get_rebate_for_standard_low_income(v_aurora_design_summary,
-                                              v_system_size,
-                                              v_rebate_cap_amount,
-                                              v_rebate_cap_percentage,
-                                              v_total_system_cost_before_rebates,
-                                              v_panel_watts,
-                                              v_rebate_amount,
-                                              v_system_size_cutoff,
-                                              v_number_of_batteries,
-                                              v_battery_rebate_cap_percent_of_total,
-                                              v_battery_rebate_cap_amount,
-                                              v_battery_rebate_amount,
-                                              v_cash_price_storage,
-                                                                  v_minimum_tsrf);
-  raise notice 'v_odoe_rebate % ',v_odoe_rebate;
+  v_odoe_rebate = 0::numeric;
 
+  if(v_odoe_rebate_id is not null) then
+      select *
+      into v_odoe_rebate
+      from brs.get_rebate_for_standard_low_income(v_aurora_design_summary,
+                                                  v_system_size,
+                                                  v_rebate_cap_amount,
+                                                  v_rebate_cap_percentage,
+                                                  v_total_system_cost_before_rebates,
+                                                  v_panel_watts,
+                                                  v_rebate_amount,
+                                                  v_system_size_cutoff,
+                                                  v_number_of_batteries,
+                                                  v_battery_rebate_cap_percent_of_total,
+                                                  v_battery_rebate_cap_amount,
+                                                  v_battery_rebate_amount,
+                                                  v_cash_price_storage,
+                                                  v_minimum_odoe_tsrf);
+      raise notice 'v_odoe_rebate % ',v_odoe_rebate;
+  end if;
 
   raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
   v_above_line_rebate =
