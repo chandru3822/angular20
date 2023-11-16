@@ -7,6 +7,7 @@ public enum ObjectType {
   AHJ_PERMIT(4L, "ahj_permit_id", "feat_db_ahj_permit_custom_field_value"),
   HOA(24L, "hoa_id", "feat_db_hoa_custom_field_value"),
   SUPPLIERS(26L, "feat_db_supplier_id", "feat_db_supplier_custom_field_value"),
+  INCENTIVE(31L, "feat_db_incentive_id", "feat_db_incentive_custom_field_value"),
   COMMISSION_OVERRIDE(9L, "override_plan_id", "commission_override_custom_field_value"),
   PROPOSAL(10L, "proposal_id", "proposal_custom_field_value");
 

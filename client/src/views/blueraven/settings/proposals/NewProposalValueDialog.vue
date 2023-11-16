@@ -1,7 +1,7 @@
 <template>
   <v-dialog persistent scrollable max-width="600px" :value="visible">
     <template v-slot:default="dialog">
-      <v-form ref="newValueForm">
+      <v-form ref="newValueForm" autocomplete="off">
         <v-card>
           <v-toolbar color="primary" dark>
             <v-btn icon dark @click="closeDialog">

@@ -346,14 +346,14 @@ public class ProposalVersionService {
    * @param filterFieldValue
    * @return
    */
-  public List<Long> getProposalValueFilterIdsByExclusionCustomField(@NonNull Long versionId, @NonNull Long fieldId, Long filterFieldId, Object filterFieldValue) {
+  public List<Long> getProposalValueFilterIdsByCustomFieldAndValue(@NonNull Long versionId, @NonNull Long fieldId, Long filterFieldId, Object filterFieldValue) {
     Map<String, Object> params = new HashMap<>();
     params.put("versionId", versionId);
     params.put("fieldId", fieldId);
     params.put("filterFieldId", filterFieldId);
     params.put("filterFieldValue", filterFieldValue);
 
-    return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByExclusionField, params, new SingleColumnRowMapper<>(Long.class));
+    return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldIdAndValue, params, new SingleColumnRowMapper<>(Long.class));
   }
 
   private Function<Map<String, Object>, ProposalCustomValuesRow> getMapper(ObjectMapper om) {

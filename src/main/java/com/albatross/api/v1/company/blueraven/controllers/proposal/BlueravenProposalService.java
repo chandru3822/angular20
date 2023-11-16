@@ -1,7 +1,6 @@
 package com.albatross.api.v1.company.blueraven.controllers.proposal;
 
 import com.albatross.api.config.AppProperties;
-import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
@@ -36,16 +35,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
-import org.springframework.beans.BeanWrapper;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -165,16 +161,11 @@ public class BlueravenProposalService {
   }
 
   public Optional<Long> getProposalVersionByProposalId(@NonNull Long proposalId) {
-    return sqlCache.queryForObjectOptionalBySql(
-      ProposalQuery.getProposalVersionId,
-      Map.of("proposalId", proposalId), Long.class);
+    return sqlCache.queryForObjectOptionalBySql(ProposalQuery.getProposalVersionId, Map.of("proposalId", proposalId), Long.class);
   }
 
   public Optional<ProposalCommission> getProposalCommissionDetails(@NonNull Long proposalId) {
-    Map<String, Object> params = new HashMap<>();
-    params.put("proposalId", proposalId);
-
-    return sqlCache.getBySql(ProposalQuery.getCommissionDetails, params, new ProposalCommissionMapper<>(ProposalCommission.class, om));
+    return sqlCache.getBySql(ProposalQuery.getCommissionDetails, Map.of("proposalId", proposalId), new ProposalCommissionMapper<>(ProposalCommission.class, om));
   }
 
   public void updateProposalVersion(@NonNull Long proposalId, @NonNull Long versionId, @NonNull UserAccountDetails details) {
@@ -186,7 +177,27 @@ public class BlueravenProposalService {
     sqlCache.updateBySql(ProposalQuery.updateProposalVersion, params);
   }
 
-  public Optional<Proposal> getProposal(@NonNull Long proposalId) {
+  /*
+    Find the org associated to a user where the org type is `Sales Dealer Partner`
+   */
+  private Optional<Long> findUserOrgId(Long userId) {
+    if (userId == null) {
+      return Optional.empty();
+    }
+
+    return sqlCache.getBySql(ProposalQuery.findUserOrgId, Map.of("userId", userId), new SingleColumnRowMapper<>(Long.class));
+  }
+
+  private static final Long excludedStateCustomFieldId = 405L;
+  private static final Long allowedOrgFieldId = 413L;
+  private static final Long dealerFieldId = 407L;
+  private static final Long financialProductFieldId = 128L;
+  private static final Long rebatesFieldId = 415L;
+
+
+  public Optional<Proposal> getProposal(@NonNull Long proposalId, Long userId) {
+
+    Optional<Long> userOrgId = findUserOrgId(userId);
 
     Optional<Proposal> result =
       sqlCache.getBySql(
@@ -206,29 +217,87 @@ public class BlueravenProposalService {
     result.ifPresent(proposal -> proposal.getCustomFieldGroups()
       .forEach(cfg -> cfg.getCustomFieldValues().stream()
         .filter(cfv -> cfv.getCustomFieldId() != null)
+        .filter(CustomFieldValue::getHasListValues)
         .forEach(cfv -> {
-          if (cfv.getHasListValues()) {
-            // get list of values available for this custom field
-            // BRS needs to filter out certain things by state so we're hardcoding the check
-            long excludedStateCustomFieldId = 405L;
-            List<Long> customFieldFilteredValues = proposalVersionService.getProposalValueFilterIdsByExclusionCustomField(proposal.getProposalVersionId(), cfv.getCustomFieldId(), excludedStateCustomFieldId, proposal.getStateId())
-              .stream()
-              .filter(Objects::nonNull)
-              .toList();
+          // BRS needs to filter out financial products by state
+          if (financialProductFieldId.equals(cfv.getCustomFieldId())) {
+            filterValuesByCustomFieldId(proposal.getProposalVersionId(), cfv, excludedStateCustomFieldId, proposal.getStateId());
+          }
 
-            // only filter if we get some results back... otherwise, we are assuming not filtering is required
-            if (!customFieldFilteredValues.isEmpty()) {
+          //BRS needs to filter out dealers by associated org
+          if (dealerFieldId.equals(cfv.getCustomFieldId()) && userOrgId.isPresent()) {
+            List<Long> ids = filterDealersByOrg(proposal.getProposalVersionId(), userOrgId.get());
+            if (!ids.isEmpty()) {
               List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
-                .filter(v -> customFieldFilteredValues.contains(v.getId()))
+                .filter(v -> ids.contains(v.getId()))
                 .sorted(Comparator.comparing(ListOfValue::getName))
                 .toList();
 
               cfv.setListOfValues(listOfValues);
             }
           }
+
+          if (rebatesFieldId.equals(cfv.getCustomFieldId())) {
+            List<Long> ids = filterRebatesByStateAndUtility(proposal.getProposalVersionId(), proposal.getStateId(), proposal.getUtilityCompanyId());
+            List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+              .filter(v -> ids.contains(v.getId()))
+              .sorted(Comparator.comparing(ListOfValue::getName))
+              .toList();
+
+            cfv.setListOfValues(listOfValues);
+          }
         })));
 
+    //filter out any custom fields that _should_ have a list of values but don't (previously filtered)
+    result.ifPresent(proposal -> proposal.getCustomFieldGroups()
+      .forEach(cfg -> {
+        List<CustomFieldValue> list = cfg.getCustomFieldValues().stream()
+          .filter(cfv -> {
+            if (!cfv.getHasListValues()) {
+              return true;
+            }
+            return cfv.getListOfValues() != null && !cfv.getListOfValues().isEmpty();
+          })
+          .toList();
+
+        cfg.setCustomFieldValues(list);
+      }));
+
     return result;
+  }
+
+  private List<Long> filterDealersByOrg(@NonNull Long proposalVersionId, Long orgId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalVersionId", proposalVersionId);
+    params.put("orgId", orgId);
+
+    return sqlCache.queryBySql(ProposalQuery.filterProposalDealerOrgs, params, new SingleColumnRowMapper<>(Long.class));
+  }
+
+  private List<Long> filterRebatesByStateAndUtility(@NonNull Long proposalVersionId, Long stateId, Long utilityId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalVersionId", proposalVersionId);
+    params.put("utilityId", utilityId);
+    params.put("stateId", stateId);
+
+    return sqlCache.queryBySql(ProposalQuery.filterRebatesByStateAndUtility, params, new SingleColumnRowMapper<>(Long.class));
+  }
+
+  private void filterValuesByCustomFieldId(Long proposalVersionId, CustomFieldValue cfv, Long filterKeyId, Object filterVal) {
+    List<Long> customFieldFilteredValues = proposalVersionService.getProposalValueFilterIdsByCustomFieldAndValue(proposalVersionId, cfv.getCustomFieldId(), filterKeyId, filterVal)
+      .stream()
+      .filter(Objects::nonNull)
+      .toList();
+
+    // only filter if we get some results back... otherwise, we are assuming not filtering is required
+    if (!customFieldFilteredValues.isEmpty()) {
+      List<ListOfValue> listOfValues = cfv.getListOfValues().stream()
+        .filter(v -> customFieldFilteredValues.contains(v.getId()))
+        .sorted(Comparator.comparing(ListOfValue::getName))
+        .toList();
+
+      cfv.setListOfValues(listOfValues);
+    }
   }
 
   /**
@@ -238,35 +307,35 @@ public class BlueravenProposalService {
    */
   private void filterCustomFieldsByVisibility(Proposal proposal) {
     List<ProposalStepCustomFieldValue> values = getProjectProcessStepValues(proposal.getProjectProcessStepId());
+
+    if (values.isEmpty()) {
+      return;
+    }
+
     log.debug("[Proposal] Found {} custom field values for proposalId={}", values.size(), proposal.getId());
 
-    if (!values.isEmpty()) {
+    try (Context ctx = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
+      ctx.getBindings("js").putMember("context", new ProposalJsContext(values));
 
-      ProposalJsContext jsContext = new ProposalJsContext(values);
+      for (CustomFieldGroup customFieldGroup : proposal.getCustomFieldGroups()) {
+        List<CustomFieldValue> filteredList = customFieldGroup.getCustomFieldValues().stream()
+          .filter(cfv -> {
+            if (cfv.getVisibility() == null || cfv.getVisibility().trim().isEmpty()) {
+              return true;
+            }
+            Value jsEval = ctx.eval("js", cfv.getVisibility());
+            if (!jsEval.isBoolean()) {
+              log.warn("[Proposal] Expression '{}' must evaluate to a boolean", cfv.getVisibility());
+              return true;
+            }
+            return jsEval.asBoolean();
+          })
+          .toList();
 
-      try (Context ctx = Context.newBuilder("js").allowHostAccess(HostAccess.ALL).build()) {
-        ctx.getBindings("js").putMember("context", jsContext);
-
-        for (CustomFieldGroup customFieldGroup : proposal.getCustomFieldGroups()) {
-          List<CustomFieldValue> filteredList = customFieldGroup.getCustomFieldValues().stream()
-            .filter(cfv -> {
-              if (cfv.getVisibility() == null || cfv.getVisibility().trim().isEmpty()) {
-                return true;
-              }
-              Value jsEval = ctx.eval("js", cfv.getVisibility());
-              if (!jsEval.isBoolean()) {
-                log.warn("[Proposal] Expression '{}' must evaluate to a boolean", cfv.getVisibility());
-                return true;
-              }
-              return jsEval.asBoolean();
-            })
-            .toList();
-
-          customFieldGroup.setCustomFieldValues(filteredList);
-        }
-      } catch (Exception e) {
-        log.error("[Proposal] Error filtering custom fields", e);
+        customFieldGroup.setCustomFieldValues(filteredList);
       }
+    } catch (Exception e) {
+      log.error("[Proposal] Error filtering custom fields", e);
     }
   }
 
@@ -295,19 +364,18 @@ public class BlueravenProposalService {
   private static final Long SYSTEM_SIZE_CFGA_ID = 140L;
 
   @Transactional
-  public Optional<Proposal> updateProposalCustomFieldValues(@NonNull Long proposalId, @NonNull List<CustomFieldValue> cfvs) {
-    final Proposal unlockedProposal = getUnlockedProposal(proposalId);
+  public Optional<Proposal> updateProposalCustomFieldValues(@NonNull Long proposalId, @NonNull List<CustomFieldValue> cfvs, @NonNull UserAccountDetails currentUser) {
+    final Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
 
-    Optional<CustomFieldValue> discountCfv = cfvs.stream()
+    cfvs.stream()
       .filter(cfv -> cfv.getCustomFieldGroupAssignmentId().equals(DISCOUNT_AMOUNT_CFGA_ID))
       .filter(cfv -> cfv.getNumericValue() != null)
-      .findFirst();
-
-    discountCfv.ifPresent(customFieldValue -> validateProposalDiscount(customFieldValue.getNumericValue(), unlockedProposal));
+      .findFirst()
+      .ifPresent(customFieldValue -> validateProposalDiscount(customFieldValue.getNumericValue(), unlockedProposal));
 
     blueravenCustomFieldValueService.updateCustomFieldValues(cfvs, unlockedProposal.getId(), ObjectType.PROPOSAL);
 
-    return getProposal(proposalId);
+    return getProposal(proposalId, currentUser.getId());
   }
 
   private Optional<CustomFieldValue> getCustomFieldValue(Proposal proposal, Long cfgaId) {
@@ -335,7 +403,7 @@ public class BlueravenProposalService {
     params.put("userId", currentUser.getId());
 
     Long id = sqlCache.updateBySqlReturningId(ProposalQuery.insert, params, "id").longValue();
-    return getProposal(id);
+    return getProposal(id, currentUser.getId());
   }
 
   private Long getProposalVersion(Long processStepId, Long currentUserId) {
@@ -405,23 +473,22 @@ public class BlueravenProposalService {
 
   @Transactional
   public Optional<Proposal> lockProposal(@NonNull Long proposalId, @NonNull UserAccountDetails currentUser) {
-    Proposal unlockedProposal = getUnlockedProposal(proposalId);
+    Proposal unlockedProposal = getUnlockedProposal(proposalId, currentUser.getId());
 
     //check to see if the proposal has a discount amount added
-    Optional<CustomFieldValue> discountCfv = getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)
-      .filter(cfv -> cfv.getNumericValue() != null);
-
-    if (discountCfv.isPresent()) {
-      validateProposalDiscount(discountCfv.get().getNumericValue(), unlockedProposal);
-      saveProjectDiscountAmount(unlockedProposal.getProjectId(), discountCfv.get().getNumericValue());
-    }
+    getCustomFieldValue(unlockedProposal, DISCOUNT_AMOUNT_CFGA_ID)
+      .filter(cfv -> cfv.getNumericValue() != null)
+      .ifPresent(cfv -> {
+        validateProposalDiscount(cfv.getNumericValue(), unlockedProposal);
+        saveProjectDiscountAmount(unlockedProposal.getProjectId(), cfv.getNumericValue());
+      });
 
     sqlCache.updateBySql(ProposalQuery.setLocked, Map.of("id", proposalId, "modifiedById", currentUser.getTrueUserId()));
 
     //insert values immediately in to proposal log history
     getCalculatedProposalValues(proposalId, ProposalGeneratedType.PRINT, true);
 
-    return getProposal(proposalId);
+    return getProposal(proposalId, currentUser.getId());
   }
 
   private void validateProposalDiscount(BigDecimal amount, Proposal proposal) {
@@ -476,7 +543,7 @@ public class BlueravenProposalService {
   }
 
   public Proposal setProposalName(@NonNull Long proposalId, @NonNull String proposalName, @NonNull UserAccountDetails currentUser) {
-    final Proposal proposal = getUnlockedProposal(proposalId);
+    final Proposal proposal = getUnlockedProposal(proposalId, currentUser.getId());
 
     sqlCache.updateBySql(ProposalQuery.setProposalName, Map.of(
       "id", proposalId,
@@ -489,15 +556,12 @@ public class BlueravenProposalService {
     return proposal;
   }
 
-  private Proposal getUnlockedProposal(@NonNull Long proposalId) {
-    return getProposal(proposalId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
+  private Proposal getUnlockedProposal(@NonNull Long proposalId, Long userId) {
+    return getProposal(proposalId, userId).filter(p -> !p.isLocked()).orElseThrow(LockedProposalException::new);
   }
 
   public Optional<Proposal> getSimpleProposal(@NonNull Long proposalId) {
-    return sqlCache.getBySql(
-      ProposalQuery.simple,
-      Map.of("proposalId", proposalId),
-      new ProposalMapper<>(Proposal.class, om));
+    return sqlCache.getBySql(ProposalQuery.simple, Map.of("proposalId", proposalId), new ProposalMapper<>(Proposal.class, om));
   }
 
   private URI buildUri(String uuid, ProposalGeneratedType proposalGeneratedType) {
@@ -527,7 +591,7 @@ public class BlueravenProposalService {
       "proposalId", proposalId,
       "userId", userId
     ), Long.class);
-    return getProposal(newProposalId);
+    return getProposal(newProposalId, userId);
   }
 
   public ProposalPostalCodeStatus checkPostalCodeApproval(@NonNull Long projectId) {
@@ -569,24 +633,5 @@ public class BlueravenProposalService {
   public void setProcessingErrorMessage(Long proposalId, String errorMessage, Long modifiedBy) {
     sqlCache.updateBySql(ProposalQuery.setProcessingErrorMessage,
       Map.of("id", proposalId, "errorMsg", errorMessage, "modifiedById", modifiedBy));
-  }
-
-  public static class ProposalCommissionMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public ProposalCommissionMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
-    }
-
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<ProposalCommissionDetail>> commissionDetailRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(
-        List.class,
-        "commissionDetails",
-        new JsonCollectionDeserializer(commissionDetailRef, objectMapper));
-    }
   }
 }

@@ -61,8 +61,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             unapproved_zip_code_adder               numeric,
             site_survey_time_adders                 bigint[],
             misc_adders_array                       bigint[],
-            commission_strategy_id                  bigint
-
+            commission_strategy_id                  bigint,
+            qualifies_for_incentive                 bigint[]
           )
 
 AS
@@ -134,7 +134,8 @@ BEGIN
            d.unapproved_zip_code_adder,
            ppscfv42.int_array_value,
            ppscfv43.int_array_value,
-           ppscfv44.int_value
+           ppscfv44.int_value,
+           pcfv23.int_array_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -183,6 +184,8 @@ BEGIN
                                                                pcfv21.custom_field_group_assignment_id = 476
            left join brs.proposal_custom_field_value pcfv22 on prop.id = pcfv22.proposal_id and
                                                                pcfv22.custom_field_group_assignment_id = 480
+           left join brs.proposal_custom_field_value pcfv23 on prop.id = pcfv23.proposal_id and
+                                                               pcfv23.custom_field_group_assignment_id = 490
            left join flow.project_process_step_custom_field_value ppscfv30
                      on pps.id = ppscfv30.project_process_step_id and
                         ppscfv30.custom_field_group_assignment_id = 22573

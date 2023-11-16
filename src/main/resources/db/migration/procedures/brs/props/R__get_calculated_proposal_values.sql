@@ -161,7 +161,8 @@ create type brs.calculated_proposal_value as
   deposit_amount                                     varchar,
   deposit_amount_number                              numeric,
   has_critter_guard boolean,
-  commission_details json
+  commission_details json,
+  qualifies_for_incentive       boolean
 );
 
 drop type brs.excluded_proposal_value;
@@ -450,6 +451,8 @@ declare
   v_storage_capacity                                   numeric;
   v_required_down_payment_number                       numeric;
   v_minimum_tsrf                                       bigint;
+  v_minimum_odoe_tsrf                                  bigint;
+  v_odoe_rebate_id                                     bigint;
   v_utility_rebate_value                               numeric;
   v_state_rebate_value                                 numeric;
   v_virginia_srec_rebate_amount                        numeric;
@@ -471,6 +474,9 @@ declare
   v_has_critter_guard                                  boolean;
   v_storage_name                                       text;
   v_storage_brand                                      text;
+  v_qualifies_for_incentive                            bigint[];
+  v_qualifies_for_incentive_boolean                            boolean;
+  v_below_line_rebate                                  numeric;
 BEGIN
 
   select proposal_id,
@@ -532,7 +538,8 @@ BEGIN
          unapproved_zip_code_adder,
          site_survey_time_adders,
          misc_adders_array,
-         commission_strategy_id
+         commission_strategy_id,
+         qualifies_for_incentive
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -592,7 +599,8 @@ BEGIN
     v_unapproved_zip_code_adder,
     v_site_survey_time_adders,
     v_misc_adders_array,
-    v_commission_strategy_id
+    v_commission_strategy_id,
+    v_qualifies_for_incentive
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -621,6 +629,7 @@ BEGIN
   raise notice 'v_tree_trimming_cost = % ',v_tree_trimming_cost;
   raise notice 'v_trenching_cost = % ',v_trenching_cost;
   raise notice 'v_ac_unit_relocation_cost = % ',v_ac_unit_relocation_cost;
+  raise notice 'v_qualifies_for_incentive = % ',v_qualifies_for_incentive;
 
   select dealer_redline_price
   into v_dealer_redline_price
@@ -1142,7 +1151,8 @@ BEGIN
     v_minimum_tsrf
   from brs.get_proposal_rebates(v_version_id)
   where utility_company_id = v_utility_company_id
-    and rebate_type_id = 455;
+    and rebate_type_id = 455
+    and rebate_applied_at = 1762;
 
   v_state_rebate_amount = coalesce(v_state_rebate_amount, 0);
   raise notice 'v_utility_rebate_value***************************** = % ',v_utility_rebate_value;
@@ -1290,13 +1300,17 @@ BEGIN
          odoe_battery_rebate_amount,
          odoe_battery_rebate_cap_amount,
          odoe_battery_rebate_percent_total,
-         odoe_system_size_cutoff
+         odoe_system_size_cutoff,
+         minimum_tsrf_for_qualification,
+         rebate_id
   into v_rebate_amount,v_rebate_cap_amount,v_rebate_cap_percentage,
     v_battery_rebate_amount,v_battery_rebate_cap_amount,v_battery_rebate_cap_percent_of_total,
-    v_system_size_cutoff
+    v_system_size_cutoff, v_minimum_odoe_tsrf, v_odoe_rebate_id
   from brs.get_proposal_rebates(v_version_id)
   where rebate_id = v_odoe_income_status;
 
+  raise notice 'v_minimum_odoe_tsrf % ',v_minimum_odoe_tsrf;
+  raise notice 'v_odoe_rebate_id % ',v_odoe_rebate_id;
   raise notice 'v_odoe_income_status % ',v_odoe_income_status;
   raise notice 'v_rebate_amount % ',v_rebate_amount;
   raise notice 'v_rebate_cap_amount % ',v_rebate_cap_amount;
@@ -1306,24 +1320,27 @@ BEGIN
   raise notice 'v_battery_rebate_cap_percent_of_total % ',v_battery_rebate_cap_percent_of_total;
   raise notice 'v_system_size_cutoff % ',v_system_size_cutoff;
 
-  select *
-  into v_odoe_rebate
-  from brs.get_rebate_for_standard_low_income(v_aurora_design_summary,
-                                              v_system_size,
-                                              v_rebate_cap_amount,
-                                              v_rebate_cap_percentage,
-                                              v_total_system_cost_before_rebates,
-                                              v_panel_watts,
-                                              v_rebate_amount,
-                                              v_system_size_cutoff,
-                                              v_number_of_batteries,
-                                              v_battery_rebate_cap_percent_of_total,
-                                              v_battery_rebate_cap_amount,
-                                              v_battery_rebate_amount,
-                                              v_cash_price_storage,
-                                                                  v_minimum_tsrf);
-  raise notice 'v_odoe_rebate % ',v_odoe_rebate;
+  v_odoe_rebate = 0::numeric;
 
+  if(v_odoe_rebate_id is not null) then
+      select *
+      into v_odoe_rebate
+      from brs.get_rebate_for_standard_low_income(v_aurora_design_summary,
+                                                  v_system_size,
+                                                  v_rebate_cap_amount,
+                                                  v_rebate_cap_percentage,
+                                                  v_total_system_cost_before_rebates,
+                                                  v_panel_watts,
+                                                  v_rebate_amount,
+                                                  v_system_size_cutoff,
+                                                  v_number_of_batteries,
+                                                  v_battery_rebate_cap_percent_of_total,
+                                                  v_battery_rebate_cap_amount,
+                                                  v_battery_rebate_amount,
+                                                  v_cash_price_storage,
+                                                  v_minimum_odoe_tsrf);
+      raise notice 'v_odoe_rebate % ',v_odoe_rebate;
+  end if;
 
   raise notice 'v_col_springs_rebate = %',v_col_springs_rebate;
   v_above_line_rebate =
@@ -1512,6 +1529,40 @@ BEGIN
   raise notice 'v_federal_tax_incentive_rate = %',v_federal_tax_incentive_rate;
   raise notice 'v_federal_tax_incentive_amount = %',v_federal_tax_incentive_amount;
 
+  v_utility_rebate_value = null;
+  v_unit_type_utility_rebate = null;
+  v_utility_rebate_cap_amount = null;
+  v_utility_rebate_cap_percent_of_total = null;
+  v_minimum_tsrf = null;
+  v_qualifies_for_incentive_boolean = false;
+  if v_qualifies_for_incentive is not null or array_length(v_qualifies_for_incentive,1)!= 0 then
+    v_qualifies_for_incentive_boolean = true;
+    select rebate_amount,
+           unit_type_id,
+           rebate_cap_amount,
+           rebate_cap_percent_of_total,
+           minimum_tsrf_for_qualification
+    into v_utility_rebate_value,v_unit_type_utility_rebate,v_utility_rebate_cap_amount,v_utility_rebate_cap_percent_of_total,
+      v_minimum_tsrf
+    from brs.get_proposal_rebates(v_version_id)
+    where rebate_id = any(v_qualifies_for_incentive);
+  end if;
+
+  select brs.get_amount_by_unit_type(v_system_size, 'PROPOSAL_REBATE',
+                                     v_utility_rebate_value::numeric, v_unit_type_utility_rebate::bigint,
+                                     (coalesce(v_total_system_cost_before_rebates, 0)),
+                                     null,
+                                     null)
+  into v_below_line_rebate;
+raise notice 'v_qualifies_for_incentive_boolean %',v_qualifies_for_incentive_boolean;
+  if v_utility_rebate_cap_amount is not null then
+    v_below_line_rebate = least(v_below_line_rebate::numeric, v_utility_rebate_cap_amount::numeric);
+  elsif v_utility_rebate_cap_percent_of_total is not null then
+    v_below_line_rebate =
+      least(v_below_line_rebate, v_utility_rebate_cap_percent_of_total * v_total_system_cost_before_rebates);
+  end if;
+
+  v_below_line_rebate = coalesce(v_below_line_rebate,0) + coalesce(v_federal_tax_incentive_amount,0) + coalesce(v_virginia_srec_rebate_amount,0);
   v_monthly_solar_payment = coalesce(v_total_loan_amount, 0) * v_initial_payment_factor;
   raise notice 'v_monthly_solar_payment = %',v_monthly_solar_payment;
 
@@ -1567,12 +1618,12 @@ BEGIN
     into v_reamortized_monthly_payment_all_credits_to_loan
     from flow.get_reamortized_monthly_payment((v_apr / 12):: numeric, ((v_loan_term * 12) - 18):: smallint,
                                               (coalesce(v_total_loan_amount, 0) -
-                                               coalesce(v_federal_tax_incentive_amount, 0) -
+                                               coalesce(v_below_line_rebate, 0) + coalesce(v_virginia_srec_rebate_amount,0) -
                                                coalesce(v_state_rebate_amount, 0) -
                                                coalesce(v_above_line_rebate, 0)):: numeric);
   else
     v_reamortized_monthly_payment_all_credits_to_loan =
-        (coalesce(v_total_loan_amount, 0) - coalesce(v_federal_tax_incentive_amount, 0) -
+        (coalesce(v_total_loan_amount, 0) - coalesce(v_below_line_rebate, 0) + coalesce(v_virginia_srec_rebate_amount,0) -
          case
            when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462 then least(
              coalesce(v_state_rebate_amount, 0), coalesce(v_first_year_rebate_cap, 0))
@@ -1682,9 +1733,8 @@ BEGIN
   v_net_system_cost =
         coalesce(v_total_loan_amount, 0) + coalesce(v_required_down_payment, 0) +
         coalesce(v_down_payment_amount, 0) -
-        coalesce(v_federal_tax_incentive_amount, 0) -
-        coalesce(v_state_rebate_amount, 0) -
-        coalesce(v_virginia_srec_rebate_amount, 0);
+        coalesce(v_below_line_rebate, 0) -
+        coalesce(v_state_rebate_amount, 0);
   raise notice 'v_net_system_cost = %',v_net_system_cost;
 
   v_current_estimated_annual_utility_bill =
@@ -1707,7 +1757,7 @@ BEGIN
        coalesce(v_initial_monthly_payment_all_credits_to_loan, 0));
   raise notice 'v_secondary_monthly_payment_no_credits_to_loan = %',v_secondary_monthly_payment_no_credits_to_loan;
 
-  v_assumed_payment_by_month_18 = v_federal_tax_incentive_amount + case
+  v_assumed_payment_by_month_18 = v_below_line_rebate - coalesce(v_virginia_srec_rebate_amount,0) + case --todo maybe take out virginia
                                                                      when v_is_first_year_rebate_cap is not null and v_is_first_year_rebate_cap = 462
                                                                        then least(coalesce(v_state_rebate_amount, 0),
                                                                                   coalesce(v_first_year_rebate_cap, 0))
@@ -1734,6 +1784,8 @@ BEGIN
 
   raise notice 'v_total_system_cost at the end %',v_total_system_cost;
   v_above_line_rebate_without_odoe = (v_above_line_rebate - v_odoe_rebate);
+  v_below_line_rebate = coalesce(v_below_line_rebate - coalesce(v_federal_tax_incentive_amount,0));
+  raise notice 'v_below_line_rebate %',v_below_line_rebate;
   if p_insert_prop_log_history is true then
     insert into brs.proposal_log_history(project_id, fullname, address, city, state, zip, phone,
                                          email, loan_term, interest_rate, optional_down_payment,
@@ -1880,7 +1932,7 @@ BEGIN
              coalesce(v_reroof_cost, 0)::numeric +
              coalesce(v_tree_trimming_cost, 0)::numeric +
              coalesce(v_trenching_cost, 0)::numeric +
-             coalesce(v_ac_unit_relocation_cost, 0)::numeric) / (1 - v_dealer_fee),
+             coalesce(v_ac_unit_relocation_cost, 0)::numeric - coalesce(v_required_down_payment,0)) / (1 - v_dealer_fee),
             (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
              coalesce(v_structural_upgrade_cost, 0)::numeric +
              coalesce(v_reroof_cost, 0)::numeric +
@@ -2047,7 +2099,7 @@ BEGIN
            v_total_square_footage,
            to_char(v_net_payment_from_customer, '$FM9,999,999')::varchar,
            to_char(v_initial_monthly_payment_all_credits_to_loan_bpPlus, '$FM9,999,999')::varchar,
-           to_char(v_virginia_srec_rebate_amount, '$FM9,999,999')::varchar,
+           to_char(v_below_line_rebate, '$FM9,999,999')::varchar,
            to_char(v_above_line_rebate_without_odoe, '$FM9,999,999')::varchar,
            to_char(v_odoe_rebate, '$FM9,999,999')::varchar,
            v_above_line_rebate_without_odoe::numeric,
@@ -2074,7 +2126,8 @@ BEGIN
                                                             v_initial_payment_factor,
                                                             v_above_line_rebate)
                  ) proposal_commission_details)
-            else '{}'::json end;
+            else '{}'::json end,
+           v_qualifies_for_incentive_boolean;
 
 END
 $BODY$

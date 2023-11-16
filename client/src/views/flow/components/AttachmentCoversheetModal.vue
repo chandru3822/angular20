@@ -3,16 +3,15 @@
     <v-card-text class="pa-0">
       <v-form ref="attachmentFieldsForm">
         <v-row class="coversheet-container ma-0">
-          <v-col cols="4" class="coversheet-left-pane  pt-3 px-4 pb-2">
-<!--            <div class="d-flex align-center">-->
-<!--&lt;!&ndash;              <v-btn small text color="primary" class="min-w-25 px-0 mr-6">&ndash;&gt;-->
-<!--&lt;!&ndash;                <v-icon>mdi-menu</v-icon>&ndash;&gt;-->
-<!--&lt;!&ndash;              </v-btn>&ndash;&gt;-->
-<!--              <div class="albatross-header-1 default-text-color">Document Summary</div>-->
-<!--            </div>-->
-<!--              <v-divider class="mt-1 mb-6"></v-divider>-->
+          <v-col cols="12" md="4" class="coversheet-left-pane  pt-3 px-4 pb-2" :class="{'coversheet-pane-height-with-tabs': isMobile}" v-if="!isMobile || tab===0">
             <v-toolbar flat dense class="app-toolbar coversheet-title">
-              <v-toolbar-title class="app-title">Document Summary</v-toolbar-title>
+              <v-toolbar-title class="title-large">Document Summary</v-toolbar-title>
+              <v-spacer/>
+              <v-toolbar-items v-if="isMobile">
+                <v-btn x-small text color="primary" @click="closeModal()">
+                  <v-icon>close</v-icon>
+                </v-btn>
+              </v-toolbar-items>
             </v-toolbar>
             <div v-if="saveError" class="error-text mt-3">
               {{errorMsg}}
@@ -112,9 +111,9 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col cols="8" class="coversheet-right-pane pt-3 px-4 pb-2" ref="rightPaneViewer">
+          <v-col cols="12" md="8" class="coversheet-right-pane pt-3 px-4 pb-2" ref="rightPaneViewer" :class="{'coversheet-pane-height-with-tabs': isMobile}" v-if="!isMobile || tab === 1">
             <v-toolbar flat dense class="app-toolbar coversheet-title">
-              <v-toolbar-title class="app-title">{{ fileDetails.displayName }}</v-toolbar-title>
+              <v-toolbar-title class="title-large">{{ fileDetails.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn small text color="primary"
@@ -136,7 +135,7 @@
                          :src="fileSrcUrl"></v-img>
 
                 </div>
-                <v-toolbar dense class="page-selection-bar" flat color="transparent">
+                <v-toolbar v-if="!isMobile" dense class="page-selection-bar" flat color="transparent">
                   <v-btn text @click="zoomImage(false)">
                     <v-icon>mdi-magnify-minus-outline</v-icon>
                   </v-btn>
@@ -190,6 +189,12 @@
                 </v-btn>
               </v-toolbar>
             </div>
+          </v-col>
+          <v-col v-if="isMobile" cols="12" class="pa-0">
+            <v-tabs fixed-tabs v-model="tab">
+              <v-tab @click="tab=0">Summary</v-tab>
+              <v-tab @click="tab=1">Preview</v-tab>
+            </v-tabs>
           </v-col>
         </v-row>
       </v-form>
@@ -270,13 +275,18 @@ export default {
       pdfPageCount: 1,
       pdfIsLoading: true,
       fileSrcUrl: null,
-      confirmClose: false
+      confirmClose: false,
+      tab:0
     }
   },
   created() {
     this.doPageLoad()
   },
-  computed: {},
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
+  },
   methods: {
     zoomImage(zoomIn) {
       this.imageWidth = null === this.imageWidth ? this.$refs.rightPaneViewer?.clientWidth : this.imageWidth
@@ -479,7 +489,13 @@ export default {
 .coversheet-container {
   height: 90vh;
   max-height: 90vh;
+  @media (min-width: 960px) {
+    height: 75vh;
+    align-content: flex-start;
+  }
+
 }
+
 
 .min-w-25 {
   min-width: 25px !important;
@@ -487,16 +503,20 @@ export default {
 
 .coversheet-left-pane {
   box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
-  height: 90vh;
-  max-height: 90vh;
+  height: 100%;
+  //max-height: 90vh;
   overflow-y: auto;
   padding-bottom: 0 !important;
 }
 
 .coversheet-right-pane {
-  height: 90vh;
-  max-height: 90vh;
+  height: 100%;
+  //max-height: 90vh;
   overflow-y: auto;
+}
+
+.coversheet-pane-height-with-tabs {
+  height: calc(100% - 50px);
 }
 
 .bottom-toolbar-container {

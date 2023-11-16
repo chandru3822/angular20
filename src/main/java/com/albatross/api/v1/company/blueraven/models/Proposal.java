@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class Proposal {
-  private Long id, proposalNbr, projectId, projectProcessStepId, proposalVersionId, revisionNumber, stateId;
+  private Long id, proposalNbr, projectId, projectProcessStepId, proposalVersionId, revisionNumber, stateId, utilityCompanyId;
   private String projectName, name, email, version;
   private OffsetDateTime dateCreated, dateModified;
   private BigDecimal maxDiscountAmount;

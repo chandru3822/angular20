@@ -306,7 +306,7 @@ public class ProposalToolQuery {
     where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $parentFieldId && @.intValue == $parentFieldValue)', :vars)
     """;
 
-  public static final String findFilterableValuesByExclusionField = """
+  public static final String findFilterableValuesByFieldIdAndValue = """
 with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
                                                                                                      proposal_group_uuid,
                                                                                                      value,
