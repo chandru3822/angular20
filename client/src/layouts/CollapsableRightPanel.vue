@@ -146,7 +146,8 @@ const isMobile = computed(() => {
   height: fit-content;
 }
 .conversation-activity-inner-container {
-  max-height: calc(100% - 85px);
+  max-height: none;
+  height: 100%;
   margin-top:0;
   overflow: auto;
 

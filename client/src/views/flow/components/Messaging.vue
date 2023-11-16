@@ -471,6 +471,12 @@ a.chatLink {
   align-items: center;
 }
 
+@media (max-width: 960px) {
+  #project-tabs{
+    height: 100%;
+  }
+}
+
 #project-tabs > div > div > div:nth-child(2) > form > div.sc-user-input--buttons > div:nth-child(3) > div {
   left: 40% !important;
 }
