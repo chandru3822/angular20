@@ -1,9 +1,9 @@
 <template>
 <v-col v-if="links.length > 0" class="pt-0">
   <v-row>
-    <v-col class="text-left py-0">
+    <v-col class="text-left pa-0">
       <v-toolbar color="transparent" class="elevation-0">
-        <v-toolbar-title>Links</v-toolbar-title>
+        <v-toolbar-title class="headline-small">Links</v-toolbar-title>
       </v-toolbar>
       <v-row v-for="(l, index) in links" class="px-7">
         <a  :key="l.id" text target="_blank" @click="followLink(l.url)" class="text-capitalize body-medium"><v-icon color="primary" class="pr-1">mdi-link</v-icon>{{l.link}}</a>
