@@ -799,6 +799,9 @@ export default {
   display: flex;
   align-items: flex-start;
 }
+#pps-toolbar{
+  z-index: 11;
+}
 
 
 .cfg-name-toolbar .v-toolbar__content {
