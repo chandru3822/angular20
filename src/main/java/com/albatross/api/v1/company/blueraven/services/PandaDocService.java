@@ -428,6 +428,8 @@ public class PandaDocService {
     }
     body.put("name", name);
     body.put("template_uuid", templateId);
+    //7oaks token is used to create docs, so if we don't override the owner then the emails get sent from 7oaks and reply to 7oaks
+    body.put("owner", Map.of("email", "support@blueravensolar.com"));
 
     // organize tokens and fields the way PandaDoc requires
     Iterator<String> keys = tokens.keys();
