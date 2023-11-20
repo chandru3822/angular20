@@ -190,7 +190,7 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col v-if="isMobile" cols="12" class="pa-0">
+          <v-col cols="12" class="pa-0 d-md-none">
             <v-tabs fixed-tabs v-model="tab">
               <v-tab @click="tab=0">Summary</v-tab>
               <v-tab @click="tab=1">Preview</v-tab>

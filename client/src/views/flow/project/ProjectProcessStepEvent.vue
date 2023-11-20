@@ -74,7 +74,7 @@
       </div>
       <div v-if="selectedEvent.hasAttachmentTypesAssigned" class="px-6">
         <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header">
-          <v-toolbar-title class="albatross-header-3">
+          <v-toolbar-title class="headline-small">
             Event Documents
           </v-toolbar-title>
           <v-spacer></v-spacer>
@@ -104,7 +104,7 @@
       </div>
       <div class="fixed-toolbar">
         <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-name-toolbar event-details-header px-6">
-          <v-toolbar-title class="albatross-header-3">
+          <v-toolbar-title class="headline-small">
             Event Details
           </v-toolbar-title>
           <v-spacer></v-spacer>
