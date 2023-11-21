@@ -37,7 +37,7 @@ export default new Vuetify({
                   lighten9:'#F4E5E7',
               },
               secondary: '#F6F7F8',
-              accent: '#3c79b6',
+              accent: '#6C2F00',
               error:{
                   base:'#B4221F',
                   lighten1:'#D03331',
@@ -54,7 +54,7 @@ export default new Vuetify({
                   lighten4:'#E8F5E9'
 
               },
-              active:'#e3eff7',
+              active:'#F4E5E7',
               anchor: '#6C2F00',
               grey: {
                 base: '#9E9E9E',
