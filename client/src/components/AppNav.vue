@@ -25,10 +25,9 @@
                   class="account-menu"
                   :close-on-content-click="false">
             <template v-slot:activator="{ on }">
-              <v-btn icon v-on="on" :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-                <img class="header-logo" v-if="selectedCompany.logoPresignedUrl"
-                     :src="selectedCompany.logoPresignedUrl">
-                <v-icon v-else>mdi-office-building</v-icon>
+              <v-btn icon v-on="on" :color="'#bbbbbb'">
+                <img class="header-logo"
+                     src="../assets/blueraven/pie.svg" width="35" height="35">
               </v-btn>
             </template>
             <v-list>
@@ -39,10 +38,9 @@
               </v-list-item>
             </v-list>
           </v-menu>
-          <v-btn icon v-else to="/home"
-                 :color="selectedCompany.logoPresignedUrl ? 'transparent' : '#bbbbbb'">
-            <img class="header-logo" v-if="selectedCompany.logoPresignedUrl" :src="selectedCompany.logoPresignedUrl">
-            <v-icon v-else>mdi-office-building</v-icon>
+          <v-btn icon v-else to="/home" :color="'#bbbbbb'">
+            <img class="header-logo"
+                 src="../assets/blueraven/pie.svg" width="35" height="35">>
           </v-btn>
           <v-btn v-if="showMobileBanner && $route.path !== '/apps'" @click="goToApps" icon class="text-capitalize bold px-0"><v-icon>mdi-download-circle</v-icon></v-btn>
           <v-spacer v-if="isMobile"></v-spacer>
