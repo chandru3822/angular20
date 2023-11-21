@@ -22,7 +22,12 @@
         <span v-if="roundRobin.schedulableFutureDays">{{ roundRobin.schedulableFutureDays }} days</span>
         <span v-else>N/A</span>
       </div>
-      <div  class="dtf">{{ roundRobin.timezone }}</div>
+      <div  class="dtf">
+        Timezone: {{ roundRobin.timezone }}
+      </div>
+      <div class="dtf">
+        Uses Total Lead Allocation: {{ roundRobin.usesTotalLeadAllocation ? 'Yes' : 'No'}}
+      </div>
     </div>
     <div v-else>
       <v-row>
@@ -63,6 +68,12 @@
                                 item-value="id"
                                 attach
                 ></v-autocomplete>
+              </td>
+              <td class="px-2">
+                <div class="allocation-label">Uses Total Lead Allocation?</div>
+<!--                <v-checkbox label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-checkbox>-->
+                <v-simple-checkbox class="allocation-checkbox" label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-simple-checkbox>
+
               </td>
               <td class="pl-5 pb-3">
                 <v-btn color="primary" :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
@@ -189,6 +200,18 @@ export default {
 <style lang="scss" scoped>
 .dtf {
   font-size: 14px;
+}
+.allocation-label {
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+  width: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.allocation-checkbox {
+  align-self: start;
+  margin-top: 8px;
 }
 </style>
 <style lang="scss">

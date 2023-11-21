@@ -140,8 +140,8 @@
           />
         </div>
       </v-col>
-      <v-col cols="12" class="text-left pt-0">
-        <div class="pps-subheader albatross-header-3"
+      <v-col cols="12" class="text-left pt-0" id="pps-actions">
+        <div class="pps-subheader headline-small"
              v-if="processStep && processStep.actions && processStep.actions.length > 0">
           Actions
           <v-btn
@@ -176,7 +176,7 @@
       <v-col cols="12" class="pa-0" v-if="processStep.hasAttachmentTypesAssigned">
         <div>
           <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header px-3">
-            <v-toolbar-title class="albatross-header-3" >
+            <v-toolbar-title class="headline-small" >
               Process Step Documents
             </v-toolbar-title>
             <v-spacer></v-spacer>
@@ -204,7 +204,7 @@
         </div>
       </v-col>
       <v-toolbar flat :color="isMobile ? 'white' : 'grey lighten-4'" class="cfg-detail-header fixed-toolbar px-3 z-3">
-        <v-toolbar-title class="albatross-header-3">
+        <v-toolbar-title class="headline-small">
            Process Step Details
         </v-toolbar-title>
         <v-spacer></v-spacer>
@@ -798,6 +798,9 @@ export default {
 #pps-toolbar .v-toolbar__content {
   display: flex;
   align-items: flex-start;
+}
+#pps-toolbar{
+  z-index: 11;
 }
 
 

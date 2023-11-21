@@ -967,9 +967,9 @@ public class ReportEngine {
         }
       } else if (r.getDataTypeId() == 3 || r.getDataTypeId() == 4 || (r.getDataTypeRequirementId() != null && r.getSecondaryRequirementValue() == null && r.getDataTypeId() != 1 && r.getDataTypeId() != 2)) {
         //if this is a text requirement using null/not null requirement
-        if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null) {
+        if ((r.getDataTypeId() == 5 || r.getDataTypeId() == 13) && r.getDataTypeRequirementId() != null  && requirementValue != null) {
           //treat empty strings as null
-          whereClause.append(String.format(" nullif(trim(%s), '') %s %s and ", referenceLocation, operator, requirementValue));
+          whereClause.append(String.format(" nullif(trim(%s::text), '') %s %s and ", referenceLocation, operator, requirementValue));
         } else {
           whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
         }
@@ -3480,16 +3480,21 @@ public class ReportEngine {
         return r.getDataTypeRequirement().getDataTypeValue();
       case 5:
       case 13:
-        if (r.getSmartlistSystemListId() != null) {
+        if (r.getSmartlistSystemListId() != null && requirementValue != null) {
           return String.format("sort(array[%s]::int[])", r.getListOfValueId());
         }
-        if (r.getIsCustomValue()) {
+        if (r.getIsCustomValue() && requirementValue != null) {
           return requirementValue;
         }
         return r.getDataTypeRequirement().getDataTypeValue();
       case 6:
         if (r.getIsCustomValue()) {
-          return (r.getHasListValues() != null && r.getHasListValues() && r.getListOfValueId() != null) ? r.getListOfValueId() : Long.parseLong(requirementValue);
+          if (r.getHasListValues() != null && r.getHasListValues() && r.getListOfValueId() != null) {
+            return r.getListOfValueId();
+          }
+          else {
+            return (requirementValue != null) ? Long.parseLong(requirementValue) : r.getDataTypeRequirement().getDataTypeValue();
+          }
         }
         return r.getDataTypeRequirement().getDataTypeValue();
       case 7:

@@ -515,6 +515,29 @@ const router = new Router({
                   return accessDenied()
                 }
               },
+            },{
+              path: 'incentive',
+              name: 'incentive',
+              meta: {title: 'Albatross - Incentive'},
+              component: () => {
+                if (store.getters.userHasFeature('INCENTIVE')) {
+                  return import (/* webpackChunkName: "featDbIncentive" */ './views/blueraven/featDB/incentive/Incentives.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            }, {
+              path: 'incentive/:incentiveId/details',
+              name: 'incentiveDetails',
+              meta: {title: 'Databases - Incentive'},
+              props: true,
+              component: () => {
+                if (store.getters.userHasFeature('INCENTIVE')) {
+                  return import (/* webpackChunkName: "featDbIncentiveDetails" */ './views/blueraven/featDB/incentive/IncentiveDetails.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }
           ]
         },

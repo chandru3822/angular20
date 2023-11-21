@@ -21,6 +21,7 @@ $BODY$
 declare
   v_period_end_date date;
   v_position_id     bigint;
+
 BEGIN
 
   select period_end, position_id

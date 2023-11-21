@@ -1,7 +1,8 @@
+DROP TYPE IF EXISTS ProposalFieldFilter cascade;
+
 DROP FUNCTION IF EXISTS brs.get_proposal_version_value(p_proposal_version_id bigint,
                                                        p_filters ProposalFieldFilter[],
                                                        p_object_code varchar);
-DROP TYPE IF EXISTS ProposalFieldFilter;
 -- This type is used as a filter in a JSONPath query
 CREATE TYPE ProposalFieldFilter AS
 (
@@ -80,24 +81,29 @@ BEGIN
         if v_item.intArrayValue is not null or v_item.intValue is not null or v_item.value is not null then
           v_var = format('(@.fieldId == %s && ', v_item.fieldId);
           case
-            when v_item.intArrayValue is not null
+            when v_item.intArrayValue is not null and v_item.intArrayValue > -1
               then v_var = v_var || format('@.intArrayValue == %s)', v_item.intArrayValue);
-            when v_item.intValue is not null
+            when v_item.intValue is not null and v_item.intValue > -1
               then v_var = v_var || format('@.intValue == %s)', v_item.intValue);
-            when v_item.value is not null then select lower(dt.data_type)
-                                               into v_item_data_type
-                                               from brs.custom_field cf
-                                                      inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
-                                                      inner join flow.data_type dt on cdt.data_type_id = dt.id
-                                               where cf.id = v_item.fieldId;
+            when v_item.value is not null and lower(v_item.value) != 'undefined'
+              then select lower(dt.data_type)
+                   into v_item_data_type
+                   from brs.custom_field cf
+                          inner join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+                          inner join flow.data_type dt on cdt.data_type_id = dt.id
+                   where cf.id = v_item.fieldId;
 
-                                               case
-                                                 when v_item_data_type in
-                                                      ('text', 'system', 'system list',
-                                                       'system multiselect', 'rich text')
-                                                   then v_var = v_var || format('@.value == %I)', v_item.value);
-                                                 else v_var = v_var || format('@.value == %s)', v_item.value);
-                                                 end case;
+                   case
+                     when v_item_data_type in
+                          ('text', 'system',
+                           'system list',
+                           'system multiselect',
+                           'rich text')
+                       then v_var = v_var || format('@.value == %I)', v_item.value);
+                     else v_var = v_var || format('@.value == %s)', v_item.value);
+                     end case;
+              else
+              raise exception 'must specify at least one search param';
             end case;
           if v_var is not null then
             v_paths := array_append(v_paths, v_var);
