@@ -5,7 +5,7 @@
     <!--        :size="size"-->
     <!--        :color="spinnerColor"-->
     <!--    ></v-progress-circular>-->
-    <img :src="require('../assets/blueraven/Cooked_turkey_25.gif')" width="300" height="300"/>
+    <img :src="require('../assets/blueraven/Cooked_turkey_26.gif')" width="300" height="300"/>
   </v-col>
 </template>
 
