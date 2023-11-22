@@ -1,11 +1,10 @@
 <template>
   <v-col cols="12" class="spinner-container">
-    <!--    <v-progress-circular-->
-    <!--        indeterminate-->
-    <!--        :size="size"-->
-    <!--        :color="spinnerColor"-->
-    <!--    ></v-progress-circular>-->
-    <img :src="require('../assets/blueraven/Cooked_turkey_1.gif')" width="300" height="300"/>
+    <v-progress-circular
+        indeterminate
+        :size="size"
+        :color="spinnerColor"
+    ></v-progress-circular>
   </v-col>
 </template>
 
@@ -32,5 +31,6 @@ export default {
   right: 0;
   margin: auto;
   background-color: var(--v-secondary-base);
+  opacity: .5;
 }
 </style>
