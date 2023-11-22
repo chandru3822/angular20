@@ -192,11 +192,12 @@ public class BirdEyeService {
           return null;
         }
 
-        BirdEyeCustomer customer = this.birdeyeApi.getCustomer(businessNumber, BirdEyeCustomerGetRequest.builder()
+        BirdEyeCustomer customer = this.birdeyeApi.getCustomer(businessNumber,
+          BirdEyeCustomerGetRequest.builder()
           .phone(customerPhone)
           .build());
 
-        if (customer == null) {
+        if (customer == null || customer.getCustomFields() == null) {
           return null;
         }
 
