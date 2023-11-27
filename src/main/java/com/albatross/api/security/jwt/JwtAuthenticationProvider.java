@@ -76,6 +76,7 @@ public class JwtAuthenticationProvider implements AuthenticationProvider {
       systemUser.setHighestCompanyId(brSystemUser.getCompanyId());
       systemUser.setParentCompanyId(brSystemUser.getCompanyId());
       systemUser.setHighestParentCompanyId(brSystemUser.getCompanyId());
+      systemUser.setHasAccess(true);
       // @TODO hardcoded the BR system user email since we're under a tight time constraint. This
       // needs to be more generalized with the system settings enum
       // @TODO in case we use other system users here

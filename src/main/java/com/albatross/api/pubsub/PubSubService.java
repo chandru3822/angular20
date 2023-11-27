@@ -34,7 +34,6 @@ public class PubSubService {
   private final RedisTemplate<String, Object> redisTemplate;
   private final Set<Subscriber> subscribers = ConcurrentHashMap.newKeySet();
 
-  @PreAuthorize("hasFeatureAccess('SMS_INBOX')") // NOTE: currently tied to this feature
   public Subscriber subscribe(Subscriber subscriber) {
 
     subscriber.onCompletion(() -> subscribers.remove(subscriber));

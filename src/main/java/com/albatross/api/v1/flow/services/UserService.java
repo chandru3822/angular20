@@ -1,7 +1,11 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.convert.JsonCollectionDeserializer;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.RevokeAccessMessage;
 import com.albatross.api.security.SecurityService;
+import com.albatross.api.security.jwt.JwtAuthenticationProvider;
 import com.albatross.api.security.jwt.JwtClaims;
 import com.albatross.api.security.jwt.JwtUtils;
 import com.albatross.api.utils.CleanString;
@@ -55,6 +59,8 @@ public class UserService {
   @Autowired private ObjectMapper om;
   @Autowired private AmazonS3 s3;
   @Autowired private JwtUtils jwtUtils;
+  @Autowired private PubSubService pubSubService;
+  @Autowired private JwtAuthenticationProvider jwtAuthProvider;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -384,7 +390,11 @@ public class UserService {
     Optional<UserStatusType> newUserStatusType = userStatusTypes.stream().filter(ust -> ust.getId().equals(userStatusTypeId)).findFirst();
     if (newUserStatusType.isPresent()) {
       // If no longer Active, remove User from SMS Teams and SMS Owners
-      if (!newUserStatusType.get().getUserStatusType().equals("Active")) {
+      // a user can still have access to the system even if their status is not active. Changed this to check their "hasAccess" status
+      if (!newUserStatusType.get().getHasAccess()) {
+        //send pub sub notification to kick them out
+        revokeUserAccess(userId);
+
         UserPosition primaryPosition = userPositionService.getUserPrimaryPosition(userId, user.getCompanyId());
         if (primaryPosition != null) {
           // If the user has a primary position, remove the user from any SMS teams associated to their position or org
@@ -397,6 +407,9 @@ public class UserService {
         // Remove all teams from this User's conversation
         messagingService.removeTeamsFromUserConversation(userId, user.trueUserId());
       }
+      //this tells the jwt to reload the user details (ensuring that an inactive user cannot hit the api)
+      jwtAuthProvider.forceReload(userId);
+
     }
   }
 
@@ -642,6 +655,13 @@ public class UserService {
         sqlCache.updateBySql(SmsTeamQuery.deleteSmsTeamUserUnassignedNotification, params);
       }
     }
+  }
+
+  public void revokeUserAccess(Long userId) {
+//    jwtAuthProvider.forceReload(userId);
+//    RevokeAccessMessage ram = new RevokeAccessMessage();
+//    ram.setUserId(userId);
+//    pubSubService.publish(EventChannel.NOTIFICATION, ram);
   }
 
   public boolean hasSmsAccess(Long userId) {
