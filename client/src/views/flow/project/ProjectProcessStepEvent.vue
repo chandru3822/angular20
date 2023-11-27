@@ -127,7 +127,7 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
-      <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="saveEventDetails" @close-dialog="conflictingEvent = null; fieldsSaving = false">
+      <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="saveEventDetails(true)" @close-dialog="conflictingEvent = null; fieldsSaving = false">
         <template v-slot:title>Conflict</template>
         <div>
           Resource <b>{{this.conflictingEvent.resourceName}}</b>
@@ -887,35 +887,10 @@ export default {
       }
     },
     async checkForSchedulingConflicts(){
-      let paramsForAvailability = {
-        // orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-        // this was the old way. leaving here in case
-        // userPositionIds: this.getUserPositionIds(),
-        userPositionIds: [this.selectedEvent.resourceId],
-        startTime: this.selectedEvent.startTime,
-        endTime: this.selectedEvent.endTime,
-        includeCancelled: false,
-        resourceId: this.selectedEvent.resourceId
-      }
+      this.saveEventDetails(false);
 
-      await postRequest(`/schedule`, paramsForAvailability).then(response => {
-        for(let scheduledEvent of response.data) {
-          console.log(scheduledEvent.projectProcessStepEventId);
-          console.log(this.selectedEvent.id);
-          if (((scheduledEvent.start >= this.selectedEvent.startTime && scheduledEvent.start <= this.selectedEvent.endTime) || (scheduledEvent.end >= this.selectedEvent.startTime && scheduledEvent.end <= this.selectedEvent.endTime)) && !(this.selectedEvent.projectProcessStepEventId == scheduledEvent.id) ) {
-            this.conflictingEvent = scheduledEvent;
-            break;
-          }
-          else{
-            this.conflictingEvent = null;
-          }
-        }
-        if(this.conflictingEvent == null){
-          this.saveEventDetails();
-        }
-      });
     },
-    async saveEventDetails() {
+    async saveEventDetails(forceSave) {
       this.eventSaveOverrideRequired = true
       this.eventActionMissingRequirements = false
       this.$store.commit(AppMutations.SET_LOADING, true)
@@ -928,9 +903,10 @@ export default {
           saveVersion: this.selectedEvent.saveVersion,
           //we only send up the status if it changed. sql handles whether to save the value or not
           companyEventStatusTypeId: this.statusChanged ? this.selectedEvent.companyEventStatusTypeId : null,
-          customFieldValues: this.dirtyCfvs
+          customFieldValues: this.dirtyCfvs,
+          forceSave: forceSave
         }
-        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}`, params)
+        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/${forceSave}`, params)
         this.statusChanged = false
         this.dirtyCfvs = []
         this.$refs.ppseFieldsContainer.$el.scrollTop = 0
@@ -943,11 +919,16 @@ export default {
           this.getRoundRobinNumDays()
         }
       } catch (e) {
-        logError(e)
-        let saveMismatch = e.data?.message === 'Save Version Mismatch'
-        let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
-        this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        if(e.status == 409){
+          this.conflictingEvent = e.data[0];
+        }
+        else {
+          logError(e)
+          let saveMismatch = e.data?.message === 'Save Version Mismatch'
+          let msg = saveMismatch ? `<div class="text-center">Cannot Save Changes. <br/>This event has been updated by another user. <br/>Click <a class="white--text underline" href="">here</a> to refresh.</div>` : 'Error Performing Event'
+          this.snackbar = getSnackbar('ERROR', msg, saveMismatch)
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
       } finally {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }

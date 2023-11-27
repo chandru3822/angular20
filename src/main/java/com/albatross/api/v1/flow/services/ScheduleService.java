@@ -27,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
@@ -203,6 +204,27 @@ public class ScheduleService {
       }
     }
 
+  }
+
+  public List<ScheduleEvent> checkForSchedulingConflict(ScheduleEvent saveEvent, Long eventId){
+    ScheduleController.EventSearchParams params = new ScheduleController.EventSearchParams();
+    ArrayList<Long> userIds = new ArrayList<Long>();
+    userIds.add(saveEvent.getResourceId());
+    params.setUserPositionIds(userIds);
+    params.setStartTime(saveEvent.getStart().toString());
+    params.setEndTime(saveEvent.getEnd().toString());
+    List<ScheduleEvent> events = getEventsForCompanyByOrgAndUser(params);
+    for(ScheduleEvent event : events){
+      if(event.getProjectProcessStepEventId() == saveEvent.getProcessStepEventId()){
+        continue;
+      }
+      else{
+        List<ScheduleEvent> eventList = new ArrayList<>();
+        eventList.add(event);
+        return eventList;
+      }
+    }
+    return null;
   }
 
   public static class ScheduleEventMapper<T> extends BeanPropertyRowMapper<T> {

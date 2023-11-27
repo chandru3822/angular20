@@ -8,6 +8,7 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeService;
 import com.albatross.api.v1.company.blueraven.services.*;
 import com.albatross.api.v1.flow.controllers.ProjectProcessStepEventController;
+import com.albatross.api.v1.flow.controllers.ScheduleController;
 import com.albatross.api.v1.flow.enums.EventStatusType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.ProcessStepStatusType;
@@ -73,6 +74,8 @@ public class ProjectProcessStepEventService {
   private final ListOfValueService listOfValueService;
   private final BirdEyeService birdeyeService;
   private final StripeService stripeService;
+
+  private final ScheduleService scheduleService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -869,5 +872,26 @@ public class ProjectProcessStepEventService {
         "resourceHiddenWhiteListedPositions",
         new JsonCollectionDeserializer(resourceHiddenWhiteListedPositionsRef, objectMapper));
     }
+  }
+
+  public List<ScheduleEvent> checkForSchedulingConflict(ProjectProcessStepEventController.SaveEventRequest saveEvent, Long eventId){
+    ScheduleController.EventSearchParams params = new ScheduleController.EventSearchParams();
+    ArrayList<Long> userIds = new ArrayList<Long>();
+    userIds.add(saveEvent.getResourceId());
+    params.setUserPositionIds(userIds);
+    params.setStartTime(saveEvent.getStartTime().toString());
+    params.setEndTime(saveEvent.getEndTime().toString());
+    List<ScheduleEvent> events = scheduleService.getEventsForCompanyByOrgAndUser(params);
+    for(ScheduleEvent event : events){
+      if(event.getProjectProcessStepEventId() == saveEvent.getId()){
+        continue;
+      }
+      else{
+        List<ScheduleEvent> eventList = new ArrayList<>();
+        eventList.add(event);
+        return eventList;
+      }
+    }
+    return null;
   }
 }

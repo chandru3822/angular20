@@ -227,7 +227,7 @@
                      class="white--text schedule-row-go-button"
                      :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                      @click="[fieldsSaving = true, checkForSchedulingConflicts()]">Save</v-btn>
-              <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="scheduleProject" @close-dialog="conflictingEvent = null; fieldsSaving = false">
+              <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="scheduleProject(true)" @close-dialog="conflictingEvent = null; fieldsSaving = false">
                 <template v-slot:title>Conflict</template>
                 <div>
                   Resource <b>{{this.selectedProject.resourceName}}</b>
@@ -511,36 +511,13 @@
         }
       },
       async checkForSchedulingConflicts(){
-        this.$refs.calendar.getEvents(false, true)
-        let params = {
-          // orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-          // this was the old way. leaving here in case
-          // userPositionIds: this.getUserPositionIds(),
-          userPositionIds: [this.selectedProject.resource.id],
-          startTime: this.selectedProject.start,
-          endTime: this.selectedProject.end,
-          includeCancelled: false,
-          resourceId: this.selectedProject.resource.id
-        }
-        const {data} = await postRequest(`/schedule`, params);
-        for(let scheduledEvent of data) {
-          if ((scheduledEvent.start >= this.selectedProject.start && scheduledEvent.start <= this.selectedProject.end) || (scheduledEvent.end >= this.selectedProject.start && scheduledEvent.end <= this.selectedProject.end)) {
-            this.conflictingEvent = scheduledEvent;
-            break;
-          }
-          else{
-            this.conflictingEvent = null;
-          }
-        }
-
-        if(this.conflictingEvent == null) {
-          this.scheduleProject();
-        }
+          this.scheduleProject(false);
       },
-      async scheduleProject() {
+      async scheduleProject(forceSave) {
 
         this.selectedProject.resourceId = this.selectedProject.resource.id
         this.selectedProject.resourceName = this.selectedProject.resource.name
+        this.selectedProject.forceSave = forceSave
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
@@ -553,13 +530,20 @@
           this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
-          console.error('*** ERROR ***', e)
-          let saveMismatch = e.data?.message === 'Save Version Mismatch'
-          let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.fieldsSaving = false
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          if(e.status == 409){
+            this.conflictingEvent = e.data[0];
+            this.fieldsSaving = false
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
+          else {
+            console.error('*** ERROR ***', e)
+            let saveMismatch = e.data?.message === 'Save Version Mismatch'
+            let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
+            this.snackbar = getSnackbar('ERROR', msg)
+            this.fieldsSaving = false
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$store.commit(AppMutations.SET_LOADING, false)
+          }
         }
       },
       async cancelProjectProcessStepEvent() {
