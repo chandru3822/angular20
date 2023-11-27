@@ -5,12 +5,16 @@
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit && showAdd">
-        <v-icon v-show="!addMode && !editMode" @click.stop="add" class="white--text">add</v-icon>
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="userCanEdit && showAdd"
+             @click.stop="handleAddBtnClick(!addMode && !editMode)">
+        <v-icon v-show="!addMode && !editMode" class="white--text">add</v-icon>
         <v-icon v-show="addMode || editMode"
                 @click.stop="hideCtrls" class="white--text">remove</v-icon>
       </v-btn>
-      <v-icon v-if="showExpanded" class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
+      <v-btn icon color="#ddd" style="border-radius: 3px" v-if="showExpanded">
+        <v-icon class="white--text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>
+      </v-btn>
+<!--      <v-icon v-if="showExpanded" class="white&#45;&#45;text clickable">{{expanded ? 'mdi-chevron-up' : 'mdi-chevron-down'}}</v-icon>-->
     </v-toolbar>
     <v-card-text v-if="expanded">
       <div v-show="addMode || editMode" class="px-3 pt-4 pb-3">
@@ -78,13 +82,22 @@ export default {
     },
     hideCtrls() {
       this.addMode = false
+      this.editMode = false
       this.$emit('hide-ctrls')
+    },
+    handleAddBtnClick(add) {
+      //without this method it would only show the "add" section if you clicked right on the icon and not if you were inside the button but outside the icon. was causing issues
+      if(add) {
+        this.add()
+      } else {
+        this.hideCtrls()
+      }
     },
     add(){
       if(!this.expanded){
         this.toggleCollapseExpand()
       }
-      this.$emit('hide-ctrls')
+      this.editMode = false
       this.addMode = true
     },
     save(){
