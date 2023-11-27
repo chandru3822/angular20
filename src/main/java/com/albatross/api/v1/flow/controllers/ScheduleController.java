@@ -69,8 +69,15 @@ public class ScheduleController {
   }
 
   @PostMapping(value = "/saveEvent")
-  public void saveEvent(@RequestBody ScheduleEvent ev) {
+  public ResponseEntity<Object> saveEvent(@RequestBody ScheduleEvent ev) {
+    if(ev.getForceSave() == null || !ev.getForceSave()){
+      List<ScheduleEvent> conflictList = scheduleService.checkForSchedulingConflict(ev, ev.getProjectProcessStepId());
+      if(conflictList != null && conflictList.size() > 0){
+        return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+      }
+    }
     scheduleService.saveEvent(ev);
+    return new ResponseEntity("Save Successful", HttpStatus.OK);
   }
 
 
