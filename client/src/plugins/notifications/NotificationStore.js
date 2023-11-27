@@ -5,7 +5,8 @@ export const NotificationActions = {
   FETCH_NOTIFICATIONS: 'notifications::fetch',
   MARK_AS_READ: 'notifications::markAsRead',
   HANDLE_STREAM_EVENT: 'notifications::handleStreamEvent',
-  PROCESS_PROJECT_MSG: 'notifications::processProjectMsg'
+  PROCESS_PROJECT_MSG: 'notifications::processProjectMsg',
+  PROCESS_REVOKE_ACCESS: 'notifications::processRevokeAccess',
 }
 
 export default {
@@ -42,6 +43,19 @@ export default {
         console.error('*** ERROR ***', e)
       }
     },
+  [NotificationActions.PROCESS_REVOKE_ACCESS]: async ({ state, commit }, userId) => {
+      try {
+          if (!userId) {
+              return
+          }
+
+          const newState = state.messages?.filter(n => n.userId !== userId)
+          commit('setMessages', newState)
+
+      } catch (e) {
+          console.error('*** ERROR ***', e)
+      }
+  },
     [NotificationActions.FETCH_NOTIFICATIONS]: async ({ commit }) => {
       try {
         const { data } = await getRequest(`/notifications/`)
