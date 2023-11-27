@@ -58,7 +58,7 @@ export default {
       hideHeader: this.$store.state.user.hideHeader || false,
       hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
       userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
-      userId: this.$store.state.user.details.id,
+      userId: this.$store.state.user?.details?.id,
       noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance', 'stripeSuccess'],
       showMobileBanner: false,
       dismissMobileToolbar: false
