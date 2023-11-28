@@ -6,10 +6,9 @@ declare
 
 BEGIN
 
-    perform brs.insert_commissions_on_project(p.id)
+    perform brs.insert_commissions_on_project(pd.project_id)
     from brs.project_details pd
-    inner join flow.project p on p.id = pd.project_id
-    left join brs.project_commission_ledger pcl on pcl.project_id = p.id
+    left join brs.project_commission_ledger pcl on pcl.project_id = pd.project_id
         where pd.closer_user_id = new.user_id
     and pcl.id is null
     and pd.final_design_complete_date is not null;

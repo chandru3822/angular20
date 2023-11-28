@@ -224,8 +224,7 @@ public class MarketoQuery {
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
     inner join flow.company_process cp on p.company_process_id = cp.id
     inner join brs.project_details pd on pd.project_id = p.id
-    left join flow.company_state cs on cs.id = p.company_state_id
-    left join flow.state s on s.id = cs.state_id
+    left join flow.state s on s.id = pd.project_state_id
     left join flow.company_country cc on cc.id = p.company_country_id
     left join flow.country co on co.id = cc.country_id
     where p.id = :projectId and
@@ -357,8 +356,7 @@ public class MarketoQuery {
     inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
     inner join flow.company_process cp on p.company_process_id = cp.id
     inner join brs.project_details pd on pd.project_id = p.id
-    left join flow.company_state cs on cs.id = p.company_state_id
-    left join flow.state s on s.id = cs.state_id
+    left join flow.state s on s.id = pd.project_state_id
     left join flow.company_country cc on cc.id = p.company_country_id
     left join flow.country co on co.id = cc.country_id
     where p.id = any(array[ :projectIds ]::bigint[]) and

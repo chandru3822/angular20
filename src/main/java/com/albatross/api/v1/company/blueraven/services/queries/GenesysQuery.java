@@ -48,8 +48,7 @@ public class GenesysQuery {
           pd.first_appointment,
           pd.closer_appointment_start > now() as future_appointment
         from flow.contact c
-        inner join flow.project p on p.contact_id = c.id
-        inner join brs.project_details pd on p.id = pd.project_id
+        inner join brs.project_details pd on c.id = pd.contact_id
         where c.id = :contactId
          and case when :isParent then c.company_id = any (select id
                                          from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
@@ -104,17 +103,16 @@ public class GenesysQuery {
     select c.id
     from flow.contact c
              left join caller_id ci on ci.postal_code = c.postal_code
-             left join flow.project p on p.contact_id = c.id
-             left join brs.project_details pd on pd.project_id = p.id
+             left join brs.project_details pd on pd.contact_id = c.id
              left join cfv on cfv.contact_id = c.id
-             left join latest_closer_event lse on lse.project_id = p.id AND lse.appointment_start_time >= current_date - 45
+             left join latest_closer_event lse on lse.project_id = pd.project_id AND lse.appointment_start_time >= current_date - 45
     where case
               when pd.closer_appointment_outcome_name IS NULL then lse.appointment_start_time < current_date - 7
               else lse.appointment_start_time < current_date - 2
           end
       AND pd.first_appointment_pitched IS NULL
       AND pd.cancelled_date IS NULL
-      AND p.id is not null
+      AND pd.project_id is not null
       AND cfv.lead_source_detail not like 'Inside Sales'
       AND cfv.lead_source not like 'Setter Gen'
       AND pd.sales_dev_representative is not null
@@ -146,9 +144,8 @@ public class GenesysQuery {
            and c.company_id = 3
     ),
     closer_rep as (
-         SELECT p.id, u.first_name || ' ' || u.last_name as closer_name
-         from flow.project p
-                  inner join brs.project_details pd on pd.project_id = p.id
+         SELECT pd.project_id as id, u.first_name || ' ' || u.last_name as closer_name
+         from brs.project_details pd
                   inner join flow.user u on u.id = pd.closer_user_id
     ),
     future_events as (
@@ -162,11 +159,10 @@ public class GenesysQuery {
     select c.id
     from flow.contact c
              left join lead_source ls on ls.id = c.id
-             left join flow.project p on p.contact_id = c.id
-             left join brs.project_details pd on pd.project_id = p.id
+             left join brs.project_details pd on pd.contact_id = c.id
              left join lead_status lst on lst.id = c.id
-             left join closer_rep cr on cr.id = p.id
-             left join future_events fe on p.id = fe.project_id
+             left join closer_rep cr on cr.id = pd.project_id
+             left join future_events fe on pd.project_id = fe.project_id
     where pd.first_appointment_pitched is not null
       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                   'US/Mountain') :: date between current_date - 180 and current_date - 30)
