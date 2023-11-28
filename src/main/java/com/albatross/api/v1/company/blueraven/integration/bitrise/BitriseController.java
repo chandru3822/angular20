@@ -40,6 +40,7 @@ public class BitriseController {
 
       BitriseApiBuildRequest.BuildParams buildParams = new BitriseApiBuildRequest.BuildParams();
       buildParams.setBranch(request.getBranch());
+      buildParams.setWorkflow_id("Cross_Platform");
 
       List<BitriseApiBuildRequest.EnvironmentField> fields = new ArrayList<>();
 

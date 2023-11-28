@@ -155,6 +155,13 @@ BEGIN
     from flow.company_state cs
            inner join flow.state s on cs.state_id = s.id
     where cs.id = p_value::bigint;
+  elsif p_unique_behavior_code = 'CLOSER_EMPLOYEE_BY_ID_TRIGGER' then
+    select ucfv.text_value
+    into v_value
+    from flow.user_position up
+      inner join flow.user u on up.user_id = u.id
+      inner join flow.user_custom_field_value ucfv on ucfv.user_id = u.id and ucfv.custom_field_group_assignment_id =19176
+    where up.id = p_value::bigint;
 
   elsif p_unique_behavior_code = 'STATE_FIELD_ID_TRIGGER' then
     select s.id
