@@ -31,7 +31,7 @@
             />
             <v-text-field v-model="newBuild.version"
                           persistent-hint
-                          hint="example 2.0.1.X"
+                          hint="example 2.0.1"
                           placeholder="Version..."/>
 
             <v-btn class="mt-3"
