@@ -69,109 +69,52 @@ public class GenesysQuery {
 
   //language=PostgreSQL
   public final static String getContactIdsSalDevRetargets = """
-    with cfv AS (
-    SELECT
-        ccfv.contact_id
-         , MAX(CASE WHEN custom_field_group_assignment_id = 20977 THEN 'Level ' || int_value END) AS lead_level
-         , MAX(CASE WHEN custom_field_group_assignment_id = 395 THEN lov.name END) AS lead_source
-         , MAX(CASE WHEN custom_field_group_assignment_id = 396 THEN lov.name END) AS lead_source_detail
-         , MAX(CASE WHEN custom_field_group_assignment_id = 399 THEN lov.name END) AS lead_status
-    FROM flow.contact_custom_field_value ccfv
-             LEFT JOIN flow.list_of_value lov ON ccfv.int_value = lov.id
-    WHERE custom_field_group_assignment_id IN (395, 396, 399, 20977)
-    GROUP BY ccfv.contact_id
-    ),
-
-    caller_id as (select min(cg.call_group_name) call_group_name, min(cgpn.phone_number) phone_number, cgpc.postal_code
-                  from brs.call_group cg
-                           left join flow.postal_code cgpc on cgpc.call_group_id = cg.id
-                           left join brs.call_group_phone_number cgpn on cgpn.call_group_id = cg.id
-                  where cg.company_id = 3
-                    AND cgpc.archived = false
-                    AND cg.archived = false
-                    AND cgpn.archived = false
-                    AND cgpn.active = true
-                  group by cgpc.postal_code),
-
-    latest_closer_event AS (SELECT pps.project_id,
-                                   ((MAX(ppse.start_time) AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE AS appointment_start_time
-                            FROM flow.project_process_step_event ppse
-                                     INNER JOIN flow.project_process_step pps ON ppse.project_process_step_id = pps.id
-                                AND ppse.process_step_event_id = 14
-                            GROUP BY pps.project_id)
-
-    select c.id
-    from flow.contact c
-             left join caller_id ci on ci.postal_code = c.postal_code
-             left join brs.project_details pd on pd.contact_id = c.id
-             left join cfv on cfv.contact_id = c.id
-             left join latest_closer_event lse on lse.project_id = pd.project_id AND lse.appointment_start_time >= current_date - 45
-    where case
-              when pd.closer_appointment_outcome_name IS NULL then lse.appointment_start_time < current_date - 7
-              else lse.appointment_start_time < current_date - 2
-          end
-      AND pd.first_appointment_pitched IS NULL
+    select pd.contact_id as id
+    from brs.project_details pd
+    where pd.first_appointment_pitched IS NULL
       AND pd.cancelled_date IS NULL
-      AND pd.project_id is not null
-      AND cfv.lead_source_detail not like 'Inside Sales'
-      AND cfv.lead_source not like 'Setter Gen'
+      AND pd.lead_source_detail_name != 'Inside Sales'
+      AND pd.source_name != 'Setter Gen'
       AND pd.sales_dev_representative is not null
       AND (pd.closer_appointment_outcome_name not in
            ('Pitched - Proposal Shown', 'Pitched - Proposal Not Shown', 'No-Go', 'Low TSRF') or
            pd.closer_appointment_outcome_name IS NULL)
-      AND cfv.lead_status in ('New', 'Scheduled', 'Attempted Contact')
-    order by c.id;
+      AND ((select ccfv.int_value
+            from flow.contact_custom_field_value ccfv
+            where ccfv.custom_field_group_assignment_id = 399
+              and ccfv.contact_id = pd.contact_id) in
+           (700, 19205, 697)) -- contacts that are new, scheduled, or attempted contact
+    AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 45
+      and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - ( case when pd.closer_appointment_outcome_name is null then 7 else 2 end)
+    order by pd.contact_id
     """;
 
   //language=PostgreSQL
   public final static String getContactIdsInsideSalesPitchedNotBooked = """
-    with lead_source as (
-         select c.id, lov.name
-         from flow.contact_custom_field_value ccfv
-                  inner join flow.custom_field_group_assignment cfga on cfga.id = ccfv.custom_field_group_assignment_id
-                  inner join flow.contact c on c.id = ccfv.contact_id
-                  inner join flow.list_of_value lov on lov.id = ccfv.int_value
-         where cfga.id = 395
-           and c.company_id = 3
-     ),
-    lead_status as (
-         select c.id, lov.name
-         from flow.contact_custom_field_value ccfv
-                  inner join flow.custom_field_group_assignment cfga on cfga.id = ccfv.custom_field_group_assignment_id
-                  inner join flow.contact c on c.id = ccfv.contact_id
-                  inner join flow.list_of_value lov on lov.id = ccfv.int_value
-         where cfga.id = 399
-           and c.company_id = 3
-    ),
-    closer_rep as (
-         SELECT pd.project_id as id, u.first_name || ' ' || u.last_name as closer_name
-         from brs.project_details pd
-                  inner join flow.user u on u.id = pd.closer_user_id
-    ),
-    future_events as (
-        SELECT pps.project_id, max(start_time) next_event
-            FROM flow.project_process_step_event ppse
-                join flow.project_process_step pps on ppse.project_process_step_id = pps.id
-                join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
-        where ppse.process_step_event_id = 14 and cest.event_status_type NOT IN ('Cancelled', 'Complete', 'Rescheduled')
-        group by pps.project_id
-    )
-    select c.id
-    from flow.contact c
-             left join lead_source ls on ls.id = c.id
-             left join brs.project_details pd on pd.contact_id = c.id
-             left join lead_status lst on lst.id = c.id
-             left join closer_rep cr on cr.id = pd.project_id
-             left join future_events fe on pd.project_id = fe.project_id
-    where pd.first_appointment_pitched is not null
-      and (((pd.closer_appointment_start at time zone 'UTC') at time zone
-                  'US/Mountain') :: date between current_date - 180 and current_date - 30)
-      and lst.name not in ('Cold', 'Unqualified', 'Do Not Call')
-      and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
-      and ls.name not in ('Closer Gen', 'Referrals')
-      and (fe.next_event is null or fe.next_event < current_date)
-      and pd.installation_agreement_signed_date IS NULL
-    ORDER BY pd.closer_appointment_start
+    with results as (select pd.contact_id             as id,
+                            pd.closer_appointment_start,
+                            (SELECT max(start_time) next_event
+                             FROM flow.project_process_step_event ppse
+                                      inner join flow.project_process_step pps
+                                                 on ppse.project_process_step_id = pps.id and pps.project_id = pd.project_id
+                             where ppse.process_step_event_id = 14
+                               and ppse.company_event_status_type_id NOT IN (3,4,24)
+                             group by pps.project_id) as next_event,
+                            (select ccfv.int_value
+                             from flow.contact_custom_field_value ccfv
+                             where ccfv.custom_field_group_assignment_id = 399
+                               and ccfv.contact_id = pd.contact_id) as lead_status_id
+                     from brs.project_details pd
+                     where pd.first_appointment_pitched is not null
+                       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
+                             'US/Mountain') :: date between current_date - 180 and current_date - 30)
+                       and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
+                       and pd.source_name not in ('Closer Gen', 'Referrals')
+                       and pd.installation_agreement_signed_date IS NULL)
+    select count(1)
+    from results
+    where (next_event is null or next_event < current_date)
+      and lead_status_id not in (698, 19595, 699)  -- 'Cold', 'Unqualified', 'Do Not Call'
     """;
 
   //language=PostgreSQL
