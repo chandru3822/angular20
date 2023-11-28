@@ -254,6 +254,8 @@ export default {
         let url = this.isIos ? '/app/ios' : '/app/android'
         const {data, status} = await getRequest(url)
         this.apps = data
+        let versionNumber = this.apps[0].versionNumber
+        this.$emit('versionNumberLoaded', versionNumber)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
