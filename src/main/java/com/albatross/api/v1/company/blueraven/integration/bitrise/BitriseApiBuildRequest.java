@@ -26,7 +26,7 @@ public class BitriseApiBuildRequest {
 
   @Data
   public static class BuildParams {
-    String branch;
+    String branch, workflow_id;
     List<EnvironmentField> environments;
   }
 
