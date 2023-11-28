@@ -36,7 +36,6 @@ public class RebateQuery {
            prp.processed_date,
            prp.project_rebate_payment_state_id as payment_state_id
          from brs.project_rebate_payment prp
-           INNER JOIN flow.project p on p.id = prp.project_id
          where prp.id = :paymentId
     """;
 
@@ -87,8 +86,7 @@ public class RebateQuery {
                       prp.project_rebate_payment_state_id as "paymentStateId",
                       prp.project_id as "projectId"
                     from brs.project_rebate_payment prp
-                      INNER JOIN flow.project p on p.id = prp.project_id
-                      left join brs.project_details pd on pd.project_id = p.id
+                      inner join brs.project_details pd on pd.project_id = prp.project_id
                     where prp.project_rebate_batch_id = drb.id
                     group by prp.id, prp.payment_nbr, pd.project_name
                     order by payment_nbr) rebatePayments), '[]') AS "rebatePayments"
@@ -227,27 +225,26 @@ public class RebateQuery {
   //language=PostgreSQL
   public final static String getPaymentsUnbalanced = """
     select * from (
-     select p.id project_id,
-     p.project_name project_name,
+     select pd.project_id project_id,
+     pd.project_name project_name,
      pd.substantial_completion_date substantialCompletionDate,
      sum(prp.payment_amount) payment_amount,
-     coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
+     coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0) total_paid,
      pd.primary_financier_name as financier,
      pd.num_of_promotion_payments as numberOfPromotionPayments,
      pd.product_name as product,
      pd.total_promotion_amount
-     from flow.project p
-       inner join brs.project_rebate_payment prp on p.id = prp.project_id
-       left join brs.project_details pd on pd.project_id = p.id
-     where p.archived is false
-       group by p.id,
+     from brs.project_details pd
+       inner join brs.project_rebate_payment prp on pd.project_id = prp.project_id
+     where pd.archived is false
+       group by pd.project_id,
        pd.contact_name,
        pd.substantial_completion_date,
        pd.primary_financier_name,
        num_of_promotion_payments,
        pd.product_name,
        total_promotion_amount,
-       coalesce((select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0),
+       coalesce((select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0),
        (select concat(u.first_name, ' ', u.last_name) from flow.user u where id = prp.created_by_user_id)
     ) payments where ROUND(payments.total_promotion_amount) != ROUND(payments.total_paid) AND (ROUND(payments.total_promotion_amount) - ROUND(payments.total_paid) > 0)
     """;
@@ -256,8 +253,8 @@ public class RebateQuery {
   public final static String getRebateDetails = """
     select array_to_json(array_agg(row_to_json(results)))
        from (
-       select p.id project_id,
-       p.project_name project_name,
+       select pd.project_id project_id,
+       pd.project_name project_name,
        pd.substantial_completion_date substantialCompletionDate,
        (case when num_of_promotion_payments = 0 then 0
                  else (total_promotion_amount)/(num_of_promotion_payments)::numeric end) as payment_amount,
@@ -278,11 +275,11 @@ public class RebateQuery {
        pd.num_of_promotion_payments as numberOfPromotionPayments,
        pd.product_name as product,
        pd.total_promotion_amount,
-       coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0) total_paid,
-       (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3) payment_sum,
+       coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0) total_paid,
+       (select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3) payment_sum,
        ((select sum(payment_amount) from brs.project_rebate_payment drp3
-           where drp3.project_id = p.id and project_rebate_payment_state_id != 4) < (total_promotion_amount)::numeric) red_balanced_owed,
-       (total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3)) balance_owed,
+           where drp3.project_id = pd.project_id and project_rebate_payment_state_id != 4) < (total_promotion_amount)::numeric) red_balanced_owed,
+       (total_promotion_amount - (select sum(prp2.payment_amount) from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3)) balance_owed,
        (select array_to_json(array_agg(row_to_json(payment_history))) from
        (select drp.id,
        batch_date,
@@ -295,15 +292,14 @@ public class RebateQuery {
        drp.void_note
        from brs.project_rebate_payment drp
        left join brs.project_rebate_batch drb on drb.id = drp.project_rebate_batch_id
-       inner join brs.project_rebate_payment_state s on project_rebate_payment_state_id = s.id where project_id = p.id order by payment_nbr)payment_history) payment_history
-       from flow.project p
-         left join brs.project_details pd on pd.project_id = p.id
-         inner join brs.project_rebate_payment drp on p.id = drp.project_id
-         inner join flow.contact c on c.id = p.contact_id
+       inner join brs.project_rebate_payment_state s on project_rebate_payment_state_id = s.id where project_id = pd.project_id order by payment_nbr)payment_history) payment_history
+       from brs.project_details pd
+         inner join brs.project_rebate_payment drp on pd.project_id = drp.project_id
+         inner join flow.contact c on c.id = pd.contact_id
          left outer join flow.company_state cs on cs.id = c.company_state_id
          left outer join flow.state s on s.id = cs.state_id
-       where p.id = :projectId
-       group by p.id,
+       where pd.project_id = :projectId
+       group by pd.project_id,
        pd.contact_name,
        pd.substantial_completion_date,
        total_promotion_amount,
@@ -322,7 +318,7 @@ public class RebateQuery {
        c.mailing_postal_code,
        pd.primary_financier_name,
        pd.product_name,
-       coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = p.id and project_rebate_payment_state_id = 3),0)
+       coalesce((select sum(prp2.payment_amount)from brs.project_rebate_payment prp2 where prp2.project_id = pd.project_id and project_rebate_payment_state_id = 3),0)
      ) results
     """;
 
