@@ -98,6 +98,7 @@ BEGIN
                                           interconnection_method,
                                           point_of_interconnection,
                                           non_standard_interconnection_items,
+                                          mixed_orientation_arrays,
                                           bom,
                                           date_created)
   VALUES (new.project_id, new.id, new.permit_pack_log_nbr, new.design_log_id, new.design_nbr, new.permit_pack_date,
@@ -188,6 +189,7 @@ BEGIN
           new.design ->> 'Interconnection Method',
           new.design ->> 'Point of Interconnection',
           new.design ->> 'Non Standard Interconnection Items',
+          new.design ->> 'Mixed Orientation Arrays',
           new.bom,
           now());
   RETURN NEW;

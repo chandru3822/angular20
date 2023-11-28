@@ -95,6 +95,7 @@ public class SecurityService implements UserDetailsService {
           user.setParentCompanyId(3L);
           user.setUserPositions(new ArrayList<>());
           user.setHighestParentCompanyId(3L);
+          user.setHasAccess(true);
         } else if (details.getId().equals(SystemSettings.BR_SYSTEM_USER.getId())) {
           // @TODO: humes, this is temporary until we have bandwidth to develop a legit 3rd party
           // API access feature
@@ -106,6 +107,7 @@ public class SecurityService implements UserDetailsService {
           user.setHighestParentCompanyId(3L);
           user.setUserPositions(new ArrayList<>());
           user.setId(details.getId());
+          user.setHasAccess(true);
         } else {
           user = userService.findUserById(details.getId());
           user.setMasqueradingUserId(((UserAccountDetails) p).getMasqueradingUserId());

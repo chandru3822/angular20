@@ -43,6 +43,8 @@ import { AppMutations } from '@/stores/AppStore'
 import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
+import {NotificationActions} from "@/plugins/notifications/NotificationStore";
+import {UserActions} from "@/stores/UserStore";
 
 export default {
   name: 'App',
@@ -56,10 +58,28 @@ export default {
       hideHeader: this.$store.state.user.hideHeader || false,
       hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
       userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
+      userId: this.$store.state.user?.details?.id,
       noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance', 'stripeSuccess'],
       showMobileBanner: false,
       dismissMobileToolbar: false
     }
+  },
+  watch: {
+    revokeAccessEvents: async function () {
+      //will kick a user out immediately if their access is revoked (only works for web users)
+      if (this.revokeAccessEvents?.length > 0) {
+        await this.$store.dispatch(UserActions.LOGOUT)
+        //i tried dispatch after 'await' but it didn't work. dont know why
+        this.$router.push('/login').then(() => {
+          this.$store.dispatch(NotificationActions.PROCESS_REVOKE_ACCESS, this.userId)
+        })
+      }
+    }
+  },
+  computed: {
+    revokeAccessEvents() {
+      return this.$store.getters.getEventsByTopic('revoke_access')?.filter(e => e.userId === this.userId)
+    },
   },
   created() {
     document.addEventListener(

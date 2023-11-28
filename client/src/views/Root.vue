@@ -22,13 +22,8 @@ export default {
   methods: {
     setupNotificationStream() {
       const setup = () => {
-        //only people with access to SMS_INBOX feature access need to have real time notifications enabled
-        if (!this.$store.getters.userHasFeature('SMS_INBOX')){
-          return
-        }
-
         const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`
-        const topics = ['sms_ownership', 'sms_reply', 'project_tag']
+        const topics = ['sms_ownership', 'sms_reply', 'project_tag', 'revoke_access']
         this.evtSource = new EventSource(url, { withCredentials: true })
         topics.forEach(topic => {
           this.evtSource.addEventListener(topic, function(e) {

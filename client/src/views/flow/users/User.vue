@@ -74,7 +74,7 @@
           <span v-if="null != user.primaryPosition" class="ml-1"> - {{ user.primaryPosition}}</span>
 
           <v-btn class="ml-3 elevation-2" dark small fab
-                 v-if="userCanMasquerade && !userIsMasquerading && userId !== loggedInUserId"
+                 v-if="userCanMasquerade && !userIsMasquerading && userId !== loggedInUserId && user.hasAccess"
                  color="primary"
                  @click="masquerade()">
             <v-icon>mdi-account-switch</v-icon>
