@@ -12,39 +12,16 @@
           Current
         </v-chip>
 
-        <fragment
-          v-if="!isDraft"
+        <v-btn
+          class="ma-2"
+          text
+          icon
+          color="blue lighten-2"
+          @click="showHistory = true"
         >
-          <v-btn
-            class="ma-2"
-            text
-            icon
-            color="blue lighten-2"
-            @click="showHistory = true"
-          >
-            <v-icon>mdi-history</v-icon>
-          </v-btn>
-
-          <v-dialog persistent scrollable max-width="600px" :value="showHistory">
-            <v-card>
-              <v-card-title>History</v-card-title>
-              <v-card-text>
-                <v-row no-gutters>
-                  <v-col cols="4" class="font-weight-bold">Last Modified By:</v-col>
-                  <v-col cols="8">{{detail.modifiedBy}}</v-col>
-                  <v-col cols="4" class="font-weight-bold">Last Modified:</v-col>
-                  <v-col cols="8">{{detail.dateModified | timestamp}}</v-col>
-                  <v-col v-if="detail.notes" cols="4" class="font-weight-bold">Notes:</v-col>
-                  <v-col v-if="detail.notes" cols="8">{{detail.notes}}</v-col>
-                </v-row>
-              </v-card-text>
-              <v-card-actions>
-                <v-spacer/>
-                <v-btn text color="primary" @click="showHistory = false">Close</v-btn>
-              </v-card-actions>
-            </v-card>
-          </v-dialog>
-        </fragment>
+          <v-icon>mdi-history</v-icon>
+        </v-btn>
+        <proposal-version-history :visible.sync="showHistory" :version="detail.version"/>
       </v-toolbar-title>
       <v-spacer/>
       <v-toolbar-items v-if="isDraft">
@@ -168,16 +145,18 @@
           </template>
 
           <template #item="{item, headers}">
-            <tr :class="isDraft ? 'clickable' : ''" @click.prevent="editItem(item)">
+            <tr :class="getRowClass(item)" :title="item.archived ? 'This row has been archived' : ''"
+                @click.prevent="editItem(item)" :aria-disabled="item.archived">
               <td v-for="header in headers">
                     <span class="row-actions" v-if="header.value === 'actions'">
                       <v-btn small text color="primary" @click.stop="deleteItem(item)"
                              v-if="item.versionId === detail.id">
                            <v-icon>mdi-undo</v-icon>
                       </v-btn>
-                      <v-btn small text color="primary" @click.stop="selectedDeleteItem = item">
+                      <v-btn small text color="primary" v-if="!item.archived" @click.stop="selectedDeleteItem = item">
                         <v-icon>mdi-delete</v-icon>
                       </v-btn>
+                      <v-btn small text color="primary" disabled v-else></v-btn>
                     </span>
 
                 <span v-if="item[header.value]">
@@ -203,6 +182,8 @@ import {deleteRequestWithPayload, getRequestWithParams, getSnackbar, postRequest
 import NewProposalValueDialog from './NewProposalValueDialog.vue'
 import {AppMutations} from '@/stores/AppStore'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
+import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
 
 const defaultActionColumn = {txt: 'Actions', value: 'actions', sortable: false}
 
@@ -231,48 +212,11 @@ let headerSort = (a, b) => {
   return 0
 }
 
-const dateTimeFormat = new Intl.DateTimeFormat('default', {
-  dateStyle: 'short',
-  timeStyle: 'short'
-})
-
-const numberFormat = new Intl.NumberFormat('default')
-
 export default {
   name: 'ProposalDetail',
-  components: {ConfirmationDialog, NewProposalValueDialog, Fragment},
+  components: {ProposalVersionHistory, ConfirmationDialog, NewProposalValueDialog, Fragment},
   props: ['id'],
-  filters: {
-    capitalize: (value) => {
-      if (!value) return
-      return value[0].toUpperCase() + value?.slice(1).toLowerCase()
-    },
-    timestamp: (value)=> {
-      if (!value){
-        return
-      }
-
-      return dateTimeFormat.format(new Date(value))
-    },
-    customValueFormatter: ({value, type}) => {
-      if (Array.isArray(value)) {
-        return value?.join(', ')
-      }
-
-      if (type === 'timestamp') {
-        return dateTimeFormat.format(new Date(value))
-      }
-
-      if (!isNaN(value) && (type === 'numeric' || type === 'integer')){
-        return numberFormat.format(value)
-      }
-
-      if (type === 'boolean'){
-        return value ? '✔' : ''
-      }
-      return value
-    }
-  },
+  mixins: [ProposalSettingsMixins],
   created() {
     Promise.allSettled([
       this.getProposalDetail(this.id),
@@ -350,24 +294,61 @@ export default {
         })
     },
 
+    getRowClass(item) {
+      if (this.isDraft) {
+        return item.archived ? 'archived' : 'clickable'
+      }
+      return ''
+    },
+
     editItem(item) {
+      if (item.archived) {
+        return
+      }
       this.visible = true
       this.editedItem = {...item}
     },
 
     async archiveItem(item) {
-      const {data} = await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven')
-      const pk = data?.pk || item.pk
-      const values = this.values?.filter(v => v.pk !== pk) ?? []
+      if (item.archived) {
+        return
+      }
+      try {
 
-      const sortHeader = this.headers.find(h => h.fieldOrder === 1)
-      values.sort(sorterFn(sortHeader?.value))
+        const pk = item.pk
+        const values = this.values.map(v => {
+          if (v.pk === pk) {
+            v.archived = true
+            v.originalVersionId = v.versionId
+            v.versionId = this.id
+          }
+          return v
+        })
 
-      this.values = values
-      this.selectedDeleteItem = undefined
+        await postRequest(`/proposal/versions/${this.id}/values/${this.propType.code}/${item.pk}/archive`, undefined, 'blueraven')
 
-      const snackbar = getSnackbar('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
-      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+        const sortHeader = this.headers.find(h => h.fieldOrder === 1)
+        values.sort(sorterFn(sortHeader?.value))
+
+        this.values = values
+        this.selectedDeleteItem = undefined
+
+        const snackbar = getSnackbar('SUCCESS', `Row was successfully archived. It will not be available in future versions.`)
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+      } catch (e) {
+        const snackbar = getSnackbar('ERROR', `Row was not archived successfully.`)
+        this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+
+        //rollback changes if there was an error
+        const pk = item.pk
+        this.values = this.values.map(v => {
+          if (v.pk === pk) {
+            v.archived = false
+            v.versionId = v.originalVersionId
+          }
+          return v
+        })
+      }
     },
 
     async deleteItem(item) {
@@ -439,7 +420,7 @@ export default {
 
     async getProposalObjectTypeFieldValues(proposalVersionId, objectType) {
       const {data} = await getRequestWithParams(`/proposal/versions/${proposalVersionId}/values/${objectType}`, {}, 'blueraven')
-      let values = data.map(({pk, versionId, row}) => ({pk, versionId, ...row}))
+      const values = data.map(({pk, versionId, archived, row}) => ({pk, versionId, archived, ...row}))
       const sortHeader = this.headers.find(h => h.fieldOrder === 1)
       values.sort(sorterFn(sortHeader?.value))
       this.values = values
@@ -508,10 +489,33 @@ export default {
 }
 
 ::v-deep {
-  .v-data-table__wrapper {
-    height: calc(100vh - 380px);
-    min-height: 300px;
-    overflow: auto;
+  .v-data-table {
+    .v-data-table__wrapper {
+      height: calc(100vh - 380px);
+      min-height: 300px;
+      overflow: auto;
+
+      table {
+        tbody {
+          tr[aria-disabled=true] {
+            cursor: not-allowed;
+          }
+
+          tr.archived {
+            background-color: #afafaf !important;
+
+            td > span:not(.row-actions) {
+              opacity: .3;
+              text-decoration: line-through;
+            }
+
+            &:hover {
+              background-color: #afafaf !important;
+            }
+          }
+        }
+      }
+    }
   }
 }
 
