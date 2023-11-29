@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_
           (
             project_id            bigint,
             closer                TEXT,
+            closer_employee_id    TEXT,
             customer_name         CHARACTER VARYING(200),
             system_size           NUMERIC(10, 2),
             overrides_earned      NUMERIC,
@@ -33,7 +34,8 @@ BEGIN
     when v_position_id = 1 then RETURN QUERY
       select foo.project_id::bigint,
              foo.closer,
-             foo.project_name,
+             foo.closer_employee_id,
+             foo.project_name::character varying,
              foo.system_size,
              case
                when cancelled_date is not null then
@@ -71,9 +73,10 @@ BEGIN
              case when foo.commission_strategy =23610 then
                0::numeric
                else foo.plan_total  end                                                                                  as plan_total
-      from (select p.id                                      as project_id,
+      from (select pd.project_id                                      as project_id,
                    u.first_name || ' ' || u.last_name        as closer,
-                   p.project_name                            as project_name,
+                   pd.closer_employee_id,
+                   pd.project_name::character varying                            as project_name,
                    pd.system_size                            as system_size,
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
                    opru1.m1_allocation                       as milestone1_amount,
@@ -90,15 +93,14 @@ BEGIN
                     WHERE dcl.project_id = d1.id
                       and dcl.ledger_type_id = 3
                       and dcl.user_id = u.id
-                      and d1.id = p.id
+                      and d1.id = pd.project_id
                       and dcl.position_id = 1)                  overrides_paid,
                    op.name                                   as name,
                    fd.substantial_completion_date,
                    fd.overrides_earned_m1,
                    fd.cancelled_date
             from brs.payroll p1
-                   inner join flow.project p on p.id = any (p1.selected_project_ids)
-                   inner join brs.project_details pd on pd.project_id = p.id
+                    inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
                    inner join brs.financial_details fd on fd.project_id = pd.project_id
                    inner join brs.override_plan op on op.id = fd.override_plan_id
                    inner join brs.override_plan_receiving_user opru1
@@ -107,9 +109,10 @@ BEGIN
             where p1.id = p_payroll_id
               and op.position_id = 1
             union
-            select p.id                               as project_id,
+            select pd.project_id                               as project_id,
                    u.first_name || ' ' || u.last_name as closer,
-                   p.project_name                     as project_name,
+                   pd.closer_employee_id,
+                   pd.project_name::character varying                     as project_name,
                    pd.system_size                     as system_size,
                    0                                  as user_allocation,
                    0                                  as milestone1_amount,
@@ -126,15 +129,14 @@ BEGIN
                     WHERE dcl.project_id = d1.id
                       and dcl.ledger_type_id = 3
                       and dcl.user_id = u.id
-                      and d1.id = p.id
+                      and d1.id = pd.project_id
                       and dcl.position_id = 1)           overrides_paid,
                    null                               as name,
                    fd.substantial_completion_date,
                    fd.overrides_earned_m1,
                    fd.cancelled_date
             from brs.payroll p1
-                   inner join flow.project p on p.id = any (p1.selected_project_ids)
-                   inner join brs.project_details pd on pd.project_id = p.id
+                     inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
                    inner join brs.financial_details fd on fd.project_id = pd.project_id
                    inner join brs.project_commission_ledger pcl on pcl.project_id = fd.project_id and
                                                                    ledger_type_id = 3 and
@@ -152,7 +154,8 @@ BEGIN
     when v_position_id = 4 then RETURN QUERY
       select foo.project_id::bigint,
              foo.closer,
-             foo.project_name,
+             foo.closer_employee_id,
+             foo.project_name::character varying,
              foo.system_size,
              foo.overrides_earned,
              foo.overrides_paid                        as prior_pay,
@@ -162,9 +165,10 @@ BEGIN
              foo.milestone1_amount,
              foo.milestone2_amount,
              foo.plan_total                            as plan_total
-      from (select p.id                                      as project_id,
+      from (select pd.project_id                                      as project_id,
                    u.first_name || ' ' || u.last_name        as closer,
-                   p.project_name                            as project_name,
+                   pd.closer_employee_id,
+                   pd.project_name::character varying                            as project_name,
                    pd.system_size                            as system_size,
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
                    opru1.m1_allocation                       as milestone1_amount,
@@ -180,13 +184,12 @@ BEGIN
                                                           where opru.override_plan_id = op.id
                                                             and opru.user_id = u.id),
                                                          0) end) total
-                              FROM flow.project p1
-                                     inner join brs.project_details pd1 on p1.id = pd1.project_id
-                                     inner join brs.project_override po on po.project_id = p1.id
+                              FROM brs.project_details pd1
+                                     inner join brs.project_override po on po.project_id = pd1.project_id
                                      inner join brs.override_plan op
                                                 on op.id = po.override_plan_id and op.position_id = 4
                                      inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
-                              WHERE p1.id = p.id
+                              WHERE pd1.project_id = pd.project_id
                                 and opru.user_id = u.id),
                              0))                             AS overrides_earned,
                    (select coalesce(sum(dcl.paid_to_date), 0)
@@ -194,13 +197,12 @@ BEGIN
                            inner join flow.project d1 on d1.id = dcl.project_id
                     WHERE dcl.ledger_type_id = 3
                       and dcl.user_id = u.id
-                      and d1.id = p.id
+                      and d1.id = pd.project_id
                       and dcl.position_id = 4)                  overrides_paid,
                    op.name                                   as name
             from brs.payroll p1
-                   inner join flow.project p on p.id = any (p1.selected_project_ids)
-                   inner join brs.project_details pd on pd.project_id = p.id
-                   inner join brs.project_override po on po.project_id = p.id
+                     inner join brs.project_details pd on pd.project_id = any (p1.selected_project_ids)
+                   inner join brs.project_override po on po.project_id = pd.project_id
                    inner join brs.override_plan op on op.id = po.override_plan_id
                    inner join brs.override_plan_receiving_user opru1
                               on opru1.override_plan_id = po.override_plan_id

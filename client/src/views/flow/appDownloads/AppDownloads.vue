@@ -46,7 +46,7 @@
     </v-toolbar>
     <v-row>
       <v-col cols="12" md="6">
-        <AppList :apps="apps" :is-ios="true"></AppList>
+        <AppList :apps="apps" :is-ios="true" @versionNumberLoaded="setVersionNumber($event)"></AppList>
       </v-col>
       <v-col cols="12" md="6">
         <AppList :apps="apps" :is-ios="false"></AppList>
@@ -72,7 +72,6 @@ export default {
     return {
       snackbar: {},
       newBuild: {
-        version: '0.0.0'
       },
       constants,
       buildMenu: false,
@@ -95,6 +94,9 @@ export default {
     }
   },
   methods: {
+    setVersionNumber (version) {
+      this.newBuild.version = version || '0.0.0'
+    },
     async testBuild() {
       try {
         let params = {

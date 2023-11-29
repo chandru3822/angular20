@@ -88,15 +88,12 @@ BEGIN
 
   RETURN QUERY
     select *, coalesce(foo1.current_pay_commissions, 0) + coalesce(foo1.current_pay_overrides, 0) as current_pay
-    from (SELECT p.id::bigint                                                        as project_id,
-                 p.contact_id::bigint                                                as customer_id,
-                 p.project_name,
+    from (SELECT pd.project_id::bigint                                                        as project_id,
+                 pd.contact_id::bigint                                                as customer_id,
+                 pd.project_name::character varying,
                  fd.system_size,
                  u.id::bigint                                                        as closer_user_id,
-                 (select text_value
-                  from flow.user_custom_field_value ucfv
-                  where custom_field_group_assignment_id = 19176
-                    and ucfv.user_id = u.id),
+                 pd.closer_employee_id::text as employee_id,
                  pd.closer_name                                                      AS closer,
                  (ust.user_status_type = 'Terminated')                               AS closer_is_terminated,
                  fd.source_name::varchar                                             as source_name,
@@ -140,7 +137,7 @@ BEGIN
                  fd.substantial_completion_date                                      as substantial_completion_date,
                  case when p_query_overrides is true then
                  (SELECT array_to_json(array_agg(row_to_json(_overrides_per_user))) AS overrides_per_user
-                  FROM ((SELECT p1.id AS project_id,
+                  FROM ((SELECT f.project_id AS project_id,
                                 u.id,
                                 u.first_name,
                                 u.last_name,
@@ -154,25 +151,24 @@ BEGIN
                                           else pd.system_size::numeric * opru.m1_allocation end, 2),
                                   0)     total,
                                 1     as milestone_id
-                         FROM flow.project p1
-                               inner join brs.financial_details f on f.project_id = p1.id
+                         FROM brs.financial_details f
                                 inner join brs.override_plan op on op.id = f.override_plan_id and op.position_id = 1
                                 INNER JOIN brs.override_plan_receiving_user opru
                                            ON opru.override_plan_id = op.id
                                 INNER JOIN flow.user u ON u.id = opru.user_id
-                         where p1.id = p.id
+                         where f.project_id = pd.project_id
                            and exists (select ppscfv.id
                                        from flow.project_process_step pps
                                               inner join flow.project_process_step_custom_field_value ppscfv
                                                          on ppscfv.project_process_step_id = pps.id and
                                                             ppscfv.custom_field_group_assignment_id = 1251
-                                       where pps.project_id = p1.id
+                                       where pps.project_id = f.project_id
                                          and pps.process_step_id = 175
                                          and ppscfv.date_value is not null
                                          and ppscfv.date_value <= v_period_end_date
                                        ))
                         UNION
-                        (SELECT p1.id AS project_id,
+                        (SELECT d.project_id AS project_id,
                                 u.id,
                                 u.first_name,
                                 u.last_name,
@@ -185,19 +181,18 @@ BEGIN
                                           else pd.system_size::numeric  * opru.m2_allocation end, 2),
                                   0)     total,
                                 2     as milestone_id
-                         FROM flow.project p1
-                                inner join brs.financial_details d on d.project_id = p1.id
+                         FROM brs.financial_details d
                                 inner join brs.override_plan op on op.id = d.override_plan_id and op.position_id = 1
                                 INNER JOIN brs.override_plan_receiving_user opru
                                            ON opru.override_plan_id = op.id
                                 INNER JOIN flow.user u ON u.id = opru.user_id
-                         where p1.id = p.id
+                         where d.project_id = pd.project_id
                            and exists (select ppscfv.id
                                        from flow.project_process_step pps
                                               inner join flow.project_process_step_custom_field_value ppscfv
                                                          on ppscfv.project_process_step_id = pps.id and
                                                             ppscfv.custom_field_group_assignment_id = 21009
-                                       where pps.project_id = p1.id
+                                       where pps.project_id = d.project_id
                                          and pps.process_step_id = 3365
                                          and ppscfv.date_value is not null
                                         and ppscfv.date_value <= v_period_end_date
@@ -281,14 +276,13 @@ BEGIN
                  coalesce(fd.total_commissions, 0) + coalesce(fd.total_overrides, 0) AS project_total_value,
                  current_pay.amount_to_pay,
                  current_pay.forfeited_amount
-          FROM flow.project p
-                 inner join brs.financial_details fd on fd.project_id = p.id
-                 inner join brs.project_details pd on pd.project_id = p.id
+          FROM brs.project_details pd
+                 inner join brs.financial_details fd on fd.project_id = pd.project_id
                  INNER JOIN flow.user u ON u.id = pd.closer_user_id
                  inner join flow.company_user_status cus on cus.user_id = u.id
                  inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
-                 left join brs.exclude_commission ec on ec.project_id = p.id
-                 left join lateral brs.get_ledger_adjustment_current_totals(p_payroll_id, array [p.id], 1) la on true
+                 left join brs.exclude_commission ec on ec.project_id = pd.project_id
+                 left join lateral brs.get_ledger_adjustment_current_totals(p_payroll_id, array [pd.project_id], 1) la on true
                  join lateral brs.get_current_pay(coalesce(fd.total_commissions, 0),
                                                   coalesce(fd.commissions_earned_m1, 0) + case
                                                                                             when fd.substantial_completion_date <= v_period_end_date
@@ -313,12 +307,12 @@ BEGIN
                   ELSE 1 = 1 END
             and CASE
                   WHEN p_project_ids IS NOT NULL
-                    THEN p.id = ANY (p_project_ids)
+                    THEN pd.project_id = ANY (p_project_ids)
                   ELSE
                     pd.final_design_complete_date is not null END
             AND CASE
                   WHEN p_contact_id IS NOT NULL
-                    THEN p.contact_id = p_contact_id
+                    THEN pd.contact_id = p_contact_id
                   ELSE 1 = 1 END
             AND CASE
                   WHEN p_sales_rep IS NOT NULL

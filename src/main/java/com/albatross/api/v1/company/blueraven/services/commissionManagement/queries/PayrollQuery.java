@@ -54,31 +54,30 @@ public class PayrollQuery {
   //language=PostgreSQL
   public final static String searchClosers = """
     SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-    FROM (SELECT p.period_end as "periodEnd",
-                 p.id,
-                 p.description,
-                 (SELECT sum(dcs1.current_pay)
-                  FROM brs.project_commission_snapshot dcs1
-                  WHERE dcs1.payroll_id = p.id) AS "currentPay"
-          FROM brs.payroll p
-                   INNER JOIN brs.project_commission_snapshot dcs ON p.id = dcs.payroll_id
-                   INNER JOIN flow.project prj ON dcs.project_id = prj.id
-                   INNER JOIN brs.project_details pd on pd.project_id = prj.id
-                   LEFT JOIN brs.project_override_commission_snapshot docs ON docs.project_commission_snapshot_id = dcs.id
-          WHERE p.position_id = 1
-            AND CASE WHEN :startDate:: DATE IS NOT NULL
-                         THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
-            AND CASE WHEN :customerName:: TEXT IS NOT NULL
-                         THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
-                     ELSE 1 = 1 END
-            AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
-                         THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
-                     ELSE 1 = 1 END
-            AND CASE WHEN :projectId:: INTEGER IS NOT NULL
-                         THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
-
-          GROUP BY p.id, p.period_end
-          ORDER BY p.period_end desc) AS sub_rows
+         FROM (SELECT p.period_end as "periodEnd",
+                      p.id,
+                      p.description,
+                      (SELECT sum(dcs1.current_pay)
+                       FROM brs.project_commission_snapshot dcs1
+                       WHERE dcs1.payroll_id = p.id) AS "currentPay"
+               FROM brs.payroll p
+                        INNER JOIN brs.project_commission_snapshot dcs ON p.id = dcs.payroll_id
+                        INNER JOIN brs.project_details pd on pd.project_id = dcs.project_id
+                        LEFT JOIN brs.project_override_commission_snapshot docs ON docs.project_commission_snapshot_id = dcs.id
+               WHERE p.position_id = 1
+                 AND CASE WHEN :startDate:: DATE IS NOT NULL
+                              THEN p.period_end BETWEEN :startDate:: DATE AND :endDate:: DATE ELSE 1 = 1 END
+                 AND CASE WHEN :customerName:: TEXT IS NOT NULL
+                              THEN lower(dcs.customer_name) LIKE lower('%' || :customerName:: TEXT || '%')
+                          ELSE 1 = 1 END
+                 AND CASE WHEN :salesRepId:: INTEGER IS NOT NULL
+                              THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
+                          ELSE 1 = 1 END
+                 AND CASE WHEN :projectId:: INTEGER IS NOT NULL
+                              THEN pd.project_id = :projectId:: INTEGER ELSE 1 = 1 END
+         
+               GROUP BY p.id, p.period_end
+               ORDER BY p.period_end desc) AS sub_rows
     """;
 
   //language=PostgreSQL
@@ -92,8 +91,7 @@ public class PayrollQuery {
                   WHERE dcs1.payroll_id = p.id) AS "currentPay"
           FROM brs.payroll p
                    INNER JOIN brs.setter_project_commission_snapshot dcs ON p.id = dcs.payroll_id
-                   INNER JOIN flow.project prj ON dcs.project_id = prj.id
-                   INNER JOIN brs.project_details pd on pd.project_id = prj.id
+                   INNER JOIN brs.project_details pd on pd.project_id = dcs.project_id
                    LEFT JOIN brs.setter_project_override_commission_snapshot docs ON docs.setter_project_commission_snapshot_id = dcs.id
           WHERE p.position_id = 4
             AND CASE WHEN :startDate:: DATE IS NOT NULL
@@ -105,7 +103,7 @@ public class PayrollQuery {
                          THEN pd.closer_user_id = :salesRepId:: INTEGER OR docs.user_id = :salesRepId:: INTEGER
                      ELSE 1 = 1 END
             AND CASE WHEN :projectId:: INTEGER IS NOT NULL
-                         THEN prj.id = :projectId:: INTEGER ELSE 1 = 1 END
+                         THEN pd.project_id = :projectId:: INTEGER ELSE 1 = 1 END
 
           GROUP BY p.id, p.period_end
           ORDER BY p.period_end desc) AS sub_rows

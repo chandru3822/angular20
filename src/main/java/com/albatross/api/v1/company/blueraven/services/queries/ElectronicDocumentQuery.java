@@ -4,43 +4,31 @@ public class ElectronicDocumentQuery {
 
   //language=PostgreSQL
   public final static String getAhjQueryStr = """
-    select s.abbreviation || ' - ' || ah.name
+    select pd.project_state_abbreviation || ' - ' || ah.name
         from brs.project_details pd
-        inner join flow.project p on p.id = pd.project_id
         inner join brs.feat_db_ahj ah on ah.id = pd.ahj
-        left outer join flow.company_state cs on cs.id = p.company_state_id
-        left outer join flow.state s on s.id = cs.state_id
     where pd.project_id = :projectId
     """;
 
   //language=PostgreSQL
   public final static String getEnvQueryStr = """
-    select s.abbreviation || ' - Environmental Attributes'
+    select pd.project_state_abbreviation || ' - Environmental Attributes'
         from brs.project_details pd
-        inner join flow.project p on p.id = pd.project_id
-        left outer join flow.company_state cs on cs.id = p.company_state_id
-        left outer join flow.state s on s.id = cs.state_id
     where pd.project_id = :projectId
     """;
 
   //language=PostgreSQL
   public final static String getUtilityQueryStr = """
-    select s.abbreviation || ' - ' || au.name
+    select pd.project_state_abbreviation || ' - ' || au.name
         from brs.project_details pd
-        inner join flow.project p on p.id = pd.project_id
         inner join brs.feat_db_utility au on au.id = pd.utility_company
-        left outer join flow.company_state cs on cs.id = p.company_state_id
-        left outer join flow.state s on s.id = cs.state_id
     where pd.project_id = :projectId
     """;
 
   //language=PostgreSQL
   public final static String getStateQueryStr = """
-    select s.abbreviation
+    select pd.project_state_abbreviation
         from brs.project_details pd
-        inner join flow.project p on p.id = pd.project_id
-        left outer join flow.company_state cs on cs.id = p.company_state_id
-        left outer join flow.state s on s.id = cs.state_id
     where pd.project_id = :projectId
     """;
 
@@ -71,10 +59,10 @@ public class ElectronicDocumentQuery {
             (case when pd.primary_financier_name = 'Cash' then (pd.total_system_price - pd.referral_promotion_amount) / 2
                 else pd.total_cash_down_payment
                 end) as progress_payment
-    FROM flow.project p INNER JOIN brs.project_details pd on p.id = pd.project_id
-                        INNER JOIN flow.company_state cs on p.company_state_id = cs.id
-                        INNER JOIN flow.state s on cs.state_id = s.id
-                        INNER JOIN flow.contact c on p.contact_id = c.id
+    FROM flow.project p 
+      INNER JOIN brs.project_details pd on p.id = pd.project_id
+      INNER JOIN flow.state s on pd.project_state_id = s.id
+      INNER JOIN flow.contact c on p.contact_id = c.id
     where p.id = :projectId
     """;
 }

@@ -88,9 +88,8 @@ BEGIN
                                                                   end
                      AND ((pd.cancelled_date is null) or
                           (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
                           left join flow.project_status_type pst
-                                    on pst.id = p.company_project_status_type_id and pst.id != 3
+                                    on pst.id = pd.company_project_status_type_id and pst.id != 3
                  group by rru.user_id),
              lead_gen_den as (
                  select rru.user_id, count(pd.id) as lead_gen_den
@@ -98,7 +97,6 @@ BEGIN
                           left join brs.project_details pd on rru.user_id = pd.closer_user_id and
                                                               closer_appointment_start >= now() - interval '90 days'
                      and pd.source not in (523, 524, 530)
-                          left join flow.project p on p.id = pd.project_id
                  group by rru.user_id),
              self_gen as (
                  select rru.user_id, count(pd.id) as self_gen
@@ -124,9 +122,8 @@ BEGIN
                                                                   end
                      AND ((pd.cancelled_date is null) or
                           (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project p on p.id = pd.project_id
                           left join flow.project_status_type pst
-                                    on pst.id = p.company_project_status_type_id and pst.id != 3
+                                    on pst.id = pd.company_project_status_type_id and pst.id != 3
                  group by rru.user_id),
              appointment_count as (
                  select rru.user_id, count(pd2.id) as appointment_count

@@ -12,9 +12,7 @@ BEGIN
              concat(u.first_name, ' ', u.last_name) AS name,
              count(1) pitches,
              rank() over (order by count(1) desc) as rank
-      from flow.project p
-        inner join brs.project_details pd on pd.project_id = p.id
-        inner join flow.contact c on c.id = p.contact_id
+      from brs.project_details pd
         inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                                                from flow.company_configuration_value
                                                                                                                                where code = 'SETTER_POSITION_IDS') and up.archived is not true)
