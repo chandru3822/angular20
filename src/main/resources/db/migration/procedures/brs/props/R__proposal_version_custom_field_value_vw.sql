@@ -12,6 +12,7 @@ select pvcfv.id,
        cf.field_code,
        cf.field_name,
        ot.object_code,
+       ot.object_type,
        pvcfv.modified_by_id,
        concat_ws(' ', mu.first_name, mu.last_name) as modified_by,
        pvcfv.date_modified

@@ -47,9 +47,23 @@
 
           </template>
           <template #item.dateModified="{ item }">
-            <span> {{ item.dateModified | dateFormatter }}</span>
+            <span> {{ item.dateModified | timestamp }}</span>
+          </template>
+          <template #item.actions="{item}">
+            <v-btn
+                class="ma-2"
+                text
+                icon
+                color="blue lighten-2"
+                @click.stop="showHistory(item.version)"
+            >
+              <v-icon>mdi-history</v-icon>
+            </v-btn>
           </template>
         </v-data-table>
+
+        <proposal-version-history :visible.sync="history.show" :version="history.version"/>
+
       </v-card>
     </v-container>
   </v-container>
@@ -58,12 +72,20 @@
 <script>
 import { getRequestWithParams, postRequest } from '@/helpers/helpers'
 import store from '@/store'
+import ProposalVersionHistory from "@/views/blueraven/settings/proposals/ProposalVersionHistory.vue";
+import {ProposalSettingsMixins} from "@/views/blueraven/settings/proposals/mixins";
 
 export default {
   name: 'ProposalSettings',
+  components: {ProposalVersionHistory},
+  mixins: [ProposalSettingsMixins],
   data() {
     return {
       loading: true,
+      history: {
+        show: false,
+        version: undefined
+      },
       options: {
         sortBy: ['version'],
         sortDesc: [true]
@@ -73,7 +95,8 @@ export default {
         { text: 'Version', value: 'version', sortable: false },
         { text: 'Modified on', value: 'dateModified', sortable: false },
         { text: 'Modified by', value: 'modifiedBy', sortable: false },
-        { text: 'Description', value: 'notes', sortable: false }
+        { text: 'Description', value: 'notes', sortable: false },
+        { text: '', value: 'actions', sortable: false }
       ],
       footerProps: {
         'items-per-page-options': [5, 10, 20, 50, 100],
@@ -84,21 +107,6 @@ export default {
   },
   created() {
     this.getProposalFields()
-  },
-  filters: {
-    capitalize: (value) => {
-      if (!value) return
-      return value[0].toUpperCase() + value?.slice(1).toLowerCase()
-    },
-    dateFormatter: (value) => {
-      if (!value) {
-        return 'NA'
-      }
-      return new Intl.DateTimeFormat('default', {
-        dateStyle: 'short',
-        timeStyle: 'short'
-      }).format(new Date(value))
-    }
   },
   computed: {
     canCreateVersion() {
@@ -132,6 +140,10 @@ export default {
       this.totalVersions = data.totalElements ?? -1
       this.versions = [...data.content]
       this.loading = false
+    },
+    showHistory(versionId){
+      this.history.version = versionId
+      this.history.show = true
     }
   }
 }
@@ -174,21 +186,14 @@ tr:nth-of-type(even) {
         justify-content: center;
       }
 
-      div.v-data-footer__pagination {
-
-      }
-
       div.v-data-footer__icons-before {
         display: inline;
         margin-left: calc(50% - 36px);
-
-
       }
 
       div.v-data-footer__icons-after {
         display: inline;
       }
-
     }
   }
 }
