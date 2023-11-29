@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION brs.get_all_users_overrides_earned_in_open_payroll(p_
           (
             project_id            bigint,
             closer                TEXT,
+            closer_employee_id    TEXT,
             customer_name         CHARACTER VARYING(200),
             system_size           NUMERIC(10, 2),
             overrides_earned      NUMERIC,
@@ -33,6 +34,7 @@ BEGIN
     when v_position_id = 1 then RETURN QUERY
       select foo.project_id::bigint,
              foo.closer,
+             foo.closer_employee_id,
              foo.project_name::character varying,
              foo.system_size,
              case
@@ -73,6 +75,7 @@ BEGIN
                else foo.plan_total  end                                                                                  as plan_total
       from (select pd.project_id                                      as project_id,
                    u.first_name || ' ' || u.last_name        as closer,
+                   pd.closer_employee_id,
                    pd.project_name::character varying                            as project_name,
                    pd.system_size                            as system_size,
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
@@ -108,6 +111,7 @@ BEGIN
             union
             select pd.project_id                               as project_id,
                    u.first_name || ' ' || u.last_name as closer,
+                   pd.closer_employee_id,
                    pd.project_name::character varying                     as project_name,
                    pd.system_size                     as system_size,
                    0                                  as user_allocation,
@@ -150,6 +154,7 @@ BEGIN
     when v_position_id = 4 then RETURN QUERY
       select foo.project_id::bigint,
              foo.closer,
+             foo.closer_employee_id,
              foo.project_name::character varying,
              foo.system_size,
              foo.overrides_earned,
@@ -162,6 +167,7 @@ BEGIN
              foo.plan_total                            as plan_total
       from (select pd.project_id                                      as project_id,
                    u.first_name || ' ' || u.last_name        as closer,
+                   pd.closer_employee_id,
                    pd.project_name::character varying                            as project_name,
                    pd.system_size                            as system_size,
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
