@@ -32,6 +32,7 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
+              <td class="text-left">{{item.closer_employee_id}}</td>
               <td class="text-left">{{item.closer_user}}</td>
               <td class="text-left">{{item.total_commission | currency('$', 2)}}</td>
               <td class="text-left">{{item.total_overrides | currency('$', 2)}}</td>
@@ -78,6 +79,7 @@
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         headers: [
+          { text: 'Employee ID', value: 'closer_employee_id', show: true },
           { text: 'Sales Rep', value: 'closer_user', show: true },
           { text: 'Total Commission', value: 'total_commission', show: true },
           { text: 'Total Overrides', value: 'total_overrides', show: true },
@@ -120,7 +122,7 @@
           const {data} = await getRequest(`/payroll/${this.currentPayroll.id}/overrides`, 'blueraven')
 
           let filename = 'Overrides.csv'
-          let csvData = 'Project ID, Customer Name, Closer, Override Plan Name, System Size, Overrides Earned, Prior Pay, Current Pay, User Allocation, Milestone 1 Percentage, Milestone 2 Percentage, Plan Total'
+          let csvData = 'Project ID, Customer Name, Closer, Employee ID, Override Plan Name, System Size, Overrides Earned, Prior Pay, Current Pay, User Allocation, Milestone 1 Percentage, Milestone 2 Percentage, Plan Total'
           csvData += '\n'
 
           data.forEach(p => {
@@ -128,6 +130,7 @@
               p.projectId + ',' +
               '"' + p.customerName + '","' +
               p.closer + '","' +
+              p.closerEmployeeId + '","' +
               p.overridePlanName + '",' +
               p.systemSize + ',' +
               p.overridesEarned + ',' +
@@ -158,12 +161,13 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Payroll Summary.csv'
-          let csvData = 'Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay'
+          let csvData = 'Employee ID, Sales Rep, Total Commission, Total Overrides, Adjustments, Current Pay'
           csvData += '\n'
 
           this.payrollSummary.forEach(p => {
             csvData +=
-              '"' + p.closer_user + '",' +
+              '"' + p.closer_employee_id + '",' +
+              p.closer_user + ',' +
               p.total_commission + ',' +
               p.total_overrides + ',' +
               p.commission_adjustments + ',' +

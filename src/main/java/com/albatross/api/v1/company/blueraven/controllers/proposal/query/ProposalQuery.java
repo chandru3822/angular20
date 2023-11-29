@@ -95,7 +95,7 @@ public class ProposalQuery {
       and p.id = :projectId
       and p.archived is false
       and cpsst.process_step_status_type_id = 2
-    order by pps.date_created desc
+    order by pps.date_modified desc
     """;
 
   //language=PostgreSQL

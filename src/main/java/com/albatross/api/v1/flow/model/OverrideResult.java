@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class OverrideResult {
-    private String closer, customerName, overridePlanName;
+    private String closer, customerName, overridePlanName, closerEmployeeId;
     private Long projectId;
     private Double systemSize, overridesEarned, priorPay, currentPay, userAllocation,
       milestone1Percentage, milestone2Percentage, planTotal ;

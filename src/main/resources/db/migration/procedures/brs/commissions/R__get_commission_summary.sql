@@ -8,7 +8,7 @@ begin
 
   case
     when p_position_id = 1 then SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-                                FROM (with no_commission_users as materialized (select distinct opru.user_id as user_id
+                                FROM (with no_commission_users as materialized (select distinct opru.user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
                                                                                        inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                                        inner join brs.financial_details f on f.project_id = pd.project_id
@@ -17,7 +17,7 @@ begin
                                                                                 where current is true
                                                                                   and pay.position_id = 1
                                                                                 union
-                                                                                select distinct l.user_id as user_id
+                                                                                select distinct l.user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
                                                                                      inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                                        inner join brs.project_commission_ledger l
@@ -29,7 +29,7 @@ begin
                                                                                 where current is true
                                                                                   and pay.position_id = 1
                                                                                 except
-                                                                                select distinct pd.closer_user_id as user_id
+                                                                                select distinct pd.closer_user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
                                                                                          inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                                 where current is true
@@ -39,6 +39,7 @@ begin
                                              foo5.commission_adjustments as current_pay
                                       from (select closer_user_id,
                                                    closer_user,
+                                                   closer_employee_id,
                                                    total_commission total_commission,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
@@ -98,6 +99,7 @@ begin
                                                              0)) AS commission_adjustments
                                             from (SELECT d.closer_user_id,
                                                          d.closer_name             AS closer_user,
+                                                         d.closer_employee_id      AS closer_employee_id,
                                                          current_pay.amount_to_pay AS total_commission,
                                                          p2.id as payroll_id
                                                   FROM brs.project_details d
@@ -120,6 +122,7 @@ begin
                                              foo5.commission_adjustments as current_pay
                                       from (SELECT ncu.user_id,
                                                    concat(u.first_name, ' ', u.last_name) AS closer_user,
+                                                   ncu.closer_employee_id,
                                                    0::numeric                             AS total_commission,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
@@ -172,7 +175,7 @@ begin
                                                    0::numeric                             AS commission_adjustments
                                             FROM no_commission_users ncu
                                                    inner join flow.user u on u.id = ncu.user_id
-                                            GROUP BY ncu.user_id, u.first_name, u.last_name) as foo5)
+                                            GROUP BY ncu.user_id, ncu.closer_employee_id, u.first_name, u.last_name) as foo5)
                                        AS sub_rows
                                 into v_json;
                                 return v_json;
