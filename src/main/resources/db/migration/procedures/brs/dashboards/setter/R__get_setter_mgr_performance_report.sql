@@ -25,16 +25,14 @@ BEGIN
                ) as pitch_percentage
         from (select
             (select count(1)::bigint
-             from flow.project p
-                 inner join brs.project_details pd on pd.project_id = p.id
-                 inner join flow.contact c on c.id = p.contact_id
+             from brs.project_details pd
                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and case when up.end_date is not null
-                     then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
-                     else ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
+                     then ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
+                     else ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                      end
                  and (((case when pd.first_appointment_pitched is not null
                                  then pd.first_appointment_pitched
@@ -57,16 +55,14 @@ BEGIN
                  and pd.company_id = 3
             ) as total_appointments,
             (select count(1)::bigint
-             from flow.project p
-                 inner join brs.project_details pd on pd.project_id = p.id
-                 inner join flow.contact c on c.id = p.contact_id
+             from brs.project_details pd
                  inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS') and up.archived is not true)
              where pd.source in (525, 526) --(Setter Gen, Retargeted)
                  and case when up.end_date is not null
-                     then ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
-                     else ((p.date_created at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
+                     then ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between up.start_date and up.end_date
+                     else ((pd.project_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date >= up.start_date
                      end
                  and (((case when pd.first_appointment_pitched is not null
                                  then pd.first_appointment_pitched

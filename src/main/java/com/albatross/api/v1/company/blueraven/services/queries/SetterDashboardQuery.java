@@ -15,8 +15,7 @@ public class SetterDashboardQuery {
                (extract('year' from now()) || '-12-31')::date as "q4_end"
       )
       SELECT (select count(1)
-              from flow.project p
-                  inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
                   inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
@@ -40,8 +39,7 @@ public class SetterDashboardQuery {
                     end
              ) as "q1",
              (select count(1)
-              from flow.project p
-                  inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
                   inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
@@ -65,8 +63,7 @@ public class SetterDashboardQuery {
                     end
              ) as "q2",
              (select count(1)
-              from flow.project p
-                  inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
                   inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))
@@ -90,8 +87,7 @@ public class SetterDashboardQuery {
                     end
              ) as "q3",
              (select count(1)
-              from flow.project p
-                  inner join brs.project_details pd on pd.project_id = p.id
+              from brs.project_details pd
                   inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.primary_flag is true and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                         from flow.company_configuration_value
                                                                                                         where code = 'SETTER_POSITION_IDS'))

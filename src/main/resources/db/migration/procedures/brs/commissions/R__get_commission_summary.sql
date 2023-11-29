@@ -8,21 +8,18 @@ begin
 
   case
     when p_position_id = 1 then SELECT array_to_json(array_agg(row_to_json(sub_rows)))
-                                FROM (with no_commission_users as materialized (select distinct opru.user_id as user_id
+                                FROM (with no_commission_users as materialized (select distinct opru.user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
-                                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                                       inner join brs.project_details pd
-                                                                                                  on pd.project_id = p.id --and pd.closer_user_id = 2294153
+                                                                                       inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                                        inner join brs.financial_details f on f.project_id = pd.project_id
                                                                                        inner join brs.override_plan_receiving_user opru
                                                                                                   on opru.override_plan_id = f.override_plan_id
                                                                                 where current is true
                                                                                   and pay.position_id = 1
                                                                                 union
-                                                                                select distinct l.user_id as user_id
+                                                                                select distinct l.user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
-                                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                                       inner join brs.project_details pd on pd.project_id = p.id
+                                                                                     inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                                        inner join brs.project_commission_ledger l
                                                                                                   on l.project_id =
                                                                                                      pd.project_id
@@ -32,10 +29,9 @@ begin
                                                                                 where current is true
                                                                                   and pay.position_id = 1
                                                                                 except
-                                                                                select distinct pd.closer_user_id as user_id
+                                                                                select distinct pd.closer_user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
-                                                                                       inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                                       inner join brs.project_details pd on pd.project_id = p.id
+                                                                                         inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                                 where current is true
                                                                                   and pay.position_id = 1)
                                       select *,
@@ -43,6 +39,7 @@ begin
                                              foo5.commission_adjustments as current_pay
                                       from (select closer_user_id,
                                                    closer_user,
+                                                   closer_employee_id,
                                                    total_commission total_commission,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
@@ -102,6 +99,7 @@ begin
                                                              0)) AS commission_adjustments
                                             from (SELECT d.closer_user_id,
                                                          d.closer_name             AS closer_user,
+                                                         d.closer_employee_id      AS closer_employee_id,
                                                          current_pay.amount_to_pay AS total_commission,
                                                          p2.id as payroll_id
                                                   FROM brs.project_details d
@@ -124,6 +122,7 @@ begin
                                              foo5.commission_adjustments as current_pay
                                       from (SELECT ncu.user_id,
                                                    concat(u.first_name, ' ', u.last_name) AS closer_user,
+                                                   ncu.closer_employee_id,
                                                    0::numeric                             AS total_commission,
                                                    coalesce((select round(sum(total1), 2)
                                                              from (select project_id,
@@ -176,22 +175,21 @@ begin
                                                    0::numeric                             AS commission_adjustments
                                             FROM no_commission_users ncu
                                                    inner join flow.user u on u.id = ncu.user_id
-                                            GROUP BY ncu.user_id, u.first_name, u.last_name) as foo5)
+                                            GROUP BY ncu.user_id, ncu.closer_employee_id, u.first_name, u.last_name) as foo5)
                                        AS sub_rows
                                 into v_json;
                                 return v_json;
 ----This section is for setters
     when p_position_id = 4 then with all_project_ids as (select array_agg(DISTINCT pd.setter_user_id) as user_ids,
-                                                                array_agg(DISTINCT p.id)                 v_all_projects,
+                                                                array_agg(DISTINCT pd.project_id)                 v_all_projects,
                                                                 pay.id
                                                          from brs.payroll pay
-                                                                inner join flow.project p on p.id = any (pay.selected_project_ids)
-                                                                inner join brs.project_details pd on pd.project_id = p.id
+                                                              inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                          where current is true
                                                            and pay.position_id = 4
                                                          group by pay.id),
                                      users AS (SELECT opru1.user_id                               AS user_id,
-                                                      array_agg(DISTINCT p2.id)                   AS project_ids,
+                                                      array_agg(DISTINCT pd2.project_id)                   AS project_ids,
                                                       p.id,
                                                       a.v_all_projects,
                                                       (select coalesce(
@@ -201,13 +199,12 @@ begin
                                                                           else coalesce(
                                                                             (select sum(opru.m1_allocation)),
                                                                             0) end total
-                                                                 FROM flow.project p1
-                                                                        inner join brs.project_details pd on p1.id = pd.project_id
-                                                                        inner join brs.project_override po on po.project_id = p1.id
+                                                                 FROM brs.project_details pd
+                                                                        inner join brs.project_override po on po.project_id = pd.project_id
                                                                         inner join brs.override_plan op
                                                                                    on op.id = po.override_plan_id and op.position_id = 4
                                                                         inner join brs.override_plan_receiving_user opru on opru.override_plan_id = op.id
-                                                                 WHERE p1.id = any (a.v_all_projects)
+                                                                 WHERE pd.project_id = any (a.v_all_projects)
                                                                    and opru.user_id = opru1.user_id
                                                                  group by pd.cancelled_date), 0)) AS overrides_earned,
 
@@ -219,22 +216,21 @@ begin
                                                       inner join brs.override_plan op1
                                                                  on op1.id = opru1.override_plan_id and op1.position_id = 4
                                                       inner join brs.project_override po1 on po1.override_plan_id = op1.id
-                                                      INNER JOIN flow.project p2 ON p2.id = po1.project_id
-                                                      inner join brs.project_details pd2 on pd2.project_id = p2.id
+                                                      inner join brs.project_details pd2 on pd2.project_id = po1.project_id
                                                       INNER JOIN brs.payroll p
-                                                                 ON p2.id = any (p.selected_project_ids) and current is true
+                                                                 ON pd2.project_id = any (p.selected_project_ids) and current is true
                                                       inner join all_project_ids a on a.id = p.id
                                                WHERE not (opru1.user_id = any (user_ids))
                                                GROUP BY opru1.user_id, p.id, a.v_all_projects),
-                                     commission_users AS (SELECT array_agg(DISTINCT p.id) AS project_ids,
+                                     commission_users AS (SELECT array_agg(DISTINCT pd.project_id) AS project_ids,
                                                                  pd.setter_user_id        AS user_id,
                                                                  pay.id,
                                                                  a.v_all_projects,
                                                                  coalesce(brs.get_commissions_earned_for_setters(
-                                                                            array_agg(DISTINCT p.id), pay.period_end),
+                                                                            array_agg(DISTINCT pd.project_id), pay.period_end),
                                                                           0)              as commissions_earned,
                                                                  coalesce(
-                                                                   brs.get_ledger_totals(pay.id, array_agg(DISTINCT p.id), 4, 4),
+                                                                   brs.get_ledger_totals(pay.id, array_agg(DISTINCT pd.project_id), 4, 4),
                                                                    0)                     as ledger_totals,
                                                                  (select coalesce(
                                                                            (SELECT sum(case
@@ -247,9 +243,8 @@ begin
                                                                                             where opru.override_plan_id = op.id
                                                                                               and opru.user_id = opru2.user_id),
                                                                                            0) end) total
-                                                                            FROM flow.project p1
-                                                                                   inner join brs.project_details pd1 on p1.id = pd1.project_id
-                                                                                   inner join brs.project_override po on po.project_id = p1.id
+                                                                            FROM brs.project_details pd1
+                                                                                   inner join brs.project_override po on po.project_id = pd1.project_id
                                                                                    inner join brs.override_plan op
                                                                                               on op.id = po.override_plan_id and op.position_id = 4
                                                                                    inner join brs.override_plan_receiving_user opru2
@@ -257,7 +252,7 @@ begin
                                                                                                  opru2.override_plan_id
                                                                                                 and opru2.user_id =
                                                                                                     pd.setter_user_id
-                                                                            WHERE p1.id = any (a.v_all_projects)),
+                                                                            WHERE pd.project_id = any (a.v_all_projects)),
                                                                            0))            AS overrides_earned,
 
                                                                  coalesce(
@@ -267,12 +262,11 @@ begin
 
                                                                  coalesce(
                                                                    brs.get_ledger_adjustment_current_totals(pay.id,
-                                                                                                            array_agg(DISTINCT p.id),
+                                                                                                            array_agg(DISTINCT pd.project_id),
                                                                                                             1),
                                                                    0)                     as ledger_adjustments
                                                           FROM brs.payroll pay
-                                                                 INNER JOIN flow.project p ON p.id = any (pay.selected_project_ids)
-                                                                 inner join brs.project_details pd on pd.project_id = p.id
+                                                                 inner join brs.project_details pd on pd.project_id = any (pay.selected_project_ids)
                                                                  inner join all_project_ids a on a.id = pay.id
                                                           WHERE pay.current is true
                                                           GROUP BY pd.setter_user_id, pay.id, a.v_all_projects)

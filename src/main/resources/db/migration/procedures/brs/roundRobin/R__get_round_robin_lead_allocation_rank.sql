@@ -25,8 +25,7 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project p on p.id = pd.project_id
-                     left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                     left join flow.project_status_type pst on pst.id = pd.company_project_status_type_id and pst.id != 3
                  where pd.closer_appointment_start  >= now()  - interval '90 days'
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
@@ -55,7 +54,6 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_den
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project p on p.id = pd.project_id
                  where pd.closer_appointment_start >= now()  - interval '90 days'
                      and pd.source not in (523,524,530)
                      and pd.company_id = 3
@@ -64,8 +62,7 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_num
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project p on p.id = pd.project_id
-                     left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                     left join flow.project_status_type pst on pst.id = pd.company_project_status_type_id and pst.id != 3
                  where pd.closer_appointment_start  >= now()  - (p_time_interval ||'day')::interval
                      and pd.source not in (523,524,530)
                      and final_design_signed_date is not null
@@ -92,7 +89,6 @@ BEGIN
                  select rru.user_id, count(pd.id) as lead_gen_den
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project p on p.id = pd.project_id
                  where pd.closer_appointment_start  >= now()  - (p_time_interval ||'day')::interval
                      and pd.source not in (523,524,530)
                      and pd.company_id = 3
@@ -101,8 +97,7 @@ BEGIN
                  select rru.user_id, count(pd.id)  as self_gen
                  from round_robin_users rru
                      left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project p on p.id = pd.project_id
-                     left join flow.project_status_type pst on pst.id = p.company_project_status_type_id and pst.id != 3
+                     left join flow.project_status_type pst on pst.id = pd.company_project_status_type_id and pst.id != 3
                  where greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
                                 utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
                      and pd.source in (523,524,530)

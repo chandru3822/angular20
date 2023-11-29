@@ -12,6 +12,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.postgresql.util.PGobject;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +30,7 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class ProposalVersionService {
+//TODO: don't allow edit of archived items
 
   private final SecurityService securityService;
   private final SqlCache sqlCache;
@@ -148,10 +150,7 @@ public class ProposalVersionService {
   public Optional<ProposalCustomValuesRow> updateCustomFieldValue(
     Long versionId, String objectCode, ProposalCustomGroup group) {
 
-    getProposalVersion(versionId)
-      .filter(pv -> ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
-      .orElseThrow(
-        () -> new RuntimeException("Proposal version not found or not eligible for edits"));
+    final ProposalVersion proposalVersion = getDraftProposalSettingsOrElseThrow(versionId);
 
     final var currentUser = securityService.getCurrentUser();
     var rowId = group.rowId() != null ? group.rowId() : UUID.randomUUID();
@@ -162,7 +161,7 @@ public class ProposalVersionService {
         proposalCustomFieldValue ->
         {
           HashMap<String, Object> values = new HashMap<>();
-          values.put("proposalVersionId", versionId);
+          values.put("proposalVersionId", proposalVersion.getId());
           values.put("groupUUID", rowId);
           values.put("objectCode", objectCode);
           values.put("fieldId", proposalCustomFieldValue.id());
@@ -203,8 +202,6 @@ public class ProposalVersionService {
   }
 
   /**
-   * This does a hard delete and removes all values associated to the field group
-   *
    * @param versionId
    * @param objectCode
    * @param groupUUID
@@ -215,15 +212,10 @@ public class ProposalVersionService {
     Long versionId, String objectCode, UUID groupUUID) {
     final var currentUser = securityService.getCurrentUser();
 
-    final ProposalVersion proposalVersion =
-      getProposalVersion(versionId)
-        .filter(pv -> ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
-        .orElseThrow(
-          () -> new RuntimeException("Proposal version not found or not eligible for edits"));
+    final ProposalVersion proposalVersion = getDraftProposalSettingsOrElseThrow(versionId);
 
     final Optional<ProposalCustomValuesRow> proposalCustomFieldValuesByGroupUUID =
-      getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID)
-        .filter(row -> row.getVersionId().equals(versionId));
+      getProposalCustomFieldValuesByGroupUUID(proposalVersion.getId(), objectCode, groupUUID);
 
     // if we have a current value for this group and version then just delete it
     if (proposalCustomFieldValuesByGroupUUID.isPresent()) {
@@ -251,33 +243,38 @@ public class ProposalVersionService {
     Long versionId, String objectCode, UUID groupUUID) {
     final var currentUser = securityService.getCurrentUser();
 
-    final ProposalVersion proposalVersion =
-      getProposalVersion(versionId)
-        .filter(pv -> ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
-        .orElseThrow(
-          () -> new RuntimeException("Proposal version not found or not eligible for edits"));
+    final ProposalVersion proposalVersion = getDraftProposalSettingsOrElseThrow(versionId);
+
+    Map<String, Object> params = Map.of(
+      "currentUserId", currentUser.getId(),
+      "groupUUID", groupUUID,
+      "versionId", proposalVersion.getId());
 
     final Optional<ProposalCustomValuesRow> proposalCustomFieldValuesByGroupUUID =
-      getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID)
-        .filter(row -> row.getVersionId().equals(versionId));
+      getProposalCustomFieldValuesByGroupUUID(proposalVersion.getId(), objectCode, groupUUID)
+        .filter(row -> row.getVersionId().equals(proposalVersion.getId()));
 
     // if we have a current value for this group and version then just delete it
     if (proposalCustomFieldValuesByGroupUUID.isPresent()) {
-      sqlCache.updateBySql(
-        ProposalToolQuery.deleteCustomFieldGroup,
-        Map.of(
-          "currentUserId", currentUser.getId(),
-          "groupUUID", groupUUID,
-          "versionId", versionId));
+      sqlCache.updateBySql(ProposalToolQuery.deleteCustomFieldGroup, params);
     }
 
-    sqlCache.updateBySql(
-      ProposalToolQuery.archiveCustomFieldGroup,
-      Map.of(
-        "currentUserId", currentUser.getId(),
-        "groupUUID", groupUUID, "versionId", versionId));
+    sqlCache.updateBySql(ProposalToolQuery.archiveCustomFieldGroup, params);
 
-    return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID);
+    return getProposalCustomFieldValuesByGroupUUID(versionId, objectCode, groupUUID)
+      .map(row -> {
+        //because we are in a transaction these values aren't properly updated, so we manually set them here
+        row.setVersionId(versionId);
+        row.setArchived(true);
+        return row;
+      });
+  }
+
+  private ProposalVersion getDraftProposalSettingsOrElseThrow(@NonNull Long versionId) {
+    return getProposalVersion(versionId)
+      .filter(pv -> ProposalVersionStatus.DRAFT.equals(pv.getStatus()))
+      .orElseThrow(
+        () -> new RuntimeException("Proposal version not found or not eligible for edits"));
   }
 
   private Optional<ProposalCustomValuesRow> getProposalCustomFieldValuesByGroupUUID(
@@ -288,24 +285,17 @@ public class ProposalVersionService {
         Map.of("objectCode", objectCode, "versionId", versionId, "groupUUID", groupUUID),
         new ColumnMapRowMapper());
 
-    return query.stream().map(getMapper(objectMapper)).filter(Objects::nonNull).findFirst();
+    return query.stream().map(getMapper(objectMapper, ProposalCustomValuesRow.class)).filter(Objects::nonNull).findFirst();
   }
 
   public List<ProposalCustomValuesRow> getProposalCustomFieldValues(
     Long versionId, String objectCode) {
 
+    Map<String, Object> params = Map.of("objectCode", objectCode, "versionId", versionId);
     final List<Map<String, Object>> query =
-      sqlCache.queryBySql(
-        ProposalToolQuery.proposalVersionCustomFieldValues,
-        Map.of("objectCode", objectCode, "versionId", versionId),
-        new ColumnMapRowMapper());
+      sqlCache.queryBySql(ProposalToolQuery.proposalVersionCustomFieldValues, params, new ColumnMapRowMapper());
 
-    return query.stream().map(getMapper(objectMapper)).filter(Objects::nonNull).toList();
-  }
-
-  public List<Long> getProposalValuesByFieldId(@NonNull Long versionId, @NonNull Long fieldId) {
-    return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldId,
-      Map.of("versionId", versionId, "fieldId", fieldId), new SingleColumnRowMapper<>(Long.class));
+    return query.stream().map(getMapper(objectMapper, ProposalCustomValuesRow.class)).filter(Objects::nonNull).toList();
   }
 
   //  TODO: cacheable
@@ -336,6 +326,23 @@ public class ProposalVersionService {
     }
   }
 
+  public ProposalVersionHistoryChangeSet getChangeHistory(@NonNull Long versionId) {
+
+    ProposalVersion proposalVersion = getProposalVersion(versionId).orElseThrow(() -> new ApiException("Proposal Version doesn not exist"));
+
+    List<ProposalVersionHistory> history = sqlCache.queryBySql(ProposalToolQuery.findVersionHistoryByVersionId, Map.of("versionId", versionId), new ColumnMapRowMapper())
+      .stream()
+      .map(getMapper(objectMapper, ProposalVersionHistory.class))
+      .filter(Objects::nonNull)
+      .toList();
+
+    ProposalVersionHistoryChangeSet historyChangeSet = new ProposalVersionHistoryChangeSet();
+    BeanUtils.copyProperties(proposalVersion, historyChangeSet);
+    historyChangeSet.setHistory(history);
+
+    return historyChangeSet;
+  }
+
   /***
    * Returns a list of proposal value ids available after filtering by the custom field and value.
    * This result set excludes values from the custom field instead of including them
@@ -356,12 +363,12 @@ public class ProposalVersionService {
     return sqlCache.queryBySql(ProposalToolQuery.findFilterableValuesByFieldIdAndValue, params, new SingleColumnRowMapper<>(Long.class));
   }
 
-  private Function<Map<String, Object>, ProposalCustomValuesRow> getMapper(ObjectMapper om) {
+  private <T> Function<Map<String, Object>, T> getMapper(ObjectMapper om, Class<T> type) {
     return m -> {
       final Object row = m.get("row");
       if (row instanceof PGobject) {
         try {
-          return om.readValue(((PGobject) row).getValue(), ProposalCustomValuesRow.class);
+          return om.readValue(((PGobject) row).getValue(), type);
         } catch (JsonProcessingException e) {
           log.error("Error reading proposal", e);
         }

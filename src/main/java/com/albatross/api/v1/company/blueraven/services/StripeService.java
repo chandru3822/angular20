@@ -115,7 +115,7 @@ public class StripeService {
             if (null != session.getPaymentIntent() && null != projectId) {
                 //if there is a payment id then save it to the process step it came from
                 final Map<String, Object> params = Map.of("projectId", projectId, "userId", 99999999,
-                        "cfgaId", 26191, "value", session.getPaymentIntent());
+                        "cfgaId", 26224, "value", session.getPaymentIntent());
                 sqlCache.queryBySql(CustomFieldValueQuery.updateValueUsingFunction, params, String.class);
             }
         } catch (StripeException e) {

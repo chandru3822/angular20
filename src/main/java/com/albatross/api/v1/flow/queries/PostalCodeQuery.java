@@ -90,13 +90,15 @@ public class PostalCodeQuery {
 
   //language=PostgreSQL
   public final static String insertPostalCode = """
-      insert into flow.postal_code(country_code, postal_code, place_name, active, state_id)
-      values ('US', :postalCode, :placeName, true, :stateId)
+      insert into flow.postal_code(country_code, postal_code, place_name, active, state_id, created_by_id, date_created, date_modified)
+      values ('US', :postalCode, :placeName, true, :stateId, :userId, now(), now())
       on conflict (postal_code)  do update
       set active = true,
           archived = false,
           place_name = :placeName,
-          state_id = :stateId
+          state_id = :stateId,
+          date_modified = now(),
+          modified_by_id = :userId
       returning id
   """;
 

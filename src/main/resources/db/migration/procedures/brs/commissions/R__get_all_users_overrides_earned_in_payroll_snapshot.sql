@@ -32,7 +32,7 @@ BEGIN
       SELECT
         CONCAT(u.first_name, ' ', u.last_name) AS closer,
         pcl.project_id,
-        pd.project_name,
+        pd.project_name::TEXT,
         pcs.system_size,
         pcl.amount AS overrides_earned,
         (select sum(pcl1.paid_to_date)
@@ -65,7 +65,7 @@ BEGIN
       group by 1,2,3,4,5,8,9,10,11,12;
     when v_position_id = 4 then RETURN QUERY select results.closer,
                                                     results.project_id::bigint,
-                                                    results.customer_name,
+                                                    results.customer_name::TEXT,
                                                     results.system_size,
                                                     results.overrides_earned,
                                                     results.prior_pay,
@@ -76,19 +76,17 @@ BEGIN
                                                     results.milestone2_percentage,
                                                     results.plan_total
                                              from (select u.first_name || ' ' || u.last_name      as closer,
-                                                          p.id                                    as project_id,
-                                                          p.project_name                          as customer_name,
+                                                          pd.project_id                           as project_id,
+                                                          pd.project_name                          as customer_name,
                                                           pd.system_size,
                                                           coalesce(sum(amount), 0)                   overrides_earned,
                                                           (select coalesce(sum(paid_to_date), 0) prior_pay
                                                            from brs.project_commission_ledger pcl1
-                                                                  inner join flow.project p1
-                                                                             on p1.id = pcl1.project_id
                                                                   inner join flow.user u1
                                                                              on u1.id = pcl1.user_id
                                                            where ledger_type_id = 3
                                                              and payroll_id < p_payroll_id
-                                                             and p1.id = p.id
+                                                             and pcl1.project_id = pd.project_id
                                                              and pcl1.user_id = pcl.user_id
                                                              and pcl1.position_id = 4)            as prior_pay,
                                                           sum(amount) - sum(paid_to_date)         as current_pay,
@@ -98,10 +96,8 @@ BEGIN
                                                           opru.m2_allocation                      as milestone2_percentage,
                                                           op.total                                as plan_total
                                                    from brs.project_commission_ledger pcl
-                                                          inner join flow.project p
-                                                                     on p.id = pcl.project_id
-                                                          inner join brs.project_details pd on pd.project_id = p.id
-                                                          inner join brs.project_override po on po.project_id = p.id
+                                                          inner join brs.project_details pd on pd.project_id = pcl.project_id
+                                                          inner join brs.project_override po on po.project_id = pd.project_id
                                                           inner join brs.override_plan op on op.id = po.override_plan_id
                                                           inner join flow.user u
                                                                      on u.id = pcl.user_id
@@ -111,7 +107,7 @@ BEGIN
                                                    where ledger_type_id = 3
                                                      and payroll_id = p_payroll_id
                                                      and pcl.position_id = 4
-                                                   group by closer, p.id, p.project_name, pd.system_size, pcl.user_id,
+                                                   group by closer, pd.project_id, pd.project_name, pd.system_size, pcl.user_id,
                                                             op.name,
                                                             opru.m1_allocation, opru.m2_allocation, op.total
                                                    order by closer) as results

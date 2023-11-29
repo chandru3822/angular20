@@ -28,7 +28,7 @@ BEGIN
     from (
       select row_number() over (order by (concat(c.first_name, ' ', c.last_name))::bytea),
              concat(c.first_name, ' ', c.last_name) as customer_name,
-             p.id,
+             pd.project_id as id,
              pd.source_name as source,
              (case when pd.first_appointment_pitched is not null
                 then pd.first_appointment_pitched
@@ -38,9 +38,8 @@ BEGIN
               else pd.closer_appointment_start
               end) as appointment_date,
               lov.name as appointment_outcome
-            from flow.project p
-              inner join brs.project_details pd on pd.project_id = p.id
-              inner join flow.contact c on c.id = p.contact_id
+            from brs.project_details pd
+              inner join flow.contact c on c.id = pd.contact_id
               inner join flow.user_position up on (up.user_id = pd.setter_user_id and up.position_id in (select unnest(string_to_array(value, ',')::bigint[])
                                                                                                          from flow.company_configuration_value
                                                                                                          where code = 'SETTER_POSITION_IDS') and up.primary_flag is true and up.archived is not true)

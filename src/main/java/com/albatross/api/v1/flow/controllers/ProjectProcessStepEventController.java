@@ -4,10 +4,7 @@ import com.albatross.api.pubsub.PubSubService;
 import com.albatross.api.pubsub.model.EventChannel;
 import com.albatross.api.pubsub.model.ProjectTagMessage;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.CompanyEventStatusType;
-import com.albatross.api.v1.flow.model.CustomFieldValue;
-import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.services.ProjectProcessStepEventService;
 import lombok.Data;
@@ -59,11 +56,17 @@ public class ProjectProcessStepEventController {
     return projectProcessStepEventService.getCancelledAssignedToPpsEvent(eventId);
   }
 
-  @PutMapping(value = "/{eventId}")
-  public Optional<ProjectProcessStepEvent> savePpsEventDetails(
-    @PathVariable Long ppsId, @PathVariable Long eventId, @RequestBody SaveEventRequest saveEvent)
+  @PutMapping(value = "/{eventId}/{forceSave}")
+  public ResponseEntity<Object> savePpsEventDetails(
+    @PathVariable Long ppsId, @PathVariable Long eventId, @RequestBody SaveEventRequest saveEvent, @PathVariable Optional<Boolean> forceSave)
     throws Exception {
-    return projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent);
+    if(!forceSave.isPresent() || !forceSave.get()){
+      List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
+      if(conflictList != null && conflictList.size() > 0){
+        return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+      }
+    }
+    return ResponseEntity.ok(projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent));
   }
 
   @GetMapping(

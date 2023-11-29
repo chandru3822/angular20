@@ -106,9 +106,9 @@ BEGIN
                                              on cpa2.commission_plan_id = foo.commission_plan_id and
                                                 ((foo.pitched_count between cpa2.min and cpa2.max) or
                                                  (foo.pitched_count > cpa2.max)))
-          SELECT p.id::bigint                                                                                 as project_id,
-                 c.id::bigint                                                                                 as customer_id,
-                 p.project_name,
+          SELECT pd.project_id::bigint                                                                                 as project_id,
+                 pd.contact_id::bigint                                                                                 as customer_id,
+                 pd.project_name::VARCHAR,
                  u.id::bigint                                                                                 as setter_user_id,
                  u.first_name || ' ' || u.last_name                                                   AS setter,
                  (ust.user_status_type = 'Terminated')                                                AS setter_is_terminated,
@@ -133,26 +133,26 @@ BEGIN
                                INNER JOIN brs.override_plan_receiving_user opru
                                           ON opru.override_plan_id = op.id
                                INNER JOIN flow.user u ON u.id = opru.user_id
-                        where p1.id = p.id) AS _overrides_per_user),
+                        where p1.id = pd.project_id) AS _overrides_per_user),
                  (SELECT op.name AS override_plan
                   FROM brs.override_plan op
                          inner join brs.project_override po on po.override_plan_id = op.id
-                  WHERE po.project_id = p.id
+                  WHERE po.project_id = pd.project_id
                     and op.position_id = 4)                                                           AS override_plan,
                  (SELECT op.id AS override_plan_id
                   FROM brs.override_plan op
                          inner join brs.project_override po on po.override_plan_id = op.id
-                  WHERE po.project_id = p.id
+                  WHERE po.project_id = pd.project_id
                     and op.position_id = 4)::bigint                                                           AS override_plan_id,
                  (SELECT cp.name AS commission_plan
                   FROM brs.commission_plan cp
                          inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                  WHERE pc.project_id = p.id
+                  WHERE pc.project_id = pd.project_id
                     and cp.position_id = 4)                                                           AS commission_plan,
                  (SELECT cp.id AS commission_plan_id
                   FROM brs.commission_plan cp
                          inner join brs.project_commission pc on pc.commission_plan_id = cp.id
-                  WHERE pc.project_id = p.id
+                  WHERE pc.project_id = pd.project_id
                     and cp.position_id = 4)::bigint                                                           AS commission_plan_id,
 
                  0::numeric                                                                           AS total_commissions,
@@ -160,7 +160,7 @@ BEGIN
                    (select op2.total
                     from brs.override_plan op2
                            inner join brs.project_override po on op2.id = po.override_plan_id
-                    where po.project_id = p.id
+                    where po.project_id = pd.project_id
                       and op2.position_id = 4),
                    0)                                                                                 AS total_overrides,
                  coalesce(
@@ -173,37 +173,33 @@ BEGIN
                    0)                                                                                 AS commission_earned,
                  coalesce(
                    (SELECT case
-                             when pd.cancelled_date is not null then
+                             when pd1.cancelled_date is not null then
                                0::numeric
                              else coalesce((select sum(m1_allocation)
                                             from brs.override_plan_receiving_user opru
                                             where opru.override_plan_id = op.id), 0) end total
-                    FROM flow.project p1
-                           inner join brs.project_details pd on p1.id = pd.project_id
-                           inner join brs.project_override po on po.project_id = p1.id
+                    FROM brs.project_details pd1
+                           inner join brs.project_override po on po.project_id = pd1.project_id
                            inner join brs.override_plan op on op.id = po.override_plan_id and op.position_id = 4
-                    WHERE p1.id = p.id),
+                    WHERE pd1.project_id = pd.project_id),
                    0)                                                                                 AS override_earned,
-                 coalesce(brs.get_ledger_adjustment_current_totals(p_payroll_id, array [p.id], 1),
+                 coalesce(brs.get_ledger_adjustment_current_totals(p_payroll_id, array [pd.project_id], 1),
                           0)                                                                          AS commission_adjustments,
                  --TODO implement this at a later date.
                  0::numeric                                                                           AS override_adjustments,
                  (SELECT coalesce(sum(amount), 0)
                   FROM brs.project_commission_ledger dcl
-                  WHERE dcl.project_id = p.id::bigint
+                  WHERE dcl.project_id = pd.project_id::bigint
                     AND dcl.ledger_type_id = 1
                     and dcl.position_id = 4)
                                                                                                       AS commission_paid_to_date,
                  (SELECT coalesce(sum(dcl.paid_to_date), 0)
                   FROM brs.project_commission_ledger dcl
-                  WHERE dcl.project_id = p.id
+                  WHERE dcl.project_id = pd.project_id
                     and dcl.ledger_type_id = 3
                     and dcl.position_id = 4)                                                          AS overrides_paid_to_date
-          FROM flow.project p
-                 -- inner join milestone1 mop on mop.project_id = p.id
-                 inner join brs.project_details pd on pd.project_id = p.id
+          FROM brs.project_details pd
                  inner join details d on d.setter_user_id = pd.setter_user_id
-                 inner join flow.contact c on c.id = p.contact_id
                  INNER JOIN flow.user u ON u.id = pd.setter_user_id
                  inner join flow.company_user_status cus on cus.user_id = u.id
                  inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
@@ -211,12 +207,12 @@ BEGIN
           WHERE pd.setter_milestone_pay::date >= '2021-04-15'
             and CASE
                   WHEN p_project_ids IS NOT NULL
-                    THEN p.id = ANY (p_project_ids)
+                    THEN pd.project_id = ANY (p_project_ids)
                   ELSE
                     pd.setter_milestone_pay::date <= v_period_end_date END
             AND CASE
                   WHEN p_contact_id IS NOT NULL
-                    THEN c.id = p_contact_id
+                    THEN pd.contact_id = p_contact_id
                   ELSE 1 = 1 END
             AND CASE
                   WHEN p_sales_rep IS NOT NULL
@@ -226,7 +222,7 @@ BEGIN
                   WHEN p_cancel_start_date IS NOT NULL
                     THEN pd.cancelled_date::date BETWEEN p_cancel_start_date AND p_cancel_end_date
                   ELSE 1 = 1 END
-          ORDER BY p.project_name) AS foo
+          ORDER BY pd.project_name) AS foo
     WHERE CASE
             WHEN v_is_show_all IS TRUE
               THEN not COALESCE(foo.commission_earned, 0) + COALESCE(foo.override_earned, 0) +

@@ -72,30 +72,40 @@ public class ProposalToolQuery {
 
   //language=PostgreSQL
   public static final String proposalVersionCustomFieldValues = """
-    with version_values as (
-        select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
-                                                                             custom_field_group_assignment_id,
-                                                                             proposal_group_uuid,
-                                                                             proposal_version_id,
-                                                                             value,
-                                                                             field_id,
-                                                                             field_code,
-                                                                             modified_by_id,
-                                                                             modified_by,
-                                                                             date_modified
-        from brs.proposal_version_custom_field_value_vw
-        where proposal_version_id <= :versionId
-          and object_code = :objectCode
-          and proposal_group_uuid not in (
-            select distinct proposal_group_uuid
-            from brs.proposal_version_custom_field_group
-            where archived is not null
-              and proposal_version_id <= :versionId)
-        order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
-    select json_build_object('pk',  proposal_group_uuid, 'versionId', max(proposal_version_id))::jsonb || json_object_agg(field_id, value)::jsonb as row
-    from version_values
-    group by proposal_group_uuid
-     """;
+    with version_values as (select distinct on ( vw.proposal_group_uuid, vw.custom_field_group_assignment_id ) vw.id,
+                                                                                                               vw.custom_field_group_assignment_id,
+                                                                                                               vw.proposal_group_uuid,
+                                                                                                               vw.proposal_version_id,
+                                                                                                               vw.value,
+                                                                                                               vw.field_id,
+                                                                                                               vw.field_code,
+                                                                                                               vw.modified_by_id,
+                                                                                                               vw.modified_by,
+                                                                                                               vw.date_modified
+                            from brs.proposal_version_custom_field_value_vw vw
+                            where vw.proposal_version_id <= :versionId
+                              and vw.object_code = :objectCode
+                              and vw.proposal_group_uuid not in (select distinct g.proposal_group_uuid
+                                                                 from brs.proposal_version_custom_field_group g
+                                                                 where g.archived is not null
+                                                                   and g.proposal_version_id <=
+                                                                       (select proposal_version_id
+                                                                        from brs.primary_company_proposal_version
+                                                                        where company_id = 3
+                                                                        limit 1))
+                            order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.id desc)
+         select json_build_object('pk', vv.proposal_group_uuid,
+                                        'archived', grp.archived is not null,
+                                        'versionId', max(case
+                                                             when grp.archived is null then vv.proposal_version_id
+                                                             else :versionId end))::jsonb ||
+                      json_object_agg(vv.field_id, vv.value)::jsonb as row
+               from version_values vv
+                        left join brs.proposal_version_custom_field_group grp
+                                  on grp.proposal_group_uuid = vv.proposal_group_uuid
+                                      and grp.proposal_version_id = :versionId
+               group by vv.proposal_group_uuid, archived
+         """;
 
   //language=PostgreSQL
   public static final String proposalVersionCustomFieldValuesByUUID = """
@@ -307,60 +317,120 @@ public class ProposalToolQuery {
     """;
 
   public static final String findFilterableValuesByFieldIdAndValue = """
-with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
-                                                                                                     proposal_group_uuid,
-                                                                                                     value,
-                                                                                                     field_id
-                        from brs.proposal_version_custom_field_value_vw
-                        where proposal_version_id <= :versionId
-                          and proposal_group_uuid not in (select distinct proposal_group_uuid
-                                                          from brs.proposal_version_custom_field_group
-                                                          where archived is not null
-                                                            and proposal_version_id <= :versionId)
-                        order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
-     grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
-                                                'fields',
-                                                array_to_json(array_agg(jsonb_strip_nulls(
-                                                            jsonb_build_object('fieldId', vv.field_id,
-                                                                               'flowCustomFieldId',
-                                                                               cf.flow_custom_field_id) || vv.value)))
-                                 ) as row
-                      from version_values vv
-                               inner join brs.custom_field cf on cf.id = vv.field_id
-                      group by proposal_group_uuid),
-     filtered as (select jsonb_path_query(row,
-                                          '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
-                                          jsonb_build_object('targetFieldId', :fieldId)) as row
-                  from grouped_rows g
-                           left join lateral jsonb_path_query(row,
-                                                              '$.fields[*] ? (@.fieldId == $filterFieldId || @.flowCustomFieldId == $filterFieldId)',
-                                                              jsonb_build_object('filterFieldId', :filterFieldId)) b
-                                     on true
-                  where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId )',
-                                          jsonb_build_object('targetFieldId', :fieldId))
-                    and (b is null or
-                         jsonb_array_length(
-                                 jsonb_path_query_array(b -> 'intArrayValue',
-                                                        '$[*] ? (@ == $filterFieldValue)',
-                                                        jsonb_build_object('filterFieldValue', :filterFieldValue))) <= 0))
-      select distinct (row -> 'intValue') from filtered
-    """;
-
-  public static final String findFilterableValuesByFieldId = """
     with version_values as (select distinct on ( proposal_group_uuid, custom_field_group_assignment_id ) id,
                                                                                                          proposal_group_uuid,
                                                                                                          value,
                                                                                                          field_id
                             from brs.proposal_version_custom_field_value_vw
                             where proposal_version_id <= :versionId
-                              and field_id = :fieldId
                               and proposal_group_uuid not in (select distinct proposal_group_uuid
                                                               from brs.proposal_version_custom_field_group
                                                               where archived is not null
                                                                 and proposal_version_id <= :versionId)
-                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc)
-    select  distinct unnest(array_remove(array [(value -> 'intValue')::int], null) ||
-              array((select jsonb_array_elements_text(value -> 'intArrayValue')))::int[])
-    from version_values;
-    """;
+                            order by proposal_group_uuid, custom_field_group_assignment_id, id desc),
+         grouped_rows as (select jsonb_build_object('pk', proposal_group_uuid,
+                                                    'fields',
+                                                    array_to_json(array_agg(jsonb_strip_nulls(
+                                                                jsonb_build_object('fieldId', vv.field_id,
+                                                                                   'flowCustomFieldId',
+                                                                                   cf.flow_custom_field_id) || vv.value)))
+                                     ) as row
+                          from version_values vv
+                                   inner join brs.custom_field cf on cf.id = vv.field_id
+                          group by proposal_group_uuid),
+         filtered as (select jsonb_path_query(row,
+                                              '$.fields[*] ? (@.fieldId == $targetFieldId || @.flowCustomFieldId == $targetFieldId)',
+                                              jsonb_build_object('targetFieldId', :fieldId)) as row
+                      from grouped_rows g
+                               left join lateral jsonb_path_query(row,
+                                                                  '$.fields[*] ? (@.fieldId == $filterFieldId || @.flowCustomFieldId == $filterFieldId)',
+                                                                  jsonb_build_object('filterFieldId', :filterFieldId)) b
+                                         on true
+                      where jsonb_path_exists(row, '$.fields[*] ? (@.fieldId == $targetFieldId )',
+                                              jsonb_build_object('targetFieldId', :fieldId))
+                        and (b is null or
+                             jsonb_array_length(
+                                     jsonb_path_query_array(b -> 'intArrayValue',
+                                                            '$[*] ? (@ == $filterFieldValue)',
+                                                            jsonb_build_object('filterFieldValue', :filterFieldValue))) <= 0))
+          select distinct (row -> 'intValue') from filtered
+        """;
+
+  public static final String findVersionHistoryByVersionId = """
+    with version_values
+         as (select distinct on ( vw.proposal_group_uuid, vw.custom_field_group_assignment_id ) vw.object_code,
+                                                                                                vw.object_type,
+                                                                                                vw.proposal_group_uuid,
+                                                                                                vw.custom_field_group_assignment_id,
+                                                                                                vw.proposal_version_id,
+                                                                                                vw.field_id,
+                                                                                                vw.value                                                                                                                          current_value,
+                                                                                                lag(vw.value)
+                                                                                                over (partition by object_code, proposal_group_uuid, custom_field_group_assignment_id, field_id order by proposal_version_id ) as previous_value,
+                                                                                                vw.modified_by_id,
+                                                                                                vw.modified_by,
+                                                                                                vw.date_modified
+             from brs.proposal_version_custom_field_value_vw vw
+             where vw.proposal_version_id <= :versionId
+               and vw.proposal_group_uuid not in (select distinct g.proposal_group_uuid
+                                                  from brs.proposal_version_custom_field_group g
+                                                  where g.archived is not null
+                                                    and g.proposal_version_id <=
+                                                        (select id
+                                                         from brs.proposal_version
+                                                         where id < :versionId
+                                                           and company_id = 3
+                                                         order by date_modified desc
+                                                         limit 1))
+             order by vw.proposal_group_uuid, vw.custom_field_group_assignment_id, vw.id desc),
+     x as (select vv.proposal_group_uuid,
+                  grp.archived is not null                               as archived,
+                  vv.object_type,
+                  cf.field_name,
+                  vv.current_value,
+                  vv.previous_value,
+                  case
+                      when grp.archived is null then vv.proposal_version_id
+                      else grp.proposal_version_id end                   as version_id,
+                  case
+                      when grp.archived is null then vv.modified_by
+                      else concat_ws(' ', u.first_name, u.last_name) end as modified_by,
+                  case
+                      when grp.archived is null then vv.date_modified
+                      else grp.date_modified end                         as date_modified
+           from version_values vv
+                    inner join brs.custom_field cf on cf.id = vv.field_id
+                    left join brs.proposal_version_custom_field_group grp
+                              on grp.proposal_group_uuid = vv.proposal_group_uuid
+                                  and grp.proposal_version_id = :versionId
+                                  and grp.archived is not null
+                    left join flow."user" u on grp.modified_by_id = u.id),
+     grouped_rows as (select max(x.version_id)                                                                   as max_version_id,
+                             jsonb_build_object(
+                                     'objectType', object_type,
+                                     'pk', proposal_group_uuid,
+                                     'archived', archived,
+                                     'modifiedDate', max(date_modified),
+                                     'modifiedBy', ( (select x2.modified_by
+                                                      from x as x2
+                                                      where x2.proposal_group_uuid = x.proposal_group_uuid
+                                                        and x2.object_type = x.object_type
+                                                        and x2.archived = x.archived
+                                                        and x2.date_modified = max(x.date_modified)
+                                                      order by x2.date_modified desc
+                                                      limit 1)),
+                                     'changes', jsonb_agg(jsonb_strip_nulls(jsonb_build_object('fieldName', field_name,
+                                                                                               'currentValue', current_value,
+                                                                                               'previousValue', previous_value,
+                                                                                               'versionId', x.version_id,
+                                                                                               'modifiedBy', modified_by,
+                                                                                               'modifiedDate', date_modified)))) as row
+                      from x
+                      group by proposal_group_uuid, archived, object_type
+                      order by object_type, proposal_group_uuid, archived)
+select row
+from grouped_rows
+where max_version_id = :versionId
+                            """;
+
 }

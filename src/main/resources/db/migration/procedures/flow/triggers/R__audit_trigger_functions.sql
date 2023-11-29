@@ -559,7 +559,7 @@ BEGIN
                                  city, postal_code, time_zone, latitude, longitude, company_state_id,
                                  company_country_id, cancelled_date)
   values (new.id, new.contact_id, new.company_process_id, new.project_name,
-          new.date_created, new.date_modified, new.created_by_id, new.modified_by_id,
+          new.date_created, now(), new.created_by_id, new.modified_by_id,
           new.company_project_status_type_id, new.user_position_id, new.street1, new.street2,
           new.city, new.postal_code, new.time_zone, new.latitude, new.longitude, new.company_state_id,
           new.company_country_id, new.cancelled_date);
@@ -601,7 +601,7 @@ BEGIN
   values (new.id, new.contact_type_id, new.first_name, new.last_name,
           new.street1, new.street2, new.city, new.postal_code, new.phone, new.email,
           new.prospect_status, new.mobile, new.mailing_street1, new.mailing_street2,
-          new.mailing_city, new.mailing_postal_code, new.date_created, new.date_modified,
+          new.mailing_city, new.mailing_postal_code, new.date_created, now(),
           new.created_by_id, new.modified_by_id, new.company_id, new.archived, new.title,
           new.owner_user_position_id, new.migrate_lead_id, new.company_state_id,
           new.mailing_company_state_id, new.company_country_id, new.latitude, new.longitude);
@@ -630,7 +630,7 @@ BEGIN
                              date_created,date_modified,default_appointment_length)
   values (new.id, new.org_name, new.parent_org_id, new.org_type_id,
           new.active_flag, new.archived, new.schedulable, new.company_timezone_id, new.company_state_id,
-          new.created_by_id, new.modified_by_id, new.date_created, new.date_modified,
+          new.created_by_id, new.modified_by_id, new.date_created, now(),
           new.default_appointment_length);
 
   RETURN NULL;
@@ -656,7 +656,7 @@ BEGIN
                               username, archived, uuid, expiry_date)
   values (new.id, new.first_name, new.last_name, new.email,
           new.password, new.phone_number, new.created_by_id, new.date_created,
-          new.modified_by_id, new.date_modified, new.default_company_id,
+          new.modified_by_id, now(), new.default_company_id,
           new.username, new.archived, new.uuid, new.expiry_date);
 
 
@@ -685,7 +685,7 @@ BEGIN
                                               cancelled_date)
   values (new.id, new.project_id, new.process_step_id,
           new.user_position_id, new.company_process_step_status_type_id,
-          new.process_step_complete_date, new.date_created, new.date_modified,
+          new.process_step_complete_date, new.date_created, now(),
           new.created_by_id, new.modified_by_id, new.archived, new.main, new.cancelled_date);
 
   if new.company_process_step_status_type_id is not null
@@ -728,7 +728,7 @@ BEGIN
                                                     cancelled_date, completed_date)
   values (new.id, new.project_process_step_id,
           new.process_step_event_id, new.resource_id, new.company_event_status_type_id,
-          new.start_time, new.end_time, new.date_created, new.date_modified,
+          new.start_time, new.end_time, new.date_created, now(),
           new.created_by_id, new.modified_by_id, new.archived, new.scheduled_date, new.cancelled_date,
           new.completed_date);
 
@@ -788,7 +788,7 @@ BEGIN
                                             distribution_time_frame_days, schedulable_future_days,
                                             date_zone_created)
     values (new.id, new.company_id, new.round_robin_name, new.archived, new.date_created,
-            new.date_modified, new.created_by_id, new.modified_by_id,
+            now(), new.created_by_id, new.modified_by_id,
             new.distribution_time_frame_days, new.schedulable_future_days,
             now());
   elsif (TG_OP = 'UPDATE') THEN
@@ -798,7 +798,7 @@ BEGIN
         round_robin_name             = new.round_robin_name,
         archived                     = new.archived,
         date_created                 = new.date_created,
-        date_modified                = new.date_modified,
+        date_modified                = now(),
         created_by_id                = new.created_by_id,
         modified_by_id               = new.modified_by_id,
         distribution_time_frame_days = new.distribution_time_frame_days,
@@ -836,7 +836,7 @@ BEGIN
                                                  round_robin_user_type_id, user_id, manual_allocation,
                                                  date_user_created)
     values (new.id, new.round_robin_id, new.archived, new.date_created,
-            new.date_modified, new.created_by_id, new.modified_by_id,
+            now(), new.created_by_id, new.modified_by_id,
             new.round_robin_user_type_id, new.user_id, new.manual_allocation,
             now());
   elsif (TG_OP = 'UPDATE') THEN
@@ -844,7 +844,7 @@ BEGIN
     set round_robin_id                = new.round_robin_id,
         archived                      = new.archived,
         date_created                  = new.date_created,
-        date_modified                 = new.date_modified,
+        date_modified                 = now(),
         created_by_id                 = new.created_by_id,
         modified_by_id                = new.modified_by_id,
         round_robin_user_type_id      = new.round_robin_user_type_id,
@@ -867,3 +867,48 @@ CREATE TRIGGER concrete_round_robin_user_audit_trg
   ON flow.round_robin_user
   FOR EACH ROW
 EXECUTE PROCEDURE flow.concrete_round_robin_user_audit();
+
+
+drop function if exists flow.concrete_postal_code_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.concrete_postal_code_audit()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+        insert into flow.postal_code_audit(postal_code_id, postal_code, place_name, postal_code_zone_id, state_id, round_robin_id,
+                                           call_group_id, active, disqualified, self_gen, inside_sales, sales_partners,
+                                           archived, notes, created_by_id, modified_by_id, date_created, date_modified)
+        values (new.id, new.postal_code, new.place_name, new.postal_code_zone_id, new.state_id,
+                new.round_robin_id, new.call_group_id, new.active, new.disqualified, new.self_gen, new.inside_sales,
+                new.sales_partners, new.archived, new.notes, new.created_by_id, new.modified_by_id, new.date_created, now());
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+drop trigger if exists concrete_postal_code_audit_trg ON flow.postal_code;
+CREATE TRIGGER concrete_postal_code_audit_trg
+    after INSERT or update
+    ON flow.postal_code
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.concrete_postal_code_audit();
+
+drop function if exists flow.concrete_postal_code_zone_audit() cascade;
+CREATE OR REPLACE FUNCTION flow.concrete_postal_code_zone_audit()
+    RETURNS TRIGGER AS
+$$
+BEGIN
+    insert into flow.postal_code_zone_audit(postal_code_zone_id, zone_name, metro_area_id, adder_amount, archived, created_by_id,
+                                            modified_by_id, date_created, date_modified)
+    values (new.id, new.zone_name, new.metro_area_id, new.adder_amount, new.archived,
+            new.created_by_id, new.modified_by_id, new.date_created, now());
+    RETURN NULL;
+END
+$$
+    LANGUAGE plpgsql;
+
+drop trigger if exists concrete_postal_code_zone_audit_trg ON flow.postal_code_zone;
+CREATE TRIGGER concrete_postal_code_zone_audit_trg
+    after INSERT or update
+    ON flow.postal_code_zone
+    FOR EACH ROW
+EXECUTE PROCEDURE flow.concrete_postal_code_zone_audit();

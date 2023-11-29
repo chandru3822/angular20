@@ -44,8 +44,10 @@
       </v-row>
       <v-row>
         <v-col cols="12" class="text-center">
-          <v-btn :large="$vuetify.breakpoint.smAndDown" :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
-                 color="primary" @click="saveCompany" v-if="userCanEdit" :class="{'one-hunned': $vuetify.breakpoint.smAndDown}">
+          <v-btn :large="$vuetify.breakpoint.smAndDown"
+                 :disabled="!company.companyName || !company.defaultPassword || ((company.minuteIncrement || company.minuteIncrement === 0) && (company.minuteIncrement < 0 || company.minuteIncrement > 60))"
+                 color="primary" @click="saveCompany" v-if="userCanEdit"
+                 :class="{'one-hunned': $vuetify.breakpoint.smAndDown}">
             <v-icon :large="$vuetify.breakpoint.smAndDown" class="pr-2">mdi-content-save</v-icon>
             <span class="body-medium text-capitalize">Save Changes</span>
           </v-btn>
@@ -75,35 +77,39 @@
       </v-col>
     </v-row>
     <v-divider class="mt-3 mb-3"></v-divider>
-    <v-row>
+    <v-row v-for="([key, logoType], idx) in Object.entries(LogoTypeEnum)">
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="title-large">Company Logo</v-toolbar-title>
+          <v-toolbar-title class="title-large">{{logoType.header}}</v-toolbar-title>
           <v-spacer></v-spacer>
           <div v-if="userCanEdit">
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="!savingCompanyLogo && !companyLogo.presignedUrl"  @click="addImage = !addImage">
-              <v-icon v-if="addImage">remove</v-icon>
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
+                   v-if="!logoType.saving && !logoType.image?.presignedUrl" @click="logoType.add = !logoType.add">
+              <v-icon v-if="logoType.add">remove</v-icon>
               <v-icon v-else>add</v-icon>
             </v-btn>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else @click="logoToDelete=LogoTypeEnum.Company"><v-icon>delete</v-icon></v-btn>
+            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
+                   @click="logoToDelete=logoType">
+              <v-icon>delete</v-icon>
+            </v-btn>
           </div>
         </v-toolbar>
         <div class="text-center">
-          <div class="mt-4" v-if="addImage">
+          <div class="mt-4" v-if="logoType.add">
             <form enctype="multipart/form-data" novalidate>
               <input
                   type="file"
                   :accept="acceptedFileTypes"
                   class="file-input clickable body-medium mx-6"
-                  :disabled="savingCompanyLogo"
-                  @change="uploadFile(true, $event.target.files, attachmentTypeId, companyId, 1048576)"
+                  :disabled="logoType.saving"
+                  @change="uploadFile(logoType, $event.target.files, logoType.attachmentTypeId, companyId, 1048576)"
                   name="avatar"
               >
               <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
             </form>
           </div>
-          <div class="company-logo-background" v-else-if="companyLogo.presignedUrl">
-            <img class="company-logo" :src="companyLogo.presignedUrl">
+          <div class="company-logo-background" v-else-if="logoType.image?.presignedUrl">
+            <img class="company-logo" :src="logoType.image.presignedUrl">
           </div>
           <div class="mt-4" v-else>
             No image uploaded
@@ -112,71 +118,68 @@
       </v-col>
     </v-row>
 
-
-    <v-divider class="mt-3 mb-3"></v-divider>
-    <v-row>
-      <v-col cols="12">
-        <v-toolbar color="white" class="elevation-1">
-          <v-toolbar-title class="title-large">Home Page Logo</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <div v-if="userCanEdit">
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="!savingHomePageLogo && !homePageLogo.presignedUrl"  @click="addHomePageImage = !addHomePageImage">
-              <v-icon v-if="addHomePageImage">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else @click="logoToDelete=LogoTypeEnum.HomePage"><v-icon>delete</v-icon></v-btn>
-          </div>
-        </v-toolbar>
-        <div class="text-center">
-          <div class="mt-4" v-if="addHomePageImage">
-            <form enctype="multipart/form-data" novalidate>
-              <input
-                type="file"
-                :accept="acceptedFileTypes"
-                class="file-input clickable mx-6 body-medium"
-                :disabled="savingHomePageLogo"
-                @change="uploadFile(false, $event.target.files, homePageAttachmentTypeId, companyId, 1048576)"
-                name="avatar"
-              >
-              <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
-            </form>
-          </div>
-          <div class="company-logo-background" v-else-if="homePageLogo.presignedUrl">
-            <img class="company-logo" :src="homePageLogo.presignedUrl">
-          </div>
-          <div class="mt-4" v-else>
-            No image uploaded
-          </div>
-        </div>
-      </v-col>
-    </v-row>
-    <ConfirmationDialog :open-dialog="!!logoToDelete" @confirm="deleteAttachment(logoToDeleteId)" @close-dialog="logoToDelete=null">
-      {{deleteLogoDialogText}}
+    <ConfirmationDialog :open-dialog="!!logoToDelete" @confirm="deleteAttachment(logoToDelete)"
+                        @close-dialog="logoToDelete=null">
+      {{ deleteLogoDialogText }}
     </ConfirmationDialog>
   </v-container>
 </template>
 
 
 <script>
-import { Actions } from '@/store'
+import {Actions} from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, postRequestWithRequestParams, getRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  postRequestWithRequestParams,
+  getRequest,
+  putRequest,
+  getSnackbar
+} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-const LogoTypeEnum = Object.freeze({
-  Company: "CompanyLogo",
-  HomePage: "HomePageLogo"
-})
+const LogoTypeEnum = {
+  COMPANY: {
+    key: "COMPANY", //this needs to match the key, cuz dumb
+    header: 'Company Logo',
+    description: '(Top Left Icon)',
+    label: 'company',
+    attachmentTypeId: 29,
+    add: false,
+    saving: false,
+    image: {}
+  },
+  HOME_PAGE: {
+    key: "HOME_PAGE", //this needs to match the key, cuz dumb
+    header: 'Home Page Logo',
+    description: '',
+    label: 'home page',
+    attachmentTypeId: 333,
+    add: false,
+    saving: false,
+    image: {}
+  },
+  //todo: put this back when the public attachments and event sub is done
+  // LOADING_SPINNER: {
+  //   key: "LOADING_SPINNER", //this needs to match the key, cuz dumb
+  //   header: 'Loading Spinner',
+  //   description: '(Page Load Indicator)',
+  //   label: 'loading spinner',
+  //   attachmentTypeId: 987,
+  //   add: false,
+  //   saving: false,
+  //   image: {}
+  // }
+}
 
 export default {
   name: 'CompanySettings',
   components: {ConfirmationDialog},
-  data () {
+  data() {
     return {
       loadComplete: false,
       constants,
-      addImage: false,
       snackbar: {},
       company: {},
       rules: [
@@ -189,15 +192,6 @@ export default {
       testUserPassword: '',
       companyId: this.$store.state.user.details.companyId,
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-      savingCompanyLogo: false,
-      //todo: 29 = company logo - do this on backend?
-      attachmentTypeId: 29,
-      companyLogo: {},
-      addHomePageImage: false,
-      savingHomePageLogo: false,
-      homePageLogo: {},
-      //todo: 333 = home page logo - do this on backend?
-      homePageAttachmentTypeId: 333,
       damnKeyThing: 0,
       LogoTypeEnum,
       logoToDelete: null
@@ -205,41 +199,27 @@ export default {
   },
   computed: {
     deleteLogoDialogText() {
-      switch (this.logoToDelete) {
-        case LogoTypeEnum.Company:
-          return "Are you sure you want to delete the company logo?"
-        case LogoTypeEnum.HomePage:
-          return "Are you sure you want to delete the home page logo?"
-        default:
-          return ""
-      }
+      return `Are you sure you want to delete the ${ this.logoToDelete?.label } logo?`
     },
     logoToDeleteId() {
-      switch (this.logoToDelete) {
-        case LogoTypeEnum.Company:
-          return this.companyLogo.id
-        case LogoTypeEnum.HomePage:
-          return this.homePageLogo.id
-        default:
-          return null
-      }
+      return this.logoToDelete?.image?.id
     }
   },
   methods: {
     forceInteger() {
-      if(this.company.minuteIncrement % 1 !== 0) {
+      if (this.company.minuteIncrement % 1 !== 0) {
         this.company.minuteIncrement = Math.floor(this.company.minuteIncrement);
         this.damnKeyThing++
       }
     },
-    passwordRule (value) {
+    passwordRule(value) {
       if (value && value.length < 8) {
         return 'Password must be at least 8 characters'
       } else {
         return true
       }
     },
-    async loadCompany () {
+    async loadCompany() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequest(`/companies/${this.companyId}`)
@@ -253,7 +233,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async saveTestUserPassword () {
+    async saveTestUserPassword() {
       if (this.$refs.companyForm.validate()) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -271,7 +251,7 @@ export default {
         }
       }
     },
-    async saveCompany () {
+    async saveCompany() {
       if (this.$refs.companyForm.validate()) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
@@ -285,31 +265,27 @@ export default {
         }
       }
     },
-    async deleteAttachment (id) {
+    async deleteAttachment(logoToDelete) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_DELETE, {
-          id,
+          id: logoToDelete.image?.id,
           callback: async () => {
-            if(this.logoToDelete == LogoTypeEnum.Company){
-              this.companyLogo = {}
-            } else {
-              this.homePageLogo = {}
-            }
+            LogoTypeEnum[logoToDelete.key].image = {}
             // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
             this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         })
-      } catch(e) {
+      } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async uploadFile (isCompanyLogo, files, attachmentTypeId, sourceId, sizeLimit) {
+    async uploadFile(logoType, files, attachmentTypeId, sourceId, sizeLimit) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         let file = files[0]
@@ -320,72 +296,52 @@ export default {
           sourceId,
           displayName: file.name.substr(0, file.name.lastIndexOf('.')),
           callback: async (img, error) => {
-            if(error?.error) {
+            if (error?.error) {
               this.snackbar = getSnackbar('ERROR', error.errorMsg)
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
             } else {
-              if(isCompanyLogo) {
-                this.companyLogo = img
-                this.addImage = false
-              } else {
-                this.homePageLogo = img
-                this.addHomePageImage = false
-              }
+              LogoTypeEnum[logoType.key].image = img
+              LogoTypeEnum[logoType.key].add = false
+              LogoTypeEnum[logoType.key].saving = false
               this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
               this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
               this.$store.commit(AppMutations.SET_LOADING, false)
             }
           }
         })
-      } catch(e) {
+      } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async loadCompanyLogo () {
+    async loadImage(logoType) {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
         await this.$store.dispatch(Actions.FILE_GET_ONE, {
-          attachmentTypeId: this.attachmentTypeId,
+          attachmentTypeId: logoType.attachmentTypeId,
           sourceId: this.companyId,
           callback: async (img) => {
-            this.companyLogo = img
+            logoType.image = img
             this.$store.commit(AppMutations.SET_LOADING, false)
           }
         })
-      } catch(e) {
+      } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async loadHomePageLogo () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await this.$store.dispatch(Actions.FILE_GET_ONE, {
-          attachmentTypeId: this.homePageAttachmentTypeId,
-          sourceId: this.companyId,
-          callback: async (img) => {
-            this.homePageLogo = img
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        })
-      } catch(e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    }
   },
-  async created () {
+  async created() {
     this.loadCompany()
-    this.loadCompanyLogo()
-    this.loadHomePageLogo()
+    //load each image for
+    Object.entries(LogoTypeEnum).forEach( ([key, value], idx) => {
+      this.loadImage(value)
+    })
   }
 }
 </script>
@@ -395,6 +351,7 @@ export default {
   margin-top: 15px;
   max-width: 100%;
   height: auto;
+  max-height: 300px;
 }
 
 .company-logo-background {

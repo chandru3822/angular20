@@ -12,7 +12,7 @@ class BirdEyeSurveyPageQuestion {
   private Long id;
   private String title, name, type;
   private Integer showQuestionNumbers;
-  private Boolean skipQuestion, displayQuestion, visible, isRequired;
+  private Boolean skipQuestion, displayQuestion, visible, isRequired, hidden;
   private Integer minimumValue, maximumValue, order;
   private List<BirdEyeSurveyPageQuestionChoice> choices;
 }

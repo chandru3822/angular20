@@ -81,7 +81,7 @@ public class BirdEyeSyncService {
 
     reviews.stream()
       // only include reviews that have a customer id to match up in the database
-      .filter(review -> review.getCustomerId() != null && review.getCustomerId().trim().length() > 0)
+      .filter(review -> review.getCustomerId() != null && !review.getCustomerId().trim().isEmpty())
       .forEach(r -> {
 
         BirdEyeReviewInvitation invitation = birdeyeService.getInviteByCustomerId(r.getCustomerId(), null, "");
@@ -134,6 +134,7 @@ public class BirdEyeSyncService {
       final Map<String, BirdEyeSurveyPageQuestion> questions = survey.getPages().stream()
         .filter(p -> !p.getQuestions().isEmpty())
         .flatMap(p -> p.getQuestions().stream())
+        .filter(p -> !Boolean.TRUE.equals(p.getHidden()))
         .collect(Collectors.toMap(BirdEyeSurveyPageQuestion::getTitle, b -> b));
 
       final Map<String, CustomField> customFields = customFieldGroupService.getCustomFieldsInGroup(customFieldGroupId)
@@ -141,7 +142,7 @@ public class BirdEyeSyncService {
         .collect(Collectors.toMap(CustomField::getFieldName, cf -> cf));
 
       boolean hasMoreSurveys = true;
-      int pageSize = 25;
+      int pageSize = 100;
       int page = 0;
 
       while (hasMoreSurveys) {
@@ -157,7 +158,9 @@ public class BirdEyeSyncService {
 
         //get all those surveys
         page++;
-        hasMoreSurveys = wrapper.getHasNext();
+        //need to fix because the birdeye api is stupid and doesn't return "true" when there are clearly more response
+        int currentPageEnd = (wrapper.getPageNo() * wrapper.getPageSize()) + wrapper.getPageSize();
+        hasMoreSurveys = wrapper.getHasNext() || wrapper.getTotalResponses() > currentPageEnd;
       }
     } catch (Exception e) {
       log.error("[BIRDEYE] Error while syncing survey responses, error={}", e.getMessage());

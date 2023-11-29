@@ -53,7 +53,7 @@ public class InstallerDashboardQuery {
          ) as substantialCompletions) ::numeric(10,2),
 
         'substantialCompletionsDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(sc)))
-                            FROM (select project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                            FROM (select pd.project_id, pd.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
                                          pd.installation_end_time, pd.substantial_completion_date, false as isnumerator,
                                          coalesce((
                                           SELECT array_to_json(array_agg(row_to_json(notes)))
@@ -88,13 +88,12 @@ public class InstallerDashboardQuery {
                                                             inner join flow.user creator on creator.id = pn.created_by_id
                                                    where pn.archived is not true
                                                      and pn.parent_id is null
-                                                     and pn.project_id = p.id
+                                                     and pn.project_id = pd.project_id
                                                      and pn.project_production_stats_type_id = 1
                                                    order by pn.date_created desc
                                                ) AS notes), '[]'
                                                   ) AS notes
                                   from brs.project_details pd
-                                    inner join flow.project p on pd.project_id = p.id
                                   where
                                       substantial_completion_date between :startDate::date and :endDate::date
                                       AND
@@ -115,7 +114,7 @@ public class InstallerDashboardQuery {
                   AND pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'sameWeekCloseoutDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(swc)))
-                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                            FROM (select pd.project_id, pd.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
                                          pd.installation_end_time, pd.substantial_completion_date,
                                          (case when
                                           (
@@ -157,7 +156,7 @@ public class InstallerDashboardQuery {
                                                             inner join flow.user creator on creator.id = pn.created_by_id
                                                    where pn.archived is not true
                                                      and pn.parent_id is null
-                                                     and pn.project_id = p.id
+                                                     and pn.project_id = pd.project_id
                                                      and pn.project_production_stats_type_id = 2
                                                    order by pn.date_created desc
                                                ) AS notes), '[]'
@@ -165,8 +164,7 @@ public class InstallerDashboardQuery {
 
 
                                   from brs.project_details pd
-                                    inner join flow.project p on pd.project_id = p.id
-                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id and pps.main = true
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = pd.project_id and pps.main = true
                                   where
                                       (installation_end_time::date between :startDate::date and :endDate::date
                                           AND
@@ -192,7 +190,7 @@ public class InstallerDashboardQuery {
             pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'onTimeCloseoutDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(otc)))
-                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                            FROM (select pd.project_id, pd.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
                                          pd.installation_end_time, pd.installation_closeout_start_time, pd.substantial_completion_date,
                                          (case when
                                             ((substantial_completion_date is not null AND installation_end_time::date = substantial_completion_date::date)
@@ -233,7 +231,7 @@ public class InstallerDashboardQuery {
                                                             inner join flow.user creator on creator.id = pn.created_by_id
                                                    where pn.archived is not true
                                                      and pn.parent_id is null
-                                                     and pn.project_id = p.id
+                                                     and pn.project_id = pd.project_id
                                                      and pn.project_production_stats_type_id = 3
                                                    order by pn.date_created desc
                                                ) AS notes), '[]'
@@ -241,8 +239,7 @@ public class InstallerDashboardQuery {
 
 
                                   from brs.project_details pd
-                                    inner join flow.project p on pd.project_id = p.id
-                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = p.id and pps.main = true
+                                    inner join flow.project_process_step pps on pps.process_step_id = 3365 and pps.project_id = pd.project_id and pps.main = true
                                   where
                                       installation_end_time::date between :startDate::date and :endDate::date
                                         AND
@@ -290,7 +287,7 @@ public class InstallerDashboardQuery {
             pd.installation_resource in (:crewIds)) ::numeric(10,2)),0),0)) ::numeric(10,2),
 
         'inspectionApprovalDrilldown', coalesce((SELECT array_to_json(array_agg(row_to_json(ia)))
-                            FROM (select pd.project_id, p.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
+                            FROM (select pd.project_id, pd.project_name, (select o.org_name from flow.org o where o.id = pd.installation_resource) as crewName,
                                          pd.installation_end_time, pd.substantial_completion_date, pd.ahj_inspection_start_time, pd.ahj_inspection_outcome_name,
 
                                          (select string_agg(lov.name, ', ')
@@ -380,13 +377,12 @@ public class InstallerDashboardQuery {
                                                             inner join flow.user creator on creator.id = pn.created_by_id
                                                    where pn.archived is not true
                                                      and pn.parent_id is null
-                                                     and pn.project_id = p.id
+                                                     and pn.project_id = pd.project_id
                                                      and pn.project_production_stats_type_id = 4
                                                    order by pn.date_created desc
                                                ) AS notes), '[]'
                                                   ) AS notes
                                   from brs.project_details pd
-                                    inner join flow.project p on pd.project_id = p.id
                                   where
                                       pd.ahj_inspection_start_time::date between :startDate::date and :endDate::date
                                       AND

@@ -13,11 +13,12 @@
     <v-list>
       <template v-for="(requirement, index) in requirements">
         <v-card
-          v-if="requirement.updateType !== updateTypes.DELETE && !edits[index]"
+          v-if="requirement.updateType !== updateTypes.DELETE"
           :key="UUID()"
           class="ma-4"
+          :class="{'bye-bye': edits[index].isEditing}"
           :disabled="!canEdit"
-          @click="edit(index)"
+          @click="toggleEditing(index, true, $event)"
         >
           <v-list-item>
             <v-list-item-content>
@@ -39,14 +40,20 @@
           </v-list-item>
         </v-card>
 
-        <RequirementEditor
-          v-if="edits[index]"
-          :available-fields="[]"
-          :existing-requirement="requirement"
-          :get-value="getValue"
-          @cancelled="edits.splice(index, 1, false)"
-          @updated="(updatedRequirement) => update(updatedRequirement, index)"
-        />
+        <div
+          v-if="edits[index].isEditing"
+          class="editor-container"
+          :style="{top: `${edits[index].top}px`}"
+        >
+          <RequirementEditor
+            :available-fields="[]"
+            :existing-requirement="requirement"
+            :get-value="getValue"
+            @cancelled="toggleEditing(index, false, $event)"
+            @updated="(updatedRequirement) => update(updatedRequirement, index)"
+          />
+        </div>
+
       </template>
     </v-list>
   </v-col>
@@ -131,7 +138,11 @@ const showDeleteDialog = ref(false)
 
 const isAddingInProgress = ref(false)
 
-const edits = ref(Array(props.requirements.length).fill(false))
+const edits = ref(Array(props.requirements.length).fill({
+  isEditing: false,
+  top: 0
+}))
+
 
 // const calculatedName = (r) => {
 //   let name = r.name
@@ -152,11 +163,18 @@ const remove = (index) => {
 const update = (requirement, index) => {
   emit('updated', requirement, index)
   edits.value.splice(index, 1, false)
+  toggleEditing(index, false, null)
 }
 
-const edit = (index) => {
+const toggleEditing = (index, isEditing, event) => {
   if (props.canEdit) {
-    edits.value.splice(index, 1, true)
+    edits.value.splice(index, 1, {...edits.value[index], isEditing})
+
+    if (isEditing) {
+      // get coords of parent card so we know where to position the requirement editor
+      const boundaries = event.target.closest('.v-card').getBoundingClientRect()
+      edits.value[index].top = boundaries.y
+    }
   }
 }
 
@@ -229,12 +247,18 @@ const added = (newRequirement) => {
   }
 }
 
+.editor-container {
+  position: fixed;
+  left: 12px;
+  z-index: 9;
+}
+
+.bye-bye {
+  visibility: hidden;
+}
+
 //don't change opacity when the requirement cards are disabled
 :deep(.v-card--disabled > div) {
   opacity: 1 !important;
-}
-
-.overflow-y-auto {
-  overflow-y: auto;
 }
 </style>
