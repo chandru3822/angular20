@@ -452,7 +452,7 @@ export default {
     async loadProposalVersions() {
       try {
         this.loadingVersions = true
-        const {data} = await getRequest(`/proposal/versions/published?size=50&page=0`, 'blueraven')
+        const {data} = await getRequest(`/proposal/versions?published=true&size=50&page=0`, 'blueraven')
         this.versions = data.content
       } catch (e) {
         this.$snackbar('ERROR', 'Error loading proposal versions')

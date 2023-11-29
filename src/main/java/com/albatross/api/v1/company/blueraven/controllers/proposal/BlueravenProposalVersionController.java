@@ -32,8 +32,10 @@ public class BlueravenProposalVersionController {
   }
 
   @GetMapping
-  public Page<ProposalVersion> getProposalVersions(Pageable pageable) {
-    return proposalVersionService.getProposalVersions(pageable, false);
+  public Page<ProposalVersion> getProposalVersions(
+    @RequestParam(name = "published", defaultValue = "false") Boolean publishedOnly,
+    Pageable pageable) {
+    return proposalVersionService.getProposalVersions(pageable, publishedOnly);
   }
 
   @GetMapping(value = "/{id}")
@@ -41,14 +43,14 @@ public class BlueravenProposalVersionController {
     return proposalVersionService.getProposalVersion(id);
   }
 
-  @GetMapping(value="/published")
-  public Page<ProposalVersion> getPublishedProposalVersions(Pageable pageable) {
-    return proposalVersionService.getProposalVersions(pageable, true);
-  }
-
   @PostMapping(value = "/{id}/publish")
   public Optional<ProposalVersion> publishProposalVersion(@PathVariable Long id, @Valid @RequestBody ProposalPublishRequest request) {
     return proposalVersionService.publishProposalVersion(id, request.message());
+  }
+
+  @GetMapping(value="/{id}/history")
+  public ProposalVersionHistoryChangeSet getProposalVersionHistory(@PathVariable Long id){
+    return proposalVersionService.getChangeHistory(id);
   }
 
   public record ProposalPublishRequest(@NotEmpty String message) {

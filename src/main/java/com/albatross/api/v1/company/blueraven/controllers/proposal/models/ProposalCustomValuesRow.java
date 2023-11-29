@@ -10,7 +10,7 @@ import java.util.Map;
 public class ProposalCustomValuesRow {
   private String pk;
   private Long versionId;
-
+  private boolean archived;
   private Map<String, Object> row = new LinkedHashMap<>();
 
   @JsonAnySetter
