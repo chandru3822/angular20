@@ -7,7 +7,6 @@ import com.albatross.api.v1.company.blueraven.services.queries.CustomActionQuery
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -20,7 +19,7 @@ import java.util.Optional;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class CustomActionService {
 
   private final SqlCache sqlCache;
@@ -42,5 +41,4 @@ public class CustomActionService {
       return temp;
     }
   }
-
 }

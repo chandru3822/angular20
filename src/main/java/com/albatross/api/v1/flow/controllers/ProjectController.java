@@ -9,7 +9,6 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.model.project.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
-import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.services.MessagingService;
 import com.albatross.api.v1.flow.services.ProjectService;
 import com.albatross.api.v1.flow.services.ProjectStatusService;
