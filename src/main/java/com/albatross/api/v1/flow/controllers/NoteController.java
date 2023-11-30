@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.controllers;
 
-import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.InteractionTimer;
 import com.albatross.api.v1.flow.model.Note;
 import com.albatross.api.v1.flow.services.NoteService;

@@ -11,7 +11,6 @@ import com.albatross.api.v1.flow.model.workQueue.WorkQueueCategory;
 import com.albatross.api.v1.flow.queries.WorkQueueCategoryQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -65,14 +65,14 @@ public class WorkQueueCategoryService {
 
   public Optional<WorkQueueCategory> getCategory(Long id) {
     return sqlCache.getBySql(
-      WorkQueueCategoryQuery.getCategory, ImmutableMap.of("id", id), WorkQueueCategory.class);
+      WorkQueueCategoryQuery.getCategory, Map.of("id", id), WorkQueueCategory.class);
   }
 
   public void deleteCategory(Long categoryId) {
     User user = securityService.getCurrentUser();
     sqlCache.updateBySql(
       WorkQueueCategoryQuery.deleteCategory,
-        ImmutableMap.of("id", categoryId, "modifiedById", user.trueUserId()));
+        Map.of("id", categoryId, "modifiedById", user.trueUserId()));
   }
 
   public void saveHiddenAndWhiteList(WorkQueueCategory workQueueCategory, Boolean savePositions) {
@@ -139,7 +139,7 @@ public class WorkQueueCategoryService {
         sqlCache
             .updateBySqlReturningId(
               WorkQueueCategoryQuery.insertCategory,
-                ImmutableMap.of(
+                Map.of(
                     "workQueueCategory",
                     category.getWorkQueueCategory(),
                     "createdById",

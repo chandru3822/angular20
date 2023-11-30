@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -109,7 +110,7 @@ public class PandaDocService {
   private String findTemplateIdByName(String name) throws Exception {
     log.debug("PANDADOC: looking for template name='{}'", name);
     String tplId = null;
-    String url = "/templates?q=" + URLEncoder.encode(name, "UTF-8");
+    String url = "/templates?q=" + URLEncoder.encode(name, StandardCharsets.UTF_8);
     HttpResponse resp = GET(url);
     JSONObject out = resp.getJSON();
 
@@ -133,7 +134,7 @@ public class PandaDocService {
 
   public JSONArray findTemplatesByName(String name) throws Exception {
     log.debug("PANDADOC: looking for template name='{}'", name);
-    String url = "/templates?count=100&q=" + URLEncoder.encode(name, "UTF-8");
+    String url = "/templates?count=100&q=" + URLEncoder.encode(name, StandardCharsets.UTF_8);
     HttpResponse resp = GET(url);
     JSONObject out = resp.getJSON();
     return out.getJSONArray("results");
@@ -490,7 +491,7 @@ public class PandaDocService {
     try (InputStream in =
         PandaDocService.class.getResourceAsStream(
             "/communication/templates/pandadoc-email.ftl.txt")) {
-      return new Scanner(in, "UTF-8").useDelimiter("\\A").next();
+      return new Scanner(in, StandardCharsets.UTF_8).useDelimiter("\\A").next();
     }
   }
 
@@ -504,7 +505,7 @@ public class PandaDocService {
     try (InputStream in =
            PandaDocService.class.getResourceAsStream(
              "/communication/templates/pandadoc-breeze-email.ftl.txt")) {
-      return new Scanner(in, "UTF-8").useDelimiter("\\A").next();
+      return new Scanner(in, StandardCharsets.UTF_8).useDelimiter("\\A").next();
     }
   }
 
@@ -1025,7 +1026,7 @@ public class PandaDocService {
   }
 
   private HttpResponse POST(String url, String body) throws Exception {
-    return request("POST", url, IOUtils.toInputStream(body, "UTF-8"));
+    return request("POST", url, IOUtils.toInputStream(body, StandardCharsets.UTF_8));
   }
 
   private Boolean isErrorCode(Integer code) {

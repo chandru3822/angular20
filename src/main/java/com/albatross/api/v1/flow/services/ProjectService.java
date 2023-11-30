@@ -25,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -81,7 +80,7 @@ public class ProjectService {
     User user = securityService.getCurrentUser();
     return sqlCache.queryBySql(
       ProjectQuery.getAllForCompanyProcess,
-        ImmutableMap.of("companyId", user.getCompanyId(), "processId", processId),
+        Map.of("companyId", user.getCompanyId(), "processId", processId),
         Project.class);
   }
 
@@ -282,7 +281,7 @@ public class ProjectService {
   public Optional<Project> getProject(Long projectId) {
     User user = securityService.getCurrentUser();
 
-    Map<String, Object> params = ImmutableMap.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
+    Map<String, Object> params = Map.of("projectId", projectId, "companyId", user.getCompanyId(), "isParent", user.isParentCompany(), "parentCompanyId", user.getHighestParentCompanyId());
       Optional<Project> result = sqlCache.getBySql(ProjectQuery.get, params, new ProjectMapper<>(Project.class, om));
       if (result.isPresent()) {
 
@@ -357,7 +356,7 @@ public class ProjectService {
 
     return sqlCache.queryBySql(
       ProjectQuery.getOwners,
-        ImmutableMap.of(
+        Map.of(
             "companyId", user.getCompanyId(),
             "isParent", isParent,
             "parentCompanyId", user.getHighestParentCompanyId()),

@@ -95,7 +95,7 @@ public class ProposalQuery {
       and p.id = :projectId
       and p.archived is false
       and cpsst.process_step_status_type_id = 2
-    order by pps.date_modified desc
+    order by pps.date_created desc
     """;
 
   //language=PostgreSQL
@@ -414,11 +414,6 @@ where p.id = :proposalId
   //language=PostgreSQL
   public final static String insert = """
     insert into brs.proposal(project_process_step_id, created_by_id, proposal_version_id) values(:projectProcessStepId, :userId, :proposalVersionId)
-     """;
-
-  //language=PostgreSQL
-  public final static String getCurrentVersion = """
-    select proposal_version_id from brs.primary_company_proposal_version where company_id = :companyId
      """;
 
   //language=PostgreSQL

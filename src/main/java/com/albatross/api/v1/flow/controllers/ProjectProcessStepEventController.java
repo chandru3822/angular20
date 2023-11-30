@@ -114,8 +114,17 @@ public class ProjectProcessStepEventController {
     @PathVariable Long ppsId,
     @PathVariable Long eventId,
     @PathVariable Long actionId,
-    @RequestBody SaveEventRequest saveEvent) {
+    @RequestBody SaveEventRequest saveEvent,
+    @PathVariable Optional<Boolean> forceSave) {
     try {
+      if(actionId == 1){
+        if(!forceSave.isPresent() || !forceSave.get()){
+          List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
+          if(conflictList != null && conflictList.size() > 0){
+            return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+          }
+        }
+      }
       // save the custom field values and default values
       projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent);
 

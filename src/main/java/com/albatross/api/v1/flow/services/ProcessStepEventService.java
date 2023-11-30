@@ -7,7 +7,6 @@ import com.albatross.api.v1.flow.enums.WhiteListType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
-import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepEventRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;

@@ -1,10 +1,6 @@
 package com.albatross.api.v1.company.blueraven.integration.bitrise;
 
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeCheckInType;
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeReviewInvitation;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,9 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/bitrise")

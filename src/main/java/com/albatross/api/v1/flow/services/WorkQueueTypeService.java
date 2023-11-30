@@ -15,7 +15,6 @@ import com.albatross.api.v1.flow.model.workQueue.*;
 import com.albatross.api.v1.flow.queries.WorkQueueTypeQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -24,10 +23,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /** Created by randanunn on 2019-05-20. !Describe Purpose! */
@@ -72,7 +68,7 @@ public class WorkQueueTypeService {
     User user = securityService.getCurrentUser();
     Optional<WorkQueueType> type = sqlCache.getBySql(
       WorkQueueTypeQuery.getType,
-        ImmutableMap.of("id", id),
+        Map.of("id", id),
         new WorkQueueTypeMapper<>(WorkQueueType.class, om));
 
     if(!type.get().getHiddenAllow() && (type.get().getHiddenWhiteListedPositions() == null || type.get().getHiddenWhiteListedPositions().size() == 0)){
@@ -171,7 +167,7 @@ public class WorkQueueTypeService {
     } else {
       sqlCache.updateBySql(
         WorkQueueTypeQuery.deleteType,
-        ImmutableMap.of("id", typeId, "modifiedById", user.trueUserId()));
+        Map.of("id", typeId, "modifiedById", user.trueUserId()));
       return ResponseEntity.ok().build();
     }
   }
@@ -246,7 +242,7 @@ public class WorkQueueTypeService {
     //this was updated to also delete the psWqt - process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
     sqlCache.updateBySql(
       WorkQueueTypeQuery.deleteProcessStepWorkQueueType,
-        ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+        Map.of("id", id, "modifiedById", currentUser.trueUserId()));
 
     callConfigChangeFunction(id, null);
   }
@@ -255,7 +251,7 @@ public class WorkQueueTypeService {
 
     return sqlCache.getBySql(
       WorkQueueTypeQuery.getProcessStepWorkQueueType,
-        ImmutableMap.of("id", id),
+        Map.of("id", id),
         new ProcessStepWorkQueueTypeMapper<>(ProcessStepWorkQueueType.class, om));
   }
 
@@ -267,7 +263,7 @@ public class WorkQueueTypeService {
         sqlCache
             .updateBySqlReturningId(
               WorkQueueTypeQuery.insertProcessStepWorkQueueType,
-                ImmutableMap.of(
+                Map.of(
                     "createdById",
                     currentUser.trueUserId(),
                     "workQueueTypeId",
@@ -464,7 +460,7 @@ public class WorkQueueTypeService {
     //this was updated to also deletes the pseWqt - events statuses, process step statuses and project statuses so that a delete-readd doesn't bring back values that it shouldnt
     sqlCache.updateBySql(
         WorkQueueTypeQuery.deleteEventWorkQueueType,
-        ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+        Map.of("id", id, "modifiedById", currentUser.trueUserId()));
 
     callConfigChangeFunction(null, id);
   }
@@ -473,7 +469,7 @@ public class WorkQueueTypeService {
 
     return sqlCache.getBySql(
       WorkQueueTypeQuery.getProcessStepEventWorkQueueType,
-        ImmutableMap.of("id", id),
+        Map.of("id", id),
         new ProcessStepEventWorkQueueTypeMapper<>(ProcessStepEventWorkQueueType.class, om));
   }
 
@@ -485,7 +481,7 @@ public class WorkQueueTypeService {
         sqlCache
             .updateBySqlReturningId(
               WorkQueueTypeQuery.insertProcessStepEventWorkQueueType,
-                ImmutableMap.of(
+                Map.of(
                     "createdById",
                     currentUser.trueUserId(),
                     "workQueueTypeId",
