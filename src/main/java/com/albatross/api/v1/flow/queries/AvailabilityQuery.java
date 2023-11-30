@@ -508,9 +508,7 @@ public class AvailabilityQuery {
     from flow.resource_slot_schedule rss
     where rss.archived is not true
       AND case when :isAdmin::boolean is not true
-        and :positionId IN (select unnest(string_to_array(value, ',')::bigint[])
-                                  from flow.company_configuration_value
-                                  where code = 'CLOSER_POSITION_IDS')
+        and :positionId IN ( 1,2,3,517 )
                    then
                        rss.id in (1,2)
                else true end
