@@ -70,16 +70,8 @@ public class InstallAgreementQuery {
     select proposal_nbr,
            loan_type
     from brs.proposal_log_history plh
-    inner join flow.project p on p.id::text = plh.project_id::text
+    inner join flow.project p on p.id = plh.project_id
     where p.id = :projectId
-    """;
-
-  //language=PostgreSQL
-  public final static String getLoanAmountFromLog = """
-    SELECT loan_amount
-    from brs.proposal_log_history
-        where project_id::bigint = :projectId::bigint
-        and proposal_nbr::bigint = :proposalNbr::bigint
     """;
 
   //language=PostgreSQL
