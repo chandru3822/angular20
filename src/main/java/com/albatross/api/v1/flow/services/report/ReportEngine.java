@@ -3480,7 +3480,7 @@ public class ReportEngine {
         return r.getDataTypeRequirement().getDataTypeValue();
       case 5:
       case 13:
-        if (r.getSmartlistSystemListId() != null && requirementValue != null) {
+        if (r.getSmartlistSystemListId() != null && r.getListOfValueId() != null) {
           return String.format("sort(array[%s]::int[])", r.getListOfValueId());
         }
         if (r.getIsCustomValue() && requirementValue != null) {
