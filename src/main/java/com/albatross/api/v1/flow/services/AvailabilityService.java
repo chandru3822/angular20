@@ -959,10 +959,24 @@ public class AvailabilityService {
     return result;
   }
 
-  public List<SlotSchedule> getAllSlotSchedules() {
+  public List<SlotSchedule> getAllSlotSchedules(Boolean isAdmin, Long userId) {
     User user = securityService.getCurrentUser();
+    Long companyId = user.getCompanyId();
+
     HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", user.getCompanyId());
+    params.put("companyId", companyId);
+    params.put("isAdmin", isAdmin);
+
+    Long positionId = null;
+
+    if(!isAdmin) {
+      Long uId = null != userId ? userId : user.trueUserId();
+      UserPosition up = userPositionService.getUserPrimaryPosition(uId, companyId);
+      positionId = null != up ? up.getPositionId() : null;
+    }
+
+    params.put("positionId", positionId);
+
     return sqlCache.queryBySql(
       AvailabilityQuery.getAllSlotSchedules,
       params,
