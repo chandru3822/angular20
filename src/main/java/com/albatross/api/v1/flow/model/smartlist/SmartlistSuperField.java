@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.model.smartlist;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 
 import java.sql.Timestamp;

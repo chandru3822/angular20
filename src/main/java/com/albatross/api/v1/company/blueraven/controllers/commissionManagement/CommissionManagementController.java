@@ -3,7 +3,6 @@ package com.albatross.api.v1.company.blueraven.controllers.commissionManagement;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.CommissionManagementService;
 import com.albatross.api.v1.flow.model.User;
-import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +49,7 @@ public class CommissionManagementController {
     } catch (CommissionManagementService.BackdatedPlanApprovalRequiredException e) {
       SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
       Map<String, String> body =
-          ImmutableMap.of(
+          Map.of(
               "msg",
               e.getMessage(),
               "reason",
@@ -63,11 +62,11 @@ public class CommissionManagementController {
               f.format(e.getPayrollEndDate()));
       return ResponseEntity.badRequest().body(body);
     } catch (CommissionManagementService.BackdatedPlanApprovalBadCredentialsException e) {
-      Map<String, String> body = ImmutableMap.of("msg", e.getMessage(), "reason", "badCredentials");
+      Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");
       return ResponseEntity.badRequest().body(body);
     } catch (CommissionManagementService.PlanStartDateBeforeHireDate e) {
       Map<String, Object> body =
-          ImmutableMap.of(
+          Map.of(
               "msg",
               e.getMessage(),
               "reason",

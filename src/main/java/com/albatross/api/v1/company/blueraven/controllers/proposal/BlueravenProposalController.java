@@ -6,12 +6,10 @@ import com.albatross.api.v1.company.blueraven.controllers.proposal.exceptions.In
 import com.albatross.api.v1.company.blueraven.controllers.proposal.models.*;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.InstallAgreementService;
-import com.albatross.api.v1.flow.model.Attachment;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.annotation.Timed;
 import io.swagger.v3.oas.annotations.Parameter;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

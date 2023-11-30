@@ -1,6 +1,5 @@
 package com.albatross.api.v1.company.blueraven.controllers;
 
-import com.albatross.api.v1.company.blueraven.services.CustomActionService;
 import com.albatross.api.v1.company.blueraven.services.MessageTypeService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +39,4 @@ public class MessageTypeController {
     private String title, content, description;
     private Boolean archived, includeManager;
   }
-
-
 }

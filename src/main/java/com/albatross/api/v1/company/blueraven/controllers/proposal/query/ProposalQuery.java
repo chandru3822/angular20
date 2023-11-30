@@ -417,11 +417,6 @@ where p.id = :proposalId
      """;
 
   //language=PostgreSQL
-  public final static String getCurrentVersion = """
-    select proposal_version_id from brs.primary_company_proposal_version where company_id = :companyId
-     """;
-
-  //language=PostgreSQL
   public final static String getCalculatedProposalValues = """
     select calc.* from brs.get_calculated_proposal_values(:proposalId::bigint, :insertPropLogHistory::boolean) calc
     """;

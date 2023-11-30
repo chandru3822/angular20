@@ -6,7 +6,6 @@ import com.albatross.api.v1.flow.model.Link;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLink;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.LinkQuery;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -81,7 +80,7 @@ public class LinkService {
 
   public Optional<Link> getLink(Long companyId, Long linkId) {
     return sqlCache.getBySql(
-      LinkQuery.getLink, ImmutableMap.of("companyId", companyId, "linkId", linkId), Link.class);
+      LinkQuery.getLink, Map.of("companyId", companyId, "linkId", linkId), Link.class);
   }
 
   public void deleteProcessStepLink(Long id) {
@@ -89,12 +88,12 @@ public class LinkService {
 
     sqlCache.updateBySql(
       LinkQuery.deleteProcessStepLink,
-        ImmutableMap.of("id", id, "modifiedById", currentUser.trueUserId()));
+        Map.of("id", id, "modifiedById", currentUser.trueUserId()));
   }
 
   public Optional<ProcessStepLink> getProcessStepLink(Long id) {
     return sqlCache.getBySql(
-      LinkQuery.getProcessStepLink, ImmutableMap.of("id", id), ProcessStepLink.class);
+      LinkQuery.getProcessStepLink, Map.of("id", id), ProcessStepLink.class);
   }
 
   public Optional<ProcessStepLink> insertProcessStepLink(ProcessStepLink link) {
@@ -104,7 +103,7 @@ public class LinkService {
         sqlCache
             .updateBySqlReturningId(
               LinkQuery.insertProcessStepLink,
-                ImmutableMap.of(
+                Map.of(
                     "createdById",
                     currentUser.trueUserId(),
                     "linkId",
@@ -118,13 +117,13 @@ public class LinkService {
   }
 
   public void deleteLink(Long linkId) {
-    sqlCache.updateBySql(LinkQuery.deleteLink, ImmutableMap.of("id", linkId));
+    sqlCache.updateBySql(LinkQuery.deleteLink, Map.of("id", linkId));
   }
 
   public void updateLink(Link link) {
     sqlCache.updateBySql(
       LinkQuery.updateLink,
-        ImmutableMap.of(
+        Map.of(
             "companyId",
             link.getCompanyId(),
             "id",
@@ -140,7 +139,7 @@ public class LinkService {
         sqlCache
             .updateBySqlReturningId(
               LinkQuery.insertLink,
-                ImmutableMap.of(
+                Map.of(
                     "link", link.getLink(), "companyId", link.getCompanyId(), "url", link.getUrl()),
                 "id")
             .longValue();

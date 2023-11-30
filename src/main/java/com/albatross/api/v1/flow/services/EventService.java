@@ -14,7 +14,6 @@ import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeEventStatus;
 import com.albatross.api.v1.flow.queries.EventQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -212,12 +211,12 @@ public class EventService {
     Long companyId = currentUser.getCompanyId();
 
     return sqlCache.queryBySql(
-      EventQuery.getCompanyStatuses, ImmutableMap.of("companyId", companyId), EventStatusType.class);
+      EventQuery.getCompanyStatuses, Map.of("companyId", companyId), EventStatusType.class);
   }
 
   public Optional<EventStatusType> getOneCompanyEventStatusType(Long id) {
     return sqlCache.getBySql(
-      EventQuery.getOneCompanyStatus, ImmutableMap.of("id", id), EventStatusType.class);
+      EventQuery.getOneCompanyStatus, Map.of("id", id), EventStatusType.class);
   }
 
   public void saveCompanyEventStatuses(List<EventStatusType> statuses) {

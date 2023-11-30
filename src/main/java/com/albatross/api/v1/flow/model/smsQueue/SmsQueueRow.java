@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.model.smsQueue;
 
-import com.albatross.api.v1.flow.model.Owner;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

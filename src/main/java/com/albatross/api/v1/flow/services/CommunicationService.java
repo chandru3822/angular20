@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -342,7 +343,7 @@ public class CommunicationService {
   public String getDefaultEmailTemplate() throws IOException {
     try (InputStream input =
         CommunicationService.class.getResourceAsStream("/communication/templates/email.ftl.txt")) {
-      return new Scanner(input, "UTF-8").useDelimiter("\\A").next();
+      return new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
     }
   }
 

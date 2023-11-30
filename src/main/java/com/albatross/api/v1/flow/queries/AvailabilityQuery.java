@@ -493,20 +493,27 @@ public class AvailabilityQuery {
   //language=PostgreSQL
   public final static String getAllSlotSchedules = """
     select *,
-       coalesce((
-                    SELECT array_to_json(array_agg(row_to_json(wlp)))
-                    FROM (
-                             SELECT rst.id,
-                                    rst.start_time as "startTime",
-                                    rst.end_time as "endTime",
-                                    rst.resource_slot_schedule_id as "resourceSlotScheduleId",
-                                    rst.archived
-                             FROM flow.resource_slot_time rst
-                             WHERE rst.resource_slot_schedule_id = rss.id
-                               AND rst.archived is not true
-                               order by rst.start_time, rst.end_time) wlp), '[]') AS "slotTimes"
+           coalesce((
+                        SELECT array_to_json(array_agg(row_to_json(wlp)))
+                        FROM (
+                                 SELECT rst.id,
+                                        rst.start_time as "startTime",
+                                        rst.end_time as "endTime",
+                                        rst.resource_slot_schedule_id as "resourceSlotScheduleId",
+                                        rst.archived
+                                 FROM flow.resource_slot_time rst
+                                 WHERE rst.resource_slot_schedule_id = rss.id
+                                   AND rst.archived is not true
+                                 order by rst.start_time, rst.end_time) wlp), '[]') AS "slotTimes"
     from flow.resource_slot_schedule rss
     where rss.archived is not true
+      AND case when :isAdmin::boolean is not true
+        and :positionId IN (select unnest(string_to_array(value, ',')::bigint[])
+                                  from flow.company_configuration_value
+                                  where code = 'CLOSER_POSITION_IDS')
+                   then
+                       rss.id in (1,2)
+               else true end
     order by rss.schedule_name
     """;
 

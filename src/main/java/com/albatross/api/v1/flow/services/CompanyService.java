@@ -7,7 +7,6 @@ import com.albatross.api.v1.flow.model.Company;
 import com.albatross.api.v1.flow.model.CompanyConfigurationValue;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.CompanyQuery;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -66,7 +65,7 @@ public class CompanyService {
   }
 
   public Optional<Company> getCompany(Long id) {
-    return sqlCache.getBySql(CompanyQuery.getById, ImmutableMap.of("id", id), Company.class);
+    return sqlCache.getBySql(CompanyQuery.getById, Map.of("id", id), Company.class);
   }
 
   public Optional<Company> saveCompany(Company company) {

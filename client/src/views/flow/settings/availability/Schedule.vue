@@ -62,7 +62,7 @@
                   >
                     <template slot="item" slot-scope="data">
                       <!-- HTML that describes how select should render items when the select is open -->
-                      {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
+                      {{ data.item.scheduleName }}
                     </template>
                   </v-select>
 
@@ -219,7 +219,7 @@
                         >
                           <template slot="item" slot-scope="data">
                             <!-- HTML that describes how select should render items when the select is open -->
-                            {{ data.item.scheduleName }} {{ buildTimeString(data.item)}}
+                            {{ data.item.scheduleName }}
                           </template>
                         </v-select>
                         <v-card v-if="item.resourceSlotScheduleId" flat color="transparent" class="mb-4">
@@ -404,7 +404,7 @@
         //without these if statements the schedule will get reloaded twice when switching between org and user
         if(this.orgId != null) {
           // reset the schedule when new org selected
-          this.schedules = []
+          this.schedules =  []
           this.newSchedule = {}
           this.addNew = false
           this.getSchedules()
@@ -417,6 +417,9 @@
           this.newSchedule = {}
           this.addNew = false
           this.getSchedules()
+          if(this.useSlotSchedule) {
+            this.getSlotSchedules()
+          }
         }
       }
     },
@@ -488,8 +491,12 @@
       async getSlotSchedules() {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/availability/slotSchedules`)
+          let params = {
+            userId: this.userId
+          }
+          const {data, status} = await getRequestWithParams('/availability/slotSchedules', {params})
           this.slotSchedules = data
+
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
