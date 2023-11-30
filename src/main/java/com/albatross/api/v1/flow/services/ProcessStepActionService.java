@@ -8,7 +8,6 @@ import com.albatross.api.v1.flow.model.MessageTeam;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.function.CompanyFunctionParam;
 import com.albatross.api.v1.flow.model.processStep.*;
-import com.albatross.api.v1.flow.queries.CustomFieldGroupAssignmentQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepActionQuery;
 import com.albatross.api.v1.flow.queries.ProcessStepRequirementQuery;
 import com.fasterxml.jackson.core.type.TypeReference;

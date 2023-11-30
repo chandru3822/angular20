@@ -2,7 +2,6 @@ package com.albatross.api.v1.company.blueraven.models;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.WhiteListedPosition;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

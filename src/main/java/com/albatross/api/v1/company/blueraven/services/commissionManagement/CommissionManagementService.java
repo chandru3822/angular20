@@ -6,12 +6,10 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.commissionManagement.CommissionPlanStatus;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.*;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.CommissionManagementQuery;
-import com.albatross.api.v1.company.blueraven.services.commissionManagement.queries.OverrideManagementQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -471,7 +469,7 @@ public class CommissionManagementService {
     final Optional<UserDateRange> existingDateRange =
         sqlCache.getBySql(
             CommissionManagementQuery.getUserDateRange,
-            ImmutableMap.of(
+            Map.of(
                 "rowId", user.getId(),
                 "userId", user.getUserId()),
             UserDateRange.class);
@@ -522,7 +520,7 @@ public class CommissionManagementService {
   }
 
   public Set<Long> getUsersWithPlanGaps(List<Long> userIds) {
-    Map<String, Object> params = ImmutableMap.of("userIds", userIds);
+    Map<String, Object> params = Map.of("userIds", userIds);
     List<UserDateRange> closerDates =
         sqlCache.queryBySql(CommissionManagementQuery.getUserDatesAsCloser, params, UserDateRange.class);
 

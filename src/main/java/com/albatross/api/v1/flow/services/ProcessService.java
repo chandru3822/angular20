@@ -13,7 +13,6 @@ import com.albatross.api.v1.flow.queries.ProcessQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -22,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -46,7 +46,7 @@ public class ProcessService {
     }
 
     return sqlCache.queryBySql(
-      ProcessQuery.getAllForCompany, ImmutableMap.of("companyId", companyId), new CompanyProcessMapper<>(CompanyProcess.class, om));
+      ProcessQuery.getAllForCompany, Map.of("companyId", companyId), new CompanyProcessMapper<>(CompanyProcess.class, om));
   }
 
   public Optional<CompanyProcess> getProcess(Long companyId, Long processId, Long projectId) {
@@ -57,7 +57,7 @@ public class ProcessService {
     }
     return sqlCache.getBySql(
       ProcessQuery.get,
-        ImmutableMap.of(
+        Map.of(
             "companyId", companyId,
             "processId", processId),
         new ProcessMapper<>(CompanyProcess.class, om));
@@ -68,11 +68,11 @@ public class ProcessService {
     // delete company process
     sqlCache.updateBySql(
       ProcessQuery.deleteCompanyProcess,
-        ImmutableMap.of("companyId", user.getCompanyId(), "processId", processId));
+        Map.of("companyId", user.getCompanyId(), "processId", processId));
 
     // delete process (this will likely change one day when we allow processes to be shared between
     // companies)
-    sqlCache.updateBySql(ProcessQuery.delete, ImmutableMap.of("processId", processId));
+    sqlCache.updateBySql(ProcessQuery.delete, Map.of("processId", processId));
   }
 
   public void updateProcess(CompanyProcess process) {
@@ -80,7 +80,7 @@ public class ProcessService {
 
     sqlCache.updateBySql(
       ProcessQuery.update,
-        ImmutableMap.of(
+        Map.of(
             "companyId",
             process.getCompanyId(),
             "id",
@@ -100,7 +100,7 @@ public class ProcessService {
         sqlCache
             .updateBySqlReturningId(
               ProcessQuery.insert,
-                ImmutableMap.of(
+                Map.of(
                     "processName",
                     process.getProcessName(),
                     "createdById",
@@ -113,7 +113,7 @@ public class ProcessService {
     // add row to company_process, this uses the true companyId
     sqlCache.updateBySql(
       ProcessQuery.insertCompanyProcess,
-        ImmutableMap.of(
+        Map.of(
             "processId",
             id,
             "companyId",
@@ -158,7 +158,7 @@ public class ProcessService {
 
     sqlCache.updateBySql(
       ProcessQuery.deleteProcessStepFromProcess,
-        ImmutableMap.of(
+        Map.of(
             "companyId",
             currentUser.getCompanyId(),
             "processStepProcessId",
@@ -172,7 +172,7 @@ public class ProcessService {
 
     return sqlCache.queryBySql(
       ProcessQuery.availableProcessSteps,
-        ImmutableMap.of("companyProcessId", companyProcessId, "companyId", user.getCompanyId()),
+        Map.of("companyProcessId", companyProcessId, "companyId", user.getCompanyId()),
         ProcessStep.class);
   }
 
@@ -189,7 +189,7 @@ public class ProcessService {
 
     return sqlCache.queryBySql(
       ProcessQuery.nonAdminProcessStepsForProcess,
-        ImmutableMap.of("companyProcessId", companyProcessId, "companyId", companyId),
+        Map.of("companyProcessId", companyProcessId, "companyId", companyId),
         new ProcessStepService.ProcessStepMapper<>(ProcessStep.class, om));
   }
 
@@ -197,7 +197,7 @@ public class ProcessService {
 
     return sqlCache.getBySql(
       ProcessQuery.getOneProcessStepProcess,
-        ImmutableMap.of("id", id),
+        Map.of("id", id),
         new ProcessStepProcessMapper<>(ProcessStepProcess.class, om));
   }
 

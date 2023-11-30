@@ -8,7 +8,6 @@ import com.albatross.api.v1.flow.queries.PositionQuery;
 import com.albatross.api.v1.flow.queries.ProcessQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -238,7 +238,7 @@ public class PositionService {
   private List<OwningPosition> getOwnerPositionsByPosition(Long positionId) {
     return sqlCache.queryBySql(
       ProcessQuery.getOwnerPositionsByPosition,
-      ImmutableMap.of("positionId", positionId),
+      Map.of("positionId", positionId),
       OwningPosition.class);
   }
 
@@ -247,7 +247,7 @@ public class PositionService {
 
     return sqlCache.queryBySql(
       PositionQuery.getWhiteListedPositionsByPosition,
-      ImmutableMap.of("companyId", user.getCompanyId(), "positionId", positionId),
+      Map.of("companyId", user.getCompanyId(), "positionId", positionId),
       WhiteListedPosition.class);
   }
 

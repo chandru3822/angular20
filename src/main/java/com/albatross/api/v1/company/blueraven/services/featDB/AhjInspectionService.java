@@ -6,7 +6,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionContactQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionLinkQuery;
 import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionQuery;
-import com.albatross.api.v1.company.blueraven.controllers.featDB.ahj.query.AhjInspectionQuery;
 import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;

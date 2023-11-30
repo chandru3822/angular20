@@ -129,9 +129,14 @@ public class AvailabilityController {
   }
 
   // slot schedules
-  @GetMapping(value = "/slotSchedules")
+  @GetMapping(value = "/slotSchedules/admin")
   public List<SlotSchedule> getSlotSchedules() {
-    return availabilityService.getAllSlotSchedules();
+    return availabilityService.getAllSlotSchedules(true, null);
+  }
+  //i had to make 2 endpoints so i didn't affect mobile
+  @GetMapping(value = "/slotSchedules")
+  public List<SlotSchedule> getSlotSchedules(@RequestParam(required = false) Long userId) {
+    return availabilityService.getAllSlotSchedules(false, userId);
   }
 
   @GetMapping(value = "/slotSchedule/{id}")

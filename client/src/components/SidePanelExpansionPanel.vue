@@ -1,7 +1,7 @@
 <template>
   <v-row id="side-panel-expansion-panel-container" class="mx-6">
     <v-col cols="12" lg="12" class="text-left py-0 px-0">
-      <v-expansion-panels flat class="py-0" :value="sectionExpanded ? 0 : null" v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')">
+      <v-expansion-panels flat class="py-0" :value="sectionExpanded ? 0 : null">
         <v-expansion-panel>
           <v-expansion-panel-header color="transparent" :hide-actions="isDisabled" :disabled="isDisabled" flat class="px-0 project-section-header" height="auto" :class="{'pt-0': removeHeaderPadding}">
             <div class="label-large">{{header}}</div>

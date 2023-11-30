@@ -1,6 +1,5 @@
 package com.albatross.api.security;
 
-import com.albatross.api.utils.Params;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +10,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 //TODO: This is never invoked on login, should we remove it?
 public class LoginSuccessHandler implements AuthenticationSuccessHandler {
@@ -29,7 +29,7 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     UserAccountDetails details = securityService.getCurrentUserDetails();
 
-    String json = objectMapper.writeValueAsString(new Params("user", details).buildNullable());
+    String json = objectMapper.writeValueAsString(Map.of("user", details));
 
     response.getWriter().write(json);
   }

@@ -1,6 +1,5 @@
 package com.albatross.api.v1.company.blueraven.integration.bitrise;
 
-import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeErrorDecoder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -9,7 +8,6 @@ import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
 import feign.okhttp.OkHttpClient;
 import feign.optionals.OptionalDecoder;
-import org.json.JSONObject;
 
 @Headers({
   "Content-Type: application/json",
