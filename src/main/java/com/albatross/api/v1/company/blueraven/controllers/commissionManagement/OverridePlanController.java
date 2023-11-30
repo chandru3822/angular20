@@ -4,7 +4,6 @@ import com.albatross.api.v1.company.blueraven.enums.ObjectType;
 import com.albatross.api.v1.company.blueraven.models.commissionManagement.PlanUser;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.company.blueraven.services.commissionManagement.OverridePlanService;
-import com.google.common.collect.ImmutableMap;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -102,7 +101,7 @@ public class OverridePlanController {
     } catch (OverridePlanService.BackdatedPlanApprovalRequiredException e) {
       SimpleDateFormat f = new SimpleDateFormat("MM/dd/yyyy");
       Map<String, String> body =
-          ImmutableMap.of(
+          Map.of(
               "msg",
               e.getMessage(),
               "reason",
@@ -115,7 +114,7 @@ public class OverridePlanController {
               f.format(e.getPayrollEndDate()));
       return ResponseEntity.badRequest().body(body);
     } catch (OverridePlanService.BackdatedPlanApprovalBadCredentialsException e) {
-      Map<String, String> body = ImmutableMap.of("msg", e.getMessage(), "reason", "badCredentials");
+      Map<String, String> body = Map.of("msg", e.getMessage(), "reason", "badCredentials");
       return ResponseEntity.badRequest().body(body);
     }
 

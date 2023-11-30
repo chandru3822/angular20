@@ -9,7 +9,6 @@ import com.albatross.api.v1.flow.model.workQueue.WorkQueueTypeProjectStatus;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.albatross.api.v1.flow.queries.ProjectStatusQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -64,7 +63,7 @@ public class ProjectStatusService {
     List<ProjectStatusType> results =
         sqlCache.queryBySql(
           ProjectStatusQuery.getCompanyStatuses,
-            ImmutableMap.of("companyId", companyId),
+            Map.of("companyId", companyId),
             ProjectStatusType.class);
 
     //this is slow, and we usually don't need it.  only load if necessary. note: mobile uses these so had to be handle with optional param so they wouldnt have to do new build
@@ -82,7 +81,7 @@ public class ProjectStatusService {
   public Optional<ProjectStatusType> getOneCompanyProjectStatusType(Long id) {
     Optional<ProjectStatusType> result =
         sqlCache.getBySql(
-          ProjectStatusQuery.getOneCompanyStatus, ImmutableMap.of("id", id), ProjectStatusType.class);
+          ProjectStatusQuery.getOneCompanyStatus, Map.of("id", id), ProjectStatusType.class);
 
     if (result.isPresent()) {
       Attachment a = attachmentService.getOneBySourceIdAndType(result.get().getId(), 463L);

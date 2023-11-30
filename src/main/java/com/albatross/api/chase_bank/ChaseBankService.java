@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.SequenceWriter;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableMap;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +61,7 @@ public class ChaseBankService {
               // export
               // it
               Map<String, Object> params =
-                  ImmutableMap.of("checkNumber", checkNumber, "paymentId", payment.getId());
+                  Map.of("checkNumber", checkNumber, "paymentId", payment.getId());
               sqlCache.updateBySql(ChaseBankQuery.saveCheckNumberToPayment, params);
             }
           }
@@ -139,7 +138,7 @@ public class ChaseBankService {
   }
 
   public List<RebatePayment> getPayments(Long batchId) {
-    ImmutableMap<String, Object> params = ImmutableMap.of("batchId", batchId);
+    Map<String, Object> params = Map.of("batchId", batchId);
     return sqlCache.queryBySql(ChaseBankQuery.getPaymentsInBatch, params, RebatePayment.class);
   }
 
@@ -149,7 +148,7 @@ public class ChaseBankService {
   }
 
   public Optional<Integer> getNextCheckNumber(Integer paymentId) {
-    ImmutableMap<String, Object> params = ImmutableMap.of("paymentId", paymentId);
+    Map<String, Object> params = Map.of("paymentId", paymentId);
     return sqlCache.getBySql(
         RebateQuery.getCheckNumber, params, new SingleColumnRowMapper<>(Integer.class));
   }
@@ -257,7 +256,7 @@ public class ChaseBankService {
         for (RebatePaymentValidationException failure : failures) {
           for (Map.Entry<String, String> entry : failure.getErrors().entrySet()) {
             Map<String, Object> m =
-                ImmutableMap.of(
+                Map.of(
                     "Project Id",
                     failure.getProjectId(),
                     "Failed Value",

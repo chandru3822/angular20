@@ -2,15 +2,12 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.aurora.AuroraProxy;
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.utils.Params;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.ExcelImportQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.ProjectService;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +55,7 @@ public class ExcelImportController {
 
   @GetMapping("/excelId")
   public Long getUniqueIdForExcel() {
-    return jdbc.queryForObject(ExcelImportQuery.sqlId, Maps.newHashMap(), Long.class);
+    return jdbc.queryForObject(ExcelImportQuery.sqlId, Map.of(), Long.class);
   }
 
   @GetMapping("/baseConfirm/{baseId}")
@@ -68,7 +65,7 @@ public class ExcelImportController {
     try {
       Map<String, Object> result =
         jdbc.queryForObject(
-          ExcelImportQuery.validateProjectId, new Params("projectId", projectId).buildNullable(), new ColumnMapRowMapper());
+          ExcelImportQuery.validateProjectId, Map.of("projectId", projectId), new ColumnMapRowMapper());
       return ResponseEntity.ok(result);
     } catch (IncorrectResultSizeDataAccessException e) {
       if (e.getActualSize() < 1) {
@@ -97,7 +94,7 @@ public class ExcelImportController {
   @GetMapping("/baseConfirm/{baseId}/proposals/{proposalId}")
   public ResponseEntity<String> getProposalData(
     @PathVariable("baseId") Long projectId, @PathVariable("proposalId") Long proposalId) {
-    Map<String, Object> params = ImmutableMap.of("projectId", projectId, "proposalId", proposalId);
+    Map<String, Object> params = Map.of("projectId", projectId, "proposalId", proposalId);
 
     List<String> results = jdbc.queryForList(ExcelImportQuery.loadProposal, params, String.class);
 
