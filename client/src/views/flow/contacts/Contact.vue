@@ -538,6 +538,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {saveContact} from "@/services/contactService";
 
 export default {
   name: 'Contact',
@@ -775,7 +776,7 @@ export default {
       let valid = this.$refs.contactForm?.validate()
       if (valid && saveContact) {
         this.fieldsSaving = true
-        await this.saveContact()
+        await this.saveCustomFieldValues()
         this.fieldsSaving = false
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
@@ -789,47 +790,33 @@ export default {
         return this.contact.ownerReadOnly
       }
     },
-    async saveContact() {
+    async saveCustomFieldValues() {
       if (this.dirtyCfvs.length > 0) {
+        this.fieldsSaving = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //we no longer save the contact system fields here
-          await this.saveCustomFieldValues()
-
-          try {
-            // Save BlueRaven Solar Contacts to Genesys
-            if (this.companyId === 3) {
-              await putRequest(`/genesys/contact/${this.contact.id}`, this.dirtyCfvs, 'blueraven')
-            }
-          } catch (e) {
-            console.error('*** ERROR ***', e)
+          // save dirty custom field values
+          let body = {
+            contact: null, //dont add the contact here. this new endpoint will save it if you do and this isn't where changes are made anymore
+            cfvs: this.dirtyCfvs
           }
+          console.log('randalogger', this.contactId)
+          const {data, status} = await saveContact(this.contactId, body)
+          this.dirtyCfvs = []
+          this.addressChanged = false
+          this.customFieldGroups = data?.cfgs
+          this.fieldsSaving = false
+          this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
+        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.fieldsSaving = false
         }
-      }
-    },
-    async saveCustomFieldValues() {
-      try {
-        // save dirty custom field values
-        const {data, status} = await postRequestWithRequestParams(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs, { cameFromWeb: true }, null, [])
-        this.dirtyCfvs = []
-        this.addressChanged = false
-        this.customFieldGroups = data
-        this.fieldsSaving = false
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     populateDirtyCfvs(field) {
