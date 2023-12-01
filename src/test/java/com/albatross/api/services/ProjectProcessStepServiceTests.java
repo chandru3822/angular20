@@ -65,7 +65,7 @@ public class ProjectProcessStepServiceTests {
 
   ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
 
-  CustomFieldValueService customFieldValueService = mock(CustomFieldValueService.class);
+  CustomFieldGroupAssignmentService cfgaService = mock(CustomFieldGroupAssignmentService.class);
 
   GoodleapService goodleapService = mock(GoodleapService.class);
 
@@ -90,7 +90,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");

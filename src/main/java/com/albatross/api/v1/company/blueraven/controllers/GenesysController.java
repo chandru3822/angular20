@@ -90,20 +90,7 @@ public class GenesysController {
 
   @PostMapping(value = "/contact/{id}")
   public ResponseEntity addContact(@RequestBody List<CustomFieldValue> values, @PathVariable Long id) {
-    try {
-      genesysService.addContact(id, values, false);
-      return ResponseEntity.ok("Contact successfully added.");
-    } catch (ApiException e) {
-      JSONObject apiException = new JSONObject(e.getRawBody());
-      String msg = "GENE: Error adding contact: {}";
-//      log.error(msg, apiException.getString("message"));
-      return ResponseEntity.badRequest().body("Error adding contact");
-    }
-    catch (IOException e) {
-      String msg = "GENE: Error adding contact: {}";
-//      log.error(msg, e.getMessage());
-      return ResponseEntity.badRequest().body("Error adding contact");
-    }
+    return genesysService.handleAddContact(id, values);
   }
 
   @PutMapping(value = "/contact/{id}")

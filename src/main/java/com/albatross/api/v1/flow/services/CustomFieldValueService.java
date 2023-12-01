@@ -6,7 +6,6 @@ import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.AttachmentQuery;
-import com.albatross.api.v1.flow.queries.CustomFieldGroupAssignmentQuery;
 import com.albatross.api.v1.flow.queries.ObjectTypeQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.ProjectCfvQuery;
@@ -19,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -36,9 +34,10 @@ public class CustomFieldValueService {
   private final SecurityService securityService;
   private final SystemListService systemListService;
   private final UserPositionService userPositionService;
-  private final ProjectService projectService;
+  private final ProjectProcessStepService projectProcessStepService;
   private final ObjectMapper om;
   private final SqlArrayService sqlArrayService;
+
 
   public void handleCustomListOfValue (List<CustomFieldGroup> results, Long companyId) {
     handleCustomListOfValue(results, null, null, companyId, null);
@@ -78,6 +77,35 @@ public class CustomFieldValueService {
       List<ListOfValue> listOfValues = systemListService.getSystemListOptionsForCompany(cv.getCompanySystemListId(), true, cv.getSystemListOptionIds(), cv.getIntValue(), companyId);
       cv.setListOfValues(listOfValues);
     }
+  }
+
+  public List<CustomFieldGroup> handleAllContactSaveBehavior(Long contactId, List<CustomFieldValue> cfvs, Boolean cameFromWeb) {
+
+
+    List<CustomFieldGroup> groups =
+      updateCustomFieldValuesTemp(cameFromWeb, cfvs, contactId, ObjectType.CONTACT);
+
+    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
+    try {
+      // grab all PPS where the updated fields are ancillary and perform auto triggers there
+      List<Long> cfgaIds =
+        cfvs.stream().map(CustomFieldValue::getCustomFieldGroupAssignmentId).toList();
+      if (!cfgaIds.isEmpty()) {
+        Long ppsForProjectId = null;
+        List<Long> ppsIds =
+          projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, contactId, cfgaIds);
+        for (Long ppsId : ppsIds) {
+          actionResults.add(projectProcessStepService.performAutoTriggerActions(
+            ppsId, securityService.getCurrentUserDetails()));
+        }
+        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
+        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
+      }
+    } catch (Exception e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    }
+
+    return groups;
   }
 
   public List<CustomFieldGroup> updateCustomFieldValuesTemp(Boolean cameFromWeb, List<CustomFieldValue> values, Long sourceId, ObjectType objectType) {
@@ -354,10 +382,6 @@ public class CustomFieldValueService {
 //    }
 
     return results;
-  }
-
-  public List<Long> getIdsByPPSId(Long ppsId) {
-    return sqlCache.queryBySql(CustomFieldGroupAssignmentQuery.getIdsByPPSId, Map.of("ppsId", ppsId), new SingleColumnRowMapper<>(Long.class));
   }
 
   public static class CustomFieldGroupMapper<T> extends BeanPropertyRowMapper<T> {

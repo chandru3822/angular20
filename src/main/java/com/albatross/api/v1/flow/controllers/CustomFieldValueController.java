@@ -109,30 +109,9 @@ public class CustomFieldValueController {
   public List<CustomFieldGroup> updateContactCustomFieldValues(
       @RequestBody List<CustomFieldValue> values, @PathVariable Long id,
       @RequestParam(required = false) Boolean cameFromWeb) {
-    List<CustomFieldGroup> groups =
-        customFieldValueService.updateCustomFieldValuesTemp(cameFromWeb, values, id, ObjectType.CONTACT);
 
-    List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
-    try {
-      // grab all PPS where the updated fields are ancillary and perform auto triggers there
-      List<Long> cfgaIds =
-          values.stream().map(CustomFieldValue::getCustomFieldGroupAssignmentId).toList();
-      if (!cfgaIds.isEmpty()) {
-        Long ppsForProjectId = null;
-        List<Long> ppsIds =
-            projectProcessStepService.getIdsForAutoTriggerByCfgaIds(null, id, cfgaIds);
-        for (Long ppsId : ppsIds) {
-          actionResults.add(projectProcessStepService.performAutoTriggerActions(
-              ppsId, securityService.getCurrentUserDetails()));
-        }
-        boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
-        projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, null, ppsIds);
-      }
-    } catch (Exception e) {
-      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
-    }
+    return customFieldValueService.handleAllContactSaveBehavior(id, values, cameFromWeb);
 
-    return groups;
   }
 
   @PostMapping(value = "/org/{id}")
