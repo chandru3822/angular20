@@ -56,7 +56,7 @@ BEGIN
     panel_count                   integer,
     total_solar_resource_fraction numeric,
     face                          integer
-  );
+  ) on commit drop;
 
   if p_system_size > p_system_size_cutoff then
     v_value = 0.00::numeric;
