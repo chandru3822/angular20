@@ -58,4 +58,5 @@ public class HubspotWebhookService {
         log.debug("HUBSPOT: New HubSpot contact information was successfully saved to database for Contact ID={} / Hubspot ID={}",  contactId , lead.getHubspot_id());
         return contactId;
     }
+
 }

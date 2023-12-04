@@ -4,6 +4,8 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.services.BlueravenCustomBehaviorService;
+import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemActivity;
@@ -29,6 +31,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +66,10 @@ public class ContactService {
   private final AttachmentService attachmentService;
 
   private final MapboxApiService mapboxApiService;
+
+  private final CustomFieldValueService customFieldValueService;
+
+  private final BlueravenCustomBehaviorService blueravenCustomBehaviorService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -176,16 +184,7 @@ public class ContactService {
     return contact.orElse(null);
   }
 
-  public Contact getHubspotContact(Long contactId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("companyId", 3L);
-    params.put("contactId", contactId);
-    params.put("parentCompanyId", 3L);
-    params.put("isParent", false);
-    return sqlCache
-        .getBySql(ContactQuery.getById, params, new ContactMapper<>(Contact.class, om))
-        .orElse(null);
-  }
+
 
   public Contact getContactByProjectId(Long projectId) {
     User user = securityService.getCurrentUser();
@@ -242,6 +241,34 @@ public class ContactService {
       sqlCache.updateBySql(ContactQuery.updateLatLongTemp, params2);
     }
     log.info("*** CONTACTS: finished updating lat/long for {} contacts ***", limitCount);
+  }
+
+
+  public ResponseEntity<ContactWithCfvs> updateContactCustom(Long cId, ContactWithCfvs request) throws Exception {
+    User user = securityService.getCurrentUser();
+
+    //update/insert Contact
+    Long contactId = cId;
+    Contact newContact = new Contact();
+    if(null != request.getContact()) {
+      newContact = updateContact(request.getContact());
+      contactId = newContact.getId();
+    }
+
+
+    //handle custom field values
+    List<CustomFieldGroup> cfgs = customFieldValueService.handleAllContactSaveBehavior(contactId, request.getCfvs(), true);
+
+    //we can check the user_id cuz if they are saving to the contact it should be the same
+    if(user.getCompanyId() == 3L) {
+      //if BR call blueraven service level stuff
+      blueravenCustomBehaviorService.handleCustomContactCreation(contactId, null == cId, request.getCfvs());
+    }
+
+    ContactWithCfvs responseBody = new ContactWithCfvs();
+    responseBody.setContact(newContact);
+    responseBody.setCfgs(cfgs);
+    return new ResponseEntity<>(responseBody, HttpStatus.OK);
   }
 
   public Contact updateContact(Contact contact) throws Exception {

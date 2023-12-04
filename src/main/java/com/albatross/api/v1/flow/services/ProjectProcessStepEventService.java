@@ -18,10 +18,7 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStep;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepRequirement;
-import com.albatross.api.v1.flow.queries.ActivityQuery;
-import com.albatross.api.v1.flow.queries.AttachmentQuery;
-import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
-import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
+import com.albatross.api.v1.flow.queries.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -47,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -875,23 +873,96 @@ public class ProjectProcessStepEventService {
   }
 
   public List<ScheduleEvent> checkForSchedulingConflict(ProjectProcessStepEventController.SaveEventRequest saveEvent, Long eventId){
+    if(saveEvent.getStartTime() == null || saveEvent.getEndTime() == null){
+      return null;
+    }
+    List<ScheduleEvent> eventList = new ArrayList<>();
+
+    List<ResourceAppointment> appointments = getResourceAppointmentsInRange(saveEvent.getResourceId(), null, saveEvent.getStartTime().toString(), saveEvent.getEndTime().toString());
+
+    for(ResourceAppointment appointment : appointments){
+      ScheduleEvent appointmentEvent = new ScheduleEvent();
+      appointmentEvent.setResourceName(appointment.getResourceName());
+      appointmentEvent.setStart(new Timestamp(appointment.getStartTime().getTime()));
+      appointmentEvent.setEnd(new Timestamp(appointment.getEndTime().getTime()));
+      appointmentEvent.setEventName(appointment.getTitle());
+      appointmentEvent.setProjectName("Personal Appointment");
+      appointmentEvent.setProjectId(999L);
+      eventList.add(appointmentEvent);
+    }
+
+    ArrayList<Long> resourceIds = new ArrayList<>();
+    resourceIds.add(saveEvent.getResourceId());
     ScheduleController.EventSearchParams params = new ScheduleController.EventSearchParams();
-    ArrayList<Long> userIds = new ArrayList<Long>();
-    userIds.add(saveEvent.getResourceId());
-    params.setUserPositionIds(userIds);
+    params.setUserPositionIds(resourceIds);
     params.setStartTime(saveEvent.getStartTime().toString());
     params.setEndTime(saveEvent.getEndTime().toString());
-    List<ScheduleEvent> events = scheduleService.getEventsForCompanyByOrgAndUser(params);
+    List<ScheduleEvent> events = getConflictingEventsForCompanyByOrgAndUser(params);
     for(ScheduleEvent event : events){
-      if(event.getProjectProcessStepEventId() == saveEvent.getId()){
+      if(event.getProjectProcessStepEventId().equals(saveEvent.getId()) || event.getStart().equals(saveEvent.getEndTime()) || event.getEnd().equals(saveEvent.getStartTime())){
         continue;
       }
       else{
-        List<ScheduleEvent> eventList = new ArrayList<>();
         eventList.add(event);
-        return eventList;
       }
     }
-    return null;
+    return eventList;
+}
+
+  public List<ResourceAppointment> getResourceAppointmentsInRange(
+    Long userId, List<Long> orgIds, String startTime, String endTime) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgIds", orgIds);
+    params.put("startTime", startTime);
+    params.put("endTime", endTime);
+    params.put("companyId", user.getCompanyId());
+    System.out.println(params);
+    List<ResourceAppointment> results =
+      sqlCache.queryBySql(
+        AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
+
+    return results;
+  }
+
+  public List<ScheduleEvent> getConflictingEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    List<Long> combined;
+
+    if(null != esp.getUserPositionIds()) {
+      combined = esp.getUserPositionIds();
+    } else {
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("userIds", esp.getUserIds());
+      combined = sqlCache.queryBySql(ScheduleQuery.getUserPositionIdsForUsers, p2, new SingleColumnRowMapper<>(Long.class));
+    }
+
+    if(null != esp.getOrgIds()) {
+      combined.addAll(esp.getOrgIds());
+    }
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("combined", combined );
+    params.put("includeCancelled", esp.getIncludeCancelled() != null ? esp.getIncludeCancelled() : false );
+    params.put("startTime", esp.getStartTime());
+    params.put("endTime", esp.getEndTime());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+    List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getConflictingEvents, params, ScheduleEvent.class);
+    for(ScheduleEvent event : results) {
+      if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+        HashMap<String, Object> moreParams = new HashMap<>();
+        moreParams.put("objectTypeId", 6); //6 is the event object type
+        moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+        moreParams.put("primaryId", event.getProjectProcessStepEventId());
+        List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+        event.setCustomFieldDisplayValue(cfvs.get(0));
+      }
+    }
+    return results;
   }
 }

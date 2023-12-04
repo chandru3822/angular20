@@ -74,7 +74,7 @@ public class ProjectProcessStepService {
   private final ProcessStepActionService processStepActionService;
   private final ObjectMapper om;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
-  private final CustomFieldValueService customFieldValueService;
+  private final CustomFieldGroupAssignmentService cfgaService;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
   private final MarketoService marketoService;
@@ -587,7 +587,7 @@ public class ProjectProcessStepService {
       }
 
       if (actionsWerePerformed) {
-        List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(ppsId);
+        List<Long> cfgaIds = cfgaService.getIdsByPPSId(ppsId);
         if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
           for (Long checkingPpsId : ppsIds) {

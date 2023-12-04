@@ -8,7 +8,8 @@ import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
-import com.albatross.api.v1.flow.services.CustomFieldValueService;
+import com.albatross.api.v1.flow.services.CustomFieldGroupAssignmentService;
+import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class ProjectProcessStepController {
 
   private final SecurityService securityService;
 
-  private final CustomFieldValueService customFieldValueService;
+  private final CustomFieldGroupAssignmentService cfgaService;
 
   private final SqlCache sqlCache;
 
@@ -151,7 +152,7 @@ public class ProjectProcessStepController {
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
       // run autotriggers for ancillary fields
-      List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(projectProcessStepId);
+      List<Long> cfgaIds = cfgaService.getIdsByPPSId(projectProcessStepId);
 
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
@@ -230,7 +231,7 @@ public class ProjectProcessStepController {
     try {
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
-      List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(newPpsId);
+      List<Long> cfgaIds = cfgaService.getIdsByPPSId(newPpsId);
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =

@@ -114,6 +114,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import { handleHidingGlobalLoader, getRequestWithParams, isNumberOrHyphen, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {getCountries} from '@/services/countryService'
+import {saveContact} from '@/services/contactService'
 import {getCompanyStates} from '@/services/stateService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {getCustomFieldReadOnly} from '@/services/customFieldService'
@@ -236,21 +237,15 @@ export default {
       this.contact.customFieldGroups = this.customFieldGroups
       try {
         this.contact.companyId = this.companyId
-        const {data, status} = await postRequest(`/contact`, this.contact)
-        if(data && data.id && this.dirtyCfvs?.length > 0) {
-          await postRequest(`/customFieldValues/contact/${data.id}`, this.dirtyCfvs)
-          // Save BlueRaven Solar Contacts to Genesys
-          if (this.companyId === 3) {
-            await postRequest(`/genesys/contact/${data.id}`, this.dirtyCfvs, 'blueraven')
-          }
-
-          //i have no idea why router.push({name: 'contact'}) suddenly stopped working, but this fixes it
-          this.$router.push({path: `/contact/${data.id}`})
-          handleHidingGlobalLoader(this, status)
-        } else {
-          this.$router.push({path: `/contact/${data.id}`})
-          handleHidingGlobalLoader(this, status)
+        let body = {
+          contact: this.contact,
+          cfvs: this.dirtyCfvs?.length > 0 ? this.dirtyCfvs : []
         }
+        const {data, status} = await saveContact(this.contact.id, body)
+        // postRequest(`/contact/custom`, body)
+
+        this.$router.push({path: `/contact/${data?.contact?.id}`})
+        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Adding Contact')

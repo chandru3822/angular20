@@ -10,7 +10,6 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.customFieldValues.ContactCfvQuery;
-import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.VerseWebhookService;
@@ -24,11 +23,13 @@ import com.mypurecloud.sdk.v2.model.ContactList;
 import com.mypurecloud.sdk.v2.model.ContactListEntityListing;
 import com.mypurecloud.sdk.v2.model.DialerContact;
 import com.mypurecloud.sdk.v2.model.WritableDialerContact;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -42,7 +43,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GenesysService {
 
-  private final ContactService contactService;
   private final CustomFieldValueService customFieldValueService;
   private final SecurityService securityService;
   private final SqueezeService squeezeService;
@@ -50,6 +50,9 @@ public class GenesysService {
   private final VerseWebhookService verseWebhookService;
   private final SqlCache sqlCache;
   private final ObjectMapper om;
+
+  private final SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+  private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
   @Value(value = "${genesys.api.client.id}")
   private String clientId;
@@ -69,6 +72,13 @@ public class GenesysService {
     return apiClient;
   }
 
+  @Data
+  public static class CustomContact {
+    Long id, contactTypeId, countryId;
+    String firstName, lastName, street1, street2, phone, mobile, city, postalCode, email, state;
+    Date dateCreated;
+  }
+
   public Contact getContactByPhone(String phoneNumber) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
@@ -86,7 +96,7 @@ public class GenesysService {
         .getBySql(
             GenesysQuery.getContactIdByPhone,
             params,
-            new ContactService.ContactMapper<>(Contact.class, om))
+            Contact.class)
         .orElse(null);
   }
 
@@ -255,6 +265,23 @@ public class GenesysService {
     return false;
   }
 
+  public ResponseEntity handleAddContact(Long contactId, List<CustomFieldValue> values) {
+    try {
+      addContact(contactId, values, false);
+      return ResponseEntity.ok("Contact successfully added.");
+    } catch (ApiException e) {
+      JSONObject apiException = new JSONObject(e.getRawBody());
+      String msg = "GENE: Error adding contact: {}";
+//      log.error(msg, apiException.getString("message"));
+      return ResponseEntity.badRequest().body("Error adding contact");
+    }
+    catch (IOException e) {
+      String msg = "GENE: Error adding contact: {}";
+//      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error adding contact");
+    }
+  }
+
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot)
       throws IOException, ApiException {
     // Only add contacts if we are in Prod
@@ -262,22 +289,9 @@ public class GenesysService {
       return;
     }
 
-    Contact contact;
-    if (isHubspot) {
-      contact = contactService.getHubspotContact(contactId);
-    } else {
-      User user = new User();
-      user.setId(SystemSettings.CRON_USER.getId());
-      user.setCompanyId(3L);
-      user.setHighestCompanyId(3L);
-      user.setParentCompanyId(3L);
-      user.setHighestParentCompanyId(3L);
-      contact = contactService.getContact(contactId, user);
-    }
+    CustomContact contact = getContact(contactId, !isHubspot);
 
     WritableDialerContact wdc = new WritableDialerContact();
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     HashMap<String, Object> contactMap = new HashMap<>();
     wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
@@ -485,8 +499,6 @@ public class GenesysService {
   }
 
   private void getPitchedNotBookedValues(Long contactId, HashMap<String, Object> contactMap) {
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     Date date = new Date();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
@@ -521,8 +533,6 @@ public class GenesysService {
   }
 
   private void getRetargetedValues(HashMap<String, Object> contactMap) {
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     Date date = new Date();
 
     // Hard code certain params for this contact list
@@ -539,15 +549,29 @@ public class GenesysService {
     contactMap.put("contactcallable", "1");
   }
 
+  public CustomContact getContact(Long contactId, Boolean isParent) {
+    //this function was created to return a smaller contact object and to remove an otherwise unavoidable circular reference
+    Map<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+
+    params.put("companyId", 3L);
+    params.put("parentCompanyId", 3L);
+    params.put("isParent", isParent);
+
+    //todo make this query return all the props needed
+    Optional<CustomContact> contact = sqlCache.getBySql(GenesysQuery.getContact, params, CustomContact.class);
+
+    return contact.orElse(null);
+  }
+
   public void updateContact(Long contactId) throws IOException, ApiException {
     // Only update contacts if we are in Prod
     if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
       return;
     }
 
-    Contact contact = contactService.getContact(contactId);
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
+    CustomContact contact = getContact(contactId, true);
+
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
@@ -772,7 +796,7 @@ public class GenesysService {
     }
   }
 
-  private String getCallerGroupNumber(Contact contact) {
+  private String getCallerGroupNumber(CustomContact contact) {
     HashMap<String, Object> params = new HashMap<>();
     User user = securityService.getCurrentUser();
     params.put("postalCode", contact.getPostalCode());
