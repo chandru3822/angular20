@@ -151,6 +151,87 @@ public class ScheduleQuery {
           and ppse.resource_id = any(array[ :combined ]::bigint[])
         """;
 
+  public final static String getConflictingEvents = """
+    select
+          pps.process_step_id,
+          pps.project_id,
+          pps.id as project_process_step_id,
+          ppse.id as project_process_step_event_id,
+          pse.id as process_step_event_id,
+          e.event_name,
+          cest.event_status_type_id,
+          e.id as event_id,
+          sl.system_list_type_id,
+          ppse.start_time as start,
+          ppse.end_time as "end",
+          ppse.resource_id as resource_id,
+          ppse.save_version,
+          u.id as user_id,
+          c.id as contact_id,
+          c.first_name as contact_first_name,
+          c.last_name as contact_last_name,
+          c.phone,
+          c.mobile,
+          p.latitude,
+          p.longitude,
+          p.street1,
+          p.city,
+          p.postal_code,
+          s.abbreviation as state_abbreviation,
+          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name) end as resource_name,
+          p.project_name,
+          ps.process_step_name,
+          p.company_state_id,
+          s.state,
+          pps.company_process_step_status_type_id,
+          cpsst.process_step_status_type,
+          cpsst.process_step_status_type_id,
+          (select cfga.id
+            from flow.project_process_step_event_custom_field_value ppsecfv
+               inner join flow.custom_field_group_assignment cfga
+                 on ppsecfv.custom_field_group_assignment_id = cfga.id
+                  and cfga.archived is false and cfga.display_on_snippet is true
+               inner join flow.custom_field cf on cf.id = cfga.custom_field_id
+            where ppsecfv.project_process_step_event_id = ppse.id) as "customFieldDisplayValueGroupAssignmentId"
+        from flow.project_process_step pps
+               inner join flow.project_process_step_event ppse on pps.id = ppse.project_process_step_id
+               inner join flow.process_step_event pse on ppse.process_step_event_id = pse.id
+               inner join flow.event e on pse.event_id = e.id
+               inner join flow.project p on p.id = pps.project_id
+               inner join flow.company_event_status_type cest on ppse.company_event_status_type_id = cest.id
+               inner join flow.company_project_status_type cpst on cpst.id = p.company_project_status_type_id
+               inner join flow.process_step ps on ps.id = pps.process_step_id
+               inner join flow.company_process_step_status_type cpsst on cpsst.id = pps.company_process_step_status_type_id
+               inner join flow.contact c on c.id = p.contact_id
+               inner join flow.company_state cs on cs.id = p.company_state_id
+               inner join flow.state s on s.id = cs.state_id
+               inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+               inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
+               inner join flow.system_list sl on sl.id = csl.system_list_id
+               left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
+               left join flow.user u on u.id = up.user_id
+               left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
+        where  ppse.start_time is not null
+          and ppse.end_time is not null
+          and p.archived is false
+          and ppse.archived is not true
+          and ppse.resource_id is not null
+          and case when :startTime::timestamp is not null and :endTime::timestamp is not null
+                     then ppse.start_time between :startTime::timestamp and :endTime::timestamp OR
+                          ppse.end_time between :startTime::timestamp and :endTime::timestamp OR
+                          ppse.end_time >= :endTime::timestamp and ppse.start_time <= :startTime::timestamp else 1=1 end
+          and case when :isParent
+                     then ps.company_id = any (select id from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
+                   else ps.company_id = :companyId end
+          and ps.archived is not true
+          and case when :includeCancelled::boolean is false
+            then cest.event_status_type_id != 3
+             else true end -- dont include cancelled events unless they told us to, we include active events on cancelled PS cuz BR told us to
+          and cpst.project_status_type_id != 2 --dont include process steps for cancelled projects
+          and ppse.resource_id is not null
+          and ppse.resource_id = any(array[ :combined ]::bigint[])
+        """;
+
   //language=PostgreSQL
   public final static String getAvailability = """
     select *
