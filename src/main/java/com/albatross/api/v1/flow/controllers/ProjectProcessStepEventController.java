@@ -60,7 +60,7 @@ public class ProjectProcessStepEventController {
   public ResponseEntity<Object> savePpsEventDetails(
     @PathVariable Long ppsId, @PathVariable Long eventId, @RequestBody SaveEventRequest saveEvent, @PathVariable Optional<Boolean> forceSave)
     throws Exception {
-    if(!forceSave.isPresent() || !forceSave.get()){
+    if(forceSave.isPresent() && !forceSave.get()){
       List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
       if(conflictList != null && conflictList.size() > 0){
         return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
@@ -118,7 +118,7 @@ public class ProjectProcessStepEventController {
     @PathVariable Optional<Boolean> forceSave) {
     try {
       if(actionId == 1){
-        if(!forceSave.isPresent() || !forceSave.get()){
+        if(forceSave.isPresent() && !forceSave.get()){
           List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
           if(conflictList != null && conflictList.size() > 0){
             return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
