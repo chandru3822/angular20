@@ -142,7 +142,7 @@
         <template v-slot:yes>Schedule Anyway</template>
 
       </ConfirmationDialog>
-      <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
+      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
