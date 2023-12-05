@@ -145,7 +145,7 @@ public class NoteService {
             noteRefName = c.getFirstName() + " " + c.getLastName() + " - " + c.getId();
           } else if (null != typeId && typeId.equals(ObjectType.PROJECT.id)) {
             locationOfNote = "project";
-            link = homeUrl + "/project/" + note.getPrimaryId() + "/details";
+            link = homeUrl + "/project/" + note.getPrimaryId() + "/status";
             Optional<Project> p = projectService.getProject(note.getPrimaryId());
             if (p.isPresent()) {
               noteRefName = p.get().getProjectName() + " - " + p.get().getId();

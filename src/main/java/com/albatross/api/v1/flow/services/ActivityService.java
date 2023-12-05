@@ -188,7 +188,7 @@ public class ActivityService {
           noteRefName = c.getFirstName() + " " + c.getLastName() + " - " + c.getId();
         } else if (null != typeId && typeId.equals(ObjectType.PROJECT.id)) {
           locationOfNote = "project";
-          link = homeUrl + "/project/" + sourceId + "/details";
+          link = homeUrl + "/project/" + sourceId + "/status";
           Optional<Project> p = projectService.getProject(sourceId);
           if (p.isPresent()) {
             noteRefName = p.get().getProjectName() + " - " + p.get().getId();
