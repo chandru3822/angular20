@@ -31,7 +31,7 @@
         <template #item="{ item, index }">
           <tr class="text-left" :class="{'shaded-row': index % 2}">
             <td class="text-left">
-              <v-btn outlined :to="`/project/${item.projectId}/details`">
+              <v-btn outlined :to="`/project/${item.projectId}/status`">
                 {{item.projectId}}
               </v-btn>
             </td>

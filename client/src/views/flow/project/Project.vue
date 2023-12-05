@@ -106,13 +106,13 @@
     <ThreeColumnLayoutMobile v-if="isMobile"
                              :menu-items="[
                                  pageOverviewMenuItem,
-                                 {pageName:'Project Details', subMenuSlot: true},
+                                 {pageName:'Details', subMenuSlot: true},
                                  {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`},
                                  {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`},
                                  {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity/2`},
-                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
+                                 {pageName: 'Notes and Activities', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
                                  {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
-                                 {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
+                                 {pageName: 'Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
                                  ]"
                              :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
                              :view-change-callback="changeMobileView"
@@ -133,7 +133,7 @@
       <template v-slot:header-contents>
         <v-toolbar-title class="title-medium text-wrap">
           <div>
-            <router-link :to="`/project/${project.id}/details`" class="no-text-decoration">{{ project.projectName }}</router-link>
+            <router-link :to="`/project/${project.id}/status`" class="no-text-decoration">{{ project.projectName }}</router-link>
             <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2 no-text-decoration"
@@ -191,7 +191,7 @@
           <v-toolbar-title class="title-large albatross-header-1 align-center "
                            >
             <div>
-              <router-link :to="`/project/${project.id}/details`">{{ project.projectName }}</router-link>
+              <router-link :to="`/project/${project.id}/status`">{{ project.projectName }}</router-link>
               <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2"
@@ -387,8 +387,8 @@ export default {
     this.pageOverviewMenuItem = {
       archived: false,
       customPath: `/project/${ this.$route.params.projectId }/projectOverview`,
-      tabName: 'Project Overview',
-      pageName: 'Project Overview',
+      tabName: 'Overview',
+      pageName: 'Overview',
       isExpandable: false,
       details: this.overviewDetails,
       uniqueIdentifier: 'menu_item_project_overview'
