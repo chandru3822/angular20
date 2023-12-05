@@ -133,7 +133,7 @@
       <template v-slot:header-contents>
         <v-toolbar-title class="title-medium text-wrap">
           <div>
-            <router-link :to="`/project/${project.id}/details`" class="no-text-decoration">{{ project.projectName }}</router-link>
+            <router-link :to="`/project/${project.id}/status`" class="no-text-decoration">{{ project.projectName }}</router-link>
             <span v-if="$store.state.project && $store.state.project.pps && $store.state.project.pps.processStepName">
             <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
             <router-link class="breadcrumb albatross-body-2 no-text-decoration"
