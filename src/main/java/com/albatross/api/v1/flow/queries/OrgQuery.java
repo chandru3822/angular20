@@ -318,7 +318,17 @@ select oat.id,
         date_modified = now(),
         modified_by_id = :currentUserId
     where user_id = :userId
-     and org_id != any(array[ :orgIdsSentIn ]::bigint[])
+     and not(org_id = any(array[ :orgIdsSentIn ]::bigint[]))
+     and archived is false
+    """;
+
+  //language=PostgreSQL
+  public final static String deleteAllUserOrgAccess = """
+    update flow.user_org_access
+    set archived = true,
+        date_modified = now(),
+        modified_by_id = :currentUserId
+    where user_id = :userId
      and archived is false
     """;
 
