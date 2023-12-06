@@ -79,6 +79,7 @@ public class BlueravenCustomFieldGroupService {
         cv.setHasListValues(true);
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
+        params.put("companyId", companyId);
         List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
         cv.setListOfValues(listOfValues);
       }
