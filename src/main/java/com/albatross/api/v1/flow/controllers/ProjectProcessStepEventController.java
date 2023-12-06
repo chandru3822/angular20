@@ -114,11 +114,10 @@ public class ProjectProcessStepEventController {
     @PathVariable Long ppsId,
     @PathVariable Long eventId,
     @PathVariable Long actionId,
-    @RequestBody SaveEventRequest saveEvent,
-    @PathVariable Optional<Boolean> forceSave) {
+    @RequestBody SaveEventRequest saveEvent) {
     try {
       if(actionId == 1){
-        if(forceSave.isPresent() && !forceSave.get()){
+        if(saveEvent.getForceSave() != null && !saveEvent.getForceSave()){
           List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
           if(conflictList != null && conflictList.size() > 0){
             return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
@@ -172,5 +171,6 @@ public class ProjectProcessStepEventController {
     private Long id, resourceId, companyEventStatusTypeId, saveVersion;
     private Timestamp startTime, endTime;
     private List<CustomFieldValue> customFieldValues;
+    private Boolean forceSave;
   }
 }
