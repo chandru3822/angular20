@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show" persistent scrollable max-width="80vw">
+  <v-dialog v-model="show" scrollable max-width="80vw" @keydown.esc="close" @click:outside="close">
     <v-card v-if="!loading && detail">
       <v-card-title>
         Change Log #{{ detail.version }}
@@ -18,15 +18,29 @@
 
       </v-card-title>
       <v-card-text>
-        <v-row no-gutters>
-          <v-col cols="4" class="font-weight-bold">Last Modified By:</v-col>
-          <v-col cols="8">{{ detail.modifiedBy }}</v-col>
-          <v-col cols="4" class="font-weight-bold">Last Modified:</v-col>
-          <v-col cols="8">{{ detail.dateModified | timestamp }}</v-col>
-          <v-col v-if="detail.notes" cols="4" class="font-weight-bold">Notes:</v-col>
-          <v-col v-if="detail.notes" cols="8">{{ detail.notes }}</v-col>
-        </v-row>
-        <v-data-table v-if="detail.history.length > 0" :headers="headers" :items="detail.history">
+        <table class="history-summary-table">
+          <colgroup>
+            <col style="width: 15%">
+          </colgroup>
+          <tbody>
+          <tr>
+            <th>Last modified by</th>
+            <td>{{ detail.modifiedBy }}</td>
+          </tr>
+          <tr>
+            <th>Last modified</th>
+            <td>{{ detail.dateModified | timestamp }}</td>
+          </tr>
+          <tr v-if="detail.notes">
+            <th>Notes</th>
+            <td>
+              {{ detail.notes }}
+            </td>
+          </tr>
+          </tbody>
+        </table>
+
+        <v-data-table class="table-striped" v-if="detail.history.length > 0" :headers="headers" :items="detail.history">
           <template #item.section="{item}">{{ item.objectType }}</template>
           <template #item.action="{item}">{{ item.action | capitalize }}</template>
           <template #item.modifiedBy="{item}">
@@ -37,8 +51,7 @@
           <template #item.changes="{item}">
             <table class="history-table" :class="item.action">
               <colgroup>
-                <col style="width: 50%">
-                <col style="width: 50%">
+                <col style="width: 35%">
               </colgroup>
               <tbody>
               <tr
@@ -131,7 +144,7 @@ export default {
             h.action = modified ? 'modified' : 'added'
           }
 
-          h.changes.sort((a,b)=>{
+          h.changes.sort((a, b) => {
             if (a.fieldName < b.fieldName) {
               return -1;
             }
@@ -161,13 +174,30 @@ export default {
 }
 </script>
 <style scoped lang="scss">
+.history-summary-table{
+  border-spacing: 0;
+  width: 100%;
+  th {
+    text-align: left;
+    vertical-align: top;
+  }
+}
+
 .history-table {
   width: 100%;
   border-spacing: 0;
 
-  &.modified{
+  td {
+    vertical-align: top;
+  }
+
+  tr:nth-of-type(even){
+    background-color: unset !important;
+  }
+
+  &.modified {
     tr:not(.current) {
-      color:#6c6a6a;
+      color: #6c6a6a;
     }
 
     tr.current {
