@@ -480,6 +480,11 @@ a.chatLink {
 #project-tabs > div > div > div:nth-child(2) > form > div.sc-user-input--buttons > div:nth-child(3) > div {
   left: 40% !important;
 }
+#project-tabs {
+  div.sc-user-input--buttons > div.sc-user-input--button {
+    padding-right: 8px;
+  }
+}
 
 
 .sc-user-input {
