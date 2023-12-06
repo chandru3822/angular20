@@ -1,5 +1,5 @@
 <template>
-  <SidePanelExpansionPanel header="Project Details">
+  <SidePanelExpansionPanel :header="isMobile ? 'Details' : 'Project Details'">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
           text color="primary" class="px-0" small
@@ -47,7 +47,11 @@ export default {
   created() {
     this.getProjectTabs()
   },
-  computed: {},
+  computed: {
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
+    },
+  },
   methods: {
     changeTabs(tab, buttonClicked) {
       if(tab.customPath) {

@@ -52,6 +52,7 @@
                             item-value="orgId"
                             return-object
                             multiple
+                            clearable
                             autocomplete="off"
                             attach>
               <template
@@ -76,7 +77,6 @@
             />
             <v-btn text color="primary" @click="[addCalendar = !addCalendar]">Cancel</v-btn>
             <v-btn color="primary"
-                   :disabled="!userHasFullAccess && userOrgCalendars.length === 0"
                    @click="[addCalendar = !addCalendar, saveUserOrgCalendars()]">Save</v-btn>
           </div>
         </v-card>

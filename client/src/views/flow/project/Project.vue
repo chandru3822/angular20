@@ -106,13 +106,13 @@
     <ThreeColumnLayoutMobile v-if="isMobile"
                              :menu-items="[
                                  pageOverviewMenuItem,
-                                 {pageName:'Project Details', subMenuSlot: true},
+                                 {pageName:'Details', subMenuSlot: true},
                                  {pageName:'Active Process Steps', subMenuSlot: true, updateKey:updatePpsKey, customPath:`/project/${ this.$route.params.projectId }/activeprocessSteps`},
                                  {pageName:'Active Events', subMenuSlot:true, updateKey:updateEventKey, customPath: `/project/${ this.$route.params.projectId }/activeevents`},
                                  {pageName: 'Documents', customPath: `/project/${ this.$route.params.projectId }/projectactivity/2`},
-                                 {pageName: 'Notes', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
+                                 {pageName: 'Notes and Activities', customPath: `/project/${ this.$route.params.projectId }/projectactivity/1`},
                                  {pageName: 'Communication', customPath: `/project/${ this.$route.params.projectId }/projectactivity/0`},
-                                 {pageName: 'Project Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
+                                 {pageName: 'Admin', customPath: `/projectAdmin/${projectId}/processSteps`}
                                  ]"
                              :headerHeight="project.tags?.length > 0 ? '86px' : '76px'"
                              :view-change-callback="changeMobileView"
@@ -387,8 +387,8 @@ export default {
     this.pageOverviewMenuItem = {
       archived: false,
       customPath: `/project/${ this.$route.params.projectId }/projectOverview`,
-      tabName: 'Project Overview',
-      pageName: 'Project Overview',
+      tabName: 'Overview',
+      pageName: 'Overview',
       isExpandable: false,
       details: this.overviewDetails,
       uniqueIdentifier: 'menu_item_project_overview'
