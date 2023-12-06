@@ -3,7 +3,7 @@
     <v-card-text class="pa-0">
       <v-form ref="attachmentFieldsForm">
         <v-row class="coversheet-container ma-0">
-          <v-col cols="12" md="4" class="coversheet-left-pane  pt-3 px-4 pb-2" :class="{'coversheet-pane-height-with-tabs': isMobile}" v-if="!isMobile || tab===0">
+          <v-col cols="12" md="4" class="coversheet-left-pane  pt-3 px-4 pb-2"  v-if="!isMobile || tab===0">
             <v-toolbar flat dense class="app-toolbar coversheet-title">
               <v-toolbar-title class="title-large">Document Summary</v-toolbar-title>
               <v-spacer/>
@@ -111,7 +111,7 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col cols="12" md="8" class="coversheet-right-pane pt-3 px-4 pb-2" ref="rightPaneViewer" :class="{'coversheet-pane-height-with-tabs': isMobile}" v-if="!isMobile || tab === 1">
+          <v-col cols="12" md="8" class="coversheet-right-pane pt-3 px-4 pb-2" ref="rightPaneViewer"  v-if="!isMobile || tab === 1">
             <v-toolbar flat dense class="app-toolbar coversheet-title">
               <v-toolbar-title class="title-large">{{ fileDetails.displayName }}</v-toolbar-title>
               <v-spacer></v-spacer>
@@ -190,12 +190,12 @@
               </v-toolbar>
             </div>
           </v-col>
-          <v-col cols="12" class="pa-0 d-md-none">
-            <v-tabs fixed-tabs v-model="tab">
-              <v-tab @click="tab=0">Summary</v-tab>
-              <v-tab @click="tab=1">Preview</v-tab>
-            </v-tabs>
-          </v-col>
+<!--          <v-col cols="12" class="pa-0 d-md-none">-->
+<!--            <v-tabs fixed-tabs v-model="tab">-->
+<!--              <v-tab @click="tab=0">Summary</v-tab>-->
+<!--              <v-tab @click="tab=1">Preview</v-tab>-->
+<!--            </v-tabs>-->
+<!--          </v-col>-->
         </v-row>
       </v-form>
     </v-card-text>
@@ -276,11 +276,14 @@ export default {
       pdfIsLoading: true,
       fileSrcUrl: null,
       confirmClose: false,
-      tab:0
+      tab: this.isMobile ? 1 : 0
     }
   },
   created() {
     this.doPageLoad()
+    if(this.isMobile){
+      this.tab = 1
+    }
   },
   computed: {
     isMobile(){
