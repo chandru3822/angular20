@@ -297,18 +297,25 @@ public class OrgService {
     params.put("currentUserId", currentUser.trueUserId());
     params.put("fullCalendarAccess", request.isFullCalendarAccess());
 
+    //if an empty array is sent in then all existing will be deleted
+    List<Long> orgIdsSentIn = request.getUserOrgAccess().stream().map(UserOrgAccess::getOrgId).toList();
+    params.put("orgIdsSentIn", orgIdsSentIn);
+
     //save the full calendar access every time...for now cuz this is taking too long
     sqlCache.updateBySql(OrgQuery.saveUserFullCalendarAccess, params);
 
     if(!request.isFullCalendarAccess()) {
-      List<Long> orgIdsSentIn = request.getUserOrgAccess().stream().map(UserOrgAccess::getOrgId).toList();
-      params.put("orgIdsSentIn", orgIdsSentIn);
+      if(!orgIdsSentIn.isEmpty()) {
+        //delete any orgs that exist and werent sent in
+        sqlCache.updateBySql(OrgQuery.deleteArchivedUserOrgAccess, params);
+        //add any orgs that are new and not archived
+        sqlCache.updateBySql(OrgQuery.saveOrgCalendarsToUser, params);
+      }
 
-      //delete any orgs that exist and werent sent in
-      sqlCache.updateBySql(OrgQuery.deleteArchivedUserOrgAccess, params);
+    }
 
-      //add any orgs that are new and not archived
-      sqlCache.updateBySql(OrgQuery.saveOrgCalendarsToUser, params);
+    if(request.isFullCalendarAccess() || orgIdsSentIn.isEmpty()) {
+      sqlCache.updateBySql(OrgQuery.deleteAllUserOrgAccess, params);
     }
 
     return getOrgCalendarsForUser(request.getUserId());
