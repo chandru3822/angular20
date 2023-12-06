@@ -54,7 +54,7 @@
                 class="ma-2"
                 text
                 icon
-                color="blue lighten-2"
+                color="primary"
                 @click.stop="showHistory(item.version)"
             >
               <v-icon>mdi-history</v-icon>
