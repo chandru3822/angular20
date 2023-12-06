@@ -67,8 +67,8 @@ export default {
           day: 'numeric', month: 'short', year: 'numeric' //formatDate('date', 'D MMM YYYY');
         })
       } else if (this.field.dataTypeId == 2 || this.field.dataTypeId == 3) {
-        this.fieldName = this.field.fieldName + ': ' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-GB', {
-          day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hour12: true //formatDate('date', 'D MMM YYYY');
+        this.fieldName = this.field.fieldName + ': ' + new Date((this.field.fieldValue + 'Z')).toLocaleDateString('en-US', {
+          day: 'numeric', month: 'long', year: 'numeric', hour: "numeric", minute: "2-digit", hourCycle: "h12" //formatDate('date', 'D MMM YYYY');
         })//formatDate('timestamp', 'D MMM YYYY H:mm a');
       } else {
         this.fieldName = this.field.fieldName + ': ' + this.field.fieldValue;

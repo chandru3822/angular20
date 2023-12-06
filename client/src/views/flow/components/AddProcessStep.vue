@@ -5,6 +5,7 @@
     offset-y
     min-width="350"
     :close-on-content-click="false"
+    style="z-index: 10"
 >
   <template #activator="{on}">
     <v-btn text color="primary" class="text-capitalize" :small="!largeBtn" :large="largeBtn" v-on="on" @click="getSteps()" @blur="clear()">
