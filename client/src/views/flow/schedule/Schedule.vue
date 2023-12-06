@@ -229,16 +229,19 @@
                      @click="[fieldsSaving = true, checkForSchedulingConflicts()]">Save</v-btn>
               <ConfirmationDialog v-if="conflictingEvents != null" :open-dialog="conflictingEvents != null && conflictingEvents.length > 0" @confirm="scheduleProject(true)" @close-dialog="cancelDialog()">
                 <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
-                <template v-else v-slot:title>Conflicts</template>
-                <div v-for="conflictingEvent in conflictingEvents">
-                  Resource <b>{{selectedProject.resourceName}}</b>
-                  has another event on their calendar on <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+                <template v-else v-slot:title>Conflict</template>
+                Resource <b>{{selectedProject.resourceName}}</b>
+                has another event on their calendar for:
+                <ol>
+                <li v-for="conflictingEvent in conflictingEvents">
+                  <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
                   - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
                   <b></b>
-                <br><br>
+                <br>
                 <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
                   <br><br>
-                </div>
+                </li>
+                </ol>
                   <template v-slot:no>Cancel</template>
                 <template v-slot:yes>Schedule Anyway</template>
 

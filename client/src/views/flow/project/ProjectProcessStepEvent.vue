@@ -129,20 +129,24 @@
       </div>
       <ConfirmationDialog v-if="conflictingEvents != null && conflictingEvents.length > 0" :open-dialog="conflictingEvents != null&& conflictingEvents.length > 0" @confirm="saveEventDetails(true)" @close-dialog="conflictingEvents = null; fieldsSaving = false">
         <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
-        <template v-else v-slot:title>Conflicts</template>
-        <div v-for="conflictingEvent in conflictingEvents">
-          Resource <b>{{conflictingEvent.resourceName}}</b>
-          has another event on their calendar on <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
-          - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
-          <b></b>
-          <br><br>
-          <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
-          <br><br>
-        </div>   <template v-slot:no>Cancel</template>
+        <template v-else v-slot:title>Conflict</template>
+        Resource <b>{{conflictingEvents[0].resourceName}}</b>
+        has another event on their calendar for:
+        <ol>
+          <li v-for="conflictingEvent in conflictingEvents">
+            <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+              - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+            <b></b>
+            <br>
+            <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
+            <br><br>
+          </li>
+        </ol>
+        <template v-slot:no>Cancel</template>
         <template v-slot:yes>Schedule Anyway</template>
 
       </ConfirmationDialog>
-      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
+      <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
