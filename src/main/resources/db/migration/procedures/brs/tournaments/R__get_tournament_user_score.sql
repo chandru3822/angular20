@@ -68,7 +68,7 @@ BEGIN
                                 and tff.field_code = 'APPOINTMENT_DATE')::date) * 4) +
                      ((select count(1)
                        from brs.project_details pd
-                              left join flow.contact_custom_field_value ccfv
+                              inner join flow.contact_custom_field_value ccfv
                                         on ccfv.contact_id = pd.contact_id and ccfv.custom_field_group_assignment_id = 19106
                        where pd.final_design_complete_date is not null
                          and pd.cancelled_date is null
