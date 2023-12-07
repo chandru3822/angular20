@@ -1,5 +1,5 @@
 <template>
-  <SidePanelExpansionPanel :header="isMobile ? 'Details' : 'Project Details'">
+  <SidePanelExpansionPanel header="Details">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
           text color="primary" class="px-0" small

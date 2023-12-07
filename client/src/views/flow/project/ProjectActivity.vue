@@ -268,26 +268,24 @@ export default {
         case 0:
           if (this.userCanViewSms) {
             if (this.projectId) {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Project Communication'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Communication'
             }
             else {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'User Communication'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'Communication'
             }
           } else {
             if (this.projectId) {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Project Communication (Read-only)'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Communication (Read-only)'
             }
             else {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'User Communication (Read-only)'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'Communication (Read-only)'
             }
           }
 
         case 1:
-          return this.orgId ? 'Organization Notes & Activities' : this.userId ? 'User Notes & Activities'
-              : this.contactId ? 'Contact Notes & Activities' : this.projectId ? 'Project Notes & Activities' : null
+          return this.orgId || this.userId || this.contactId || this.projectId ? 'Notes & Activities' : null
         case 2:
-          return this.isMobile ? 'Documents' : this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
-              : this.projectId ? 'Project Documents' : null
+          return this.orgId || this.userId || this.contactId || this.projectId ? 'Documents' : null
       }
     },
     isSidebarCollapsed() {

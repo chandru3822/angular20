@@ -132,6 +132,7 @@
         <template v-else v-slot:title>Conflict</template>
         Resource <b>{{conflictingEvents[0].resourceName}}</b>
         has another event on their calendar for:
+        <br><br>
         <ol>
           <li v-for="conflictingEvent in conflictingEvents">
             <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
@@ -146,7 +147,7 @@
         <template v-slot:yes>Schedule Anyway</template>
 
       </ConfirmationDialog>
-      <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
+      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
