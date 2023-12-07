@@ -132,6 +132,7 @@
         <template v-else v-slot:title>Conflict</template>
         Resource <b>{{conflictingEvents[0].resourceName}}</b>
         has another event on their calendar for:
+        <br><br>
         <ol>
           <li v-for="conflictingEvent in conflictingEvents">
             <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
