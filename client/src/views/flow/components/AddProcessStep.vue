@@ -8,7 +8,7 @@
     style="z-index: 10"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="text-capitalize" :outlined="outlined" :small="false"  :large="false" v-on="on" @click="getSteps()" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize add-process-step-menu-btn" :outlined="outlined" :small="false"  :large="false" v-on="on" @click="getSteps()" @blur="clear()">
       <v-icon>add</v-icon>
       <span v-if="title != null && !isMobile">{{title}}</span>
     </v-btn>
@@ -213,5 +213,10 @@ export default {
 <style lang="scss">
 .add-process-step-btn > .v-btn__content {
   color: white !important;
+}
+#side-panel-expansion-panel-container {
+  button {
+    border: thin solid var(--v-primary-base);
+  }
 }
 </style>
