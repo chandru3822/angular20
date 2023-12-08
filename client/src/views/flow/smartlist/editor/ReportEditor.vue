@@ -25,8 +25,8 @@
                 hide-details="true"
                 ref="reportNameField"
                 class="report-name"
-                @blur="isEditingReportName = false"
-                @keydown.enter.esc="[isEditingReportName = false, reportNameField.blur()]"
+                @blur="toggleEditingReportName"
+                @keydown.enter.esc="reportNameField.blur"
               />
               <span
                 v-show="!isEditingReportName"
@@ -44,7 +44,7 @@
             <SmartlistCopy
               :smartlist="report"
               :show-text="true"
-              :disabled="!canView || !hasAddAccess"
+              :disabled="!hasAddAccess || (!canView && !report?.public)"
               @copied="copied"
             />
 
@@ -52,7 +52,7 @@
               :smartlist-id="report.id"
               :disabled="!canDelete"
               :show-text="true"
-              @deleted="router.go(-1)"
+              @deleted="report.archived = true; router.go(-1)"
             />
 
             <SmartlistShare
@@ -96,6 +96,7 @@
               placeholder="Data Type"
               :rules="constants.BASIC_REQUIRED_RULE"
               @change="updateObjectType"
+              @click="prevObjectTypeId = report.objectTypeId"
             />
           </v-col>
 
@@ -105,26 +106,11 @@
           >
             <v-checkbox
               v-model="report.mainProcessSteps"
-              :disabled="!canEdit"
+              :disabled="!canEdit && report?.id != null"
               label="Primary Steps Only"
               hide-details
               :ripple="false"
               class="px-4"
-            />
-          </v-col>
-
-          <v-col
-            class="flex-shrink-1 flex-grow-0 text-no-wrap"
-            v-if="[1,2,4,6].includes(report?.objectTypeId)"
-          >
-            <v-checkbox
-              v-model="report.projectDetails"
-              :disabled="!canEdit"
-              label="Project Details"
-              hide-details
-              :ripple="false"
-              class="px-4"
-              @click="projectDetailsClicked"
             />
           </v-col>
 
@@ -279,7 +265,7 @@
       <v-card-actions class="justify-end">
         <v-btn
           text
-          @click="[report.projectDetails = !report.projectDetails, showDataViewDialog = false]"
+          @click="[revertObjectType(), showDataViewDialog = false]"
         >
           Cancel
         </v-btn>
@@ -357,7 +343,7 @@ const sourceRequirements = ref([])
 const reportTypes = ref([])
 const availableFields = ref([])
 const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
-
+const prevObjectTypeId = ref([])
 /**
  * If editing a report, show only types available to that group
  * project/PS/PSE/contact, org/user
@@ -365,12 +351,12 @@ const isEditing = ref(typeof vueInstance.$route.params.reportId !== 'undefined')
 const filteredReportTypes = computed(() => {
   if (isEditing.value) {
     let objectTypeIds = []
-    if ([1,2,4].includes(report.value.objectTypeId)) {
-      objectTypeIds = [1,2,4]
+    if ([1,2,4,8].includes(report.value.objectTypeId)) {
+      objectTypeIds = [1,2,4,8]
     } else if ([3,5].includes(report.value.objectTypeId)) {
       objectTypeIds = [3,5]
     } else if (report.value.objectTypeId === 6) {
-      objectTypeIds = [1,2,4,6]
+      objectTypeIds = [1,2,4,6,8]
     }
     return reportTypes.value.filter(t => objectTypeIds.includes(t.objectTypeId))
   } else {
@@ -484,6 +470,7 @@ const updateOwner = (newOwner) => {
 
 const copied = async (copiedReport) => {
   await router.push({name: 'reportEditor', params: {reportId: copiedReport.id}})
+  showUnsavedDialog.value = false
   await refreshReport()
 }
 
@@ -524,7 +511,7 @@ const save = async () => {
     snackbar('SUCCESS', 'Save Successful')
   } catch (e) {
     logError(e)
-    snackbar('ERROR', 'Error saving smartlist')
+    snackbar('ERROR', e.message || e.data?.message || 'Error saving smartlist')
   } finally {
     store.commit(AppMutations.SET_LOADING, false)
   }
@@ -533,7 +520,7 @@ const save = async () => {
 const getReportTypes = async () => {
   try {
     loadingAvailableFields.value = true
-    const {data} = await getRequest(`/smartlistv1/companyObjectTypes`)
+    const {data} = await getRequest(`/smartlist/companyObjectTypes`)
     reportTypes.value = data.sort((a, b) => a.objectType.localeCompare(b.objectType))
   } catch (e) {
     logError(e)
@@ -549,6 +536,10 @@ const getAvailableFields = async (forceUpdate = false) => {
     try {
       loadingAvailableFields.value = true
       const csvReportTypes = filteredReportTypes.value.map(t => t.objectTypeId).join(',')
+      if (report.value.objectTypeId === 8) {
+        report.value.projectDetails = true
+      }
+
       const {data} = await getRequest(`/smartlist/fields?objectTypeIds=${csvReportTypes}&projectDetails=${report.value.projectDetails}`)
       availableFields.value = data
     } catch (e) {
@@ -613,7 +604,21 @@ const deleteRequirement = (index) => {
 const updateObjectType = () => {
   const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
   if (selectedType) {
+    // If Object Type is being changed from or to Project Details
+    if (report.value?.id && (selectedType.objectTypeId === 8 || prevObjectTypeId.value === 8)) {
+      showDataViewDialog.value = true
+    }
+    else {
+      report.value.objectTypeId = selectedType.objectTypeId
+    }
+  }
+}
+
+const revertObjectType = () => {
+  const selectedType = reportTypes.value.find(t => t.objectTypeId === prevObjectTypeId.value)
+  if (selectedType) {
     report.value.objectTypeId = selectedType.objectTypeId
+    report.value.companyObjectTypeId = selectedType.companyObjectTypeId
   }
 }
 
@@ -622,13 +627,21 @@ const updateRequirement = (requirement, index) => requirements.value.splice(inde
 const toggleDataView = async () => {
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    await putRequest(`/smartlist/${report.value.id}/toggleProjectDetails`)
+    const selectedType = reportTypes.value.find(t => t.id === report.value.companyObjectTypeId)
+    report.value.objectTypeId = selectedType.objectTypeId
+
+    await putRequest(`/smartlist/toggleProjectDetails`, report.value)
     refreshReport(true)
   } catch (e) {
-    report.value.projectDetails = !report.value.projectDetails
     snackbar('ERROR', 'Unable to update project details setting')
   } finally {
     store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const toggleEditingReportName = () => {
+  if (isEditing.value) {
+    isEditingReportName.value = !isEditingReportName.value
   }
 }
 
@@ -647,12 +660,6 @@ const editNameClicked = () => {
   if (canEdit.value) {
     isEditingReportName.value = true
     nextTick(reportNameField.value.focus)
-  }
-}
-
-const projectDetailsClicked = () => {
-  if (report.value?.id) {
-    showDataViewDialog.value = true
   }
 }
 
@@ -677,7 +684,7 @@ onMounted(async () => {
 onUnmounted(() => window.removeEventListener('beforeunload', windowLeave))
 
 onBeforeRouteLeave(async (to, from, next) => {
-  if (hasUnsavedChanges.value) {
+  if (hasUnsavedChanges.value && !report.value.archived) {
     const shouldSave = await unsavedPrompt()
 
     if (shouldSave) {
@@ -757,7 +764,7 @@ const windowLeave = async (event) => {
   }
 
   :deep(.v-data-table__wrapper) {
-    height: calc(100vh - 270px) !important;
+    height: calc(100vh - 300px) !important;
   }
 
   .v-item-group {

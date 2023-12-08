@@ -33,7 +33,7 @@
         <template #item="{item: smartlist}">
           <tr
             class="clickable"
-            @click="router.push({name: 'smartlistEditor', params: {smartlistEditor: smartlist.id}})"
+            @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})"
           >
             <td class="text-left td-name">{{ smartlist.name }}</td>
             <td class="text-left">{{ smartlist.owner }}</td>

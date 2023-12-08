@@ -243,6 +243,7 @@ const props = defineProps({
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
+const companyId = vueInstance.$store.state.user.details.companyId
 
 const availableDataTypeRequirements = ref([])
 const availableOperators = ref([])
@@ -536,7 +537,7 @@ const getSystemListValues = async () => {
     const {data} = await getRequest(url)
 
     requirement.value.isCustomValue = true
-    requirement.value.hasListOfValues = true
+    requirement.value.hasListValues = true
     //Event data return correctly and doesn't need manipulation
     requirement.value.listOfValues = (requirement.value.objectTypeId === 6) ? data : data.map(v => ({id: v.userPositionId, name: v.fullName}))
   } catch (e) {
@@ -573,8 +574,11 @@ const getOperators = async () => {
 }
 
 const add = () => {
+  // copy requirement.value because editing that directly somehow also updates the availableValues props all the way up to the editor
+  let newRequirement = cloneDeep(requirement.value)
+
   //data integrity checks
-  if (requirement.value === null || operator.value === null || value.value === null) {
+  if (newRequirement === null || operator.value === null || value.value === null) {
     return
   }
 
@@ -590,48 +594,52 @@ const add = () => {
   }
 
   if (psEvent.value !== null) {
-    if (requirement.value.objectTypeId === 4) {
-      requirement.value.processStepId = psEvent.value.id
-      requirement.value.processStepName = psEvent.value.name
+    if (newRequirement.objectTypeId === 4) {
+      newRequirement.processStepId = psEvent.value.id
+      newRequirement.processStepName = psEvent.value.name
     } else {
-      requirement.value.eventId = psEvent.value.id
-      requirement.value.eventName = psEvent.value.name
+      newRequirement.eventId = psEvent.value.id
+      newRequirement.eventName = psEvent.value.name
     }
   }
 
-  requirement.value.operatorTypeId = operator.value.id
-  requirement.value.operatorType = operator.value.operatorType
+  newRequirement.operatorTypeId = operator.value.id
+  newRequirement.operatorType = operator.value.operatorType
 
   //if select value is custom
   if (typeof value.value === 'string') {
-    requirement.value.requirementValue = value.value.trim()
+    newRequirement.requirementValue = value.value.trim()
   } else if (Array.isArray(value.value)) {
     //if selected value is a multi-select
-    requirement.value.listOfValueIds = value.value.map(v => v.id)
+    newRequirement.listOfValueIds = value.value.map(v => v.id)
   } else if (value.value?.dataTypeId) {
     //if selected value is a data type requirement
-    requirement.value.dataTypeRequirementId = value.value.id
-    requirement.value.dataTypeRequirement = value.value
+    newRequirement.dataTypeRequirementId = value.value.id
+    newRequirement.dataTypeRequirement = value.value
   } else {
     //selected value is a list value
-    requirement.value.listOfValueId = value.value.id
+    newRequirement.listOfValueId = value.value.id
   }
 
   if (value.value?.secondaryRequirement) {
-    requirement.value.secondaryRequirement = true
-    requirement.value.secondaryRequirementValue = secondaryValue.value.trim()
+    newRequirement.secondaryRequirement = true
+    newRequirement.secondaryRequirementValue = secondaryValue.value.trim()
   }
 
-  if (requirement.value.hasListOfValues) {
-    requirement.value.availableListOfValues = requirement.value.listOfValues
+  if (newRequirement.hasListValues) {
+    newRequirement.availableListOfValues = newRequirement.listOfValues
   }
 
-  requirement.value.isCustomValue = typeof value.value === 'string'
+  newRequirement.isCustomValue = (typeof value.value === 'string' || typeof value.value === 'object')
+
+  if (newRequirement.companyId === null) {
+    newRequirement.companyId = companyId
+  }
 
   if (isEditing.value) {
-    emit('updated', requirement.value)
+    emit('updated', newRequirement)
   } else {
-    emit('added', requirement.value)
+    emit('added', newRequirement)
   }
   reset()
 }
@@ -657,6 +665,10 @@ onMounted(() => {
     operator.value = {
       id: requirement.value.operatorTypeId,
       operatorType: requirement.value.operatorType
+    }
+
+    if (requirement.value.hasListValues) {
+      requirement.value.availableListOfValues = requirement.value.listOfValues
     }
 
     if (requirement.value.dataTypeRequirementId) {

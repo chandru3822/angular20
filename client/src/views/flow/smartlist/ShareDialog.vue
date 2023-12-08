@@ -3,7 +3,7 @@
   <v-dialog
     v-model="openDialog"
     :width="450"
-    persistent
+    @click:outside="closeDialog"
   >
     <v-card>
       <v-card-title
@@ -114,7 +114,7 @@
                   <template #append-item>
                     <v-divider/>
                     <v-list-item
-                      v-if="accessLevel.isUser"
+                      v-if="accessLevel.isUser && isOwner"
                       @click="confirmOwnershipChange(accessLevel)"
                     >
                       Transfer Ownership
@@ -128,7 +128,7 @@
                 align-self="center"
                 class="pl-0"
               >
-                <v-icon @click="markDeleted(accessLevel)">mdi-delete</v-icon>
+                <v-icon color="primary" @click="markDeleted(accessLevel)">mdi-delete</v-icon>
               </v-col>
             </v-row>
           </v-list-item>
@@ -151,7 +151,7 @@
           class="white--text elevation-2 text-capitalize mr-2 mb-2"
           @click="updateAccess"
         >
-          Share
+          Save
         </v-btn>
       </v-card-actions>
     </v-card>
@@ -328,19 +328,26 @@ const updateAccess = async () => {
     try {
       store.commit(AppMutations.SET_LOADING, true)
       await postRequest(`/smartlist/${props.smartlist.id}/access`, {...payload, smartlistId: props.smartlist.id})
-      snackbar('SUCCESS', `Smartlist Successfully Shared`)
+
+      if (payload.updatePublic && payload.public) {
+        snackbar('SUCCESS', `Smartlist made public`)
+      }
+      else {
+        snackbar('SUCCESS', `Access updated`)
+      }
+
       emit('dialog-closed')
       if (props.smartlist.public !== isPublic.value) {
         emit('updated-public', isPublic.value)
       }
     } catch (err) {
       logError(err)
-      snackbar('ERROR', 'Error while Sharing Smartlist')
+      snackbar('ERROR', 'Error while sharing Smartlist')
     } finally {
       handleHidingGlobalLoader(vueInstance, true)
     }
   } else {
-    snackbar('SUCCESS', `Smartlist Successfully Shared`)
+    snackbar('SUCCESS', `Access updated`)
     emit('dialog-closed')
   }
 }
@@ -381,6 +388,10 @@ const markDeleted = (accessLevel) => {
     deleted: true
   })
 }
+
+const closeDialog = () => {
+  emit('dialog-closed')
+};
 
 getSharables()
 getAccessLevels()

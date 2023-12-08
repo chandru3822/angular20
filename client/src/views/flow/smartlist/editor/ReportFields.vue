@@ -28,9 +28,19 @@
       placeholder="Type or Select Name"
       solo
       hide-details="true"
-      class="field-selector pa-2"
+      class="pa-2"
       @change="add"
-    />
+    >
+      <template #append>
+        <v-btn
+          icon
+          @click.stop="reset()"
+        >
+          <v-icon>mdi-close</v-icon>
+        </v-btn>
+      </template>
+
+    </v-autocomplete>
   </v-col>
 
   <v-col class="flex-grow-1 flex-shrink-0 overflow-auto">
