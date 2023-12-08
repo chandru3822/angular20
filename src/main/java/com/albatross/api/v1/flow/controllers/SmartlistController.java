@@ -1,6 +1,8 @@
 package com.albatross.api.v1.flow.controllers;
 
+import com.albatross.api.v1.flow.model.CompanyObjectType;
 import com.albatross.api.v1.flow.model.smartlist.*;
+import com.albatross.api.v1.flow.services.ObjectTypeService;
 import com.albatross.api.v1.flow.services.report.SmartlistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class SmartlistController {
 
   private final SmartlistService smartlistService;
+  private final ObjectTypeService objectTypeService;
 
   @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_VIEW', 'SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -156,9 +159,9 @@ public class SmartlistController {
   }
 
   @PreAuthorize("hasFeatureAccessLevel('SMARTLIST_ADD', 'SMARTLIST_MANAGE', 'SMARTLIST_ADMIN')")
-  @PutMapping(value = "/{smartlistId}/toggleProjectDetails")
-  public ResponseEntity<Void> updateSmartlistType(@PathVariable Long smartlistId) {
-    smartlistService.updateProjectDetails(smartlistId);
+  @PutMapping(value = "/toggleProjectDetails")
+  public ResponseEntity<Void> updateSmartlistType(@RequestBody Smartlist smartlist) {
+    smartlistService.updateProjectDetails(smartlist);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
@@ -189,6 +192,17 @@ public class SmartlistController {
       smartlistService.saveError(report.getSmartlist(), null, report.getFields(), report.getRequirements(), e);
       throw e;
     }
+  }
+
+  @GetMapping(value = "/companyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<CompanyObjectType>> getCompanyObjectTypes() {
+    List<CompanyObjectType> types = objectTypeService.getSmartlistCompanyObjectTypes();
+    for (CompanyObjectType type : types) {
+      if ("Data View".equals(type.getObjectType())) {
+        type.setObjectType("Project Details");
+      }
+    }
+    return new ResponseEntity<>(types, HttpStatus.OK);
   }
 
   @PreAuthorize("hasRootLevelAccess()")

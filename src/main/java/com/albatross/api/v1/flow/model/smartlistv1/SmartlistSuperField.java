@@ -13,7 +13,10 @@ public class SmartlistSuperField {
     displayOrder, processStepId, eventId, processStepEventId, dataTypeId, objectTypeId, companySystemListId, systemListTypeId, smartlistSystemListId,
     companyId, systemListId;
 
-  private String name, objectType, processStepName, eventName, customFieldSqlKey, customFieldSql, customFieldSqlSmartlist, projectDetailsColumn;
+  private String name, objectType, processStepName, eventName, projectDetailsColumn;
+
+  @JsonIgnore
+  private String customFieldSqlKey, customFieldSql, customFieldSqlSmartlist;
 
   private Timestamp dateCreated, dateModified;
 

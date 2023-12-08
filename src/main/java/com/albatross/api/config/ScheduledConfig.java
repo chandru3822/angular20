@@ -216,6 +216,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     user.setHighestCompanyId(cronUser.getCompanyId());
     user.setUserPositions(new ArrayList<>());
     user.setHighestParentCompanyId(cronUser.getCompanyId());
+    user.setHasAccess(true);
 
     final UserAccountDetails uad = new UserAccountDetails(user, List.of());
 

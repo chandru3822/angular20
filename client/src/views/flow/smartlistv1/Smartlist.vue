@@ -107,7 +107,7 @@
               <v-row>
                 <v-col cols="4" md="2">
                   <v-checkbox
-                    v-model="smartlist.public"
+                    v-model="smartlist.shared"
                     label="Public"
                     :readonly="!userCanEdit"
                   />
@@ -432,6 +432,8 @@ export default {
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
+        this.snackbar = getSnackbar('SUCCESS', `Smartlist Created`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -471,9 +473,10 @@ export default {
         }
 
         const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}`, this.smartlist)
-
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.originalObjectTypeId = companyObjectType.objectTypeId
+        this.snackbar = getSnackbar('SUCCESS', `Smartlist Updated`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)

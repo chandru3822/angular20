@@ -354,7 +354,7 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
+          <div class="contact-fields-container" v-if="contact && contact.id && !fieldsLoading">
             <v-row class="px-5">
               <v-col cols="12" class="text-left py-0 px-0">
                 <!--    process field groups-->
@@ -1037,58 +1037,67 @@ export default {
   overflow: hidden;
 }
 
-.contact-split-container {
-  height: calc(100% - 50px);
-  max-width: 100%;
-  width: 100%;
-  margin-right: 0 !important;
-  margin-left: 0 !important;
+#three-column-container {
+  div.contact-fields-container {
+    overflow: auto ;
+    overflow-x: hidden;
+    height: calc(100vh - 200px);
+    padding-bottom: 0;
 }
 
-.detail-label {
-  font-size: 12px;
-  color: var(--v-grey-darken1);
-}
+  .contact-split-container {
+    height: calc(100% - 50px);
+    max-width: 100%;
+    width: 100%;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
 
-.detail-item {
-  font-size: 0.875rem;
-  margin-left: 5px;
-  overflow-wrap: break-word;
-}
+  .detail-label {
+    font-size: 12px;
+    color: var(--v-grey-darken1);
+  }
 
-.project-button {
-  border: solid 1px #C4C4C4;
-  padding: 10px;
-  margin-bottom: 10px;
-}
+  .detail-item {
+    font-size: 0.875rem;
+    margin-left: 5px;
+    overflow-wrap: break-word;
+  }
 
-.menu-option{
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
+  .project-button {
+    border: solid 1px #C4C4C4;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
 
-.scrollable {
-  overflow-y: scroll !important;
-}
-
-.mobile-padding-menu{
-  padding-left: 24px !important;
-  padding-bottom: 16px !important;
-}
-
-@media (max-width: 960px) {
-
-  .mobile-contact-header{
+  .menu-option{
     padding-top: 12px;
-    padding-right: 24px;
+    padding-bottom: 12px;
   }
 
-  .mobile-content-padding{
-    padding-top: 16px;
-    padding-left: 16px;
-    padding-right: 16px;
+  .scrollable {
+    overflow-y: scroll !important;
   }
 
+  .mobile-padding-menu{
+    padding-left: 24px !important;
+    padding-bottom: 16px !important;
+  }
+
+  @media (max-width: 960px) {
+
+    .mobile-contact-header{
+      padding-top: 12px;
+      padding-right: 24px;
+    }
+
+    .mobile-content-padding{
+      padding-top: 16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+  }
 }
 
 </style>

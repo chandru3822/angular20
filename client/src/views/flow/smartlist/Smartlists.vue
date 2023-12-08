@@ -6,7 +6,7 @@
         <v-toolbar-title class="app-title">Smartlists</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn text to="/smartlistv1/null" color="primary" v-if="userCanAdd">
+          <v-btn text to="/smartlist/editor" color="primary" v-if="userCanAdd">
             <span>Add Smartlist</span>
           </v-btn>
         </v-toolbar-items>
