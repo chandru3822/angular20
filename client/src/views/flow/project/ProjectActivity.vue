@@ -129,7 +129,14 @@
           @joinConversation="startJoinConversation"
       />
     </template>
-    <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
+    <Messaging
+      v-if="showSmsTab && selectedOption === 0"
+      :primaryId="projectId"
+      :userIdIn="userId"
+      :user-assigned="userAssigned"
+      :teams-associated-to-user="teamsAssociatedToUser"
+    />
+
     <ActivitySection :contact-id="contactId" :user-id="userId"
                      :timeline-view="toggleTimelineView === 0"
                      :object-type-id="objectTypeId" :project-id="projectId"
@@ -371,7 +378,7 @@ export default {
           this.conversationIsLoading = true
           const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`, null, [])
           // this.$store.commit(AppMutations.SET_LOADING, false)
-          this.teamsAssociatedToUser = data
+          this.teamsAssociatedToUser = data ?? []
 
           if (data != null && data.length > 0) {
             this.userHasTeam = true
