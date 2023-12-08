@@ -129,6 +129,7 @@ public class ProposalProcessor {
     user.setId(brSystemUser.getId());
     user.setCompanyId(brSystemUser.getCompanyId());
     user.setHighestCompanyId(brSystemUser.getCompanyId());
+    user.setHasAccess(true);
     user.setHighestParentCompanyId(brSystemUser.getCompanyId());
 
     final FeatureAccessControl proposalAdminFac = new FeatureAccessControl();
