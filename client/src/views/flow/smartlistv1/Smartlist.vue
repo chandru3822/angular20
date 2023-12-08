@@ -473,7 +473,6 @@ export default {
         }
 
         const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}`, this.smartlist)
-
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.originalObjectTypeId = companyObjectType.objectTypeId
         this.snackbar = getSnackbar('SUCCESS', `Smartlist Updated`)
