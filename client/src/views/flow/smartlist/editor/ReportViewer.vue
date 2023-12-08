@@ -9,7 +9,8 @@
   class="rounded-0"
 >
   <template #no-data>
-    No available report data
+    <span v-if="requirements.length > 0">No available report data</span>
+    <span v-else>Select at least one column and one filter to view data preview</span>
   </template>
 
   <template #no-results>
@@ -49,6 +50,7 @@
 
 import { computed, getCurrentInstance, watch } from 'vue'
 import { logError, postRequest, requestInterceptor, responseInterceptor, UUID } from '@/helpers/helpers'
+import { AppMutations } from '@/stores/AppStore'
 import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
 import axios from 'axios'
@@ -116,7 +118,12 @@ watch(
         isUpdateQueued.value = true
         emit('queued')
       } else {
-        processQueue()
+        // If data type is changed, only call processQueue if we aren't switching to/from Project Details
+        if (oldReport.objectType == newReport.objectType ||
+          (oldReport.objectType != newReport.objectType &&
+          !(oldReport.objectType == 'Data View' || newReport.objectType == 'Data View'))) {
+          processQueue()
+        }
       }
     }
   }
@@ -133,6 +140,7 @@ const headers = computed(() => {
 
 const processQueue = async () => {
   try {
+    store.commit(AppMutations.SET_LOADING, true)
     isDataLoading.value = true
     isUpdateQueued.value = false
     reportData.value = []
@@ -147,6 +155,7 @@ const processQueue = async () => {
   } catch (e) {
     //@TODO: #smartlistsv2 - Frontend needs to know backend message here. Want a better way
     const errMessage = e.response.data.message
+    store.commit(AppMutations.SET_LOADING, false)
     if (errMessage.includes('An event smartlist must have at least 1 event type column')) {
       snackbar('ERROR', errMessage)
     } else {
@@ -154,6 +163,7 @@ const processQueue = async () => {
     }
   } finally {
     isDataLoading.value = false
+    store.commit(AppMutations.SET_LOADING, false)
     if (isUpdateQueued.value) {
       processQueue()
     }

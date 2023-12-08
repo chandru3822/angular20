@@ -158,7 +158,6 @@ public class SmartlistQuery {
     inner join flow.user u on u.id = s.owner_id
     where
       cot.company_id = :companyId and
-      s.owner_id != :userId and
       s.public and
       s.archived is not true and
       s.work_queue_type_id is null
@@ -538,6 +537,8 @@ public class SmartlistQuery {
       cdt.data_type_id as "dataTypeId",
       case when sf.smartlist_system_list_id is null then cdt.has_list_values else true end as "hasListValues",
       cdt.allow_multiple as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       case when sf.smartlist_system_list_id is null then '[]' else
         (select to_jsonb(array_agg(row_to_json(rows))) from (
           select id, name from flow.get_smartlist_system_list_options(sf.smartlist_system_list_id::bigint, :companyId::bigint)
@@ -569,9 +570,18 @@ public class SmartlistQuery {
       e.event_name as "eventName",
       pse.id as "processStepEventId",
       cdt.data_type_id as "dataTypeId",
-      cdt.has_list_values as "hasListValues",
+      case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as "hasListValues",
       cdt.allow_multiple as "allowMultiple",
-      coalesce((
+      sl.system_list_type_id  as "systemListTypeId",
+      sl.id as "systemListId",
+      case
+        when cf.custom_field_sql_smartlist is not null then (
+          select to_jsonb(array_agg(row_to_json(listOfValues)))
+          from (
+            select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+          ) listOfValues
+        )
+        else coalesce((
         select to_jsonb(array_agg(row_to_json(rows))) from (
           select
             lv.id,
@@ -590,7 +600,7 @@ public class SmartlistQuery {
           order by
             case when cf.sort_list_values_alphabetically is true  then lv.name end,
             case when cf.sort_list_values_alphabetically is false then lv.display_order end
-      ) rows), '[]') AS "listOfValues"
+      ) rows), '[]') end AS "listOfValues"
     from flow.custom_field_group_assignment cfga
     inner join flow.custom_field_group cfg on cfg.id = cfga.custom_field_group_id
     inner join flow.company_object_type cot on cot.id = cfg.company_object_type_id
@@ -600,6 +610,8 @@ public class SmartlistQuery {
     left join flow.process_step ps2 on pse.process_step_id = ps2.id
     inner join flow.custom_field cf on cf.id = cfga.custom_field_id
     inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
+    left join flow.company_system_list csl on csl.id = cf.company_system_list_id
+    left join flow.system_list sl on sl.id = csl.system_list_id
     where
       cot.object_type_id = any(array[ :objectTypeIds ]::bigint[]) and
       cot.company_id = :companyId and
@@ -628,6 +640,8 @@ public class SmartlistQuery {
       null as "dataTypeId",
       null as "hasListValues",
       null as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       null as "listOfValues"
     from flow.process_step ps
     inner join flow.custom_field_group cfg on cfg.process_step_id = ps.id
@@ -648,7 +662,7 @@ public class SmartlistQuery {
         inner join flow.custom_field_group cfg1 on cfg1.id = cfga1.custom_field_group_id
         inner join flow.company_object_type cot1 on cot1.id = cfg1.company_object_type_id
         inner join flow.process_step ps1 on ps1.id = cfg1.process_step_id
-        where 
+        where
           cot1.object_type_id = cot.object_type_id and
           cot1.company_id = :companyId and
           cfga1.ancillary_custom_field_group_assignment_id is null and
@@ -677,11 +691,13 @@ public class SmartlistQuery {
       null as "dataTypeId",
       null as "hasListValues",
       null as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       null as "listOfValues"
     from flow.process_step ps
     inner join flow.process_step_process psp on ps.id = psp.process_step_id
     left join flow.custom_field_group cfg on ps.id = cfg.process_step_id
-    where 
+    where
       ps.archived is not true and
       ps.company_id = :companyId and
       -- include these results only if we're fetching process steps
@@ -708,6 +724,8 @@ public class SmartlistQuery {
       null as "dataTypeId",
       null as "hasListValues",
       null as "allowMultiple",
+      null as "systemListTypeId",
+      null as "systemListId",
       null as "listOfValues"
     from flow.event e
     inner join flow.process_step_event pse on e.id = pse.event_id
@@ -726,10 +744,79 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String getAvailableProjectDetailsFields = """
+    select
+      distinct coalesce(pdc.second_field_to_update, pdc.field_to_update)                   as project_details_column,
+      pdc.display_name                                                            as name,
+      null::bigint                                                                   as process_step_event_id,
+      coalesce(pdc.second_data_type_id, pdc.data_type_id) as data_type_id,
+      case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as has_list_values,
+      cf.custom_field_sql_key,
+      cf.custom_field_sql,
+      cf.custom_field_sql_smartlist,
+      cfga.id  as "customFieldGroupAssignmentId",
+      case
+        when cf.custom_field_sql_smartlist is not null then (
+          select to_jsonb(array_agg(row_to_json(listOfValues)))
+          from (
+            select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+          ) listOfValues
+        )
+      end                                                                         as list_of_values
+    from brs.project_details_config pdc
+    left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+    left join flow.custom_field cf on cfga.custom_field_id = cf.id
+    left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+    where (cfga.archived is not true or cfga.id is null) and
+    pdc.display_name is not null and
+      (coalesce(pdc.second_field_to_update, pdc.field_to_update) not like '%_resource%' or
+    coalesce(pdc.second_field_to_update, pdc.field_to_update) not like '%_start_time' or
+    coalesce(pdc.second_field_to_update, pdc.field_to_update) not like '%_end_time')
+    union
+    select distinct coalesce(pdec.second_field_to_update, pdec.field_to_update) as project_details_column,
+    pdec.display_name                                           as name,
+    pdec.process_step_event_id                                  as process_step_event_id,
+      case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then 6
+      else 2
+    end                                                         as data_type_id,
+      case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
+    end                                                         as has_list_values,
+      null                                                        as custom_field_sql_key,
+      null                                                        as custom_field_sql,
+      null                                                        as custom_field_sql_smartlist,
+      cfga.id  as "customFieldGroupAssignmentId",
+
+                  case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
+      (
+        select to_jsonb(array_agg(row_to_json(listOfValues)))
+    from (
+      select *
+      from flow.get_system_list_options(3, cf.company_system_list_id, true,
+      cf.system_list_option_ids)
+                             ) listOfValues
+                      )
+    end                                                         as list_of_values
+    from brs.project_detail_events_config pdec
+    inner join flow.process_step_event pse on pdec.process_step_event_id = pse.id
+    inner join flow.event e on pse.event_id = e.id
+    inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+    left join flow.custom_field_group_assignment cfga on cfga.custom_field_id = cf.id
+    where (pse.archived is not true) and
+    pdec.display_name is not null and
+      (coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' or
+    coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_start_time' or
+    coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_end_time')
+    order by name
+  """;
+
+  //language=PostgreSQL
   public final static String addField = """
     insert into flow.smartlist_field_assignment (smartlist_id, smartlist_field_id, custom_field_group_assignment_id, display_order, process_step_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:smartlistId, :smartlistFieldId, :customFieldGroupAssignmentId, :displayOrder, :processStepId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())
-    
+
     returning id
   """;
 

@@ -31,7 +31,7 @@
         </template>
 
         <template #item="{item: smartlist}">
-          <tr class="clickable" @click="router.push({name: 'smartlistEditor', params: {smartlistId: smartlist.id}})">
+          <tr class="clickable" @click="router.push({name: 'reportEditor', params: {reportId: smartlist.id}})">
             <td class="td-name">{{ smartlist.name }}</td>
             <td>{{ smartlist.owner }}</td>
             <td>{{ smartlist.dateModified | formatDate('timestamp') }}</td>
