@@ -107,7 +107,7 @@
               <v-row>
                 <v-col cols="4" md="2">
                   <v-checkbox
-                    v-model="smartlist.public"
+                    v-model="smartlist.shared"
                     label="Public"
                     :readonly="!userCanEdit"
                   />
