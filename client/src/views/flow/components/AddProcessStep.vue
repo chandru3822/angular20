@@ -8,7 +8,7 @@
     style="z-index: 10"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="text-capitalize" :small="!largeBtn" :large="largeBtn" v-on="on" @click="getSteps()" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize" :outlined="outlined" :small="false"  :large="false" v-on="on" @click="getSteps()" @blur="clear()">
       <v-icon>add</v-icon>
       <span v-if="title != null && !isMobile">{{title}}</span>
     </v-btn>
@@ -77,6 +77,10 @@ export default {
       default: false
     },
     largeBtn: {
+      type: Boolean,
+      default: false
+    },
+    outlined: {
       type: Boolean,
       default: false
     }

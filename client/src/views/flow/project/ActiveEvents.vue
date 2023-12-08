@@ -1,5 +1,9 @@
 <template>
   <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')" header="Active Events" :section-expanded="sectionExpanded" :is-loading="activeEventsLoading">
+    <template v-slot:tool-btn>
+      <v-btn v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+             text color="primary" x-small class="d-inline-block" :to="`/project/${projectId}/events`"><v-icon small>mdi-view-list</v-icon></v-btn>
+    </template>
     <template v-slot:expanded-content>
       <ActiveEventSnippet class="px-4"
                           @refresh-upcoming-events="getEvents()"
@@ -10,7 +14,6 @@
           cols="12"
           class="text-left pt-0 albatross-body-3"
       >
-        <router-link :to="`/project/${projectId}/events`">View All</router-link>
       </v-col>
     </template>
   </SidePanelExpansionPanel>
