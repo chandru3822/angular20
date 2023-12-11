@@ -1,5 +1,9 @@
 <template>
-  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')" header="Active Events" :section-expanded="sectionExpanded" :is-loading="activeEventsLoading">
+  <SidePanelExpansionPanel v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
+                           header="Active Events"
+                           :section-expanded="sectionExpanded"
+                           :is-loading="activeEventsLoading"
+                           @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
       <v-btn v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
              text color="primary" x-small class="d-inline-block" :to="`/project/${projectId}/events`">
@@ -28,6 +32,7 @@ import EventSnippet from '@/views/flow/project/EventSnippet'
 import SpinnerInline from '@/components/SpinnerInline'
 import ActiveEventSnippet from '@/views/flow/project/ActiveEventSnippet'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'ActiveEvents',
@@ -50,7 +55,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       events: [],
-      sectionExpanded: this.$route.path.includes('processStep'),
+      sectionExpanded: this.$store.state.project.activeEventDropdown,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -91,6 +96,9 @@ export default {
         this.activeEventsLoading = false
       }
     },
+    toggleCollapseExpand(){
+      this.$store.commit(ProjectMutations.ACTIVE_EVENT_COLLAPSE)
+    }
 
   }
 }

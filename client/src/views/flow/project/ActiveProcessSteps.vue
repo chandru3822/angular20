@@ -3,9 +3,10 @@
                            header="Active Process Steps"
                            :section-expanded="sectionExpanded"
                            :is-loading="isProcessStepsLoading"
+                           @click="toggleCollapseExpand"
   >
     <template v-slot:tool-btn>
-      <v-btn text color="primary" x-small class="d-inline-block" :to="`/project/${projectId}/processSteps`"><v-icon small>mdi-view-list</v-icon></v-btn>
+      <v-btn text color="primary" x-small class="d-inline-block" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon small>mdi-view-list</v-icon></v-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveProjectProcessStepSnippet class="px-4"
@@ -44,6 +45,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'ActiveProcessSteps',
@@ -71,7 +73,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
-      sectionExpanded: this.$route.path.includes('processStep'),
+      sectionExpanded: this.$store.state.project.activePpsDropdown,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -113,6 +115,9 @@ export default {
         this.isProcessStepsLoading = false
       }
     },
+    toggleCollapseExpand(){
+      this.$store.commit(ProjectMutations.ACTIVE_PPS_COLLAPSE)
+    }
   }
 }
 </script>
