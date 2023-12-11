@@ -101,7 +101,13 @@ export default {
     },
     async loginSuccess(details) {
       await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
-      this.$router.push({name: 'home'})
+
+      //this code handles redirecting them back to the page they were trying to get to after they login
+      let rt = { name: 'home'}
+      if(this.$route.query?.redirect) {
+        rt = { path: this.$route.query?.redirect}
+      }
+      this.$router.push(rt)
     }
   }
 }

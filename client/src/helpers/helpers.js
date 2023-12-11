@@ -282,7 +282,16 @@ export function responseInterceptor({ response }) {
       } else {
         localStorage.removeItem('store')
         store.commit(UserMutations.LOGIN_ERROR, msg)
-        router.push({ name: 'login' })
+
+        //this code handles redirecting them back to the page they were trying to get to after they login
+        let rt = {
+          name: 'login'
+        }
+        if( !['/', '/home'].includes(router.currentRoute?.path) || store.state.app.redirectUrl != null ) {
+          rt.query = { redirect: router.currentRoute?.path || store.state.app.redirectUrl }
+        }
+
+        router.push(rt)
       }
     } else if (response?.data?.message === constants.NOT_FOUND_404_TEXT && status === 404) {
       router.push({ path: `/dataNotFound` })
