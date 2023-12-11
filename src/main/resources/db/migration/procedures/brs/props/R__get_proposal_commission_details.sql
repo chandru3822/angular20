@@ -40,7 +40,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_commission_details(p_financial_produ
             monthly_payment          numeric,
             commission_kw            numeric,
             total_commissions        numeric,
-            above_line_rebate        numeric
+            above_line_rebate        numeric,
+            recommended              boolean
           )
 
 AS
@@ -58,6 +59,7 @@ declare
   v_monthly_payment                       numeric;
   v_commission_dollars_per_kw             numeric;
   v_total_commissions                     numeric;
+  v_recommended_option                    boolean;
   x                                       record;
 BEGIN
 
@@ -77,7 +79,8 @@ BEGIN
     monthly_payment          numeric,
     commission_kw            numeric,
     total_commissions        numeric,
-    above_line_rebate        numeric
+    above_line_rebate        numeric,
+    recommended              boolean
   ) on commit drop;
 
   v_closer_gen_discount = p_closer_gen_discount;
@@ -141,6 +144,9 @@ BEGIN
 --       raise notice 'v_commission_dollars_per_kw %',v_commission_dollars_per_kw;
 --       raise notice 'v_total_commissions %',v_total_commissions;
 
+      --for now BR wants the recommended option to be the one where the commission in $/kW is 400. but they want to be able to configure that later.
+      v_recommended_option = (coalesce(v_commission_dollars_per_kw, 0) = 400);
+
       insert into proposal_details(redline_amount,
                                    source_discount,
                                    adders_dollar_watts,
@@ -153,7 +159,8 @@ BEGIN
                                    monthly_payment,
                                    commission_kw,
                                    total_commissions,
-                                   above_line_rebate)
+                                   above_line_rebate,
+                                   recommended)
       values (coalesce(p_red_line_funding_amount,0),
               coalesce(v_closer_gen_discount,0),
               round(coalesce(v_adders_dollars_per_watt,0), 4),
@@ -166,7 +173,8 @@ BEGIN
               round(coalesce(v_monthly_payment,0)),
               coalesce(v_commission_dollars_per_kw,0),
               coalesce(v_total_commissions,0),
-              coalesce(p_above_line_rebate,0));
+              coalesce(p_above_line_rebate,0),
+              v_recommended_option);
 
       v_commission_watt = v_commission_watt + .10;
     end loop;
