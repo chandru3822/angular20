@@ -300,7 +300,7 @@ public class RebateQuery {
          left outer join flow.state s on s.id = cs.state_id
        where pd.project_id = :projectId
        group by pd.project_id,
-       pd.contact_name,
+       pd.project_name,
        pd.substantial_completion_date,
        total_promotion_amount,
        num_of_promotion_payments,

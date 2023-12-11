@@ -808,7 +808,10 @@
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAction" @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this action?
-
+      <div class="pt-2"><b>Action Name:</b> {{itemToDelete?.actionName}}</div>
+      <div><b>Type:</b> {{ itemToDelete?.actionType }}</div>
+      <div><b>Parent Status Change:</b> {{ itemToDelete?.processStepStatusType || 'N/A' }}</div>
+      <div><b>Project Status Change:</b> {{ itemToDelete?.projectStatusType || 'N/A' }}</div>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLinkFromAction" @close-dialog="closeLinkDeleteDialog">
       Are you sure you want to delete <strong>{{ linkToDelete?.link }}</strong> from <strong>{{

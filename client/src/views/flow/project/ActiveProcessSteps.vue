@@ -3,32 +3,35 @@
                            header="Active Process Steps"
                            :section-expanded="sectionExpanded"
                            :is-loading="isProcessStepsLoading"
+                           @click="toggleCollapseExpand"
   >
     <template v-slot:tool-btn>
-      <AddProcessStep
-          v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
-          class="d-inline-block"
-          :admin="$store.getters.isFullAdmin"
-          :project-id="projectId"
-          :process-id="project.processId"
-          :contact-id="project.contactId"
-          @step-added="getProcessSteps"
-      />
+      <v-btn text color="primary" x-small class="d-inline-block" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon small>mdi-view-list</v-icon></v-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveProjectProcessStepSnippet class="px-4"
                                        :steps="processSteps"
                                        :projectId="projectId"
                                        :contactId="project.contactId"/>
-      <v-col
+      <v-row
           v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
-          cols="12"
-          class="text-left pt-0"
+          class="text-left pt-0 px-0"
       >
-        <div>
-        <router-link class="albatross-body-3" :to="`/project/${projectId}/processSteps`">View All</router-link>
-        </div>
-      </v-col>
+        <v-col class="px-3 py-0">
+          <AddProcessStep
+              title="Add Process Step"
+              v-if="project.processId && $store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'ADD') && !hideAddBtn"
+              class="d-inline-block"
+              :admin="$store.getters.isFullAdmin"
+              :project-id="projectId"
+              :process-id="project.processId"
+              :contact-id="project.contactId"
+              @step-added="getProcessSteps"
+              :largeBtn="true"
+              :outlined="true"
+          />
+        </v-col>
+      </v-row>
     </template>
   </SidePanelExpansionPanel>
 </template>
@@ -42,6 +45,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 
 import AddProcessStep from '@/views/flow/components/AddProcessStep'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'ActiveProcessSteps',
@@ -69,7 +73,7 @@ export default {
     return {
       projectId: parseInt(this.$route.params.projectId),
       processSteps: [],
-      sectionExpanded: this.$route.path.includes('processStep'),
+      sectionExpanded: this.$store.state.project.activePpsDropdown,
       customFieldGroups: [],
       menuOpen: false,
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'EDIT'),
@@ -111,6 +115,9 @@ export default {
         this.isProcessStepsLoading = false
       }
     },
+    toggleCollapseExpand(){
+      this.$store.commit(ProjectMutations.ACTIVE_PPS_COLLAPSE)
+    }
   }
 }
 </script>

@@ -10,6 +10,7 @@ import ProposalDesignerRoutes from '@/views/blueraven/settings/proposalDesigner/
 import {AppMutations} from "@/stores/AppStore";
 
 Vue.use(Router)
+const nonRedirectPaths = ['/', '/home']
 
 const router = new Router({
   mode: 'history',
@@ -63,10 +64,20 @@ const router = new Router({
       beforeEnter: async (to, from, next) => {
         if (!store.state.user.authorized && from.name !== 'login') {
           //only re-route back to login if not already on login
-          next('/login')
+          let rt = {
+            path: '/login'
+          }
+          //this code handles redirecting them back to the page they were trying to get to after they login
+          if( !nonRedirectPaths.includes(to.path) ) {
+            rt.query = { redirect: to.path }
+          }
+          next(rt)
         } else {
           if (from.name !== 'login') {
             try {
+              //this sets the redirect url in case the getUser request returns a 401
+              store.commit(AppMutations.SET_REDIRECT_URL, nonRedirectPaths.includes(to.path) ? null : to.path)
+
               const {data} = await getUser()
               store.commit(UserMutations.SET_DETAILS, data)
               next()
