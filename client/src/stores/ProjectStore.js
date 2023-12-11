@@ -14,7 +14,9 @@ export const ProjectMutations = {
   LEFT_SIDE_COLLAPSE: 'leftSideCollapse',
   RIGHT_SIDE_COLLAPSE: 'rightSideCollapse',
   ACTIVE_PPS_COLLAPSE: 'activePpsCollapse',
-  ACTIVE_EVENT_COLLAPSE: 'activeEventCollapse'
+  ACTIVE_EVENT_COLLAPSE: 'activeEventCollapse',
+  PROJECT_DETAILS_COLLAPSE: 'projectDetailsCollapse'
+
 }
 
 export const ProjectStore = {
@@ -29,7 +31,8 @@ export const ProjectStore = {
       leftSideSplit: false,
       rightSideSplit: false,
       activePpsDropdown: true,
-      activeEventDropdown: true
+      activeEventDropdown: true,
+      projectDetailsDropdown: false
   },
   mutations: {
     [ProjectMutations.FLIP_MANUAL_COLUMN_SPLIT]: (state) => {
@@ -62,6 +65,9 @@ export const ProjectStore = {
     },
     [ProjectMutations.ACTIVE_EVENT_COLLAPSE]: (state) => {
         state.activeEventDropdown = !state.activeEventDropdown
+    },
+    [ProjectMutations.PROJECT_DETAILS_COLLAPSE]: (state) => {
+        state.projectDetailsDropdown = !state.projectDetailsDropdown
     }
   },
 }

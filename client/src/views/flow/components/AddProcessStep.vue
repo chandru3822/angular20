@@ -215,7 +215,7 @@ export default {
   color: white !important;
 }
 #side-panel-expansion-panel-container {
-  button {
+  button.add-process-step-menu-btn {
     border: thin solid var(--v-primary-base);
   }
 }

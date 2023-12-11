@@ -1,5 +1,5 @@
 <template>
-  <SidePanelExpansionPanel header="Details">
+  <SidePanelExpansionPanel header="Details" :section-expanded="sectionExpanded" @click="toggleCollapseExpand">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
           text color="primary" class="px-0" small
@@ -23,6 +23,7 @@
 
 import {getRequestWithParams, logError} from '@/helpers/helpers'
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {ProjectMutations} from "@/stores/ProjectStore";
 
 export default {
   name: 'ProjectTabs',
@@ -40,7 +41,7 @@ export default {
       projectId: parseInt(this.$route.params.projectId),
       tabsLoading: true,
       selectedTab: {},
-      sectionExpanded: false,
+      sectionExpanded: this.$store.state.project.projectDetailsDropdown,
       tabs: [],
     }
   },
@@ -102,6 +103,9 @@ export default {
       } finally {
         this.tabsLoading = false
       }
+    },
+    toggleCollapseExpand(){
+      this.$store.commit(ProjectMutations.PROJECT_DETAILS_COLLAPSE)
     },
   }
 }
