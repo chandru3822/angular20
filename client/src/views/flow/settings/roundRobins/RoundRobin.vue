@@ -8,7 +8,8 @@
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit" @click="editRoundRobin = !editRoundRobin">
-          <v-icon>edit</v-icon>
+          <v-icon v-if="!editRoundRobin">edit</v-icon>
+          <span v-else class="text-capitalize">Cancel</span>
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
@@ -32,57 +33,50 @@
     <div v-else>
       <v-row>
         <v-col cols="12" md="6">
-          <table style="width: 100%">
-            <tr>
-              <td colspan="2" class="px-2">
-                <v-text-field text
-                              type="text"
-                              label="Name"
-                              v-model="roundRobin.roundRobinName">
-                </v-text-field>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-2">
-                <v-text-field text
-                              type="text"
-                              label="Distribution Time Frame"
-                              v-model="roundRobin.distributionTimeFrameDays">
-                </v-text-field>
-              </td>
-              <td class="px-2">
-                <v-text-field text
-                              type="text"
-                              label="Schedulable Future Days"
-                              v-model="roundRobin.schedulableFutureDays">
-                </v-text-field>
-              </td>
-            </tr>
-            <tr>
-              <td class="px-2">
-                <v-autocomplete v-model="roundRobin.companyTimezoneId"
-                                :items="companyTimezones"
-                                label="Time Zone"
-                                style="width: 200px;"
-                                item-text="timezone"
-                                item-value="id"
-                                attach
-                ></v-autocomplete>
-              </td>
-              <td class="px-2">
-                <div class="allocation-label">Uses Total Lead Allocation?</div>
-<!--                <v-checkbox label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-checkbox>-->
-                <v-simple-checkbox class="allocation-checkbox" label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-simple-checkbox>
 
-              </td>
-              <td class="pl-5 pb-3">
-                <v-btn color="primary" :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
-                       class="white--text" @click="saveRoundRobinInfo()">
-                  Save
-                </v-btn>
-              </td>
-            </tr>
-          </table>
+          <v-text-field text
+                        type="text"
+                        label="Name"
+                        v-model="roundRobin.roundRobinName">
+          </v-text-field>
+
+          <div class="d-flex align-baseline">
+            <v-text-field text
+                          style="max-width: 200px"
+                          type="text"
+                          label="Distribution Time Frame"
+                          v-model="roundRobin.distributionTimeFrameDays">
+            </v-text-field>
+            <span class="body-medium">days</span>
+          </div>
+          <div class="d-flex align-baseline">
+            <v-text-field text
+                          style="max-width: 200px"
+                          type="text"
+                          label="Schedulable Future Days"
+                          v-model="roundRobin.schedulableFutureDays">
+            </v-text-field>
+            <span class="body-medium">days</span>
+          </div>
+          <v-autocomplete v-model="roundRobin.companyTimezoneId"
+                          :items="companyTimezones"
+                          label="Time Zone"
+                          style="width: 200px;"
+                          item-text="timezone"
+                          item-value="id"
+                          attach
+          ></v-autocomplete>
+
+          <div class="d-flex align-center mb-4">Uses Total Lead Allocation?
+          <!--                <v-checkbox label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-checkbox>-->
+          <v-simple-checkbox class="pl-2" label="Uses Total Lead Allocation?" v-model="roundRobin.usesTotalLeadAllocation"></v-simple-checkbox>
+          </div>
+
+          <v-btn color="primary" :disabled="!roundRobin.roundRobinName || !roundRobin.companyTimezoneId"
+                 class="white--text" @click="saveRoundRobinInfo()">
+            Save
+          </v-btn>
+
         </v-col>
       </v-row>
     </div>
@@ -206,13 +200,9 @@ export default {
   font-size: 12px;
   width: 200px;
   display: flex;
-  flex-direction: column;
 }
 
-.allocation-checkbox {
-  align-self: start;
-  margin-top: 8px;
-}
+
 </style>
 <style lang="scss">
 @media (max-width: 959px) {
