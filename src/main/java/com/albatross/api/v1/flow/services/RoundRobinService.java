@@ -154,7 +154,7 @@ public class RoundRobinService {
     params.put("companyTimezoneId", roundRobin.getCompanyTimezoneId());
     params.put("distributionTimeFrameDays", roundRobin.getDistributionTimeFrameDays());
     params.put("schedulableFutureDays", roundRobin.getSchedulableFutureDays());
-    params.put("usesTotalLeadAllocation", roundRobin.getUsesTotalLeadAllocation());
+    params.put("usesTotalLeadAllocation", null != roundRobin.getUsesTotalLeadAllocation() && roundRobin.getUsesTotalLeadAllocation());
 
     Long id;
     if (null != roundRobin.getId()) {
