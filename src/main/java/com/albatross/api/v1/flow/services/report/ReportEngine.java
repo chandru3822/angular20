@@ -993,7 +993,12 @@ public class ReportEngine {
                 final String positionSubquery = String.format("select id from flow.user_position where user_id = (select user_id from flow.user_position where id = %s)", requirementValue);
                 whereClause.append(String.format(" %s = any(%s) and ", referenceLocation, positionSubquery));
               } else {
-                whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                if (requirementValue == null) {
+                  whereClause.append(String.format(" %s %s %s and ", referenceLocation, operator, requirementValue));
+                }
+                else {
+                  whereClause.append(String.format(" %s %s '%s' and ", referenceLocation, operator, requirementValue));
+                }
               }
             }
           }
