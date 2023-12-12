@@ -57,13 +57,13 @@ public class ProjectProcessStepEventController {
   }
 
   @PutMapping(value = "/{eventId}/{forceSave}")
-  public ResponseEntity<Object> savePpsEventDetails(
+  public ResponseEntity<?> savePpsEventDetails(
     @PathVariable Long ppsId, @PathVariable Long eventId, @RequestBody SaveEventRequest saveEvent, @PathVariable Optional<Boolean> forceSave)
     throws Exception {
     if(forceSave.isPresent() && !forceSave.get()){
       List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
       if(conflictList != null && conflictList.size() > 0){
-        return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
       }
     }
     return ResponseEntity.ok(projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent));
@@ -110,7 +110,7 @@ public class ProjectProcessStepEventController {
   @PostMapping(
     value = "/{eventId}/action/{actionId}/perform",
     produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<Object> performStepEventAction(
+  public ResponseEntity<?> performStepEventAction(
     @PathVariable Long ppsId,
     @PathVariable Long eventId,
     @PathVariable Long actionId,
@@ -120,7 +120,7 @@ public class ProjectProcessStepEventController {
         if(saveEvent.getForceSave() != null && !saveEvent.getForceSave()){
           List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
           if(conflictList != null && conflictList.size() > 0){
-            return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+            return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
           }
         }
       }

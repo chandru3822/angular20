@@ -43,7 +43,7 @@ public class ReimbursementController {
 
     //dont save if it would go over budget
     if(expenseBudget.isPresent() && expenseBudget.get().getBalance() < reimbursementRequest.getAmount()){
-      return new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
+      return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
     }
 
     //save the request if no budget or balance >= amount

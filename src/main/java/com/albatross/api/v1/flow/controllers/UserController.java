@@ -158,8 +158,8 @@ public class UserController {
   public ResponseEntity validatePassword(@RequestBody Map<String, String> requestData) {
     Boolean response = securityService.validatePassword(requestData.get("password"));
     return response
-        ? new ResponseEntity(HttpStatus.OK)
-        : new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
+        ? new ResponseEntity<>(HttpStatus.OK)
+        : new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
   }
 
   @PostMapping(value = "/forgotPassword")
