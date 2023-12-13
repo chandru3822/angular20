@@ -29,7 +29,7 @@ BEGIN
     total_solar_resource_fraction numeric,
     face                          integer,
     size                          numeric
-  ) on commit drop;
+  ) ;
   v_value = 0;
   for x in SELECT jsonb_array_elements::jsonb FROM jsonb_array_elements(p_aurora_design_summary -> 'arrays')
     loop

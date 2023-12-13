@@ -56,7 +56,7 @@ BEGIN
     panel_count                   integer,
     total_solar_resource_fraction numeric,
     face                          integer
-  ) on commit drop;
+  );
 
   if p_system_size > p_system_size_cutoff then
     v_value = 0.00::numeric;
@@ -116,7 +116,7 @@ BEGIN
                       (p_system_size * 1000) * p_battery_rebate_amount);
     end if;
   end if;
-  --drop table if exists calculations;
+  drop table if exists calculations;
   return coalesce(v_value, 0);
 
 
