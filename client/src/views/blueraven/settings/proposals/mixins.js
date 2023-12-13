@@ -3,7 +3,9 @@ const dateTimeFormat = new Intl.DateTimeFormat('default', {
     timeStyle: 'short'
 })
 
-const numberFormat = new Intl.NumberFormat('default')
+const numberFormat = new Intl.NumberFormat('default', {
+  maximumFractionDigits: 15
+})
 
 export const ProposalSettingsMixins = {
     filters: {
