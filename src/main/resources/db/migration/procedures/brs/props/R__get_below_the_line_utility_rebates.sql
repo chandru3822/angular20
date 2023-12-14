@@ -34,7 +34,7 @@ BEGIN
     from brs.get_proposal_rebates(p_version_id)
     where rebate_type_id = 455
       and rebate_applied_at = 1763
-      and ((rebate_id is not null and
+      and ((p_rebate_id is not null and
             rebate_id = any (p_rebate_id)
       and utility_company_id = p_utility_company_id
       and case
@@ -42,6 +42,7 @@ BEGIN
               state_id = p_state_id
             else 1 = 1 end) or
            (utility_company_id = p_utility_company_id
+              and rebate_id != 2058
              and case
                    when state_id is not null then
                      state_id = p_state_id
