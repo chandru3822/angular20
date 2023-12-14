@@ -1,6 +1,12 @@
 <template>
   <v-col cols="12" class="spinner-container">
+
+<!--    <img v-if="spinnerUrl" :src="require(spinnerUrl)" width="300" height="300"/>-->
+    <v-img v-if="spinnerUrl" name="spinnerImg"
+           class="custom-spinner-icon"
+           alt="spinner-image" :src="spinnerUrl"></v-img>
     <v-progress-circular
+        v-else
         indeterminate
         :size="size"
         :color="spinnerColor"
@@ -14,6 +20,15 @@ export default {
   props: {
     spinnerColor: String,
     size: Number
+  },
+  computed: {
+    spinnerUrl() {
+      return this.$store.state.app.spinnerUrl || null
+    }
+  },
+  data() {
+    return {
+    }
   }
 }
 </script>
@@ -32,5 +47,10 @@ export default {
   margin: auto;
   background-color: var(--v-secondary-base);
   opacity: .5;
+}
+
+.custom-spinner-icon {
+  max-height: 300px;
+  max-width: 300px;
 }
 </style>

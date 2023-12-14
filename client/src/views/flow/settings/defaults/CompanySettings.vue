@@ -40,6 +40,32 @@
                         :disabled="!userCanEdit"
                         label="Minute Increment">
           </v-text-field>
+          <div>
+            <div class="color-swatch d-inline-block mr-3"
+                 :style="{'background-color': company.bannerColor}"></div>
+            <v-text-field v-model="company.bannerColor"
+                          placeholder="Enter a color HEX"
+                          required
+                          :rules="[hexRule]"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          class="body-large color-field d-inline-block"
+                          label="Banner Color">
+            </v-text-field>
+          </div>
+          <div>
+            <div class="color-swatch d-inline-block mr-3"
+                 :style="{'background-color': company.primaryColor}"></div>
+            <v-text-field v-model="company.primaryColor"
+                          placeholder="Enter a color HEX"
+                          required
+                          :rules="[hexRule]"
+                          :readonly="!userCanEdit"
+                          :disabled="!userCanEdit"
+                          class="body-large color-field d-inline-block"
+                          label="Primary Color">
+            </v-text-field>
+          </div>
         </v-col>
       </v-row>
       <v-row>
@@ -51,6 +77,7 @@
             <v-icon :large="$vuetify.breakpoint.smAndDown" class="pr-2">mdi-content-save</v-icon>
             <span class="body-medium text-capitalize">Save Changes</span>
           </v-btn>
+
         </v-col>
       </v-row>
     </v-form>
@@ -160,17 +187,16 @@ const LogoTypeEnum = {
     saving: false,
     image: {}
   },
-  //todo: put this back when the public attachments and event sub is done
-  // LOADING_SPINNER: {
-  //   key: "LOADING_SPINNER", //this needs to match the key, cuz dumb
-  //   header: 'Loading Spinner',
-  //   description: '(Page Load Indicator)',
-  //   label: 'loading spinner',
-  //   attachmentTypeId: 987,
-  //   add: false,
-  //   saving: false,
-  //   image: {}
-  // }
+  LOADING_SPINNER: {
+    key: "LOADING_SPINNER", //this needs to match the key, cuz dumb
+    header: 'Loading Spinner',
+    description: '(Page Load Indicator)',
+    label: 'loading spinner',
+    attachmentTypeId: 987,
+    add: false,
+    saving: false,
+    image: {}
+  }
 }
 
 export default {
@@ -180,6 +206,12 @@ export default {
     return {
       loadComplete: false,
       constants,
+      colorOptions: {
+        canvasHeight: 75,
+        width: 200,
+        mode: 'hexa',
+        hideModeSwitch: true
+      },
       snackbar: {},
       company: {},
       rules: [
@@ -210,6 +242,18 @@ export default {
       if (this.company.minuteIncrement % 1 !== 0) {
         this.company.minuteIncrement = Math.floor(this.company.minuteIncrement);
         this.damnKeyThing++
+      }
+    },
+    hexRule(value) {
+      let regEx = /^#[0-9A-Fa-f]{6}/g
+      if(value && value.charAt(0) !== '#') {
+        return 'First character must be #'
+      } else if (value && value.length !== 7) {
+        return 'Color HEX must be exactly 7 characters'
+      } else if (value && !regEx.test(value)) {
+        return 'Can only contain 1-9 and A-F'
+      } else {
+        return true
       }
     },
     passwordRule(value) {
@@ -346,12 +390,27 @@ export default {
 }
 </script>
 
+<style lang="scss">
+
+</style>
+
 <style scoped lang="scss">
 .company-logo {
   margin-top: 15px;
   max-width: 100%;
   height: auto;
   max-height: 300px;
+}
+
+.color-swatch {
+  height: 30px;
+  width: 30px;
+  border-radius: 50%;
+  border: solid 1px black;
+}
+
+.color-field {
+  width: 50%;
 }
 
 .company-logo-background {
@@ -367,4 +426,6 @@ export default {
 .file-input {
   max-width: calc(100vw - 100px);
 }
+
+
 </style>

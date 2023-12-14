@@ -4,10 +4,11 @@ let constants = {}
 
 constants.NOT_FOUND_404_TEXT = 'FAIL_TO_NOT_FOUND_SCREEN'
 constants.LOCAL_COLOR = 'pink'
+// constants.LOCAL_COLOR = 'banner'
 constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
-constants.PROD_COLOR = 'primary' //this is the dark blue prod color
+constants.PROD_COLOR = 'banner' //this is the dark blue prod color
 constants.VUE_APP_ENV = VITE_ENV
 constants.VUE_APP_BASE_API = VITE_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'

@@ -23,7 +23,7 @@ export default {
     setupNotificationStream() {
       const setup = () => {
         const url = `${constants.VUE_APP_BASE_API}/api/v1/flow/notifications/stream?access_token=${store.state.user.jwt}`
-        const topics = ['sms_ownership', 'sms_reply', 'project_tag', 'revoke_access']
+        const topics = ['sms_ownership', 'sms_reply', 'project_tag', 'revoke_access', 'theme_update']
         this.evtSource = new EventSource(url, { withCredentials: true })
         topics.forEach(topic => {
           this.evtSource.addEventListener(topic, function(e) {
