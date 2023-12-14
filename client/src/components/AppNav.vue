@@ -127,6 +127,13 @@ export default {
     AccountMenu,
     CompanyTools
   },
+  watch: {
+    themeUpdateEvents: async function () {
+      console.log('THIS IS HAPPENING', this.themeUpdateEvents)
+      //reload the companies so we get any new icons
+      await this.getCompanies()
+    }
+  },
   data() {
     return {
       snackbar: {},
@@ -218,6 +225,9 @@ export default {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
+    themeUpdateEvents() {
+      return this.$store.getters.getEventsByTopic('theme_update')
+    },
   },
   methods: {
     async changeContext(companyId) {
@@ -230,18 +240,24 @@ export default {
     },
     async getCompanies() {
       // get the companies that a user has access to
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      // this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const url = (this.$store.getters.isFullAdmin) ? `/companies` : `/companies/assignedToUser`
         const { data } = await getRequest(url, null, [])
         this.companies = data
         this.$store.commit(UserMutations.SET_COMPANIES, this.companies)
         this.selectedCompany = this.companies.find(c => c.id === this.$store.state.user?.details?.companyId) || {}
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        //always do this, that way if they dont have a spinner it will unset the url
+        this.$store.commit(AppMutations.SET_SPINNER_URL, this.selectedCompany?.spinnerPresignedUrl)
+
+        //this handles if the color is null too
+        this.$store.commit(AppMutations.SET_PRIMARY_BASE_COLOR, this.selectedCompany?.primaryColor)
+        this.$store.commit(AppMutations.SET_BANNER_COLOR, this.selectedCompany?.bannerColor)
+
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Changing Companies')
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        // this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getCompanyTools() {

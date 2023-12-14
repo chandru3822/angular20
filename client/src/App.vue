@@ -45,6 +45,7 @@ import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {UserActions} from "@/stores/UserStore";
+import defaultLightTheme from "@/helpers/defaultTheme";
 
 export default {
   name: 'App',
@@ -61,6 +62,7 @@ export default {
       userId: this.$store.state.user?.details?.id,
       noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance', 'stripeSuccess'],
       showMobileBanner: false,
+      defaultLightTheme,
       dismissMobileToolbar: false
     }
   },
@@ -74,17 +76,27 @@ export default {
           this.$store.dispatch(NotificationActions.PROCESS_REVOKE_ACCESS, this.userId)
         })
       }
-    }
+    },
+    // themeUpdateEvents: async function () {
+    //   console.log('THIS IS HAPPENING', this.themeUpdateEvents)
+    // }
   },
   computed: {
     revokeAccessEvents() {
       return this.$store.getters.getEventsByTopic('revoke_access')?.filter(e => e.userId === this.userId)
     },
+    // themeUpdateEvents() {
+    //   return this.$store.getters.getEventsByTopic('theme_update')
+    // },
   },
   created() {
     document.addEventListener(
       'swUpdated', this.showRefreshUI, { once: true }
     )
+
+    //set the theme which will use the default until one load from company
+    this.$vuetify.theme.themes.light = this.$store.state.app.theme
+
     let userAgent = window.navigator.userAgent
     if (!this.hideMobileBanner && userAgent && ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))) {
       //the hideMobileBanner prop is used so that the mobile app can disable the mobile banner when displaying web views inside the app

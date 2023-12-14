@@ -2,7 +2,7 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-breadcrumbs :items="breadcrumbs" color="primary lighten-1"></v-breadcrumbs>
+        <v-breadcrumbs :items="breadcrumbs" color="primary"></v-breadcrumbs>
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="title-large text-wrap" >{{tournament.tournamentName}}</v-toolbar-title>
         </v-toolbar>

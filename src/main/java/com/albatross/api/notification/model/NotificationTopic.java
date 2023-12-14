@@ -8,6 +8,7 @@ public enum NotificationTopic {
   SMS_REPLY("sms_reply"),
   SMS_OWNERSHIP("sms_ownership"),
   PROJECT_TAG("project_tag"),
+  THEME_UPDATE("theme_update"),
   REVOKE_ACCESS("revoke_access");
 
   private final String name;

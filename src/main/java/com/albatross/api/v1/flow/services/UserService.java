@@ -658,10 +658,10 @@ public class UserService {
   }
 
   public void revokeUserAccess(Long userId) {
-//    jwtAuthProvider.forceReload(userId);
-//    RevokeAccessMessage ram = new RevokeAccessMessage();
-//    ram.setUserId(userId);
-//    pubSubService.publish(EventChannel.NOTIFICATION, ram);
+    jwtAuthProvider.forceReload(userId);
+    RevokeAccessMessage ram = new RevokeAccessMessage();
+    ram.setUserId(userId);
+    pubSubService.publish(EventChannel.NOTIFICATION, ram);
   }
 
   public boolean hasSmsAccess(Long userId) {
