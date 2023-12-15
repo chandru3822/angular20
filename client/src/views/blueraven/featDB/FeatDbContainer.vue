@@ -35,7 +35,7 @@
       },
 
       hasAccess(tab){
-        return this.$store.getters.userHasFeatureAccessLevel(tab.label.toUpperCase(), 'VIEW')
+        return this.$store.getters.userHasFeatureAccessLevel(tab.featureCode, 'VIEW')
       }
     }
   }
