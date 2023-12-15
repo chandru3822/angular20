@@ -485,6 +485,7 @@ declare
   v_total_rebate_first_year_cap_amount                  numeric;
   v_eto_rebate_amount                                   numeric;
   v_nominal_power                                       numeric;
+  v_adder_amount                                        numeric;
 
 BEGIN
   select proposal_id,
@@ -547,7 +548,8 @@ BEGIN
          site_survey_time_adders,
          misc_adders_array,
          commission_strategy_id,
-         qualifies_for_incentive
+         qualifies_for_incentive,
+         adder_amount
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -608,7 +610,8 @@ BEGIN
     v_site_survey_time_adders,
     v_misc_adders_array,
     v_commission_strategy_id,
-    v_qualifies_for_incentive
+    v_qualifies_for_incentive,
+    v_adder_amount
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -964,15 +967,18 @@ BEGIN
   end if;
   --raise notice 'v_led_light_bulbs_adder = %',v_led_light_bulbs_adder;
 
-  --@randa remove all this with the postal code release
   v_postal_code = substring(v_postal_code, 1, 5);
-  with my_zips
-         as (select adder_value,postal_codes from brs.get_proposal_zone_adders(v_version_id))
-  select adder_value
-  into v_zone_adder
-  from my_zips
-  where v_postal_code::bigint = any (postal_codes);
+  --this was the old way
+--   with my_zips
+--          as (select adder_value,postal_codes from brs.get_proposal_zone_adders(v_version_id))
+--   select adder_value
+--   into v_zone_adder
+--   from my_zips
+--   where v_postal_code::bigint = any (postal_codes);
 
+  --re: carlin - pull this value from the process step, coalesce to zero, dont pull from zone
+  select coalesce(v_adder_amount, 0)
+  into v_zone_adder;
 
   --raise notice 'v_zone_adder = %',v_zone_adder;
   --raise notice 'v_equipment_storage_adder = %',v_equipment_storage_adder;
