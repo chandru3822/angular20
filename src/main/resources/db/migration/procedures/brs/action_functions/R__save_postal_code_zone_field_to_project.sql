@@ -6,7 +6,7 @@ AS
 $function$
 declare
   v_metro_area_id int;
-  v_adder_amount int;
+  v_adder_amount numeric;
 BEGIN
   -- we dont need the ppse_id yet but it is easier to add now vs later if we need it so i put it in
 
