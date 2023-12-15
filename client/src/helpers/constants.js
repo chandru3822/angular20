@@ -5,7 +5,9 @@ let constants = {}
 constants.NOT_FOUND_404_TEXT = 'FAIL_TO_NOT_FOUND_SCREEN'
 constants.LOCAL_COLOR = 'pink'
 // constants.LOCAL_COLOR = 'banner'
-constants.STAGE_COLOR = 'orange'
+//todo: put this back after
+// constants.STAGE_COLOR = 'orange'
+constants.STAGE_COLOR = 'banner'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
 constants.PROD_COLOR = 'banner' //this is the dark blue prod color
