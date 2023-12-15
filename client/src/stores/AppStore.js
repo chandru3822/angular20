@@ -57,7 +57,10 @@ export const AppStore = {
 //           const addArrayItem = (state, item) => {
 //             state.array = [...state.array, item]
 //           }
-        state.theme = theme.LIGHT
+        state.theme = {
+          ...state.theme,
+          primary: theme.LIGHT.primary
+        }
         // Vue.set(state.theme, 'primary', theme.LIGHT.primary)
       }
     },
