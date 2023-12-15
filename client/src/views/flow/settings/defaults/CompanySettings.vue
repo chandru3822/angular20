@@ -46,6 +46,7 @@
             <v-text-field v-model="company.bannerColor"
                           placeholder="Enter a color HEX"
                           required
+                          clearable
                           :rules="[hexRule]"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"
@@ -59,6 +60,7 @@
             <v-text-field v-model="company.primaryColor"
                           placeholder="Enter a color HEX"
                           required
+                          clearable
                           :rules="[hexRule]"
                           :readonly="!userCanEdit"
                           :disabled="!userCanEdit"

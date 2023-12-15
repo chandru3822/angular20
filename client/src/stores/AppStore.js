@@ -33,35 +33,21 @@ export const AppStore = {
     [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
     [AppMutations.SET_PRIMARY_BASE_COLOR]: (state, color) => {
 
-
       //vuetify's color generator does weird stuff. like if maroon is the base color then lighten-5 is orange. but this code seems to make appropriate colors.
       //if adding a new color here like `lighten2` ensure you also add it in the defaultTheme.js
       if(color && color !== '') {
         state.theme.primary.base = color
-        // state.theme.primary.lighten1 = shadeColorByPercent(color, .1)
-        // state.theme.primary.lighten2 = shadeColorByPercent(color, .2)
         state.theme.primary.lighten3 = shadeColorByPercent(color, .3)
-        // state.theme.primary.lighten4 = shadeColorByPercent(color, .4)
         state.theme.primary.lighten5 = shadeColorByPercent(color, .5)
-        // state.theme.primary.lighten6 = shadeColorByPercent(color, .6)
-        // state.theme.primary.lighten7 = shadeColorByPercent(color, .7)
-        // state.theme.primary.lighten8 = shadeColorByPercent(color, .8)
         state.theme.primary.lighten9 = shadeColorByPercent(color, .9)
+        // state.theme.primary.lighten1 = shadeColorByPercent(color, .1)
+
       } else {
-        // state.theme.primary = theme.LIGHT.primary
-        // for objects
-        // const addObjectProperty = (state, property) => {
-        //   state.object = {...state.object, property)
-        // }
-// for arrays
-//           const addArrayItem = (state, item) => {
-//             state.array = [...state.array, item]
-//           }
-        state.theme = {
-          ...state.theme,
-          primary: theme.LIGHT.primary
-        }
-        // Vue.set(state.theme, 'primary', theme.LIGHT.primary)
+        //vuex has issues if you try and set state.theme.primary = theme.LIGHT.primary (i tried using Vue.set and state.theme = { ...state.theme, primaryBlah }
+        state.theme.primary.base = theme.LIGHT.primary.base
+        state.theme.primary.lighten3 = theme.LIGHT.primary.lighten3
+        state.theme.primary.lighten5 = theme.LIGHT.primary.lighten5
+        state.theme.primary.lighten9 = theme.LIGHT.primary.lighten9
       }
     },
     [AppMutations.SET_BANNER_COLOR]: (state, color) => (state.theme.banner = color && color !== '' ? color : theme.LIGHT.banner)
