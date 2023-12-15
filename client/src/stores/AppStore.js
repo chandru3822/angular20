@@ -1,6 +1,7 @@
 import theme from "@/helpers/defaultTheme";
 import { shadeColorByPercent } from "@/helpers/helpers"
-import colors from 'vuetify/lib/util/colors'
+import Vue from 'vue'
+// import colors from 'vuetify/lib/util/colors'
 
 export const AppMutations = {
   INIT: 'storeInt',
@@ -31,13 +32,10 @@ export const AppStore = {
     [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
     [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
     [AppMutations.SET_PRIMARY_BASE_COLOR]: (state, color) => {
-      //let vuetify do it based on a hex code - ugly
-      //   state.theme.primary = color && color !== '' ? color : theme.LIGHT.primary
 
-      //use material colors - pretty but limited
-      // state.theme.primary = colors.red
 
-      //calculate it ourselves (prettier...i think, but annoying to have to do)
+      //vuetify's color generator does weird stuff. like if maroon is the base color then lighten-5 is orange. but this code seems to make appropriate colors.
+      //if adding a new color here like `lighten2` ensure you also add it in the defaultTheme.js
       if(color && color !== '') {
         state.theme.primary.base = color
         // state.theme.primary.lighten1 = shadeColorByPercent(color, .1)
@@ -50,7 +48,20 @@ export const AppStore = {
         // state.theme.primary.lighten8 = shadeColorByPercent(color, .8)
         state.theme.primary.lighten9 = shadeColorByPercent(color, .9)
       } else {
-        state.theme.primary = theme.LIGHT.primary
+        // state.theme.primary = theme.LIGHT.primary
+        // for objects
+        // const addObjectProperty = (state, property) => {
+        //   state.object = {...state.object, property)
+        // }
+// for arrays
+//           const addArrayItem = (state, item) => {
+//             state.array = [...state.array, item]
+//           }
+        state.theme = {
+          ...state.theme,
+          primary: theme.LIGHT.primary
+        }
+        // Vue.set(state.theme, 'primary', theme.LIGHT.primary)
       }
     },
     [AppMutations.SET_BANNER_COLOR]: (state, color) => (state.theme.banner = color && color !== '' ? color : theme.LIGHT.banner)

@@ -3,6 +3,7 @@ let theme = {}
 theme.LIGHT = {
   // light: {
     primary: {
+      // if you add one of these colors back in, be sure to also add it in AppStore.js for the corresponding color
       base:'#1F3C73',
       // lighten1:'#2c5893',
       // lighten2:'#3368a5',
