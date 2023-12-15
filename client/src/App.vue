@@ -45,7 +45,7 @@ import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {UserActions} from "@/stores/UserStore";
-import defaultLightTheme from "@/helpers/defaultTheme";
+import theme from "@/helpers/defaultTheme";
 
 export default {
   name: 'App',
@@ -62,7 +62,7 @@ export default {
       userId: this.$store.state.user?.details?.id,
       noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance', 'stripeSuccess'],
       showMobileBanner: false,
-      defaultLightTheme,
+      theme,
       dismissMobileToolbar: false
     }
   },
@@ -95,6 +95,11 @@ export default {
     )
 
     //set the theme which will use the default until one load from company
+    this.$store.commit(AppMutations.SET_INITIAL_THEME)
+
+    console.log('AAAA',this.$store.state.app.theme)
+    console.log('BBBB',this.theme)
+
     this.$vuetify.theme.themes.light = this.$store.state.app.theme
 
     let userAgent = window.navigator.userAgent

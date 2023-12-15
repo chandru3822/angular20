@@ -13,6 +13,7 @@ export const AppMutations = {
   SET_SPINNER_URL: 'SET_SPINNER_URL',
   SET_PRIMARY_BASE_COLOR: 'SET_PRIMARY_BASE_COLOR',
   SET_BANNER_COLOR: 'SET_BANNER_COLOR',
+  SET_INITIAL_THEME: 'SET_INITIAL_THEME',
 }
 
 export const AppStore = {
@@ -31,6 +32,11 @@ export const AppStore = {
     [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
     [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
     [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
+    [AppMutations.SET_INITIAL_THEME]: (state) => {
+      if(state.theme === undefined) {
+        state.theme = { ...theme.LIGHT }
+      }
+    },
     [AppMutations.SET_PRIMARY_BASE_COLOR]: (state, color) => {
 
       //vuetify's color generator does weird stuff. like if maroon is the base color then lighten-5 is orange. but this code seems to make appropriate colors.
@@ -42,12 +48,6 @@ export const AppStore = {
           lighten5: shadeColorByPercent(color, .5),
           lighten9: shadeColorByPercent(color, .9),
         }
-        // state.theme.primary.base = color
-        // state.theme.primary.lighten3 = shadeColorByPercent(color, .3)
-        // state.theme.primary.lighten5 = shadeColorByPercent(color, .5)
-        // state.theme.primary.lighten9 = shadeColorByPercent(color, .9)
-        // state.theme.primary.lighten1 = shadeColorByPercent(color, .1)
-
       } else {
         //vuex has issues if you try and set state.theme.primary = theme.LIGHT.primary (i tried using Vue.set and state.theme = { ...state.theme, primaryBlah }
         state.theme.primary = {
@@ -56,10 +56,6 @@ export const AppStore = {
           lighten5: theme.LIGHT.primary.lighten5,
           lighten9: theme.LIGHT.primary.lighten9,
         }
-        // state.theme.primary.base = theme.LIGHT.primary.base
-        // state.theme.primary.lighten3 = theme.LIGHT.primary.lighten3
-        // state.theme.primary.lighten5 = theme.LIGHT.primary.lighten5
-        // state.theme.primary.lighten9 = theme.LIGHT.primary.lighten9
       }
     },
     [AppMutations.SET_BANNER_COLOR]: (state, color) => (state.theme.banner = color && color !== '' ? color : theme.LIGHT.banner)
