@@ -23,10 +23,10 @@ BEGIN
 
   if p_field_to_save = 1 then
     --update the metro area
-    perform flow.set_project_cfv(p_project_id, p_current_user_id, 1051, v_metro_area_id, p_overwrite_existing);
+    perform flow.set_project_cfv(p_project_id, p_current_user_id, 1051::bigint, v_metro_area_id::text, p_overwrite_existing::boolean);
   elsif p_field_to_save = 2 then
     --update the adder amount
-    perform flow.set_pps_cfv(p_project_id, p_current_user_id, 26217, v_adder_amount, p_overwrite_existing);
+    perform flow.set_pps_cfv(p_project_id, p_current_user_id, 26217::bigint, v_adder_amount::text, p_overwrite_existing::boolean);
   end if;
 
 END;
