@@ -49,7 +49,16 @@ export const AppStore = {
         state.theme.primary.lighten9 = shadeColorByPercent(color, .9)
       } else {
         // state.theme.primary = theme.LIGHT.primary
-        Vue.set(state.theme, 'primary', theme.LIGHT.primary)
+        // for objects
+        // const addObjectProperty = (state, property) => {
+        //   state.object = {...state.object, property)
+        // }
+// for arrays
+//           const addArrayItem = (state, item) => {
+//             state.array = [...state.array, item]
+//           }
+        state.theme = theme.LIGHT
+        // Vue.set(state.theme, 'primary', theme.LIGHT.primary)
       }
     },
     [AppMutations.SET_BANNER_COLOR]: (state, color) => (state.theme.banner = color && color !== '' ? color : theme.LIGHT.banner)
