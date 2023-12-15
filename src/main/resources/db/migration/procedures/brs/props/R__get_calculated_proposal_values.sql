@@ -165,7 +165,9 @@ create type brs.calculated_proposal_value as
   all_rebates jsonb,
   eto_rebate_amount varchar,
   eto_rebate_number numeric,
-  virginia_srec_rebate_amount varchar
+  virginia_srec_rebate_amount varchar,
+  storage_capacity numeric,
+  nominal_power numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -222,7 +224,6 @@ create type brs.excluded_proposal_value as
   aurora_design_id                               text,
   proposal_nbr                                   bigint,
   storage_type_id                                bigint,
-  storage_type                                   varchar,
   financier                                      varchar,
   financier_id                                   bigint,
   loan_price_storage                             numeric,
@@ -483,6 +484,7 @@ declare
   v_below_the_line_utility_rebate_first_year_cap_amount numeric;
   v_total_rebate_first_year_cap_amount                  numeric;
   v_eto_rebate_amount                                   numeric;
+  v_nominal_power                                       numeric;
 
 BEGIN
   select proposal_id,
@@ -786,8 +788,9 @@ BEGIN
          cash_price_storage,
          storage_capacity,
          storage_name,
-         storage_brand
-  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,v_storage_name,v_storage_brand
+         storage_brand,
+         nominal_power
+  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,v_storage_name,v_storage_brand,v_nominal_power
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
 
   v_number_of_batteries = coalesce(v_number_of_batteries, 0);
@@ -2094,7 +2097,9 @@ BEGIN
            v_rebates,
            to_char(v_eto_rebate_amount, '$FM9,999,999')::varchar,
            v_eto_rebate_amount,
-           to_char(v_virginia_srec_rebate_amount, '$FM9,999,999')::varchar;
+           to_char(v_virginia_srec_rebate_amount, '$FM9,999,999')::varchar,
+           v_storage_capacity,
+           v_nominal_power;
 
 
 END

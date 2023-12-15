@@ -6,7 +6,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_storage_details(p_version_id bigint,
                   storage_capacity numeric,
                  storage_name  text,
                   storage_brand text,
-                  storage_brand_id bigint
+                  storage_brand_id bigint,
+                  nominal_power numeric
                  ) AS
 $BODY$
 declare
@@ -17,7 +18,8 @@ BEGIN
              (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 151)') ->> 'value')::numeric as storage_capacity,
              (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 160)') ->> 'value')::text as storage_name,
              (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 412)') ->> 'value')::text as storage_brand,
-             (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 412)') ->> 'intValue')::bigint as storage_brand_id
+             (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 412)') ->> 'intValue')::bigint as storage_brand_id,
+             (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 152)') ->> 'intValue')::numeric as nominal_power
       from brs.get_proposal_version_value(p_version_id, array [(160, null, p_storage_type_id, null)::ProposalFieldFilter,
         (102, null, p_financier_id, null)::ProposalFieldFilter],
                                           'PROPOSAL_STORAGE_DETAILS');
