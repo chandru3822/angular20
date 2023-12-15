@@ -67,6 +67,13 @@
                           class="body-large color-field d-inline-block"
                           label="Primary Color">
             </v-text-field>
+
+            <div>
+              <v-btn class="mr-3" color="primary">Primary</v-btn>
+              <v-btn class="mr-3" color="primary lighten-3">Lighten 3</v-btn>
+              <v-btn class="mr-3" color="primary lighten-5">Lighten 5</v-btn>
+              <v-btn class="mr-3" color="primary lighten-9">Lighten 9</v-btn>
+            </div>
           </div>
         </v-col>
       </v-row>

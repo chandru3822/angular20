@@ -1,5 +1,6 @@
 <template>
-  <v-col cols="12" class="spinner-container">
+  <v-col cols="12" class="spinner-container"
+    :class="{'spinner-opacity': !spinnerUrl}">
 
 <!--    <img v-if="spinnerUrl" :src="require(spinnerUrl)" width="300" height="300"/>-->
     <v-img v-if="spinnerUrl" name="spinnerImg"
@@ -46,6 +47,10 @@ export default {
   right: 0;
   margin: auto;
   background-color: var(--v-secondary-base);
+  //opacity: .5;
+}
+
+.spinner-opacity {
   opacity: .5;
 }
 
