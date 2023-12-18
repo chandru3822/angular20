@@ -481,6 +481,7 @@ public class ProjectProcessStepService {
 
     User cronUser = new User();
     cronUser.setId(SystemSettings.CRON_USER.getId());
+    cronUser.setHasAccess(true);
 
     final List<Map<String, Object>> results = sqlCache.queryBySql(ProjectProcessStepQuery.getTimeBasedAutoTriggerPps, null, new ColumnMapRowMapper());
 

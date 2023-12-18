@@ -50,6 +50,7 @@ public class Smartlistv1Servicev1Tests {
 
     var user = new User();
     user.setId(SystemSettings.CRON_USER.getId());
+    user.setHasAccess(true);
     user.setCompanyId(3L);
     user.setHighestCompanyId(3L);
     user.setHighestParentCompanyId(3L);
