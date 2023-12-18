@@ -238,7 +238,7 @@ public class RebateQuery {
        inner join brs.project_rebate_payment prp on pd.project_id = prp.project_id
      where pd.archived is false
        group by pd.project_id,
-       pd.contact_name,
+       pd.project_name,
        pd.substantial_completion_date,
        pd.primary_financier_name,
        num_of_promotion_payments,

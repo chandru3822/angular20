@@ -54,7 +54,8 @@
                 hide-default-header
                 :sort-desc="[false]"
                 :sort-by="['groupOrder']"
-                class="elevation-1 fix-column-width-bug attachment-cfg-table square-card"
+                class="elevation-1 attachment-cfg-table square-card striped"
+                :class="{'table-striped': isMobile}"
               >
                 <template #no-data>
                   No custom field groups assigned
@@ -64,15 +65,16 @@
                   No custom field groups assigned
                 </template>
 
-                <template #item="{ item, index }">
-                  <tr :class="{'shaded-row': localCustomFieldGroups.indexOf(item) % 2, 'mobile-tr': $vuetify.breakpoint.xsOnly}">
-                    <td style="width: 50px">
+                    <template #item.draggable="{ item, index }">
+                      <td class="draggable-handle-col" :class="{'shaded-row': index % 2 && !isMobile}">
                       <v-btn text icon small color="primary" class="handle" v-if="userCanEdit">
                         <v-icon>drag_handle</v-icon>
                       </v-btn>
-                    </td>
-                    <td class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
-                      <div v-if="userCanEdit">
+                      </td>
+                    </template>
+                    <template #item.groupName="{ item, index }" class="text-left" :class="{'mb-4': $vuetify.breakpoint.xsOnly && item.edit}">
+                      <td :class="{'shaded-row': index % 2 && !isMobile}">
+                      <div v-if="userCanEdit" :class="{'shaded-row': index % 2}">
                         <v-text-field text
                                       v-if="item.edit"
                                       v-model="item.groupName">
@@ -86,9 +88,11 @@
                         </a>
                       </div>
                       <span v-else>{{ item.groupName }}</span>
-                    </td>
-                    <td class="text-right">
-                      <div class="item-icons">
+                      </td>
+                    </template>
+                    <template #item.icons="{item, index}">
+                      <td :class="{'shaded-row': index % 2 && !isMobile}">
+                      <div class="item-icons text-right">
                         <v-btn v-if="userCanAdd" small text color="primary"
                                @click="[addField = !addField, selectedIndex = index, expanded = [item], loadFieldsByParent()]">
                           <v-icon v-if="addField && expanded.includes(item)">remove</v-icon>
@@ -101,12 +105,11 @@
                         </v-btn>
                         <v-btn small color="primary" text @click="cfGroupToDelete = item"><v-icon>delete</v-icon></v-btn>
                       </div>
-                    </td>
-                  </tr>
-                </template>
+                      </td>
+                    </template>
 
-                <template #expanded-item="{ headers, item }">
-                  <tr class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2,'mobile-tr': $vuetify.breakpoint.xsOnly}">
+                <template #expanded-item="{ headers, item, index }">
+                  <td :colspan="headers.length" class="pb-2 px-0" :class="{'shaded-row': selectedIndex % 2,'mobile-tr': $vuetify.breakpoint.xsOnly}">
                     <v-col cols="12" class="pl-3 pr-3 justify" v-if="addField">
                       <h3 class="text-left">Add Ancillary Field</h3>
                       <v-autocomplete v-model="selectedAncillaryField"
@@ -123,7 +126,7 @@
                       </v-autocomplete>
                       <v-btn text color="primary" @click="addField = false">Cancel</v-btn>
                     </v-col>
-                    <v-col cols="12" class="px-3 py-0 pt-2 justify"
+                    <v-col cols="12" class="px-3 justify"
                            v-if="!addField && (!item.customFields || item.customFields.length === 0)">
                       No Custom Fields Added
                     </v-col>
@@ -155,7 +158,7 @@
                         </v-list>
                       </draggable>
                     </v-col>
-                  </tr>
+                  </td>
                 </template>
               </v-data-table>
             </v-col>
@@ -227,7 +230,7 @@ export default {
       newGroup: {},
       expanded: [],
       headers: [
-        {text: null, value: 'draggable', width: '50px', show: true, sortable: false},
+        {text: null, value: 'draggable', width: 50, show: true, sortable: false},
         {text: 'Name', value: 'groupName', show: true},
         {text: null, value: 'icons', show: true}
       ],
@@ -527,7 +530,19 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 
+
 </style>
 <style lang="scss">
+#attachment-cfg-table > div > table > tbody > tr.v-data-table__expanded.v-data-table__expanded__content {
+  box-shadow: none;
+}
+td.draggable-handle-col {
+  width: 50px !important;
+}
+@media (max-width: 960px) {
+  #attachment-cfg-table > div > table > tbody > tr > td {
+    justify-content: center !important;
+  }
+}
 
 </style>

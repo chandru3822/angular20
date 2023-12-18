@@ -7,34 +7,39 @@ export const CollapseExpandEnum = Object.freeze({
 export const FEAT_DB_TABS = [
   {
     label: 'AHJ',
+    featureCode: 'AHJ',
     path: '/database/ahj',
     pathMatches: ['/list', '/permit', '/inspection', '/design'],
     display: true
   },
   {
     label: 'Utility',
+    featureCode: 'UTILITY',
     path: '/database/utility',
     pathMatches: ['/utility'],
     display: true
   },
   {
     label: 'HOA',
+    featureCode: 'HOA',
     path: '/database/hoa',
     pathMatches: ['/hoa'],
     display: true
   },
   {
     label: 'Suppliers',
+    featureCode: 'SUPPLIERS',
     path: '/database/supplier',
     pathMatches: ['/supplier'],
     display: true
   },
-    {
-        label: 'Incentives',
-        path: '/database/incentive',
-        pathMatches: ['/incentive'],
-        display: true
-    }
+  {
+      label: 'Incentives',
+      featureCode: 'INCENTIVE',
+      path: '/database/incentive',
+      pathMatches: ['/incentive'],
+      display: true
+  }
 ]
 
 export const FILTER_DEFAULTS = {
