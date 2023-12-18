@@ -2,6 +2,7 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
+import com.albatross.api.v1.company.blueraven.models.CompanyDashboardDateRange;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
@@ -14,9 +15,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -96,16 +100,14 @@ public class CompanyDashboardService {
     }
   }
 
-  public String getDashboardValues(String startDate, String endDate, Long targetTypeId) {
-    User user = securityService.getCurrentUser();
-
+  public String getDashboardValues(String startDate, String endDate, String trendStart, String trendEnd) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("startDate", startDate);
     params.put("endDate", endDate);
-    params.put("companyId", user.getCompanyId());
-    params.put("targetTypeId", targetTypeId);
-    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
+    params.put("trendStart", trendStart);
+    params.put("trendEnd", trendEnd);
 
+    System.out.println(params);
     String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
     return results;
   }
@@ -123,5 +125,32 @@ public class CompanyDashboardService {
 
     String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
     return results;
+  }
+
+  public ArrayList<CompanyDashboardDateRange> getDropdownValues(Instant today) {
+    User user = securityService.getCurrentUser();
+
+    ArrayList<CompanyDashboardDateRange> ranges = new ArrayList<>();
+
+    String[] rangeNames = {"Yesterday", "Today", "Tomorrow", "Current Week", "Current Period", "Last Week",
+    "Last 30 Days", "Last Period", "Period", "Custom", "Current Month", "Current Quarter", "Current Year",
+    "All Time"};
+
+    ranges.add(new CompanyDashboardDateRange(1, "Yesterday", "YESTERDAY", today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS), today.minus(2, ChronoUnit.DAYS), today.minus(2, ChronoUnit.DAYS)));
+    ranges.add(new CompanyDashboardDateRange(2, "Today", "TODAY", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+    ranges.add(new CompanyDashboardDateRange(3, "Tomorrow", "TOMORROW", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
+    //ranges.add(new CompanyDashboardDateRange(4, "Current Week", "CURRENT_WEEK", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
+   // ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
+    ranges.add(new CompanyDashboardDateRange(6, "Last Week", "LAST WEEK", today.minus(6, ChronoUnit.DAYS), today, today.minus(13, ChronoUnit.DAYS), today.minus(7, ChronoUnit.DAYS)));
+    ranges.add(new CompanyDashboardDateRange(7, "Last 30 Days", "LAST_30_DAYS", today.minus(29, ChronoUnit.DAYS), today, today.minus(59, ChronoUnit.DAYS), today.minus(30, ChronoUnit.DAYS)));
+   // ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+    //ranges.add(new CompanyDashboardDateRange(9, "Period", "PERIOD", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+    ranges.add(new CompanyDashboardDateRange(10, "Custom", "CUSTOM", null, null, null, null));
+   // ranges.add(new CompanyDashboardDateRange(11, "Current Month", "CURRENT_MONTH", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+    //ranges.add(new CompanyDashboardDateRange(12, "Current Quarter", "CURRENT_QUARTER", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+   // ranges.add(new CompanyDashboardDateRange(13, "Current Year", "CURRENT_YEAR", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+
+
+    return ranges;
   }
 }

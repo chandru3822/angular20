@@ -57,7 +57,7 @@ public class CompanyDashboardQuery {
 
   //language=PostgreSQL
   public final static String getCompanyDashboard = """
-    select * from brs.rpt_company_dashboard(:startDate::date, :endDate::date, :companyId::bigint, :targetTypeId::bigint, :currentUserId::bigint);
+      select * from brs.rpt_company_dashboard(:startDate::date, :endDate::date, :trendStart::date, :trendEnd::date);
     """;
 
   //language=PostgreSQL
