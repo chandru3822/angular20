@@ -1,18 +1,20 @@
 <template>
-  <v-col cols="12" class="spinner-container"
-    :class="{'spinner-opacity': !spinnerUrl}">
+  <v-row class="spinner-row">
+    <v-col cols="12" class="spinner-container">
 
-<!--    <img v-if="spinnerUrl" :src="require(spinnerUrl)" width="300" height="300"/>-->
+  <!--    <img v-if="spinnerUrl" :src="require(spinnerUrl)" width="300" height="300"/>-->
+    </v-col>
     <v-img v-if="spinnerUrl" name="spinnerImg"
-           class="custom-spinner-icon"
+           class="custom-spinner-icon abs-position-spinner"
            alt="spinner-image" :src="spinnerUrl"></v-img>
     <v-progress-circular
-        v-else
         indeterminate
+        v-else
+        class="abs-position-spinner spinner-opacity"
         :size="size"
         :color="spinnerColor"
     ></v-progress-circular>
-  </v-col>
+  </v-row>
 </template>
 
 <script>
@@ -47,11 +49,19 @@ export default {
   right: 0;
   margin: auto;
   background-color: var(--v-secondary-base);
-  //opacity: .5;
+  opacity: .5;
+}
+
+.abs-position-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1001;
+  transform: translate(-50%, -50%);
 }
 
 .spinner-opacity {
-  opacity: .5;
+  opacity: .8;
 }
 
 .custom-spinner-icon {
