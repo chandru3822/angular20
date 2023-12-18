@@ -167,7 +167,9 @@ create type brs.calculated_proposal_value as
   eto_rebate_number numeric,
   virginia_srec_rebate_amount varchar,
   storage_capacity numeric,
-  nominal_power numeric
+  nominal_power numeric,
+  battery_manufacturers_warranty bigint,
+  battery_workmanship_warranty bigint
 );
 
 drop type brs.excluded_proposal_value;
@@ -485,6 +487,8 @@ declare
   v_total_rebate_first_year_cap_amount                  numeric;
   v_eto_rebate_amount                                   numeric;
   v_nominal_power                                       numeric;
+  v_battery_manufacturers_warranty                      bigint;
+  v_battery_workmanship_warranty                        bigint;
   v_adder_amount                                        numeric;
 
 BEGIN
@@ -792,8 +796,11 @@ BEGIN
          storage_capacity,
          storage_name,
          storage_brand,
-         nominal_power
-  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,v_storage_name,v_storage_brand,v_nominal_power
+         nominal_power,
+         battery_manufacturers_warranty,
+         battery_workmanship_warranty
+  into v_number_of_batteries,v_cash_price_storage,v_storage_capacity,v_storage_name,v_storage_brand,v_nominal_power,
+    v_battery_manufacturers_warranty,v_battery_workmanship_warranty
   from brs.get_proposal_storage_details(v_version_id, coalesce(v_storage_type_id,0),coalesce(v_financier_id,0));
 
   v_number_of_batteries = coalesce(v_number_of_batteries, 0);
@@ -2105,7 +2112,9 @@ BEGIN
            v_eto_rebate_amount,
            to_char(v_virginia_srec_rebate_amount, '$FM9,999,999')::varchar,
            v_storage_capacity,
-           v_nominal_power;
+           v_nominal_power,
+           v_battery_manufacturers_warranty,
+           v_battery_workmanship_warranty;
 
 
 END
