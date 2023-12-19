@@ -994,7 +994,7 @@ public class SmartlistService {
     List<SmartlistRequirement> requirements;
 
     if (smartlist.isProjectDetails()) {
-      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+      requirements = sqlCache.queryBySql(SmartlistQuery.getProjectDetailsRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
     } else {
       requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
