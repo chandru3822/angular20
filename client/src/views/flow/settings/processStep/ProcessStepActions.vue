@@ -638,7 +638,7 @@
                           <v-icon v-if="cp.edit">remove</v-icon>
                           <v-icon v-else>edit</v-icon>
                         </v-btn>
-                        <v-list-item-action class="clickable" @click="[childProcessToDelete = cp, parentActionForChildToDelete = item]">
+                        <v-list-item-action class="clickable" @click="[childFunctionToDelete = cp, parentActionForChildToDelete = item]">
                           <v-icon>delete</v-icon>
                         </v-list-item-action>
                       </v-list-item>
@@ -820,6 +820,10 @@
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction" @close-dialog="closeChildProcessDialog">
       Are you sure you want to delete <strong>{{ childProcessToDelete?.processStepName }}</strong> from
+      <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!childFunctionToDelete" @confirm="deleteChildFunctionFromAction" @close-dialog="closeChildFunctionDialog">
+      Are you sure you want to delete <strong>{{ childFunctionToDelete?.companyFunctionName }}</strong> from
       <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="showLogicInfoDialog" @confirm="copyToClipBoard" @close-dialog="closeLogicInfoDialog">
@@ -1023,6 +1027,7 @@ export default {
       linkToDelete: null,
       parentActionForChildToDelete: null,
       childProcessToDelete: null,
+      childFunctionToDelete: null,
       showLogicInfoDialog: false,
     }
   },
@@ -1514,7 +1519,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteChildFunctionFromAction(actionId, id) {
+    async deleteChildFunctionFromAction() {
+      this.childFunctionToDelete.archived = true
+      const actionId = this.parentActionForChildToDelete.id
+      const id = this.childFunctionToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
@@ -1683,6 +1691,10 @@ export default {
     },
     closeChildProcessDialog() {
       this.childProcessToDelete = null
+      this.parentActionForChildToDelete = null
+    },
+    closeChildFunctionDialog() {
+      this.childFunctionToDelete = null
       this.parentActionForChildToDelete = null
     },
     closeLogicInfoDialog() {
