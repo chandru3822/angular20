@@ -109,10 +109,10 @@ BEGIN
     into v_user_id,v_set_closer_appointment_audit_id
     from brs.set_closer_appointment_audit scau
     where project_process_step_id = p_project_process_step_id
-      and scau.user_id = any (p_users)
+      and scau.user_id = any (p_users) and available_users is not null
       order by
         case when v_uses_total_lead_allocation is true then total_lead_allocation end desc nulls last,
-        case when v_uses_total_lead_allocation is false then distance_from_actual_to_target end asc nulls last
+        case when v_uses_total_lead_allocation is false then nullif(distance_from_actual_to_target,0) end asc nulls last
 
     limit 1;
   end if;
