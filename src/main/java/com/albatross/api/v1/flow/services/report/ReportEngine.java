@@ -3425,7 +3425,7 @@ public class ReportEngine {
 
     switch (r.getDataTypeId().intValue()) {
       case 1:
-        if (r.getIsCustomValue()) {
+        if (r.getIsCustomValue() && r.getSecondaryRequirementValue() == null) {
           LocalDate dateValue = (requirementValue != null) ? LocalDate.parse(requirementValue) : null;
           return dateValue;
         }
