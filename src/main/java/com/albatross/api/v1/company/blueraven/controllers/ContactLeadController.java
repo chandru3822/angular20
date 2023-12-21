@@ -360,4 +360,5 @@ public class ContactLeadController {
   public void updateContactMaxdMarketing(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
 }
