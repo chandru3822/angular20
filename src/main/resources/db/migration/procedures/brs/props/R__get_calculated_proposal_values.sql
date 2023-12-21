@@ -490,7 +490,7 @@ declare
   v_battery_manufacturers_warranty                      bigint;
   v_battery_workmanship_warranty                        bigint;
   v_adder_amount                                        numeric;
-
+  v_company_process_id integer;
 BEGIN
   select proposal_id,
          version_id,
@@ -553,7 +553,8 @@ BEGIN
          misc_adders_array,
          commission_strategy_id,
          qualifies_for_incentive,
-         adder_amount
+         adder_amount,
+         company_process_id
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -615,7 +616,8 @@ BEGIN
     v_misc_adders_array,
     v_commission_strategy_id,
     v_qualifies_for_incentive,
-    v_adder_amount
+    v_adder_amount,
+    v_company_process_id
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -1154,7 +1156,7 @@ BEGIN
   --raise notice 'v_total_system_cost_before_rebates = %',v_total_system_cost_before_rebates;
 
   --illinios
-  if v_state_id = 13 then
+  if v_state_id = 13 and v_company_process_id = 1 then
     select srec_less_10,
            srec_between_10_25,
            srec_greater_25,
