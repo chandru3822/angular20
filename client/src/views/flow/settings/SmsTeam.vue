@@ -59,6 +59,11 @@
             <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': filterTeams.indexOf(item) % 2}">
               <v-text-field text v-model="item.teamName" label="Team Name" class="px-4"/>
               <v-checkbox dense v-model="item.checked" :value="item.isDefault" :disabled="item.isDefault" class="albatross-body-2 mt-0 px-4" label="Make Default for incoming unprompted customer and internal messages" />
+              <v-btn :disabled="item.teamName.length < 1"
+                     color="primary" class="mr-2"
+                     @click="saveTeam(item, false)">
+                Save
+              </v-btn>
               <div class="mb-2">
                 <v-toolbar flat dense color="transparent" class="wqt-header-bar">
                   <v-toolbar-title class="albatross-header-4"><b>Positions</b></v-toolbar-title>
