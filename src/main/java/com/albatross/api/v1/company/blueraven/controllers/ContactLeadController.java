@@ -355,4 +355,9 @@ public class ContactLeadController {
   public void updateContactRhino(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
+
+  @PostMapping(value = "/maxdmarketing", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void updateContactMaxdMarketing(@RequestBody ContactLead contactLead) {
+    contactLeadService.saveContactLead(contactLead);
+  }
 }
