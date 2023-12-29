@@ -626,11 +626,11 @@ const add = () => {
     newRequirement.secondaryRequirementValue = secondaryValue.value.trim()
   }
 
-  if (newRequirement.hasListValues) {
+  if (newRequirement.hasListValues && newRequirement.availableListOfValues.length === 0) {
     newRequirement.availableListOfValues = newRequirement.listOfValues
   }
 
-  newRequirement.isCustomValue = (typeof value.value === 'string' || typeof value.value === 'object')
+  newRequirement.isCustomValue = typeof value.value === 'string'
 
   if (newRequirement.companyId === null) {
     newRequirement.companyId = companyId
@@ -667,7 +667,7 @@ onMounted(() => {
       operatorType: requirement.value.operatorType
     }
 
-    if (requirement.value.hasListValues) {
+    if (requirement.value.hasListValues && requirement.value.availableListOfValues.length === 0) {
       requirement.value.availableListOfValues = requirement.value.listOfValues
     }
 
