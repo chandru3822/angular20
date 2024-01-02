@@ -118,7 +118,8 @@ export default {
         async getSmartlistData() {
             try {
                 this.isLoading = true
-                const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/data`)
+                const params = {timezone: this.$store.state.user.details.timezone}
+                const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/data`, {params})
                 this.reportData = data.data
                 this.headers = data.headers.map(h => ({text: h.name, value: h.name, id: h.id}))
             } catch (e) {

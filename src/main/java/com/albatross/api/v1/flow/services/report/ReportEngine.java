@@ -1982,7 +1982,12 @@ public class ReportEngine {
             if (f.getDataTypeId() == 1) {
               selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 2) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 7) {
@@ -2924,7 +2929,12 @@ public class ReportEngine {
             if (f.getDataTypeId() == 1) {
               selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 2) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", joinTable, f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 7) {
@@ -2940,7 +2950,12 @@ public class ReportEngine {
             if (f.getDataTypeId() == 1) {
               selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 2) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 7) {

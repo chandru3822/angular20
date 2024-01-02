@@ -255,7 +255,7 @@
 <script>
 
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 
@@ -297,7 +297,8 @@ export default {
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
       userId: this.$store.state.user.details.id,
-      refreshData: false
+      refreshData: false,
+      timezone: this.$store.state.user.details.timezone.value
     }
   },
   created () {
@@ -545,7 +546,8 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlistv1/${this.smartlist.id}/csv`)
+        const params = {timezone: this.timezone}
+        const {data, status} = await getRequestWithParams(`/smartlistv1/${this.smartlist.id}/csv`, {params})
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         })
@@ -642,7 +644,8 @@ export default {
     },
     async buildSql() {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.smartlist.id}/getSqlString`)
+        const params = {timezone: this.timezone}
+        const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlist.id}/getSqlString`, {params})
         this.sql = data
         navigator.clipboard.writeText(this.sql);
         this.snackbar = getSnackbar('SUCCESS', 'Copied query to clipboard')
