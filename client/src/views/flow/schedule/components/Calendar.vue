@@ -147,25 +147,24 @@
         </v-col>
         <v-col class="py-0" cols="12" md="4">
           <v-autocomplete v-model="selectedOrgs"
-                    :items="sortedOrgs"
-                    label="Organization Resources"
-                    multiple
-                    clearable
-                    :loading="orgsLoading"
-                    :hide-details="countSelected < maxSelectionAllowed"
-                    :error="countSelected >= maxSelectionAllowed"
-                    :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                    return-object
-                    type="search"
-                    item-text="orgName"
-                    item-value="id"
-                    @input="[orgValuesChanged = true, limiter()]"
-                    @blur="getEvents(true)"
+                          ref="orgSelector"
+                          :items="sortedOrgs"
+                          label="Organization Resources"
+                          multiple
+                          clearable
+                          :loading="orgsLoading"
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
+                          return-object
+                          item-text="orgName"
+                          item-value="id"
+                          @input="[orgValuesChanged = true, limiter()]"
+                          @blur="getEvents(true)"
                           attach
           >
             <template
-              slot="selection"
-              slot-scope="{ item, index }"
+            v-slot:selection="{item, index}"
             >
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedOrgs.length }} selected
@@ -382,8 +381,10 @@
         this.handleResourceColors()
       },
       'selectedOrgs': function () {
+        this.selectedOrgs.forEach(so => console.log(so.id))
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
+        this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
       },
       calendarStartTime: function (newStartTime, oldStartTime){
         if(newStartTime !== oldStartTime) {
