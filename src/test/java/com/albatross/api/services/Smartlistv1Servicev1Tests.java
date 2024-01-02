@@ -78,7 +78,7 @@ public class Smartlistv1Servicev1Tests {
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        smartlistServicev1.getSmartlistResults(id);
+        smartlistServicev1.getSmartlistResults(id, null);
       } catch (Exception e) {
         if (!currentlyFailingProjectDetails.contains(id)) {
           log.error(String.format("Failed on smartlist ID: %s", id));
@@ -107,7 +107,7 @@ public class Smartlistv1Servicev1Tests {
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        smartlistServicev1.getSmartlistResults(id);
+        smartlistServicev1.getSmartlistResults(id, null);
       } catch (Exception e) {
         if (!currentlyFailingProcessStepNonMain.contains(id)) {
           log.error(String.format("Failed on smartlist ID: %s", id));
@@ -140,7 +140,7 @@ public class Smartlistv1Servicev1Tests {
     smartlistIds.forEach(id -> {
       try {
         log.info("Running smartlist ID: " + id);
-        final String sql = smartlistServicev1.getSmartlistSqlString(id);
+        final String sql = smartlistServicev1.getSmartlistSqlString(id, null);
         final Boolean isValid = sqlCacheRO.queryForObjectBySql(SmartlistQueryv1.isSyntaxValid, Map.of("query", sql), Boolean.class);
         if (!isValid) {
             throw new RuntimeException(String.format("Invalid Syntax, Smartlist ID: %s, Query: %s", id, sql));

@@ -190,8 +190,16 @@ public class SmartlistServicev1 {
     return sqlCache.queryBySql(SmartlistQueryv1.getAvailableProjectDetailsFields, null, new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
   }
 
-  public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
-    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId, String timezone) {
+    List<SmartlistFieldAssignment> fields = sqlCache.queryBySql(SmartlistQueryv1.getAssignedFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    if (timezone != null) {
+      for (SmartlistFieldAssignment field : fields) {
+        if (field.getDataTypeId() == 1 || field.getDataTypeId() == 2) {
+          field.setName(field.getName() + " (" + timezone + ")");
+        }
+      }
+    }
+    return fields;
   }
 
   public SmartlistFieldAssignment getAssignedFieldById(Long assignmentId) {
@@ -202,8 +210,16 @@ public class SmartlistServicev1 {
     return sqlCache.getBySql(SmartlistQueryv1.getAssignedProjectDetailsFieldById, Map.of("id", assignmentId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om)).orElse(null);
   }
 
-  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
-    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedProjectDetailsFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId, String timezone) {
+    List<SmartlistFieldAssignment> fields = sqlCache.queryBySql(SmartlistQueryv1.getAssignedProjectDetailsFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    if (timezone != null) {
+      for (SmartlistFieldAssignment field : fields) {
+        if (field.getDataTypeId() == 1 || field.getDataTypeId() == 2) {
+          field.setName(field.getName() + " (" + timezone + ")");
+        }
+      }
+    }
+    return fields;
   }
 
   public SmartlistRequirement getRequirementById(Long requirementId) {
@@ -392,14 +408,14 @@ public class SmartlistServicev1 {
     return getSmartlist(newSmartlistId);
   }
 
-  public String getSmartlistSqlString(Long smartlistId) {
+  public String getSmartlistSqlString(Long smartlistId, String timezone) {
     Smartlistv1 smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
-    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId, timezone);
 
     fields = prettifyFieldNames(fields);
 
@@ -410,26 +426,26 @@ public class SmartlistServicev1 {
     } else if (smartlist.getObjectTypeId() == 6) {
       query = buildEventSql(smartlist, fields, null, null);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist, timezone) : buildSql(smartlist, fields);
     }
 
     return query;
   }
 
-  public SmartlistResult getSmartlistResults(Long smartlistId) {
+  public SmartlistResult getSmartlistResults(Long smartlistId, String timezone) {
     Smartlistv1 smartlist = this.getSmartlist(smartlistId);
     if (smartlist == null) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
     log.debug("SMARTLIST: Running smartlist ID: {}", smartlistId);
-    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = this.getAssignedFields(smartlistId, timezone);
     String query;
 
     if (List.of(4L, 6L).contains(smartlist.getObjectTypeId())) {
       query = buildProcessStepSql(smartlist, fields);
     } else {
-      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist) : buildSql(smartlist, fields, true);
+      query = (smartlist.isProjectDetails()) ? this.buildProjectDetailsSql(smartlist, timezone) : buildSql(smartlist, fields, true);
     }
 
     List<Map<String, Object>> results;
@@ -450,7 +466,7 @@ public class SmartlistServicev1 {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
     }
 
-    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId) : this.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? this.getAssignedProjectDetailsFields(smartlistId, timezone) : this.getAssignedFields(smartlistId, timezone);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Smartlist must have at least 1 field", new Exception());
@@ -465,12 +481,12 @@ public class SmartlistServicev1 {
 
     //dont run the processStepSql if it is for a work queue list. i only put the work queue code into the buildSql funtion
     if (smartlist.isProjectDetails()) {
-      query = buildProjectDetailsSql(smartlist);
+      query = buildProjectDetailsSql(smartlist, timezone);
     } else if (List.of(4L, 6L).contains(smartlist.getObjectTypeId()) && null == smartlist.getWorkQueueTypeId()) {
       if (smartlist.getObjectTypeId() == 4) {
         query = buildProcessStepSql(smartlist, fields);
       } else {
-        query = buildEventSql(smartlist, fields, null, null);
+        query = buildEventSql(smartlist, fields, timezone, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
@@ -496,9 +512,9 @@ public class SmartlistServicev1 {
     }
   }
 
-  public String buildProjectDetailsSql(Smartlistv1 smartlist) {
+  public String buildProjectDetailsSql(Smartlistv1 smartlist, String timezone) {
 
-    List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId());
+    List<SmartlistFieldAssignment> fields = this.getAssignedProjectDetailsFields(smartlist.getId(), timezone);
     List<SmartlistRequirement> requirements = this.getRequirements(smartlist.getId(), false);
 
     StringBuilder query = new StringBuilder();
@@ -515,9 +531,18 @@ public class SmartlistServicev1 {
 
     for (SmartlistFieldAssignment f : fields) {
       if (f.getDataTypeId() == 1) {
-        query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        if (null != timezone) {
+          query.append(String.format(" to_char(brs.project_details.%s at time zone 'UTC' as time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), timezone, f.getName()));
+        } else {
+          query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        }
       } else if (f.getDataTypeId() == 2) {
-        query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        if (null != timezone) {
+          query.append(String.format(" to_char(brs.project_details.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), timezone, f.getName()));
+        }
+        else {
+          query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
+        }
       } else if (f.getCustomFieldSql() != null) {
         query.append(String.format(" \"%s\".name as \"%s\", ", f.getCustomFieldSqlKey(), f.getName()));
       } else {
@@ -940,9 +965,19 @@ public class SmartlistServicev1 {
           query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), f.getName()));
         }
       } else if (f.getDataTypeId() == 1) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
+        if (null != timezone) {
+          query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", location, timezone, f.getName()));
+        }
+        else {
+          query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
+        }
       } else if (f.getDataTypeId() == 2) {
-        query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        if (null != timezone) {
+          query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, timezone, f.getName()));
+        }
+        else {
+          query.append(String.format("  to_char(%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, f.getName()));
+        }
       } else if (f.getDataTypeId() == 7 && f.getSmartlistSystemListId() == null) {
         query.append(String.format("  (select array_to_string(array(select \"name\" from flow.list_of_value where id = any(%s)), ',')) as \"%s\", ", location, f.getName()));
       } else if (f.getDataTypeId() == 9) {
@@ -2023,9 +2058,19 @@ public class SmartlistServicev1 {
                        Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
                        Objects.equals(f.getReferenceTable(), "flow.event_status_type")) {
             if (f.getDataTypeId() == 1) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 2) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 7) {
@@ -2057,9 +2102,19 @@ public class SmartlistServicev1 {
             if (f.getCustomFieldGroupAssignmentId() != null) {
               //system fields
               if (f.getDataTypeId() == 1) {
-                selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                if (null != timezone) {
+                  selectFields.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getId()));
+                }
+                else {
+                  selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                }
               } else if (f.getDataTypeId() == 2) {
-                selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                if (null != timezone) {
+                  selectFields.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getId()));
+                }
+                else {
+                  selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                }
               } else if (f.getDataTypeId() == 6 && f.getHasListValues()) {
                 selectFields.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
               } else if (f.getDataTypeId() == 7) {
@@ -2963,9 +3018,19 @@ public class SmartlistServicev1 {
             }
 
             if (f.getDataTypeId() == 1) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD') as \"%s\", ", joinTable, f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 2) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", joinTable, f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", joinTable, f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 7) {
@@ -2979,9 +3044,19 @@ public class SmartlistServicev1 {
                        Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
                        Objects.equals(f.getReferenceTable(), "flow.event_status_type")) {
             if (f.getDataTypeId() == 1) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 2) {
-              selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              if (null != timezone) {
+                selectFields.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getId()));
+              }
+              else {
+                selectFields.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
+              }
             } else if (f.getDataTypeId() == 6 && Objects.equals(f.getHasListValues(), true)) {
               selectFields.append(String.format(" (select name from flow.list_of_value where id = %s.%s) as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getId()));
             } else if (f.getDataTypeId() == 7) {
@@ -3013,9 +3088,19 @@ public class SmartlistServicev1 {
             if (f.getCustomFieldGroupAssignmentId() != null) {
               //system fields
               if (f.getDataTypeId() == 1) {
-                selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                if (null != timezone) {
+                  selectFields.append(String.format(" to_char(\"%s\".%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getId()));
+                }
+                else {
+                  selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                }
               } else if (f.getDataTypeId() == 2) {
-                selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                if (null != timezone) {
+                  selectFields.append(String.format(" to_char(\"%s\".%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getId()));
+                }
+                else {
+                  selectFields.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
+                }
               } else if (f.getDataTypeId() == 6 && f.getHasListValues()) {
                 selectFields.append(String.format(" (select name from flow.list_of_value where id = \"%s\".%s) as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getId()));
               } else if (f.getDataTypeId() == 7) {
@@ -3633,7 +3718,12 @@ public class SmartlistServicev1 {
           Objects.equals(f.getReferenceTable(), "flow.company_event_status_type") ||
           Objects.equals(f.getReferenceTable(), "flow.event_status_type")) {//else if field is process step or event system field
           if (f.getDataTypeId() == 1) {
-            selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            if (null != timezone) {
+              selectQuery.append(String.format(" to_char(%s.%s at time zone \'UTC\' at time zone \'%s\', 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
+            }
+            else {
+              selectQuery.append(String.format(" to_char(%s.%s, 'YYYY-MM-DD') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), f.getName()));
+            }
           } else if (f.getDataTypeId() == 2) {
             if (timezone != null) {
               selectQuery.append(String.format(" to_char(%s.%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getReferenceTable(), f.getReferenceColumn(), timezone, f.getName()));
@@ -3661,7 +3751,11 @@ public class SmartlistServicev1 {
           //if field is system
           if (f.getCustomFieldGroupAssignmentId() != null) {
             if (f.getDataTypeId() == 1) {
-              selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
+              if (timezone != null) {
+                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
+              } else {
+                selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
+              }
             } else if (f.getDataTypeId() == 2) {
               if (timezone != null) {
                 selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
@@ -4155,7 +4249,11 @@ public class SmartlistServicev1 {
   private String addSelectCustomField(Long dataTypeId, String valueTable, String fieldLabel, Boolean hasListValues, String customTimezone) {
     var select = "";
     if (dataTypeId == 1) {
-      select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
+      if (customTimezone != null) {
+        select = String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), customTimezone, fieldLabel);
+      } else {
+        select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
+      }
     } else if (dataTypeId == 2) {
       if (customTimezone != null) {
         select = String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), customTimezone, fieldLabel);
@@ -4939,7 +5037,7 @@ public class SmartlistServicev1 {
    */
   public List<SmartlistFieldAssignment> prettifyFieldNames(List<SmartlistFieldAssignment> fields) {
     for (SmartlistFieldAssignment f : fields) {
-      if (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6) {
+      if (f.getObjectTypeId() != null && (f.getObjectTypeId() == 4 || f.getObjectTypeId() == 6)) {
         f.setName(String.format("%s (%s)", f.getName(), (f.getObjectTypeId() == 6) ? f.getEventName() : f.getProcessStepName()));
 
         if (f.getName().length() > 63) {

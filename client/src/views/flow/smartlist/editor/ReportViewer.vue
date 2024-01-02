@@ -145,7 +145,7 @@ const processQueue = async () => {
     isUpdateQueued.value = false
     reportData.value = []
 
-    const response = await http.post(`/smartlist/adhoc`, {
+    const response = await http.post(`/smartlist/adhoc?timezone=${store.state.user.details.timezone.value}`, {
       smartlist: props.report,
       fields: props.fields,
       requirements: props.requirements

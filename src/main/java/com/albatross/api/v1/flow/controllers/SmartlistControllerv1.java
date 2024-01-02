@@ -52,8 +52,8 @@ public class SmartlistControllerv1 {
   //humes dont hate, i added an endpoint so i could get the sql string on the frontend.
   //this has helped me a ton with work queues especially when the say it is only failing in prod
   @GetMapping(value = "/{smartlistId}/getSqlString", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getSqlString (@PathVariable Long smartlistId) {
-    return smartlistServicev1.getSmartlistSqlString(smartlistId);
+  public String getSqlString (@PathVariable Long smartlistId, @RequestParam(required = false) String timezone) {
+    return smartlistServicev1.getSmartlistSqlString(smartlistId, timezone != null ? timezone.replace("_", " ") : null);
   }
 
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,9 +99,9 @@ public class SmartlistControllerv1 {
     List<SmartlistFieldAssignment> fields;
 
     if (smartlist.isProjectDetails()) {
-      fields = smartlistServicev1.getAssignedProjectDetailsFields(smartlistId);
+      fields = smartlistServicev1.getAssignedProjectDetailsFields(smartlistId, null);
     } else {
-      fields = smartlistServicev1.getAssignedFields(smartlistId);
+      fields = smartlistServicev1.getAssignedFields(smartlistId, null);
     }
 
     return new ResponseEntity<>(fields, HttpStatus.OK);
@@ -167,9 +167,10 @@ public class SmartlistControllerv1 {
   }
 
   @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<SmartlistResult> getSmartlistDataById(@PathVariable Long smartlistId) {
+  public ResponseEntity<SmartlistResult> getSmartlistDataById(@PathVariable Long smartlistId,
+                                                              @RequestParam(required = false) String timezone) {
       try {
-          return new ResponseEntity<>(smartlistServicev1.getSmartlistResults(smartlistId), HttpStatus.OK);
+          return new ResponseEntity<>(smartlistServicev1.getSmartlistResults(smartlistId, timezone != null ? timezone.replace("_", " ") : null), HttpStatus.OK);
       } catch (RuntimeException e) {
           throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate results", e);
       }
