@@ -184,10 +184,11 @@ BEGIN
       update flow.project_process_step
       set company_process_step_status_type_id = 76
       where id = p_project_process_step_id;
-      --change the status of the project to appointment scheduled
-      update flow.project
-        set company_project_status_type_id = 61
-      where id = p_project_id;
+      --turned project status change off due to carlin request 1/2/24
+--       --change the status of the project to appointment scheduled
+--       update flow.project
+--         set company_project_status_type_id = 61
+--       where id = p_project_id;
 
       --then return
              return query select true::boolean,
