@@ -127,8 +127,9 @@ public class StripeService {
         try {
             String stripeApiKey = environment.getProperty(partnerKeyPrefix + ".stripe.api.token");
             String priceKey = environment.getProperty(partnerKeyPrefix + ".stripe.down.payment.price.key");;
+            String partnerPortalHostUrl = environment.getProperty(partnerKeyPrefix + ".portal.host.url");;
 
-            if(stripeApiKey != null && priceKey != null) {
+            if(stripeApiKey != null && priceKey != null && partnerPortalHostUrl != null) {
 
                 Stripe.apiKey = stripeApiKey;
                 
@@ -136,7 +137,7 @@ public class StripeService {
                         SessionCreateParams.builder()
                                 .setUiMode(SessionCreateParams.UiMode.EMBEDDED)
                                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                                .setReturnUrl(frontEndHostUrl + "/success?session_id={CHECKOUT_SESSION_ID}")
+                                .setReturnUrl(partnerPortalHostUrl + "/success?session_id={CHECKOUT_SESSION_ID}")
                                 .setCustomerEmail(customerEmail) //this is ok to be null
 //                                .setAutomaticTax(
 //                                        SessionCreateParams.AutomaticTax.builder()
