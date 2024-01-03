@@ -532,7 +532,7 @@ public class SmartlistServicev1 {
     for (SmartlistFieldAssignment f : fields) {
       if (f.getDataTypeId() == 1) {
         if (null != timezone) {
-          query.append(String.format(" to_char(brs.project_details.%s at time zone 'UTC' as time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), timezone, f.getName()));
+          query.append(String.format(" to_char(brs.project_details.%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), timezone, f.getName()));
         } else {
           query.append(String.format(" to_char(brs.project_details.%s, 'YYYY-MM-DD') as \"%s\", ", f.getProjectDetailsColumn(), f.getName()));
         }
@@ -3752,13 +3752,13 @@ public class SmartlistServicev1 {
           if (f.getCustomFieldGroupAssignmentId() != null) {
             if (f.getDataTypeId() == 1) {
               if (timezone != null) {
-                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
+                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
               } else {
                 selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
               }
             } else if (f.getDataTypeId() == 2) {
               if (timezone != null) {
-                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
+                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
               } else {
                 selectQuery.append(String.format(" to_char(\"%s\".%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
               }
@@ -4250,7 +4250,7 @@ public class SmartlistServicev1 {
     var select = "";
     if (dataTypeId == 1) {
       if (customTimezone != null) {
-        select = String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), customTimezone, fieldLabel);
+        select = String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), customTimezone, fieldLabel);
       } else {
         select = String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", valueTable, getReferenceColumn(dataTypeId), fieldLabel);
       }
