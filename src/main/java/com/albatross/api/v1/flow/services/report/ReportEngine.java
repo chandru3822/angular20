@@ -1405,7 +1405,7 @@ public class ReportEngine {
               selectQuery.append(String.format(" to_char(\"%s\".%s, 'YYYY-MM-DD') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
             } else if (f.getDataTypeId() == 2) {
               if (timezone != null) {
-                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' as time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
+                selectQuery.append(String.format(" to_char(\"%s\".%s at time zone 'UTC' at time zone '%s', 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), timezone, f.getName()));
               } else {
                 selectQuery.append(String.format(" to_char(\"%s\".%s, 'MM/DD/YYYY HH:MI am') as \"%s\", ", f.getValueReferenceTable(), getReferenceColumn(f.getDataTypeId()), f.getName()));
               }
