@@ -381,7 +381,7 @@
         this.handleResourceColors()
       },
       'selectedOrgs': function () {
-        this.selectedOrgs.forEach(so => console.log(so.id))
+        // this.selectedOrgs.forEach(so => console.log(so.id))
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
         this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
@@ -836,7 +836,7 @@
                   d.colorForBorder = matchingResource?.color
                 }
               })
-              console.log('the events: ',data)
+              // console.log('the events: ',data)
               this.eventSources[0].events = cloneDeep(data)
 
               this.calendarLoading = false
@@ -940,7 +940,7 @@
         }
 
         //if this is an org (first char === 1) then make it a hyperlink to the org screen
-        console.log('resource: ', renderInfo)
+        // console.log('resource: ', renderInfo)
         let isOrg = false
         let anchorHref = ''
         if(renderInfo?.resource?.id?.charAt(0) === '1') {

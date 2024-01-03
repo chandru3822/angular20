@@ -800,7 +800,6 @@ export default {
             contact: null, //dont add the contact here. this new endpoint will save it if you do and this isn't where changes are made anymore
             cfvs: this.dirtyCfvs
           }
-          console.log('randalogger', this.contactId)
           const {data, status} = await saveContact(this.contactId, body)
           this.dirtyCfvs = []
           this.addressChanged = false

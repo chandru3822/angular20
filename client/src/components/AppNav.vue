@@ -129,7 +129,7 @@ export default {
   },
   watch: {
     themeUpdateEvents: async function () {
-      console.log('THIS IS HAPPENING', this.themeUpdateEvents)
+      // console.log('THIS IS HAPPENING', this.themeUpdateEvents)
       //reload the companies so we get any new icons
       await this.getCompanies()
     }

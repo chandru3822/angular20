@@ -142,7 +142,7 @@ export default {
       }
     },
     onProgress(event) {
-      console.log(`Processed: ${event} / 100`);
+      // console.log(`Processed: ${event} / 100`);
     },
     hasGenerated() {
       alert("PDF generated successfully!");

@@ -349,7 +349,6 @@ export default {
           return (!this.hideFutureFollowUps || (this.hideFutureFollowUps && noteFilter)) && (!this.hideFutureEvents || (this.hideFutureEvents && moment(r['Event Start Time'], 'MM/DD/YYYY hh:mm a').isBefore(moment())))
         })
       } else {
-        console.log('non onono')
         this.results = cloneDeep(this.filteredResults)
       }
     },

@@ -527,7 +527,7 @@ export default {
   },
   methods: {
     doSomething() {
-      console.log('this happened')
+      // console.log('this happened')
     },
     goToPath(path, query) {
       this.unsavedFieldsModal = false
