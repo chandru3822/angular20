@@ -761,6 +761,11 @@ const windowLeave = async (event) => {
     left: 0;
     width: 100%;
     background-color: white;
+
+    .v-data-footer__select > .v-input {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
   }
 
   :deep(.v-data-table__wrapper) {
