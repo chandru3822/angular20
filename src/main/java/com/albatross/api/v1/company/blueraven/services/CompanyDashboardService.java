@@ -151,12 +151,12 @@ public class CompanyDashboardService {
 
     LocalDate leapYearTest = LocalDate.of(today.atZone(ZoneId.of("UTC")).getYear(), 01, 01);
     Boolean isLeapYear = leapYearTest.isLeapYear();
-    System.out.println(today);
-    System.out.println(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue());
-    System.out.println("Current Month Start: ");
-    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS));
-    System.out.println("Last week Saturday: ");
-    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth(), ChronoUnit.DAYS).plus(today.atZone(ZoneId.of("UTC")).getMonth().length(isLeapYear), ChronoUnit.DAYS));
+//    System.out.println(today);
+//    System.out.println(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue());
+//    System.out.println("Current Month Start: ");
+//    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS));
+//    System.out.println("Last week Saturday: ");
+//    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth(), ChronoUnit.DAYS).plus(today.atZone(ZoneId.of("UTC")).getMonth().length(isLeapYear), ChronoUnit.DAYS));
 
     return ranges;
   }
