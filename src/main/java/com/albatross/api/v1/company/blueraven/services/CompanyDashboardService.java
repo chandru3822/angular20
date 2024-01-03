@@ -14,16 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.time.DayOfWeek;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.Month;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -107,7 +103,6 @@ public class CompanyDashboardService {
     params.put("trendStart", trendStart);
     params.put("trendEnd", trendEnd);
 
-    System.out.println(params);
     String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
     return results;
   }
@@ -124,6 +119,7 @@ public class CompanyDashboardService {
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
+
     return results;
   }
 
@@ -139,7 +135,10 @@ public class CompanyDashboardService {
     ranges.add(new CompanyDashboardDateRange(1, "Yesterday", "YESTERDAY", today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS), today.minus(2, ChronoUnit.DAYS), today.minus(2, ChronoUnit.DAYS)));
     ranges.add(new CompanyDashboardDateRange(2, "Today", "TODAY", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
     ranges.add(new CompanyDashboardDateRange(3, "Tomorrow", "TOMORROW", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
-    //ranges.add(new CompanyDashboardDateRange(4, "Current Week", "CURRENT_WEEK", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
+    ranges.add(new CompanyDashboardDateRange(4, "Current Week", "CURRENT_WEEK", today.minus(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue(), ChronoUnit.DAYS),
+      today.plus((7-today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue()-1), ChronoUnit.DAYS),
+      today.minus(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue()+7, ChronoUnit.DAYS),
+      today.minus(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue()+1, ChronoUnit.DAYS)));
    // ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
     ranges.add(new CompanyDashboardDateRange(6, "Last Week", "LAST WEEK", today.minus(6, ChronoUnit.DAYS), today, today.minus(13, ChronoUnit.DAYS), today.minus(7, ChronoUnit.DAYS)));
     ranges.add(new CompanyDashboardDateRange(7, "Last 30 Days", "LAST_30_DAYS", today.minus(29, ChronoUnit.DAYS), today, today.minus(59, ChronoUnit.DAYS), today.minus(30, ChronoUnit.DAYS)));
@@ -150,6 +149,14 @@ public class CompanyDashboardService {
     //ranges.add(new CompanyDashboardDateRange(12, "Current Quarter", "CURRENT_QUARTER", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
    // ranges.add(new CompanyDashboardDateRange(13, "Current Year", "CURRENT_YEAR", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
 
+    LocalDate leapYearTest = LocalDate.of(today.atZone(ZoneId.of("UTC")).getYear(), 01, 01);
+    Boolean isLeapYear = leapYearTest.isLeapYear();
+    System.out.println(today);
+    System.out.println(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue());
+    System.out.println("Current Month Start: ");
+    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS));
+    System.out.println("Last week Saturday: ");
+    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth(), ChronoUnit.DAYS).plus(today.atZone(ZoneId.of("UTC")).getMonth().length(isLeapYear), ChronoUnit.DAYS));
 
     return ranges;
   }

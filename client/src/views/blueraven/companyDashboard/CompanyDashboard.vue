@@ -1,143 +1,143 @@
 <template>
   <v-container id="company-dash-container">
-    <v-row>
-      <v-col cols="12" class="pt-0">
-        <v-row id="company-dash-toolbar-container">
-          <v-col cols="12" id="company-dash-toolbar">
-            <v-toolbar class="elevation-1 toolbar-z-index-override">
-              <v-toolbar-title>Company Dashboard</v-toolbar-title>
-              <div id="toolbar-right-side">
-                <v-select attach class="date-range-dropdown"
-                          v-model="selectedDateRange"
-                          :items="dateRanges"
-                          label="Date Range"
-                          @change="getDashboardValues(false)"
-                          hide-details
-                          dense
-                          outlined
-                ></v-select>
-                <DatetimePickerInput :custom-class="'date-range-date'"
-                                     v-model="startDate"
-                                     :timezone="timezone"
-                                     :maxDate="endDate"
-                                     :type="'date'"
-                                     label="Start Date"
-                                     hide-details
-                                     :hide-prepend-icon="true"
-                                     :dense="'dense'"
-                                     :outlined="'outlined'"
-                ></DatetimePickerInput>
-                <DatetimePickerInput :custom-class="'date-range-date'"
-                                     v-model="endDate"
-                                     :timezone="timezone"
-                                     :minDate="startDate"
-                                     :type="'date'"
-                                     label="End Date"
-                                     hide-details
-                                     :hide-prepend-icon="true"
-                                     :dense="'dense'"
-                                     :outlined="'outlined'"
-                ></DatetimePickerInput>
-                <v-btn color="primary" dark class="white--text dash-btn"
-                  @click="getDashboardValues(true)">
-                  Go
-                </v-btn>
-                <v-btn outlined color="primary" v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser) && !constants.IS_MOBILE"
-                       id="targets-btn" class="dash-btn text-capitalize"
-                       to="/companyDashboardTargets" title="View company dashboard targets">
-                  Targets
-                </v-btn>
-              </div>
-            </v-toolbar>
-          </v-col>
-        </v-row>
+<!--    <v-row>-->
+<!--      <v-col cols="12" class="pt-0">-->
+<!--        <v-row id="company-dash-toolbar-container">-->
+<!--          <v-col cols="12" id="company-dash-toolbar">-->
+<!--            <v-toolbar class="elevation-1 toolbar-z-index-override">-->
+<!--              <v-toolbar-title>Company Dashboard</v-toolbar-title>-->
+<!--              <div id="toolbar-right-side">-->
+<!--                <v-select attach class="date-range-dropdown"-->
+<!--                          v-model="selectedDateRange"-->
+<!--                          :items="dateRanges"-->
+<!--                          label="Date Range"-->
+<!--                          @change="getDashboardValues(false)"-->
+<!--                          hide-details-->
+<!--                          dense-->
+<!--                          outlined-->
+<!--                ></v-select>-->
+<!--                <DatetimePickerInput :custom-class="'date-range-date'"-->
+<!--                                     v-model="startDate"-->
+<!--                                     :timezone="timezone"-->
+<!--                                     :maxDate="endDate"-->
+<!--                                     :type="'date'"-->
+<!--                                     label="Start Date"-->
+<!--                                     hide-details-->
+<!--                                     :hide-prepend-icon="true"-->
+<!--                                     :dense="'dense'"-->
+<!--                                     :outlined="'outlined'"-->
+<!--                ></DatetimePickerInput>-->
+<!--                <DatetimePickerInput :custom-class="'date-range-date'"-->
+<!--                                     v-model="endDate"-->
+<!--                                     :timezone="timezone"-->
+<!--                                     :minDate="startDate"-->
+<!--                                     :type="'date'"-->
+<!--                                     label="End Date"-->
+<!--                                     hide-details-->
+<!--                                     :hide-prepend-icon="true"-->
+<!--                                     :dense="'dense'"-->
+<!--                                     :outlined="'outlined'"-->
+<!--                ></DatetimePickerInput>-->
+<!--                <v-btn color="primary" dark class="white&#45;&#45;text dash-btn"-->
+<!--                  @click="getDashboardValues(true)">-->
+<!--                  Go-->
+<!--                </v-btn>-->
+<!--                <v-btn outlined color="primary" v-if="$store.getters.userHasFeatureAccessLevel('COMPANY_DASHBOARD', 'ADMIN') && (is7oaksAdmin || isBrCorporateUser) && !constants.IS_MOBILE"-->
+<!--                       id="targets-btn" class="dash-btn text-capitalize"-->
+<!--                       to="/companyDashboardTargets" title="View company dashboard targets">-->
+<!--                  Targets-->
+<!--                </v-btn>-->
+<!--              </div>-->
+<!--            </v-toolbar>-->
+<!--          </v-col>-->
+<!--        </v-row>-->
 
-        <v-row>
-          <v-col cols="12">
-            <v-data-table id="company-dash-table"
-                          class="elevation-1 mx-1"
-                          :headers="visibleHeaders"
-                          :items="dashValues"
-                          :loading="isLoading"
-                          loading-text="Loading data..."
-                          hide-default-footer
-                          disable-pagination
-                          disable-sort
-                          mobile-breakpoint=""
-                          dense>
-              <template v-slot:header>
-                <thead id="main-table-header">
-                  <tr>
-                    <th id="milestone-col-header" colspan="1">Milestone</th>
-                    <th v-if="isBrCorporateUser" colspan="3">Actual</th>
-                    <th v-if="isBrCorporateUser" colspan="3">Planned</th>
-                    <th v-if="isBrCorporateUser" colspan="3">Difference</th>
-                    <th v-if="!isBrCorporateUser" colspan="3">Total</th>
-                  </tr>
-                </thead>
-              </template>
-              <template #item="{ item, index }">
-                <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"
-                    :style="{'background-color': index === 0 ? 'var(--v-primary-lighten9)' : ''}">
-                  <td class="milestone-col-td">{{ item.name }}</td>
-                  <td class="data-col-td total-col-td clickable"
-                      @click="openDrilldown(item, false)">{{ item.company_count + item.partner_count }}</td>
-                  <td v-if="isBrCorporateUser" class="data-col-td clickable"
-                      @click="openDrilldown(item, false)">{{ item.company_count }}</td>
-                  <td v-if="isBrCorporateUser"
-                      class="data-col-td clickable" @click="openDrilldown(item, true)">{{ item.partner_count }}</td>
-                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td">
-                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ ((item.brs_target + item.partner_target) / dividerForSingleDayTargets) | currency('', 1) }}</span>
-                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target + item.partner_target }}</span>
-                    <span v-else>-</span>
-                  </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td">
-                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ item.brs_target / dividerForSingleDayTargets | currency('', 1) }}</span>
-                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target || 0 }}</span>
-                    <span v-else>-</span>
-                  </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td">
-                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ (item.partner_target / dividerForSingleDayTargets) | currency('', 1) }}</span>
-                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_target || 0 }}</span>
-                    <span v-else>-</span>
-                  </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="getClass((item.company_count + item.partner_count) - (item.brs_target + item.partner_target))">
-                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{((item.company_count + item.partner_count) - (item.brs_target + item.partner_target)) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
-                    <span v-else-if="item.show_targets && targetTypeId != null">{{ (item.company_count + item.partner_count) - (item.brs_target + item.partner_target) }}</span>
-                    <span v-else>-</span>
-                  </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.company_count - item.brs_target)">
-                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.company_count - item.brs_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
-                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.company_count - item.brs_target }}</span>
-                    <span v-else>-</span>
-                  </td>
-                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.partner_count - item.partner_target)">
-                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.partner_count - item.partner_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>
-                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_count - item.partner_target }}</span>
-                    <span v-else>-</span>
-                  </td>
-                </tr>
-              </template>
-              <template v-slot:footer>
-                <div v-if="dashValues.length > 0" id="company-funnel-background"></div>
-              </template>
-            </v-data-table>
-          </v-col>
-        </v-row>
-      </v-col>
-      <v-dialog v-model="showDrilldown">
-        <CompanyDashboardDrilldown v-if="!drilldownIsLoading" :milestone="selectedMilestone"
-                                   :load-partners="loadPartners"
-                                   :drilldown-data="drilldownData"
-                                   :start-date="startDate"
-                                   :end-date="endDate"
-                                   :close-callback="closeDrilldown">
+<!--        <v-row>-->
+<!--          <v-col cols="12">-->
+<!--            <v-data-table id="company-dash-table"-->
+<!--                          class="elevation-1 mx-1"-->
+<!--                          :headers="visibleHeaders"-->
+<!--                          :items="dashValues"-->
+<!--                          :loading="isLoading"-->
+<!--                          loading-text="Loading data..."-->
+<!--                          hide-default-footer-->
+<!--                          disable-pagination-->
+<!--                          disable-sort-->
+<!--                          mobile-breakpoint=""-->
+<!--                          dense>-->
+<!--              <template v-slot:header>-->
+<!--                <thead id="main-table-header">-->
+<!--                  <tr>-->
+<!--                    <th id="milestone-col-header" colspan="1">Milestone</th>-->
+<!--                    <th v-if="isBrCorporateUser" colspan="3">Actual</th>-->
+<!--                    <th v-if="isBrCorporateUser" colspan="3">Planned</th>-->
+<!--                    <th v-if="isBrCorporateUser" colspan="3">Difference</th>-->
+<!--                    <th v-if="!isBrCorporateUser" colspan="3">Total</th>-->
+<!--                  </tr>-->
+<!--                </thead>-->
+<!--              </template>-->
+<!--              <template #item="{ item, index }">-->
+<!--                <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"-->
+<!--                    :style="{'background-color': index === 0 ? 'var(&#45;&#45;v-primary-lighten9)' : ''}">-->
+<!--                  <td class="milestone-col-td">{{ item.name }}</td>-->
+<!--                  <td class="data-col-td total-col-td clickable"-->
+<!--                      @click="openDrilldown(item, false)">{{ item.company_count + item.partner_count }}</td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td clickable"-->
+<!--                      @click="openDrilldown(item, false)">{{ item.company_count }}</td>-->
+<!--                  <td v-if="isBrCorporateUser"-->
+<!--                      class="data-col-td clickable" @click="openDrilldown(item, true)">{{ item.partner_count }}</td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td">-->
+<!--                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ ((item.brs_target + item.partner_target) / dividerForSingleDayTargets) | currency('', 1) }}</span>-->
+<!--                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target + item.partner_target }}</span>-->
+<!--                    <span v-else>-</span>-->
+<!--                  </td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td">-->
+<!--                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ item.brs_target / dividerForSingleDayTargets | currency('', 1) }}</span>-->
+<!--                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.brs_target || 0 }}</span>-->
+<!--                    <span v-else>-</span>-->
+<!--                  </td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td">-->
+<!--                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{ (item.partner_target / dividerForSingleDayTargets) | currency('', 1) }}</span>-->
+<!--                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_target || 0 }}</span>-->
+<!--                    <span v-else>-</span>-->
+<!--                  </td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td total-col-td" :class="getClass((item.company_count + item.partner_count) - (item.brs_target + item.partner_target))">-->
+<!--                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{((item.company_count + item.partner_count) - (item.brs_target + item.partner_target)) / dividerForSingleDayTargets  | currency('', 1)  }}</span>-->
+<!--                    <span v-else-if="item.show_targets && targetTypeId != null">{{ (item.company_count + item.partner_count) - (item.brs_target + item.partner_target) }}</span>-->
+<!--                    <span v-else>-</span>-->
+<!--                  </td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.company_count - item.brs_target)">-->
+<!--                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.company_count - item.brs_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>-->
+<!--                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.company_count - item.brs_target }}</span>-->
+<!--                    <span v-else>-</span>-->
+<!--                  </td>-->
+<!--                  <td v-if="isBrCorporateUser" class="data-col-td" :class="getClass(item.partner_count - item.partner_target)">-->
+<!--                    <span v-if="item.show_targets && targetTypeId != null && singleDateRange">{{(item.partner_count - item.partner_target) / dividerForSingleDayTargets  | currency('', 1)  }}</span>-->
+<!--                    <span v-else-if="item.show_targets && targetTypeId != null">{{ item.partner_count - item.partner_target }}</span>-->
+<!--                    <span v-else>-</span>-->
+<!--                  </td>-->
+<!--                </tr>-->
+<!--              </template>-->
+<!--              <template v-slot:footer>-->
+<!--                <div v-if="dashValues.length > 0" id="company-funnel-background"></div>-->
+<!--              </template>-->
+<!--            </v-data-table>-->
+<!--          </v-col>-->
+<!--        </v-row>-->
+<!--      </v-col>-->
+<!--      <v-dialog v-model="showDrilldown">-->
+<!--        <CompanyDashboardDrilldown v-if="!drilldownIsLoading" :milestone="selectedMilestone"-->
+<!--                                   :load-partners="loadPartners"-->
+<!--                                   :drilldown-data="drilldownData"-->
+<!--                                   :start-date="startDate"-->
+<!--                                   :end-date="endDate"-->
+<!--                                   :close-callback="closeDrilldown">-->
 
-        </CompanyDashboardDrilldown>
-      </v-dialog>
-      <Snackbar :snackbar="snackbar"></Snackbar>
-    </v-row>
-<!--    <dashboard></dashboard>-->
+<!--        </CompanyDashboardDrilldown>-->
+<!--      </v-dialog>-->
+<!--      <Snackbar :snackbar="snackbar"></Snackbar>-->
+<!--    </v-row>-->
+    <dashboard></dashboard>
   </v-container>
 </template>
 

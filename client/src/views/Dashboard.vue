@@ -1,33 +1,75 @@
 <template>
   <v-container id="company-dash-container">
+    <v-card >
+      <v-row align="center">
+        <div class="dashboard-header">
+          Company Dashboard
+        </div>
+        <div class="checkbox-container">
+          <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
+        </div>
+        <div class="checkbox-container">
+          <v-checkbox label="Only View Major Milestones"></v-checkbox>
+        </div>
+        <v-btn @click="resetFilters">Reset Filters x</v-btn>
+      </v-row>
+    </v-card>
+    <br>
     <v-data-table
       class="elevation-1 table-striped"
-      :headers="headers"
       :items="dashValues"
       fixed-header
       ref="pageable-table"
-      :page.sync="page"
-      :options.sync="options"
       disable-sort
       :footer-props="footerProps"
-      :server-items-length="totalProjects"
-      :loading="isProjectsLoading"
-      :class="{'fix-column-width-bug': !isMobile}"
-      @click:row="goToRoute"
+      :loading="isLoading"
+      :hide-default-footer="true"
     >
 
       <template #no-data>
-        <span class="default-text-color">No available projects</span>
+        <span class="default-text-color">No available data</span>
       </template>
 
 <!--      <template #no-results>-->
 <!--        <span class="default-text-color">No available projects</span>-->
 <!--      </template>-->
+                    <template v-slot:header>
+                      <thead id="main-table-header">
+                        <tr>
+                          {{secondDateRange}}
+                          <th id="milestone-col-header" colspan="1">Milestones</th>
+                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)"></v-select></th>
+                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
+                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
+
+
+
+                          <!--                          <th v-if="isBrCorporateUser" colspan="3">Actual</th>-->
+<!--                          <th v-if="isBrCorporateUser" colspan="3">Planned</th>-->
+<!--                          <th v-if="isBrCorporateUser" colspan="3">Difference</th>-->
+<!--                          <th v-if="!isBrCorporateUser" colspan="3">Total</th>-->
+                        </tr>
+                      </thead>
+                    </template>
 
       <template #item="{ item, index }">
                         <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"
                             :style="{'background-color': index === 0 ? 'var(--v-primary-lighten9)' : ''}">
                           <td class="milestone-col-td">{{ item.name }}</td>
+                          <td class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
+                            <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                            <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+                            <span v-if="viewTrends && (item.trend_count ==null || item.trend_count==0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+                          </td>
+
+                          <td class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}</td>
+                          <td class="milestone-col-td" v-else></td>
+                          <td class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">{{column3Values[index].company_count?column3Values[index].company_count:0}}</td>
+                          <td class="milestone-col-td" v-else></td>
+
+                          <!--                          <td class="milestone-col-td">{{ column2Values[index].company_count }}</td>-->
+<!--                          <td class="milestone-col-td">{{ column3Values[index].company_count }}</td>-->
+
                         </tr>
       </template>
 <!--      <template #item.projectName="{item: project, index}" class="text-left text&#45;&#45;black clickable">-->
@@ -49,6 +91,30 @@
 <!--        <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>-->
 <!--      </template>-->
     </v-data-table>
+    <ConfirmationDialog v-if="selectingCustomDates" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
+      <template v-slot:title>Custom Date Range</template>
+      <div>
+        <DatetimePickerInput
+          v-model="customDate.startDate"
+          :timezone="timezone"
+          :type="'date'"
+          :format="'MMMM DD, YYYY'"
+          input-format="HH:mm:ss"
+          label="Start Date"
+        />
+        <DatetimePickerInput
+          v-model="customDate.endDate"
+          :timezone="timezone"
+          :type="'date'"
+          :format="'MMMM DD, YYYY'"
+          input-format="HH:mm:ss"
+          label="End Date"
+        />
+      </div>
+       <template v-slot:no>Cancel</template>
+      <template v-slot:yes>Confirm</template>
+
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -82,14 +148,33 @@
         timezone: 'US/Mountain',
         selectedDateRange: 'Today',
         startDate: moment().format('YYYY-MM-DD'),
+        startDateColumn2: moment().format('YYYY-MM-DD'),
+        startDateColumn3: moment().format('YYYY-MM-DD'),
         endDate: moment().format('YYYY-MM-DD'),
+        endDateColumn2: moment().format('YYYY-MM-DD'),
+        endDateColumn3: moment().format('YYYY-MM-DD'),
         weekNum: 1,
         currentPeriod: Math.ceil((moment().isoWeek() - (moment().isoWeek()%13 == 0)) / 4),
         dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last 30 Days', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'],
         isLoading: true,
+        loadingData: false,
+        viewTrends: false,
+        selectingCustomDates: false,
         drilldownIsLoading: true,
+        dropdownValues: [],
         dashValues: [],
+        column2Values: [],
+        column3Values: [],
         drilldownData: [],
+        customDate: {
+          startDate: "",
+          endDate: "",
+          trendStart: "",
+          trendEnd: ""
+        },
+        firstDateRange: 2,
+        secondDateRange: null,
+        thirdDateRange: null,
         singleDateRange: false,
         singleDateRanges: ['Yesterday', 'Today', 'Tomorrow'],
         loadTargetsRanges:  ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'],
@@ -103,9 +188,9 @@
       }
     },
     computed: {
-      visibleHeaders () {
-        return this.headers.filter(header => header.show === true)
-      },
+      // visibleHeaders () {
+      //   return this.headers.filter(header => header.show === true)
+      // },
       additionalStartWeek () {
         if (this.currentPeriod > 9) {
           return 1;
@@ -137,6 +222,7 @@
         return moment().startOf('isoWeek').isoWeek((this.currentPeriod) * 4 - 3 + Math.floor((this.currentPeriod - 1) / 3)).format('YYYY-MM-DD')
       },
       endOfPeriod () {
+         return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
          return moment(this.momentStartOfPeriod).clone().add(3 + this.additionalEndWeek, 'weeks').endOf('isoWeek').format('YYYY-MM-DD')
       },
       startOfQuarter(){
@@ -268,6 +354,112 @@
         }
       },
 
+      async toggleTrends(){
+        if(this.viewTrends){
+          await this.getDashboardValues();
+        }
+      },
+      async resetFilters(){
+        this.viewTrends = false;
+        this.firstDateRange = 2;
+        this.secondDateRange = null;
+        this.thirdDateRange = null;
+        await this.getDashboardValues();
+      },
+      async changeDropdownSelection(dropdown){
+        if(dropdown == 1){
+          let result = this.dropdownValues.find(x => x.id == this.firstDateRange)
+          console.log("Result:");
+          console.log(result);
+          if(result.startDate == null){
+            console.log("Result Start was Null");
+            if(this.customDate.startDate.length == 0) {
+              this.selectingCustomDates = true;
+              return;
+            }
+            else{
+              result = this.customDate;
+            }
+          }
+          this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
+          console.log(this.dashValues);
+        }
+        else if(dropdown == 2){
+          let result = this.dropdownValues.find(x => x.id == this.secondDateRange)
+          if(result.startDate == null){
+            if(this.customDate.startDate.length == 0) {
+              this.selectingCustomDates = true;
+              return;
+            }
+            else{
+              result = this.customDate;
+              this.resetCustomDate();
+
+            }
+          }
+          this.column2Values = await this.getDashBoardData(result.startDate.format('YYYY-MM-DD'), result.endDate.format('YYYY-MM-DD'), result.trendStart.format('YYYY-MM-DD'), result.trendEnd.format('YYYY-MM-DD'));
+          console.log("COLUMN 2");
+          console.log(this.column2Values);
+        }
+        else if(dropdown == 3){
+          let result = this.dropdownValues.find(x => x.id == this.thirdDateRange)
+          if(result.startDate == null){
+            if(this.customDate.startDate.length == 0) {
+              this.selectingCustomDates = true;
+              return;
+            }
+            else{
+              result = this.customDate;
+            }
+          }
+          this.column3Values = await this.getDashBoardData(result.startDate, result.endDate, result.trendStart, result.trendEnd);
+        }
+      },
+      resetCustomDate(){
+        this.customDate.startDate = "";
+        this.customDate.endDate = "";
+        this.customDate.trendStart = "";
+        this.customDate.trendEnd = "";
+        console.log("Reset Custom Done")
+      },
+      async applyCustomDates(){
+        this.customDate.startDate = moment(this.customDate.startDate);
+        this.customDate.endDate = moment(this.customDate.endDate);
+        let dateDiff = this.customDate.endDate.diff(this.customDate.startDate, 'days');
+        this.customDate.trendEnd = this.customDate.startDate.subtract(1, 'days');
+        this.customDate.trendStart = this.customDate.trendEnd.subtract(dateDiff, 'days');
+        // this.customDate.startDate = this.customDate.startDate.format('YYYY-MM-DD');
+        // this.customDate.endDate = this.customDate.endDate.format('YYYY-MM-DD');
+        await this.getDashboardValues();
+      },
+      async getDashBoardData(startDate, endDate, trendStart, trendEnd){
+        let result = null;
+        try {
+          // this.$store.commit(AppMutations.SET_LOADING, true)
+
+          let params = {
+            startDate: startDate,
+            endDate: endDate,
+            targetTypeId: this.targetTypeId,
+            trendStart: this.viewTrends?trendStart:null,
+            trendEnd: this.viewTrends?trendEnd:null
+          }
+
+          const {data, status} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven', [])
+            console.log(data);
+            result = data;
+
+          handleHidingGlobalLoader(this, status)
+
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
+          this.isLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+        return result;
+      },
+
       async getDashboardValues (dateWasManuallyEntered) {
         if (dateWasManuallyEntered) {
           this.selectedDateRange = 'Custom'
@@ -280,26 +472,29 @@
         this.targetTypeId = this.singleDateRange ? 1 :
           this.loadTargetsRanges.includes(this.selectedDateRange) ? 2 : null
 
-        try {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-
-          const params = {
-            startDate: this.startDate,
-            endDate: this.endDate,
-            targetTypeId: this.targetTypeId
-          }
-
-          const {data, status} = await getRequestWithParams('/companyDashboard/dashboardValues', {params}, 'blueraven', [])
-          this.dashValues = data
-
-          this.isLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving data')
-          this.isLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
+        this.loadingData = true;
+        if(this.dropdownValues != null && this.dropdownValues.length > 0){
+          this.dashValues = await this.changeDropdownSelection(1);
         }
+        else {
+          this.dashValues = await this.getDashBoardData(this.startDate, this.endDate, moment().subtract(60, "days").format('YYYY-MM-DD'), moment().subtract(31, "days").format('YYYY-MM-DD'));
+          console.log("Here");
+        }
+        console.log(this.dashValues);
+       if(this.secondDateRange != null) {
+         this.column2Values = await this.changeDropdownSelection(2);
+
+       }
+
+       if(this.thirdDateRange != null){
+         this.column3Values = await this.changeDropdownSelection(3);
+       }
+
+        // this.startDate = moment().subtract(30, "days").format('YYYY-MM-DD');
+        // this.startDateColumn2 = moment().subtract(60, "days").format('YYYY-MM-DD');
+        // this.startDateColumn3 = moment().subtract(90, "days").format('YYYY-MM-DD');
+
+        this.loadingData = false;
       },
       async getDropdownValues() {
         console.log("HERE")
@@ -307,11 +502,12 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
 
           const params = {
-            today: moment().format()
+            today: moment().format('YYYY-MM-DDTHH:mm:ss')
           }
 
           const {data, status} = await getRequestWithParams('/companyDashboard/dropdownValues', {params}, 'blueraven', [])
-
+          this.dropdownValues = data;
+          console.log(data)
           this.isLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -326,6 +522,10 @@
       this.headers = [
         { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true },
         { text: 'Today', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+        { text: 'Today2', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+        { text: 'Today3', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+
+
         // { text: 'Total', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
         // { text: 'BRS', value: 'actualBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
         // { text: 'Partners', value: 'actualPartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
@@ -349,6 +549,38 @@
 </script>
 
 <style lang="scss" scoped>
+  .dashboard-header{
+    padding-left: 20px;
+    padding-right: 16px;
+    font-weight: bold;
+  }
+  .checkbox-container{
+    padding-right: 12px;
+  }
+  .positive-percentage{
+    color: green;
+  }
+  .negative-percentage{
+    padding-left: 4px;
+    color: red;
+  }
+  .negative-trendline{
+    color: red;
+  }
+  .positive-percentage{
+    padding-left: 4px;
+    color: green;
+  }
+  .positive-trendline{
+    color: green;
+  }
+  .neutral-percentage{
+    padding-left: 4px;
+    color: grey;
+  }
+  .neutral-trendline{
+    color: grey;
+  }
   .date-range-dropdown {
     min-width: 200px;
   }

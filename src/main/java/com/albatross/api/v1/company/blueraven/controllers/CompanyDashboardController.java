@@ -43,6 +43,6 @@ public class CompanyDashboardController {
 
   @GetMapping(value = "/dropdownValues")
   public List<CompanyDashboardDateRange> getDropdownValues(@RequestParam String today) {
-    return companyDashboardService.getDropdownValues(Instant.parse(today));
+    return companyDashboardService.getDropdownValues(Instant.parse(today + "Z"));
   }
 }
