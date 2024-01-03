@@ -626,7 +626,12 @@ const add = () => {
     newRequirement.secondaryRequirementValue = secondaryValue.value.trim()
   }
 
-  if (newRequirement.hasListValues && newRequirement.availableListOfValues.length === 0) {
+  if (
+    newRequirement.hasListValues && (
+      newRequirement?.availableListOfValues?.length === 0 ||
+      !Object.keys(newRequirement).includes('availableListOfValues')
+    )
+  ) {
     newRequirement.availableListOfValues = newRequirement.listOfValues
   }
 
@@ -667,7 +672,12 @@ onMounted(() => {
       operatorType: requirement.value.operatorType
     }
 
-    if (requirement.value.hasListValues && requirement.value.availableListOfValues.length === 0) {
+    if (
+      requirement.value.hasListValues && (
+        requirement.value?.availableListOfValues?.length === 0 ||
+        !Object.keys(requirement.value).includes('availableListOfValues')
+      )
+    ) {
       requirement.value.availableListOfValues = requirement.value.listOfValues
     }
 
