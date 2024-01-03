@@ -46,7 +46,7 @@ const toggleMenu = (forceClose) => {
   watch(
       () => props.subMenuSelectedView,
       () => {
-        console.log('watcher')
+        // console.log('watcher')
         toggleMenu(true)
         //fires only when subMenuSelectedView is replaced
         //allows us to close the menu when using a submenu and the route doesn't change

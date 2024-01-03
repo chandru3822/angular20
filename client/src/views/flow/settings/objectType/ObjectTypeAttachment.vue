@@ -419,8 +419,6 @@ export default {
       let item = this.cfGroupToDelete ? this.cfGroupToDelete : this.customFieldToDelete ? this.customFieldToDelete : null
       let customFieldGroupId = this.cfGroupToDelete ? this.cfGroupToDelete.id : null
       let customFieldGroupAssignmentId = this.customFieldToDelete ? this.customFieldToDelete.id : null
-      console.log('item',item)
-      console.log('cfga',customFieldGroupAssignmentId)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {

@@ -87,7 +87,7 @@ export default {
         ? ((prev?.blockOrder - target?.element?.blockOrder) / 2) + target?.element?.blockOrder
         : target?.element?.blockOrder + 1
 
-      console.log({active, target, pos})
+      // console.log({active, target, pos})
 
       //
       // const draggedItem = draggedContext?.element

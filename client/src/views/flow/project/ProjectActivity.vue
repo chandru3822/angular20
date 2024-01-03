@@ -232,7 +232,7 @@ export default {
       this.fetchTeamsForUser()
     }, 800),
     selectedOption: function() {
-      console.log('option changed to:', this.selectedOption)
+      // console.log('option changed to:', this.selectedOption)
       this.handlePageLoad()
     }
   },
