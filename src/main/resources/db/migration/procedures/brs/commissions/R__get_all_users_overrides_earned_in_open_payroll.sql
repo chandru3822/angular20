@@ -110,6 +110,7 @@ BEGIN
                               on opru1.override_plan_id = op.id
                    inner join flow.user u on u.id = opru1.user_id
             where p1.id = p_payroll_id
+              and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
               and op.position_id = 1
             union
             select pd.project_id                               as project_id,
@@ -150,6 +151,7 @@ BEGIN
                              where opru1.user_id = pcl.user_id
                                and opru1.override_plan_id = fd.override_plan_id)
             where p1.id = p_payroll_id
+              and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
               and p1.position_id = 1) as foo
     order by 1;
 
