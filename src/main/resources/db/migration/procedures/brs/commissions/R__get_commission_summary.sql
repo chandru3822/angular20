@@ -54,12 +54,16 @@ begin
                                                                                     then
                                                                                     0::numeric
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
-                                                                                    (opru.red_line_m1_allocation + opru.red_line_m2_allocation) * fd.total_commissions
+                                                                                    (opru.red_line_m1_allocation +case when fd.substantial_completion_date is not null and
+                                                                                                                            fd.substantial_completion_date <= p.period_end then
+                                                                                                                         opru.red_line_m2_allocation else 0 end) * fd.total_commissions
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
                                                                                       (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
-                                                                                    (opru.m1_allocation + opru.m2_allocation) * fd.system_size
+                                                                                    (opru.m1_allocation + case when fd.substantial_completion_date is not null and
+                                                                                                                    fd.substantial_completion_date <= p.period_end then
+                                                                                                                    opru.m2_allocation else 0 end) * fd.system_size
                                                                                   else
                                                                                     opru.m1_allocation * fd.system_size
                                                                                   end       overrides_earned1,
@@ -88,7 +92,8 @@ begin
                                                                                   fd.commission_strategy,
                                                                                   opru.red_line_m1_allocation,
                                                                                   opru.red_line_m2_allocation,
-                                                                                  fd.total_commissions) as foo) as foo1),
+                                                                                  fd.total_commissions,
+                                                                                  p.period_end) as foo) as foo1),
                                                             0)   AS total_overrides,
 
                                                    (coalesce((select sum(amount)
@@ -137,12 +142,16 @@ begin
                                                                                     then
                                                                                     0::numeric
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
-                                                                                      (opru.red_line_m1_allocation + opru.red_line_m2_allocation) * fd.total_commissions
+                                                                                      (opru.red_line_m1_allocation + case when fd.substantial_completion_date is not null and
+                                                                                                                               fd.substantial_completion_date <= p.period_end then
+                                                                                                                            opru.red_line_m2_allocation else 0 end) * fd.total_commissions
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
                                                                                       (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
-                                                                                    (opru.m1_allocation + opru.m2_allocation) * fd.system_size
+                                                                                    (opru.m1_allocation + case when fd.substantial_completion_date is not null and
+                                                                                                                    fd.substantial_completion_date <= p.period_end then
+                                                                                                                 opru.m2_allocation else 0 end) * fd.system_size
                                                                                   else
                                                                                     opru.m1_allocation * fd.system_size
                                                                                   end       overrides_earned1,
@@ -169,7 +178,8 @@ begin
                                                                                   fd.commission_strategy,
                                                                                   opru.red_line_m1_allocation,
                                                                                   opru.red_line_m2_allocation,
-                                                                                  fd.total_commissions) as foo) as foo1),
+                                                                                  fd.total_commissions,
+                                                                                  p.period_end) as foo) as foo1),
                                                             0)                            AS total_overrides,
 
                                                    0::numeric                             AS commission_adjustments
