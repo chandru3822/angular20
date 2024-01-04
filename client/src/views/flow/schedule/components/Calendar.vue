@@ -186,7 +186,12 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-4" cols="12" md="3">
+        <v-col class="py-0 text-right align-self-end" cols="12" md="2">
+          <v-btn large color="primary" class="mt-1 mb-n1"><v-icon>mdi-map</v-icon></v-btn>
+        </v-col>
+      </v-row>
+      <v-row class="py-0 d-flex align-baseline">
+      <v-col class="py-4" cols="12" md="3">
           <v-select
               v-model="timezone"
               :items="timezones"
@@ -204,12 +209,11 @@
               dense
               hide-details
               class="fix-switch-color cancelled-event-switch"
-              label="Include Cancelled Events"
+              label="Cancelled Events"
               @change="getEvents(null)"
             />
           </div>
         </v-col>
-
       </v-row>
     </div>
     <div class="calendar-resize-container">
@@ -395,7 +399,6 @@
         // this.selectedOrgs.forEach(so => console.log(so.id))
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
-        debugger
         this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
       },
       calendarStartTime: function (newStartTime, oldStartTime){
