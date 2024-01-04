@@ -3,7 +3,7 @@
     <div class="mb-2">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="4">
+        <v-col class="py-0" cols="12" md="2">
           <v-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -44,7 +44,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="4">
+        <v-col class="py-0" cols="12" md="2">
           <v-autocomplete v-model="selectedOrgTypes"
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
@@ -86,7 +86,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="4">
+        <v-col class="py-0" cols="12" md="2">
 
           <v-autocomplete v-model="selectedPositions"
                     :items="sortedPositions"
@@ -131,21 +131,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-      </v-row>
-      <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="4">
-          <div>
-            <v-switch
-              v-model="includeCancelled"
-              dense
-              hide-details
-              class="fix-switch-color cancelled-event-switch"
-              label="Include Cancelled Events"
-              @change="getEvents(null)"
-            />
-          </div>
-        </v-col>
-        <v-col class="py-0" cols="12" md="4">
+        <v-col class="py-0" cols="12" md="2">
           <v-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
@@ -172,7 +158,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="4">
+        <v-col class="py-0" cols="12" md="2">
 
           <v-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
@@ -191,8 +177,8 @@
                           attach
           >
             <template
-              slot="selection"
-              slot-scope="{ item, index }"
+                slot="selection"
+                slot-scope="{ item, index }"
             >
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedUsers.length }} selected
@@ -200,6 +186,30 @@
             </template>
           </v-autocomplete>
         </v-col>
+        <v-col class="py-4" cols="12" md="3">
+          <v-select
+              v-model="timezone"
+              :items="timezones"
+              label="Current Time Zone"
+              item-text="friendlyValue"
+              :item-value="{friendlyValue, value}"
+              prepend-icon="mdi-web"
+              outlined
+              />
+        </v-col>
+        <v-col class="py-0" cols="12" md="4">
+          <div>
+            <v-switch
+              v-model="includeCancelled"
+              dense
+              hide-details
+              class="fix-switch-color cancelled-event-switch"
+              label="Include Cancelled Events"
+              @change="getEvents(null)"
+            />
+          </div>
+        </v-col>
+
       </v-row>
     </div>
     <div class="calendar-resize-container">
@@ -268,6 +278,7 @@
   import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
+  import {UserActions} from "@/stores/UserStore";
 
   export default {
     name: 'ScheduleCalendar',
@@ -384,6 +395,7 @@
         // this.selectedOrgs.forEach(so => console.log(so.id))
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
+        debugger
         this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
       },
       calendarStartTime: function (newStartTime, oldStartTime){
@@ -395,6 +407,9 @@
         if(newEndTime !== oldEndTime) {
           this.getDayOptions()
         }
+      },
+      timezone : function () {
+        this.changeTimezone(this.timezone)
       }
     },
     created() {
@@ -474,7 +489,7 @@
             firstDay: 1,
             editable: true,
             defaultView: 'resourceTimelineDay',
-            timezone: this.$store.state.user.details.timezone.value,
+            timezone: this.$store.state.user.details.timezone.value || {},
             header: {
               left: 'customPrev,customToday,customNext',
               center: 'title',
@@ -544,7 +559,16 @@
               },
             }
           }
-        }
+        },
+        timezones: [
+          { friendlyValue: 'US/Pacific', value: 'America/Los_Angeles'},
+          { friendlyValue: 'US/Alaska', value: 'America/Anchorage'},
+          { friendlyValue: 'US/Arizona', value: 'America/Phoenix'},
+          { friendlyValue: 'US/Central', value: 'America/Chicago'},
+          { friendlyValue: 'US/Hawaii', value: 'Pacific/Honolulu'},
+          { friendlyValue: 'US/Eastern', value: 'America/New_York'},
+          { friendlyValue: 'US/Mountain', value: 'America/Denver'}
+        ],
       }
     },
     methods: {
@@ -953,6 +977,13 @@
           "<span>" + renderInfo.resource.title + "</span>"
         renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
 
+      },
+      async changeTimezone (tz) {
+        debugger
+        await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
+        //todo: actually save it to the DB
+        // i dont think we have to refresh, the filter should do that for us
+        // window.location.reload()
       },
       filterOrgsAndUsers() {
         //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur

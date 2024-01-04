@@ -1,10 +1,362 @@
 <template>
-  <v-container>
-    <Calendar :map-resources="mapResources"
-              ref="calendar"
-              :states="states"
-              :callback="this.resourceMapCallback"
-              :date-callback="this.dateCallback"></Calendar>  </v-container>
+  <v-container id="schedule-container" class="py-0">
+    <v-row class="map-row">
+      <v-col cols="12" md="5">¡
+        <Map :latitude="state.mapLatitude"
+             :markers="selectedRows"
+             :longitude="state.mapLongitude"
+             :zoom="state.mapZoom"
+             :map-resources="mapResources"/>
+      </v-col>
+      <v-col cols="12" md="7" style="overflow: auto;">
+        <!-- map-resources allows the calendar to send events back to the map -->
+        <Calendar :map-resources="mapResources"
+                  ref="calendar"
+                  :states="states"
+                  :callback="this.resourceMapCallback"
+                  :date-callback="this.dateCallback"></Calendar>
+      </v-col>
+    </v-row>
+    <v-row class="schedule-row">
+      <v-col cols="12" md="5" class="py-0 schedule-row-filter-container">
+        <v-card color="white" class="text-left py-0 square-card height-one-hunned">
+          <v-card-actions v-if="!selectedProject || !selectedProject.projectId">
+            <v-tabs>
+              <!--   todo: turn this into v-tabs in extension if constants.IS_MOBILE           -->
+            <v-tab text @click="showFilters = true">Filters</v-tab>
+            <v-tab text @click="showFilters = false">Find Project</v-tab>
+            </v-tabs>
+          </v-card-actions>
+          <v-card-text v-if="showFilters && (!selectedProject || !selectedProject.projectId)"
+                       class="filter-text-card">
+            <v-autocomplete attach v-model="state"
+                      :items="states"
+                      label="State"
+                      return-object
+                            hide-details
+                      item-text="state"
+                      item-value="id"
+            ></v-autocomplete>
+
+            <v-autocomplete attach v-model="selectedEventTypes"
+                      :items="eventTypes"
+                      label="Event"
+                      item-text="eventName"
+                      item-value="id"
+                      return-object
+                            hide-details
+                      clearable
+                      :disabled="!state || !state.id"
+                      multiple
+            >
+              <template
+                  slot="selection"
+                  slot-scope="{ item, index }"
+              >
+                <div v-if="index === 0 && selectedEventTypes.length < 3">
+                  <v-chip small v-for="sp in selectedEventTypes">
+                    <span>{{ sp.eventName }}</span>
+                  </v-chip>
+                </div>
+                <span
+                    v-if="index === 1 && selectedEventTypes.length >= 3"
+                    class="primary--text text-caption"
+                >{{ selectedEventTypes.length }} selected</span>
+              </template>
+            </v-autocomplete>
+
+            <v-autocomplete v-model="selectedEventStatusType"
+                      :items="eventStatusTypes"
+                      label="Event Step Status"
+                      clearable
+                            hide-details
+                      item-text="eventStatusType"
+                      item-value="id"
+                      :disabled="selectedEventTypes.length === 0"
+                      return-object
+            />
+
+            <v-autocomplete v-model="selectedProcessStepStatusType"
+                      :items="processStepStatusTypes"
+                      label="Process Step Status"
+                      clearable
+                      hide-details
+                      item-text="processStepStatusType"
+                      item-value="id"
+                      :disabled="selectedEventTypes.length === 0"
+                      return-object
+            />
+            <v-btn color="primary" class="white--text schedule-row-go-button"
+                   :disabled="!selectedEventTypes || selectedEventTypes.length === 0 || !state
+                   || !selectedEventStatusType || !selectedEventStatusType.id
+                   || !selectedProcessStepStatusType || !selectedProcessStepStatusType.id"
+                   @click="getProjects(true)">Go</v-btn>
+          </v-card-text>
+          <v-card-text class="filter-text-card" v-else-if="!showFilters && (!selectedProject || !selectedProject.projectId)">
+            <v-autocomplete v-model="searchProject"
+                            :items="searchProjects"
+                            :search-input.sync="search"
+                            item-text="projectName"
+                            :key="0"
+                            prepend-icon="search"
+                            text
+                            hide-details
+                            label="Search for project..."
+                            autocomplete="off"
+                            :loading="searchProjectsLoading"
+                            item-value="projectId"
+                            return-object
+                            attach
+                            >
+              <template slot="item" slot-scope="data">
+                <!-- HTML that describe how select should render items when the select is open -->
+                {{ data.item.projectName }} - {{ data.item.projectId }}
+              </template>
+            </v-autocomplete>
+            <v-select attach v-model="searchEventType"
+                      :items="eventTypes"
+                      label="Event"
+                      hide-details
+                      item-text="eventName"
+                      item-value="id"
+                      return-object
+            >
+            </v-select>
+            <v-autocomplete v-model="searchEventStatusType"
+                            :items="eventStatusTypes"
+                            label="Event Step Status"
+                            clearable
+                            hide-details
+                            item-text="eventStatusType"
+                            item-value="id"
+                            return-object
+            />
+            <v-select attach v-model="searchProcessStepStatusType"
+                      :items="processStepStatusTypes"
+                      label="Process Step Status"
+                      hide-details
+                      item-text="processStepStatusType"
+                      item-value="id"
+                      return-object
+            >
+            </v-select>
+            <v-btn color="primary" class="white--text schedule-row-go-button"
+                   :disabled="!searchProject || !searchProject.projectId
+                        || !searchEventType.id" @click="getSingleProject(searchProject.projectId, searchEventType.id, searchEventStatusType.id, searchProcessStepStatusType.id)">Go</v-btn>
+          </v-card-text>
+          <v-card-text class="height-one-hunned" v-else>
+            <v-toolbar color="white" flat id="schedule-project-toolbar">
+              <v-toolbar-title class="app-title">
+                {{selectedProject.projectName}}
+                <div class="toolbar-subtitle">{{selectedProject.processStepName}}</div>
+              </v-toolbar-title>
+              <v-spacer></v-spacer>
+              <v-toolbar-items>
+                <v-tooltip top v-if="$store.getters.userHasFeature('PROJECTS')">
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on"
+                           target="_blank"
+                           :to="`/project/${selectedProject.projectId}/status`"><v-icon>mdi-chevron-right</v-icon></v-btn>
+                  </template>
+                  <span>Go to Project</span>
+                </v-tooltip>
+                <v-tooltip top v-if="$store.getters.userHasFeature('PROCESS_STEPS')">
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on"
+                           target="_blank"
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}`">
+                      <v-icon>mdi-chevron-double-right</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Go to Process Step</span>
+                </v-tooltip>
+                <v-tooltip top v-if="$store.getters.userHasFeature('EVENTS')">
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on"
+                           target="_blank"
+                           :to="`/project/${selectedProject.projectId}/processStep/${selectedProject.projectProcessStepId}/event/${selectedProject.projectProcessStepEventId}`">
+                      <v-icon>mdi-chevron-triple-right</v-icon>
+                    </v-btn>
+                  </template>
+                  <span>Go to Event</span>
+                </v-tooltip>
+                <v-tooltip top>
+                  <template v-slot:activator="{ on }">
+                    <v-btn x-small text v-on="on" @click="selectedProject = {}"><v-icon>mdi-close</v-icon></v-btn>
+                  </template>
+                  <span>Close</span>
+                </v-tooltip>
+              </v-toolbar-items>
+            </v-toolbar>
+            <div class="px-3">
+              <h4>{{selectedProject.eventName}}</h4>
+              <DatetimePickerInput
+                v-model="selectedProject.start"
+                :timezone="this.timezone"
+                hide-details
+                :readonly="selectedProject.startFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                :type="'timestamp'"
+                :format="'MMMM DD, YYYY, h:mm A'"
+                label="Start Time"
+                @input="validateSaveEvent()"
+              />
+              <DatetimePickerInput
+                v-model="selectedProject.end"
+                :timezone="this.timezone"
+                :readonly="selectedProject.endFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                :type="'timestamp'"
+                :format="'MMMM DD, YYYY, h:mm A'"
+                label="End Time"
+                hide-details
+                @input="validateSaveEvent()"
+              />
+              <v-autocomplete v-model="selectedProject.resource"
+                        :items="selectedProject.resources"
+                        :label="selectedProject.resourceFieldName  || 'Resource'"
+                        placeholder=" "
+                        return-object
+                        clearable
+                              hide-details
+                        item-text="name"
+                        :readonly="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                        :disabled="selectedProject.resourceFieldReadOnly || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                        item-value="id"
+                        @input="validateSaveEvent()"
+              />
+              <v-btn color="primary"
+                     class="white--text schedule-row-go-button"
+                     :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
+                     @click="[fieldsSaving = true, checkForSchedulingConflicts()]">Save</v-btn>
+              <ConfirmationDialog v-if="conflictingEvents != null" :open-dialog="conflictingEvents != null && conflictingEvents.length > 0" @confirm="scheduleProject(true)" @close-dialog="cancelDialog()">
+                <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
+                <template v-else v-slot:title>Conflict</template>
+                Resource <b>{{selectedProject.resourceName}}</b>
+                has another event on their calendar for:
+                <br><br>
+                <ol>
+                <li v-for="conflictingEvent in conflictingEvents">
+                  <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+                  - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+                  <b></b>
+                <br>
+                <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
+                  <br><br>
+                </li>
+                </ol>
+                  <template v-slot:no>Cancel</template>
+                <template v-slot:yes>Schedule Anyway</template>
+
+              </ConfirmationDialog>
+              <v-dialog
+                  v-if="selectedProject.eventStatusTypeId === 2"
+                  v-model="selectedProject.unscheduleConfirm"
+                  width="500">
+                <template #activator="{ on }">
+                  <v-btn color="primary" text
+                         class="unschedule-button"
+                         @click="getCancelledCompanyEventStatuses"
+                         v-on="on">Unschedule Event</v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                      class="text-h5 grey lighten-2"
+                      primary-title>
+                    Confirm
+                  </v-card-title>
+
+                  <v-card-text class="pt-4">
+                    Are you sure you want to remove this event from the schedule? This will cancel the event.
+
+                    <v-select attach :items="cancelledCompanyEventStatuses"
+                              v-model="selectedProject.cancelledCompanyStatusType"
+                              item-value="id"
+                              return-object
+                              label="Status to set this event to:"
+                              item-text="eventStatusType"></v-select>
+
+                  </v-card-text>
+
+                  <v-divider></v-divider>
+
+                  <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn
+                        @click="selectedProject.unscheduleConfirm = false">
+                      No
+                    </v-btn>
+                    <v-btn
+                        :disabled="!selectedProject.cancelledCompanyStatusType || !selectedProject.cancelledCompanyStatusType.id"
+                        color="primary"
+                        text
+                        @click="cancelProjectProcessStepEvent">
+                      Yes
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-col>
+      <v-col cols="12" md="7" class="py-0 height-one-hunned">
+        <div class="list-container">
+          <div id="list-loader" v-if="listLoading">
+            <v-progress-circular
+              indeterminate
+              :size="80"
+              :color="'primary'"
+            ></v-progress-circular>
+          </div>
+          <v-text-field
+            v-model="projectFilter"
+            @input="filterProjects()"
+            @click:clear="filterProjects()"
+            class="square-card"
+            clearable
+            prepend-inner-icon="search"
+            label="Filter"
+            solo
+            hide-details
+          ></v-text-field>
+          <v-divider></v-divider>
+          <v-data-table
+              :headers="headers"
+              :items="projects"
+              fixed-header
+              :mobile-breakpoint="0"
+              :footer-props="footerProps"
+              :options.sync="options"
+              disable-sort
+              v-model="selectedRows"
+              :server-items-length="totalProjects"
+              item-key="projectProcessStepEventId"
+              :show-select="true"
+              @item-selected="zoomToMap"
+              @toggle-select-all="zoomToMap"
+              class="elevation-1 square-card"
+          >
+            <template #no-data>
+              <span class="default-text-color">No Results Found</span>
+            </template>
+
+            <template #no-results>
+              <span class="default-text-color">No Results Found</span>
+            </template>
+
+            <template #item.start="{ item }">
+              {{item.start | formatDate('timestamp', 'MM/DD/YYYY')}}
+            </template>
+
+            <template #item.projectName="{ item }">
+              <a @click="[getResources(item), selectedProject = item, selectedProject.resource = { id: item.resourceId, name: item.resourceName }]" style="text-decoration: underline">{{item.projectName}}</a>
+            </template>
+
+          </v-data-table>
+        </div>
+      </v-col>
+    </v-row>
+
+  </v-container>
 </template>
 
 <script>
