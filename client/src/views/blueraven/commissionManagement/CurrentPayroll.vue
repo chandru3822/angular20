@@ -185,6 +185,7 @@
                 <td class="text-left">{{item.proof_of_howmeowners_insurance_required }}</td>
                 <td class="text-left">{{item.substantial_completion_date | formatDate('date') }}</td>
                 <td class="text-left">{{item.commission_plan }}</td>
+                <td class="text-left">{{item.commission_strategy_name }}</td>
                 <td class="text-left">{{item.commission_earned || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_forfeited_paid_to_date || 0 | currency('$', 2) }}</td>
@@ -278,6 +279,7 @@
                 <td class="text-left">{{item.closer_appointment_start  | formatDate('date') }}</td>
                 <td class="text-left">{{item.closer_appointment_outcome }}</td>
                 <td class="text-left">{{item.commission_plan }}</td>
+                <td class="text-left">{{item.commission_strategy_name }}</td>
                 <td class="text-left">{{item.commission_earned || 0 | currency('$', 2) }}</td>
                 <td class="text-left">{{item.commission_paid_to_date || 0 | currency('$', 2) }}</td>
                 <td class="text-left">
@@ -484,6 +486,7 @@
           {text: 'HOI-R', value: 'proof_of_howmeowners_insurance_required', show: true},
           {text: 'SC', value: 'substantial_completion_date', show: true},
           {text: 'Commission Plan', value: 'commission_plan', show: true},
+          {text: 'Commission Strategy', value: 'commission_strategy_name', show: true},
           {text: 'Commissions Earned', value: 'commission_earned', show: true},
           {text: 'Commission Paid to Date', value: 'commission_paid_to_date', show: true},
           {text: 'Commission Forfeited Paid to Date', value: 'commission_forfeited_paid_to_date', show: true},
@@ -809,7 +812,7 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'Accounting Review.csv';
-          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commissions Earned,Commission Paid to Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
+          let csvData = 'Project ID,Customer Name,System Size (kW),Sales Rep,User ID,Employee ID,Current Pay,Source,Cancelled,IAS,FDS,FAS,Utility Bill Verified,%/$ Dep,HOI,HOI-R,SC,Commission Plan,Commission Strategy,Commissions Earned,Commission Paid to Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides';
           csvData += '\n';
 
           this.accountingData.forEach(p => {
@@ -833,6 +836,7 @@
                 p.proof_of_howmeowners_insurance_required + ',' +
                 p.substantial_completion_date + ',"' +
                 p.commission_plan + '",' +
+                p.commission_strategy_name + '",' +
                 p.commission_earned + ',' +
                 p.commission_paid_to_date + ',' +
                 p.commission_forfeited_paid_to_date + ',' +
