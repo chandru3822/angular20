@@ -64,6 +64,7 @@ CREATE OR REPLACE FUNCTION brs.get_commission_account_details(p_payroll_id bigin
             project_total_value                         NUMERIC(10, 2),
             amount_to_pay                               NUMERIC(10, 2),
             forfeited_amount                            NUMERIC(10, 2),
+            commission_strategy_name                    text,
             current_pay                                 NUMERIC(10, 2)
           )
   LANGUAGE plpgsql
@@ -275,7 +276,8 @@ BEGIN
                    end                                                               AS remaining_value_overrides,
                  coalesce(fd.total_commissions, 0) + coalesce(fd.total_overrides, 0) AS project_total_value,
                  current_pay.amount_to_pay,
-                 current_pay.forfeited_amount
+                 current_pay.forfeited_amount,
+                 fd.commission_strategy_name
           FROM brs.project_details pd
                  inner join brs.financial_details fd on fd.project_id = pd.project_id
                  INNER JOIN flow.user u ON u.id = pd.closer_user_id
