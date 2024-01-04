@@ -2,6 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.CombinedStepAndType;
 import com.albatross.api.v1.flow.model.FieldInUse;
+import com.albatross.api.v1.flow.model.ListOfValue;
 import com.albatross.api.v1.flow.model.Owner;
 import com.albatross.api.v1.flow.model.processStep.ProcessStep;
 import com.albatross.api.v1.flow.services.ProcessStepService;
@@ -84,5 +85,15 @@ public class ProcessStepController {
   @GetMapping(value = "/{id}/owners", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<Owner>> getAvailableProcessStepOwners(@PathVariable Long id) {
     return new ResponseEntity<>(processStepService.getOwners(id), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{processStepId}/lovStatus", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ListOfValue>> getAssignedEventStatusesByListOfValue(@PathVariable Long processStepId) {
+    return new ResponseEntity<>(processStepService.getAssignedStatusesByListOfValue(processStepId), HttpStatus.OK);
+  }
+
+  @GetMapping(value = "/{processStepId}/lovCategory", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ListOfValue>> getAssignedEventCategoriesByListOfValue(@PathVariable Long processStepId) {
+    return new ResponseEntity<>(processStepService.getAssignedCategoriesByListOfValue(processStepId), HttpStatus.OK);
   }
 }
