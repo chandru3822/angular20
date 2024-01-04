@@ -207,6 +207,24 @@ public class ProcessStepService {
         Owner.class);
   }
 
+  public List<ListOfValue> getAssignedStatusesByListOfValue(Long processStepId) {
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+    return sqlCache.queryBySql(
+      ProcessStepQuery.getAssignedStatusesByListOfValue,
+      Map.of("processStepId", processStepId, "companyId", companyId),
+      ListOfValue.class
+    );
+  }
+
+  public List<ListOfValue> getAssignedCategoriesByListOfValue(Long processStepId) {
+    final Long companyId = securityService.getCurrentUser().getCompanyId();
+    return sqlCache.queryBySql(
+      ProcessStepQuery.getAssignedCategoriesByListOfValue,
+      Map.of("processStepId", processStepId, "companyId", companyId),
+      ListOfValue.class
+    );
+  }
+
   public static class ProcessStepMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
