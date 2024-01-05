@@ -381,7 +381,6 @@
         this.handleResourceColors()
       },
       'selectedOrgs': function () {
-        // this.selectedOrgs.forEach(so => console.log(so.id))
         this.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
         this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
