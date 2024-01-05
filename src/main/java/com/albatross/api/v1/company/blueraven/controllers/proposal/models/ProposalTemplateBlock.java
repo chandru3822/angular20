@@ -29,7 +29,7 @@ public class ProposalTemplateBlock implements Serializable {
 
   private Object blockValue;
 
-  private Integer blockOrder;
+  private Double blockOrder;
 
   private Integer version;
 
