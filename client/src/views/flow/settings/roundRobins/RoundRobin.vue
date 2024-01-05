@@ -32,7 +32,7 @@
     </div>
     <div v-else>
       <v-row>
-        <v-col cols="12" md="6">
+        <v-col cols="12" md="6" class="px-8">
 
           <v-text-field text
                         type="text"
