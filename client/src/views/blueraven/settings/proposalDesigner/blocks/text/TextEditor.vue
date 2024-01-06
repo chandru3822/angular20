@@ -1,71 +1,19 @@
 <template>
-  <fragment>
-    <editor-content :editor="editor" />
-  </fragment>
+  <editor-content :editor="editor"/>
 </template>
 
 <script>
-import { Fragment } from 'vue-frag'
-import { BubbleMenu, Editor, EditorContent } from '@tiptap/vue-2'
-import { getExtensions } from './utils'
-
-const defaultDocument = {
-  type: 'doc',
-  content: [
-    {
-      type: 'paragraph',
-      content: [
-        {
-          type: 'text',
-          text: ''
-        }
-      ]
-    }
-  ]
-}
+import {EditorContent} from '@tiptap/vue-2'
 
 export default {
   name: 'TextEditor',
   props: {
-    value: {
+    editor: {
       type: Object,
       required: true
-    },
-    tags: {
-      type: Array,
-      required: false
     }
   },
-  components: { EditorContent, BubbleMenu, Fragment },
-  data() {
-    return {
-      editor: null
-    }
-  },
-  watch: {
-    value: function(val) {
-      if (val) {
-        this.editor?.commands?.setContent(val)
-      }
-    }
-  },
-  mounted() {
-    const content = this.value ?? defaultDocument
-    this.editor = new Editor({
-      content,
-      extensions: getExtensions({tags: this.tags}),
-      onBlur: () => {
-        const payload = this.editor.getJSON()
-        this.$emit('blur', { ...payload })
-      }
-    })
-
-    this.$emit('init', this.editor)
-  },
-  beforeDestroy() {
-    //TODO: deregister editor
-    this.editor.destroy()
-  }
+  components: {EditorContent}
 }
 </script>
 
@@ -89,7 +37,7 @@ export default {
     outline: none;
   }
 
-  p  {
+  p {
     padding: 0;
     margin: 0;
   }
@@ -151,7 +99,6 @@ export default {
 
 .resize-cursor {
   cursor: ew-resize;
-  //cursor: col-resize;
 }
 
 </style>
