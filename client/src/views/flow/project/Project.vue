@@ -206,6 +206,10 @@
               {{ $store.state.project.ppsEvent.eventName }} Event
             </router-link>
           </span>
+              <span v-if="$store.state.project && selectedTab && $route.name === 'projectDetails'" class="breadcrumb albatross-body-2 primary--text">
+            <v-icon class="mx-4" size="20">mdi-chevron-right</v-icon>
+              {{ selectedTab.tabName}}
+          </span>
         </div>
         <div class="mt-2">
           <v-chip v-for="(tag, idx) in project.tags"
@@ -478,6 +482,7 @@ export default {
       await this.getMilestones()
     },
     changeTabs(selectedTab, buttonClicked) {
+      debugger
       this.selectedTab = selectedTab
       if (buttonClicked && this.$route.name !== 'projectDetails') {
         this.$router.push({name: 'projectDetails', projectId: this.projectId})

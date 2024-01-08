@@ -48,7 +48,9 @@ public class PandaDocQuery {
       (plh.down_payment_above_line_incentive::numeric - plh.optional_down_payment::numeric) as solar_rebate,
       plh.itc,
       plh.state_tax_credit,
-      (plh.loan_amount::numeric - plh.itc::numeric - plh.state_tax_credit::numeric) as system_cost
+      (plh.loan_amount::numeric - plh.itc::numeric - plh.state_tax_credit::numeric) as system_cost,
+      plh.storage_brand,
+      case when pr.process_name = 'z Battery Only' then true else false end as is_battery_only
     FROM flow.project p
            JOIN brs.project_details pd on p.id = pd.project_id
            JOIN brs.proposal_log_history plh on p.id = plh.project_id
@@ -58,6 +60,7 @@ public class PandaDocQuery {
            left join flow.company_country cc on cc.id = p.company_country_id
            left JOIN flow.country cy on cy.id = cc.country_id
            JOIN flow.company_process cp on cp.id = p.company_process_id
+           left JOIN flow.process pr on pr.id = cp.process_id
     WHERE p.id = :projectId and plh.proposal_nbr = :proposalNbr
     """;
 

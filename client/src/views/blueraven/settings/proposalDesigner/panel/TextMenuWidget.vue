@@ -98,9 +98,9 @@
 
       <!--      </v-btn>-->
       <!--          TODO: run this before saving if there is a table-->
-      <!--          <v-btn @click="editor.chain().focus().fixTables().run()" :disabled="!editor.can().fixTables()">-->
-      <!--            fixTables-->
-      <!--          </v-btn>-->
+<!--                <v-btn @click="editor.chain().focus().fixTables().run()" :disabled="!editor.can().fixTables()">-->
+<!--                  fixTables-->
+<!--                </v-btn>-->
     </div>
   </div>
 </template>

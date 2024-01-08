@@ -1,6 +1,5 @@
 <template>
   <div id="designer">
-    <!--    <div class="dpi"></div>-->
     <div class="toolbar">
       <v-tooltip bottom>
         <template #activator="{on, attrs}">
@@ -47,9 +46,14 @@
 
     <div class="proposal-designer">
       <div class="main-content">
-        <text-menu-widget class="text-menu" v-if="activeEditor" :editor="activeEditor" />
+        <text-menu-widget class="text-menu" v-if="activeEditor" :editor="activeEditor"/>
         <viewport class="main-viewport" ref="viewport">
-          <proposal-template v-if="pages && pages.length > 0" :children="pages" :debug="debug" :editable="editable" />
+          <proposal-template
+            v-if="pages && pages.length > 0"
+            :children="pages"
+            :debug="debug"
+            :editable="editable"
+          />
         </viewport>
       </div>
       <div class="main-sidebar">
@@ -57,50 +61,50 @@
           <v-tab>Editor</v-tab>
           <v-tab>Tree</v-tab>
         </v-tabs>
-        <v-tabs-items v-model="tabs">
+        <v-tabs-items v-model="tabs" class="tabs-scrollable">
           <v-tab-item>
             <v-card v-if="selected">
-
               <!--              TODO: themes and more styles + drag and drop -->
-              <v-card-title>
-                <v-tooltip>
-                  <template #activator="{on, attrs}">
-                    <v-btn v-bind="attrs" v-on="on" @click="focusViewport" :disabled="!selected" icon text>
-                      <v-icon>mdi-image-filter-center-focus-weak</v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Focus</span>
-                </v-tooltip>
-                {{ selected.blockType }}
-              </v-card-title>
-              <v-card-subtitle class="clickable"
-                               v-if="parent"
-                               @click="selectNode(parent.id)">^ {{ parent.blockType }}
-              </v-card-subtitle>
-
+              <div class="sticky-header">
+                <v-card-title>
+                  <v-tooltip>
+                    <template #activator="{on, attrs}">
+                      <v-btn v-bind="attrs" v-on="on" @click="focusViewport" :disabled="!selected" icon text>
+                        <v-icon>mdi-image-filter-center-focus-weak</v-icon>
+                      </v-btn>
+                    </template>
+                    <span>Focus</span>
+                  </v-tooltip>
+                  {{ selected.blockType }}
+                  <span v-if="selected.modified">*</span>
+                </v-card-title>
+                <v-card-subtitle class="clickable"
+                                 v-if="parent"
+                                 @click="selectNode(parent.id)">^ {{ parent.blockType }}
+                </v-card-subtitle>
+              </div>
               <div class="pa-4">
                 <!--                  <add-component-panel @input="addComponent" />-->
 
                 <!--      TODO: add themeClass-->
                 <!--      TODO: need to be able to edit theme -->
-                <image-panel v-if="selected && selected.blockType === 'ImageBlock'" @input="updateValue" />
+                <image-panel v-if="selected && selected.blockType === 'ImageBlock'" @input="updateValue"/>
 
                 <style-panel
                   :type="selected.blockType"
                   :cssStyle="selected.blockStyle"
                   v-if="selected"
-                  @input="updateStyles" />
+                  @input="updateStyles"/>
 
                 <advanced-panel
                   :visibility="selected.visibility"
                   @input="updateVisibility"/>
-
               </div>
             </v-card>
           </v-tab-item>
           <v-tab-item>
             <v-card class="mx-auto pa-4" flat>
-              <nested-tree :children="pages" @select="focusNode" />
+              <nested-tree :children="pages" @select="focusNode"/>
             </v-card>
           </v-tab-item>
         </v-tabs-items>
@@ -110,7 +114,7 @@
 </template>
 <script>
 import './styles/proposals.scss'
-import { mapState } from 'vuex'
+import {mapState} from 'vuex'
 import Viewport from './viewport/Viewport'
 import StylePanel from './panel/Style'
 import ImagePanel from './panel/Image'
@@ -119,10 +123,12 @@ import AddComponentPanel from './panel/AddComponentWidget'
 import TextMenuWidget from './panel/TextMenuWidget'
 import AdvancedPanel from './panel/Advanced.vue'
 import ProposalTemplate from './ProposalTemplate'
-import { ProposalActions, ProposalMutations } from './store'
-import { apiRequest } from '@/helpers/helpers'
-import { AppMutations } from '@/stores/AppStore'
-import { VuexUndoRedoMixin } from './mixin/VuexUndoRedoMixin'
+import {ProposalActions, ProposalMutations} from './store'
+import {apiRequest} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+import {VuexUndoRedoMixin} from './mixin/VuexUndoRedoMixin'
+import {Editor} from "@tiptap/vue-2";
+import {getExtensions} from "@/views/blueraven/settings/proposalDesigner/blocks/text/utils";
 
 function fixContainer(revert = false) {
   document.querySelectorAll('.router-container').forEach((node) => {
@@ -141,6 +147,21 @@ const StyleFixerMixin = {
   destroyed() {
     fixContainer(true)
   }
+}
+
+const defaultDocument = {
+  type: 'doc',
+  content: [
+    {
+      type: 'paragraph',
+      content: [
+        {
+          type: 'text',
+          text: ''
+        }
+      ]
+    }
+  ]
 }
 
 export default {
@@ -165,7 +186,43 @@ export default {
       tabs: null,
       debug: false,
       editable: true,
-      dragging: false
+      dragging: false,
+      activeEditor: undefined
+    }
+  },
+  provide() {
+    const editor = {}
+    Object.defineProperty(editor, 'current', {
+      enumerable: true,
+      get: () => this.activeEditor
+    })
+    return {
+      editor
+    }
+  },
+  watch: {
+    selectedId: function (id) {
+      const block = this.selected
+      if (this.activeEditor) {
+        this.activeEditor.destroy()
+        this.activeEditor = undefined
+      }
+
+      if (!block || block.blockType !== 'TextBlock') {
+        return
+      }
+
+      const self = this
+      const content = block.blockValue ?? defaultDocument
+      this.activeEditor = new Editor({
+        content,
+        autofocus: true,
+        extensions: getExtensions({tags: this.tags}),
+        onUpdate({editor}) {
+          const payload = editor.getJSON()
+          self.updateValue(payload)
+        },
+      })
     }
   },
   computed: {
@@ -181,18 +238,17 @@ export default {
     isSaveable() {
       return this.$store.getters.modifiedBlocks?.length > 0
     },
-    activeEditor() {
-      return this.$store.getters.activeEditor
-    },
-    isFullAdmin(){
+    isFullAdmin() {
       return this.$store.getters.isFullAdmin
     },
     ...mapState({
-      template: (state) => state.proposal.template
+      selectedId: (state) => state.proposal.selectedId,
+      template: (state) => state.proposal.template,
+      tags: (state) => state.proposal.tags?.map(t => t.tagName)
     })
   },
   methods: {
-    addComponent({ blockType, blockTypeId, blockValue }) {
+    addComponent({blockType, blockTypeId, blockValue}) {
       this.$store.commit(ProposalMutations.ADD_COMPONENT, {
         parentId: this.selected.id,
         blockType,
@@ -202,26 +258,26 @@ export default {
       })
     },
     updateValue(value) {
-      this.$store.commit(ProposalMutations.SET_VALUE, { blockId: this.selected.id, value })
+      this.$store.commit(ProposalMutations.SET_VALUE, {blockId: this.selected.id, value})
     },
     updateStyles(styles) {
-      this.$store.commit(ProposalMutations.SET_STYLE, { blockId: this.selected.id, styles })
+      this.$store.commit(ProposalMutations.SET_STYLE, {blockId: this.selected.id, styles})
     },
     updateVisibility(visibility) {
-      this.$store.commit(ProposalMutations.SET_VISIBILITY, { blockId: this.selected.id, visibility })
+      this.$store.commit(ProposalMutations.SET_VISIBILITY, {blockId: this.selected.id, visibility})
     },
     async downloadPreview() {
       try {
 
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const { data } = await apiRequest('blueraven', {
+        const {data} = await apiRequest('blueraven', {
           method: 'post',
           url: '/proposal-preview/1',
           responseType: 'blob'
         })
 
         if (data) {
-          const pdfFile = URL.createObjectURL(new Blob([data], { type: 'application/pdf' }))
+          const pdfFile = URL.createObjectURL(new Blob([data], {type: 'application/pdf'}))
           const docUrl = document.createElement('a')
           docUrl.href = pdfFile
           docUrl.setAttribute('download', 'preview.pdf')
@@ -262,7 +318,7 @@ export default {
       if (nodes.length > 0) {
         const rect = nodes[0].getBoundingClientRect()
         const top = vp.scrollTop + rect.top - 220
-        vp.scrollTo({ top, behavior: 'smooth' })
+        vp.scrollTo({top, behavior: 'smooth'})
       }
     }
   }
@@ -307,15 +363,18 @@ export default {
 
 .main-sidebar {
   grid-area: 1 / 2 / 2 / 3;
-  overflow: auto;
-  height: calc(100vh - 115px);
 }
 
-//.dpi {
-//  height: 1in;
-//  width: 1in;
-//  left: 100%;
-//  position: fixed;
-//  top: 100%;
-//}
+.tabs-scrollable {
+  overflow: auto;
+  height: calc(100vh - 165px);
+}
+
+.sticky-header {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+}
+
 </style>

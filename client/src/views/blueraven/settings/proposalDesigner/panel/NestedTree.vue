@@ -13,7 +13,7 @@
            @click="handleClick(child)"
       >
         #{{child.id}} - {{ child.blockType }}
-<!--        <span>- {{ child.themeKey }} {{ child.blockOrder }}</span> -->
+        <span v-if="child.modified">*</span>
       </div>
       <tree class="node-sub"
             v-on="$listeners"

@@ -58,7 +58,6 @@ export default {
       template: [],
       theme: {},
       selectedId: undefined,
-      editors: {},
       tags: []
     }
   },
@@ -136,15 +135,6 @@ export default {
         })
       }
     },
-    [ProposalMutations.REGISTER_EDITOR](state, {blockId, editor}) {
-      if (state.editors === undefined) {
-        state.editors = {}
-      }
-      state.editors[blockId] = editor
-    },
-    [ProposalMutations.DEREGISTER_EDITOR](state, {blockId}) {
-      delete state.editors[blockId]
-    }
   },
   actions: {
     [ProposalActions.FETCH_TEMPLATE]: async ({commit}) => {
@@ -197,13 +187,6 @@ export default {
 
     selectedBlock(state) {
       return state.template.find((b) => b.id === state.selectedId)
-    },
-
-    activeEditor(state, getters) {
-      if (!getters.selectedBlock) {
-        return null
-      }
-      return state.editors[getters.selectedBlock.id] ?? null
     },
 
     findById: (state) => (id) => {

@@ -77,7 +77,7 @@ public class PandaDocService {
    * @throws Exception
    */
   private String findTemplateId(PandaDocProjectDetails deets, Boolean isSpanish) throws Exception {
-    String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
+    String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName(), deets.getIsBatteryOnly());
     String tplId = findTemplateIdByName(name);
 
     log.debug(
@@ -86,7 +86,7 @@ public class PandaDocService {
     if (tplId == null) {
       log.debug("PANDADOC: falling back to generic utility company");
       deets.setUtilityCompany(pandaDoc.getGenericName());
-      name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
+      name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName(), deets.getIsBatteryOnly());
       tplId = findTemplateIdByName(name);
     }
 
@@ -682,6 +682,7 @@ public class PandaDocService {
 
       tokens.put("Proposal.Number Of Batteries", numberOfBatteries);
       tokens.put("Proposal.Storage Size", storageSize);
+      tokens.put("Proposal.Battery Brand", deets.getStorageBrand());
       tokens.put("Proposal.Estimated Backup Days", result.get("custom_fields.Estimated Backup Days"));
       tokens.put("Proposal.Solar Rebate For HIC", result.get("custom_fields.Solar Rebate for HIC"));
       tokens.put("Proposal.Solar Below the Line Rebates", result.get("custom_fields.Solar Below the Line Rebates"));
