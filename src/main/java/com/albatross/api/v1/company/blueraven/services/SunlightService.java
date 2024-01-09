@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +66,7 @@ public class SunlightService {
       hashId = sunlightHash.get().toString();
       setCreditLastCheckedBy(projectId, "Sunlight");
       accessToken = generateToken();
-      return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
+      return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, StandardCharsets.UTF_8);
     }
 
     projectDetails.put("externalId", propLogDetail.getProjectId().toString());
@@ -155,7 +156,7 @@ public class SunlightService {
     setSunlightHashId(projectId, proposalNbr, hashId);
     setCreditLastCheckedBy(projectId, "Sunlight");
 
-    return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
+    return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, StandardCharsets.UTF_8);
   }
 
   public String getCreditStatus(Long projectId) throws Exception {

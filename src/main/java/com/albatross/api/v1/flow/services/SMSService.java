@@ -7,9 +7,10 @@ import com.albatross.api.utils.JodaDateTimeEditor;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RecipientType;
 import com.albatross.api.v1.flow.model.Owner;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.model.smsQueue.*;
-import com.albatross.api.v1.flow.queries.ProjectQuery;
+import com.albatross.api.v1.flow.model.smsQueue.SMSQueueItem;
+import com.albatross.api.v1.flow.model.smsQueue.SmsQueueRow;
+import com.albatross.api.v1.flow.model.smsQueue.TwilioMessageRequest;
+import com.albatross.api.v1.flow.model.smsQueue.TwilioSMSResponse;
 import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -124,7 +125,7 @@ public class SMSService {
     Long sentBySmsTeamId,
     Integer priorityLevel) {
 
-    if(null != toPhone && !toPhone.isBlank()) {
+    if (null != toPhone && !toPhone.isBlank()) {
       String queueInsert = SmsServiceQuery.insert;
 
       MapSqlParameterSource source = new MapSqlParameterSource();
@@ -233,8 +234,8 @@ public class SMSService {
         jdbcTemplate.update(queueUpdate, params);
         String errorMsg = e.toString();
         if (!errorMsg.contains("violates a blacklist rule")
-          && !errorMsg.contains("is not a valid phone number")
-          && !errorMsg.contains("Attempt to send to unsubscribed recipient")) {
+            && !errorMsg.contains("is not a valid phone number")
+            && !errorMsg.contains("Attempt to send to unsubscribed recipient")) {
           // cron logs are noisy. only log error if not one we are expecting
           log.error("TWILIO: error={}", e.toString());
         }

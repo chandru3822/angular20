@@ -2,7 +2,6 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.Tag;
-import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +48,7 @@ public class TagController {
 
   @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectTag> addProjectTag(@PathVariable Long projectId,
-                                             @RequestBody Tag tag) {
+                                            @RequestBody Tag tag) {
     return tagService.addProjectTag(projectId, tag);
   }
 

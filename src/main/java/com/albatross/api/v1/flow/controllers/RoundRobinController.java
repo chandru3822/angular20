@@ -2,10 +2,10 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.v1.flow.enums.RoundRobinUserType;
-import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.PostalCode;
-import com.albatross.api.v1.flow.model.roundRobin.RoundRobinAllocationUser;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
+import com.albatross.api.v1.flow.model.roundRobin.RoundRobinAllocationUser;
 import com.albatross.api.v1.flow.model.roundRobin.RoundRobinUser;
 import com.albatross.api.v1.flow.services.RoundRobinService;
 import lombok.Data;
@@ -29,7 +29,7 @@ public class RoundRobinController {
 
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<RoundRobin> getRoundRobins(@RequestParam(required=false) String searchQuery) {
+  public List<RoundRobin> getRoundRobins(@RequestParam(required = false) String searchQuery) {
     return roundRobinService.getRoundRobins(searchQuery);
   }
 
@@ -125,7 +125,7 @@ public class RoundRobinController {
 
   @GetMapping(value = "/byPostalCode", produces = MediaType.APPLICATION_JSON_VALUE)
   public RoundRobin getRoundRobinByPostalCode(@RequestParam String postalCode,
-                                        @RequestParam Long projectId) {
+                                              @RequestParam Long projectId) {
     return roundRobinService.getRoundRobinByPostalCode(postalCode, projectId);
   }
 

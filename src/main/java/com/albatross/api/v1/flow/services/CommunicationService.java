@@ -50,30 +50,30 @@ public class CommunicationService {
 
   @Async
   public Future<Void> sendEmails(
-      String subject,
-      List<Long> userIDs,
-      String templateContent,
-      Map<String, javax.activation.DataSource> attachments,
-      URL emailUnsubscribeURL,
-      String sentByEmail,
-      String sentByName,
-      Long sentByUserId,
-      String cc) {
+    String subject,
+    List<Long> userIDs,
+    String templateContent,
+    Map<String, javax.activation.DataSource> attachments,
+    URL emailUnsubscribeURL,
+    String sentByEmail,
+    String sentByName,
+    Long sentByUserId,
+    String cc) {
     for (Long userID : userIDs) {
       Optional<User> user = userService.getUser(userID, false);
       // do not send email if they do not have access to the system
       if (user.isPresent() && user.get().getUserStatusType() != null && user.get().getHasAccess()) {
         sendEmail(
-            subject,
-            user.get().getEmail(),
-            user.get(),
-            templateContent,
-            attachments,
-            emailUnsubscribeURL,
-            sentByEmail,
-            sentByName,
-            sentByUserId,
-             cc);
+          subject,
+          user.get().getEmail(),
+          user.get(),
+          templateContent,
+          attachments,
+          emailUnsubscribeURL,
+          sentByEmail,
+          sentByName,
+          sentByUserId,
+          cc);
       }
     }
     return new AsyncResult<>(null);
@@ -81,16 +81,16 @@ public class CommunicationService {
 
   @Async
   public Future<Void> sendEmail(
-      String subject,
-      String emailAddress,
-      User user,
-      String templateContent,
-      Map<String, javax.activation.DataSource> attachments,
-      URL emailUnsubscribeURL,
-      String sentByEmail,
-      String sentByName,
-      Long sentByUserId,
-      String cc) {
+    String subject,
+    String emailAddress,
+    User user,
+    String templateContent,
+    Map<String, javax.activation.DataSource> attachments,
+    URL emailUnsubscribeURL,
+    String sentByEmail,
+    String sentByName,
+    Long sentByUserId,
+    String cc) {
     // don't send email if user does not have access to the system
     if (user != null && user.getUserStatusType() != null && user.getHasAccess()) {
 
@@ -101,7 +101,7 @@ public class CommunicationService {
 
         final String template = renderTemplate(templateContent, contextMap);
         mailService.sendMessage(
-            emailAddress, subject, template, attachments, sentByEmail, sentByName, sentByUserId, cc);
+          emailAddress, subject, template, attachments, sentByEmail, sentByName, sentByUserId, cc);
 
       } catch (Exception ex) {
         log.error("EMAIL: ERROR: Error sending email to address={}", emailAddress, ex);
@@ -112,18 +112,18 @@ public class CommunicationService {
 
   @Async
   public void sendEmail(
-      String subject,
-      String email,
-      String template,
-      Map<String, Object> context,
-      String sentByEmail,
-      String sentByName,
-      Long sentByUserId,
-      String cc) {
+    String subject,
+    String email,
+    String template,
+    Map<String, Object> context,
+    String sentByEmail,
+    String sentByName,
+    Long sentByUserId,
+    String cc) {
     try {
       final String renderTemplate = renderTemplate(template, context);
       mailService.sendMessage(
-          email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId, cc);
+        email, subject, renderTemplate, null, sentByEmail, sentByName, sentByUserId, cc);
     } catch (Exception e) {
       log.error("EMAIL: ERROR: Error sending email to address={}", email, e);
     }
@@ -131,62 +131,62 @@ public class CommunicationService {
 
   @Async
   public void sendBulkEmail(
-      String subject,
-      String template,
-      Map<String, File> attachments,
-      URL emailUnsubscribeURL,
-      List<User> users,
-      String sentByEmail,
-      String sentByName,
-      Long sentByUserId,
-      List<Long> attachmentIds,
-      String cc)
-      throws Exception {
+    String subject,
+    String template,
+    Map<String, File> attachments,
+    URL emailUnsubscribeURL,
+    List<User> users,
+    String sentByEmail,
+    String sentByName,
+    Long sentByUserId,
+    List<Long> attachmentIds,
+    String cc)
+    throws Exception {
 
     try {
       final Instant startTime = Instant.now();
 
       final Map<String, DataSource> emailAttachments =
-          Maps.transformValues(attachments, FileDataSource::new);
+        Maps.transformValues(attachments, FileDataSource::new);
 
       // do not send email if they do not have access to the system
       final List<EmailMessage> emailMessages =
-          users.stream()
-              .filter(user -> user.getUserStatusType() != null)
-              .filter(User::getHasAccess)
-              .map(
-                  user -> {
-                    try {
-                      final String message =
-                          renderTemplate(
-                              template,
-                              Map.of(
-                                  "unsubscribeURL",
-                                  String.format(
-                                      "%s?emailAddress=%s", emailUnsubscribeURL, user.getEmail()),
-                                  "user",
-                                  user));
-                      return new EmailMessage(
-                          user.getEmail(),
-                          sentByEmail,
-                          sentByName,
-                          subject,
-                          message,
-                          sentByUserId,
-                          true,
-                          null,
-                          attachmentIds,
-                          cc);
-                    } catch (Exception e) {
-                      log.error(
-                          "EMAIL: ERROR: Generating template. template={}, address={}",
-                          template,
-                          user.getEmail());
-                      return null;
-                    }
-                  })
-              .filter(Objects::nonNull)
-              .toList();
+        users.stream()
+          .filter(user -> user.getUserStatusType() != null)
+          .filter(User::getHasAccess)
+          .map(
+            user -> {
+              try {
+                final String message =
+                  renderTemplate(
+                    template,
+                    Map.of(
+                      "unsubscribeURL",
+                      String.format(
+                        "%s?emailAddress=%s", emailUnsubscribeURL, user.getEmail()),
+                      "user",
+                      user));
+                return new EmailMessage(
+                  user.getEmail(),
+                  sentByEmail,
+                  sentByName,
+                  subject,
+                  message,
+                  sentByUserId,
+                  true,
+                  null,
+                  attachmentIds,
+                  cc);
+              } catch (Exception e) {
+                log.error(
+                  "EMAIL: ERROR: Generating template. template={}, address={}",
+                  template,
+                  user.getEmail());
+                return null;
+              }
+            })
+          .filter(Objects::nonNull)
+          .toList();
 
       log.info("EMAIL: Starting to send out emails. Expected count={}", emailMessages.size());
 
@@ -194,9 +194,9 @@ public class CommunicationService {
 
       final Instant endTime = Instant.now();
       log.info(
-          "EMAIL: Elapsed time={}, Total emails={}",
-          Duration.between(startTime, endTime),
-          sentMessages);
+        "EMAIL: Elapsed time={}, Total emails={}",
+        Duration.between(startTime, endTime),
+        sentMessages);
     } finally {
       for (File tempFile : attachments.values()) {
         log.debug("EMAIL: Deleting Temp File {}", tempFile.getAbsolutePath());
@@ -206,29 +206,29 @@ public class CommunicationService {
   }
 
   @Async
-  public Future<Void> sendMassText (
-      String groupId, SendTextsRequest sendTexts, List<User> users, User loggedInUser) {
+  public Future<Void> sendMassText(
+    String groupId, SendTextsRequest sendTexts, List<User> users, User loggedInUser) {
 
     for (User user : users) {
       queueTextMessages(
-          groupId,
-          user,
-          sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
-          sendTexts.getMediaURLs(),
-          loggedInUser.trueUserId(),
-          users.size() > 10 ? SmsPriority.LARGE_GROUP.level : SmsPriority.SMALL_GROUP.level);
+        groupId,
+        user,
+        sendTexts.getMessage() == null ? "" : sendTexts.getMessage(),
+        sendTexts.getMediaURLs(),
+        loggedInUser.trueUserId(),
+        users.size() > 10 ? SmsPriority.LARGE_GROUP.level : SmsPriority.SMALL_GROUP.level);
     }
     return new AsyncResult<>(null);
   }
 
   @Async
   public void queueTextMessages(
-      String messageGroupId,
-      User user,
-      String templateContent,
-      List<URI> mediaURLs,
-      Long loggedInUserId,
-      Integer priorityLevel) {
+    String messageGroupId,
+    User user,
+    String templateContent,
+    List<URI> mediaURLs,
+    Long loggedInUserId,
+    Integer priorityLevel) {
     // dont try to send text if there is no phone number or the user doesnt have access
     if (null != user
         && user.getPhoneNumber() != null
@@ -241,16 +241,16 @@ public class CommunicationService {
         // make sure the sent by user id is the logged in user, not the user the content is getting
         // sent to
         smsService.queueMessage(
-            messageGroupId,
-            user.getId(),
-            null,
+          messageGroupId,
+          user.getId(),
           null,
-            user.getPhoneNumber(),
-            template,
-            mediaURLs,
-            RecipientType.USER,
-            loggedInUserId,
-            null,
+          null,
+          user.getPhoneNumber(),
+          template,
+          mediaURLs,
+          RecipientType.USER,
+          loggedInUserId,
+          null,
           priorityLevel);
       } catch (NumberParseException ex) {
         log.warn("TWILIO: Message not sent: Invalid phone number: {}", user.getPhoneNumber());
@@ -278,15 +278,15 @@ public class CommunicationService {
   }
 
   @Async
-  public void queueTextMessagesForProject (
-      String messageGroupId,
-      Contact contact,
-      Long projectId,
-      String toPhone,
-      String template,
-      List<URI> mediaURLs,
-      Long sentByUserId,
-      Long sentBySmsTeamId) {
+  public void queueTextMessagesForProject(
+    String messageGroupId,
+    Contact contact,
+    Long projectId,
+    String toPhone,
+    String template,
+    List<URI> mediaURLs,
+    Long sentByUserId,
+    Long sentBySmsTeamId) {
     try {
       smsService.queueMessage(
         messageGroupId,
@@ -306,7 +306,7 @@ public class CommunicationService {
   }
 
   @Async
-  public void queueTextMessagesForUser (
+  public void queueTextMessagesForUser(
     String messageGroupId,
     Long recipientUserId,
     String toPhone,
@@ -333,7 +333,7 @@ public class CommunicationService {
   }
 
   public String renderTemplate(String templateContent, Map<String, Object> contextMap)
-      throws Exception {
+    throws Exception {
     try (var output = new ByteArrayOutputStream()) {
       templatingEngineService.applyFreemarkerTemplate(templateContent, contextMap, output);
       return output.toString();
@@ -342,73 +342,73 @@ public class CommunicationService {
 
   public String getDefaultEmailTemplate() throws IOException {
     try (InputStream input =
-        CommunicationService.class.getResourceAsStream("/communication/templates/email.ftl.txt")) {
+           CommunicationService.class.getResourceAsStream("/communication/templates/email.ftl.txt")) {
       return new Scanner(input, StandardCharsets.UTF_8).useDelimiter("\\A").next();
     }
   }
 
   public Map<String, Object> sendTextsForProject(Long projectId, Contact contact, User user, String message, List<URI> mediaURLs, Long smsTeamId) {
     String groupId = UUID.randomUUID().toString();
-      String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
-      try {
-        String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
-        Optional<Project> projectIn = projectService.getProject(projectId);
-        if (projectIn.isEmpty()) {
-          log.error("MESSAGING: Missing project id={}", projectId);
-          throw new ApiException("Unable to find project");
-        }
-        Project project = projectIn.get();
-
-        CommunicationController.ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
-
-        Map<String, Object> contextMap =
-          Map.of(
-            "contact",
-            contact,
-            "project",
-            project,
-            "user",
-            user,
-            "projectDetails",
-            projectDetails);
-
-        String template =
-          renderTemplate(
-            message == null ? "" : message, contextMap);
-
-        queueTextMessagesForProject(
-          groupId,
-          contact,
-          projectId,
-          safePhone,
-          template,
-          mediaURLs,
-          user.getId(),
-          smsTeamId);
-
-        return Map.of("messageGroup", groupId);
-      } catch (NumberParseException ex) {
-        log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
-        throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
-      } catch (InvalidReferenceException ire) {
-        Pattern invalidParameter = Pattern.compile("([$]\\S+)");
-        Matcher m = invalidParameter.matcher(ire.getMessage());
-        if (m.find()) {
-          String invalidParamName = m.group(1);
-          throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST,
-            "Invalid parameter " + invalidParamName + " ",
-            new Exception());
-        } else {
-          throw new ResponseStatusException(
-            HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
-        }
-      } catch (Exception e) {
-        log.error("MESSAGING: Error queueing SMS message ", e);
-        throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
+    String phoneNumber = (contact.getMobile() != null && !contact.getMobile().isEmpty()) ? contact.getMobile() : contact.getPhone();
+    try {
+      String safePhone = smsService.safeCleanPhoneNumber(phoneNumber);
+      Optional<Project> projectIn = projectService.getProject(projectId);
+      if (projectIn.isEmpty()) {
+        log.error("MESSAGING: Missing project id={}", projectId);
+        throw new ApiException("Unable to find project");
       }
+      Project project = projectIn.get();
+
+      CommunicationController.ProjectDetails projectDetails = getProjectTemplateFields(projectId, project.getTimeZone());
+
+      Map<String, Object> contextMap =
+        Map.of(
+          "contact",
+          contact,
+          "project",
+          project,
+          "user",
+          user,
+          "projectDetails",
+          projectDetails);
+
+      String template =
+        renderTemplate(
+          message == null ? "" : message, contextMap);
+
+      queueTextMessagesForProject(
+        groupId,
+        contact,
+        projectId,
+        safePhone,
+        template,
+        mediaURLs,
+        user.getId(),
+        smsTeamId);
+
+      return Map.of("messageGroup", groupId);
+    } catch (NumberParseException ex) {
+      log.warn("TWILIO: Message not sent: Invalid phone number: {}", phoneNumber);
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Invalid phone number: " + phoneNumber, new Exception());
+    } catch (InvalidReferenceException ire) {
+      Pattern invalidParameter = Pattern.compile("([$]\\S+)");
+      Matcher m = invalidParameter.matcher(ire.getMessage());
+      if (m.find()) {
+        String invalidParamName = m.group(1);
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST,
+          "Invalid parameter " + invalidParamName + " ",
+          new Exception());
+      } else {
+        throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "Invalid parameter: " + ire.getMessage(), new Exception());
+      }
+    } catch (Exception e) {
+      log.error("MESSAGING: Error queueing SMS message ", e);
+      throw new ResponseStatusException(
+        HttpStatus.BAD_REQUEST, "Error queueing message: " + e.getMessage(), new Exception());
+    }
   }
 
   public Map<String, Object> sendTextsForUser(User recipientUser, String message, List<URI> mediaURLs, Long smsTeamId) {
@@ -532,9 +532,7 @@ public class CommunicationService {
 
     Optional<String> scopeOfWork = projectService.getInstallationScopeOfWork(projectId);
 
-    if (scopeOfWork.isPresent()) {
-      projectDetails.setInstallationScopeOfWork(scopeOfWork.get());
-    }
+    scopeOfWork.ifPresent(projectDetails::setInstallationScopeOfWork);
 
     return projectDetails;
   }
