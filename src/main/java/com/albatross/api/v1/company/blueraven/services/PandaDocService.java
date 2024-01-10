@@ -419,7 +419,7 @@ public class PandaDocService {
         pandaDoc.getDocumentPrefix(),
         tokens.getString("Deal.Contact.Name"),
         tokens.optString("Deal.Proposal Number"),
-        "Installation Agreement");
+        "Home Improvement Contract");
     }
     else {
       name = joinIfPresent(
