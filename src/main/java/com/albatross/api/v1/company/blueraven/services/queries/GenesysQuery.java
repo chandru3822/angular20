@@ -143,7 +143,7 @@ public class GenesysQuery {
                        and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
                        and pd.source_name not in ('Closer Gen', 'Referrals')
                        and pd.installation_agreement_signed_date IS NULL)
-    select count(1)
+    select id
     from results
     where (next_event is null or next_event < current_date)
       and lead_status_id not in (698, 19595, 699)  -- 'Cold', 'Unqualified', 'Do Not Call'
