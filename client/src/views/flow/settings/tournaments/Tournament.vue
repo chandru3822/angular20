@@ -41,23 +41,23 @@
         tabs: [
           {
             label: 'Details',
-            path: `/settings/tournaments/${this.$route.params.id}/details`,
+            path: `/settings/tournament/${this.$route.params.id}/details`,
           },
           {
             label: 'Brackets',
-            path: `/settings/tournaments/${this.$route.params.id}/brackets`,
+            path: `/settings/tournament/${this.$route.params.id}/brackets`,
           },
           {
             label: 'Qualifying',
-            path: `/settings/tournaments/${this.$route.params.id}/pool/1`,
+            path: `/settings/tournament/${this.$route.params.id}/pool/1`,
           },
           {
             label: 'Last Chance',
-            path: `/settings/tournaments/${this.$route.params.id}/pool/2`,
+            path: `/settings/tournament/${this.$route.params.id}/pool/2`,
           },
           {
             label: 'Winner',
-            path: `/settings/tournaments/${this.$route.params.id}/pool/3`,
+            path: `/settings/tournament/${this.$route.params.id}/pool/3`,
           }
         ],
         breadcrumbs: [

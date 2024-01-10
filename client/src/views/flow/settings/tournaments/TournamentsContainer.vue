@@ -16,7 +16,7 @@ const store = vueInstance.$store
 const tabs = ref([
   {
     label: 'Tournaments',
-    path: `/settings/tournaments/tournaments`,
+    path: `/settings/tournaments`,
     display: store.getters.userHasFeature('SETTINGS')
   },
   {
