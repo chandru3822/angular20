@@ -43,15 +43,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.sql.DataSource;
 import java.io.InputStream;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-/**
- * Created by randanunn on 2019-05-20. !Describe Purpose!
- */
 @Slf4j
 @Service
 @PreAuthorize("hasFeatureAccess('AVAILABILITY')")
@@ -68,9 +69,7 @@ public class AvailabilityService {
   private final CustomFieldValueService customFieldValueService;
   private final UserPositionService userPositionService;
   private final MapboxApiService mapboxApiService;
-
   private final MarketoService marketoService;
-
   private final PubSubService pubSubService;
 
   @Value(value = "${app.cron.blueraven.marketo.enabled:false}")
@@ -156,7 +155,7 @@ public class AvailabilityService {
             .filter(
               rsa ->
                 (null == rsa.getResourceSlotScheduleId()
-                  && (null != rsa.getStartTime() || null != rsa.getEndTime())))
+                 && (null != rsa.getStartTime() || null != rsa.getEndTime())))
             .toList();
         if (!invalids.isEmpty()) {
           throw new ResponseStatusException(
@@ -169,9 +168,9 @@ public class AvailabilityService {
         // only try save if there is an id or it has one of the 3 scheduling fields. otherwise it is
         // just a blank day
         if (null != rsa.getId()
-          || (rsa.getResourceSlotScheduleId() != null
-          || rsa.getStartTime() != null
-          || rsa.getEndTime() != null)) {
+            || (rsa.getResourceSlotScheduleId() != null
+                || rsa.getStartTime() != null
+                || rsa.getEndTime() != null)) {
           saveAvailability(rsa, id);
         }
       }
@@ -192,7 +191,7 @@ public class AvailabilityService {
 
   public void saveAvailability(ResourceScheduleAvailability rsa, Long resourceScheduleId) {
     if ((null == rsa.getStartTime() && null != rsa.getEndTime())
-      || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
+        || (null == rsa.getEndTime() && null != rsa.getStartTime())) {
       log.error(
         "AVAILABILITY: Daily schedule must have start and end time. ID={}, Day of Week={}, Start Time={}, End Time={}",
         rsa.getId(),
@@ -227,9 +226,9 @@ public class AvailabilityService {
     Long rsaId = null;
     // if existing and archived, or existing and they send in null start and end time
     if (hasId
-      && (archived
-      || (null == rsa.getResourceSlotScheduleId()
-      && (null == rsa.getStartTime() && null == rsa.getEndTime())))) {
+        && (archived
+            || (null == rsa.getResourceSlotScheduleId()
+                && (null == rsa.getStartTime() && null == rsa.getEndTime())))) {
       rsaId = rsa.getId();
       params.put("id", rsa.getId());
       params.put("modifiedById", user.trueUserId());
@@ -240,7 +239,7 @@ public class AvailabilityService {
       params.put("modifiedById", user.trueUserId());
       sqlCache.updateBySql(AvailabilityQuery.updateHours, params);
     } else if ((null != rsa.getResourceSlotScheduleId())
-      || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
+               || (null != rsa.getStartTime() && null != rsa.getEndTime())) {
       rsaId = sqlCache.updateBySqlReturningId(AvailabilityQuery.insertHours, params, "id").longValue();
     }
 
@@ -249,16 +248,16 @@ public class AvailabilityService {
       // if it is a slot schedule
       HashMap<String, Object> excludedParams = new HashMap<>();
       excludedParams.put(
-          "excludedResourceSlotTimeIds",
-          null == rsa.getExcludedResourceSlotTimeIds()
-                  || rsa.getExcludedResourceSlotTimeIds().isEmpty()
-              ? null
-              : rsa.getExcludedResourceSlotTimeIds());
+        "excludedResourceSlotTimeIds",
+        null == rsa.getExcludedResourceSlotTimeIds()
+        || rsa.getExcludedResourceSlotTimeIds().isEmpty()
+          ? null
+          : rsa.getExcludedResourceSlotTimeIds());
       // adding this param cuz sql array null checks are too hard for me
       excludedParams.put(
-          "excludedIsEmpty",
-          null == rsa.getExcludedResourceSlotTimeIds()
-              || rsa.getExcludedResourceSlotTimeIds().isEmpty());
+        "excludedIsEmpty",
+        null == rsa.getExcludedResourceSlotTimeIds()
+        || rsa.getExcludedResourceSlotTimeIds().isEmpty());
       excludedParams.put("resourceScheduleAvailabilityId", rsaId);
       excludedParams.put("userId", user.trueUserId());
 
@@ -267,7 +266,7 @@ public class AvailabilityService {
 
       // add any excluded slots that do not already exist - if there are any sent in
       if (null != rsa.getExcludedResourceSlotTimeIds()
-        && !rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
+          && !rsa.getExcludedResourceSlotTimeIds().isEmpty()) {
         sqlCache.updateBySql(AvailabilityQuery.addExcludedSlots, excludedParams);
       }
     }
@@ -397,8 +396,8 @@ public class AvailabilityService {
 
       // reload lat/long if location changed
       if (null != ra.getReloadCoordinates()
-        && ra.getReloadCoordinates()
-        && null != ra.getLocation()) {
+          && ra.getReloadCoordinates()
+          && null != ra.getLocation()) {
         List<Double> coordinates = new ArrayList<>();
         try {
           coordinates = mapboxApiService.getLatLong(ra.getLocation());
@@ -548,7 +547,7 @@ public class AvailabilityService {
                 .filter(
                   a ->
                     a.getStartTimeString().contains(finalCurrentEventStart.toString())
-                      && a.getEndTimeString().contains(currentEventEnd.toString()))
+                    && a.getEndTimeString().contains(currentEventEnd.toString()))
                 .findFirst()
                 .orElse(null);
             if (null != appt) {
@@ -620,8 +619,8 @@ public class AvailabilityService {
 
       // doDayOffset = repeating by day of week AND frontend said local date and utc are different
       boolean doDayOffset = null != rule.getByDayPart()
-        && !rule.getByDayPart().isEmpty()
-        && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
+                            && !rule.getByDayPart().isEmpty()
+                            && (ra.getStartTimeOffsetDay() != null && ra.getStartTimeOffsetDay());
 
       // if doDayOffSet subtract 1 from the recurring start date in the rule so it will check the right day to start on (sign: subtract/add the duration)
       RecurrenceRuleIterator it =
@@ -749,9 +748,9 @@ public class AvailabilityService {
   public ResponseEntity<Object> setCloserAppointment(CloserAppointmentRequest request)
     throws Exception {
     if (null != request.getProjectId()
-      && null != request.getAppointmentTime()
-      && null != request.getProjectProcessStepId()
-      && null != request.getUsers()) {
+        && null != request.getAppointmentTime()
+        && null != request.getProjectProcessStepId()
+        && null != request.getUsers()) {
       User user = securityService.getCurrentUser();
 
       HashMap<String, Object> params = new HashMap<>();
@@ -824,12 +823,12 @@ public class AvailabilityService {
             if (project.isPresent() && null != project.get().getTimeZone()) {
               projectAddress =
                 project.get().getStreet1()
-                  + ", "
-                  + project.get().getCity()
-                  + ", "
-                  + project.get().getState()
-                  + " "
-                  + project.get().getPostalCode();
+                + ", "
+                + project.get().getCity()
+                + ", "
+                + project.get().getState()
+                + " "
+                + project.get().getPostalCode();
               timeZoneAbbreviation = project.get().getTimeZone();
 
               SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy h:mm a");
@@ -900,7 +899,15 @@ public class AvailabilityService {
   }
 
   public void cacheAvailability() {
-    sqlCache.queryBySql(AvailabilityQuery.cacheAvailability, Map.of("currentUserId", securityService.getCurrentUser().trueUserId()), String.class);
+    DataSource dataSource = sqlCache.getSqlJdbc().getJdbcTemplate().getDataSource();
+    if (dataSource != null) {
+      try (Connection connection = dataSource.getConnection();
+           CallableStatement stmt = connection.prepareCall("call brs.cache_available_time_slots()")) {
+        stmt.execute();
+      } catch (SQLException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   public Optional<SlotSchedule> saveSlotSchedule(SlotSchedule slotSchedule) {
@@ -969,7 +976,7 @@ public class AvailabilityService {
 
     Long positionId = null;
 
-    if(!isAdmin) {
+    if (!isAdmin) {
       Long uId = null != userId ? userId : user.trueUserId();
       UserPosition up = userPositionService.getUserPrimaryPosition(uId, companyId);
       positionId = null != up ? up.getPositionId() : null;

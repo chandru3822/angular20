@@ -168,6 +168,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void cacheAvailability() {
     if (runCachedAvailability) {
       log.info("*** CRON: start cache availability ***");
+      setCronUser();
       availabilityService.cacheAvailability();
       log.info("*** CRON: end cache availability ***");
     }
@@ -179,6 +180,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void processFutureRecurringEvents() {
     if (processFutureAppointments) {
       log.info("*** CRON: start populating recurring events ***");
+      setCronUser();
       availabilityService.processFutureRecurringEvents();
       log.info("*** CRON: end populating recurring events ***");
     }
