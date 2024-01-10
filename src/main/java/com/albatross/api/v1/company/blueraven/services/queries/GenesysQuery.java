@@ -136,10 +136,10 @@ public class GenesysQuery {
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                              'US/Mountain') :: date between current_date - 180 and current_date - 30)
-                       and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
+                       and pd.company_project_status_type in ('Project Consultation')
                        and pd.source_name not in ('Closer Gen', 'Referrals')
                        and pd.installation_agreement_signed_date IS NULL)
-    select count(1)
+    select id
     from results
     where (next_event is null or next_event < current_date)
       and lead_status_id not in (698, 19595, 699)  -- 'Cold', 'Unqualified', 'Do Not Call'
