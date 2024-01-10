@@ -59,7 +59,7 @@ public class ElectronicDocumentQuery {
             (case when pd.primary_financier_name = 'Cash' then (pd.total_system_price - pd.referral_promotion_amount) / 2
                 else pd.total_cash_down_payment
                 end) as progress_payment
-    FROM flow.project p 
+    FROM flow.project p
       INNER JOIN brs.project_details pd on p.id = pd.project_id
       INNER JOIN flow.state s on pd.project_state_id = s.id
       INNER JOIN flow.contact c on p.contact_id = c.id

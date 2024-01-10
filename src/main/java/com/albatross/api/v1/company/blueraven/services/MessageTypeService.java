@@ -2,14 +2,11 @@ package com.albatross.api.v1.company.blueraven.services;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.controllers.CustomActionController;
 import com.albatross.api.v1.company.blueraven.controllers.MessageTypeController;
-import com.albatross.api.v1.company.blueraven.services.queries.CustomActionQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.MessageTypeQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,23 +18,21 @@ import java.util.*;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class MessageTypeService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
 
   public List<MessageTypeController.MessageType> getMessageTypes() {
-    List<MessageTypeController.MessageType> results = sqlCache.queryBySql(MessageTypeQuery.getMessageTypes, Collections.emptyMap(), MessageTypeController.MessageType.class);
-    return results;
+    return sqlCache.queryBySql(MessageTypeQuery.getMessageTypes, Collections.emptyMap(), MessageTypeController.MessageType.class);
   }
 
   public Optional<MessageTypeController.MessageType> getOneMessageType(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
 
-    Optional<MessageTypeController.MessageType> result = sqlCache.getBySql(MessageTypeQuery.getOneMessageType, params, MessageTypeController.MessageType.class);
-    return result;
+    return sqlCache.getBySql(MessageTypeQuery.getOneMessageType, params, MessageTypeController.MessageType.class);
   }
 
   public Optional<MessageTypeController.MessageType> saveMessageType(MessageTypeController.MessageType mt) {
@@ -50,7 +45,7 @@ public class MessageTypeService {
     params.put("includeManager", null != mt.getIncludeManager() ? mt.getIncludeManager() : false);
     params.put("userId", user.trueUserId());
     Long id;
-    if(null == mt.getId()) {
+    if (null == mt.getId()) {
       id = sqlCache.updateBySqlReturningId(MessageTypeQuery.insertMessageType, params, "id").longValue();
     } else {
       id = mt.getId();

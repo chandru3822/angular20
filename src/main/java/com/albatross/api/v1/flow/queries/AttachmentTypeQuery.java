@@ -600,7 +600,7 @@ public class AttachmentTypeQuery {
 //      """.formatted(tablePrefix, tablePrefix);
 //  }
 
-  public final static String updateDisplayOrder(String tablePrefix) {
+  public static String updateDisplayOrder(String tablePrefix) {
     //language=PostgreSQL
     return """
       update flow.%s_attachment_type
@@ -611,7 +611,7 @@ public class AttachmentTypeQuery {
       """.formatted(tablePrefix);
   }
 
-  public final static String update(String tablePrefix) {
+  public static String update(String tablePrefix) {
     //language=PostgreSQL
     return """
       update flow.%s_attachment_type
@@ -625,7 +625,7 @@ public class AttachmentTypeQuery {
   }
 
 
-  public final static String deleteType(String tablePrefix) {
+  public static String deleteType(String tablePrefix) {
     //language=PostgreSQL
     return """
       update flow.%s_attachment_type

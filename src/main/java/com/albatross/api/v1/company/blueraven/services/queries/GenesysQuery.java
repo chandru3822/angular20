@@ -1,9 +1,5 @@
 package com.albatross.api.v1.company.blueraven.services.queries;
 
-import lombok.Data;
-
-import java.util.Date;
-
 public class GenesysQuery {
 
   //language=PostgreSQL
@@ -17,31 +13,31 @@ public class GenesysQuery {
 
   //language=PostgreSQL
   public final static String getContact = """
-    select c.id,
-           c.contact_type_id,
-           cc.country_id,
-           c.first_name,
-           c.last_name,
-           c.street1,
-           c.street2,
-           c.phone,
-           c.mobile,
-           c.city,
-           c.postal_code,
-           c.email,
-           s.state,
-           c.date_created
-    from flow.contact c
-      left outer join flow.company_state cs on cs.id = c.company_state_id
-      left outer join flow.state s on s.id = cs.state_id
-      left outer join flow.company_country cc on cc.id = c.company_country_id
-      left join flow.country ctr on ctr.id = cc.country_id
-    where c.id = :contactId
-    and case when :isParent then c.company_id = any (select id
-                                                 from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
-                                                             else c.company_id = :companyId end
-            and c.archived is not true
-  """;
+      select c.id,
+             c.contact_type_id,
+             cc.country_id,
+             c.first_name,
+             c.last_name,
+             c.street1,
+             c.street2,
+             c.phone,
+             c.mobile,
+             c.city,
+             c.postal_code,
+             c.email,
+             s.state,
+             c.date_created
+      from flow.contact c
+        left outer join flow.company_state cs on cs.id = c.company_state_id
+        left outer join flow.state s on s.id = cs.state_id
+        left outer join flow.company_country cc on cc.id = c.company_country_id
+        left join flow.country ctr on ctr.id = cc.country_id
+      where c.id = :contactId
+      and case when :isParent then c.company_id = any (select id
+                                                   from flow.company_hierarchy_filter_down(:parentCompanyId::bigint))
+                                                               else c.company_id = :companyId end
+              and c.archived is not true
+    """;
 
   //language=PostgreSQL
   public final static String getGenesysContactIdByContactId = """

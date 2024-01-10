@@ -10,8 +10,6 @@ import com.albatross.api.v1.company.blueraven.services.expenses.queries.Reimburs
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -21,7 +19,7 @@ import java.util.*;
  */
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ExpenseService {
 
   private final SqlCache sqlCache;
@@ -38,7 +36,7 @@ public class ExpenseService {
     return sqlCache.getBySql(ExpenseQuery.getOneGlCode, params, GlCode.class);
   }
 
-  public Optional<GlCode> saveGlCode(GlCode glCode){
+  public Optional<GlCode> saveGlCode(GlCode glCode) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -47,18 +45,18 @@ public class ExpenseService {
     params.put("userId", currentUser.trueUserId());
 
     Long id;
-    if(null != glCode.getId()){
+    if (null != glCode.getId()) {
       id = glCode.getId();
       params.put("id", glCode.getId());
       sqlCache.updateBySql(ExpenseQuery.updateGlCode, params);
-    }else{
+    } else {
       id = sqlCache.updateBySqlReturningId(ExpenseQuery.insertGlCode, params, "id").longValue();
     }
 
     return getOneGlCode(id);
   }
 
-  public void deleteGlCode(Long id){
+  public void deleteGlCode(Long id) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();

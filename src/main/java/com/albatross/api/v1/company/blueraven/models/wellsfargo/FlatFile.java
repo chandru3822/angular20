@@ -62,7 +62,7 @@ public class FlatFile {
         return String.format("HD|%s|%s\n%s\nTR|%s|%.2f\n",
                 controlNumber,
                 dateFormat.format(date),
-                rendered.toString(),
+                rendered,
                 paymentCount,
                 paymentAmount);
     }

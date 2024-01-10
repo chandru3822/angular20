@@ -482,7 +482,6 @@ export default {
       await this.getMilestones()
     },
     changeTabs(selectedTab, buttonClicked) {
-      debugger
       this.selectedTab = selectedTab
       if (buttonClicked && this.$route.name !== 'projectDetails') {
         this.$router.push({name: 'projectDetails', projectId: this.projectId})

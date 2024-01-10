@@ -275,6 +275,11 @@ export default {
       filters: {}
     }
   },
+  provide() {
+    return {
+      editor: undefined
+    }
+  },
   created() {
     this.getProposalDetails()
     this.$store.dispatch(ProposalActions.FETCH_TEMPLATE_CONTEXT, {proposalId: this.proposalId})

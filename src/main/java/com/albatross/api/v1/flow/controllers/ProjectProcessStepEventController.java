@@ -60,9 +60,9 @@ public class ProjectProcessStepEventController {
   public ResponseEntity<Object> savePpsEventDetails(
     @PathVariable Long ppsId, @PathVariable Long eventId, @RequestBody SaveEventRequest saveEvent, @PathVariable Optional<Boolean> forceSave)
     throws Exception {
-    if(forceSave.isPresent() && !forceSave.get()){
+    if (forceSave.isPresent() && !forceSave.get()) {
       List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-      if(conflictList != null && conflictList.size() > 0){
+      if (conflictList != null && conflictList.size() > 0) {
         return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
       }
     }
@@ -116,10 +116,10 @@ public class ProjectProcessStepEventController {
     @PathVariable Long actionId,
     @RequestBody SaveEventRequest saveEvent) {
     try {
-      if(actionId == 1){
-        if(saveEvent.getForceSave() != null && !saveEvent.getForceSave()){
+      if (actionId == 1) {
+        if (saveEvent.getForceSave() != null && !saveEvent.getForceSave()) {
           List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-          if(conflictList != null && conflictList.size() > 0){
+          if (conflictList != null && conflictList.size() > 0) {
             return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
           }
         }
@@ -141,9 +141,7 @@ public class ProjectProcessStepEventController {
       Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
 
       //add in the child function returned strings
-      if(ppsEvent.isPresent()) {
-        ppsEvent.get().setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings());
-      }
+      ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
 
       return ResponseEntity.ok(ppsEvent);
     } catch (Exception e) {
