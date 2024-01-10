@@ -136,7 +136,7 @@ public class GenesysQuery {
                      where pd.first_appointment_pitched is not null
                        and (((pd.closer_appointment_start at time zone 'UTC') at time zone
                              'US/Mountain') :: date between current_date - 180 and current_date - 30)
-                       and pd.company_project_status_type in ('Active', 'Pitched', 'Appointment Scheduled')
+                       and pd.company_project_status_type in ('Project Consultation')
                        and pd.source_name not in ('Closer Gen', 'Referrals')
                        and pd.installation_agreement_signed_date IS NULL)
     select id
