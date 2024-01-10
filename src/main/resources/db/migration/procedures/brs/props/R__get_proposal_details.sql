@@ -64,7 +64,7 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             commission_strategy_id                  bigint,
             qualifies_for_incentive                 bigint[],
             adder_amount numeric,
-            company_process_id  integer
+            company_process_id  bigint
           )
 
 AS
@@ -139,7 +139,7 @@ BEGIN
            ppscfv44.int_value,
            pcfv23.int_array_value,
            ppscfv45.numeric_value,
-           d.company_process_id
+           p.company_process_id
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
