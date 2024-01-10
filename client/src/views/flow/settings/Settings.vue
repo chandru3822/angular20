@@ -114,7 +114,7 @@ export default {
         pathMatch: '/settings/callGroup',
         show: this.$store.getters.userHasFeature('CALL_GROUPS')
       }, {
-        path: '/settings/tournaments',
+        path: '/settings/tournaments/tournaments',
         title: 'Tournaments',
         pathMatch: '/settings/tournaments',
         show: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')

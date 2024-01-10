@@ -683,39 +683,51 @@ const router = new Router({
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
-                  return import ( './views/flow/settings/tournaments/Tournaments.vue')
-                } else {
-                  return accessDenied()
-                }
-              }
-            },
-            {
-              path: 'tournaments/:id',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
-                  return import ( './views/flow/settings/tournaments/Tournament.vue')
+                  return import ( './views/flow/settings/tournaments/TournamentsContainer.vue')
                 } else {
                   return accessDenied()
                 }
               },
-              children: [
-                {
-                  path: 'details',
-                  meta: {title: 'Albatross - Settings'},
-                  component: () => import ( './views/flow/settings/tournaments/TournamentDetails.vue'),
-                },
-                {
-                  path: 'brackets',
-                  meta: {title: 'Albatross - Settings'},
-                  component: () => import ( './views/flow/settings/tournaments/Bracket.vue'),
-                },
-                {
-                  path: 'pool/:poolTypeId',
-                  meta: {title: 'Albatross - Settings'},
-                  component: () => import ( './views/flow/settings/tournaments/Pool.vue'),
-                },
-              ]
+                  children: [
+                      {
+                          path: 'tournaments',
+                          meta: {title: 'Albatross - Settings'},
+                          component: () => import ('./views/flow/settings/tournaments/Tournaments.vue')
+                      },
+                      {
+                          path: 'tournaments/:id',
+                          meta: {title: 'Albatross - Settings'},
+                          component: () => {
+                              if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                                  return import ( './views/flow/settings/tournaments/Tournament.vue')
+                              } else {
+                                  return accessDenied()
+                              }
+                          },
+                          children: [
+                              {
+                                  path: 'details',
+                                  meta: {title: 'Albatross - Settings'},
+                                  component: () => import ( './views/flow/settings/tournaments/TournamentDetails.vue'),
+                              },
+                              {
+                                  path: 'brackets',
+                                  meta: {title: 'Albatross - Settings'},
+                                  component: () => import ( './views/flow/settings/tournaments/Bracket.vue'),
+                              },
+                              {
+                                  path: 'pool/:poolTypeId',
+                                  meta: {title: 'Albatross - Settings'},
+                                  component: () => import ( './views/flow/settings/tournaments/Pool.vue'),
+                              },
+                          ]
+                      },
+                      {
+                          path: 'appearance',
+                          meta: {title: 'Albatross - Settings'},
+                          component: () => import ('./views/flow/settings/tournaments/TournamentAppearance.vue')
+                      }
+                  ]
             },
             {
               path: 'states',
