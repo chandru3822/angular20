@@ -1,7 +1,7 @@
 <template>
   <v-row justify="center" no-gutters>
-    <v-col cols="12" id="incentive-container" class="justify-end">
-      <img id="incentive-banner" src="../../../assets/blueraven/Ravens_Cup_Logo_2023.svg" alt="incentive competition banner">
+    <v-col cols="12" id="incentive-container" class="justify-end" :style="{'background-image':null != backgroundImage.presignedUrl ? `url(${backgroundImage.presignedUrl})` : ''}">
+      <img id="incentive-banner" v-if="headerImage.logoPresignedUrl" :src="headerImage.logoPresignedUrl" alt="incentive competition banner">
       <div id="milestones-container">
         <incentive-milestone
             :milestone-level="milestoneLevel(counts.q1)"
@@ -54,6 +54,9 @@ import constants from '@/helpers/constants'
 import {incentive_constants, DashboardTypeEnum} from './incentive_constants'
 import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
+import {AppMutations} from "@/stores/AppStore";
+import {getSnackbar} from "@/helpers/helpers";
+import {Actions} from "@/store";
 
 export default {
   name: "Incentive",
@@ -78,6 +81,10 @@ export default {
       QuarterEnum,
       percentAchieved: 0,
       progressBarIsFull: false,
+      headerImage:{},
+      headerImageTypeId: 991,
+      backgroundImage:{},
+      backgroundImageTypeId: 992
     }
   },
   computed: {
@@ -110,8 +117,35 @@ export default {
       this.progressBarIsFull = this.percentAchieved === 100
     }
   },
-  created() {
+  async loadImages(){
+    const {img1} = await this.loadImage(this.headerImageTypeId, 'Header Image')
+    this.headerImage = img1
+    const {img2} = this.loadImage(this.backgroundImageTypeId, 'Background Image')
+    this.backgroundImageTypeId = img2
+  },
+  async loadImage(typeId, imageType){
+    let snackbar
+    let image
+    try {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      await this.$store.dispatch(Actions.FILE_GET_ONE,{
+        attachmentTypeId: typeId,
+        sourceId: this.companyId,
+        callback: async (img) => {
+          image = img
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      })
+    } catch(e) {
+      console.error('*** ERROR ***', e)
+      snackbar = getSnackbar('ERROR', `Error Loading ${imageType}`)
+      this.$store.commit(AppMutations.SHOW_SNACK, snackbar)
+      this.$store.commit(AppMutations.SET_LOADING, false)
+    }
+  },
+  async created() {
     this.calcYearPercentage()
+    await this.loadImages()
   }
 }
 </script>
