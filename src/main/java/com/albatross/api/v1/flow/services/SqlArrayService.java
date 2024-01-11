@@ -12,13 +12,9 @@ import java.sql.SQLException;
 import java.util.List;
 
 
-/**
- * Created by randanunn on 2019-05-20.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class SqlArrayService {
 
   private final DataSource dataSource;

@@ -32,7 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -285,7 +285,7 @@ public class GenesysService {
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot)
       throws IOException, ApiException {
     // Only add contacts if we are in Prod
-    if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
+    if (ObjectUtils.isEmpty(clientId) || ObjectUtils.isEmpty(clientSecret == null)) {
       return;
     }
 
@@ -566,7 +566,7 @@ public class GenesysService {
 
   public void updateContact(Long contactId) throws IOException, ApiException {
     // Only update contacts if we are in Prod
-    if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
+    if (ObjectUtils.isEmpty(clientId) || ObjectUtils.isEmpty(clientSecret == null)) {
       return;
     }
 
@@ -807,7 +807,7 @@ public class GenesysService {
         CallGroupQuery.getLowestCallsCallGroupNumber, params, CallGroupPhoneNumber.class);
 
     // Return default number if no numbers are found for this postal code
-    if (!callGroupPhoneNumber.isPresent()) {
+    if (callGroupPhoneNumber.isEmpty()) {
       return "+13852921523";
     }
 
@@ -976,8 +976,7 @@ public class GenesysService {
   private void addTextelParameters(HashMap<String, Object> contactMap, boolean isUpdate) {
     contactMap.put(
         "messageBody1",
-        "Hello, "
-            + "this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
+        "Hello, this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
     contactMap.put("messageBody2", "Let me know which is better for you!");
     contactMap.put(
         "messageBody3",
@@ -990,12 +989,10 @@ public class GenesysService {
         "Just wanted to check in. We would be more than happy to assist you. Let me know when it’s a good time to talk.");
     contactMap.put(
         "messageBody6",
-        "Hey, "
-            + " we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
+        "Hey, we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
     contactMap.put(
         "messageBody7",
-        "Hi, "
-            + " are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
+        "Hi, are you still interested in scheduling an appointment for more information about our solar solutions? If so, please let us know!");
     contactMap.put(
         "messageBodyAfterHours",
         "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");

@@ -66,8 +66,8 @@ public class ProjectProcessStepController {
       return new ResponseEntity<>(pps, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
-        String.format(
-          "Unable to get PPS, PPS ID: %s *** %s", projectProcessStepId, e.getMessage());
+
+          "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -100,8 +100,8 @@ public class ProjectProcessStepController {
         projectProcessStepService.getActionResult(actionId, ppsId), HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
-        String.format(
-          "Unable to get action result, action ID: %s, PPS ID: %s *** %s",
+
+          "Unable to get action result, action ID: %s, PPS ID: %s *** %s".formatted(
           actionId, ppsId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
@@ -200,8 +200,8 @@ public class ProjectProcessStepController {
       return new ResponseEntity<>(actionResultToReturn, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
-        String.format(
-          "PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",
+
+          "PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s".formatted(
           actionId, projectProcessStepId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
@@ -263,8 +263,8 @@ public class ProjectProcessStepController {
       projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, projectProcessStep.getProjectId(), null);
     } catch (Exception e) {
       final String errMessage =
-        String.format(
-          "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
+
+          "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s".formatted(newPpsId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -293,7 +293,7 @@ public class ProjectProcessStepController {
     @PathVariable Long projectProcessStepId,
     @RequestParam Long attachmentTypeId,
     @RequestParam String displayName,
-    @RequestParam("file") MultipartFile file)
+    @RequestParam MultipartFile file)
     throws IOException {
     return new ResponseEntity<>(
       projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId, displayName),
@@ -361,8 +361,8 @@ public class ProjectProcessStepController {
 
       } catch (Exception e) {
         final String errMessage =
-          String.format(
-            "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s",
+
+            "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s".formatted(
             projectProcessStepId, e.getMessage());
         log.error(errMessage);
         throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);

@@ -20,8 +20,8 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
+import jakarta.activation.DataSource;
+import jakarta.activation.FileDataSource;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class CommunicationService {
     String subject,
     List<Long> userIDs,
     String templateContent,
-    Map<String, javax.activation.DataSource> attachments,
+    Map<String, jakarta.activation.DataSource> attachments,
     URL emailUnsubscribeURL,
     String sentByEmail,
     String sentByName,
@@ -81,16 +81,16 @@ public class CommunicationService {
 
   @Async
   public Future<Void> sendEmail(
-    String subject,
-    String emailAddress,
-    User user,
-    String templateContent,
-    Map<String, javax.activation.DataSource> attachments,
-    URL emailUnsubscribeURL,
-    String sentByEmail,
-    String sentByName,
-    Long sentByUserId,
-    String cc) {
+      String subject,
+      String emailAddress,
+      User user,
+      String templateContent,
+      Map<String, jakarta.activation.DataSource> attachments,
+      URL emailUnsubscribeURL,
+      String sentByEmail,
+      String sentByName,
+      Long sentByUserId,
+      String cc) {
     // don't send email if user does not have access to the system
     if (user != null && user.getUserStatusType() != null && user.getHasAccess()) {
 

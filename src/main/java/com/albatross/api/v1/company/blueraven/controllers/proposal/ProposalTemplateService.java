@@ -26,7 +26,6 @@ import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.HostAccess;
 import org.graalvm.polyglot.Value;
 import org.postgresql.util.PGobject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.Resource;
@@ -66,11 +65,11 @@ public class ProposalTemplateService {
 
 
   public ProposalTemplateService(
-    @Autowired SqlCache sqlCache,
-    @Autowired ObjectMapper objectMapper,
-    @Autowired PdfService pdfService,
-    @Autowired AppProperties appProperties,
-    @Autowired freemarker.template.Configuration freemarkerConfiguration) {
+    SqlCache sqlCache,
+    ObjectMapper objectMapper,
+    PdfService pdfService,
+    AppProperties appProperties,
+    freemarker.template.Configuration freemarkerConfiguration) {
     this.sqlCache = sqlCache;
     this.objectMapper = objectMapper;
     this.appProperties = appProperties;
@@ -258,7 +257,7 @@ public class ProposalTemplateService {
       final Object valueKey = style.getOrDefault(backgroundImageKey, null);
       if (valueKey != null) {
         URI uri = buildUri(valueKey.toString(), proposalGeneratedType);
-        style.put("backgroundImage", String.format("url(%s)", uri));
+        style.put("backgroundImage", "url(%s)".formatted(uri));
         style.remove(backgroundImageKey);
       }
       block.setBlockStyle(style);
@@ -296,8 +295,8 @@ public class ProposalTemplateService {
   private <T> T getNestedValue(Map map, String... keys) {
     Object value = map;
     for (String key : keys) {
-      if (value instanceof Map) {
-        value = ((Map) value).get(key);
+      if (value instanceof Map map1) {
+        value = map1.get(key);
       }
     }
     return (T) value;

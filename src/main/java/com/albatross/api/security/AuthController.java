@@ -133,7 +133,7 @@ public class AuthController {
 
   @GetMapping("/masquerade/{userId}")
   public MasqueradeResponseBody masquerade(
-      @PathVariable("userId") Long userId, @RequestHeader("Authorization") String authHeader) {
+      @PathVariable Long userId, @RequestHeader("Authorization") String authHeader) {
     User user = securityService.getCurrentUser();
 
     // make sure the current user has access to masquerade

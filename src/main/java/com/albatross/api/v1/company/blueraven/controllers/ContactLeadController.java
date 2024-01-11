@@ -4,7 +4,6 @@ import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.company.blueraven.services.ContactLeadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/contact")
 public class ContactLeadController {
   private final ContactLeadService contactLeadService;
 
   @PostMapping(value = "/leadLabz", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateContactLeadLabz(@RequestBody ContactLead contactLead) {
-      contactLeadService.saveContactLead(contactLead);
+    contactLeadService.saveContactLead(contactLead);
   }
 
   @PostMapping(value = "/leadLabzCody", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -201,7 +200,7 @@ public class ContactLeadController {
   }
 
   @PostMapping(value = "/wishone", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactWishone (@RequestBody ContactLead contactLead) {
+  public void updateContactWishone(@RequestBody ContactLead contactLead) {
     contactLeadService.saveContactLead(contactLead);
   }
 

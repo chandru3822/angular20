@@ -27,12 +27,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -240,7 +240,7 @@ public class BlueravenProposalController {
   @GetMapping(value = "/{proposalId}/template")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public Optional<ProposalTemplate> getProposalTemplate(@PathVariable Long proposalId,
-                                                        @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId,
+                                                        @Parameter(hidden = true) @RequestParam(defaultValue = "1") Long templateId,
                                                         @Parameter(hidden = true) @RequestParam(value = "type", defaultValue = "MOBILE") ProposalGeneratedType proposalGeneratedType,
                                                         @Parameter(hidden = true) @RequestParam(value = "debug", defaultValue = "false") boolean isDebug) {
     return proposalService.getProposalTemplate(proposalId, templateId, proposalGeneratedType, isDebug);
@@ -250,8 +250,8 @@ public class BlueravenProposalController {
   @GetMapping(value = "/{proposalId}/pdf", produces = MediaType.APPLICATION_PDF_VALUE)
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
   public ResponseEntity<StreamingResponseBody> getProposalTemplatePdf(@PathVariable Long proposalId,
-                                                                      @Parameter(hidden = true) @RequestParam(value = "templateId", defaultValue = "1") Long templateId,
-                                                                      @RequestParam(value = "inline", defaultValue = "false") boolean inline,
+                                                                      @Parameter(hidden = true) @RequestParam(defaultValue = "1") Long templateId,
+                                                                      @RequestParam(defaultValue = "false") boolean inline,
                                                                       HttpServletResponse response) {
     final StreamingResponseBody responseBody = outputStream -> {
       try {
@@ -279,8 +279,8 @@ public class BlueravenProposalController {
 
   private String getContentDisposition(Proposal proposal, boolean inline) {
     String cleanedFilename = getCleanFilename(proposal);
-    return String.format(
-      "%s; filename=\"%s%sproposal.pdf\"",
+    return 
+      "%s; filename=\"%s%sproposal.pdf\"".formatted(
       inline ? "inline" : "attachment",
       cleanedFilename,
       proposal.isLocked() ? "_" : "_DRAFT_");

@@ -125,7 +125,7 @@ public class ContactController {
   public ResponseEntity<Attachment> uploadContactAttachment(@PathVariable Long contactId,
                                                             @RequestParam Long attachmentTypeId,
                                                             @RequestParam String displayName,
-                                                            @RequestParam("file") MultipartFile file) throws IOException {
+                                                            @RequestParam MultipartFile file) throws IOException {
     return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 }

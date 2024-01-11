@@ -164,7 +164,7 @@ public class ProjectController {
     @PathVariable Long projectId,
     @RequestParam Long attachmentTypeId,
     @RequestParam(required = false) String displayName,
-    @RequestParam("file") MultipartFile file)
+    @RequestParam MultipartFile file)
     throws IOException {
     if (displayName == null) {
       displayName = file.getOriginalFilename();

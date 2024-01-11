@@ -214,7 +214,7 @@ export default {
     },
     async fetchTeamsForUser() {
       try {
-        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
       } catch (e) {

@@ -12,7 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 
 @Slf4j
@@ -27,11 +27,11 @@ public class ProposalPreviewController {
   @PostMapping(value = "/{templateId}", produces = MediaType.APPLICATION_PDF_VALUE)
   public ResponseEntity<StreamingResponseBody> getProposalPreview(
     @PathVariable Long templateId,
-    @RequestParam(value = "inline", defaultValue = "false") boolean inline,
+    @RequestParam(defaultValue = "false") boolean inline,
     final HttpServletResponse response) {
 
     final String contentDisposition =
-      String.format("%s; filename=\"preview.pdf\"", inline ? "inline" : "attachment");
+      "%s; filename=\"preview.pdf\"".formatted(inline ? "inline" : "attachment");
 
     response.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_PDF_VALUE);
     response.addHeader(HttpHeaders.CONTENT_DISPOSITION, contentDisposition);

@@ -129,7 +129,7 @@ public class OrgController {
   public ResponseEntity<Attachment> uploadOrgAttachment(@PathVariable Long orgId,
                                                         @RequestParam Long attachmentTypeId,
                                                         @RequestParam String displayName,
-                                                        @RequestParam("file") MultipartFile file) throws IOException {
+                                                        @RequestParam MultipartFile file) throws IOException {
     return new ResponseEntity<>(orgService.addAttachment(file, orgId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 

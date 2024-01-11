@@ -92,7 +92,7 @@ public class PandaDocService {
 
     // if we're still not finding a match, abort
     if (tplId == null) {
-      String err = String.format("No PandaDoc template matching '%s'", name);
+      String err = "No PandaDoc template matching '%s'".formatted(name);
       throw new Exception(err);
     }
 
@@ -232,8 +232,8 @@ public class PandaDocService {
     setRecipientInfoElecDocs(template, tokens, body);
     HttpResponse resp = POST("/documents", body.toString());
     JSONObject respBody = resp.getJSON();
-    return String.format(
-        "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets", respBody.get("id"));
+    return 
+      "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets".formatted(respBody.get("id"));
   }
 
   /**
@@ -252,7 +252,7 @@ public class PandaDocService {
     } else if (!installAgreementRepository.isSunlightProject(financier)
         && !installAgreementRepository.isSunpowerProject(financier)) {
       throw new Exception(
-          String.format("unexpected financier for project %d: %s", projectId, financier));
+        "unexpected financier for project %d: %s".formatted(projectId, financier));
     }
   }
 
@@ -318,13 +318,13 @@ public class PandaDocService {
       Double value = tokens.getDouble(key);
       log.debug("PANDADOC: field {}: {}", key, value);
       if (value == null) {
-        errors.add(String.format("%s is undefined", key));
+        errors.add("%s is undefined".formatted(key));
       } else if (value <= 0) {
-        errors.add(String.format("%s must be greater than 0", key));
+        errors.add("%s must be greater than 0".formatted(key));
       }
     } catch (JSONException ex) {
       Object obj = tokens.opt(key);
-      errors.add(String.format("%s is an invalid field (%s)", key, obj));
+      errors.add("%s is an invalid field (%s)".formatted(key, obj));
     }
 
     return errors;

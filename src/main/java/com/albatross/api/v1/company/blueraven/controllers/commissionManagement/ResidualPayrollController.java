@@ -41,7 +41,7 @@ public class ResidualPayrollController {
 
   @PostMapping(value = "/{residualId}")
   public ResponseEntity<?> updateResidualById(
-      @PathVariable("residualId") Long residualId,
+      @PathVariable Long residualId,
       @RequestBody ResidualPayrollService.PayrollUpdateRequest updateRequest)
       throws SQLException {
     boolean updated = residualPayrollService.updateResidual(residualId, updateRequest);

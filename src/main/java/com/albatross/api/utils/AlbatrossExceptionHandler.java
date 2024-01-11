@@ -4,14 +4,15 @@ import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.flow.model.User;
+import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,7 +23,6 @@ import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import javax.validation.ConstraintViolationException;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
@@ -36,24 +36,10 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
   private final SecurityService securityService;
 
   @Override
-  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
     final var fieldErrorMessages =
       ex.getBindingResult().getFieldErrors().stream()
         .map(e -> new FieldErrorMessage(e.getField(), e.getDefaultMessage()))
-        .toList();
-    return ResponseEntity.badRequest().body(fieldErrorMessages);
-  }
-
-  @Override
-  protected ResponseEntity<Object> handleBindException(
-    BindException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-    final var fieldErrorMessages =
-      ex.getBindingResult().getFieldErrors().stream()
-        .map(
-          e ->
-            new FieldErrorMessage(
-              e.getField(),
-              String.format("'%s' is an invalid value", e.getRejectedValue())))
         .toList();
     return ResponseEntity.badRequest().body(fieldErrorMessages);
   }
@@ -121,7 +107,7 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
     try {
       info +=
         ", fileName="
-          + ((StandardMultipartHttpServletRequest) ((ServletWebRequest) request).getRequest())
+        + ((StandardMultipartHttpServletRequest) ((ServletWebRequest) request).getRequest())
           .getFile("file")
           .getOriginalFilename();
     } catch (Exception e) {
@@ -131,9 +117,9 @@ public class AlbatrossExceptionHandler extends ResponseEntityExceptionHandler {
     log.error("FILE UPLOAD: {}", info);
   }
 
-  record ErrorMessage(String message) {
+  public record ErrorMessage(String message) {
   }
 
-  record FieldErrorMessage(String field, String message) {
+  public record FieldErrorMessage(String field, String message) {
   }
 }

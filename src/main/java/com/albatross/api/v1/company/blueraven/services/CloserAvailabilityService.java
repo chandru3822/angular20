@@ -6,7 +6,6 @@ import com.albatross.api.v1.company.blueraven.controllers.CloserAvailabilityCont
 import com.albatross.api.v1.company.blueraven.services.queries.CloserAvailabilityQuery;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +19,7 @@ import java.util.HashMap;
 @Slf4j
 @Service
 @PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('CLOSER_AVAILABILITY')")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class CloserAvailabilityService {
 
   private final SqlCache sqlCache;
@@ -38,7 +37,7 @@ public class CloserAvailabilityService {
 
     String results = sqlCache.queryForObjectBySql(CloserAvailabilityQuery.get, params, String.class);
 
-    return null == results ? "[]": results;
+    return null == results ? "[]" : results;
   }
 
 }
