@@ -147,8 +147,8 @@ public class ProjectProcessStepEventController {
     } catch (Exception e) {
       User currentUser = securityService.getCurrentUser();
       final String errMessage =
-        String.format(
-          "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s, BY USER: %s *** %s",
+
+          "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s, BY USER: %s *** %s".formatted(
           actionId, eventId, currentUser.trueUserId(), e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);

@@ -46,7 +46,7 @@ class BlueravenSecurityAnnotationTests {
   @Autowired private BlueravenCustomFieldService blueravenCustomFieldService;
 
   @Test
-  public void should_throw_exception_with_no_user() {
+  void should_throw_exception_with_no_user() {
     assertThrows(
         AuthenticationCredentialsNotFoundException.class,
         () -> blueravenCustomFieldService.getAllCustomFields());
@@ -54,14 +54,14 @@ class BlueravenSecurityAnnotationTests {
 
   @Test
   @WithAnonymousUser
-  public void should_throw_access_denied_with_anonymous_user() {
+  void should_throw_access_denied_with_anonymous_user() {
     assertThrows(
         AccessDeniedException.class, () -> blueravenCustomFieldService.getAllCustomFields());
   }
 
   @Test
   @WithUserDetails("blueraven")
-  public void should_return_with_correct_user_company() {
+  void should_return_with_correct_user_company() {
 
     when(sqlCache.queryBySql(any(String.class), anyMap(), any(RowMapper.class)))
         .thenReturn(List.of(new CustomField()));
@@ -73,7 +73,7 @@ class BlueravenSecurityAnnotationTests {
 
   @Test
   @WithUserDetails("other")
-  public void should_throw_access_denied_with_incorrect_user_company() {
+  void should_throw_access_denied_with_incorrect_user_company() {
     assertThrows(
         AccessDeniedException.class, () -> blueravenCustomFieldService.getAllCustomFields());
   }

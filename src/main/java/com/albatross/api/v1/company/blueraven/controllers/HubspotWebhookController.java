@@ -29,8 +29,8 @@ public class HubspotWebhookController {
     if (contact.getProperties().getLead_source() != null
         && !contact.getProperties().getLead_source().getValue().equals("")) {
       log.debug(
-          "HUBSPOT: (Additional contact information from HubSpot) " + "lead_source: {}",
-          contact.getProperties().getLead_source().getValue());
+        "HUBSPOT: (Additional contact information from HubSpot) lead_source: {}",
+        contact.getProperties().getLead_source().getValue());
       lead.setLead_source(contact.getProperties().getLead_source().getValue());
     } else {
       lead.setLead_source("Organic");
@@ -39,7 +39,7 @@ public class HubspotWebhookController {
     if (contact.getProperties().getLead_source_detail() != null
         && !contact.getProperties().getLead_source_detail().getValue().equals("")) {
       log.debug(
-          "HUBSPOT: (Additional contact information from HubSpot) " + "lead_source_detail: {}",
+          "HUBSPOT: (Additional contact information from HubSpot) lead_source_detail: {}",
           contact.getProperties().getLead_source_detail().getValue());
       lead.setLead_source_detail(contact.getProperties().getLead_source_detail().getValue());
     } else {

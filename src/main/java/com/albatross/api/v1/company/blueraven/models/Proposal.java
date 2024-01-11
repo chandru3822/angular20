@@ -25,9 +25,9 @@ public class Proposal {
     }
 
     if (this.revisionNumber != null && this.revisionNumber > 0) {
-      name += String.format(" (%d)", this.revisionNumber);
+      name += " (%d)".formatted(this.revisionNumber);
     }
-    name = name + String.format(" - %d", this.proposalNbr);
+    name = name + " - %d".formatted(this.proposalNbr);
 
     return name;
   }

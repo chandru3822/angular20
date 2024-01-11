@@ -6,7 +6,6 @@ import com.albatross.api.v1.flow.model.processStep.ProcessStepEvent;
 import com.albatross.api.v1.flow.services.DataViewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +21,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/dataView")
 public class DataViewController {
 
@@ -46,14 +45,14 @@ public class DataViewController {
 
   @PostMapping(value = "/{viewId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<DataViewFieldConfig> saveFieldConfig(@PathVariable Long viewId,
-                                                      @RequestBody DataViewFieldConfig field) {
+                                                       @RequestBody DataViewFieldConfig field) {
     return dataViewService.saveFieldConfig(viewId, field);
   }
 
   @PostMapping(value = "/{viewId}/field/{fieldId}/childField", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<DataViewChildFieldConfig> saveChildFieldConfig(@PathVariable Long viewId,
-                                                                @PathVariable Long fieldId,
-                                                                @RequestBody DataViewChildFieldConfig childField) {
+                                                                 @PathVariable Long fieldId,
+                                                                 @RequestBody DataViewChildFieldConfig childField) {
     return dataViewService.saveChildFieldConfig(viewId, fieldId, childField);
   }
 

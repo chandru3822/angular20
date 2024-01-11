@@ -22,8 +22,8 @@ public final class FeatureAccessControlGrantedAuthority implements GrantedAuthor
     if (this == obj) {
       return true;
     }
-    return obj instanceof FeatureAccessControlGrantedAuthority
+    return obj instanceof FeatureAccessControlGrantedAuthority facga
         && this.getFeatureCode()
-            .equals(((FeatureAccessControlGrantedAuthority) obj).getFeatureCode());
+            .equals(facga.getFeatureCode());
   }
 }

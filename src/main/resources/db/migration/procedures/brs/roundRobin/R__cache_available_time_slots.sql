@@ -1,49 +1,52 @@
-drop function if exists brs.cache_available_time_slots(p_run_by_id      bigint);
-  CREATE OR REPLACE FUNCTION brs.cache_available_time_slots(p_run_by_id      bigint)
-    RETURNS void
+drop procedure if exists brs.cache_available_time_slots();
+CREATE OR REPLACE procedure brs.cache_available_time_slots()
 AS
 $BODY$
-
+declare
+  v_user_id bigint;
+  x         record;
 BEGIN
 
-    truncate table brs.cached_appointment;
-    insert into brs.cached_appointment(user_id,appointment_count)
-    (
-    select foo.user,count(1) as avail
-    from (
-             with active_users as (
-                 select u.id,u.first_name,u.last_name,up.position_id,t.timezone,
-                        date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone as start_time,
-                        (date_trunc('day', now()) at time zone  'UTC' AT TIME ZONE t.timezone) + interval '1 day' - interval '1 second' as end_time
-                 from flow.user u
-                          inner join flow.user_position up on up.user_id = u.id
-                          inner join flow.org o on o.id = up.org_id
-                          inner join flow.company_timezone ct on ct.id = o.company_timezone_id
-                          inner join flow.timezone t on t.id = ct.timezone_id
-                          inner join flow.company_user_status cus on cus.user_id = u.id
-                          inner join flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = o.company_id
-                     and up.id in (select up2.id
-                                      from flow.user_position up2
-                                                inner join flow.custom_field cf on up2.position_id = any(cf.system_list_option_ids) and cf.parent_custom_field_id = 9959
-                                            where up2.primary_flag is true
-                                              and up2.archived is false
-                                              and cf.archived is false)
-                     and up.end_date is null
-                     and up.primary_flag is true
-                     and up.archived is false
-                     and ust.has_access is true
-             )
-             select unnest(users) as user, scheduled_start_time
-             from active_users ap cross join generate_series(ap.start_time - interval '21 days',
-                                                                ap.end_time, interval '1 day') as gs(d)
-                                     join lateral flow.past_available_time_slots(
-                     ap.id,
-                     d::timestamp,
-                     (d + interval '23 hours 59 minutes 59 seconds')::timestamp,
-                     d::date,ap.timezone) as t on true) as foo
-    group by foo.user);
+  --truncate table brs.cached_appointment;
+  for x in select u.id,
+                  u.first_name,
+                  u.last_name,
+                  coalesce(t.timezone, t1.timezone) as timezone,
+                  date_trunc('day', now()) at time zone 'UTC' AT TIME ZONE
+                  coalesce(t.timezone, t1.timezone) as start_time,
+                  (date_trunc('day', now()) at time zone 'UTC' AT TIME ZONE
+                   coalesce(t.timezone, t1.timezone)) + interval '1 day' -
+                  interval '1 second'               as end_time
+           from flow.user u
+                  inner join flow.round_robin_user rru
+                             on rru.user_id = u.id and rru.archived is false and
+                                rru.round_robin_user_type_id = 1
+                  left join flow.company_timezone ct
+                            on ct.id = rru.company_timezone_id and ct.archived is false
+                  left join flow.timezone t on t.id = ct.timezone_id
+                  inner join flow.round_robin as rr
+                             on rr.id = rru.round_robin_id and rr.archived is false
+                  left join flow.company_timezone ct1
+                            on ct1.id = rr.company_timezone_id and ct1.archived is false
+                  left join flow.timezone t1 on t1.id = ct1.timezone_id
+        --where u.id in ( 2484306,2404974)
+    loop
 
+      insert into brs.cached_appointment(schedule_date, user_id, appointment_count)
+        (select foo.scheduled_date::date, x.id, count(1) as avail
+         from (select d::date as scheduled_date, scheduled_start_time
+               from  generate_series(x.start_time - interval '90 days',
+                                           x.end_time + interval '10 days', interval '1 day') as gs(d)
+                      join lateral flow.past_available_time_slots(
+                 x.id,
+                 d::timestamp,
+                 (d + interval '23 hours 59 minutes 59 seconds')::timestamp,
+                 d::date, x.timezone) as t on true) as foo
+         group by foo.scheduled_date::date) on conflict (user_id,schedule_date) do update
+          set appointment_count = excluded.appointment_count;
+      commit;
+
+    end loop;
 END
 $BODY$
-    LANGUAGE plpgsql VOLATILE
-                     COST 100;
+  LANGUAGE plpgsql;

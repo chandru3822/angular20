@@ -30,10 +30,7 @@ public class VerseWebhookController {
     }
 
     log.debug(
-        "VERSE: Received new lead event from Verse. "
-            + "externalLeadId: {}, "
-            + "event: {}, "
-            + "title: {} ",
+        "VERSE: Received new lead event from Verse. externalLeadId: {}, event: {}, title: {}",
         versusLeadEvent.getExternalLeadId() != null ? versusLeadEvent.getExternalLeadId() : "null",
         !isBlank(versusLeadEvent.getEvent()) ? versusLeadEvent.getEvent() : "null",
         !isBlank(versusLeadEvent.getTitle()) ? versusLeadEvent.getTitle() : "null");

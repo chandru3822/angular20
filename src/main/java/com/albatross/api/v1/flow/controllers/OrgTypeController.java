@@ -5,7 +5,6 @@ import com.albatross.api.v1.flow.model.org.OrgType;
 import com.albatross.api.v1.flow.services.OrgTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,7 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/orgType")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class OrgTypeController {
 
   private final OrgTypeService orgTypeService;

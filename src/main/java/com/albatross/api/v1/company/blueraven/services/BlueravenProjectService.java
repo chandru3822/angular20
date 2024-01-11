@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -15,7 +15,7 @@ public class BlueravenProjectService {
   private final SqlCache sqlCache;
 
   public void processMetroAreaPostalCodes() {
-    sqlCache.queryBySql(updateProjectMetroAreaPostalCodes, Collections.emptyMap(), String.class);
+    sqlCache.queryBySql(updateProjectMetroAreaPostalCodes, Map.of(), String.class);
   }
 
   //language=PostgreSQL

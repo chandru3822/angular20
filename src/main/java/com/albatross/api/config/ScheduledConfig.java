@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,7 +17,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -168,6 +168,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void cacheAvailability() {
     if (runCachedAvailability) {
       log.info("*** CRON: start cache availability ***");
+      setCronUser();
       availabilityService.cacheAvailability();
       log.info("*** CRON: end cache availability ***");
     }
@@ -179,6 +180,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void processFutureRecurringEvents() {
     if (processFutureAppointments) {
       log.info("*** CRON: start populating recurring events ***");
+      setCronUser();
       availabilityService.processFutureRecurringEvents();
       log.info("*** CRON: end populating recurring events ***");
     }

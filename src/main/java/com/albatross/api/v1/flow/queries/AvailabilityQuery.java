@@ -482,11 +482,6 @@ public class AvailabilityQuery {
         """;
 
   //language=PostgreSQL
-  public final static String cacheAvailability = """
-     select from brs.cache_available_time_slots()
-    """;
-
-  //language=PostgreSQL
   public final static String updateSlotSchedule = """
     update flow.resource_slot_schedule
     set schedule_name = :scheduleName,
