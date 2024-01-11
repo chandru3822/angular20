@@ -152,7 +152,7 @@ export default {
 
 <style lang="scss" scoped>
 #incentive-container {
-  background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Background.jpg") no-repeat fixed center 0;
+  background: #1D9ADD no-repeat fixed center 0;
   background-size: cover;
   display: flex;
   flex-flow: column nowrap;
