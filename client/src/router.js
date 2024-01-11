@@ -679,30 +679,18 @@ const router = new Router({
                 }
               },
             }, {
-              path: 'tournaments',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
-                  return import ( './views/flow/settings/tournaments/TournamentsContainer.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
-                  children: [
-                      {
-                          path: '',
-                          meta: {title: 'Albatross - Settings'},
-                          component: () => import ('./views/flow/settings/tournaments/Tournaments.vue')
-                      },
-                      {
-                          path: 'appearance',
-                          meta: {title: 'Albatross - Settings'},
-                          component: () => import ('./views/flow/settings/tournaments/TournamentAppearance.vue')
+                  path: 'tournaments',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                      if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                          return import ( './views/flow/settings/tournaments/Tournaments.vue')
+                      } else {
+                          return accessDenied()
                       }
-                  ]
-            },
+                  }
+              },
               {
-                  path: 'tournament/:id',
+                  path: 'tournaments/:id',
                   meta: {title: 'Albatross - Settings'},
                   component: () => {
                       if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {

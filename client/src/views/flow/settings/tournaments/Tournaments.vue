@@ -171,7 +171,7 @@
         }), [ 'active', 'startDate', 'tournamentName'], ['desc','desc', 'asc'])
       },
       goToTournament = (id) => {
-        router.push({path: `/settings/tournament/${id}/details`})
+        router.push({path: `/settings/tournaments/${id}/details`})
       },
       getTournamentFormulas = async() => {
     let snackbar
@@ -240,7 +240,7 @@
         const id = tournamentToDelete.value.id
         store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
+          const {status} = await deleteRequest(`/tournaments/${id}`, 'blueraven')
           let snackbar = getSnackbar('SUCCESS', 'Tournament Deleted')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
           handleHidingGlobalLoader(vueInstance, status)
@@ -257,7 +257,7 @@
         store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await postRequest(`/tournament`, newTournament.value, 'blueraven')
-          router.push({path: `/settings/tournament/${data.id}/details`})
+          router.push({path: `/settings/tournaments/${data.id}/details`})
           snackbar = getSnackbar('SUCCESS', 'Tournament Added')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
           handleHidingGlobalLoader(vueInstance, status)
