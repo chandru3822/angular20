@@ -206,26 +206,7 @@ const LogoTypeEnum = {
     saving: false,
     image: {}
   },
-  CLOSER_DASH_TOURNAMENT_HEADER_LOGO: {
-    key: "CLOSER_DASH_TOURNAMENT_HEADER_LOGO", //this needs to match the key, cuz dumb
-    header: 'Closer/Setter Dashboard Header Image',
-    description: 'Logo at the top of the Closer and Setter Incentive Dashboards',
-    label: 'dashboard header',
-    attachmentTypeId: 991,
-    add: false,
-    saving: false,
-    image: {}
-  },
-  TOURNAMENT_BACKGROUND: {
-    key: "CLOSER_DASH_TOURNAMENT_BACKGROUND", //this needs to match the key, cuz dumb
-    header: 'Closer/Setter Dashboard Background Image',
-    description: 'Background of the Closer and Setter Incentive Dashboards',
-    label: 'dashboard background',
-    attachmentTypeId: 992,
-    add: false,
-    saving: false,
-    image: {}
-  }
+
 }
 
 export default {

@@ -778,6 +778,11 @@ const router = new Router({
                   meta: {title: 'Albatross - Settings'},
                   component: () => import ( './views/flow/settings/MessageTypes.vue'),
                 },
+                  {
+                  path: 'closerDashboard',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import ( './views/flow/settings/defaults/CloserDashboardSettings.vue'),
+                },
               ]
             }, {
               path: 'roundRobins',
