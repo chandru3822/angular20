@@ -51,11 +51,6 @@ const deleteImageDialogText = computed(() => {
   return `Are you sure you want to delete the ${ imageToDelete.value?.label } logo?`
 })
 
-const toggleAdd = (imageType) => {
-  debugger
-  imageType.add = !imageType.add
-}
-
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
   let snackbar
   try {
