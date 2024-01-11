@@ -50,6 +50,11 @@ import constants from '@/helpers/constants'
             label: 'Message Types',
             path: `/settings/company/messageTypes`,
             display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADMIN')
+          },
+          {
+            label: 'Closer Dashboard',
+            path:`/settings/company/closerDashboard`,
+            display: this.$store.getters.userHasFeatureAccessLevel('SETTINGS','ADMIN')
           }
         ]
       }

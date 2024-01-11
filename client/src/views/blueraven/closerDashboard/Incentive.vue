@@ -1,7 +1,7 @@
 <template>
   <v-row justify="center" no-gutters>
-    <v-col cols="12" id="incentive-container" class="justify-end">
-      <img id="incentive-banner" src="../../../assets/blueraven/Ravens_Cup_Logo_2023.svg" alt="incentive competition banner">
+    <v-col cols="12" id="incentive-container" class="justify-end" :style="{'background-image':null != backgroundImage?.presignedUrl ? `url(${backgroundImage.presignedUrl})` : ''}">
+      <img id="incentive-banner" v-if="headerImage?.logoPresignedUrl" :src="headerImage?.logoPresignedUrl" alt="incentive competition banner">
       <div id="milestones-container">
         <incentive-milestone
             :milestone-level="milestoneLevel(counts.q1)"
@@ -41,7 +41,7 @@
           <div v-for="i in incentive_constants.totalPointsPossible" class="progress-bar-segment"></div>
           <div id="progress-bar-fill"
                :style="{borderRadius: progressBarIsFull ? '3px' : '3px 8px 8px 3px',
-                          width: this.percentAchieved + '%'}"></div>
+                          width: percentAchieved.value + '%'}"></div>
         </div>
       </div>
     </v-col>
@@ -49,76 +49,114 @@
 
 </template>
 
-<script>
-import constants from '@/helpers/constants'
-import {incentive_constants, DashboardTypeEnum} from './incentive_constants'
+<script setup>
+import {incentive_constants} from './incentive_constants'
 import {MilestoneEnum, QuarterEnum} from "@/views/blueraven/closerDashboard/MilestoneEnum";
 import IncentiveMilestone from "@/views/blueraven/closerDashboard/IncentiveMilestone";
+import {AppMutations} from "@/stores/AppStore";
+import {getSnackbar} from "@/helpers/helpers";
+import {Actions} from "@/store";
+import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
-export default {
-  name: "Incentive",
-  components: {
-    IncentiveMilestone
+/**
+ * counts: {q1:Number, q2:Number, q3:Number, q4:Number}
+ * dashboardType: DashboardTypeEnum
+ */
+const props = defineProps({
+  counts: {
+    type: Object,
+    required: true
   },
-  props: {
-    counts: {
-      q1: Number,
-      q2: Number,
-      q3: Number,
-      q4: Number
-    },
-    yearlyPointTotal: Number,
-    dashboardType: DashboardTypeEnum
+  yearlyPointTotal: {
+    type: Number,
+    required: true
   },
-  data () {
-    return {
-      constants,
-      incentive_constants,
-      MilestoneEnum,
-      QuarterEnum,
-      percentAchieved: 0,
-      progressBarIsFull: false,
-    }
-  },
-  computed: {
-    windowInnerWidth () { return window.innerWidth},
-  },
-  watch: {
-    yearlyPointTotal:  function ()  {
-      this.calcYearPercentage()
-    }
-  },
-  methods: {
-    milestoneLevel(quarterCount) {
-      switch(true) {
-        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
-          return this.MilestoneEnum.LEVEL4
-        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]:
-          return this.MilestoneEnum.LEVEL3
-        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]:
-          return this.MilestoneEnum.LEVEL2
-        case quarterCount >= this.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1]:
-          return this.MilestoneEnum.LEVEL1
-        default:
-          return this.MilestoneEnum.LEVEL0
-      }
-    },
-    calcYearPercentage () {
-      // Fill progress bar based on closer's points for the year
-      this.percentAchieved = (this.yearlyPointTotal / this.incentive_constants.totalPointsPossible) * 100
-      this.percentAchieved = this.percentAchieved > 100 ? 100 : this.percentAchieved
-      this.progressBarIsFull = this.percentAchieved === 100
-    }
-  },
-  created() {
-    this.calcYearPercentage()
+  dashboardType: {
+    type: Object,
+    required: true
+  }
+})
+
+
+// constants,
+// incentive_constants,
+// MilestoneEnum,
+// QuarterEnum,
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+
+const percentAchieved = ref(0),
+    progressBarIsFull=ref(false),
+    headerImage=ref({}),
+    headerImageTypeId=ref(991),
+    backgroundImage=ref({}),
+    backgroundImageTypeId=ref(992),
+    companyId = store.state.user.details.companyId
+
+const windowInnerWidth = computed(() => { return window.innerWidth})
+
+
+
+const milestoneLevel = (quarterCount) => {
+  switch(true) {
+    case quarterCount >= props.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL4]:
+      return MilestoneEnum.LEVEL4
+    case quarterCount >= props.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL3]:
+      return MilestoneEnum.LEVEL3
+    case quarterCount >= props.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL2]:
+      return MilestoneEnum.LEVEL2
+    case quarterCount >= props.dashboardType.milestoneGoalMap[MilestoneEnum.LEVEL1]:
+      return MilestoneEnum.LEVEL1
+    default:
+      return MilestoneEnum.LEVEL0
   }
 }
+const calcYearPercentage= () => {
+  // Fill progress bar based on closer's points for the year
+  percentAchieved.value = (props.yearlyPointTotal.value / incentive_constants.totalPointsPossible) * 100
+  percentAchieved.value = percentAchieved.value > 100 ? 100 : percentAchieved.value
+  progressBarIsFull.value = percentAchieved.value === 100
+}
+
+watch(() => props.yearlyPointTotal, () => {
+  calcYearPercentage()
+})
+
+const loadImages = async () => {
+  headerImage.value = await loadImage(headerImageTypeId.value, 'Header Image')
+  backgroundImage.value = await loadImage(backgroundImageTypeId.value, 'Background Image')
+}
+const loadImage= async (typeId, imageType) => {
+  let snackbar
+  let image
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await store.dispatch(Actions.FILE_GET_ONE,{
+      attachmentTypeId: typeId,
+      sourceId: companyId,
+      callback: async (img) => {
+        image = img
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    })
+  } catch(e) {
+    console.error('*** ERROR ***', e)
+    snackbar = getSnackbar('ERROR', `Error Loading ${imageType}`)
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+onMounted(async () => {
+  calcYearPercentage()
+  await loadImages()
+})
+
 </script>
 
 <style lang="scss" scoped>
 #incentive-container {
-  background: #1D9ADD url("../../../assets/blueraven/Ravens_Cup_Background.jpg") no-repeat fixed center 0;
+  background: #1D9ADD no-repeat fixed center 0;
   background-size: cover;
   display: flex;
   flex-flow: column nowrap;
