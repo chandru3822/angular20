@@ -7,7 +7,7 @@ import lombok.Data;
  */
 @Data
 public class RoundRobinLeadAllocationScores {
-    private Long userId, selfGen, averageAvailability;
+    private Long userId, selfGen, averageAvailability, futureAvailability;
     private Double leadGenFdc, score;
     private String closerName, userImageUrl, userImageAltText;
 }
