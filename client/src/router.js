@@ -679,44 +679,44 @@ const router = new Router({
                 }
               },
             }, {
-              path: 'tournaments',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
-                  return import ( './views/flow/settings/tournaments/Tournaments.vue')
-                } else {
-                  return accessDenied()
-                }
-              }
-            },
-            {
-              path: 'tournaments/:id',
-              meta: {title: 'Albatross - Settings'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
-                  return import ( './views/flow/settings/tournaments/Tournament.vue')
-                } else {
-                  return accessDenied()
-                }
+                  path: 'tournaments',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => {
+                      if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                          return import ( './views/flow/settings/tournaments/Tournaments.vue')
+                      } else {
+                          return accessDenied()
+                      }
+                  }
               },
-              children: [
-                {
-                  path: 'details',
+              {
+                  path: 'tournaments/:id',
                   meta: {title: 'Albatross - Settings'},
-                  component: () => import ( './views/flow/settings/tournaments/TournamentDetails.vue'),
-                },
-                {
-                  path: 'brackets',
-                  meta: {title: 'Albatross - Settings'},
-                  component: () => import ( './views/flow/settings/tournaments/Bracket.vue'),
-                },
-                {
-                  path: 'pool/:poolTypeId',
-                  meta: {title: 'Albatross - Settings'},
-                  component: () => import ( './views/flow/settings/tournaments/Pool.vue'),
-                },
-              ]
-            },
+                  component: () => {
+                      if (store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADMIN')) {
+                          return import ( './views/flow/settings/tournaments/Tournament.vue')
+                      } else {
+                          return accessDenied()
+                      }
+                  },
+                  children: [
+                      {
+                          path: 'details',
+                          meta: {title: 'Albatross - Settings'},
+                          component: () => import ( './views/flow/settings/tournaments/TournamentDetails.vue'),
+                      },
+                      {
+                          path: 'brackets',
+                          meta: {title: 'Albatross - Settings'},
+                          component: () => import ( './views/flow/settings/tournaments/Bracket.vue'),
+                      },
+                      {
+                          path: 'pool/:poolTypeId',
+                          meta: {title: 'Albatross - Settings'},
+                          component: () => import ( './views/flow/settings/tournaments/Pool.vue'),
+                      },
+                  ]
+              },
             {
               path: 'states',
               meta: {title: 'Albatross - Settings'},
@@ -777,6 +777,11 @@ const router = new Router({
                   path: 'messageTypes',
                   meta: {title: 'Albatross - Settings'},
                   component: () => import ( './views/flow/settings/MessageTypes.vue'),
+                },
+                  {
+                  path: 'closerDashboard',
+                  meta: {title: 'Albatross - Settings'},
+                  component: () => import ( './views/flow/settings/defaults/CloserDashboardSettings.vue'),
                 },
               ]
             }, {

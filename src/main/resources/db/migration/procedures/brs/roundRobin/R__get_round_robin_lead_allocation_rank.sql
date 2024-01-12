@@ -1,240 +1,145 @@
 drop function if exists brs.get_round_robin_lead_allocation_rank(p_round_robin_id bigint, p_time_interval bigint, p_run_by_id bigint);
 CREATE OR REPLACE FUNCTION brs.get_round_robin_lead_allocation_rank(p_round_robin_id bigint, p_time_interval bigint, p_run_by_id bigint)
-    RETURNS table
-            (
-                user_id              bigint,
-                closer_name          text,
-                lead_gen_fdc         numeric,
-                self_gen             bigint,
-                average_availability bigint,
-                score                numeric
-            )
+  RETURNS table
+          (
+            user_id              bigint,
+            closer_name          text,
+            lead_gen_fdc         numeric,
+            self_gen             bigint,
+            average_availability bigint,
+            future_availability  numeric,
+            score                numeric
+          )
 AS
 $BODY$
+declare
+  v_closer_gen_source_ids bigint[];
+  v_start_date date;
+  v_end_date date;
+  v_number_of_weeks numeric;
+  v_future_availability date;
 BEGIN
-    return query
-        with round_robin_users as (
-            select pczu.user_id, concat(u.first_name, ' ', u.last_name) as closer_name, pcz.distribution_time_frame_days
-            from flow.round_robin_user pczu
-                     inner join flow.user u on u.id = pczu.user_id
-                     inner join flow.round_robin pcz on pcz.id = pczu.round_robin_id and pcz.archived is false
-            where pcz.id = p_round_robin_id
-              and pczu.round_robin_user_type_id = 1
-              and pczu.archived is false),
-             lead_gen_num as (
-                 select rru.user_id, count(pd.id) as lead_gen_num
-                 from round_robin_users rru
-                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project_status_type pst on pst.id = pd.company_project_status_type_id and pst.id != 3
-                 where pd.closer_appointment_start  >= now()  - interval '90 days'
-                     and pd.source not in (523,524,530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                     pd.first_cash_payment_paid_date is not null and
-                                     greatest(final_design_signed_date, financial_agreement_signed_date,
-                                              first_cash_payment_paid_date, utility_bill_verified_date,
-                                              proof_of_homeowners_insurance_obtained_date)
-                                         -->= now()  - interval '90 days'
-                                       between now() - interval '90 days' and now()
-                             else
-                                     greatest(final_design_signed_date, financial_agreement_signed_date,
-                                              proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     -->= now()  - interval '90 days'
-                                       between now() - interval '90 days' and now()
-                                                                  end
-                     and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > (now() AT TIME ZONE 'US/Mountain') :: date))
-                     and pd.company_id = 3
-                 group by rru.user_id),
-             lead_gen_den as (
-                 select rru.user_id, count(pd.id) as lead_gen_den
-                 from round_robin_users rru
-                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                 where pd.closer_appointment_start >= now()  - interval '90 days'
-                     and pd.source not in (523,524,530)
-                     and pd.company_id = 3
-                 group by rru.user_id),
-             lead_gen_num_fdc as (
-                 select rru.user_id, count(pd.id) as lead_gen_num
-                 from round_robin_users rru
-                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project_status_type pst on pst.id = pd.company_project_status_type_id and pst.id != 3
-                 where pd.closer_appointment_start  >= now()  - (p_time_interval ||'day')::interval
-                     and pd.source not in (523,524,530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                     pd.first_cash_payment_paid_date is not null and
-                                     greatest(final_design_signed_date, financial_agreement_signed_date,
-                                              first_cash_payment_paid_date, utility_bill_verified_date,
-                                              proof_of_homeowners_insurance_obtained_date)
-                                         >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
-                             else
-                                 greatest(final_design_signed_date, financial_agreement_signed_date,
-                                          proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
-                                                                  end
-                     and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > ((now() AT TIME ZONE 'US/Mountain') :: date)))
-                     and pd.company_id = 3
-                 group by rru.user_id),
-             lead_gen_den_fdc as (
-                 select rru.user_id, count(pd.id) as lead_gen_den
-                 from round_robin_users rru
-                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                 where pd.closer_appointment_start  >= now()  - (p_time_interval ||'day')::interval
-                     and pd.source not in (523,524,530)
-                     and pd.company_id = 3
-                 group by rru.user_id),
-             self_gen as (
-                 select rru.user_id, count(pd.id)  as self_gen
-                 from round_robin_users rru
-                     left join brs.project_details pd on rru.user_id = pd.closer_user_id
-                     left join flow.project_status_type pst on pst.id = pd.company_project_status_type_id and pst.id != 3
-                 where greatest(final_design_signed_date, financial_agreement_signed_date, first_cash_payment_paid_date,
-                                utility_bill_verified_date, proof_of_homeowners_insurance_obtained_date) >= ((now() AT TIME ZONE 'US/Mountain') :: date - (p_time_interval ||'day')::interval)
-                     and pd.source in (523,524,530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                 pd.first_cash_payment_paid_date is not null
-                             else
-                                     1 = 1
-                                                                  end
-                     and ((pd.cancelled_date is null) or (pd.cancelled_date is not null and pd.cancelled_date > ((now() AT TIME ZONE 'US/Mountain') :: date)))
-                     and pd.company_id = 3
-                 group by rru.user_id),
-             appointment_count as (
-                 select rru.user_id, count(pd2.id) as appointment_count
-                 from round_robin_users rru
-                     left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 where ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between ((now() AT TIME ZONE 'US/Mountain') :: date - (21 ||'day')::interval) and ((now() AT TIME ZONE 'US/Mountain') :: date + interval '100 days')
-                     and pd2.company_id = 3
-                 group by rru.user_id),
-             appointment_count_with_interval as (
-                 select rru.user_id, count(pd2.id) as appointment_count_with_interval
-                 from round_robin_users rru
-                     left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                 where ((pd2.closer_appointment_start at time zone 'UTC') at time zone 'US/Mountain') :: date between (((now() AT TIME ZONE 'US/Mountain') :: date) - (rru.distribution_time_frame_days || 'days')::interval) and ((now() AT TIME ZONE 'US/Mountain') :: date + interval '100 days')
-                     and pd2.company_id = 3
-                 group by rru.user_id),
-             total_avail as (
-                 select coalesce(ca.appointment_count,0) as avail, rru.user_id
-                 from round_robin_users rru
-                     left join brs.cached_appointment ca on rru.user_id = ca.user_id
-             )
+  select (select string_to_array(value, ',')
+          from flow.company_configuration_value
+          where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
+  into v_closer_gen_source_ids;
 
-        select
-            foo2.user_id::bigint,
-            foo2.closer_name,
-            foo2.lead_gen_fdc,
-            foo2.self_gen::bigint,
-            foo2.average_availability::bigint,
-            coalesce(foo2.manual_allocation,
-                    case when foo2.sum_manual_allocation is null then
-                     foo2.score else
-                     foo2.score *
-                     (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric as score
-    from (
+  select now()::date
+  into v_end_date;
 
-        select foo1.user_id,
-               foo1.closer_name,
-               foo1.lead_gen_fdc * 100 as lead_gen_fdc,
-               foo1.self_gen,
-               foo1.average_availability,
-               case when sum(foo1.score) = 0 then
-                   0
-                else
-                 (round(foo1.score / sum(foo1.score) over (), 10))
-                end as score,
-               foo1.manual_allocation,
-               foo1.sum_manual_allocation
-        from (
-                 select foo.user_id,
-                        case when lead_gen_den is null or lead_gen_den = 0 then
-                                 case
-                                     when foo.manual_allocation is not null then
-                                         0
-                                 else
-                                     (foo.self_gen +
-                                     ((foo.appointment_count + foo.avail) / 3) + ((foo.lead_gen_num + foo.self_gen) * 15))
-                                 end
+  v_future_availability = v_end_date + interval  '7 days';
 
-                             else
-                                 case
-                                     when foo.manual_allocation is not null then
-                                         0
-                                else
-                                             ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) + foo.self_gen +
-                                            -- ((foo.appointment_count + foo.avail) / 3) +
-                                              ((foo.lead_gen_num + foo.self_gen) * 15))
-                                      end end as score,
-                        case
-                            when foo.lead_gen_den_fdc is null or foo.lead_gen_den_fdc = 0 then
-                                0
-                            else
-                                round((foo.lead_gen_num_fdc / foo.lead_gen_den_fdc::numeric), 2) end   as lead_gen_fdc,
-                        ((foo.appointment_count + foo.avail) / 9)                                       as average_availability,
-                        foo.self_gen,
-                        foo.closer_name,
-                        foo.manual_allocation,
-                        sum(foo.manual_allocation) over ()                        as sum_manual_allocation
-                 from (
-                          select pczu.user_id,
-                             concat(u.first_name, ' ', u.last_name)                as closer_name,
-                                 coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
-                                 coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
-                                 coalesce(lgnfdc.lead_gen_num, 0)                     as lead_gen_num_fdc,
-                                 coalesce(lgdfdc.lead_gen_den, 0)                     as lead_gen_den_fdc,
-                                 coalesce(sg.self_gen, 0)                          as self_gen,
-                                 ac.appointment_count,
-                                 coalesce(ta.avail, 0)                             as avail,
-                                 coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
-                                 pczu.manual_allocation
-                          from flow.round_robin pcz
-                                   inner join flow.round_robin_user pczu on pczu.round_robin_id = pcz.id and pczu.archived is false
-                                   inner join flow.user u on u.id = pczu.user_id
-                                   left join lead_gen_num lgn on lgn.user_id = pczu.user_id
-                                   left join lead_gen_den lgd on lgd.user_id = pczu.user_id
-                                   left join lead_gen_num_fdc lgnfdc on lgnfdc.user_id = pczu.user_id
-                                   left join lead_gen_den_fdc lgdfdc on lgdfdc.user_id = pczu.user_id
-                                   left join self_gen sg on sg.user_id = pczu.user_id
-                                   left join appointment_count ac on ac.user_id = pczu.user_id
-                                   left join total_avail ta on ta.user_id = pczu.user_id
-                                   left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
-                          where pcz.id = p_round_robin_id
-                            and pczu.round_robin_user_type_id = 1
-                            and pcz.archived is false
-                          group by pczu.user_id, concat(u.first_name, ' ', u.last_name), lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
-                                   lgnfdc.lead_gen_num,lgdfdc.lead_gen_den,
-                                   ac.appointment_count,
-                                   pcz.distribution_time_frame_days, ta.avail,
-                                   acwi.appointment_count_with_interval,pczu.manual_allocation) as foo
-                 group by foo.user_id, foo.closer_name, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
-                          foo.lead_gen_num_fdc,foo.lead_gen_den_fdc,
-                          foo.appointment_count,
-                          foo.avail,foo.manual_allocation) as foo1
-        group by foo1.score,foo1.average_availability,foo1.user_id, foo1.closer_name, foo1.lead_gen_fdc, foo1.self_gen,foo1.manual_allocation,
-                 foo1.sum_manual_allocation, coalesce(foo1.average_availability, 0), coalesce(foo1.score, 0)) as foo2
-    group by foo2.user_id, foo2.closer_name, foo2.lead_gen_fdc, foo2.self_gen, foo2.average_availability, coalesce(foo2.manual_allocation,
-                                                                                                                   case when foo2.sum_manual_allocation is null then
-                                                                                                                            foo2.score else
-                                                                                                                                foo2.score *
-                                                                                                                                (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric;
+  if p_time_interval < 7 then
+    SELECT
+        current_date - EXTRACT(ISODOW FROM current_date)::integer + 1 AS current_monday
+    into v_start_date;
+
+    v_number_of_weeks = 1;
+  else
+    select now()::date - (p_time_interval || 'day')::interval
+    into v_start_date;
+
+    select (v_end_date - v_start_date)/7::numeric
+    into v_number_of_weeks;
+
+  end if;
+-- raise notice 'v_number_of_weeks = %',v_number_of_weeks;
+--   raise notice 'v_start_date = %',v_start_date;
+--   raise notice 'v_end_date = %',v_end_date;
+  return query
+    select foo2.user_id::bigint,
+           foo2.closer_name,
+           foo2.lead_gen_fdc,
+           foo2.self_gen::bigint,
+           foo2.average_availability::bigint,
+           foo2.future_availability,
+           coalesce(foo2.manual_allocation,
+                    case
+                      when foo2.sum_manual_allocation is null then
+                        foo2.score
+                      else
+                        foo2.score *
+                        (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric as score
+    from (select foo1.user_id,
+                 foo1.closer_name,
+                 foo1.lead_gen_fdc * 100 as lead_gen_fdc,
+                 foo1.self_gen,
+                 foo1.average_availability,
+                 foo1.future_availability,
+                 case
+                   when sum(foo1.score) = 0 then
+                     0
+                   else
+                     (round(foo1.score / sum(foo1.score) over (), 10))
+                   end                   as score,
+                 foo1.manual_allocation,
+                 foo1.sum_manual_allocation
+          from (select foo.user_id,
+                       brs.get_lead_allocation_score(foo.lead_gen_num, foo.lead_gen_den,
+                                                     foo.self_gen, foo.manual_allocation,
+                                                     false)                                 as score,
+                       case
+                         when foo.lead_gen_den is null or foo.lead_gen_den = 0 then
+                           0
+                         else
+                           round((foo.lead_gen_num / foo.lead_gen_den::numeric), 2) end as lead_gen_fdc,
+                       foo.average_availability                                                                   as average_availability,
+                       foo.future_availability,
+                       foo.self_gen,
+                       foo.closer_name,
+                       foo.manual_allocation,
+                       sum(foo.manual_allocation) over ()                                   as sum_manual_allocation
+                from (select pczu.user_id,
+                             concat(u.first_name, ' ', u.last_name)             as closer_name,
+                             coalesce(fdc_counts.lead_gen_fdc_count, 0)         as lead_gen_num,
+                             coalesce(fdc_counts.lead_gen_appointment_count, 0) as lead_gen_den,
+                             coalesce(fdc_counts.total_fdc_count, 0)            as lead_gen_num_fdc,
+                             coalesce(fdc_counts.self_gen_fdc_count, 0)         as self_gen,
+                             pczu.manual_allocation,
+                             ( select coalesce ((select ((sum(appointment_count)::numeric)/v_number_of_weeks)
+                                                 from brs.cached_appointment ca
+                                                 where ca.schedule_date between v_start_date and v_end_date and
+                                                       ca.user_id = pczu.user_id),0)) as average_availability,
+                             ( select coalesce ((select ((sum(appointment_count)::numeric))
+                                                 from brs.cached_appointment ca
+                                                 where ca.schedule_date between v_end_date and v_future_availability and
+                                                   ca.user_id = pczu.user_id),0)) as future_availability
+                      from flow.round_robin pcz
+                             inner join flow.round_robin_user pczu
+                                        on pczu.round_robin_id = pcz.id and pczu.archived is false
+                             inner join flow.user u on u.id = pczu.user_id
+                             left join LATERAL brs.get_fdc_counts(pczu.user_id, v_closer_gen_source_ids,
+                                                                  p_time_interval) fdc_counts on true
+                      where pcz.id = p_round_robin_id
+                        and pczu.round_robin_user_type_id = 1
+                        and pcz.archived is false
+                      group by pczu.user_id, concat(u.first_name, ' ', u.last_name),
+                               pcz.distribution_time_frame_days,
+                               pczu.manual_allocation,fdc_counts.lead_gen_appointment_count,
+                               fdc_counts.lead_gen_fdc_count,
+                               fdc_counts.total_fdc_count,
+                               fdc_counts.self_gen_fdc_count,
+                               fdc_counts.self_gen_fdc_count) as foo
+                group by foo.user_id, foo.closer_name, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
+                         foo.lead_gen_num_fdc,
+                         foo.manual_allocation,
+                         foo.average_availability,
+                         foo.future_availability) as foo1
+          group by foo1.score, foo1.average_availability, foo1.user_id, foo1.closer_name, foo1.lead_gen_fdc,
+                   foo1.self_gen, foo1.manual_allocation,foo1.future_availability,
+                   foo1.sum_manual_allocation, coalesce(foo1.average_availability, 0), coalesce(foo1.score, 0)) as foo2
+    group by foo2.user_id, foo2.closer_name, foo2.lead_gen_fdc, foo2.self_gen, foo2.average_availability,
+             foo2.future_availability,
+             coalesce(foo2.manual_allocation,
+                      case
+                        when foo2.sum_manual_allocation is null then
+                          foo2.score
+                        else
+                          foo2.score *
+                          (1 - foo2.sum_manual_allocation::numeric)::numeric end)::numeric;
 
 
 END
 $BODY$
-    LANGUAGE plpgsql VOLATILE
-                     COST 100;
+  LANGUAGE plpgsql VOLATILE
+                   COST 100;

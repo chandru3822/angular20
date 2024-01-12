@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -106,11 +107,8 @@ public class CloserDashboardService {
             CloserDashboardQuery.getRoundRobinLeadAllocationRank,
             params,
             RoundRobinLeadAllocationScores.class);
-    List<Long> userIds = new ArrayList<>();
 
-    for (RoundRobinLeadAllocationScores row : roundRobinLeadAllocationData) {
-      userIds.add(row.getUserId());
-    }
+    List<Long> userIds = roundRobinLeadAllocationData.stream().map(RoundRobinLeadAllocationScores::getUserId).collect(Collectors.toList());
 
     Map<Long, String> userImageUrls = getUserImages(userIds);
 
@@ -165,12 +163,19 @@ public class CloserDashboardService {
       Integer timeInterval, Boolean officeFdcRank, Long selectedOrgId) {
     JSONObject closerDashboardData = new JSONObject();
 
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("currentUserId", securityService.getCurrentUser().getId());
+    params.put("timeInterval", timeInterval);
+    params.put("officeFdcRank", officeFdcRank);
+    params.put("selectedOrgId", selectedOrgId);
+
     if (officeFdcRank) {
-      closerDashboardData.put(
-          "officeFdcRankValues", processCloserData(timeInterval, true, selectedOrgId));
+      List<CloserTableScores> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresOffice, params, CloserTableScores.class);
+      closerDashboardData.put("officeFdcRankValues", closerTableScores);
       return getUserImages("officeFdcRankValues", closerDashboardData);
     } else {
-      closerDashboardData.put("companyRankingValues", processCloserData(timeInterval, false, null));
+      List<CloserTableScores> closerTableScores = sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresRep, params, CloserTableScores.class);
+      closerDashboardData.put("companyRankingValues", closerTableScores);
       return getUserImages("companyRankingValues", closerDashboardData);
     }
   }
@@ -204,49 +209,6 @@ public class CloserDashboardService {
     }
 
     return closerDashboardData.toString();
-  }
-
-  private JSONArray processCloserData(
-      Integer timeInterval, boolean officeFdcRank, Long selectedOrgId) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("currentUserId", securityService.getCurrentUser().getId());
-    params.put("timeInterval", timeInterval);
-    params.put("officeFdcRank", officeFdcRank);
-    params.put("selectedOrgId", selectedOrgId);
-
-    List<CloserTableScores> closerTableScores = officeFdcRank
-      ? sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresOffice, params, CloserTableScores.class)
-      : sqlCache.queryBySql(CloserDashboardQuery.getCloserTableScoresRep, params, CloserTableScores.class);
-
-    JSONArray closerTableScoresArray = new JSONArray();
-    for (CloserTableScores row : closerTableScores) {
-      try {
-        JSONObject closerTableScoresJson = new JSONObject();
-        closerTableScoresJson.put("userId", row.getId());
-        closerTableScoresJson.put("name", row.getName());
-        closerTableScoresJson.put("userStatusType", row.getUserStatusType());
-        closerTableScoresJson.put("officeName", row.getOfficeName());
-        closerTableScoresJson.put("region", row.getRegion());
-        closerTableScoresJson.put("metroArea", row.getMetroArea());
-
-        double leadGenFdcValue = 0;
-        if (row.getLeadGenFdcPercentageDenominator() != 0) {
-          leadGenFdcValue =
-              ((double) row.getLeadGenFdcPercentageNumerator()
-                  / row.getLeadGenFdcPercentageDenominator());
-        }
-        closerTableScoresJson.put(
-            "leadGenFdcPercentage", new DecimalFormat("#.#").format(leadGenFdcValue * 100));
-
-        closerTableScoresJson.put("selfGenFdc", row.getSelfGenFdc());
-        closerTableScoresJson.put("totalFdc", row.getTotalFdc());
-
-        closerTableScoresArray.put(closerTableScoresJson);
-      } catch (Exception e) {
-        log.error("CLOSER DASH: exception", e);
-      }
-    }
-    return closerTableScoresArray;
   }
 
   public List<Source> getBrsProvidedSources() {

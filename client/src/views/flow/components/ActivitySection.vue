@@ -57,7 +57,7 @@
       </div>
 <!--Topic View-->
       <div v-if="!timelineView">
-        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
+        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available </div>
         <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
           <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
@@ -278,7 +278,7 @@ export default {
       filterMenuOpen: false,
       //should probably load this but hardcoding for now
       activityTypes: [
-        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: true},
+        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: false},
         {id: 2, activityType: 'Notes', activityTypeSingularLabel: 'Note', show: true},
       ],
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
