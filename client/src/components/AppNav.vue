@@ -93,7 +93,7 @@
           <v-toolbar-items v-if="companyTools.length > 0">
             <CompanyTools :company-tools="companyTools" />
             <v-spacer></v-spacer>
-            <AnnouncementDropdown></AnnouncementDropdown>
+            <AnnouncementDropdown v-if="$store.state.app.announcements?.length > 0"></AnnouncementDropdown>
           </v-toolbar-items>
           <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items>
