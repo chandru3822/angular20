@@ -48,7 +48,7 @@ const userCanEdit= store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')
 let imageToDelete = ref(null)
 
 const deleteImageDialogText = computed(() => {
-  return `Are you sure you want to delete the ${ imageToDelete.value?.label } logo?`
+  return `Are you sure you want to delete the ${ imageToDelete?.value?.label } logo?`
 })
 
 const loadImage = async(logoType) => {
@@ -106,10 +106,11 @@ const deleteAttachment = async() => {
   let snackbar
   try {
     store.commit(AppMutations.SET_LOADING, true)
+    let key = imageToDelete?.value?.key
     await store.dispatch(Actions.FILE_DELETE, {
-      id: imageToDelete.value?.image?.id,
+      id: imageToDelete?.value?.image?.id,
       callback: async () => {
-        ImageTypeEnum.value[imageToDelete.value.key].image = {}
+        ImageTypeEnum.value[key].image = {}
         snackbar = getSnackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SHOW_SNACK, snackbar)
         store.commit(AppMutations.SET_LOADING, false)
