@@ -204,8 +204,9 @@ public class NotificationService {
   @Cacheable(key = "#userId")
   public List<Notification> getUserNotifications(@NonNull Long userId) {
     final Map<String, Object> params = Map.of("userId", userId);
-    return sqlCache.queryBySql(
+    List<Notification> results = sqlCache.queryBySql(
       NotificationQuery.getUnreadByUser, params, new NotificationMapper(this.objectMapper));
+    return results;
   }
 
   public List<Notification> getProjectNotificationsForUser(@NonNull Long userId) {
