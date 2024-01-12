@@ -34,7 +34,7 @@
         <span v-else class="albatross-body-3">Go to user</span>
       </v-tooltip>
       <span v-else>{{ sidebarTitle }}</span>
-      <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+      <div v-if="showSmsTab && selectedOption === 0 && !$route.path.includes('inbox')" style="display: inline-flex">
         <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
           <span >Customer</span>
         </v-chip>
