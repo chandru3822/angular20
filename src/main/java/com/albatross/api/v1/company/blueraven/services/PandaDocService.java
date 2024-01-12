@@ -232,7 +232,7 @@ public class PandaDocService {
     setRecipientInfoElecDocs(template, tokens, body);
     HttpResponse resp = POST("/documents", body.toString());
     JSONObject respBody = resp.getJSON();
-    return 
+    return
       "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets".formatted(respBody.get("id"));
   }
 
@@ -774,6 +774,7 @@ public class PandaDocService {
     // New params format, keeping the Deal. params until all templates are updated with the new parameter names
     tokens.put("Project.Id", deets.getProjectId());
     tokens.put("Project.Name", deets.getProjectName());
+    tokens.put("Project.Closer Name", deets.getCloserFirstName() + " " + deets.getCloserLastName());
     tokens.put("Project.Address", getContactAddress(deets));
     tokens.put(
       "Project.Contact Name", deets.getCustomerFirstName() + " " + deets.getCustomerLastName());
