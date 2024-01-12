@@ -1,7 +1,7 @@
 <template>
   <v-row justify="center" no-gutters>
-    <v-col cols="12" id="incentive-container" class="justify-end" :style="{'background-image':null != backgroundImage?.presignedUrl ? `url(${backgroundImage.presignedUrl})` : ''}">
-      <img id="incentive-banner" v-if="headerImage?.logoPresignedUrl" :src="headerImage?.logoPresignedUrl" alt="incentive competition banner">
+    <v-col cols="12" id="incentive-container" class="justify-end" :style="{'background-image':null != backgroundImage?.image?.presignedUrl ? `url(${backgroundImage.image.presignedUrl})` : ''}">
+      <img id="incentive-banner" v-if="headerImage?.image?.presignedUrl" :src="headerImage.image.presignedUrl" alt="incentive competition banner">
       <div id="milestones-container">
         <incentive-milestone
             :milestone-level="milestoneLevel(counts.q1)"
@@ -124,19 +124,18 @@ watch(() => props.yearlyPointTotal, () => {
 })
 
 const loadImages = async () => {
-  headerImage.value = await loadImage(headerImageTypeId.value, 'Header Image')
-  backgroundImage.value = await loadImage(backgroundImageTypeId.value, 'Background Image')
+  await loadImage(headerImageTypeId.value, headerImage.value)
+  await loadImage(backgroundImageTypeId.value, backgroundImage.value)
 }
 const loadImage= async (typeId, imageType) => {
   let snackbar
-  let image
   try {
     store.commit(AppMutations.SET_LOADING, true)
     await store.dispatch(Actions.FILE_GET_ONE,{
       attachmentTypeId: typeId,
       sourceId: companyId,
       callback: async (img) => {
-        image = img
+        imageType.image = img
         store.commit(AppMutations.SET_LOADING, false)
       }
     })

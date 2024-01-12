@@ -7,7 +7,7 @@
 *@description
 *
 */
-import {computed, getCurrentInstance, ref} from "vue";
+import {computed, getCurrentInstance, onMounted, ref} from "vue";
 import constants from "@/helpers/constants";
 import {AppMutations} from "@/stores/AppStore";
 import {Actions} from "@/store";
@@ -50,6 +50,25 @@ let imageToDelete = ref(null)
 const deleteImageDialogText = computed(() => {
   return `Are you sure you want to delete the ${ imageToDelete.value?.label } logo?`
 })
+
+const loadImage = async(logoType) => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await store.dispatch(Actions.FILE_GET_ONE, {
+      attachmentTypeId: logoType.attachmentTypeId,
+      sourceId: companyId,
+      callback: async (img) => {
+        logoType.image = img
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    this.snackbar = getSnackbar('ERROR', 'Error Loading Image')
+    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+    this.$store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
   let snackbar
@@ -106,6 +125,12 @@ const deleteAttachment = async() => {
   }
 }
 
+onMounted(async () => {
+  //load each image for
+  Object.entries(ImageTypeEnum.value).forEach( ([key, value], idx) => {
+    loadImage(value)
+  })
+})
 
 </script>
 
