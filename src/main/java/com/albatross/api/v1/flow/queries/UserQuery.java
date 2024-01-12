@@ -722,8 +722,8 @@ public class UserQuery {
       select u.id,
              u.first_name,
              u.last_name,
-             concat(u.first_name, ' ', u.last_name, ' (', u.email, ')') AS full_name,
-             concat(u.first_name, ' ', u.last_name, ' (', u.email, ')') AS value,
+             concat(u.first_name, ' ', u.last_name) AS full_name,
+             concat(u.first_name, ' ', u.last_name) AS value,
              u.email
       from flow."user" u
                inner join flow.user_company uc on u.id = uc.user_id
