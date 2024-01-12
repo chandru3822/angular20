@@ -25,7 +25,7 @@ const ImageTypeEnum = ref({
     saving: false,
     image: {}
   },
-  TOURNAMENT_BACKGROUND: {
+  CLOSER_DASH_TOURNAMENT_BACKGROUND: {
     key: "CLOSER_DASH_TOURNAMENT_BACKGROUND", //this needs to match the key, cuz dumb
     header: 'Closer/Setter Dashboard Background Image',
     description: 'Background of the Closer and Setter Incentive Dashboards',
