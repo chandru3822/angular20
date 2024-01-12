@@ -1,4 +1,3 @@
-drop table if exists flow.announcement;
 CREATE TABLE if not exists flow.announcement
 (
     id             bigserial NOT NULL,
@@ -43,8 +42,6 @@ insert into flow.attachment_type(attachment_type, attachment_code, company_id, k
 select 'Announcement', 'ANNOUNCEMENT', 3, 9, true, 2417170, 2417170
 where not exists (select id from flow.attachment_type where attachment_code = 'ANNOUNCEMENT');
 
-
-drop table if exists flow.user_announcement;
 CREATE TABLE if not exists flow.user_announcement
 (
     id             bigserial NOT NULL,
