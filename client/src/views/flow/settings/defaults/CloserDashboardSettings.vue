@@ -51,11 +51,6 @@ const deleteImageDialogText = computed(() => {
   return `Are you sure you want to delete the ${ imageToDelete.value?.label } logo?`
 })
 
-const toggleAdd = (imageType) => {
-  debugger
-  imageType.add = !imageType.add
-}
-
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
   let snackbar
   try {
@@ -75,13 +70,14 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
           ImageTypeEnum[imageType.key].add = false
           ImageTypeEnum[imageType.key].saving = false
           snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar = getSnackbar('ERROR', 'Error Uploading File')
-  } finally {
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     store.commit(AppMutations.SET_LOADING, false)
   }
@@ -96,12 +92,14 @@ const deleteAttachment = async() => {
       callback: async () => {
         ImageTypeEnum[imageToDelete.value.key].image = {}
         snackbar = getSnackbar('SUCCESS', 'Image Deleted')
+        store.commit(AppMutations.SHOW_SNACK, snackbar)
+        store.commit(AppMutations.SET_LOADING, false)
+        imageToDelete.value = null
       }
     })
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar = getSnackbar('ERROR', 'Error Deleting File')
-  } finally {
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     store.commit(AppMutations.SET_LOADING, false)
     imageToDelete.value = null
