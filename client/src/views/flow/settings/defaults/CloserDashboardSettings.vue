@@ -67,7 +67,6 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
         if (error?.error) {
           snackbar = getSnackbar('ERROR', error.errorMsg)
         } else {
-          debugger
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
           ImageTypeEnum.value[imageType.key].saving = false
