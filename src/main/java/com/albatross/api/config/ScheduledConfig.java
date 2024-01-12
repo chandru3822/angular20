@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
@@ -40,6 +41,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final DataViewService dataViewService;
   private final OrgService orgService;
   private final SecurityService securityService;
+  private final AnnouncementService announcementService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
   private Boolean sendSmsNotifications;
@@ -161,6 +163,14 @@ public class ScheduledConfig implements SchedulingConfigurer {
     if (sendEmailNotifications) {
       mailService.sendUnprocessedEmails();
     }
+  }
+
+  //    every  hour
+  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
+  public void publishAnnouncements() {
+    log.debug("*** CRON: start Announcement publish ***");
+    announcementService.publishActiveAnnouncements();
+    log.debug("*** CRON: end Announcement publish ***");
   }
 
   //    every  day at 1 am - mtn

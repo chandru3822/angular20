@@ -900,6 +900,26 @@ const router = new Router({
                   return accessDenied()
                 }
               },
+            },  {
+              path: 'announcements',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import ( './views/flow/settings/Announcements.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },  {
+              path: 'announcement/:id?',
+              meta: {title: 'Albatross - Settings'},
+              component: () => {
+                if (store.getters.userHasFeature('SETTINGS')) {
+                  return import ( './views/flow/settings/Announcement.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
             }, {
               path: 'hashtags',
               meta: {title: 'Albatross - Settings'},
