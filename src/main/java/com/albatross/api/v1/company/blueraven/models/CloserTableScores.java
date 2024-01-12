@@ -7,6 +7,7 @@ import lombok.Data;
  */
 @Data
 public class CloserTableScores {
-    private Long id, leadGenFdcPercentageNumerator, leadGenFdcPercentageDenominator, selfGenFdc, totalFdc;
+    private Long userId, selfGenFdc, totalFdc;
+    private Double leadGenFdcPercentage;
     private String name, userStatusType, officeName, region, metroArea;
 }
