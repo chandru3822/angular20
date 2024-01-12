@@ -44,14 +44,11 @@ public class AnnouncementController {
     return announcementService.saveAnnouncement(announcement);
   }
 
-  @PostMapping(value = "/{id}/read", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void markAnnouncementAsRead(@PathVariable Long id) {
-    announcementService.markAnnouncementTime(id, true);
-  }
-
-  @PostMapping(value = "/{id}/seen", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void markAnnouncementAsSeen(@PathVariable Long id) {
-    announcementService.markAnnouncementTime(id, false);
+  @PostMapping(value = "/{id}/mark", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void markAnnouncementAsRead(@PathVariable Long id,
+                                     @RequestParam Boolean read,
+                                     @RequestParam Boolean seen) {
+    announcementService.markAnnouncementTime(id, read, seen);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

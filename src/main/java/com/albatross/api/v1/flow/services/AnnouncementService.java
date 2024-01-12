@@ -1,5 +1,9 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.AnnouncementMessage;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ThemeUpdateMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Announcement;
@@ -19,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.*;
 
 @Slf4j
@@ -28,6 +33,7 @@ public class AnnouncementService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final AttachmentService attachmentService;
+  private final PubSubService pubSubService;
 
   public Page<Announcement> getAnnouncements(Boolean current, Pageable pageable) {
     HashMap<String, Object> params = new HashMap<>();
@@ -62,7 +68,7 @@ public class AnnouncementService {
     return results;
   }
 
-  public void markAnnouncementTime(Long id, Boolean doReadUpdate) {
+  public void markAnnouncementTime(Long id, Boolean read, Boolean seen) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -70,9 +76,11 @@ public class AnnouncementService {
     //dont use true user id here.
     params.put("userId", user.getId());
 
-    if(doReadUpdate) {
+    if(read) {
       sqlCache.updateBySql(AnnouncementQuery.markAsRead, params);
-    } else {
+    }
+
+    if(seen) {
       sqlCache.updateBySql(AnnouncementQuery.markAsSeen, params);
     }
   }
@@ -121,7 +129,39 @@ public class AnnouncementService {
       //they should only be able to upload a file and save at the same time if it was an insert
     }
 
-    return getOneAnnouncement(id);
+    Optional<Announcement> announcement = getOneAnnouncement(id);
+    Instant now = Instant.now();
+
+    //if the announcement is not published and should be, do that now.
+    if(announcement.isPresent() && !announcement.get().getPublished()
+     && now.isAfter(announcement.get().getStartTime().toInstant()) &&
+      (null == announcement.get().getEndTime() || now.isBefore(announcement.get().getEndTime().toInstant()))) {
+      publishOneAnnouncement(announcement.get());
+      announcement.get().setPublished(true);
+    }
+
+    return announcement;
+  }
+
+  public void publishActiveAnnouncements() {
+    List<Announcement> announcements = sqlCache.queryBySql(AnnouncementQuery.getUnpublishedActive, Collections.emptyMap(), Announcement.class);
+    for(Announcement a : announcements) {
+      publishOneAnnouncement(a);
+    }
+  }
+
+  public void publishOneAnnouncement(Announcement a) {
+    //notifications for announcements only work for web so check it is a web announcement
+    if(a.getShowOnWeb()) {
+      Map<String, Object> params = new HashMap<>();
+      params.put("id", a.getId());
+
+      AnnouncementMessage am = new AnnouncementMessage();
+      am.setAnnouncement(a);
+      //todo: return the entire announcement in here
+      pubSubService.publish(EventChannel.NOTIFICATION, am);
+      sqlCache.updateBySql(AnnouncementQuery.savePublished, params);
+    }
   }
 
   public void deleteAnnouncement(Long id) {

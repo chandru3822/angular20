@@ -27,12 +27,23 @@
       </v-btn>
     </template>
     <div>
-      <v-list>
-        <template  v-for="(item, index) in announcements">
+      <v-list v-if="$store.state.app.announcements?.length > 0">
+        <template  v-for="(item, index) in $store.state.app.announcements">
         <v-list-item class="pr-1"
                      :key="item.id">
           <v-list-item-icon v-if="!item.read" class="mr-2">
-            <v-icon small color="error lighten-1">mdi-circle</v-icon>
+            <v-icon small v-if="item.expandable"
+                    tool
+                    color="error lighten-1">mdi-circle</v-icon>
+            <v-tooltip v-else bottom class="randa-test">
+              <template v-slot:activator="{on, attrs}">
+                <v-icon small v-bind="attrs" v-on="on"
+                        @click="markAsRead(item)"
+                        color="error lighten-1">mdi-circle</v-icon>
+              </template>
+              <span>Mark as Read</span>
+            </v-tooltip>
+
           </v-list-item-icon>
           <v-list-item-content class="">
               {{item.title}}
@@ -45,7 +56,7 @@
           </v-list-item-action>
           </v-list-item>
         <v-divider
-            v-if="index < announcements.length - 1"
+            v-if="index < $store.state.app.announcements.length - 1"
         ></v-divider>
         </template>
       </v-list>
@@ -59,7 +70,7 @@
   import constants from '@/helpers/constants'
   import Vue2Filters from "vue2-filters"
   import SpinnerInline from '@/components/SpinnerInline'
-  import {getRequest, postRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
+  import {getRequest, postRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
   const { VITE_ENV } =  import.meta.env
   import { AppMutations } from '@/stores/AppStore'
   import AnnouncementModal from "@/components/AnnouncementModal.vue";
@@ -72,7 +83,6 @@
     },
     mixins: [Vue2Filters.mixin],
     props: {
-        announcements: Array
     },
     watch: {},
     data () {
@@ -87,7 +97,7 @@
     },
     computed: {
       hasUnreadAnnouncements () {
-        return this.announcements?.filter(a => !a.read)?.length > 0 || false
+        return this.$store.state.app.announcements?.filter(a => !a.read)?.length > 0 || false
       }
     },
     created () {
@@ -106,8 +116,12 @@
       async markAsRead(item) {
         if( !item.read) {
           try {
-            await postRequest(`/announcements/${item.id}/read`, {})
             item.read = true
+            let params = {
+              read: true,
+              seen: true
+            }
+            await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Marking Announcement As Read')

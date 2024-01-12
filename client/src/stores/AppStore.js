@@ -9,7 +9,7 @@ export const AppMutations = {
   SET_AVAILABLE_UPDATE: 'SET_AVAILABLE_UPDATE',
   SET_SELECTED_PROCESS_STEP_NAME: 'SET_SELECTED_PROCESS_STEP_NAME',
   SHOW_SNACK: 'SHOW_SNACK',
-  SHOW_ANNOUNCEMENT: 'SHOW_ANNOUNCEMENT',
+  SET_ANNOUNCEMENTS: 'SET_ANNOUNCEMENTS',
   SET_REDIRECT_URL: 'SET_REDIRECT_URL',
   SET_SPINNER_URL: 'SET_SPINNER_URL',
   SET_PRIMARY_BASE_COLOR: 'SET_PRIMARY_BASE_COLOR',
@@ -24,6 +24,7 @@ export const AppStore = {
     availableUpdate: false,
     redirectUrl: null,
     spinnerUrl: null,
+    announcements: [],
     theme: theme.LIGHT
   },
   mutations: {
@@ -31,7 +32,7 @@ export const AppStore = {
     [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading),
     [AppMutations.SET_SELECTED_PROCESS_STEP_NAME]: (state, selectedProcessStepName) => (state.selectedProcessStepName = selectedProcessStepName),
     [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),
-    [AppMutations.SHOW_ANNOUNCEMENT]: (state, {announcement, positionOffset}) => (state.announcement = { ...announcement, positionOffset}),
+    [AppMutations.SET_ANNOUNCEMENTS]: (state, announcements) => (state.announcements = announcements),
     [AppMutations.SET_REDIRECT_URL]: (state, url) => (state.redirectUrl = url),
     [AppMutations.SET_SPINNER_URL]: (state, url) => (state.spinnerUrl = url),
     [AppMutations.SET_INITIAL_THEME]: (state) => {

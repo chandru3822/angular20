@@ -239,7 +239,7 @@ export default {
       if(this.hasSettingsAccess) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
+          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, null,[])
           this.companyObjectTypes = data
           this.setTitle()
           handleHidingGlobalLoader(this, status)

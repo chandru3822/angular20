@@ -56,6 +56,7 @@ public class AnnouncementQuery {
            a.attachment_id,
            a.start_time,
            a.end_time,
+           a.published,
            a.expandable,
            a.show_on_web,
            a.show_on_mobile,
@@ -87,6 +88,48 @@ public class AnnouncementQuery {
     where id = :id
     """;
 
+
+  //language=PostgreSQL
+  public final static String savePublished = """
+    update flow.announcement
+    set published = true
+    where id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String getUnpublishedActive = """
+    select a.id,
+           a.title,
+           a.alert_text,
+           a.subtitle,
+           a.description,
+           a.hyperlink,
+           a.attachment_id,
+           a.start_time,
+           a.end_time,
+           a.published,
+           a.expandable,
+           a.show_on_web,
+           a.show_on_mobile,
+           a.company_id,
+           a.date_created,
+           a.date_modified,
+           a.created_by_id,
+           a.modified_by_id,
+           a.archived,
+           case when ua.message_read_tsz is null then false else true end as read,
+           case when ua.message_seen_tsz is null then false else true end as seen
+    from flow.announcement a
+    left join flow.user_announcement ua on a.id = ua.announcement_id and ua.user_id = :userId
+    where a.archived is false
+    and case when :mobile::boolean is true then a.show_on_mobile is true
+      else a.show_on_web is true
+    end
+    and a.published is false
+    and a.start_time <= now()
+    and (a.end_time is null or a.end_time >= now())
+  """;
+
   //language=PostgreSQL
   public final static String getOne = """
         select a.id,
@@ -98,6 +141,7 @@ public class AnnouncementQuery {
            a.attachment_id,
            a.start_time,
            a.end_time,
+           a.published,
            a.expandable,
            a.show_on_web,
            a.show_on_mobile,

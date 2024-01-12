@@ -93,7 +93,7 @@
           <v-toolbar-items v-if="companyTools.length > 0">
             <CompanyTools :company-tools="companyTools" />
             <v-spacer></v-spacer>
-            <AnnouncementDropdown :announcements="announcements"></AnnouncementDropdown>
+            <AnnouncementDropdown></AnnouncementDropdown>
           </v-toolbar-items>
           <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items>
@@ -133,9 +133,19 @@ export default {
   },
   watch: {
     themeUpdateEvents: async function () {
+      // todo refactor this to receive the theme update from the notification so we dont have load anything
       // console.log('THIS IS HAPPENING', this.themeUpdateEvents)
       //reload the companies so we get any new icons
       await this.getCompanies()
+    },
+    announcementEvents: async function () {
+      this.announcementEvents.forEach(ae => {
+        let match = this.$store.state.app.announcements.find(a => a.id === ae.announcement?.id)
+        if(!match && ae.announcement) {
+          console.log('aaaa',ae.announcement)
+          this.$store.state.app.announcements.push(ae.announcement)
+        }
+      })
     }
   },
   data() {
@@ -230,6 +240,9 @@ export default {
     },
     themeUpdateEvents() {
       return this.$store.getters.getEventsByTopic('theme_update')
+    },
+    announcementEvents() {
+      return this.$store.getters.getEventsByTopic('announcement')
     },
   },
   methods: {
@@ -326,11 +339,10 @@ export default {
     },
     async getActiveAnnouncements() {
       try {
+        this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, [])
         this.$store.commit(AppMutations.SET_LOADING, true)
         const {data, status} = await getRequest(`/announcements/active`)
-        this.announcements = data
-        this.$store.commit(AppMutations.SHOW_ANNOUNCEMENT, { announcement: this.announcements[0], positionOffset: 1})
-        this.$store.commit(AppMutations.SHOW_ANNOUNCEMENT, { announcement: this.announcements[1], positionOffset: 2})
+        this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, data)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)

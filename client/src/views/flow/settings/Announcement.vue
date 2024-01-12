@@ -105,7 +105,7 @@
                 </form>
               </div>
               <div class="company-logo-background" v-else-if="announcement.presignedUrl">
-                <img class="company-logo" :src="announcement.presignedUrl">
+                <img class="announcement-image" :src="announcement.presignedUrl">
               </div>
               <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAttachment()"
                                   @close-dialog="showDeleteDialog=false">
@@ -300,10 +300,22 @@ import {Actions} from "@/store";
     }
   }
 </script>
+<style lang="scss">
+.ql-editor ul {
+  padding-left: 0 !important;
+}
+</style>
+
 <style lang="scss" scoped>
 .description-label {
   color: #666666;
   font-size: 12px;
 
 }
+
+.announcement-image {
+  max-width: 100%;
+  height: auto;
+}
+
 </style>

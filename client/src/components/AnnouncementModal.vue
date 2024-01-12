@@ -10,12 +10,12 @@
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <div class="px-5">
+      <div class="px-4">
         <h3>{{announcement.subtitle}}</h3>
         <div v-if="announcement.presignedUrl" class="py-3">
           <img class="announcement-image" :src="announcement.presignedUrl">
         </div>
-        <a v-if="announcement.hyperlink"
+        <a v-if="announcement.hyperlink" target="_blank"
            :href="announcement.hyperlink">
           {{announcement.hyperlink}}
         </a>
@@ -91,6 +91,10 @@ export default {
   border-radius: 0.25em;
   background-color: #fff;
   padding: 0;
+}
+
+.rich-text-editor-readonly ul {
+  padding-left: 0;
 }
 
 .rich-text-editor-readonly .ql-editor {
