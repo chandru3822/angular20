@@ -66,9 +66,9 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
         if (error?.error) {
           snackbar = getSnackbar('ERROR', error.errorMsg)
         } else {
-          ImageTypeEnum[imageType.key].image = img
-          ImageTypeEnum[imageType.key].add = false
-          ImageTypeEnum[imageType.key].saving = false
+          ImageTypeEnum.value[imageType.key].image = img
+          ImageTypeEnum.value[imageType.key].add = false
+          ImageTypeEnum.value[imageType.key].saving = false
           snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
           store.commit(AppMutations.SHOW_SNACK, snackbar)
           store.commit(AppMutations.SET_LOADING, false)
@@ -90,7 +90,7 @@ const deleteAttachment = async() => {
     await store.dispatch(Actions.FILE_DELETE, {
       id: imageToDelete.value?.image?.id,
       callback: async () => {
-        ImageTypeEnum[imageToDelete.value.key].image = {}
+        ImageTypeEnum.value[imageToDelete.value.key].image = {}
         snackbar = getSnackbar('SUCCESS', 'Image Deleted')
         store.commit(AppMutations.SHOW_SNACK, snackbar)
         store.commit(AppMutations.SET_LOADING, false)
