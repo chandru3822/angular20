@@ -34,6 +34,7 @@
       </v-container>
     </v-main>
     <Snackbar></Snackbar>
+    <AnnouncementAlert></AnnouncementAlert>
   </v-app>
 
 </template>
@@ -43,6 +44,7 @@ import { AppMutations } from '@/stores/AppStore'
 import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
+import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
 import {NotificationActions} from "@/plugins/notifications/NotificationStore";
 import {UserActions} from "@/stores/UserStore";
 
@@ -51,6 +53,7 @@ export default {
   components: {
     AppNav,
     Snackbar,
+    AnnouncementAlert,
     Spinner
   },
   data() {

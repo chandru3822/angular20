@@ -92,6 +92,8 @@
           <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items v-if="companyTools.length > 0">
             <CompanyTools :company-tools="companyTools" />
+            <v-spacer></v-spacer>
+            <AnnouncementDropdown :announcements="announcements"></AnnouncementDropdown>
           </v-toolbar-items>
           <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items>
@@ -111,12 +113,13 @@
 <script>
 import { AppMutations } from '@/stores/AppStore'
 import { UserActions, UserMutations } from '@/stores/UserStore'
-import { getRequest, getSnackbar } from '@/helpers/helpers'
+import {getRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import AccountMenu from '@/components/AccountMenu.vue'
 import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
+import AnnouncementDropdown from "@/components/AnnouncementDropdown.vue";
 
 const { VITE_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -124,6 +127,7 @@ const { VITE_ENV } =  import.meta.env
 export default {
   name: 'appNav',
   components: {
+    AnnouncementDropdown,
     AccountMenu,
     CompanyTools
   },
@@ -147,14 +151,12 @@ export default {
       menuOpen: false,
       tabMenuOpen: false,
       companies: [],
+      announcements: [],
       companyTools: [],
       model: '',
       hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
       showMobileBanner: false,
-      headerColor: VITE_ENV === 'local' ? constants.LOCAL_COLOR :
-        VITE_ENV === 'dev' || VITE_ENV === 'stage' ? constants.STAGE_COLOR :
-          VITE_ENV === 'flux' ? constants.FLUX_COLOR :
-            VITE_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
+      headerColor: constants.ENV_COLOR,
       tabs: [{
         label: 'Contacts',
         path: '/contacts',
@@ -197,6 +199,7 @@ export default {
       this.getCompanies()
       this.getCompanyTools()
       this.getSmsNotification()
+      this.getActiveAnnouncements()
     }
 
     //@TODO: #smartlistsv2 Please leave while smartlists v2 is being developed
@@ -320,6 +323,23 @@ export default {
     },
     getSmsNotification() {
       this.$store.dispatch(NotificationActions.FETCH_NOTIFICATIONS)
+    },
+    async getActiveAnnouncements() {
+      try {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        const {data, status} = await getRequest(`/announcements/active`)
+        this.announcements = data
+        this.$store.commit(AppMutations.SHOW_ANNOUNCEMENT, { announcement: this.announcements[0], positionOffset: 1})
+        this.$store.commit(AppMutations.SHOW_ANNOUNCEMENT, { announcement: this.announcements[1], positionOffset: 2})
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.$store.commit(AppMutations.SET_LOADING, false)
+        this.saving = false
+      }
     }
   }
 }
@@ -366,4 +386,5 @@ export default {
   left: -25px;
   padding-right: 41px;
 }
+
 </style>

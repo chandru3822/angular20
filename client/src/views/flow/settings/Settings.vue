@@ -169,6 +169,10 @@ export default {
         title: 'Message Templates',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/announcements',
+        title: 'Announcements',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/hashtags',
         title: 'Topic Hashtags',
         show: this.hasSettingsAccess
