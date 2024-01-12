@@ -1220,7 +1220,7 @@
       async fetchTeamsForUser() {
         try {
           this.conversationIsLoading = true
-          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
           this.$store.commit(AppMutations.SET_LOADING, false)
           this.teamsAssociatedToUser = data
           for (let team of this.teamsAssociatedToUser){

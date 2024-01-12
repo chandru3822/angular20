@@ -10,7 +10,6 @@ import com.albatross.api.v1.company.blueraven.services.expenses.ReimbursementSer
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +22,7 @@ import java.util.Optional;
  * Created by Joseph Canto on 2020-02-07.
  */
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/reimbursement")
 public class ReimbursementController {
 
@@ -37,23 +36,23 @@ public class ReimbursementController {
 
     Optional<ExpenseBudget> expenseBudget = Optional.empty();
     //if there is a budget id get the balance of the budget
-    if(null != reimbursementRequest.getExpenseBudgetId()){
+    if (null != reimbursementRequest.getExpenseBudgetId()) {
       expenseBudget = expenseBudgetService.getBudgetRemainingById(reimbursementRequest.getExpenseBudgetId());
     }
 
     //dont save if it would go over budget
-    if(expenseBudget.isPresent() && expenseBudget.get().getBalance() < reimbursementRequest.getAmount()){
+    if (expenseBudget.isPresent() && expenseBudget.get().getBalance() < reimbursementRequest.getAmount()) {
       return new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
     }
 
     //save the request if no budget or balance >= amount
-    if(null == reimbursementRequest.getExpenseBudgetId() || (expenseBudget.isPresent() && expenseBudget.get().getBalance() >= reimbursementRequest.getAmount())){
+    if (null == reimbursementRequest.getExpenseBudgetId() || (expenseBudget.isPresent() && expenseBudget.get().getBalance() >= reimbursementRequest.getAmount())) {
 
       //save the request first
       Long id = reimbursementService.updateRequest(reimbursementRequest);
       reimbursementRequest.setId(id);
 
-      if(null != reimbursementRequest.getId()){
+      if (null != reimbursementRequest.getId()) {
 
         Expense expense = new Expense();
         expense.setExpenseDate(reimbursementRequest.getExpenseDate());
@@ -63,7 +62,7 @@ public class ReimbursementController {
         expense.setExpenseBudgetId(reimbursementRequest.getExpenseBudgetId());
         expenseService.addDefaultLineItem(expense);
 
-        if(null != reimbursementRequest.getAttachmentId()){
+        if (null != reimbursementRequest.getAttachmentId()) {
           //add to the attachment join table
           //todo: @randa this
           attachmentService.addToJoinTable(reimbursementRequest.getAttachmentId(), reimbursementRequest.getId(), 4L, true);
@@ -122,12 +121,12 @@ public class ReimbursementController {
 
   @GetMapping(value = "/getMonthlySubmittedReport", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getMonthlySubmittedReport(@RequestParam String startDate,
-                                       @RequestParam String endDate) {
+                                          @RequestParam String endDate) {
     return reimbursementService.getMonthlySubmittedReport(startDate, endDate);
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteRequest(@PathVariable("id") Long id) {
+  public void deleteRequest(@PathVariable Long id) {
     reimbursementService.deleteRequest(id);
   }
 }

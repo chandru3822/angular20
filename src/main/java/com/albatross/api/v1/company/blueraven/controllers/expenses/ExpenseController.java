@@ -90,7 +90,7 @@ public class ExpenseController {
   }
 
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteExpense(@PathVariable("id") Long id) {
+  public void deleteExpense(@PathVariable Long id) {
     expenseService.deleteExpense(id);
   }
 }

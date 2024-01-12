@@ -9,7 +9,6 @@ import com.albatross.api.v1.flow.model.processStep.ProcessStepLogic;
 import com.albatross.api.v1.flow.model.projectProcessStep.*;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.services.CustomFieldGroupAssignmentService;
-import com.albatross.api.v1.flow.services.CustomFieldGroupService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepRequirementService;
 import com.albatross.api.v1.flow.services.ProjectProcessStepService;
 import lombok.RequiredArgsConstructor;
@@ -31,8 +30,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(
-    value = "/api/v1/flow/projectProcessStep",
-    produces = MediaType.APPLICATION_JSON_VALUE)
+  value = "/api/v1/flow/projectProcessStep",
+  produces = MediaType.APPLICATION_JSON_VALUE)
 public class ProjectProcessStepController {
 
   private final ProjectProcessStepService projectProcessStepService;
@@ -47,10 +46,10 @@ public class ProjectProcessStepController {
 
   @GetMapping(value = "/{projectProcessStepId}")
   public ResponseEntity<ProjectProcessStep> getProjectProcessStepById(
-      @PathVariable Long projectProcessStepId) {
+    @PathVariable Long projectProcessStepId) {
     try {
       ProjectProcessStep pps =
-          projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+        projectProcessStepService.getProjectProcessStep(projectProcessStepId);
 
       int index = 0;
       for (ProjectProcessStepAction a : pps.getActions()) {
@@ -67,8 +66,8 @@ public class ProjectProcessStepController {
       return new ResponseEntity<>(pps, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
-          String.format(
-              "Unable to get PPS, PPS ID: %s *** %s", projectProcessStepId, e.getMessage());
+
+          "Unable to get PPS, PPS ID: %s *** %s".formatted(projectProcessStepId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -95,15 +94,15 @@ public class ProjectProcessStepController {
 
   @GetMapping(value = "/{ppsId}/actionResult/{actionId}")
   public ResponseEntity<ProjectProcessStepAction> getActionResult(
-      @PathVariable Long ppsId, @PathVariable Long actionId) {
+    @PathVariable Long ppsId, @PathVariable Long actionId) {
     try {
       return new ResponseEntity<>(
-          projectProcessStepService.getActionResult(actionId, ppsId), HttpStatus.OK);
+        projectProcessStepService.getActionResult(actionId, ppsId), HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
-          String.format(
-              "Unable to get action result, action ID: %s, PPS ID: %s *** %s",
-              actionId, ppsId, e.getMessage());
+
+          "Unable to get action result, action ID: %s, PPS ID: %s *** %s".formatted(
+          actionId, ppsId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -111,31 +110,31 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "/{projectProcessStepId}/action/{actionId}")
   public ResponseEntity<ProjectProcessStepActionResult> performAction(
-      @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
+    @PathVariable Long projectProcessStepId, @PathVariable Long actionId) {
     try {
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       ProjectProcessStep pps =
-          projectProcessStepService.getProjectProcessStep(projectProcessStepId);
+        projectProcessStepService.getProjectProcessStep(projectProcessStepId);
       ProjectProcessStepAction action =
-          pps.getActions().stream()
-              .filter(a -> a.getId().equals(actionId))
-              .findFirst()
-              .orElse(null);
+        pps.getActions().stream()
+          .filter(a -> a.getId().equals(actionId))
+          .findFirst()
+          .orElse(null);
 
       if (pps.getProcessStepStatusTypeId() != 1 || action == null) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
       }
 
       List<Long> requirementIds =
-          action.getProcessStepLogicList().stream()
-              .filter(step -> step.getProcessStepRequirementId() != null)
-              .map(ProcessStepLogic::getProcessStepRequirementId)
-              .collect(Collectors.toList());
+        action.getProcessStepLogicList().stream()
+          .filter(step -> step.getProcessStepRequirementId() != null)
+          .map(ProcessStepLogic::getProcessStepRequirementId)
+          .collect(Collectors.toList());
       List<ProjectProcessStepRequirement> requirements =
-          projectProcessStepRequirementService.getByProjectProcessStepId(
-              pps.getProjectProcessStepId(), requirementIds);
+        projectProcessStepRequirementService.getByProjectProcessStepId(
+          pps.getProjectProcessStepId(), requirementIds);
       ProjectProcessStepAction actionResult =
-          projectProcessStepService.canPerformAction(action, pps, requirements);
+        projectProcessStepService.canPerformAction(action, pps, requirements);
       boolean canPerform = actionResult.getCanPerform();
       if (!canPerform) {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -147,7 +146,7 @@ public class ProjectProcessStepController {
 
       // Since something on the PPS might have changed, run autotriggers for it
       actionResults.add(projectProcessStepService.performAutoTriggerActions(
-          projectProcessStepId, securityService.getCurrentUserDetails()));
+        projectProcessStepId, securityService.getCurrentUserDetails()));
 
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
       // Consolidate to projectProcessStepService
@@ -156,13 +155,13 @@ public class ProjectProcessStepController {
 
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
-            projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
-                pps.getProjectId(), null, cfgaIds);
+          projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
+            pps.getProjectId(), null, cfgaIds);
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(projectProcessStepId)) {
             actionResults.add(projectProcessStepService.performAutoTriggerActions(
-                ppsId, securityService.getCurrentUserDetails()));
+              ppsId, securityService.getCurrentUserDetails()));
           }
         }
       }
@@ -171,18 +170,18 @@ public class ProjectProcessStepController {
       // that creates a potential infinite loop) if active
       // run auto triggers for those actions
       List<ProjectProcessStep> steps =
-          sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
-              Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
-              ProjectProcessStep.class);
+        sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
+          Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
+          ProjectProcessStep.class);
       for (ProjectProcessStep step : steps) {
         // only run if the referring PPS is active
         if (step.getProcessStepStatusTypeId() == 1) {
           actionResults.add(projectProcessStepService.performAutoTriggerActions(
-              step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
+            step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
         }
       }
       ProjectProcessStepStatus status =
-          projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
+        projectProcessStepService.getProjectProcessStepStatus(projectProcessStepId);
 
       boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
       projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, pps.getProjectId(), null);
@@ -201,32 +200,32 @@ public class ProjectProcessStepController {
       return new ResponseEntity<>(actionResultToReturn, HttpStatus.OK);
     } catch (Exception e) {
       final String errMessage =
-          String.format(
-              "PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s",
-              actionId, projectProcessStepId, e.getMessage());
+
+          "PPS: Unable to MANUALLY trigger action ID: %s, PPS ID: %s *** %s".formatted(
+          actionId, projectProcessStepId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
   }
 
   @PostMapping(
-      value =
-          "/initialStatus/{initialCompanyProcessStepStatusTypeId}/existingStatus/{existingCompanyProcessStepStatusTypeId}",
-      consumes = MediaType.APPLICATION_JSON_VALUE)
+    value =
+      "/initialStatus/{initialCompanyProcessStepStatusTypeId}/existingStatus/{existingCompanyProcessStepStatusTypeId}",
+    consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Long> createProjectProcessStep(
-      @PathVariable Long initialCompanyProcessStepStatusTypeId,
-      @PathVariable Long existingCompanyProcessStepStatusTypeId,
-      @RequestBody ProjectProcessStep projectProcessStep) {
+    @PathVariable Long initialCompanyProcessStepStatusTypeId,
+    @PathVariable Long existingCompanyProcessStepStatusTypeId,
+    @RequestBody ProjectProcessStep projectProcessStep) {
 
     Long newPpsId =
-        projectProcessStepService.insertProjectProcessStep(
-            projectProcessStep.getProjectId(),
-            projectProcessStep.getProcessStepId(),
-            null,
-            null,
-            true,
-            initialCompanyProcessStepStatusTypeId,
-            existingCompanyProcessStepStatusTypeId);
+      projectProcessStepService.insertProjectProcessStep(
+        projectProcessStep.getProjectId(),
+        projectProcessStep.getProcessStepId(),
+        null,
+        null,
+        true,
+        initialCompanyProcessStepStatusTypeId,
+        existingCompanyProcessStepStatusTypeId);
 
     try {
       // @TODO: This code to run autotriggers for ancillary fields exists in a few places.
@@ -235,13 +234,13 @@ public class ProjectProcessStepController {
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       if (!cfgaIds.isEmpty()) {
         List<Long> ppsIds =
-            projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
-                projectProcessStep.getProjectId(), null, cfgaIds);
+          projectProcessStepService.getIdsForAutoTriggerByCfgaIds(
+            projectProcessStep.getProjectId(), null, cfgaIds);
         for (Long ppsId : ppsIds) {
           // Don't re-check the ppsId we just previously did
           if (!ppsId.equals(newPpsId)) {
             actionResults.add(projectProcessStepService.performAutoTriggerActions(
-                ppsId, securityService.getCurrentUserDetails()));
+              ppsId, securityService.getCurrentUserDetails()));
           }
         }
       }
@@ -250,22 +249,22 @@ public class ProjectProcessStepController {
       // that creates a potential infinite loop) if active
       // run auto triggers for those actions
       List<ProjectProcessStep> steps =
-          sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
-              Map.of("projectProcessStepIds", List.of(newPpsId)),
-              ProjectProcessStep.class);
+        sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
+          Map.of("projectProcessStepIds", List.of(newPpsId)),
+          ProjectProcessStep.class);
       for (ProjectProcessStep step : steps) {
         // only run if the referring PPS is active
         if (step.getProcessStepStatusTypeId() == 1) {
           actionResults.add(projectProcessStepService.performAutoTriggerActions(
-              step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
+            step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
         }
       }
       boolean doTagUpdate = actionResults.stream().anyMatch(ProjectProcessStepService.PpsActionResult::getShouldRunProjectTagUpdate);
       projectProcessStepService.updateProjectTagsViaRedis(doTagUpdate, projectProcessStep.getProjectId(), null);
     } catch (Exception e) {
       final String errMessage =
-          String.format(
-              "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s", newPpsId, e.getMessage());
+
+          "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s".formatted(newPpsId, e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
     }
@@ -278,8 +277,8 @@ public class ProjectProcessStepController {
                                                                            @RequestParam(required = false) Boolean isMobile,
                                                                            @RequestParam(required = false) Boolean linked) {
     return new ResponseEntity<>(
-        projectProcessStepService.getProjectProcessStepAttachments(projectProcessStepId, isMobile, linked),
-        HttpStatus.OK);
+      projectProcessStepService.getProjectProcessStepAttachments(projectProcessStepId, isMobile, linked),
+      HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectProcessStepId}/linkAttachment/{attachmentId}")
@@ -291,67 +290,67 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "/{projectProcessStepId}/attachment")
   public ResponseEntity<Attachment> uploadProjectProcessStepAttachment(
-      @PathVariable Long projectProcessStepId,
-      @RequestParam Long attachmentTypeId,
-      @RequestParam String displayName,
-      @RequestParam("file") MultipartFile file)
-      throws IOException {
+    @PathVariable Long projectProcessStepId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam String displayName,
+    @RequestParam MultipartFile file)
+    throws IOException {
     return new ResponseEntity<>(
-        projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId, displayName),
-        HttpStatus.OK);
+      projectProcessStepService.addAttachment(file, projectProcessStepId, attachmentTypeId, displayName),
+      HttpStatus.OK);
   }
 
   @GetMapping(value = "/owners/{processStepProcessId}")
   public ResponseEntity<List<Owner>> getAvailableProjectProcessStepOwners(
-      @PathVariable Long processStepProcessId) {
+    @PathVariable Long processStepProcessId) {
     return new ResponseEntity<>(
-        projectProcessStepService.getOwners(processStepProcessId), HttpStatus.OK);
+      projectProcessStepService.getOwners(processStepProcessId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{projectProcessStepId}/owner")
   public ResponseEntity<Void> updateProjectProcessStepOwner(
-      @PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
+    @PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
     projectProcessStepService.updateOwner(projectProcessStepId, owner, false);
     return new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @PostMapping(value = "/{projectProcessStepId}/owner/checkExisting")
   public ResponseEntity<?> updateProjectProcessStepOwnerCheckExisting(
-      @PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
+    @PathVariable Long projectProcessStepId, @RequestBody Owner owner) {
     return projectProcessStepService.updateOwner(projectProcessStepId, owner, true);
   }
 
   @PostMapping(
-      value = "/{projectProcessStepId}/status",
-      consumes = MediaType.APPLICATION_JSON_VALUE)
+    value = "/{projectProcessStepId}/status",
+    consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<Void> updateProjectProcessStepStatus(
-      @PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
+    @PathVariable Long projectProcessStepId, @RequestBody CompanyProcessStepStatusType status) {
     try {
       List<ProjectProcessStepService.PpsActionResult> actionResults = new ArrayList<>();
       projectProcessStepService.setStatus(
-          projectProcessStepId,
-          status.getProcessStepStatusTypeId(),
-          status.getId(),
-          status.getCancelledCompanyProcessStepStatusTypeId());
+        projectProcessStepId,
+        status.getProcessStepStatusTypeId(),
+        status.getId(),
+        status.getCancelledCompanyProcessStepStatusTypeId());
 
       // @TODO: Few dupes of this code fragment. Combine when there if free time... lol... free
       // time... good one
       try {
         actionResults.add(projectProcessStepService.performAutoTriggerActions(
-            projectProcessStepId, securityService.getCurrentUserDetails()));
+          projectProcessStepId, securityService.getCurrentUserDetails()));
 
         // check for any actions using this PS - Status as a requirement - NOT including SELF
         // (because that creates a potential infinite loop) if active
         // run auto triggers for those actions
         List<ProjectProcessStep> steps =
-            sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
-                Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
-                ProjectProcessStep.class);
+          sqlCache.queryBySql(ProjectProcessStepQuery.getUsingStatusByPpsIds,
+            Map.of("projectProcessStepIds", List.of(projectProcessStepId)),
+            ProjectProcessStep.class);
         for (ProjectProcessStep step : steps) {
           // only run if the referring PPS is active
           if (step.getProcessStepStatusTypeId() == 1) {
             actionResults.add(projectProcessStepService.performAutoTriggerActions(
-                step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
+              step.getProjectProcessStepId(), securityService.getCurrentUserDetails()));
           }
         }
 
@@ -362,9 +361,9 @@ public class ProjectProcessStepController {
 
       } catch (Exception e) {
         final String errMessage =
-            String.format(
-                "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s",
-                projectProcessStepId, e.getMessage());
+
+            "PPS: Unable to AUTO trigger actions on PPS ID: %s *** %s".formatted(
+            projectProcessStepId, e.getMessage());
         log.error(errMessage);
         throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
       }
@@ -378,7 +377,7 @@ public class ProjectProcessStepController {
 
   @PostMapping(value = "/{ppsId}/main")
   public ResponseEntity<Void> updateMainProjectProcessStep(
-      @PathVariable Long ppsId, @RequestBody CompanyProcessStepStatusType status) {
+    @PathVariable Long ppsId, @RequestBody CompanyProcessStepStatusType status) {
     try {
       projectProcessStepService.setMain(ppsId, status);
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);

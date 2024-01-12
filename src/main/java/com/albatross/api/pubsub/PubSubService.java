@@ -11,7 +11,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -42,7 +41,7 @@ public class PubSubService {
 
     subscribers.add(subscriber);
     log.debug(
-        "[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
+      "[PubSub] Subscriber count={}, userId={}", subscribers.size(), subscriber.getUserId());
 
     // send an initial event so the front end knows to keep reconnecting
     try {
@@ -66,9 +65,9 @@ public class PubSubService {
     setLastMessageRecv();
 
     subscribers.stream()
-        .filter(subscriber -> subscriber.getEventChannel() == channel)
-        .filter(subscriber -> subscriber.acceptsEventMessage(eventMessage))
-        .forEach(subscriber -> notify(subscriber, eventMessage));
+      .filter(subscriber -> subscriber.getEventChannel() == channel)
+      .filter(subscriber -> subscriber.acceptsEventMessage(eventMessage))
+      .forEach(subscriber -> notify(subscriber, eventMessage));
   }
 
   public void notify(Subscriber subscriber, IEventMessage eventMessage) {
@@ -91,11 +90,11 @@ public class PubSubService {
   private void setLastMessageRecv() {
     // value is not important
     redisTemplate
-        .opsForValue()
-        .set(
-            LAST_MESSAGE_RECV,
-            OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
-            Duration.ofSeconds(90));
+      .opsForValue()
+      .set(
+        LAST_MESSAGE_RECV,
+        OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME),
+        Duration.ofSeconds(90));
   }
 
   private Object getLastMessageRecv() {
@@ -103,6 +102,7 @@ public class PubSubService {
   }
 
 //  TODO (scholeskk): fix this
+
   /**
    * there really isn't a great way to know if a client closes a connection so we broadcast a
    * simple ping message periodically allowing us to close the connection on the server side
@@ -118,15 +118,15 @@ public class PubSubService {
 
         log.debug("[PubSub] Sending out ping");
         subscribers.forEach(
-            sub -> {
-              try {
-                this.sendKeepAlive(sub);
-              } catch (Exception e) {
-                log.debug(
-                    "[PubSub] Error sending keepalive ping (likely client closed connection)", e);
-                deadEmitters.add(sub);
-              }
-            });
+          sub -> {
+            try {
+              this.sendKeepAlive(sub);
+            } catch (Exception e) {
+              log.debug(
+                "[PubSub] Error sending keepalive ping (likely client closed connection)", e);
+              deadEmitters.add(sub);
+            }
+          });
 
         if (!deadEmitters.isEmpty()) {
           log.debug("[PubSub] Removing {} dead emitters", deadEmitters.size());
@@ -140,8 +140,8 @@ public class PubSubService {
 
   private void sendKeepAlive(Subscriber subscriber) throws IOException {
     final String message =
-        "ping event sent at %s"
-            .formatted(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
+      "ping event sent at %s"
+        .formatted(DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.now()));
     subscriber.send(SseEmitter.event().name("ping").data(message).reconnectTime(5000));
   }
 }

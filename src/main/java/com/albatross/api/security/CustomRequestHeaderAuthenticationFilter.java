@@ -3,7 +3,7 @@ package com.albatross.api.security;
 import com.albatross.api.security.jwt.JwtUtils;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CustomRequestHeaderAuthenticationFilter extends RequestHeaderAuthenticationFilter {
 
@@ -17,7 +17,7 @@ public class CustomRequestHeaderAuthenticationFilter extends RequestHeaderAuthen
       final String accessToken = request.getParameter("access_token");
       if (accessToken != null) {
         // format it so it's handled downstream correctly
-        return String.format("%s %s", JwtUtils.TOKEN_PREFIX.trim(), accessToken.trim());
+        return "%s %s".formatted(JwtUtils.TOKEN_PREFIX.trim(), accessToken.trim());
       }
     }
 

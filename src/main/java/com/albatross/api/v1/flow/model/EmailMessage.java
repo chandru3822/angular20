@@ -1,6 +1,6 @@
 package com.albatross.api.v1.flow.model;
 
-import javax.activation.DataSource;
+import jakarta.activation.DataSource;
 import java.net.URL;
 import java.util.Map;
 

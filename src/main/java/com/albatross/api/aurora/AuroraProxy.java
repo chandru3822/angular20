@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,8 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.annotation.PostConstruct;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -63,7 +63,7 @@ public class AuroraProxy {
     try {
       ResponseEntity<String> res = client
         .get()
-        .uri(String.format("/v2/tenants/%s/designs/%s/summary", tenantId, designId))
+        .uri("/v2/tenants/%s/designs/%s/summary".formatted(tenantId, designId))
         .header("Authorization", "Bearer " + token)
         .retrieve()
         .toEntity(String.class)
@@ -147,8 +147,7 @@ public class AuroraProxy {
       checkArgument(!arrays.isEmpty(), "list of arrays cannot be empty");
       return arrays.stream()
                    .map(com.albatross.api.aurora.AuroraProxy.SolarArray::getPanelCount)
-                   .filter(Optional::isPresent)
-                   .map(Optional::get)
+                   .flatMap(Optional::stream)
                    .reduce(Integer::sum);
     }
 

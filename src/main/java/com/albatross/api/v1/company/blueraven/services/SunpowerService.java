@@ -209,7 +209,7 @@ public class SunpowerService {
             : pd.getStorageSizeKwh());
 
       Optional<SunpowerProducts> sunpowerProducts = getSunpowerProducts(pd);
-      if (!sunpowerProducts.isPresent()) {
+      if (sunpowerProducts.isEmpty()) {
         return sunpowerSpfUrl;
       }
 
@@ -417,7 +417,7 @@ public class SunpowerService {
     String url = apiUrl + uri;
     log.debug("SUNPOWER: sending to SunPower url: {}", url);
     Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", String.format("Basic %s", basicToken));
+    headers.put("Authorization", "Basic %s".formatted(basicToken));
     headers.put("Content-Type", "application/json");
     return HttpUtils.call(method, url, headers, content);
   }

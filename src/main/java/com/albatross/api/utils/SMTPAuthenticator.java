@@ -1,8 +1,8 @@
 package com.albatross.api.utils;
 
-import javax.mail.PasswordAuthentication;
+import jakarta.mail.PasswordAuthentication;
 
-public class SMTPAuthenticator extends javax.mail.Authenticator {
+public class SMTPAuthenticator extends jakarta.mail.Authenticator {
 
 	private String userName;
 	private String password;

@@ -4,7 +4,6 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.services.ProcessStepActionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,14 +16,14 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/processStep/{stepId}/action")
 public class ProcessStepActionController {
 
   private final ProcessStepActionService processStepActionService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepAction> getActionsForStep (@PathVariable Long stepId) {
+  public List<ProcessStepAction> getActionsForStep(@PathVariable Long stepId) {
     return processStepActionService.getActionsForStep(stepId);
   }
 
@@ -49,14 +48,14 @@ public class ProcessStepActionController {
   }
 
   @GetMapping(value = "/{actionId}/logicString", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getActionLogicString (@PathVariable Long actionId) {
+  public String getActionLogicString(@PathVariable Long actionId) {
     return processStepActionService.getActionLogicString(actionId);
   }
 
   // child process steps
 
   @GetMapping(value = "/{actionId}/childProcessSteps", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStep> getChildProcessStepsForAction (@PathVariable Long stepId, @PathVariable Long actionId) {
+  public List<ProcessStep> getChildProcessStepsForAction(@PathVariable Long stepId, @PathVariable Long actionId) {
     return processStepActionService.getChildProcessStepsForAction(stepId, actionId);
   }
 
@@ -111,7 +110,7 @@ public class ProcessStepActionController {
 
   @PutMapping(value = "/{actionId}/updateChildFunctionOrder", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateChildFunctionOrder(@PathVariable Long actionId,
-                                                                 @RequestBody List<ProcessStepActionChildFunction> childFns) {
+                                       @RequestBody List<ProcessStepActionChildFunction> childFns) {
     processStepActionService.updateChildFunctionOrder(actionId, childFns);
   }
 

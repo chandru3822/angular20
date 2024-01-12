@@ -8,20 +8,19 @@ import lombok.Data;
 
 @Data
 public class WorkQueueTypeSchedule {
-    private String day, startTime, endTime;
-    private boolean selected;
+  private String day, startTime, endTime;
+  private boolean selected;
 
-    public String toString() {
-      StringBuilder builder = new StringBuilder();
-      builder.append("{\"day\" :");
-      builder.append("\""+day+"\"");
-      builder.append(", \"startTime\" :");
-      builder.append(startTime == null ? null : "\""+startTime+"\"");
-      builder.append(", \"endTime\" :");
-      builder.append(endTime == null ? null : "\""+endTime+"\"");
-      builder.append(", \"selected\" :");
-      builder.append(selected);
-      builder.append("}");
-      return builder.toString();
-    }
+  public String toString() {
+    String builder = "{\"day\" :" +
+                     "\"" + day + "\"" +
+                     ", \"startTime\" :" +
+                     (startTime == null ? null : "\"" + startTime + "\"") +
+                     ", \"endTime\" :" +
+                     (endTime == null ? null : "\"" + endTime + "\"") +
+                     ", \"selected\" :" +
+                     selected +
+                     "}";
+    return builder;
+  }
 }

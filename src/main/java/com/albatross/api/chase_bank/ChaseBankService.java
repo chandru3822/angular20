@@ -210,9 +210,9 @@ public class ChaseBankService {
 
     @Override
     public String getMessage() {
-      return String.format(
-          "Project with Project id %s failed validation; errors are: %s",
-          projectId, Joiner.on("; ").withKeyValueSeparator(":").join(errors));
+      return 
+        "Project with Project id %s failed validation; errors are: %s".formatted(
+        projectId, Joiner.on("; ").withKeyValueSeparator(":").join(errors));
     }
 
     private boolean hasErrors() {

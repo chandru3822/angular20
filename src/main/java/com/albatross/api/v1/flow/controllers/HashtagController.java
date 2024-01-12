@@ -4,7 +4,6 @@ import com.albatross.api.v1.flow.model.Hashtag;
 import com.albatross.api.v1.flow.services.HashtagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/hashtag")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class HashtagController {
 
   private final HashtagService hashtagService;

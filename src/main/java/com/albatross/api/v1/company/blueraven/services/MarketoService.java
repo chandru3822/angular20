@@ -5,11 +5,12 @@ import com.albatross.api.v1.company.blueraven.models.MarketoProject;
 import com.albatross.api.v1.company.blueraven.services.queries.MarketoQuery;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import javax.annotation.PostConstruct;
 import java.net.http.HttpTimeoutException;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -61,7 +61,7 @@ public class MarketoService {
              we can check time since last token refresh (Marketo tokens are good for 5 min) and only refresh when expiration is close
      */
     private void authenticate() {
-        final String url = String.format("%s/identity/oauth/token?grant_type=client_credentials&client_id=%s&client_secret=%s", host, clientId, secret);
+        final String url = "%s/identity/oauth/token?grant_type=client_credentials&client_id=%s&client_secret=%s".formatted(host, clientId, secret);
         WebClient client = WebClient.create();
         //@TODO: This is blocking. If issues arise for this feature, might need to make async
         ResponseEntity<String> res = client.get()
@@ -116,7 +116,7 @@ public class MarketoService {
 
             return resultBody.getJSONArray("result");
         } catch (Exception e) {
-            throw new RuntimeException(String.format("MARKETO: Unable to push data: %s", e.getMessage()));
+            throw new RuntimeException("MARKETO: Unable to push data: %s".formatted(e.getMessage()));
         }
     }
 
@@ -166,7 +166,7 @@ public class MarketoService {
 
             return marketoIds;
         } catch (Exception e) {
-            throw new RuntimeException(String.format("MARKETO: Unable to fetch IDs from Marketo: %s", e.getMessage()));
+            throw new RuntimeException("MARKETO: Unable to fetch IDs from Marketo: %s".formatted(e.getMessage()));
         }
     }
 
@@ -258,7 +258,7 @@ public class MarketoService {
                 pushData(l);
             } catch (Exception e) {
                 final List<String> errorIds = l.stream().map(lead -> lead.get("projectId").toString()).toList();
-                log.error(String.format("MARKETO: Error in cron while PUSHING data for projects: %s", errorIds));
+                log.error("MARKETO: Error in cron while PUSHING data for projects: %s".formatted(errorIds));
             }
         });
 
@@ -275,7 +275,7 @@ public class MarketoService {
             try {
                 removeFromMarekto(l);
             } catch (Exception e) {
-                log.error(String.format("MARKETO: Error in cron while REMOVING data for projects: %s", l));
+                log.error("MARKETO: Error in cron while REMOVING data for projects: %s".formatted(l));
             }
         });
 
@@ -296,7 +296,7 @@ public class MarketoService {
                 pushData(l);
             } catch (Exception e) {
                 final List<String> errorIds = l.stream().map(lead -> lead.get("projectId").toString()).toList();
-                log.error(String.format("MARKETO: Error in cron while REACTIVATING data for projects: %s", errorIds));
+                log.error("MARKETO: Error in cron while REACTIVATING data for projects: %s".formatted(errorIds));
             }
         });
     }

@@ -184,8 +184,8 @@ public class InstallAgreementService {
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
         log.warn(
-          String.format(
-            "IARQ: Unable to locate goodleap application for project ID: %s", projectId));
+          
+            "IARQ: Unable to locate goodleap application for project ID: %s".formatted(projectId));
         throw new RuntimeException(e);
       } else {
         if (!resultMsg.isEmpty()) {

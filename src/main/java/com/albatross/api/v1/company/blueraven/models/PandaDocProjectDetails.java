@@ -16,9 +16,10 @@ public class PandaDocProjectDetails {
     private String mailingState, city, phone, postalCode, mailingStreet1, mailingStreet2, country,
         projectName, optionalDownPayment, systemSize, firstCashPaymentAmount, totalSystemPrice,
         loanTerm, interestRate, financialOption, loanType, loanAmount, totalCost, solarRebate, itc, stateTaxCredit, systemCost,
-        leadSource;
+        leadSource, storageBrand;
+    private Boolean isBatteryOnly;
 
-    public String getTemplateName(Boolean isSpanish, String genericName) {
+    public String getTemplateName(Boolean isSpanish, String genericName, Boolean isBatteryOnly) {
         StringJoiner sj = new StringJoiner("_");
 
         // If companyId is BRS
@@ -32,21 +33,29 @@ public class PandaDocProjectDetails {
         if (isSpanish) {
             sj.add("Spanish");
         }
+
+        if (isBatteryOnly) {
+          sj.add("Battery_Retrofit");
+        }
+
         sj.add(state);
 
-        if (utilityCompany.equals(genericName)) {
-          sj.add(utilityCompany);
+        if (!isBatteryOnly) {
+          if (utilityCompany.equals(genericName)) {
+            sj.add(utilityCompany);
+          }
+          else {
+            sj.add(mailingState + " - " + utilityCompany);
+          }
         }
-        else {
-          sj.add(mailingState + " - " + utilityCompany);
-        }
-        // Change financier to match what is in PandaDocs for Sunlight templates
-        if (financier.equals("Sunlight")) {
-          sj.add("Sunlight Financial");
-        }
-        else {
-          sj.add(financier);
-        }
+
+      // Change financier to match what is in PandaDocs for Sunlight templates
+      if (financier.equals("Sunlight")) {
+        sj.add("Sunlight Financial");
+      }
+      else {
+        sj.add(financier);
+      }
 
         return sj.toString();
     }

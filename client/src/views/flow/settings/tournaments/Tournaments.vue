@@ -28,7 +28,7 @@
               @change="getTournamentFormulas()"
               item-text="ownerType"
               item-value="id"
-              attach
+              :attach="true"
             ></v-autocomplete>
             <v-autocomplete
               v-model="newTournament.tournamentFormulaId"
@@ -36,7 +36,7 @@
               label="Scoring Formula"
               item-text="formulaTitle"
               item-value="id"
-              attach
+              :attach="true"
               @change="getTournamentFormulaFields"
             ></v-autocomplete>
 
@@ -50,14 +50,14 @@
             </div>
             <DatetimePickerInput
               v-model="newTournament.startDate"
-              :timezone="this.timezone"
+              :timezone="timezone"
               :type="'date'"
               :format="'MMMM DD, YYYY'"
               label="Start Date"
             />
             <DatetimePickerInput
               v-model="newTournament.endDate"
-              :timezone="this.timezone"
+              :timezone="timezone"
               :type="'date'"
               :format="'MMMM DD, YYYY'"
               label="End Date"
@@ -106,65 +106,57 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
   import moment from 'moment'
   import orderBy from 'lodash.orderby'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import TournamentCustomField from '@/views/flow/settings/tournaments/TournamentCustomField.vue'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import {computed, getCurrentInstance, onMounted, ref} from "vue";
+  import {useRouter} from "vue-router/composables";
 
-  export default {
-    name: 'TournamentsAdmin',
-    mixins: [Vue2Filters.mixin],
-    components: {
-      ConfirmationDialog,
-      DatetimePickerInput,
-      TournamentCustomField
-    },
-    data () {
-      return {
-        snackbar: {},
-        addNew: false,
-        showPreviousYears: false,
-        search: null,
-        newTournament: {
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+
+  const router = useRouter()
+
+  const addNew= ref(false),
+        showPreviousYears= ref(false),
+        search= ref(null),
+        newTournament= ref({
           tournamentFormulaFields: []
-        },
-        timezone: this.$store.state.user.details.timezone.value,
-        dataLoading: true,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE'),
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        tournaments: [],
-        currentYear: moment().year(),
-        ownerTypes: [],
-        formulas: [],
-        headers: [
+        }),
+        timezone=ref(store.state.user.details.timezone.value),
+        dataLoading= ref(true),
+        userCanAdd=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'ADD')),
+        userCanEdit=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'EDIT')),
+        userCanDelete=ref(store.getters.userHasFeatureAccessLevel('TOURNAMENTS', 'DELETE')),
+        companyId=ref(store.state.user.details.companyId),
+        userId=ref(store.state.user.details.id),
+        tournaments=ref([]),
+        currentYear=ref(moment().year()),
+        ownerTypes=ref([]),
+        formulas=ref([]),
+        headers= ref([
           {text: 'Tournament', value: 'tournamentName', show: true},
           {text: 'Start', value: 'startDate', show: true},
           {text: 'End', value: 'endDate', show: true},
           {text: 'Active', value: 'active', show: true},
           {text: '', value: 'icons', show: true},
-        ],
-        tournamentToDelete: null
-      }
-    },
-    computed: {
-      tournamentToDeleteName(){
-        return this.tournamentToDelete ? this.tournamentToDelete.tournamentName : ''
-      }
-    },
-    methods: {
-      validateCustomFields() {
+        ]),
+        tournamentToDelete=ref(null)
+
+    const tournamentToDeleteName = computed(() => {
+        return tournamentToDelete.value ? tournamentToDelete.value.tournamentName : ''
+      })
+
+    const validateCustomFields = () => {
         let invalid = false
-        if(this.newTournament.tournamentFormulaFields?.length > 0) {
+        if(newTournament.value.tournamentFormulaFields?.length > 0) {
           //if the tournament has custom fields then none of them can be null
-          this.newTournament.tournamentFormulaFields.forEach(tff => {
+          newTournament.value.tournamentFormulaFields.forEach(tff => {
             //datatype 3 = booleans can be null if they dont have a value
             if((tff.fieldValue === null || tff.fieldValue === '') && tff.dataTypeId !== 3) {
               invalid = true
@@ -173,112 +165,115 @@
         }
         return invalid
       },
-      filterTournaments () {
-        return orderBy(this.tournaments.filter(t => {
-          return !t.archived && ( !this.showPreviousYears ? (moment(t.startDate).year() === this.currentYear || moment(t.endDate).year() === this.currentYear) : true )
+      filterTournaments = () => {
+        return orderBy(tournaments.value.filter(t => {
+          return !t.archived && ( !showPreviousYears.value ? (moment(t.startDate).year() === currentYear.value || moment(t.endDate).year() === currentYear.value) : true )
         }), [ 'active', 'startDate', 'tournamentName'], ['desc','desc', 'asc'])
       },
-      goToTournament(id) {
-        this.$router.push({path: `/settings/tournaments/${id}/details`})
+      goToTournament = (id) => {
+        router.push({path: `/settings/tournaments/${id}/details`})
       },
-      async getTournamentFormulas() {
-        this.newTournament.tournamentFormulaId = null
-        this.newTournament.tournamentFormulaFields = []
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      getTournamentFormulas = async() => {
+    let snackbar
+        newTournament.value.tournamentFormulaId = null
+        newTournament.value.tournamentFormulaFields = []
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/tournament/formulas/${this.newTournament.tournamentOwnerTypeId}`, 'blueraven')
-          this.formulas = data
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await getRequest(`/tournament/formulas/${newTournament.value.tournamentOwnerTypeId}`, 'blueraven')
+          formulas.value = data
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataLoading.value = false
+          snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getTournamentFormulaFields() {
-        this.newTournament.tournamentFormulaFields = []
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/tournament/formula/${this.newTournament.tournamentFormulaId}/fields`, 'blueraven')
-          this.newTournament.tournamentFormulaFields = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getTournamentOwnerTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+        getTournamentFormulaFields = async() => {
+          let snackbar
+          newTournament.value.tournamentFormulaFields = []
+          store.commit(AppMutations.SET_LOADING, true)
+          try {
+            const {data, status} = await getRequest(`/tournament/formula/${newTournament.value.tournamentFormulaId}/fields`, 'blueraven')
+            newTournament.value.tournamentFormulaFields = data
+            handleHidingGlobalLoader(vueInstance, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            dataLoading.value = false
+            snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+            store.commit(AppMutations.SHOW_SNACK, snackbar)
+            store.commit(AppMutations.SET_LOADING, false)
+          }
+        },
+      getTournamentOwnerTypes= async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/tournament/ownerTypes`, 'blueraven')
-          this.ownerTypes = data
-          handleHidingGlobalLoader(this, status)
+          ownerTypes.value = data
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataLoading.value = false
+          let snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getTournaments () {
-        this.dataLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      getTournaments = async() => {
+        dataLoading.value = true
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getRequest(`/tournament`, 'blueraven')
-          this.tournaments = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
+          tournaments.value = data
+          dataLoading.value = false
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.dataLoading = false
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          dataLoading.value = false
+          let snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async deleteTournament () {
-        const id = this.tournamentToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      deleteTournament = async() => {
+        const id = tournamentToDelete.value.id
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {status} = await deleteRequest(`/tournament/${id}`, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Tournament Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {status} = await deleteRequest(`/tournaments/${id}`, 'blueraven')
+          let snackbar = getSnackbar('SUCCESS', 'Tournament Deleted')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          let snackbar = getSnackbar('ERROR', 'Error Deleting Tournament')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-        this.tournamentToDelete=null
+        tournamentToDelete.value=null
       },
-      async addTournament () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      addTournament= async() => {
+        let snackbar
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/tournament`, this.newTournament, 'blueraven')
-          this.$router.push({path: `/settings/tournaments/${data.id}/details`})
-          this.snackbar = getSnackbar('SUCCESS', 'Tournament Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await postRequest(`/tournament`, newTournament.value, 'blueraven')
+          router.push({path: `/settings/tournaments/${data.id}/details`})
+          snackbar = getSnackbar('SUCCESS', 'Tournament Added')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Tournament')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar = getSnackbar('ERROR', 'Error Adding Tournament')
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-    },
-    async created () {
-      this.getTournaments()
-      this.getTournamentOwnerTypes()
-    }
-  }
+      }
+
+    onMounted(async () => {
+      await getTournaments()
+      await getTournamentOwnerTypes()
+    })
+
 </script>
 
 <style lang="scss">
