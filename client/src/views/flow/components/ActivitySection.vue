@@ -163,7 +163,7 @@
           </template>
           <template #item-@="{ item }">
             <div class="user">
-                  ({{ item.value }})
+                  {{ item.value }}({{item["email"]}})
             </div>
           </template>
         </Mentionable>
@@ -383,6 +383,9 @@ export default {
     this.getUsers()
   },
   methods: {
+    testing($event){
+      console.log($event)
+    },
     cloneDeep,
     bottomHitCallback() {
       this.bottomHitCount = this.bottomHitCount + 1
@@ -496,7 +499,7 @@ export default {
       try {
         const {data} = await getRequest('/user/mentionableUsers', null, [])
         this.users = data
-
+        console.log(this.users[0])
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
