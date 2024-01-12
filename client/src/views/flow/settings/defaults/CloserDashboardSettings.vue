@@ -52,7 +52,6 @@ const deleteImageDialogText = computed(() => {
 })
 
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
-  debugger
   let snackbar
   try {
     store.commit(AppMutations.SET_LOADING, true)
