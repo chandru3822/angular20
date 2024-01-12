@@ -232,8 +232,7 @@ public class PandaDocService {
     setRecipientInfoElecDocs(template, tokens, body);
     HttpResponse resp = POST("/documents", body.toString());
     JSONObject respBody = resp.getJSON();
-    return
-      "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets".formatted(respBody.get("id"));
+    return "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets".formatted(respBody.get("id"));
   }
 
   /**
