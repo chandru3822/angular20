@@ -25,7 +25,7 @@ const ImageTypeEnum = ref({
     saving: false,
     image: {}
   },
-  TOURNAMENT_BACKGROUND: {
+  CLOSER_DASH_TOURNAMENT_BACKGROUND: {
     key: "CLOSER_DASH_TOURNAMENT_BACKGROUND", //this needs to match the key, cuz dumb
     header: 'Closer/Setter Dashboard Background Image',
     description: 'Background of the Closer and Setter Incentive Dashboards',
@@ -52,6 +52,7 @@ const deleteImageDialogText = computed(() => {
 })
 
 const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit) => {
+  debugger
   let snackbar
   try {
     store.commit(AppMutations.SET_LOADING, true)
@@ -66,6 +67,7 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
         if (error?.error) {
           snackbar = getSnackbar('ERROR', error.errorMsg)
         } else {
+          debugger
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
           ImageTypeEnum.value[imageType.key].saving = false
