@@ -38,6 +38,15 @@
 
                 <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               </span>
+              <v-btn
+                v-if=" report?.id && (isOwner || isSmartlistAdmin || isSystemAdmin)"
+                class="ml-6 mt-1"
+                text
+                @click="router.push(`/smartlistv1/${report.id}`)"
+              >
+                <v-icon>mdi-eye</v-icon>
+                View old smartlist editor
+              </v-btn>
             </div>
           </v-toolbar-title>
           <v-toolbar-items>
