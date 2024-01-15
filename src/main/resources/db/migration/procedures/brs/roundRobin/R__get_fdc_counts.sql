@@ -1,5 +1,6 @@
 drop function if exists brs.get_fdc_counts(p_user_id bigint, p_closer_gen_source_ids bigint[], p_interval bigint);
-create or replace function brs.get_fdc_counts(p_user_id bigint, p_closer_gen_source_ids bigint[], p_interval bigint)
+drop function if exists brs.get_fdc_counts(p_user_id bigint,p_user_position_id bigint, p_closer_gen_source_ids bigint[], p_interval bigint);
+create or replace function brs.get_fdc_counts(p_user_id bigint,p_user_position_id bigint, p_closer_gen_source_ids bigint[], p_interval bigint)
   returns TABLE
           (
             user_id                    bigint,
@@ -16,7 +17,7 @@ select p_user_id,
                                 inner join flow.company_project_status_type cpst
                                            on cpst.id = pd.company_project_status_type_id and
                                               cpst.project_status_type_id in (1, 4)
-                         where pd.closer_user_id = p_user_id
+                         where pd.closer_user_position_id = p_user_position_id
                            and not pd.source = any (p_closer_gen_source_ids)
                            and pd.archived is false
                            and pd.final_design_complete_date is not null
@@ -31,7 +32,7 @@ select p_user_id,
                                 inner join flow.company_project_status_type cpst
                                            on cpst.id = pd.company_project_status_type_id and
                                               cpst.project_status_type_id in (1, 4)
-                         where pd.closer_user_id = p_user_id
+                         where pd.closer_user_position_id = p_user_position_id
                            and pd.source = any (p_closer_gen_source_ids)
                            and pd.archived is false
                            and pd.final_design_complete_date is not null
@@ -46,7 +47,7 @@ select p_user_id,
                                 inner join flow.company_project_status_type cpst
                                            on cpst.id = pd.company_project_status_type_id and
                                               cpst.project_status_type_id in (1, 4)
-                         where pd.closer_user_id = p_user_id
+                         where pd.closer_user_position_id = p_user_position_id
                            and pd.archived is false
                            and pd.final_design_complete_date is not null
                            and pd.final_design_complete_date >=
@@ -60,7 +61,7 @@ select p_user_id,
                                 inner join flow.company_project_status_type cpst
                                            on cpst.id = pd.company_project_status_type_id and
                                               cpst.project_status_type_id in (1, 4)
-                         where pd.closer_user_id = p_user_id
+                         where pd.closer_user_position_id = p_user_position_id
                            and pd.first_appointment >=
                                now() - (p_interval || 'day')::interval
                            and not pd.source = any (p_closer_gen_source_ids)

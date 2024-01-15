@@ -108,12 +108,18 @@ BEGIN
                              inner join flow.round_robin_user pczu
                                         on pczu.round_robin_id = pcz.id and pczu.archived is false
                              inner join flow.user u on u.id = pczu.user_id
-                             left join LATERAL brs.get_fdc_counts(pczu.user_id, v_closer_gen_source_ids,
+                             INNER JOIN flow.user_position up ON up.user_id = u.id
+                             INNER JOIN flow.company_user_status cus on cus.user_id = u.id
+                             INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3   AND ust.has_access is true
+                             left join LATERAL brs.get_fdc_counts(pczu.user_id,up.id, v_closer_gen_source_ids,
                                                                   p_time_interval) fdc_counts on true
                       where pcz.id = p_round_robin_id
                         and pczu.round_robin_user_type_id = 1
                         and pcz.archived is false
-                      group by pczu.user_id, concat(u.first_name, ' ', u.last_name),
+                        and up.archived is false
+                        and (up.end_date is null or
+                                 up.end_date >= (now() at time zone 'US/Mountain')::date - (p_time_interval || 'day')::interval)
+                      group by pczu.user_id, up.id,concat(u.first_name, ' ', u.last_name),
                                pcz.distribution_time_frame_days,
                                pczu.manual_allocation,fdc_counts.lead_gen_appointment_count,
                                fdc_counts.lead_gen_fdc_count,
