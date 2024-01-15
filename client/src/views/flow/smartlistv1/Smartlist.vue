@@ -20,6 +20,15 @@
                 <v-icon>mdi-arrow-left</v-icon>
               </v-btn>
               <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
+              <v-btn
+                v-if="smartlist?.id && ($store.state.user.details.id === smartlist?.ownerId || $store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN') || is7oaksAdmin)"
+                class="ml-6 mt-3"
+                text
+                @click="$router.push(`/smartlist/editor/${smartlist.id}`)"
+              >
+                <v-icon>mdi-eye</v-icon>
+                View new smartlist editor
+              </v-btn>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn
