@@ -9,14 +9,14 @@
           <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
         </div>
         <div class="checkbox-container">
-          <v-checkbox label="Only View Major Milestones"></v-checkbox>
+          <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
         </div>
-        <v-btn @click="resetFilters">Reset Filters x</v-btn>
+        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon>Export</a>
       </v-row>
     </v-card>
     <br>
     <v-data-table
-      class="elevation-1 table-striped"
+      class="elevation-1"
       :items="dashValues"
       fixed-header
       ref="pageable-table"
@@ -30,30 +30,19 @@
         <span class="default-text-color">No available data</span>
       </template>
 
-<!--      <template #no-results>-->
-<!--        <span class="default-text-color">No available projects</span>-->
-<!--      </template>-->
                     <template v-slot:header>
                       <thead id="main-table-header">
                         <tr>
                           <th id="milestone-col-header" colspan="1">Milestones</th>
-                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
-
-
-
-                          <!--                          <th v-if="isBrCorporateUser" colspan="3">Actual</th>-->
-<!--                          <th v-if="isBrCorporateUser" colspan="3">Planned</th>-->
-<!--                          <th v-if="isBrCorporateUser" colspan="3">Difference</th>-->
-<!--                          <th v-if="!isBrCorporateUser" colspan="3">Total</th>-->
+                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></th>
+                          <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
+                          <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
                         </tr>
                       </thead>
                     </template>
 
       <template #item="{ item, index }">
-                        <tr :class="[{'light-blue-row': !(index % 2)}, {'blue-row': item.show_targets}]"
-                            :style="{'background-color': index === 0 ? 'var(--v-primary-lighten9)' : ''}">
+                        <tr v-if="item.major_milestone || !viewMajorMilestones" :class="{'light-blue-row': (item.major_milestone)}">
                           <td class="milestone-col-td">{{ item.name }}</td>
                           <td class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
                             <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
@@ -73,30 +62,8 @@
                             <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
                           </td>
                           <td class="milestone-col-td" v-else></td>
-
-                          <!--                          <td class="milestone-col-td">{{ column2Values[index].company_count }}</td>-->
-<!--                          <td class="milestone-col-td">{{ column3Values[index].company_count }}</td>-->
-
                         </tr>
       </template>
-<!--      <template #item.projectName="{item: project, index}" class="text-left text&#45;&#45;black clickable">-->
-<!--        <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">-->
-<!--          {{project.projectName}}-->
-<!--        </router-link>-->
-<!--      </template>-->
-<!--      <template #item.stateAbbreviation="{item: project, index}" class="text-left clickable">-->
-<!--        <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">-->
-<!--          {{project.stateAbbreviation}}-->
-<!--        </router-link>-->
-<!--      </template>-->
-<!--      <template #item.projectStatusType="{item: project, index}" class="text-left clickable">-->
-<!--        <router-link class="router-link-td elevation-0 square-card" :to="`/project/${project.id}/status`">-->
-<!--          {{project.projectStatusType}}-->
-<!--        </router-link>-->
-<!--      </template>-->
-<!--      <template #item.dateCreated="{item: project, index}" class="text-left clickable">-->
-<!--        <span class="clickable">{{project.dateCreated | formatDate('timestamp', 'MM/DD/YYYY')}}</span>-->
-<!--      </template>-->
     </v-data-table>
     <ConfirmationDialog v-if="selectingCustomDates" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
       <template v-slot:title>Custom Date Range</template>
@@ -132,8 +99,9 @@
   import Snackbar from '@/components/Snackbar.vue'
   import CompanyDashboardDrilldown from './blueraven/companyDashboard/CompanyDashboardDrilldown.vue'
   import { AppMutations } from '@/stores/AppStore'
-  import { handleHidingGlobalLoader, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
   import cloneDeep from 'lodash.clonedeep'
+  import {DateTime} from "luxon";
 
 
   export default {
@@ -168,6 +136,7 @@
         isLoading: true,
         loadingData: false,
         viewTrends: false,
+        viewMajorMilestones: false,
         selectingCustomDates: false,
         drilldownIsLoading: true,
         dropdownValues: [],
@@ -425,10 +394,8 @@
         this.customDate.trendEnd = "";
       },
       async applyCustomDates(){
-        console.log(this.customDate.startDate);
         this.customDate.startDate = moment(this.customDate.startDate);
         this.customDate.endDate = moment(this.customDate.endDate);
-        console.log(this.customDate.startDate);
 
 
         let dateDiff = this.customDate.endDate.diff(this.customDate.startDate, 'days');
@@ -440,6 +407,87 @@
         // console.log(this.customDate.startDate);
         // this.customDate.startDate.format('YYYY-MM-DD')
         await this.getDashboardValues();
+      },
+      async exportCsv () {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          let filename = 'CompanyDashboard.csv'
+
+          let csvData = ' , ' + this.dropdownValues.find(x => x.id == this.firstDateRange).friendlyName;
+          if(this.viewTrends){
+            csvData += ', ' +  'Trend 1'
+          }
+          if(this.secondDateRange){
+            csvData += ', ' + this.dropdownValues.find(x => x.id == this.secondDateRange).friendlyName;
+            if(this.viewTrends){
+              csvData += ', ' +  'Trend 2'
+            }
+          }
+          if(this.thirdDateRange){
+            csvData += ', ' + this.dropdownValues.find(x => x.id == this.thirdDateRange).friendlyName;
+            if(this.viewTrends){
+              csvData += ', ' +  'Trend 3'
+            }
+          }
+          csvData += '\n';
+
+          this.dashValues.forEach((p, i) => {
+            csvData +=
+              // p.userFirstName + ',"' +
+              // p.userLastName + '",' +
+              // p.employeeId + ',"' +
+              // p.regionName + '",' +
+              // "\"" + p.officeName +  '\",' +
+              // p.officeState + ',' +
+              // p.userPositionName + ',"' +
+              // p.userStatus + '",' +
+              // p.hireDate + ',' +
+              // p.userFullName + ',' +
+              // p.residualStartDate + ',' +
+              // p.lifetimeQualifiedFds + ',' +
+              // p.qualifiedFdcInPeriod + ',' +
+              // p.fdcNotQualifiedInPeriod + ',' +
+              // p.requiredFdcPerMonth + ',' +
+              // p.residualEarned + ',' +
+              // p.percentOfResidualEarned + ',"' +
+              // p.potentialResidual + '",' +
+              // p.earnedResidual + ',' +
+              // p.clawback + ',' +
+              // p.adjustmentOverride + ',' +
+              // p.residualTotal + ',' +
+              // p.paidInPeriod
+              p.name + ',' + (p.company_count? p.company_count: 0);
+            if(this.viewTrends){
+              csvData += ', ' + (p.trend_count?p.trend_count : 0) + '%';
+            }
+            if(this.secondDateRange){
+              csvData += ', ' + (this.column2Values[i].company_count?this.column2Values[i].company_count : 0)
+              if(this.viewTrends){
+                csvData += ', ' + (this.column2Values[i].trend_count?this.column2Values[i].trend_count : 0) + '%';
+              }
+            }
+            if(this.thirdDateRange){
+              csvData += ', ' + (this.column3Values[i].company_count?this.column3Values[i].company_count : 0)
+              if(this.viewTrends){
+                csvData += ', ' + (this.column3Values[i].trend_count?this.column3Values[i].trend_count : 0) + '%';
+              }
+            }
+            csvData += '\n';
+          })
+
+
+          let blob = new Blob([csvData], {
+            type: 'text/csv;charset=utf-8'
+          });
+
+          saveAs(blob, filename);
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Exporting Residual Review')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
       },
       async getDashBoardData(startDate, endDate, trendStart, trendEnd){
         try {
@@ -560,6 +608,14 @@
   .checkbox-container{
     padding-right: 12px;
   }
+  .export-button{
+    display: flex;
+    margin: auto 50px auto auto;
+    color: #1F3C73;
+  }
+  .export-icon{
+    color: #1F3C73;
+  }
   .positive-percentage{
     color: green;
   }
@@ -661,6 +717,7 @@
     #main-table-header {
       #milestone-col-header {
         text-align: left;
+        min-width: 250px;
       }
 
       tr:hover {
@@ -674,14 +731,6 @@
         font-size: 12px !important;
         text-align: center;
         padding-top: 10px;
-      }
-    }
-
-    .light-blue-row {
-      background-color: var(--v-primary-lighten9);
-
-      &:hover {
-        background-color: var(--v-primary-lighten9);
       }
     }
 
@@ -740,6 +789,14 @@
       .neg_diff > span {
         color: red;
       }
+    }
+  }
+
+  .light-blue-row {
+    background-color: var(--v-primary-lighten9) !important;
+
+    &:hover {
+      background-color: var(--v-primary-lighten9);
     }
   }
 
