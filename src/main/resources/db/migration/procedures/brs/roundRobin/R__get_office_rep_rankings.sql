@@ -26,6 +26,7 @@ BEGIN
                           from flow.company_configuration_value
                           where code = 'CLOSER_POSITION_IDS'),
          current_closers as (select distinct u.id,
+                                             up.id as user_position_id,
                                              concat(u.first_name, ' ', u.last_name) AS name,
                                              o.org_name                             as office_name,
                                              o2.org_name                            as region,
@@ -42,11 +43,13 @@ BEGIN
                                               ON ocfv.org_id = o.id and ocfv.custom_field_group_assignment_id = 19097
                                     LEFT JOIN flow.list_of_value lov ON ocfv.int_value = lov.id
                              where up.archived IS FALSE
-                               AND up.primary_flag IS true
-                               AND (up.end_date is null or up.end_date >= now())
+                              -- AND up.primary_flag IS true
+                               and (up.end_date is null or
+                                    up.end_date >= (now() at time zone 'US/Mountain')::date - (p_time_interval || 'day')::interval)
                                AND ust.has_access is true)
       ,
          foo as (SELECT cc.id,
+                        cc.user_position_id,
                         cc.name,
                         cc.office_name,
                         cc.region,
@@ -58,9 +61,9 @@ BEGIN
 --                       INNER JOIN flow.company_project_status_type cp on pd.company_project_status_type_id = cp.id --being used??
                  from current_closers cc
                         inner join brs.project_details pd on pd.closer_user_id = cc.id
-                        left join LATERAL brs.get_fdc_counts(cc.id, v_closer_gen_source_ids, p_time_interval) fdc_counts
+                        left join LATERAL brs.get_fdc_counts(cc.id,cc.user_position_id, v_closer_gen_source_ids, p_time_interval) fdc_counts
                                   on true
-                 GROUP BY cc.id, cc.name, cc.office_name, cc.region, cc.metro_area,
+                 GROUP BY cc.id,cc.user_position_id, cc.name, cc.office_name, cc.region, cc.metro_area,
                           fdc_counts.lead_gen_fdc_count,
                           fdc_counts.lead_gen_appointment_count,
                           fdc_counts.self_gen_fdc_count,
