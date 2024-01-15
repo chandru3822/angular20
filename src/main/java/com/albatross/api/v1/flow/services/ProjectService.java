@@ -512,6 +512,17 @@ public class ProjectService {
     sqlCache.updateBySql(sql, params);
   }
 
+  public List<Attachment> addAttachments(MultipartFile[] files, Long projectId, Long attachmentTypeId) throws IOException {
+    List<Attachment> results = new ArrayList<>();
+    Attachment a;
+    for(MultipartFile file : files) {
+      a = addAttachment(file, projectId, attachmentTypeId, file.getOriginalFilename());
+      results.add(a);
+    }
+
+    return results;
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(MultipartFile file, @NonNull Long projectId, Long attachmentTypeId, String displayName)
