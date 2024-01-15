@@ -165,7 +165,7 @@ const calculatedAvailableFields = computed(() => {
     let suffix = ''
     if (f?.smartlistFieldId) {
       keep = props.fields.findIndex(field => {
-        return field?.smartlistFieldId === f.smartlistFieldId &&
+        return (field?.smartlistFieldId === f.smartlistFieldId && field?.updateType !== props.updateTypes.DELETE) &&
                (
                  //PS/event system fields can be added once per PS/event. Other object type system fields can be added just once
                  [1,2,3,5].includes(field.objectTypeId) ||
@@ -174,7 +174,10 @@ const calculatedAvailableFields = computed(() => {
                )
       }) === -1
     } else if (f?.customFieldGroupAssignmentId) {
-      keep = props.fields.findIndex(field => field?.customFieldGroupAssignmentId === f.customFieldGroupAssignmentId) === -1
+      keep = props.fields.findIndex(field =>
+        field?.customFieldGroupAssignmentId === f.customFieldGroupAssignmentId &&
+        field?.updateType !== props.updateTypes.DELETE
+      ) === -1
       if (keep) {
         switch (f.objectTypeId) {
           case 1:
