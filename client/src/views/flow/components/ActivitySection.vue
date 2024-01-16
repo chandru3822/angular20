@@ -57,7 +57,7 @@
       </div>
 <!--Topic View-->
       <div v-if="!timelineView">
-        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available </div>
+        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
         <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
           <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
@@ -383,9 +383,6 @@ export default {
     this.getUsers()
   },
   methods: {
-    testing($event){
-      console.log($event)
-    },
     cloneDeep,
     bottomHitCallback() {
       this.bottomHitCount = this.bottomHitCount + 1
@@ -499,7 +496,6 @@ export default {
       try {
         const {data} = await getRequest('/user/mentionableUsers', null, [])
         this.users = data
-        console.log(this.users[0])
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
