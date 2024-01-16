@@ -12,7 +12,7 @@ import java.util.Date;
 public class ResourceAppointment {
 
   private Long id, companyId, userId, orgId, duration, originTimezoneOffset;
-  private String title, description, location, recurrence, recurringEventId, recurringEventEndType, originTimezone;
+  private String title, description, location, recurrence, recurringEventId, recurringEventEndType, originTimezone, resourceName;
   private Double latitude, longitude;
   private Date startTime, endTime, recurringStartTime, recurringEndTime;
   private Boolean archived, allDay, repeat, startTimeOffsetDay;

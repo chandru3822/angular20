@@ -23,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,7 +69,7 @@ public class BrsProcessStepActionFunctionService {
     final String functionName = CleanString.snakeToCamel(originalFuncName.substring(dot + 1));
     final String functionType = (func.getRunInBackend()) ? "MANUAL" : "AUTOTRIGGER";
 
-    throw new RuntimeException(String.format("PPS: Unable to perform %s action for java function: %s *** %s", functionType, functionName, message));
+    throw new RuntimeException("PPS: Unable to perform %s action for java function: %s *** %s".formatted(functionType, functionName, message));
   }
 
   // inverters should maybe be an enum if they start to get used anywhere else in the codebase
@@ -254,7 +253,7 @@ public class BrsProcessStepActionFunctionService {
 
       for (Object stipulation : stipulations) {
         var stip = (JSONObject) stipulation;
-        formattedStipulations.append(String.format("%s\n", stip.getString("name")));
+        formattedStipulations.append("%s\n".formatted(stip.getString("name")));
       }
 
       // Remove the last comma and space

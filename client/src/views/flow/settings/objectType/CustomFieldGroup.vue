@@ -64,7 +64,7 @@
     <v-row>
       <v-col cols="12" class="shrink pt-0">
         <v-toolbar flat class="app-toolbar">
-          <v-toolbar-title v-if="$vuetify.breakpoint.mdAndUp" class="title-large">Custom Field Groups</v-toolbar-title>
+          <v-toolbar-title class="title-large">Custom Field Groups</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">

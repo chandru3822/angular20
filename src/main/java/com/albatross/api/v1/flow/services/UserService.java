@@ -44,7 +44,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -85,11 +84,11 @@ public class UserService {
     params.put("offset", pageable.getOffset());
 
     List<User> results =
-        sqlCache.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
+      sqlCache.queryBySql(UserQuery.searchUsers, params, new UserMapper<>(User.class, om));
 //      sqlCache.queryForObjectBySql(UserQuery.searchUserCount, params, Integer.class);
 
     return new PageImpl<>(
-        results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), 100000);
+      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), 100000);
   }
 
   public void saveUserHomePage(Long homePageCompanyFeatureId) {
@@ -176,11 +175,11 @@ public class UserService {
         // todo: remove this check after we turn it on and mobile is working
         if (doCompanyDefaultValidation) {
           Boolean passwordIsCompanyDefault =
-              securityService.passwordIsCompanyDefault(user.getId(), user.getNewPassword());
+            securityService.passwordIsCompanyDefault(user.getId(), user.getNewPassword());
           if (passwordIsCompanyDefault) {
             // NOT_ACCEPTABLE = 406
             throw new ResponseStatusException(
-                HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+              HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
           } else {
             securityService.updateUserPassword(id, user.getNewPassword());
           }
@@ -232,9 +231,9 @@ public class UserService {
       return result;
     } catch (Exception e) {
       log.error(
-          "USER: Main user query returned more than 1 result. {} user={}",
-          e.getMessage(),
-          currentUser.getId());
+        "USER: Main user query returned more than 1 result. {} user={}",
+        e.getMessage(),
+        currentUser.getId());
       return Optional.empty();
     }
   }
@@ -283,7 +282,7 @@ public class UserService {
     // had to make a change cuz for a 7oaks employee in a non-alba context it wasn't loading some
     // company specific columns we needed on the frontend
     Optional<User> user =
-        sqlCache.getBySql(UserQuery.findByUsernameIgnoreCase, params, new UserMapper<>(User.class, om));
+      sqlCache.getBySql(UserQuery.findByUsernameIgnoreCase, params, new UserMapper<>(User.class, om));
     return user.orElse(null);
   }
 
@@ -301,8 +300,8 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("usernameOrEmail", usernameOrEmail);
     return sqlCache
-        .getBySql(UserQuery.findByUsernameOrEmailIgnoreCase, params, new UserMapper<>(User.class, om))
-        .orElse(null);
+      .getBySql(UserQuery.findByUsernameOrEmailIgnoreCase, params, new UserMapper<>(User.class, om))
+      .orElse(null);
   }
 
   public User findByUserUuid(UUID uuid) {
@@ -399,8 +398,7 @@ public class UserService {
         if (primaryPosition != null) {
           // If the user has a primary position, remove the user from any SMS teams associated to their position or org
           smsTeamService.deleteUserByUserId(userId, primaryPosition.getOrgId(), primaryPosition.getPositionId());
-        }
-        else {
+        } else {
           // Remove user from any SMS teams they've been added to via User
           smsTeamService.deleteUserByUserId(userId, null, null);
         }
@@ -416,8 +414,8 @@ public class UserService {
   public ResponseEntity changeContext(Long companyId) {
     User user = securityService.getCurrentUser();
     return user.getHighestCompanyId() == 1L
-        ? changeContextAdmin(companyId)
-        : changeContextNonAdmin(companyId);
+      ? changeContextAdmin(companyId)
+      : changeContextNonAdmin(companyId);
   }
 
   private ResponseEntity changeContextAdmin(Long companyId) {
@@ -439,7 +437,7 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.getId());
     List<Company> companies =
-        sqlCache.queryBySql(CompanyQuery.getCompaniesAssignedToUser, params, Company.class);
+      sqlCache.queryBySql(CompanyQuery.getCompaniesAssignedToUser, params, Company.class);
 
     // verify they have access to the company id that was sent in
     for (Company c : companies) {
@@ -455,7 +453,7 @@ public class UserService {
       sqlCache.updateBySql(UserQuery.updateDefault, params);
       User newUserObj = findByUsernameIgnoreCase(null, user.getId());
       List<FeatureAccessControl> results =
-          securityService.getUserFeatureAccess(newUserObj.getId(), newUserObj.getCompanyId());
+        securityService.getUserFeatureAccess(newUserObj.getId(), newUserObj.getCompanyId());
       newUserObj.setFeatureAccess(results);
       return ResponseEntity.ok(newUserObj);
     } else {
@@ -474,13 +472,13 @@ public class UserService {
 
         // check if the masquerading user is a 7oaks employee
         Boolean masqueradingUserIs7oaks =
-            securityService.userIsSuperAdmin(user.getMasqueradingUserId());
+          securityService.userIsSuperAdmin(user.getMasqueradingUserId());
         if (!masqueradingUserIs7oaks) {
           // if the masquerading user is not 7oaks/super admin - then need to remove any access that
           // the masquerading user does not ALSO have access to
           results =
-              securityService.getMasqueradedUserFeatureAccess(
-                  user.getId(), jwt.getCompanyId(), user.getMasqueradingUserId());
+            securityService.getMasqueradedUserFeatureAccess(
+              user.getId(), jwt.getCompanyId(), user.getMasqueradingUserId());
         } else {
           // if the masquerading user is a 7oaks employee/super admin - then just use their normal
           // access
@@ -528,10 +526,8 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", currentUser.getCompanyId());
     params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
-    List<MentionableUser> results =
-        sqlCache.queryBySql(UserQuery.mentionableUsers, params, MentionableUser.class);
 
-    //todo: come back to this but i dont think we need it
+      //todo: come back to this but i dont think we need it
 //    List<Long> userIds = results.stream().map(User::getId).collect(Collectors.toList());
 //    Map<Long, String> userImageUrls =
 //        attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
@@ -544,23 +540,23 @@ public class UserService {
 //      }
 //    }
 
-    return results;
+    return sqlCache.queryBySql(UserQuery.mentionableUsers, params, MentionableUser.class);
   }
 
   public void addNotificationToken(Long userId, String token) {
     try {
       sqlCache.updateBySql(
         UserQuery.addNotificationToken,
-          Map.of(
-              "userId",
-              userId,
-              "token",
-              token,
-              "createdById",
-              securityService.getCurrentUser().trueUserId()));
+        Map.of(
+          "userId",
+          userId,
+          "token",
+          token,
+          "createdById",
+          securityService.getCurrentUser().trueUserId()));
     } catch (DuplicateKeyException e) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Token already exists on given user", e);
+        HttpStatus.CONFLICT, "Token already exists on given user", e);
     }
   }
 
@@ -572,9 +568,9 @@ public class UserService {
     params.put("linked", linked);
     params.put("companyId", currentUser.getCompanyId());
     List<Attachment> attachments =
-        sqlCache.queryBySql(UserQuery.getUserAttachments, params, Attachment.class);
+      sqlCache.queryBySql(UserQuery.getUserAttachments, params, Attachment.class);
     return attachmentService.getAttachmentPresignedUrls(
-        attachments, storageBucket, null != isMobile ? isMobile : false);
+      attachments, storageBucket, null != isMobile ? isMobile : false);
   }
 
   public void linkAttachment(Long userId, Long attachmentId, Boolean doLink) {
@@ -586,7 +582,7 @@ public class UserService {
     params.put("companyId", currentUser.getCompanyId());
 
     String sql = UserQuery.linkAttachment;
-    if(!doLink) {
+    if (!doLink) {
       sql = UserQuery.unlinkAttachment;
     }
     sqlCache.updateBySql(sql, params);
@@ -595,7 +591,7 @@ public class UserService {
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(MultipartFile file, Long userId, Long attachmentTypeId, String displayName)
-      throws IOException {
+    throws IOException {
     User user = securityService.getCurrentUser();
 
     if (file.isEmpty()) {
@@ -605,8 +601,8 @@ public class UserService {
     // get keyPattern from attachmentType
     AttachmentType attachmentType = attachmentService.getAttachmentType(attachmentTypeId);
     String key =
-        String.format(
-            user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
+      String.format(
+        user.getAwsBucket() + "/" + attachmentType.getKeyPattern(), UUID.randomUUID());
 
     ObjectMetadata metadata = new ObjectMetadata();
     metadata.setContentLength(file.getSize());
@@ -614,8 +610,8 @@ public class UserService {
     metadata.setCacheControl("public, max-age=31536000");
 
     PutObjectRequest objectRequest =
-        new PutObjectRequest(
-            storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
+      new PutObjectRequest(
+        storageBucket, key, new ByteArrayInputStream(file.getBytes()), metadata);
 
     s3.putObject(objectRequest.withCannedAcl(CannedAccessControlList.PublicRead));
 
@@ -645,12 +641,11 @@ public class UserService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
 
-    for (SmsTeam smsTeam: smsTeams) {
+    for (SmsTeam smsTeam : smsTeams) {
       params.put("smsTeamId", smsTeam.getId());
       if (smsTeam.getReceiveUnassignedNotifications() != null && smsTeam.getReceiveUnassignedNotifications()) {
         sqlCache.updateBySql(SmsTeamQuery.upsertSmsTeamUserUnassignedNotification, params);
-      }
-      else {
+      } else {
         params.put("modifiedById", userId);
         sqlCache.updateBySql(SmsTeamQuery.deleteSmsTeamUserUnassignedNotification, params);
       }
@@ -658,10 +653,10 @@ public class UserService {
   }
 
   public void revokeUserAccess(Long userId) {
-//    jwtAuthProvider.forceReload(userId);
-//    RevokeAccessMessage ram = new RevokeAccessMessage();
-//    ram.setUserId(userId);
-//    pubSubService.publish(EventChannel.NOTIFICATION, ram);
+    jwtAuthProvider.forceReload(userId);
+    RevokeAccessMessage ram = new RevokeAccessMessage();
+    ram.setUserId(userId);
+    pubSubService.publish(EventChannel.NOTIFICATION, ram);
   }
 
   public boolean hasSmsAccess(Long userId) {
@@ -683,33 +678,38 @@ public class UserService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<FeatureAccessControl>> featureAccessRef = new TypeReference<>() {};
+      TypeReference<List<FeatureAccessControl>> featureAccessRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "featureAccess",
-          new JsonCollectionDeserializer(featureAccessRef, objectMapper));
+        List.class,
+        "featureAccess",
+        new JsonCollectionDeserializer(featureAccessRef, objectMapper));
 
-      TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {};
+      TypeReference<List<UserOrgHierarchy>> userOrgHierarchyRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "hierarchy",
-          new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
+        List.class,
+        "hierarchy",
+        new JsonCollectionDeserializer(userOrgHierarchyRef, objectMapper));
 
-      TypeReference<List<Company>> companiesRef = new TypeReference<>() {};
+      TypeReference<List<Company>> companiesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class, "companies", new JsonCollectionDeserializer(companiesRef, objectMapper));
+        List.class, "companies", new JsonCollectionDeserializer(companiesRef, objectMapper));
 
-      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
+      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "userPositions",
-          new JsonCollectionDeserializer(userPositionsRef, objectMapper));
+        List.class,
+        "userPositions",
+        new JsonCollectionDeserializer(userPositionsRef, objectMapper));
 
-      TypeReference<List<Long>> notificationTokensRef = new TypeReference<>() {};
+      TypeReference<List<Long>> notificationTokensRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "notificationTokens",
-          new JsonCollectionDeserializer(notificationTokensRef, objectMapper));
+        List.class,
+        "notificationTokens",
+        new JsonCollectionDeserializer(notificationTokensRef, objectMapper));
     }
   }
 }

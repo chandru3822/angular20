@@ -17,7 +17,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class OverridePlanService {
 
     private final SqlCache sqlCache;
@@ -496,9 +495,11 @@ public class OverridePlanService {
         private final Date payrollEndDate;
 
         public BackdatedPlanApprovalRequiredException(Date userStartDate, Long payrollId, Date payrollEndDate) {
-            super(String.format("Provided user start date (%s) is before most"
-                    + " recent payroll's end date (payroll id %d; end date %s);"
-                    + " executive approval required", userStartDate, payrollId, payrollEndDate));
+            super(("""
+              Provided user start date (%s) is before most
+               recent payroll's end date (payroll id %d; end date %s);
+               executive approval required
+              """).formatted(userStartDate, payrollId, payrollEndDate));
             this.userStartDate = userStartDate;
             this.payrollId = payrollId;
             this.payrollEndDate = payrollEndDate;

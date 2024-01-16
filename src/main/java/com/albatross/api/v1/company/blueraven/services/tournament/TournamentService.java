@@ -11,7 +11,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -27,7 +26,7 @@ import java.util.Optional;
  */
 @Service
 @PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('TOURNAMENTS')")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class TournamentService {
 
   @Value("${aws.storageBucket}")
@@ -151,7 +150,7 @@ public class TournamentService {
     params.put("id", id);
 
     Optional<Tournament> result = sqlCache.getBySql(TournamentQuery.get, params, new TournamentMapper<>(Tournament.class, om));
-    if(result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
+    if (result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
       result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(bucket, result.get().getBackgroundAttachmentId()));
     }
     return result;
@@ -197,7 +196,7 @@ public class TournamentService {
 
     Long id = sqlCache.updateBySqlReturningId(TournamentQuery.addBracket, params, "id").longValue();
 
-    for(Round round : bracket.getRounds()) {
+    for (Round round : bracket.getRounds()) {
       round.setTournamentBracketId(id);
       saveRound(round, true);
     }
@@ -225,7 +224,7 @@ public class TournamentService {
     params.put("userId", user.trueUserId());
 
     //if replicating then always insert
-    if(null != round.getId() && !replicate) {
+    if (null != round.getId() && !replicate) {
       params.put("id", round.getId());
       sqlCache.updateBySql(TournamentQuery.updateRound, params);
     } else {
@@ -263,7 +262,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.trueUserId());
 
-    for(Match m : matches) {
+    for (Match m : matches) {
       //advance each match
       params.put("matchId", m.getId());
       params.put("roundId", roundId);
@@ -280,7 +279,7 @@ public class TournamentService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", user.trueUserId());
 
-    for(Match m : matches) {
+    for (Match m : matches) {
       //advance each match
       params.put("matchId", m.getId());
       params.put("parentMatchId", m.getParentMatchId());
@@ -306,12 +305,10 @@ public class TournamentService {
 
     if (overrideUser1) {
       sqlCache.updateBySql(TournamentQuery.overrideMatchUser1, params);
-    }
-    else {
+    } else {
       sqlCache.updateBySql(TournamentQuery.overrideMatchUser2, params);
     }
   }
-
 
 
   public static class TournamentMapper<T> extends BeanPropertyRowMapper<T> {
@@ -324,15 +321,18 @@ public class TournamentService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Bracket>> bracketsRef = new TypeReference<>() {};
+      TypeReference<List<Bracket>> bracketsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "brackets",
         new JsonCollectionDeserializer(bracketsRef, objectMapper));
 
-      TypeReference<List<TournamentPool>> poolsRef = new TypeReference<>() {};
+      TypeReference<List<TournamentPool>> poolsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "pools",
         new JsonCollectionDeserializer(poolsRef, objectMapper));
 
-      TypeReference<List<TournamentFormulaField>> formulaFieldsRef = new TypeReference<>() {};
+      TypeReference<List<TournamentFormulaField>> formulaFieldsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "tournamentFormulaFields",
         new JsonCollectionDeserializer(formulaFieldsRef, objectMapper));
     }
@@ -348,7 +348,8 @@ public class TournamentService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Round>> roundsRef = new TypeReference<>() {};
+      TypeReference<List<Round>> roundsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "rounds",
         new JsonCollectionDeserializer(roundsRef, objectMapper));
     }

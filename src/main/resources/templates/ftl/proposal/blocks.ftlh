@@ -64,7 +64,7 @@
     </#if>
     <#local type=marks[0].type>
     <#local val>
-        <@.vars[type] attrs=marks[0].attrs>${aVal}</@>
+        <@.vars[type] attrs=marks[0].attrs!>${aVal}</@>
     </#local>
     <#return addMarks(val, marks[1..])>
 </#function>

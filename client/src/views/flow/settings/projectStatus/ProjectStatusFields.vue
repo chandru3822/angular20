@@ -206,7 +206,6 @@ export default {
       }
     },
     async deleteField() {
-      console.log('delete that shiz', this.itemToDelete)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let id = this.itemToDelete.id
@@ -223,7 +222,6 @@ export default {
       }
     },
     async saveFieldToMilestone() {
-      console.log('save that shiz', this.selectedDataViewField)
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         let params = {

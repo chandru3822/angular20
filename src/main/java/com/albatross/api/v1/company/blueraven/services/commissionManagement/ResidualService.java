@@ -10,7 +10,6 @@ import com.albatross.api.v1.flow.model.User;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -25,7 +24,7 @@ import java.util.*;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class ResidualService {
 
   private final SqlCache sqlCache;
@@ -55,12 +54,12 @@ public class ResidualService {
 
     try {
 
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("projectId", projectOverride.getProjectId());
-    params.put("overrideDate", projectOverride.getOverrideDate());
-    params.put("userId", currentUser.trueUserId());
-    sqlCache.updateBySql(ResidualQuery.addProjectOverride, params);
-    sqlCache.updateBySql(ResidualQuery.deleteProjectQualified, params);
+      HashMap<String, Object> params = new HashMap<>();
+      params.put("projectId", projectOverride.getProjectId());
+      params.put("overrideDate", projectOverride.getOverrideDate());
+      params.put("userId", currentUser.trueUserId());
+      sqlCache.updateBySql(ResidualQuery.addProjectOverride, params);
+      sqlCache.updateBySql(ResidualQuery.deleteProjectQualified, params);
     } catch (DuplicateKeyException e) {
       String msg = "An override date already exists for this project";
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
@@ -134,8 +133,8 @@ public class ResidualService {
     params.put("planId", planId);
 
     return sqlCache
-        .getBySql(ResidualQuery.getResidualPlanDetails, params, new SingleColumnRowMapper<>(String.class))
-        .orElse("{}");
+      .getBySql(ResidualQuery.getResidualPlanDetails, params, new SingleColumnRowMapper<>(String.class))
+      .orElse("{}");
   }
 
   public String findUserForResidual(String search, Long planId) {
@@ -153,10 +152,10 @@ public class ResidualService {
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", userId);
     List<String> query =
-        sqlCache.queryBySql(
-            ResidualQuery.getResidualPlanUserHistory,
-            params,
-            new SingleColumnRowMapper<>(String.class));
+      sqlCache.queryBySql(
+        ResidualQuery.getResidualPlanUserHistory,
+        params,
+        new SingleColumnRowMapper<>(String.class));
     return query.isEmpty() ? "[]" : query.get(0);
   }
 
@@ -186,8 +185,8 @@ public class ResidualService {
     params.put("planId", id);
 
     return sqlCache
-        .getBySql(ResidualQuery.getResidualPlanUsers, params, new SingleColumnRowMapper<>(String.class))
-        .orElse("[]");
+      .getBySql(ResidualQuery.getResidualPlanUsers, params, new SingleColumnRowMapper<>(String.class))
+      .orElse("[]");
   }
 
   public void deletePlan(Long id) {
@@ -240,9 +239,9 @@ public class ResidualService {
     params.put("id", id);
 
     return sqlCache
-        .getBySql(
-            ResidualQuery.getResidualPlanAllocation, params, new SingleColumnRowMapper<>(String.class))
-        .orElse("{}");
+      .getBySql(
+        ResidualQuery.getResidualPlanAllocation, params, new SingleColumnRowMapper<>(String.class))
+      .orElse("{}");
   }
 
   public Optional<Long> clonePlan(Long id, ResidualPlan residualPlan) {

@@ -173,7 +173,6 @@
           this.newCode.callGroupId = this.callGroupId
           const {data, status} = await postRequest(`/callGroup/addCode`, this.newCode, 'blueraven')
           this.postalCodes.push(data)
-          console.log('randalogger', data.id)
           this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
           this.addCode = false
           this.newCode = {}

@@ -92,7 +92,8 @@ export default {
   },
   props: {
     userAssigned: Boolean,
-    userIdIn: Number
+    userIdIn: Number,
+    teamsAssociatedToUser: Array
   },
   data() {
     return {
@@ -159,10 +160,12 @@ export default {
       this.userId = parseInt(this.$route.params.userId) | null
       await this.fetchUserData()
     },
-    '$parent.$data.teamsAssociatedToUser': async function() {
+    'teamsAssociatedToUser': async function() {
       this.templateTeams = []
-      for (let team of this.$parent.$data.teamsAssociatedToUser){
-        this.templateTeams.push(team.id);
+      if (this.teamsAssociatedToUser.length > 0) {
+        for (let team of this.teamsAssociatedToUser) {
+          this.templateTeams.push(team.id);
+        }
       }
       await this.getTemplates()
     },
@@ -230,7 +233,7 @@ export default {
             userIDs: userIds,
             message: message.data.file.name,
             mediaURLs: mediaUrls,
-            smsTeamId: this.$parent.$data.teamsAssociatedToUser[0].id
+            smsTeamId: this.teamsAssociatedToUser[0].id
           }
           await postRequest(sendTextUrl, params)
         }
@@ -239,7 +242,7 @@ export default {
           params = {
             userIDs: userIds,
             message: message.data.text,
-            smsTeamId: this.$parent.$data.teamsAssociatedToUser[0].id
+            smsTeamId: this.teamsAssociatedToUser[0].id
           }
           await postRequest(sendTextUrl, params)
         }
@@ -372,7 +375,7 @@ export default {
       textInput.innerHTML += this.selectedTemplate.message
       //clear out all the selections for the next time the template selector is opened
       this.selectedTemplate = undefined
-      if (this.$parent.$data.teamsAssociatedToUser.length != 1) {
+      if (this.teamsAssociatedToUser.length !== 1) {
         this.selectableTemplates = []
         this.templateTeams = []
       }
@@ -382,16 +385,20 @@ export default {
       await this.fetchContact()
       await this.fetchSmsData()
       this.templateTeams = []
-      for (let team of this.$parent.$data.teamsAssociatedToUser){
-        this.templateTeams.push(team.id);
+      if (this.teamsAssociatedToUser?.length > 0) {
+        for (let team of this.teamsAssociatedToUser) {
+          this.templateTeams.push(team.id);
+        }
       }
       await this.getTemplates()
     },
     async fetchUserData() {
       await this.fetchSmsData()
       this.templateTeams = []
-      for (let team of this.$parent.$data.teamsAssociatedToUser){
-        this.templateTeams.push(team.id);
+      if (this.teamsAssociatedToUser?.length > 0) {
+        for (let team of this.teamsAssociatedToUser) {
+          this.templateTeams.push(team.id);
+        }
       }
       await this.getTemplates()
     }
@@ -479,6 +486,11 @@ a.chatLink {
 
 #project-tabs > div > div > div:nth-child(2) > form > div.sc-user-input--buttons > div:nth-child(3) > div {
   left: 40% !important;
+}
+#project-tabs {
+  div.sc-user-input--buttons > div.sc-user-input--button {
+    padding-right: 8px;
+  }
 }
 
 

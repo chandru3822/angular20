@@ -57,7 +57,7 @@
       </div>
 <!--Topic View-->
       <div v-if="!timelineView">
-        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
+        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available </div>
         <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
           <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
@@ -163,7 +163,7 @@
           </template>
           <template #item-@="{ item }">
             <div class="user">
-                  ({{ item.value }})
+                  {{ item.value }}({{item["email"]}})
             </div>
           </template>
         </Mentionable>
@@ -278,7 +278,7 @@ export default {
       filterMenuOpen: false,
       //should probably load this but hardcoding for now
       activityTypes: [
-        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: true},
+        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: false},
         {id: 2, activityType: 'Notes', activityTypeSingularLabel: 'Note', show: true},
       ],
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
@@ -383,6 +383,9 @@ export default {
     this.getUsers()
   },
   methods: {
+    testing($event){
+      console.log($event)
+    },
     cloneDeep,
     bottomHitCallback() {
       this.bottomHitCount = this.bottomHitCount + 1
@@ -496,7 +499,7 @@ export default {
       try {
         const {data} = await getRequest('/user/mentionableUsers', null, [])
         this.users = data
-
+        console.log(this.users[0])
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')

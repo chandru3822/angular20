@@ -25,126 +25,16 @@ CREATE OR REPLACE FUNCTION brs.get_total_lead_allocation(p_round_robin_id bigint
 AS
 $BODY$
 declare
-  v_round_robin_id bigint;
+  v_closer_gen_source_ids bigint[];
+  v_users bigint[];
 BEGIN
 
-  if p_remote is false then
-    create temp table round_robin_users as (
-      select pczu.user_id, pcz.distribution_time_frame_days
-      from flow.round_robin pcz
-             inner join flow.round_robin_user pczu
-                        on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
-                           pczu.archived is false
-             inner join flow.company_user_status cus on cus.user_id = pczu.user_id
-             inner join flow.user_status_type ust
-                        on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
-      where pcz.id = p_round_robin_id and pcz.remote is false);
-    create index round_robin_users_user_id on round_robin_users(user_id);
-    create index round_robin_users_distribution_time_frame_days on round_robin_users(distribution_time_frame_days);
-    v_round_robin_id = p_round_robin_id;
-  else
-    create temp table round_robin_users as (
-      select pczu.user_id, pcz.distribution_time_frame_days
-      from flow.round_robin pcz
-             inner join flow.round_robin_user pczu
-                        on pczu.round_robin_id = pcz.id and pczu.round_robin_user_type_id = 1 and
-                           pczu.archived is false
-             inner join flow.company_user_status cus on cus.user_id = pczu.user_id
-             inner join flow.user_status_type ust
-                        on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
-      where pcz.archived is false and pcz.remote is true
-    );
-    create index round_robin_users_user_id on round_robin_users(user_id);
-    create index round_robin_users_distribution_time_frame_days on round_robin_users(distribution_time_frame_days);
-    select id
-    into v_round_robin_id
-    from flow.round_robin
-    where archived is false and remote is true;
-  end if;
+  select (select string_to_array(value, ',')
+     from flow.company_configuration_value
+     where code = 'CLOSER_GEN_SOURCE_IDS')::bigint[]
+  into v_closer_gen_source_ids;
 
     return query
-        with lead_gen_num as (
-                 select rru.user_id, count(pd.id) as lead_gen_num
-                 from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              closer_appointment_start >= now() - interval '90 days'
-                     and pd.source not in (523, 524, 530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                     pd.first_cash_payment_paid_date is not null and
-                                     greatest(final_design_signed_date, financial_agreement_signed_date,
-                                              first_cash_payment_paid_date, utility_bill_verified_date,
-                                              proof_of_homeowners_insurance_obtained_date)
-                                         between now() - interval '90 days' and now()
-                             else
-                                 greatest(final_design_signed_date, financial_agreement_signed_date,
-                                          proof_of_homeowners_insurance_obtained_date, utility_bill_verified_date)
-                                     between now() - interval '90 days' and now()
-                                                                  end
-                     AND ((pd.cancelled_date is null) or
-                          (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project_status_type pst
-                                    on pst.id = pd.company_project_status_type_id and pst.id != 3
-                 group by rru.user_id),
-             lead_gen_den as (
-                 select rru.user_id, count(pd.id) as lead_gen_den
-                 from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              closer_appointment_start >= now() - interval '90 days'
-                     and pd.source not in (523, 524, 530)
-                 group by rru.user_id),
-             self_gen as (
-                 select rru.user_id, count(pd.id) as self_gen
-                 from round_robin_users rru
-                          left join brs.project_details pd on rru.user_id = pd.closer_user_id and
-                                                              greatest(final_design_signed_date,
-                                                                       financial_agreement_signed_date,
-                                                                       first_cash_payment_paid_date,
-                                                                       utility_bill_verified_date,
-                                                                       proof_of_homeowners_insurance_obtained_date) >=
-                                                              now() - interval '90 days'
-                     and pd.source in (523, 524, 530)
-                     and final_design_signed_date is not null
-                     and pd.financial_agreement_signed_date is not null
-                     and pd.utility_bill_verified_date is not null
-                     and (pd.proof_of_homeowners_insurance_obtained_date is not null or
-                          proof_of_homeowners_insurance_required = 306)
-                     and case
-                             when pd.primary_financier = 721 then
-                                 pd.first_cash_payment_paid_date is not null
-                             else
-                                 1 = 1
-                                                                  end
-                     AND ((pd.cancelled_date is null) or
-                          (pd.cancelled_date is not null and pd.cancelled_date > now()))
-                          left join flow.project_status_type pst
-                                    on pst.id = pd.company_project_status_type_id and pst.id != 3
-                 group by rru.user_id),
-             appointment_count as (
-                 select rru.user_id, count(pd2.id) as appointment_count
-                 from round_robin_users rru
-                          left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                     and
-                                                               closer_appointment_start between now() - interval '21 days' and now() + interval '100 days'
-                 group by rru.user_id),
-             appointment_count_with_interval as (
-                 select rru.user_id, count(pd2.id) as appointment_count_with_interval
-                 from round_robin_users rru
-                          left join brs.project_details pd2 on rru.user_id = pd2.closer_user_id
-                     and
-                                                               closer_appointment_start between now() - (rru.distribution_time_frame_days || 'days')::interval and now() + interval '100 days'
-                     and pd2.source not in (523, 524, 530)
-                 group by rru.user_id),
-             total_avail as (
-                 select coalesce(ca.appointment_count, 0) as avail, rru.user_id
-                 from round_robin_users rru
-                          left join brs.cached_appointment ca on rru.user_id = ca.user_id
-             )
         select foo3.round_robin_user_id::bigint,
                foo3.user_id::bigint,
                foo3.company_timezone_id::bigint,
@@ -156,9 +46,9 @@ BEGIN
                foo3.lead_gen_num::bigint,
                foo3.lead_gen_den::bigint,
                foo3.self_gen::bigint,
-               foo3.avail::bigint,
+               -1::bigint,
                foo3.appointment_count_with_interval::bigint,
-               foo3.appointment_count::bigint,
+              -1::bigint,
                foo3.manual_allocation
         from (
                  select foo2.round_robin_user_id, foo2.user_id,
@@ -175,9 +65,7 @@ BEGIN
                         foo2.lead_gen_num,
                         foo2.lead_gen_den,
                         foo2.self_gen,
-                        foo2.avail,
                         foo2.appointment_count_with_interval,
-                        foo2.appointment_count,
                         foo2.manual_allocation
                  from (
                           select foo1.round_robin_user_id, foo1.user_id,
@@ -192,36 +80,16 @@ BEGIN
                                  foo1.lead_gen_num,
                                  foo1.lead_gen_den,
                                  foo1.self_gen,
-                                 foo1.avail,
                                  foo1.appointment_count_with_interval,
-                                 foo1.appointment_count,
                                  foo1.manual_allocation,
                                  foo1.sum_manual_allocation
                           from (
                                    select foo.round_robin_user_id, foo.user_id,
                                           foo.company_timezone_id, foo.timezone,
-                                          case
-                                              when foo.lead_gen_den is null or foo.lead_gen_den = 0 then
-                                                  case
-                                                      when foo.manual_allocation is not null and p_run_manual_allocation is true
-                                                          then
-                                                          0
-                                                      else
-                                                              (foo.self_gen +
-                                                               ((foo.appointment_count + foo.avail) / 3) +
-                                                               ((foo.lead_gen_num + foo.self_gen) * 15))
-                                                               end
-                                              else
-                                                  case
-                                                      when foo.manual_allocation is not null and p_run_manual_allocation is true
-                                                          then
-                                                          0
-                                                      else
-                                                              ((foo.lead_gen_num / foo.lead_gen_den::numeric * 10000) +
-                                                               foo.self_gen +
-                                                              -- ((foo.appointment_count + foo.avail) / 3) +
-                                                               ((foo.lead_gen_num + foo.self_gen) * 15))
-                                                               end end               as score,
+                                   (select * from
+                                     brs.get_lead_allocation_score(foo.lead_gen_num, foo.lead_gen_den,
+                                     foo.self_gen, foo.manual_allocation,
+                                     false)) as score,
                                           case
                                               when sum(foo.appointment_count_with_interval) over () = 0 then
                                                   0
@@ -230,9 +98,7 @@ BEGIN
                                           foo.lead_gen_num,
                                           foo.lead_gen_den,
                                           foo.self_gen,
-                                          foo.avail,
                                           foo.appointment_count_with_interval,
-                                          foo.appointment_count,
                                           foo.manual_allocation,
                                           sum(foo.manual_allocation) over ()                        as sum_manual_allocation
                                    from (
@@ -240,38 +106,32 @@ BEGIN
                                                    pczu.user_id,
                                                    pczu.company_timezone_id,
                                                    t.timezone,
-                                                   coalesce(lgn.lead_gen_num, 0)                     as lead_gen_num,
-                                                   coalesce(lgd.lead_gen_den, 0)                     as lead_gen_den,
-                                                   coalesce(sg.self_gen, 0)                          as self_gen,
-                                                   ac.appointment_count,
-                                                   coalesce(ta.avail, 0)                             as avail,
-                                                   coalesce(acwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
+                                                   coalesce(fdc_counts.lead_gen_fdc_count, 0)                     as lead_gen_num,
+                                                   coalesce(fdc_counts.lead_gen_appointment_count, 0)                     as lead_gen_den,
+                                                   coalesce(fdc_counts.self_gen_fdc_count, 0)                          as self_gen,
+                                                   coalesce(apcwi.appointment_count_with_interval, 0) as appointment_count_with_interval,
                                                    pczu.manual_allocation
                                             from flow.round_robin_user pczu
                                                    inner join flow.company_user_status cus on cus.user_id = pczu.user_id
                                                    inner join flow.user_status_type ust
                                                               on cus.user_status_type_id = ust.id and ust.has_access is true and ust.company_id = 3 and ust.archived is false
-                                                     left join lead_gen_num lgn on lgn.user_id = pczu.user_id
-                                                     left join lead_gen_den lgd on lgd.user_id = pczu.user_id
-                                                     left join self_gen sg on sg.user_id = pczu.user_id
-                                                     left join appointment_count ac on ac.user_id = pczu.user_id
-                                                     left join total_avail ta on ta.user_id = pczu.user_id
-                                                     left join appointment_count_with_interval acwi on acwi.user_id = pczu.user_id
+                                                   INNER JOIN flow.user_position up ON up.user_id = pczu.user_id and up.archived is false and up.primary_flag is true
+                                                   left join LATERAL brs.get_fdc_counts(pczu.user_id,up.id, v_closer_gen_source_ids,
+                                                                                        90) fdc_counts on true
+                                                   left join lateral brs.get_appointment_count_with_interval(pczu.user_id,v_closer_gen_source_ids,
+                                                                                                             100) apcwi on true
                                                      left join flow.company_timezone ct on ct.id = pczu.company_timezone_id
                                                      left join flow.timezone t on t.id = ct.timezone_id
-                                            where pczu.round_robin_id = v_round_robin_id and
+                                            where pczu.round_robin_id = p_round_robin_id and
                                               pczu.round_robin_user_type_id = 1 and
                                               pczu.archived is false
                                             group by pczu.id, pczu.user_id, pczu.company_timezone_id,
-                                                     t.timezone, lgn.lead_gen_num, lgd.lead_gen_den, sg.self_gen,
-                                                     ac.appointment_count,
-                                                     ta.avail,
-                                                     acwi.appointment_count_with_interval,
+                                                     t.timezone, fdc_counts.lead_gen_fdc_count,lead_gen_appointment_count, fdc_counts.self_gen_fdc_count,
+                                                     apcwi.appointment_count_with_interval,
                                                      pczu.manual_allocation) as foo
                                    group by foo.round_robin_user_id, foo.user_id, foo.company_timezone_id,
                                             foo.timezone, foo.lead_gen_num, foo.lead_gen_den, foo.self_gen,
-                                            foo.appointment_count,
-                                            foo.avail, foo.appointment_count_with_interval,
+                                            foo.appointment_count_with_interval,
                                             foo.manual_allocation) as foo1) as foo2
                  group by foo2.round_robin_user_id, foo2.user_id, foo2.company_timezone_id,
                           foo2.timezone, foo2.actual_lead_allocation, foo2.total_lead_allocation,
@@ -279,13 +139,9 @@ BEGIN
                           foo2.lead_gen_num,
                           foo2.lead_gen_den,
                           foo2.self_gen,
-                          foo2.avail,
                           foo2.appointment_count_with_interval,
-                          foo2.appointment_count,
                           foo2.manual_allocation,
                           foo2.sum_manual_allocation) as foo3;
-  drop table round_robin_users;
-
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

@@ -92,9 +92,8 @@ public class StripeService {
 
                 //create the session
                 Session sessionSdk = Session.create(sessionParams);
-                String url = sessionSdk.getUrl();
 
-                return url;
+                return sessionSdk.getUrl();
             } else {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No Down Payment Amount Found.");
             }
@@ -126,17 +125,18 @@ public class StripeService {
     public Map<String, String> createEmbeddedCheckoutSession(String partnerKeyPrefix, String customerEmail) {
         try {
             String stripeApiKey = environment.getProperty(partnerKeyPrefix + ".stripe.api.token");
-            String priceKey = environment.getProperty(partnerKeyPrefix + ".stripe.down.payment.price.key");;
+            String priceKey = environment.getProperty(partnerKeyPrefix + ".stripe.down.payment.price.key");
+            String partnerPortalHostUrl = environment.getProperty(partnerKeyPrefix + ".portal.host.url");
 
-            if(stripeApiKey != null && priceKey != null) {
+            if(stripeApiKey != null && priceKey != null && partnerPortalHostUrl != null) {
 
                 Stripe.apiKey = stripeApiKey;
-                
+
                 SessionCreateParams params =
                         SessionCreateParams.builder()
                                 .setUiMode(SessionCreateParams.UiMode.EMBEDDED)
                                 .setMode(SessionCreateParams.Mode.PAYMENT)
-                                .setReturnUrl(frontEndHostUrl + "/success?session_id={CHECKOUT_SESSION_ID}")
+                                .setReturnUrl(partnerPortalHostUrl + "/success?session_id={CHECKOUT_SESSION_ID}")
                                 .setCustomerEmail(customerEmail) //this is ok to be null
 //                                .setAutomaticTax(
 //                                        SessionCreateParams.AutomaticTax.builder()

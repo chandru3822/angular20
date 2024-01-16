@@ -17,9 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.activation.FileDataSource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.activation.FileDataSource;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -169,9 +169,9 @@ public class CommunicationController {
 
   @PostMapping(value = "/sendSingleEmail", produces = "text/html")
   public void sendEmailTest(
-      @RequestParam(name = "userID") Long userID,
-      @RequestParam(name = "emailAddress") String emailAddress,
-      @RequestParam(name = "subject") String subject,
+      @RequestParam Long userID,
+      @RequestParam String emailAddress,
+      @RequestParam String subject,
       @RequestPart("template") String templateContent,
       @RequestPart("attachments") List<MultipartFile> attachments,
       HttpServletRequest request,

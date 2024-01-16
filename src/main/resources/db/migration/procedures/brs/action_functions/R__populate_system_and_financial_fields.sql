@@ -14,6 +14,7 @@ declare
     v_number_of_pitch bigint;
     v_loan_type varchar;
     v_closer_commission_forfeiture_amount numeric;
+    v_commission_forfeited_by_closer_amount numeric;
 BEGIN
 
     select ppscfv.int_value
@@ -40,6 +41,12 @@ BEGIN
     into v_loan_type,v_closer_commission_forfeiture_amount
     from brs.proposal_log_history
     where id = v_proposal_history_id;
+
+    select numeric_value
+    into v_commission_forfeited_by_closer_amount
+      from flow.project_process_step p
+    inner join flow.project_process_step_custom_field_value v on v.project_process_step_id = p.id and v.custom_field_group_assignment_id = 24999
+    where p.project_id = p_project_id;
 
     if v_loan_type = 'SunPower' then
       v_loan_type = 'SunPower Financial';
@@ -391,9 +398,12 @@ BEGIN
         perform flow.set_pps_cfv(p_project_id,99999999, _key::bigint, _value, true);
     END LOOP;
 
-    update brs.project_details d
-    set commission_forfeited_by_closer = v_closer_commission_forfeiture_amount
-    where d.project_id = p_project_id;
+    if coalesce(v_closer_commission_forfeiture_amount, 0) > 0 and
+       coalesce(v_closer_commission_forfeiture_amount, 0) > coalesce(v_commission_forfeited_by_closer_amount,0) then
+      update brs.project_details d
+      set commission_forfeited_by_closer = v_closer_commission_forfeiture_amount
+      where d.project_id = p_project_id;
+    end if;
 
     insert into flow.company_function_log(function_name, db_function_id, parameters)
     values ('Populate System and Financial Fields', 12, 'p_project_id: ' || p_project_id ||

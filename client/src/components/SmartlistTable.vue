@@ -54,7 +54,7 @@
                   class="text-left"
                 >
                   <router-link class="router-link-td elevation-0 square-card"
-                               color="transparent" :to="type === 'PROJECT' ? `/project/${row.project_id}/details` :
+                               color="transparent" :to="type === 'PROJECT' ? `/project/${row.project_id}/status` :
                                                         type === 'CONTACT' ? `/contact/${row.contact_id}` : ''">
                     {{field}}
                   </router-link>
@@ -118,7 +118,8 @@ export default {
         async getSmartlistData() {
             try {
                 this.isLoading = true
-                const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/data`)
+                const params = {timezone: this.$store.state.user.details.timezone}
+                const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlistId}/data`, {params})
                 this.reportData = data.data
                 this.headers = data.headers.map(h => ({text: h.name, value: h.name, id: h.id}))
             } catch (e) {

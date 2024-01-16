@@ -18,20 +18,9 @@ $BODY$
 
 BEGIN
 
-    create temp table excluded_appointments as (
-        select ra.user_id, ra.start_time as start_time, ra.end_time as end_time
-        from flow.resource_appointment ra
-                 inner join flow.user_position up on up.user_id = ra.user_id
-            and up.primary_flag is true and up.archived is false
-        where up.user_id = p_user_id and
-            ra.archived is false
-          and ((start_time between p_start_time and p_end_time
-        or ra.end_time between p_start_time and p_end_time)
-              or (ra.start_time < p_start_time and ra.end_time > p_end_time))
-    );
--- raise notice 'start time %',p_start_time;
--- raise notice 'end time %',p_end_time;
--- raise notice 'p_available_date %',p_available_date;
+--  raise notice 'start time %',p_start_time;
+--  raise notice 'end time %',p_end_time;
+--  raise notice 'p_available_date %',p_available_date;
 
     EXECUTE 'SET TIME ZONE ''' || p_time_zone || ''';';
     return query
@@ -41,13 +30,15 @@ BEGIN
                         foo1.scheduled_start_time,
                         scheduled_end_time,
                         (select count(1) < 1
-                         from excluded_appointments
-                         where excluded_appointments.user_id = foo1.user_id
-                           and ((excluded_appointments.start_time <foo1.scheduled_end_time
-                                        and excluded_appointments.end_time > foo1.scheduled_start_time ))
-                                        and ((foo1.scheduled_start_time between excluded_appointments.start_time and excluded_appointments.end_time)
-                                            or
-                                             (foo1.scheduled_end_time between excluded_appointments.start_time and excluded_appointments.end_time)) ) as available
+                         from flow.resource_appointment ra
+                         where ra.user_id = p_user_id and
+                           ra.archived is false
+                           and ((start_time between p_start_time and p_end_time
+                           or ra.end_time between p_start_time and p_end_time)
+                           or (ra.start_time < p_start_time and ra.end_time > p_end_time))
+                           and (tsrange(foo1.scheduled_start_time, foo1.scheduled_end_time, '[]')
+                           && tsrange(ra.start_time, ra.end_time, '[]'))
+                        ) as available
                  from (
                           select user_id,
                                  available_times                                                          as scheduled_start_time,
@@ -67,7 +58,7 @@ BEGIN
                                             left join flow.excluded_resource_slot_time erst on erst.resource_slot_time_id = rst.id and
                                                                                                erst.resource_schedule_availability_id = rsa.id
                                        and erst.archived is false
-                                   where rs.user_id = p_user_id and erst.id is null
+                                   where rs.archived is false and rs.user_id = p_user_id and erst.id is null
                                      and p_available_date::date >= rs.start_date and
                                          case when rs.end_date is not null then p_available_date <=rs.end_date
                                         else 1=1 end) as foo) as foo1) as foo2
@@ -75,9 +66,6 @@ BEGIN
         group by foo2.scheduled_start_time
         order by foo2.scheduled_start_time;
     set TimeZone = 'UTC';
-    drop table if exists excluded_appointments;
-
-
 END
 $BODY$
     LANGUAGE plpgsql VOLATILE

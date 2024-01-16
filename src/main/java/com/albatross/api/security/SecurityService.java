@@ -82,8 +82,8 @@ public class SecurityService implements UserDetailsService {
       Object p = auth.getPrincipal();
       if (p == null) {
         // don't do anything
-      } else if (p instanceof User) {
-        user = (User) p;
+      } else if (p instanceof User user1) {
+        user = user1;
       } else if (p instanceof UserAccountDetails details) {
 
         if (details.getId().equals(SystemSettings.CRON_USER.getId())) {
@@ -147,8 +147,8 @@ public class SecurityService implements UserDetailsService {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
     if (auth != null) {
       Object p = auth.getPrincipal();
-      if (p instanceof UserAccountDetails) {
-        return (UserAccountDetails) p;
+      if (p instanceof UserAccountDetails details) {
+        return details;
       }
     }
     return null;

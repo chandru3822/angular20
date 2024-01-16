@@ -45,33 +45,33 @@ create temp table  company_dash_results as (
       OR
       ((pd.first_appointment_pitched at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.installation_agreement_signed_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.installation_agreement_signed_date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.site_survey_verified_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.site_survey_verified_date between p_custom_start_date and p_custom_end_date
       OR
       ((pd.final_design_created_timestamp at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
       OR
       ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.final_design_signed_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.final_design_signed_date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.final_design_complete_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.final_design_complete_date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.plan_set_created_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.plan_set_created_date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.permit_pack_complete at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.permit_pack_complete between p_custom_start_date and p_custom_end_date
       OR
       least(((pd.online_submission_time at time zone 'UTC') at time zone 'US/Mountain'),permit_pack_submittal_verified_date) :: date between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.permit_approved_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.permit_approved_date  between p_custom_start_date and p_custom_end_date
       OR
-      ((pd.installation_scheduled at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.installation_scheduled  between p_custom_start_date and p_custom_end_date
       OR
       ((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date
       OR
       ((pd.installation_closeout_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date
       OR
-      ((pd.substantial_completion_date at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.substantial_completion_date  between p_custom_start_date and p_custom_end_date
       OR
       pd.ahj_inspection_scheduled_date BETWEEN p_custom_start_date and p_custom_end_date
       OR
@@ -81,7 +81,7 @@ create temp table  company_dash_results as (
       OR
       ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date BETWEEN p_custom_start_date and p_custom_end_date
       OR
-      ((pd.ahj_final_inspection_verified at time zone 'UTC') at time zone 'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+      pd.ahj_final_inspection_verified between p_custom_start_date and p_custom_end_date
       OR
       pd.verified_inspection_approval_received_by_utility_date BETWEEN p_custom_start_date and p_custom_end_date
       OR
@@ -239,8 +239,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   4            as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.installation_agreement_signed_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.installation_agreement_signed_date between p_custom_start_date and p_custom_end_date
                                   )            as company_count,
                                   0            as partner_count,
 --                                     case
@@ -273,8 +272,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   5                       as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.site_survey_verified_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.site_survey_verified_date between p_custom_start_date and p_custom_end_date
                                   )                       as company_count,
                                   0                       as partner_count,
 --                                     case
@@ -360,7 +358,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                          ) as row_counts
                     union
                     select name,
-                           true  as show_targets,
+                           false  as show_targets,
                            false as has_additional_column,
                            milestone_type_id,
                            display_order,
@@ -375,8 +373,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   8                        as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.final_design_signed_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.final_design_signed_date between p_custom_start_date and p_custom_end_date
                                   )                        as company_count,
                                   0                        as partner_count,
 --                                     case
@@ -394,7 +391,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                          ) as row_counts
                     union
                     select name,
-                           false as show_targets,
+                           true as show_targets,
                            false as has_additional_column,
                            milestone_type_id,
                            display_order,
@@ -409,8 +406,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   9                         as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.final_design_complete_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.final_design_complete_date  between p_custom_start_date and p_custom_end_date
                                   )                         as company_count,
                                   0                         as partner_count,
 --                                     case
@@ -443,8 +439,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   10                  as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.plan_set_created_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.plan_set_created_date between p_custom_start_date and p_custom_end_date
                                   )                   as company_count,
                                   0                   as partner_count,
 --                                     case
@@ -477,8 +472,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   11                     as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.permit_pack_complete at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.permit_pack_complete  between p_custom_start_date and p_custom_end_date
                                   )                      as company_count,
                                   0                      as partner_count,
 --                                     case
@@ -547,8 +541,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   13                 as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.permit_approved_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.permit_approved_date between p_custom_start_date and p_custom_end_date
                                   )                  as company_count,
                                   0                  as partner_count,
 --                                     case
@@ -625,8 +618,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   15                        as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.installation_scheduled at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.installation_scheduled  between p_custom_start_date and p_custom_end_date
                                   )                         as company_count,
                                   0                         as partner_count,
 --                                     case
@@ -697,8 +689,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   17                        as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.substantial_completion_date at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.substantial_completion_date  between p_custom_start_date and p_custom_end_date
                                   )                         as company_count,
                                   0                         as partner_count,
 --                                     case
@@ -805,8 +796,7 @@ RETURN QUERY select array_to_json(array_agg(row_to_json(funnel_rows)))
                                   20                   as display_order,
                                   (select count(*) as count
                                    from company_dash_results pd
-                                   where ((pd.ahj_final_inspection_verified at time zone 'UTC') at time zone
-                                          'US/Mountain') :: date between p_custom_start_date and p_custom_end_date
+                                   where pd.ahj_final_inspection_verified between p_custom_start_date and p_custom_end_date
                                   )                    as company_count,
                                   0                    as partner_count,
 --                                     case

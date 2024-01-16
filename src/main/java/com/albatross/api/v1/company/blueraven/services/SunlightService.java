@@ -10,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -19,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ import java.util.Optional;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class SunlightService {
 
   private final SqlCache sqlCache;
@@ -65,18 +65,17 @@ public class SunlightService {
       hashId = sunlightHash.get().toString();
       setCreditLastCheckedBy(projectId, "Sunlight");
       accessToken = generateToken();
-      return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
+      return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, StandardCharsets.UTF_8);
     }
 
     projectDetails.put("externalId", propLogDetail.getProjectId().toString());
     DecimalFormat df2 = new DecimalFormat("#.##");
-    projectDetails.put("apr",  Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100)));
+    projectDetails.put("apr", Double.valueOf(df2.format(Double.parseDouble(propLogDetail.getInterestRate()) * 100)));
     projectDetails.put("isACH", true);
 
     if (propLogDetail.getLoanAmount() == null) {
       return portalUrl + "salesdashboard";
-    }
-    else {
+    } else {
       try {
         quoteDetails.put("loanAmount", Integer.parseInt(propLogDetail.getLoanAmount()));
       } catch (NumberFormatException nfe) {
@@ -91,7 +90,7 @@ public class SunlightService {
     }
     projectDetails.put("salesRepresentativeFirstName", propLogDetail.getSalesRepresentativeFirstName());
     projectDetails.put("salesRepresentativeLastName", propLogDetail.getSalesRepresentativeLastName());
-    projectDetails.put("term", Integer.parseInt(propLogDetail.getLoanTerm())*12);
+    projectDetails.put("term", Integer.parseInt(propLogDetail.getLoanTerm()) * 12);
     projectDetails.put("productType", "Solar");
     projectDetails.put("installStreet", propLogDetail.getAddress());
     projectDetails.put("installCity", propLogDetail.getCity());
@@ -155,7 +154,7 @@ public class SunlightService {
     setSunlightHashId(projectId, proposalNbr, hashId);
     setCreditLastCheckedBy(projectId, "Sunlight");
 
-    return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, "UTF-8");
+    return portalUrl + "runcredit?sid=" + accessToken + "&pid=" + URLEncoder.encode(hashId, StandardCharsets.UTF_8);
   }
 
   public String getCreditStatus(Long projectId) throws Exception {
@@ -188,7 +187,7 @@ public class SunlightService {
 
   private String generateToken() throws Exception {
     Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", String.format("Basic %s", basicToken));
+    headers.put("Authorization", "Basic %s".formatted(basicToken));
     headers.put("Content-Type", "application/json");
     String url = apiUrl + "gettoken/accesstoken";
     JSONObject content = new JSONObject();
@@ -196,7 +195,7 @@ public class SunlightService {
     content.put("password", password);
     HttpResponse resp = HttpUtils.call("POST", url, headers, new ByteArrayInputStream(content.toString().getBytes()));
     if (resp.getResponseCode() != 200) {
-      throw new Exception(String.format("SUNLIGHT: Unable to generate Sunlight token: %s", resp.getBody()));
+      throw new Exception("SUNLIGHT: Unable to generate Sunlight token: %s".formatted(resp.getBody()));
     }
 
     String respBody = resp.getBody();
@@ -247,8 +246,8 @@ public class SunlightService {
     accessToken = generateToken();
     log.debug("SUNLIGHT: sending to Sunlight url: {}", url);
     Map<String, String> headers = new HashMap<>();
-    headers.put("Authorization", String.format("Basic %s", basicToken));
-    headers.put("SFAccessToken", String.format("Bearer %s", accessToken));
+    headers.put("Authorization", "Basic %s".formatted(basicToken));
+    headers.put("SFAccessToken", "Bearer %s".formatted(accessToken));
     headers.put("Content-Type", "application/json");
     return HttpUtils.call(method, url, headers, content);
   }

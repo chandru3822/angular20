@@ -603,7 +603,49 @@
                                  @confirm="deleteRequirement"
                                  @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this requirement?
-
+      <div v-if="itemToDelete" class="pt-3">
+        <div><b>Requirement Id: </b>{{ itemToDelete.requirementNbr }}</div>
+      <div class="text-left"><b>Type: </b>{{ itemToDelete.processStepRequirementType }}</div>
+      <div class="text-left">
+        <b>Details: </b>
+                    <span v-if="itemToDelete.processStepRequirementTypeId === 1">
+                      <a :href="`/settings/processStep/${itemToDelete.processStepId}/components`">{{ itemToDelete.parentName }}</a> | {{ itemToDelete.fieldName }}
+                    </span>
+        <span v-else-if="itemToDelete.processStepRequirementTypeId === 2">
+                      <a :href="`/settings/function/${itemToDelete.companyFunctionId}`">{{ itemToDelete.companyFunctionName }}</a>
+                    </span>
+        <span
+            v-else-if="itemToDelete.processStepRequirementTypeId === 7 || itemToDelete.processStepRequirementTypeId === 8">
+                      <a :href="`/settings/processStep/${itemToDelete.referenceProcessStepId}/components`">{{ itemToDelete.referenceProcessStepName }}</a>
+                    </span>
+        <span v-if="itemToDelete.processStepRequirementTypeId === 12">
+                      {{ itemToDelete.dataViewChildFieldName || itemToDelete.dataViewFieldName }}
+                    </span>
+        <span v-else>
+                      {{ itemToDelete.fieldName }}
+                    </span>
+      </div>
+        <div class="text-left"><b>Operator: </b>{{ itemToDelete.operatorType }}</div>
+      <div class="text-left">
+        <b>Value: </b>
+                    <span v-if="itemToDelete.requirementValue">
+                      {{ itemToDelete.requirementValue }}
+                    </span>
+        <span v-else-if="itemToDelete.dataTypeRequirementId">
+                      {{
+            itemToDelete.dataTypeRequirement ? itemToDelete.dataTypeRequirement.dataTypeValue : 'unknown'
+          }} {{ itemToDelete.secondaryRequirementValue }}
+                    </span>
+        <span v-else-if="itemToDelete.listOfValueId || itemToDelete.customFieldSql || itemToDelete.companySystemListId">
+<!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
+                      {{ getListValueName(item) }}
+                    </span>
+        <span v-else-if="itemToDelete.listOfValues">
+                      <!-- todo: show the selected values here -->
+                      {{ itemToDelete.listOfValues.map(v => ' ' + v.name).toString() }}
+                    </span>
+      </div>
+      </div>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="showInfoDialog"
                         hideConfirm

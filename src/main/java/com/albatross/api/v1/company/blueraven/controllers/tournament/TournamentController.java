@@ -4,7 +4,6 @@ import com.albatross.api.v1.company.blueraven.models.tournament.*;
 import com.albatross.api.v1.company.blueraven.services.tournament.TournamentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +15,7 @@ import java.util.Optional;
  */
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/company/blueraven/tournament")
 public class TournamentController {
 
@@ -34,9 +33,9 @@ public class TournamentController {
 
   @GetMapping(value = "/{tournamentId}/scores", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getUserScores(@PathVariable Long tournamentId,
-                            @RequestParam Long userId,
-                            @RequestParam String startDate,
-                            @RequestParam String endDate) {
+                              @RequestParam Long userId,
+                              @RequestParam String startDate,
+                              @RequestParam String endDate) {
     return tournamentService.getUserScores(tournamentId, userId, startDate, endDate);
   }
 

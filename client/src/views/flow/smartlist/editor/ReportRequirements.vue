@@ -105,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { UUID } from '@/helpers/helpers'
 import RequirementEditor from '@/views/flow/smartlist/editor/RequirementEditor.vue'
 
@@ -138,10 +138,19 @@ const showDeleteDialog = ref(false)
 
 const isAddingInProgress = ref(false)
 
+// keep track of whether each requirement is being edited and the top position for placement
 const edits = ref(Array(props.requirements.length).fill({
   isEditing: false,
   top: 0
 }))
+
+// keep our editing list in line with current requirements
+watch(props.requirements, (requirements) => {
+  edits.value = Array(requirements.length).fill({
+    isEditing: false,
+    top: 0
+  })
+})
 
 
 // const calculatedName = (r) => {

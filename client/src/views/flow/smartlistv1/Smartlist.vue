@@ -20,6 +20,15 @@
                 <v-icon>mdi-arrow-left</v-icon>
               </v-btn>
               <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
+              <v-btn
+                v-if="smartlist?.id && ($store.state.user.details.id === smartlist?.ownerId || $store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN') || is7oaksAdmin)"
+                class="ml-6 mt-3"
+                text
+                @click="$router.push(`/smartlist/editor/${smartlist.id}`)"
+              >
+                <v-icon>mdi-eye</v-icon>
+                View new smartlist editor
+              </v-btn>
               <v-spacer></v-spacer>
               <v-toolbar-items>
                 <v-btn
@@ -107,7 +116,7 @@
               <v-row>
                 <v-col cols="4" md="2">
                   <v-checkbox
-                    v-model="smartlist.public"
+                    v-model="smartlist.shared"
                     label="Public"
                     :readonly="!userCanEdit"
                   />
@@ -255,7 +264,7 @@
 <script>
 
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, getRequestWithParams, putRequest, postRequest, deleteRequest, logError, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
 
@@ -297,7 +306,8 @@ export default {
       is7oaksAdmin: this.$store.getters.isFullAdmin,
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
       userId: this.$store.state.user.details.id,
-      refreshData: false
+      refreshData: false,
+      timezone: this.$store.state.user.details.timezone.value
     }
   },
   created () {
@@ -432,6 +442,8 @@ export default {
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
         this.$router.replace({name: 'smartlistEditor', params: {smartlistId: this.smartlist.id}})
+        this.snackbar = getSnackbar('SUCCESS', `Smartlist Created`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -471,9 +483,10 @@ export default {
         }
 
         const {status} = await putRequest(`/smartlistv1/${this.smartlist.id}`, this.smartlist)
-
         const companyObjectType = this.companyObjectTypes.find(t => t.companyObjectTypeId === this.smartlist.companyObjectTypeId)
         this.originalObjectTypeId = companyObjectType.objectTypeId
+        this.snackbar = getSnackbar('SUCCESS', `Smartlist Updated`)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         logError(e)
@@ -542,7 +555,8 @@ export default {
     async runReport () {
       try {
         this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/smartlistv1/${this.smartlist.id}/csv`)
+        const params = {timezone: this.timezone}
+        const {data, status} = await getRequestWithParams(`/smartlistv1/${this.smartlist.id}/csv`, {params})
         let blob = new Blob([data], {
           type: 'text/csv;charset=utf-8'
         })
@@ -639,7 +653,8 @@ export default {
     },
     async buildSql() {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.smartlist.id}/getSqlString`)
+        const params = {timezone: this.timezone}
+        const {data} = await getRequestWithParams(`/smartlistv1/${this.smartlist.id}/getSqlString`, {params})
         this.sql = data
         navigator.clipboard.writeText(this.sql);
         this.snackbar = getSnackbar('SUCCESS', 'Copied query to clipboard')

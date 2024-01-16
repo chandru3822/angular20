@@ -15,20 +15,17 @@ import com.albatross.api.v1.flow.services.*;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.annotation.PostConstruct;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -36,7 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,8 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @Slf4j
-@ExtendWith(SpringExtension.class)
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @SpringBootTest
 @ActiveProfiles(profiles = "local")
 public class ProjectProcessStepServiceTests {
@@ -65,7 +64,7 @@ public class ProjectProcessStepServiceTests {
 
   ProjectProcessStepRequirementService projectProcessStepRequirementService = mock(ProjectProcessStepRequirementService.class);
 
-  CustomFieldValueService customFieldValueService = mock(CustomFieldValueService.class);
+  CustomFieldGroupAssignmentService cfgaService = mock(CustomFieldGroupAssignmentService.class);
 
   GoodleapService goodleapService = mock(GoodleapService.class);
 
@@ -90,7 +89,7 @@ public class ProjectProcessStepServiceTests {
   @PostConstruct
   public void init() throws IOException, XMLStreamException {
 
-    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, customFieldValueService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
+    projectProcessStepService = spy(new ProjectProcessStepService(null, null, projectService, null, null, processStepActionService, om, projectProcessStepRequirementService, cfgaService, goodleapService, auroraService, marketoService, listOfValueService, null, null, null, customerPortalService, birdeyeService, pubSubService, stripeService));
 
     ResourcePatternResolver patternResolver = new PathMatchingResourcePatternResolver();
     Resource[] resources = patternResolver.getResources("classpath*:**/*.json.xml");
@@ -106,19 +105,21 @@ public class ProjectProcessStepServiceTests {
     }
 
     action = om.readValue(jsonObjects.get("projectProcessStepAction.action"), ProjectProcessStepAction.class);
-    processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {});
-    projectProcessStepRequirements = om.readValue(jsonObjects.get("projectProcessStepRequirement.scheduleWithSystemList"), new TypeReference<>() {});
+    processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {
+    });
+    projectProcessStepRequirements = om.readValue(jsonObjects.get("projectProcessStepRequirement.scheduleWithSystemList"), new TypeReference<>() {
+    });
   }
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     action.setProcessStepLogicList(processStepLogicList);
     when(processStepActionService.getActionById(anyLong())).thenReturn(action);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(projectProcessStepRequirements);
   }
 
   @Test
-  public void alwaysEnabled() throws Exception {
+  void alwaysEnabled() throws Exception {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProjectProcessStepId(123L);
     pps.setProcessStepStatusTypeId(1L);
@@ -134,7 +135,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void noLogicSteps() throws Exception {
+  void noLogicSteps() throws Exception {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProjectProcessStepId(123L);
     pps.setProcessStepStatusTypeId(1L);
@@ -144,14 +145,15 @@ public class ProjectProcessStepServiceTests {
     assertThat(passed).isFalse();
     verify(projectProcessStepService, never()).isRequirementMet(any(), anyLong());
 
-    List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {});
+    List<ProcessStepLogic> processStepLogicList = om.readValue(jsonObjects.get("processStepLogic.trueAndTrueAndTrue"), new TypeReference<>() {
+    });
     action.setProcessStepLogicList(processStepLogicList);
     projectProcessStepService.canPerformAction(action, pps, projectProcessStepRequirements);
     verify(projectProcessStepService, atLeastOnce()).isRequirementMet(any(), anyLong());
   }
 
   @Test
-  public void noRequirements() throws Exception {
+  void noRequirements() throws Exception {
     ProjectProcessStep pps = new ProjectProcessStep();
     pps.setProcessStepStatusTypeId(1L);
     when(projectProcessStepRequirementService.getByProjectProcessStepId(anyLong(), anyList())).thenReturn(List.of());
@@ -164,7 +166,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareDatesTest() throws Exception {
+  void compareDatesTest() throws Exception {
     LocalDateTime today = LocalDateTime.now();
     ZonedDateTime zonedToday = today.atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareDates(null, zonedToday, 1L)).isFalse();
@@ -210,7 +212,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareNullDateTest() throws Exception {
+  void compareNullDateTest() throws Exception {
     LocalDateTime today = LocalDateTime.now();
     ZonedDateTime zonedToday = today.atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNullDate(null, 1L)).isTrue();
@@ -231,7 +233,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareNonNullDateTest() throws Exception {
+  void compareNonNullDateTest() throws Exception {
     LocalDateTime today = LocalDateTime.now();
     ZonedDateTime zonedToday = today.atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNonNullDate(null, 1L)).isFalse();
@@ -252,9 +254,10 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void calculateDateRequirementTest() throws Exception {
+  void calculateDateRequirementTest() throws Exception {
     LocalDateTime today = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.date"), new TypeReference<>(){});
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.date"), new TypeReference<>() {
+    });
     r.setDataTypeId(1L);
     r.setSecondaryRequirementValue("1");
 
@@ -444,7 +447,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareDateTimesTest() throws Exception {
+  void compareDateTimesTest() throws Exception {
     ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareDateTimes(null, today, 1L)).isFalse();
     assertThat(projectProcessStepService.compareDateTimes(null, today, 2L)).isTrue();
@@ -489,7 +492,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareNullDateTimeTest() throws Exception {
+  void compareNullDateTimeTest() throws Exception {
     ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNullDateTime(null, 1L)).isTrue();
     assertThat(projectProcessStepService.compareNullDateTime(null, 2L)).isFalse();
@@ -509,7 +512,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareNonNullDateTimeTest() throws Exception {
+  void compareNonNullDateTimeTest() throws Exception {
     ZonedDateTime today = LocalDateTime.now().atZone(ZoneId.of("UTC"));
     assertThat(projectProcessStepService.compareNonNullDateTime(null, 1L)).isFalse();
     assertThat(projectProcessStepService.compareNonNullDateTime(null, 2L)).isTrue();
@@ -529,9 +532,10 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void calculateTimestampRequirementTest() throws Exception {
+  void calculateTimestampRequirementTest() throws Exception {
     LocalDateTime today = LocalDateTime.ofInstant(Instant.now(), ZoneId.of("UTC")).withMinute(0).withSecond(0).withNano(0);
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.timestamp"), new TypeReference<ProjectProcessStepRequirement>(){});
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.timestamp"), new TypeReference<ProjectProcessStepRequirement>() {
+    });
     r.setDataTypeId(2L);
     r.setSecondaryRequirementValue("1");
 
@@ -871,8 +875,9 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void calculateBooleanRequirementTest() throws Exception {
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.boolean"), new TypeReference<ProjectProcessStepRequirement>(){});
+  void calculateBooleanRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.boolean"), new TypeReference<ProjectProcessStepRequirement>() {
+    });
     r.setDataTypeId(3L);
 
     // Check true boolean value
@@ -946,7 +951,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareNumericTest() throws Exception {
+  void compareNumericTest() throws Exception {
     Double number = 10d;
     Double compareNumber = 10d;
 
@@ -994,8 +999,9 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void calculateNumericRequirementTest() throws Exception {
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.numeric"), new TypeReference<ProjectProcessStepRequirement>(){});
+  void calculateNumericRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.numeric"), new TypeReference<ProjectProcessStepRequirement>() {
+    });
     r.setDataTypeId(4L);
 
     // Check requirement value gets compared
@@ -1056,7 +1062,7 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareTextTest() throws Exception {
+  void compareTextTest() throws Exception {
     String text = "test";
     String compareText = "test";
 
@@ -1109,8 +1115,9 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareTextRequirementTest() throws Exception {
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.text"), new TypeReference<ProjectProcessStepRequirement>(){});
+  void compareTextRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.text"), new TypeReference<ProjectProcessStepRequirement>() {
+    });
     r.setDataTypeId(5L);
 
     // Check requirement value gets compared
@@ -1195,9 +1202,9 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void compareIntTest() throws Exception {
+  void compareIntTest() throws Exception {
     Long number = 10L;
-    Long  compareNumber = 10L;
+    Long compareNumber = 10L;
 
     // Compare equal
 
@@ -1243,8 +1250,9 @@ public class ProjectProcessStepServiceTests {
   }
 
   @Test
-  public void calculateIntRequirementTest() throws Exception {
-    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.int"), new TypeReference<ProjectProcessStepRequirement>(){});
+  void calculateIntRequirementTest() throws Exception {
+    ProjectProcessStepRequirement r = om.readValue(jsonObjects.get("projectProcessStepRequirement.int"), new TypeReference<ProjectProcessStepRequirement>() {
+    });
     r.setDataTypeId(6L);
 
     // Check requirement value gets compared

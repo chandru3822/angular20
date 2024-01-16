@@ -5,7 +5,9 @@ public class CompanyQuery {
   //language=PostgreSQL
   public final static String getAll = """
       select id,
-        company_name
+        company_name,
+        banner_color,
+        primary_color
       from flow.company
       where archived is not true
       order by parent_company_id nulls first, company_name
@@ -16,7 +18,9 @@ public class CompanyQuery {
       select id,
         company_name,
         default_password,
-        minute_increment
+        minute_increment,
+        banner_color,
+        primary_color
       from flow.company
       where id = :id
     """;
@@ -43,7 +47,7 @@ public class CompanyQuery {
                join lateral flow.company_hierarchy_filter_down(t1.id) as t2 on true
         order by parent_company_id, company_name
       )
-      select c.id, c.company_name, comp.default_password
+      select c.id, c.company_name, comp.default_password, comp.banner_color, comp.primary_color
       from companies c
              inner join flow.company comp on comp.id = c.id
              inner join flow.user_status_type ust on ust.company_id = c.id
@@ -82,6 +86,8 @@ public class CompanyQuery {
         set company_name = :companyName,
             default_password = :defaultPassword,
             minute_increment = :minuteIncrement,
+            banner_color = :bannerColor,
+            primary_color = :primaryColor,
             modified_by_id = :modifiedById,
             date_modified = now()
       where id = :id

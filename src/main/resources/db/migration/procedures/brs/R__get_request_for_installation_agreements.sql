@@ -27,7 +27,7 @@ BEGIN
 
   RETURN QUERY
 SELECT pd.project_id::bigint                                                       AS project_id,
-       pd.project_name,
+       pd.project_name::varchar,
        pd.contact_email as email,
        concat(pd.project_street1, ', ', pd.project_city, ', ', s.state, ' ', pd.project_postal_code) AS address,
        (case

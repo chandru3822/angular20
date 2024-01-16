@@ -129,6 +129,7 @@
             item-value="id"
             return-object
             dense
+            style="z-index: 10"
             class="mt-2"
             @input="addEvent()"
           ></v-autocomplete>

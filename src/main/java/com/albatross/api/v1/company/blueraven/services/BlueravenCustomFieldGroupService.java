@@ -79,6 +79,7 @@ public class BlueravenCustomFieldGroupService {
         cv.setHasListValues(true);
         HashMap<String, Object> params = new HashMap<>();
         params.put("projectId", projectId);
+        params.put("companyId", companyId);
         List<ListOfValue> listOfValues = sqlCache.queryBySql(sql, params, ListOfValue.class);
         cv.setListOfValues(listOfValues);
       }
@@ -369,47 +370,47 @@ public class BlueravenCustomFieldGroupService {
     String primaryKeyColumn = objectType.primaryKeyColumn;
     String sql = """
             select cfg.id,
-            cfg.group_name as \"groupName\",
-            cfg.group_order as \"groupOrder\",
-            cfg.column_number as \"columnNumber\",
+            cfg.group_name as "groupName",
+            cfg.group_order as "groupOrder",
+            cfg.column_number as "columnNumber",
             coalesce((
                        SELECT array_to_json(array_agg(row_to_json(fields)))
                        FROM (
                               select cfv.id,
-                                     cfv.%s as \"sourceId\",
-                                     false as \"valueWasChanged\",
-                                     cfv.date_value as \"dateValue\",
-                                     cfv.timestamp_value as \"timestampValue\",
-                                     cfv.boolean_value as \"booleanValue\",
-                                     cfv.text_value as \"textValue\",
-                                     cfv.rich_text_value as \"richTextValue\",
-                                     cfv.numeric_value as \"numericValue\",
-                                     cfv.int_value as \"intValue\",
-                                     cfv.int_array_value as \"intArrayValue\",
-                                     cfga.custom_field_group_id as \"customFieldGroupId\",
-                                     cfga.id as \"customFieldGroupAssignmentId\",
-                                     cfga.custom_field_id as \"customFieldId\",
-                                     cfga.field_order as \"fieldOrder\",
-                                     cfga.required as \"required\",
-                                     cf.list_of_value_id as \"listOfValueId\",
-                                     cf.field_name as \"fieldName\",
-                                     cf.custom_field_sql as \"customFieldSql\",
-                                     cf.company_system_list_id as \"companySystemListId\",
-                                     cf.system_list_option_ids as \"systemListOptionIds\",
-                                     cf.company_data_type_id as \"companyDataTypeId\",
-                                     cf.sort_list_values_alphabetically as \"sortListValuesAlphabetically\",
-                                     cfg.object_type_id as \"objectTypeId\",
-                                     cdt.data_type_id as \"dataTypeId\",
-                                     cdt.has_list_values as \"hasListValues\",
+                                     cfv.%s as "sourceId",
+                                     false as "valueWasChanged",
+                                     cfv.date_value as "dateValue",
+                                     cfv.timestamp_value as "timestampValue",
+                                     cfv.boolean_value as "booleanValue",
+                                     cfv.text_value as "textValue",
+                                     cfv.rich_text_value as "richTextValue",
+                                     cfv.numeric_value as "numericValue",
+                                     cfv.int_value as "intValue",
+                                     cfv.int_array_value as "intArrayValue",
+                                     cfga.custom_field_group_id as "customFieldGroupId",
+                                     cfga.id as "customFieldGroupAssignmentId",
+                                     cfga.custom_field_id as "customFieldId",
+                                     cfga.field_order as "fieldOrder",
+                                     cfga.required as "required",
+                                     cf.list_of_value_id as "listOfValueId",
+                                     cf.field_name as "fieldName",
+                                     cf.custom_field_sql as "customFieldSql",
+                                     cf.company_system_list_id as "companySystemListId",
+                                     cf.system_list_option_ids as "systemListOptionIds",
+                                     cf.company_data_type_id as "companyDataTypeId",
+                                     cf.sort_list_values_alphabetically as "sortListValuesAlphabetically",
+                                     cfg.object_type_id as "objectTypeId",
+                                     cdt.data_type_id as "dataTypeId",
+                                     cdt.has_list_values as "hasListValues",
                                      coalesce((
                                                 SELECT array_to_json(array_agg(row_to_json(listOfValues)))
                                                 FROM (
                                                        select lov.id,
                                                               lov.name,
                                                               lov.code,
-                                                              lov.parent_id as \"parentId\",
-                                                              lov.show_other as \"showOther\",
-                                                              lov.display_order as \"displayOrder\"
+                                                              lov.parent_id as "parentId",
+                                                              lov.show_other as "showOther",
+                                                              lov.display_order as "displayOrder"
                                                        from brs.list_of_value lov
                                                        where lov.parent_id is not null
                                                          and lov.parent_id = cf.list_of_value_id
@@ -417,7 +418,7 @@ public class BlueravenCustomFieldGroupService {
                                                        order by
                                                          case when cf.sort_list_values_alphabetically is true  then lov.name end,
                                                          case when cf.sort_list_values_alphabetically is false then lov.display_order end
-                                                     ) listOfValues), '[]') AS \"listOfValues\"
+                                                     ) listOfValues), '[]') AS "listOfValues"
                               from brs.custom_field_group_assignment cfga
                                      inner join brs.custom_field cf on cf.id = cfga.custom_field_id
                                      inner join flow.company_data_type cdt on cdt.id = cf.company_data_type_id
@@ -426,7 +427,7 @@ public class BlueravenCustomFieldGroupService {
                               where cfga.custom_field_group_id = cfg.id
                                 and cfga.archived is not true
                               order by cfga.field_order, cf.field_name
-                            ) fields), '[]') AS \"customFieldValues\"
+                            ) fields), '[]') AS "customFieldValues"
       from brs.custom_field_group cfg
             inner join brs.object_type cot on cot.id = cfg.object_type_id
       where cot.id = :objectTypeId

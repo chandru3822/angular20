@@ -9,12 +9,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.preauth.AbstractPreAuthenticatedProcessingFilter;
@@ -25,12 +28,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
+public class SecurityConfig {
 
   private final JwtAuthenticationProvider jwtAuth;
 
@@ -55,10 +59,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowCredentials(true);
     configuration.setAllowedOriginPatterns(
-        List.of(
-            appLocalCors,
-            "https://*.myblueraven.com",
-            "https://*blueraven-excel-data-addon.netlify.app"));
+      List.of(
+        appLocalCors,
+        "https://*.myblueraven.com",
+        "https://*blueraven-excel-data-addon.netlify.app"));
     configuration.setAllowedHeaders(List.of("*"));
     configuration.setExposedHeaders(List.of("Content-Disposition"));
     configuration.setAllowedMethods(List.of("*"));
@@ -67,73 +71,59 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     return source;
   }
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry registry =
-        http.sessionManagement()
-            .sessionCreationPolicy(STATELESS)
-            .and()
-            .cors()
-            .and()
-            .authorizeRequests()
-            .antMatchers("/auth/login")
-            .permitAll()
-            .antMatchers("/public/**")
-            .permitAll()
-            .antMatchers("/api/v1/flow/app/latest/**")
-            .permitAll()
-            .antMatchers("/actuator/**")
-            .permitAll()
-            .antMatchers("/api/v1/flow/user/forgotPassword/**")
-            .permitAll()
-            .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html")
-            .permitAll()
-            .antMatchers("/webhook/twilio/**")
-            .permitAll()
-            .antMatchers("/webhook/hubspot/**")
-            .permitAll()
-            .antMatchers("/webhook/verse/**")
-            .permitAll()
-            .antMatchers("/webhook/genesys/**")
-            .permitAll()
-            // export the endpoint for automating s3 uploads of mobile builds from fast lane
-            .antMatchers("/api/v1/flow/app/addAttachmentRecord")
-            .permitAll()
-            // export the endpoint for mobile to call to ensure the app_attachment table is present
-            // in stage and flux before they do a build
-            .antMatchers("/api/v1/flow/app/fixTable")
-            .permitAll();
+  @Bean
+  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+    http.sessionManagement(management -> management
+        .sessionCreationPolicy(STATELESS))
+      .cors(withDefaults())
+      .authorizeHttpRequests((auth) ->
+        auth.requestMatchers(
+          "/auth/login",
+          "/public/**",
+          "/api/v1/flow/app/latest/**",
+          "/actuator/**",
+          "/api/v1/flow/user/forgotPassword/**",
+          "/swagger-ui/**",
+          "/v3/api-docs/**",
+          "/swagger-ui.html",
+          "/webhook/twilio/**",
+          "/webhook/verse/**",
+          "/webhook/hubspot/**",
+          "/webhook/genesys/**",
+//            // export the endpoint for automating s3 uploads of mobile builds from fast lane
+          "/api/v1/flow/app/addAttachmentRecord",
+          // export the endpoint for mobile to call to ensure the app_attachment table is present
+          // in stage and flux before they do a build
+          "/api/v1/flow/app/fixTable"
+        ).permitAll());
 
     if (maintenanceMode) {
       // have to allow access to br endpoints so that ContactLeadController endpoints don't fail
       // suddenly
-      registry.antMatchers("/api/v1/company/blueraven/contact**").permitAll();
-      registry.anyRequest().hasAnyAuthority("MAINTENANCE_MODE_ADMIN");
+      http.authorizeHttpRequests((auth) -> auth.requestMatchers("/api/v1/company/blueraven/contact**").permitAll());
+      http.authorizeHttpRequests((auth) -> auth.anyRequest().hasAnyAuthority("MAINTENANCE_MODE_ADMIN"));
     } else {
-      registry.anyRequest().authenticated();
+      http.authorizeHttpRequests((auth) -> auth.anyRequest().authenticated());
     }
 
-    registry
-        .and()
-        .exceptionHandling()
-        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-        .and()
-        .headers()
-        .frameOptions()
-        .sameOrigin()
-        .and()
-        .csrf()
-        .disable()
-        .addFilterAt(sessionFilter(), AbstractPreAuthenticatedProcessingFilter.class)
-        .addFilterBefore(authFailureFilter(), RequestHeaderAuthenticationFilter.class)
-        .authenticationProvider(jwtAuth);
+    http
+      .exceptionHandling(handling -> handling
+        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+      .headers(headers -> headers
+        .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
+      .csrf(AbstractHttpConfigurer::disable)
+      .addFilterAt(sessionFilter(authenticationManager(http.getSharedObject(AuthenticationConfiguration.class))), AbstractPreAuthenticatedProcessingFilter.class)
+      .addFilterBefore(authFailureFilter(), RequestHeaderAuthenticationFilter.class)
+      .authenticationProvider(jwtAuth);
+    return http.build();
   }
 
   @SneakyThrows
-  public RequestHeaderAuthenticationFilter sessionFilter() {
+  public RequestHeaderAuthenticationFilter sessionFilter(AuthenticationManager authenticationManager) {
     final var filter = new CustomRequestHeaderAuthenticationFilter();
     filter.setPrincipalRequestHeader("Authorization");
-    filter.setAuthenticationManager(authenticationManager());
+    filter.setAuthenticationManager(authenticationManager);
     filter.setExceptionIfHeaderMissing(false);
     filter.setCheckForPrincipalChanges(true);
     return filter;
@@ -142,5 +132,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
   @SneakyThrows
   public ExceptionTranslationFilter authFailureFilter() {
     return new ExceptionTranslationFilter(jwtAuth::logFailedAuthAttempt);
+  }
+
+  @Bean
+  public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    return authenticationConfiguration.getAuthenticationManager();
   }
 }

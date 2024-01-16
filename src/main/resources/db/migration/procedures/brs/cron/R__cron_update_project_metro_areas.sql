@@ -6,7 +6,7 @@ declare
     r              record;
 BEGIN
 
-    for r in select pd.id,
+    for r in with t1 as (select pd.id,
                     pd.project_id,
                     (select pcz.metro_area_id
                      from flow.postal_code pc
@@ -20,7 +20,10 @@ BEGIN
                and left(pd.project_postal_code, 5) in (
                       select postal_code
                       from flow.postal_code
-                      where archived is false)
+                      where archived is false))
+             select id, project_id, metro_area_id
+             from t1
+             where metro_area_id is not null
     loop
       --1051 = cfga for metro area on project, this should also auto update project details
         perform flow.set_project_cfv(r.project_id, 99999999::bigint, 1051::bigint,

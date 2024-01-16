@@ -13,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
 
@@ -22,13 +21,9 @@ import java.util.List;
 import java.util.Optional;
 
 
-/**
- * Created by randanunn on 12/17/19.
- * !Describe Purpose!
- */
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class RoleService {
 
   private final SqlCache sqlCache;
@@ -40,8 +35,7 @@ public class RoleService {
     User user = securityService.getCurrentUser();
     HashMap<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<Role> results = sqlCache.queryBySql(RoleQuery.getAllForCompany, params, Role.class);
-    return results;
+    return sqlCache.queryBySql(RoleQuery.getAllForCompany, params, Role.class);
   }
 
 
@@ -62,9 +56,9 @@ public class RoleService {
     params.put("companyId", user.getCompanyId());
     Long roleId = sqlCache.updateBySqlReturningId(RoleQuery.insertRole, params, "id").longValue();
 
-    for(CompanyFeature cf : role.getCompanyFeatures()) {
-      for(FeatureAccessControl ac : cf.getAccessControl()) {
-        if(ac.isEnabled()) {
+    for (CompanyFeature cf : role.getCompanyFeatures()) {
+      for (FeatureAccessControl ac : cf.getAccessControl()) {
+        if (ac.isEnabled()) {
           params.put("companyFeatureId", cf.getId());
           params.put("accessControlId", ac.getId());
           params.put("roleId", roleId);
@@ -88,9 +82,9 @@ public class RoleService {
     params.put("roleName", role.getRoleName());
     sqlCache.updateBySql(RoleQuery.updateRole, params);
 
-    for(CompanyFeature cf : role.getCompanyFeatures()) {
+    for (CompanyFeature cf : role.getCompanyFeatures()) {
       for (FeatureAccessControl ac : cf.getAccessControl()) {
-        if(null != ac.getId()) {
+        if (null != ac.getId()) {
           params.put("enabled", ac.isEnabled());
           params.put("roleFeatureAccessControlId", ac.getAccessControlId());
           sqlCache.updateBySql(RoleQuery.updateRoleFeatureAccessControl, params);
@@ -137,9 +131,10 @@ public class RoleService {
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
 
-      TypeReference<List<CompanyFeature>> companyFeaturesRef = new TypeReference<>() {};
+      TypeReference<List<CompanyFeature>> companyFeaturesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "companyFeatures",
-          new JsonCollectionDeserializer(companyFeaturesRef, objectMapper));
+        new JsonCollectionDeserializer(companyFeaturesRef, objectMapper));
 
     }
   }

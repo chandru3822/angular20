@@ -1,6 +1,5 @@
 package com.albatross.api.v1.flow.model.smsQueue;
 
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +20,7 @@ public class TwilioMessageRequestDeserializer extends StdDeserializer<TwilioMess
   }
 
   @Override
-  public TwilioMessageRequest deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException, JacksonException {
+  public TwilioMessageRequest deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
     final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
     final String numMedia = node.get("NumMedia").textValue();

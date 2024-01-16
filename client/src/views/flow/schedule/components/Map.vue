@@ -290,7 +290,7 @@ export default {
             this.suggestions = addresses
             // return addresses
           } else {
-            console.log(data.message)
+            // console.log(data.message)
           }
         } catch (e) {
           console.error('*** ERROR ***', e)

@@ -106,6 +106,7 @@
           {text: '$/% Dep', value: 'percentOfCashDeposit', show: true},
           {text: 'SC', value: 'sc', show: true},
           {text: 'Commission Plan', value: 'commissionPlan', show: true},
+          {text: 'Commission Strategy', value: 'commissionStrategyName', show: true},
           {text: 'Commissions Earned', value: 'commissionsEarned', show: true},
           {text: 'Commissions Paid To Date', value: 'commissionPaidToDate', show: true},
           {text: 'Commission Forfeited Paid to Date', value: 'commissionForfeitedPaidToDate', show: true},
@@ -235,7 +236,7 @@
           let csvData = ''
 
           if(this.payroll.positionId === 1) {
-            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commissions Earned,Commissions Paid To Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
+            csvData += 'Project ID,Customer Name,System Size (kW),Sales Rep,Source,Stage,Cancelled,IAS,FDS,FAS,$/% Dep,SC,Commission Plan,Commission Strategy,Commissions Earned,Commissions Paid To Date,Commission Forfeited Paid to Date,Commission Forfeited by Closer,Forfeited Amount,Adjustment,Commission Pay,Remaining Value Commissions,Override Plan,Override Earned,Overrides Paid to Date,Override Pay,Remaining Value Overrides,Current Pay'
             csvData += '\n'
 
             this.payrollSnapshot.forEach(p => {
@@ -253,6 +254,7 @@
                 p.percentOfCashDeposit + ',"' +
                 p.sc + '","' +
                 p.commissionPlan + '",' +
+                p.commissionStrategyName + '",' +
                 p.commissionsEarned + ',' +
                 p.commissionPaidToDate + ',' +
                 p.commissionForfeitedPaidToDate + ',' +

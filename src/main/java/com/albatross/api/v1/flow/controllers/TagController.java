@@ -2,11 +2,9 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.Tag;
-import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +19,7 @@ import java.util.Optional;
 @Slf4j
 @RestController
 @RequestMapping(value = "/api/v1/flow/tag")
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class TagController {
 
   private final TagService tagService;
@@ -49,7 +47,7 @@ public class TagController {
 
   @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ProjectTag> addProjectTag(@PathVariable Long projectId,
-                                             @RequestBody Tag tag) {
+                                            @RequestBody Tag tag) {
     return tagService.addProjectTag(projectId, tag);
   }
 

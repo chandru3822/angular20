@@ -507,4 +507,30 @@ where ps.id = :id
     select * from flow.get_process_step_available_owners(:id::bigint, :companyId::bigint, :inParentCompany)
         """;
 
+  //language=PostgreSQL
+  public final static String getAssignedStatusesByListOfValue = """
+    select
+      cpsst.id,
+      cpsst.process_step_status_type as name
+    from flow.process_step_company_process_step_status_type pscpsst
+    inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+    where pscpsst.process_step_id = :processStepId and
+      cpsst.company_id = :companyId and
+      pscpsst.archived is not true
+    order by cpsst.process_step_status_type
+        """;
+
+  //language=PostgreSQL
+  public final static String getAssignedCategoriesByListOfValue = """
+    select
+      psst.id,
+      psst.process_step_status_type as name
+    from flow.process_step_company_process_step_status_type pscpsst
+    inner join flow.company_process_step_status_type cpsst on pscpsst.company_process_step_status_type_id = cpsst.id
+    inner join flow.process_step_status_type psst on cpsst.process_step_status_type_id = psst.id
+    WHERE pscpsst.process_step_id = :processStepId and
+      cpsst.company_id = :companyId and
+      pscpsst.archived is not true
+    order by cpsst.process_step_status_type
+        """;
 }

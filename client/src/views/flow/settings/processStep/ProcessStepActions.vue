@@ -638,7 +638,7 @@
                           <v-icon v-if="cp.edit">remove</v-icon>
                           <v-icon v-else>edit</v-icon>
                         </v-btn>
-                        <v-list-item-action class="clickable" @click="[childProcessToDelete = cp, parentActionForChildToDelete = item]">
+                        <v-list-item-action class="clickable" @click="[childFunctionToDelete = cp, parentActionForChildToDelete = item]">
                           <v-icon>delete</v-icon>
                         </v-list-item-action>
                       </v-list-item>
@@ -808,7 +808,10 @@
     </v-row>
     <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAction" @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this action?
-
+      <div class="pt-2"><b>Action Name:</b> {{itemToDelete?.actionName}}</div>
+      <div><b>Type:</b> {{ itemToDelete?.actionType }}</div>
+      <div><b>Parent Status Change:</b> {{ itemToDelete?.processStepStatusType || 'N/A' }}</div>
+      <div><b>Project Status Change:</b> {{ itemToDelete?.projectStatusType || 'N/A' }}</div>
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!linkToDelete" @confirm="deleteLinkFromAction" @close-dialog="closeLinkDeleteDialog">
       Are you sure you want to delete <strong>{{ linkToDelete?.link }}</strong> from <strong>{{
@@ -817,6 +820,10 @@
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="!!childProcessToDelete" @confirm="deleteChildProcessFromAction" @close-dialog="closeChildProcessDialog">
       Are you sure you want to delete <strong>{{ childProcessToDelete?.processStepName }}</strong> from
+      <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
+    </ConfirmationDialog>
+    <ConfirmationDialog :open-dialog="!!childFunctionToDelete" @confirm="deleteChildFunctionFromAction" @close-dialog="closeChildFunctionDialog">
+      Are you sure you want to delete <strong>{{ childFunctionToDelete?.companyFunctionName }}</strong> from
       <strong>{{parentActionForChildToDelete?.actionName }}</strong>?
     </ConfirmationDialog>
     <ConfirmationDialog :open-dialog="showLogicInfoDialog" @confirm="copyToClipBoard" @close-dialog="closeLogicInfoDialog">
@@ -1020,6 +1027,7 @@ export default {
       linkToDelete: null,
       parentActionForChildToDelete: null,
       childProcessToDelete: null,
+      childFunctionToDelete: null,
       showLogicInfoDialog: false,
     }
   },
@@ -1511,7 +1519,10 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async deleteChildFunctionFromAction(actionId, id) {
+    async deleteChildFunctionFromAction() {
+      this.childFunctionToDelete.archived = true
+      const actionId = this.parentActionForChildToDelete.id
+      const id = this.childFunctionToDelete.id
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {status} = await deleteRequest(`/processStep/${this.processStepId}/action/${actionId}/deleteChildFunction/${id}`)
@@ -1680,6 +1691,10 @@ export default {
     },
     closeChildProcessDialog() {
       this.childProcessToDelete = null
+      this.parentActionForChildToDelete = null
+    },
+    closeChildFunctionDialog() {
+      this.childFunctionToDelete = null
       this.parentActionForChildToDelete = null
     },
     closeLogicInfoDialog() {

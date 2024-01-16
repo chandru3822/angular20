@@ -482,7 +482,7 @@ export default {
     async fetchTeamsForUser() {
       try {
         this.conversationIsLoading = true
-        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
         if (this.teamsAssociatedToUser && this.teamsAssociatedToUser.length > 0) {
@@ -509,7 +509,7 @@ export default {
         const { data } = await getRequest(`/messaging/templates/` + this.templateTeams)
         this.selectableTemplates = data
       } catch (e) {
-        console.log('ccc')
+        // console.log('ccc')
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error retrieving templates')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)

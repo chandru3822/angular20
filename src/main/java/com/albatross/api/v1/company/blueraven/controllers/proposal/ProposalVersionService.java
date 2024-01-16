@@ -366,9 +366,9 @@ public class ProposalVersionService {
   private <T> Function<Map<String, Object>, T> getMapper(ObjectMapper om, Class<T> type) {
     return m -> {
       final Object row = m.get("row");
-      if (row instanceof PGobject) {
+      if (row instanceof PGobject gobject) {
         try {
-          return om.readValue(((PGobject) row).getValue(), type);
+          return om.readValue(gobject.getValue(), type);
         } catch (JsonProcessingException e) {
           log.error("Error reading proposal", e);
         }

@@ -127,21 +127,27 @@
           </v-toolbar-items>
         </v-toolbar>
       </div>
-      <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="saveEventDetails(true)" @close-dialog="conflictingEvent = null; fieldsSaving = false">
-        <template v-slot:title>Conflict</template>
-        <div>
-          Resource <b>{{this.conflictingEvent.resourceName}}</b>
-          has another event on their calendar on <b>{{this.conflictingEvent.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
-          - {{this.conflictingEvent.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
-          <b></b>
-        </div>
-        <br>
-        <b>Existing Event:</b> {{ conflictingEvent.eventName }} ({{ conflictingEvent.projectName }}, ID: {{ conflictingEvent.projectId }})
+      <ConfirmationDialog v-if="conflictingEvents != null && conflictingEvents.length > 0" :open-dialog="conflictingEvents != null&& conflictingEvents.length > 0" @confirm="saveEventDetails(true)" @close-dialog="conflictingEvents = null; fieldsSaving = false">
+        <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
+        <template v-else v-slot:title>Conflict</template>
+        Resource <b>{{conflictingEvents[0].resourceName}}</b>
+        has another event on their calendar for:
+        <br><br>
+        <ol>
+          <li v-for="conflictingEvent in conflictingEvents">
+            <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+              - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+            <b></b>
+            <br>
+            <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
+            <br><br>
+          </li>
+        </ol>
         <template v-slot:no>Cancel</template>
         <template v-slot:yes>Schedule Anyway</template>
 
       </ConfirmationDialog>
-      <div class="error-text pb-4 px-0" v-if="eventActionMissingRequirements">
+      <div class="error-text pb-4 px-6" v-if="eventActionMissingRequirements">
         {{ this.saveErrorMsg }}
       </div>
       <v-card class="pa-4 square-card mb-2"
@@ -399,7 +405,7 @@ export default {
       unsavedFieldsModal: false,
       navigationOverride: false,
       toPath: null,
-      conflictingEvent: null,
+      conflictingEvents: null,
       query: {},
       attemptedAction: {},
       companyEventStatuses: [],
@@ -521,7 +527,7 @@ export default {
   },
   methods: {
     doSomething() {
-      console.log('this happened')
+      // console.log('this happened')
     },
     goToPath(path, query) {
       this.unsavedFieldsModal = false
@@ -920,7 +926,7 @@ export default {
         }
       } catch (e) {
         if(e.status == 409){
-          this.conflictingEvent = e.data[0];
+          this.conflictingEvents = e.data;
         }
         else {
           logError(e)

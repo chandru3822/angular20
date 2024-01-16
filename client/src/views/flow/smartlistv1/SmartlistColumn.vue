@@ -264,7 +264,8 @@ export default {
     },
     async getAssignedFields () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/field`)
+        let timezone = this.$store.state.user.details.timezone.value
+        const {data} = await getRequest(`/smartlistv1/${this.smartlistId}/field?timezone=${timezone}`)
         this.assignedFields = data
       } catch (e) {
         logError(e)

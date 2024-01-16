@@ -60,9 +60,9 @@ public class ProjectProcessStepEventController {
   public ResponseEntity<Object> savePpsEventDetails(
     @PathVariable Long ppsId, @PathVariable Long eventId, @RequestBody SaveEventRequest saveEvent, @PathVariable Optional<Boolean> forceSave)
     throws Exception {
-    if(!forceSave.isPresent() || !forceSave.get()){
+    if (forceSave.isPresent() && !forceSave.get()) {
       List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-      if(conflictList != null && conflictList.size() > 0){
+      if (conflictList != null && conflictList.size() > 0) {
         return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
       }
     }
@@ -114,13 +114,12 @@ public class ProjectProcessStepEventController {
     @PathVariable Long ppsId,
     @PathVariable Long eventId,
     @PathVariable Long actionId,
-    @RequestBody SaveEventRequest saveEvent,
-    @PathVariable Optional<Boolean> forceSave) {
+    @RequestBody SaveEventRequest saveEvent) {
     try {
-      if(actionId == 1){
-        if(!forceSave.isPresent() || !forceSave.get()){
+      if (actionId == 1) {
+        if (saveEvent.getForceSave() != null && !saveEvent.getForceSave()) {
           List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-          if(conflictList != null && conflictList.size() > 0){
+          if (conflictList != null && conflictList.size() > 0) {
             return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
           }
         }
@@ -142,16 +141,14 @@ public class ProjectProcessStepEventController {
       Optional<ProjectProcessStepEvent> ppsEvent = getPpsEvent(ppsId, ppseActionResult.getPpsEventId());
 
       //add in the child function returned strings
-      if(ppsEvent.isPresent()) {
-        ppsEvent.get().setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings());
-      }
+      ppsEvent.ifPresent(projectProcessStepEvent -> projectProcessStepEvent.setChildFunctionReturnedStrings(ppseActionResult.getChildFunctionReturnedStrings()));
 
       return ResponseEntity.ok(ppsEvent);
     } catch (Exception e) {
       User currentUser = securityService.getCurrentUser();
       final String errMessage =
-        String.format(
-          "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s, BY USER: %s *** %s",
+
+          "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s, BY USER: %s *** %s".formatted(
           actionId, eventId, currentUser.trueUserId(), e.getMessage());
       log.error(errMessage);
       throw new ResponseStatusException(HttpStatus.CONFLICT, errMessage, e);
@@ -172,5 +169,6 @@ public class ProjectProcessStepEventController {
     private Long id, resourceId, companyEventStatusTypeId, saveVersion;
     private Timestamp startTime, endTime;
     private List<CustomFieldValue> customFieldValues;
+    private Boolean forceSave;
   }
 }

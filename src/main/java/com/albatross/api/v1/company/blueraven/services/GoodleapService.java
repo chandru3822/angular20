@@ -3,12 +3,12 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.enums.GoodleapLoanStatus;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -16,14 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class GoodleapService {
 
   private final SqlCache sqlCache;
@@ -111,7 +110,7 @@ public class GoodleapService {
         }
       }
     } else if (applications.isEmpty()) {
-      final String message = String.format("GOODLEAP: Unable to locate application for project ID: %s", projectId);
+      final String message = "GOODLEAP: Unable to locate application for project ID: %s".formatted(projectId);
       //this error is ALWAYS accompanied by the error from "ARQ: Installation agreement: Failed to get loan...." turning this one off since the same info is available in the accompanying error
 //      log.info(message);
       throw new NotFoundException(message);
@@ -166,7 +165,7 @@ public class GoodleapService {
     ResponseEntity<Void> response = rest.exchange(host + "/loans/" + loanId + "/documents", HttpMethod.POST, request, Void.class);
 
     if (response.getStatusCode() != HttpStatus.NO_CONTENT) {
-      throw new RuntimeException(String.format("Unable to send Goodleap docs with loan ID: %s", loanId));
+      throw new RuntimeException("Unable to send Goodleap docs with loan ID: %s".formatted(loanId));
     }
   }
 
@@ -194,7 +193,7 @@ public class GoodleapService {
     ResponseEntity<String> response = rest.exchange(host + "/loans/" + loanId + "/changeorders", HttpMethod.POST, request, String.class);
 
     if (response.getStatusCode() != HttpStatus.CREATED) {
-      throw new RuntimeException(String.format("Unable to update loan fields for loan ID: %s", loanId));
+      throw new RuntimeException("Unable to update loan fields for loan ID: %s".formatted(loanId));
     }
   }
 
@@ -245,9 +244,9 @@ public class GoodleapService {
 
     if (approved.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Approved";
-    }  else if (pending.stream().anyMatch(status::equalsIgnoreCase)) {
+    } else if (pending.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Pending";
-    } else if(declined.stream().anyMatch(status::equalsIgnoreCase)) {
+    } else if (declined.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Denied";
     } else if (cancelled.stream().anyMatch(status::equalsIgnoreCase)) {
       normalizedStatus = "Cancelled";

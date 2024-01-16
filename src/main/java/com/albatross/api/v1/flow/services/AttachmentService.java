@@ -1,6 +1,9 @@
 package com.albatross.api.v1.flow.services;
 
 import com.albatross.api.config.CachingConfig;
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ThemeUpdateMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
@@ -33,6 +36,7 @@ public class AttachmentService {
   private final AmazonS3 s3;
   private final SqlCache sqlCache;
   private final SecurityService securityService;
+  private final PubSubService pubSubService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -390,7 +394,12 @@ public class AttachmentService {
     params.put("id", id);
     params.put("modifiedById", currentUser.trueUserId());
 
-    sqlCache.updateBySql(AttachmentQuery.deleteById, params);
+    Long attachmentTypeId = sqlCache.updateBySqlReturningId(AttachmentQuery.deleteById, params, "attachment_type_id").longValue();
+    //todo: PUBSUB if attachment was part of company defaults (theme) then send the theme update pubsub
+    if(attachmentTypeId == 987 || attachmentTypeId == 29) {
+      ThemeUpdateMessage tum = new ThemeUpdateMessage();
+      pubSubService.publish(EventChannel.NOTIFICATION, tum);
+    }
   }
 
   public void deleteBySourceAndType(Long sourceId, Long attachmentTypeId) {
@@ -474,6 +483,11 @@ public class AttachmentService {
     // first before having the source id (i.e. reimbursement requests)
     if (null != sourceId) {
       addToJoinTable(attachmentId, sourceId, attachmentTypeId, deleteFirst);
+    }
+
+    if(attachmentTypeId == 987L || attachmentTypeId == 29) {
+        ThemeUpdateMessage tum = new ThemeUpdateMessage();
+        pubSubService.publish(EventChannel.NOTIFICATION, tum);
     }
 
     return findById(attachmentId);

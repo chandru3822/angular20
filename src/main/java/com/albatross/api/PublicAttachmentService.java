@@ -61,7 +61,7 @@ public class PublicAttachmentService {
       final String s3Url =
         String.format("s3://%s/%s", awsProperties.getStorageBucket(), attachment.getS3Key());
       String encodedUrl = Base64.getUrlEncoder().withoutPadding().encodeToString(s3Url.getBytes());
-      String path = String.format("/%s/%s", imageOptions.getParams(), encodedUrl);
+      String path = "/%s/%s".formatted(imageOptions.getParams(), encodedUrl);
       String signature = generateUrlSignatureForImgProxy(path);
 
       return UriComponentsBuilder.fromUri(imageProxy.getUrl())

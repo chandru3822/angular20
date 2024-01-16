@@ -38,6 +38,15 @@
 
                 <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               </span>
+              <v-btn
+                v-if=" report?.id && (isOwner || isSmartlistAdmin || isSystemAdmin)"
+                class="ml-6 mt-1"
+                text
+                @click="router.push(`/smartlistv1/${report.id}`)"
+              >
+                <v-icon>mdi-eye</v-icon>
+                View old smartlist editor
+              </v-btn>
             </div>
           </v-toolbar-title>
           <v-toolbar-items>
@@ -443,7 +452,7 @@ const getReport = async () => {
 
 const getFields = async () => {
   try {
-    const {data} = await getRequest(`/smartlist/${report.value.id}/field`)
+    const {data} = await getRequest(`/smartlist/${report.value.id}/field?timezone=${store.state.user.details.timezone.value}`)
     fields.value = cloneDeep(data)
     sourceFields.value = cloneDeep(data)
   } catch (e) {
@@ -761,6 +770,11 @@ const windowLeave = async (event) => {
     left: 0;
     width: 100%;
     background-color: white;
+
+    .v-data-footer__select > .v-input {
+      margin-top: 0;
+      margin-bottom: 0;
+    }
   }
 
   :deep(.v-data-table__wrapper) {

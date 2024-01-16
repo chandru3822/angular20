@@ -5,6 +5,7 @@ import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
 import com.albatross.api.v1.flow.services.*;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,12 +17,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Configuration
@@ -40,6 +41,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final DataViewService dataViewService;
   private final OrgService orgService;
   private final SecurityService securityService;
+  private final AnnouncementService announcementService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
   private Boolean sendSmsNotifications;
@@ -163,11 +165,20 @@ public class ScheduledConfig implements SchedulingConfigurer {
     }
   }
 
+  //    every  hour
+  @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
+  public void publishAnnouncements() {
+    log.debug("*** CRON: start Announcement publish ***");
+    announcementService.publishActiveAnnouncements();
+    log.debug("*** CRON: end Announcement publish ***");
+  }
+
   //    every  day at 1 am - mtn
   @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
   public void cacheAvailability() {
     if (runCachedAvailability) {
       log.info("*** CRON: start cache availability ***");
+      setCronUser();
       availabilityService.cacheAvailability();
       log.info("*** CRON: end cache availability ***");
     }
@@ -179,6 +190,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   public void processFutureRecurringEvents() {
     if (processFutureAppointments) {
       log.info("*** CRON: start populating recurring events ***");
+      setCronUser();
       availabilityService.processFutureRecurringEvents();
       log.info("*** CRON: end populating recurring events ***");
     }
@@ -216,6 +228,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
     user.setHighestCompanyId(cronUser.getCompanyId());
     user.setUserPositions(new ArrayList<>());
     user.setHighestParentCompanyId(cronUser.getCompanyId());
+    user.setHasAccess(true);
 
     final UserAccountDetails uad = new UserAccountDetails(user, List.of());
 

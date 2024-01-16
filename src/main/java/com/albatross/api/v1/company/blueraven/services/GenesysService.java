@@ -10,7 +10,6 @@ import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.queries.customFieldValues.ContactCfvQuery;
-import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.CustomFieldValueService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.VerseWebhookService;
@@ -24,14 +23,16 @@ import com.mypurecloud.sdk.v2.model.ContactList;
 import com.mypurecloud.sdk.v2.model.ContactListEntityListing;
 import com.mypurecloud.sdk.v2.model.DialerContact;
 import com.mypurecloud.sdk.v2.model.WritableDialerContact;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -42,7 +43,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GenesysService {
 
-  private final ContactService contactService;
   private final CustomFieldValueService customFieldValueService;
   private final SecurityService securityService;
   private final SqueezeService squeezeService;
@@ -50,6 +50,9 @@ public class GenesysService {
   private final VerseWebhookService verseWebhookService;
   private final SqlCache sqlCache;
   private final ObjectMapper om;
+
+  private final SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+  private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
   @Value(value = "${genesys.api.client.id}")
   private String clientId;
@@ -69,6 +72,13 @@ public class GenesysService {
     return apiClient;
   }
 
+  @Data
+  public static class CustomContact {
+    Long id, contactTypeId, countryId;
+    String firstName, lastName, street1, street2, phone, mobile, city, postalCode, email, state;
+    Date dateCreated;
+  }
+
   public Contact getContactByPhone(String phoneNumber) {
     User user = securityService.getCurrentUser();
     Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
@@ -86,7 +96,7 @@ public class GenesysService {
         .getBySql(
             GenesysQuery.getContactIdByPhone,
             params,
-            new ContactService.ContactMapper<>(Contact.class, om))
+            Contact.class)
         .orElse(null);
   }
 
@@ -255,29 +265,33 @@ public class GenesysService {
     return false;
   }
 
+  public ResponseEntity handleAddContact(Long contactId, List<CustomFieldValue> values) {
+    try {
+      addContact(contactId, values, false);
+      return ResponseEntity.ok("Contact successfully added.");
+    } catch (ApiException e) {
+      JSONObject apiException = new JSONObject(e.getRawBody());
+      String msg = "GENE: Error adding contact: {}";
+//      log.error(msg, apiException.getString("message"));
+      return ResponseEntity.badRequest().body("Error adding contact");
+    }
+    catch (IOException e) {
+      String msg = "GENE: Error adding contact: {}";
+//      log.error(msg, e.getMessage());
+      return ResponseEntity.badRequest().body("Error adding contact");
+    }
+  }
+
   public void addContact(Long contactId, List<CustomFieldValue> values, boolean isHubspot)
       throws IOException, ApiException {
     // Only add contacts if we are in Prod
-    if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
+    if (ObjectUtils.isEmpty(clientId) || ObjectUtils.isEmpty(clientSecret == null)) {
       return;
     }
 
-    Contact contact;
-    if (isHubspot) {
-      contact = contactService.getHubspotContact(contactId);
-    } else {
-      User user = new User();
-      user.setId(SystemSettings.CRON_USER.getId());
-      user.setCompanyId(3L);
-      user.setHighestCompanyId(3L);
-      user.setParentCompanyId(3L);
-      user.setHighestParentCompanyId(3L);
-      contact = contactService.getContact(contactId, user);
-    }
+    CustomContact contact = getContact(contactId, !isHubspot);
 
     WritableDialerContact wdc = new WritableDialerContact();
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     HashMap<String, Object> contactMap = new HashMap<>();
     wdc.setId(contact.getId().toString());
     contactMap.put("id", contact.getId());
@@ -485,8 +499,6 @@ public class GenesysService {
   }
 
   private void getPitchedNotBookedValues(Long contactId, HashMap<String, Object> contactMap) {
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     Date date = new Date();
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
@@ -521,8 +533,6 @@ public class GenesysService {
   }
 
   private void getRetargetedValues(HashMap<String, Object> contactMap) {
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
     Date date = new Date();
 
     // Hard code certain params for this contact list
@@ -539,15 +549,29 @@ public class GenesysService {
     contactMap.put("contactcallable", "1");
   }
 
+  public CustomContact getContact(Long contactId, Boolean isParent) {
+    //this function was created to return a smaller contact object and to remove an otherwise unavoidable circular reference
+    Map<String, Object> params = new HashMap<>();
+    params.put("contactId", contactId);
+
+    params.put("companyId", 3L);
+    params.put("parentCompanyId", 3L);
+    params.put("isParent", isParent);
+
+    //todo make this query return all the props needed
+    Optional<CustomContact> contact = sqlCache.getBySql(GenesysQuery.getContact, params, CustomContact.class);
+
+    return contact.orElse(null);
+  }
+
   public void updateContact(Long contactId) throws IOException, ApiException {
     // Only update contacts if we are in Prod
-    if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret == null)) {
+    if (ObjectUtils.isEmpty(clientId) || ObjectUtils.isEmpty(clientSecret == null)) {
       return;
     }
 
-    Contact contact = contactService.getContact(contactId);
-    SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
-    SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
+    CustomContact contact = getContact(contactId, true);
+
     DialerContact dc = new DialerContact();
     HashMap<String, Object> contactMap = new HashMap<>();
     contactMap.put("id", contact.getId());
@@ -772,7 +796,7 @@ public class GenesysService {
     }
   }
 
-  private String getCallerGroupNumber(Contact contact) {
+  private String getCallerGroupNumber(CustomContact contact) {
     HashMap<String, Object> params = new HashMap<>();
     User user = securityService.getCurrentUser();
     params.put("postalCode", contact.getPostalCode());
@@ -783,7 +807,7 @@ public class GenesysService {
         CallGroupQuery.getLowestCallsCallGroupNumber, params, CallGroupPhoneNumber.class);
 
     // Return default number if no numbers are found for this postal code
-    if (!callGroupPhoneNumber.isPresent()) {
+    if (callGroupPhoneNumber.isEmpty()) {
       return "+13852921523";
     }
 
@@ -952,8 +976,7 @@ public class GenesysService {
   private void addTextelParameters(HashMap<String, Object> contactMap, boolean isUpdate) {
     contactMap.put(
         "messageBody1",
-        "Hello, "
-            + "this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
+        "Hello, this is Blue Raven Solar. I’m just following up on your inquiry about our solar solutions. I wanted to touch base and answer any questions you may have. Is now a good time to hop on a quick phone call or would you prefer to chat via text?");
     contactMap.put("messageBody2", "Let me know which is better for you!");
     contactMap.put(
         "messageBody3",
@@ -966,12 +989,10 @@ public class GenesysService {
         "Just wanted to check in. We would be more than happy to assist you. Let me know when it’s a good time to talk.");
     contactMap.put(
         "messageBody6",
-        "Hey, "
-            + " we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
+        "Hey, we don't want to bother you, but we do want to help with your request. Are you available to chat sometime in the next couple of days?");
     contactMap.put(
         "messageBody7",
-        "Hi, "
-            + " are you still interested in scheduling an appointment  for more information about our solar solutions? If so, please let us know!");
+        "Hi, are you still interested in scheduling an appointment for more information about our solar solutions? If so, please let us know!");
     contactMap.put(
         "messageBodyAfterHours",
         "Thank you for your text! We are currently out of office but will reply to your message as soon as we get back in.");

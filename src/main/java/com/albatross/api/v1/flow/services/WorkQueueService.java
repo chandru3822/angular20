@@ -108,7 +108,7 @@ public class WorkQueueService {
           HttpStatus.BAD_REQUEST, "Smartlist not found", new RuntimeException());
       }
       log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
-      List<SmartlistFieldAssignment> fields = smartlistServicev1.getAssignedFields(smartlistId);
+      List<SmartlistFieldAssignment> fields = smartlistServicev1.getAssignedFields(smartlistId, timezone);
 
       fields = smartlistServicev1.prettifyFieldNames(fields);
 
@@ -163,7 +163,7 @@ public class WorkQueueService {
     }
 
     log.debug("SMARTLIST: Running smartlist ID: " + smartlistId);
-    List<SmartlistFieldAssignment> fields = smartlistServicev1.getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = smartlistServicev1.getAssignedFields(smartlistId, null);
     fields = smartlistServicev1.prettifyFieldNames(fields);
     String query;
     if (useEventData) {

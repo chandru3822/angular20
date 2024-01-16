@@ -238,6 +238,7 @@ public class PayrollQuery {
                   s.commission_adjustment as "commissionAdjustment",
                   s.commission_paid_to_date as "commissionPaidToDate",
                   s.commission_plan as "commissionPlan",
+                  s.commission_strategy_name as "commissionStrategyName",
                   s.commission_plan_id as "commissionPlanId",
                   s.commissions_earned as "commissionsEarned",
                   s.current_pay as "currentPay",

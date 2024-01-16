@@ -9,7 +9,7 @@ public class CommissionManagementQuery {
           milestone_type,
           display_order
         FROM brs.milestone_type
-        where active is
+        where active is true
     """;
 
   //language=PostgreSQL
@@ -791,7 +791,7 @@ FROM (SELECT cp.id,
   public final static String removeSource = """
     DELETE
       FROM brs.commission_plan_source_allocation
-       WHERE id = :
+       WHERE id = :id
     """;
 
   //language=PostgreSQL

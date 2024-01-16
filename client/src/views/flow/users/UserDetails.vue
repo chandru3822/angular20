@@ -168,7 +168,7 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <div v-if="user && user.id && !fieldsLoading" style="overflow-x: hidden">
+          <div class="user-fields-container" v-if="user && user.id && !fieldsLoading">
             <v-row class="px-5">
               <v-col cols="12" class="text-left py-0 px-0">
                 <!--    process field groups-->
@@ -595,6 +595,15 @@ export default {
   margin-left: -15px;
 }
 
+#three-column-container {
+  div.user-fields-container {
+    overflow: auto ;
+    overflow-x: hidden;
+    height: calc(100vh - 200px);
+    padding-bottom: 0;
+  }
+}
+
 .cfg-detail-header {
   background-color: var(--v-secondary-base) !important;
   margin-left: -10px;
@@ -606,6 +615,8 @@ export default {
 .user-header {
   background-color: white;
 }
+
+
 
 .user-title {
   font-size: 30px;

@@ -210,7 +210,7 @@ export default {
 <style scoped lang="scss">
 .card {
   border-radius: 4px;
-  border: 1px solid var(--grey-lighten-2, #E0E0E0);
+  border: 1px solid var(--v-grey-base);
 }
 
 

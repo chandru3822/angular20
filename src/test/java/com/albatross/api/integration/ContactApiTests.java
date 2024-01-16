@@ -6,13 +6,11 @@ import com.albatross.api.v1.flow.model.UserAccountDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -28,12 +26,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Slf4j
-@ExtendWith(SpringExtension.class)
-//@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+//@RequiredArgsConstructor
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles(profiles = "local")
-public class ContactApiTests {
+class ContactApiTests {
 
   @Autowired
   private WebApplicationContext webApplicationContext;
@@ -45,7 +42,7 @@ public class ContactApiTests {
   private SecurityService securityService;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     this.mockMvc = MockMvcBuilders.webAppContextSetup(this.webApplicationContext).build();
 
     //set the local security service user or most calls will fail
@@ -58,7 +55,7 @@ public class ContactApiTests {
   }
 
   @Test
-  public void getContact() throws Exception {
+  void getContact() throws Exception {
     MvcResult mvcResult = this.mockMvc.perform(get("/api/v1/flow/contact/1646593"))
       .andDo(print()).andExpect(status().isOk())
       .andExpect(jsonPath("$.id").value("1646593"))
@@ -70,7 +67,7 @@ public class ContactApiTests {
   }
 
   @Test
-  public void postContact() throws Exception {
+  void postContact() throws Exception {
     String email = "randanunn@gmail2.com";
     String json =
       "{\"city\": \"Salt Lake City\"," +

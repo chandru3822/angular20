@@ -21,7 +21,9 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_rebates(p_version_id bigint)
             odoe_battery_rebate_amount        numeric,
             odoe_battery_rebate_cap_amount    numeric,
             odoe_battery_rebate_percent_total numeric,
-            odoe_system_size_cutoff           numeric
+            odoe_system_size_cutoff           numeric,
+            rebate text,
+            selectable_by_user boolean
           )
 AS
 $BODY$
@@ -49,7 +51,9 @@ BEGIN
         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 382)') ->> 'value')::numeric as odoe_battery_rebate_amount,
         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 383)') ->> 'value')::numeric as odoe_battery_rebate_cap_amount,
         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 384)') ->> 'value')::numeric as odoe_battery_rebate_percent_total,
-        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 385)') ->> 'value')::numeric as odoe_system_size_cutoff
+        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 385)') ->> 'value')::numeric as odoe_system_size_cutoff,
+        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 93)') ->> 'value')::text as rebate,
+        (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 414)') ->> 'value')::boolean as selectable_by_user
       from brs.get_proposal_version_value(p_version_id, array [(null, null, null, null)::ProposalFieldFilter],
                                           'PROPOSAL_REBATE');
 END
