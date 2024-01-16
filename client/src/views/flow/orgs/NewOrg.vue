@@ -54,7 +54,6 @@
                 <h6 class="mt-3 error-text" v-if="org.schedulable && !org.companyTimezoneId">* Required when Schedulable Organization</h6>
               </div>
               <v-checkbox class="mb-n4" v-if="$store.getters.isParent(parentId)" label="Make available in children" v-model="org.availableToChildren"></v-checkbox>
-              <v-checkbox class="mb-n4" v-if="$store.getters.isParent(parentId)" label="Enable SMS" v-model="org.smsEnabled"></v-checkbox>
             </v-col>
           </v-row>
         </v-container>
