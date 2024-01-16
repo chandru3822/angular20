@@ -105,6 +105,17 @@ public class ProjectProcessStepEventController {
       HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{projectProcessStepEventId}/attachmentss")
+  public ResponseEntity<List<Attachment>> uploadMultipleProjectProcessStepEventAttachment(
+    @PathVariable Long projectProcessStepEventId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam("files") MultipartFile[] files)
+    throws IOException {
+
+    return new ResponseEntity<>(
+      projectProcessStepEventService.addAttachments(files, projectProcessStepEventId, attachmentTypeId), HttpStatus.OK);
+  }
+
   // action
 
   @PostMapping(
