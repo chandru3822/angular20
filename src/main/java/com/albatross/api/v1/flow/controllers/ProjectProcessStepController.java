@@ -300,6 +300,17 @@ public class ProjectProcessStepController {
       HttpStatus.OK);
   }
 
+  @PostMapping(value = "/{projectProcessStepId}/attachments")
+  public ResponseEntity<List<Attachment>> uploadMultipleProjectProcessStepAttachment(
+    @PathVariable Long projectProcessStepId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam("files") MultipartFile[] files)
+    throws IOException {
+
+    return new ResponseEntity<>(
+      projectProcessStepService.addAttachments(files, projectProcessStepId, attachmentTypeId), HttpStatus.OK);
+  }
+
   @GetMapping(value = "/owners/{processStepProcessId}")
   public ResponseEntity<List<Owner>> getAvailableProjectProcessStepOwners(
     @PathVariable Long processStepProcessId) {
