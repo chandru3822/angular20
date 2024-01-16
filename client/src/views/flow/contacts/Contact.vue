@@ -354,7 +354,7 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <div v-if="contact && contact.id && !fieldsLoading" style="overflow-x: hidden">
+          <div class="contact-fields-container" v-if="contact && contact.id && !fieldsLoading">
             <v-row class="px-5">
               <v-col cols="12" class="text-left py-0 px-0">
                 <!--    process field groups-->
@@ -538,6 +538,7 @@ import SpinnerInline from '@/components/SpinnerInline'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import PageOverview from "../PageOverview";
 import SidePanelExpansionPanel from "@/components/SidePanelExpansionPanel.vue";
+import {saveContact} from "@/services/contactService";
 
 export default {
   name: 'Contact',
@@ -775,7 +776,7 @@ export default {
       let valid = this.$refs.contactForm?.validate()
       if (valid && saveContact) {
         this.fieldsSaving = true
-        await this.saveContact()
+        await this.saveCustomFieldValues()
         this.fieldsSaving = false
       } else {
         this.snackbar = getSnackbar('ERROR', 'Missing Required Fields')
@@ -789,47 +790,32 @@ export default {
         return this.contact.ownerReadOnly
       }
     },
-    async saveContact() {
+    async saveCustomFieldValues() {
       if (this.dirtyCfvs.length > 0) {
+        this.fieldsSaving = true
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          //we no longer save the contact system fields here
-          await this.saveCustomFieldValues()
-
-          try {
-            // Save BlueRaven Solar Contacts to Genesys
-            if (this.companyId === 3) {
-              await putRequest(`/genesys/contact/${this.contact.id}`, this.dirtyCfvs, 'blueraven')
-            }
-          } catch (e) {
-            console.error('*** ERROR ***', e)
+          // save dirty custom field values
+          let body = {
+            contact: null, //dont add the contact here. this new endpoint will save it if you do and this isn't where changes are made anymore
+            cfvs: this.dirtyCfvs
           }
+          const {data, status} = await saveContact(this.contactId, body)
+          this.dirtyCfvs = []
+          this.addressChanged = false
+          this.customFieldGroups = data?.cfgs
+          this.fieldsSaving = false
+          this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.fieldsSaving = false
+        } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
+          this.fieldsSaving = false
         }
-      }
-    },
-    async saveCustomFieldValues() {
-      try {
-        // save dirty custom field values
-        const {data, status} = await postRequestWithRequestParams(`/customFieldValues/contact/${this.contact.id}`, this.dirtyCfvs, { cameFromWeb: true }, null, [])
-        this.dirtyCfvs = []
-        this.addressChanged = false
-        this.customFieldGroups = data
-        this.fieldsSaving = false
-        this.snackbar = getSnackbar('SUCCESS', 'Fields Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Contact')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.fieldsSaving = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     populateDirtyCfvs(field) {
@@ -1050,58 +1036,67 @@ export default {
   overflow: hidden;
 }
 
-.contact-split-container {
-  height: calc(100% - 50px);
-  max-width: 100%;
-  width: 100%;
-  margin-right: 0 !important;
-  margin-left: 0 !important;
+#three-column-container {
+  div.contact-fields-container {
+    overflow: auto ;
+    overflow-x: hidden;
+    height: calc(100vh - 200px);
+    padding-bottom: 0;
 }
 
-.detail-label {
-  font-size: 12px;
-  color: var(--v-grey-darken1);
-}
+  .contact-split-container {
+    height: calc(100% - 50px);
+    max-width: 100%;
+    width: 100%;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
 
-.detail-item {
-  font-size: 0.875rem;
-  margin-left: 5px;
-  overflow-wrap: break-word;
-}
+  .detail-label {
+    font-size: 12px;
+    color: var(--v-grey-darken1);
+  }
 
-.project-button {
-  border: solid 1px #C4C4C4;
-  padding: 10px;
-  margin-bottom: 10px;
-}
+  .detail-item {
+    font-size: 0.875rem;
+    margin-left: 5px;
+    overflow-wrap: break-word;
+  }
 
-.menu-option{
-  padding-top: 12px;
-  padding-bottom: 12px;
-}
+  .project-button {
+    border: solid 1px #C4C4C4;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
 
-.scrollable {
-  overflow-y: scroll !important;
-}
-
-.mobile-padding-menu{
-  padding-left: 24px !important;
-  padding-bottom: 16px !important;
-}
-
-@media (max-width: 960px) {
-
-  .mobile-contact-header{
+  .menu-option{
     padding-top: 12px;
-    padding-right: 24px;
+    padding-bottom: 12px;
   }
 
-  .mobile-content-padding{
-    padding-top: 16px;
-    padding-left: 16px;
-    padding-right: 16px;
+  .scrollable {
+    overflow-y: scroll !important;
   }
 
+  .mobile-padding-menu{
+    padding-left: 24px !important;
+    padding-bottom: 16px !important;
+  }
+
+  @media (max-width: 960px) {
+
+    .mobile-contact-header{
+      padding-top: 12px;
+      padding-right: 24px;
+    }
+
+    .mobile-content-padding{
+      padding-top: 16px;
+      padding-left: 16px;
+      padding-right: 16px;
+    }
+
+  }
 }
 
 </style>

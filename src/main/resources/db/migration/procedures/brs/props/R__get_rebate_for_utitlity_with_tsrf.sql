@@ -29,7 +29,7 @@ BEGIN
     total_solar_resource_fraction numeric,
     face                          integer,
     size                          numeric
-  ) on commit drop;
+  ) ;
   v_value = 0;
   for x in SELECT jsonb_array_elements::jsonb FROM jsonb_array_elements(p_aurora_design_summary -> 'arrays')
     loop
@@ -38,33 +38,34 @@ BEGIN
       v_panel_count = (x::jsonb -> 'module' -> 'count')::bigint;
       v_face = x::jsonb -> 'face';
       insert into calculations(panel_count, total_solar_resource_fraction, face, size)
-      values (v_panel_count, v_total_solar_resource_fraction, v_face, v_size);
+      values (v_panel_count, round(v_total_solar_resource_fraction,1), v_face, v_size);
     end loop;
 
   with multiple_faces as (select face
                           from calculations
                           group by face
                           having count(1) > 1)
-  select size * p_rebate_rate
+  select sum(size) * p_rebate_rate
   into v_multiple_plane_rebate_amount
   from (select fraction / count as total_solar_resource_fraction, count as panel_count, size as size
         from (select sum(panel_count * total_solar_resource_fraction) fraction,
                      sum(panel_count)                                 count,
                      sum(size) as                                     size
               from calculations mc
-                     inner join multiple_faces mf on mf.face = mc.face) as foo) as foo1
+                     inner join multiple_faces mf on mf.face = mc.face group by mc.face) as foo) as foo1
   where foo1.total_solar_resource_fraction > p_minimum_tsrf;
 
   with single_faces as (select face
                         from calculations
                         group by face
                         having count(1) = 1)
-  select size * p_rebate_rate
+  select sum(size) * p_rebate_rate
   into v_single_plane_rebate_amount
   from (select sum(panel_count) as panel_count, sum(size) as size
         from calculations mc
                inner join single_faces mf on mf.face = mc.face
-        where total_solar_resource_fraction > p_minimum_tsrf) as foo;
+        where total_solar_resource_fraction > p_minimum_tsrf
+        group by mc.face) as foo;
   v_value = coalesce(v_multiple_plane_rebate_amount, 0) + coalesce(v_single_plane_rebate_amount, 0);
 
   --   if v_total_solar_resource_fraction > p_minimum_tsrf then

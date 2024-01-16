@@ -13,7 +13,7 @@
            @click="handleClick(child)"
       >
         #{{child.id}} - {{ child.blockType }}
-<!--        <span>- {{ child.themeKey }} {{ child.blockOrder }}</span> -->
+        <span v-if="child.modified">*</span>
       </div>
       <tree class="node-sub"
             v-on="$listeners"
@@ -87,7 +87,7 @@ export default {
         ? ((prev?.blockOrder - target?.element?.blockOrder) / 2) + target?.element?.blockOrder
         : target?.element?.blockOrder + 1
 
-      console.log({active, target, pos})
+      // console.log({active, target, pos})
 
       //
       // const draggedItem = draggedContext?.element

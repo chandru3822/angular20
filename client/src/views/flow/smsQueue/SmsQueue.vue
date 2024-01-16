@@ -59,7 +59,7 @@
             {{ item.objectTypeId === 1 ? 'Project' : 'User'}}
           </td>
           <td class="text-left sent-to-column">
-            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/details`">
+            <router-link v-if="item.projectId" text :to="`/project/${item.projectId}/status`">
               {{ item.projectName }} - {{ item.projectStatusType}}
             </router-link>
             <router-link v-else text :to="`/user/${item.sentToUserId}/details`">

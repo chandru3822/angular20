@@ -34,7 +34,7 @@
         <slot name="left-column"></slot>
         </div>
       </v-col>
-      <v-col class="project-section center-panel py-0 px-0" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit}">
+      <v-col class="project-section center-panel py-0 px-0" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit, 'halvsies': this.leftHidden,}">
         <slot name="main-column"></slot>
       </v-col>
       <v-col id="right-column" class="project-section right-column pa-0" :class="{'hidden': this.rightHidden,
@@ -189,6 +189,7 @@ export default {
   width: 100%;
   margin-right: 0 !important;
   margin-left: 0 !important;
+  flex-wrap: nowrap;
 
   &.full-height {
     height: 100%
@@ -297,5 +298,8 @@ export default {
     max-width: 72px;
     min-width: 72px;
   }
+}
+.center-panel.halvsies {
+  width: calc((6/12) * 100%);
 }
 </style>

@@ -73,7 +73,7 @@ BEGIN
 
       'System Purchase and Installation Agreement Signed on ', v_installation_agreement_signed_date, '.<br/><br/>',
 
-      'You can access this permit by going to <a href="https://albatross.myblueraven.com/project/', p_project_id, '/details" target="_blank">Albatross</a>.<br/><br/>',
+      'You can access this permit by going to <a href="https://albatross.myblueraven.com/project/', p_project_id, '/status" target="_blank">Albatross</a>.<br/><br/>',
       'Please contact <a href="mailto:legal@blueravensolar.com">legal@blueravensolar.com</a> if you have any questions about this permit.',
       '</p></div>'
     ) into v_email_body;

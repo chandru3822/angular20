@@ -9,7 +9,7 @@ BEGIN
   return query
     with origins as (
       select 'Project' as origin,
-             concat('/project/', pa.project_id, '/details') as origin_path_url,
+             concat('/project/', pa.project_id, '/status') as origin_path_url,
              1::int as obj_type_id,
              pa.project_id::bigint as src_id
       from flow.project_attachment pa

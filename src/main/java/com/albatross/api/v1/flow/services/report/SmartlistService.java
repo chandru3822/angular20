@@ -32,9 +32,10 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -609,7 +610,7 @@ public class SmartlistService {
   public String export(Long smartlistId, String timezone) throws JsonProcessingException {
     Smartlist smartlist = this.getById(smartlistId);
 
-    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? getAssignedProjectDetailsFields(smartlistId) : getAssignedFields(smartlistId);
+    List<SmartlistFieldAssignment> fields = (smartlist.isProjectDetails()) ? getAssignedProjectDetailsFields(smartlistId, timezone) : getAssignedFields(smartlistId, timezone);
     List<SmartlistRequirement> requirements = getRequirements(smartlist.getId(), false);
 
     if (null == smartlist.getWorkQueueTypeId() && fields.isEmpty()) {
@@ -630,7 +631,7 @@ public class SmartlistService {
       if (smartlist.getObjectTypeId() == 4) {
         query = reportEngine.buildProcessStepSql(smartlist, fields, requirements, null);
       } else {
-        query = reportEngine.buildEventSql(smartlist, fields, requirements, null, null);
+        query = reportEngine.buildEventSql(smartlist, fields, requirements, timezone, null);
       }
     } else {
       if (smartlist.getWorkQueueTypeId() != null && smartlist.getObjectTypeId() == 6) {
@@ -876,6 +877,10 @@ public class SmartlistService {
       if (f.getId() == null) {
         f.setId((long) ((Math.random() * (40000 - 20000)) + 20000));
       }
+
+      if (f.getDataTypeId() == 1 || f.getDataTypeId() == 2) {
+        f.setName(f.getName() + " (" + timezone + ")");
+      }
     });
 
     String query;
@@ -887,7 +892,7 @@ public class SmartlistService {
       if (report.getObjectTypeId() == 4) {
         query = reportEngine.buildProcessStepSql(report, fields, requirements, null);
       } else {
-        query = reportEngine.buildEventSql(report, fields, requirements, null, null);
+        query = reportEngine.buildEventSql(report, fields, requirements, timezone, null);
       }
     } else {
       if (report.getWorkQueueTypeId() != null && report.getObjectTypeId() == 6) {
@@ -994,7 +999,7 @@ public class SmartlistService {
     List<SmartlistRequirement> requirements;
 
     if (smartlist.isProjectDetails()) {
-      requirements = sqlCache.queryBySql(SmartlistQueryv1.getProjectDetailsRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
+      requirements = sqlCache.queryBySql(SmartlistQuery.getProjectDetailsRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
     } else {
       requirements = sqlCache.queryBySql(SmartlistQueryv1.getRequirements, params, new SmartlistRequirementMapper<>(SmartlistRequirement.class, om));
 
@@ -1061,22 +1066,38 @@ public class SmartlistService {
     }
   }
 
-  public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId) {
-    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedFields, Map.of("smartlistId", smartlistId), new SmartlistService.SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  public List<SmartlistFieldAssignment> getAssignedFields(Long smartlistId, String timezone) {
+    List<SmartlistFieldAssignment> fields = sqlCache.queryBySql(SmartlistQueryv1.getAssignedFields, Map.of("smartlistId", smartlistId), new SmartlistService.SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    if (timezone != null) {
+      for (SmartlistFieldAssignment field : fields) {
+        if (field.getDataTypeId() == 1 || field.getDataTypeId() == 2) {
+          field.setName(field.getName() + " (" + timezone + ")");
+        }
+      }
+    }
+    return fields;
   }
 
-  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId) {
-    return sqlCache.queryBySql(SmartlistQueryv1.getAssignedProjectDetailsFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+  public List<SmartlistFieldAssignment> getAssignedProjectDetailsFields(Long smartlistId, String timezone) {
+    List<SmartlistFieldAssignment> fields = sqlCache.queryBySql(SmartlistQueryv1.getAssignedProjectDetailsFields, Map.of("smartlistId", smartlistId), new SmartlistFieldAssignmentMapper<>(SmartlistFieldAssignment.class, om));
+    if (timezone != null) {
+      for (SmartlistFieldAssignment field : fields) {
+        if (field.getDataTypeId() == 1 || field.getDataTypeId() == 2) {
+          field.setName(field.getName() + " (" + timezone + ")");
+        }
+      }
+    }
+    return fields;
   }
 
   // @TODO: #smartlistsv2 - this was pulled from v1, for sure revamp
-  public List<SmartlistFieldAssignment> getFields(@NotNull Long smartlistId) {
+  public List<SmartlistFieldAssignment> getFields(@NotNull Long smartlistId, @RequestParam(required = false) String timezone) {
     var smartlist = getById(smartlistId);
 
     if (smartlist.isProjectDetails()) {
-      return getAssignedProjectDetailsFields(smartlistId);
+      return getAssignedProjectDetailsFields(smartlistId, timezone != null ? timezone.replace("_", " ") : null);
     } else {
-      return getAssignedFields(smartlistId);
+      return getAssignedFields(smartlistId, timezone != null ? timezone.replace("_", " ") : null);
     }
   }
 

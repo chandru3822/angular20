@@ -39,7 +39,7 @@
             <v-card-text>
               <ul>
                 <li v-for="tag in tags">
-                  {{tag.tagName}} [{{tag.tagType}}]
+                  {{ tag.tagName }} [{{ tag.tagType }}]
                 </li>
               </ul>
             </v-card-text>
@@ -68,7 +68,7 @@ import {mapState} from "vuex";
 
 export default {
   props: {
-    visibility : {
+    visibility: {
       type: String
     }
   },
@@ -84,7 +84,8 @@ export default {
     })
   },
   watch: {
-    'visibility' : function(arg){
+    visibility: function (arg) {
+      console.log("wtf")
       this.expression = arg
     }
   },

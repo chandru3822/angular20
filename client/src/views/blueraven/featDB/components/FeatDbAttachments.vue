@@ -96,7 +96,7 @@ export default {
   },
   watch: {
     attachments() {
-      console.log(this.attachments)
+      // console.log(this.attachments)
     }
   },
   created() {},

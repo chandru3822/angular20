@@ -1,6 +1,6 @@
 <template>
 <v-container class="pa-0 mobile-background">
-  <SidePanelExpansionPanel :header="`${pageName} Overview`" :is-disabled="!isExpandable" :section-expanded="opened">
+  <SidePanelExpansionPanel header="Overview" :is-disabled="!isExpandable" :section-expanded="opened">
     <template v-slot:tool-btn>
       <v-btn
           text small color="primary" class="px-0"
@@ -214,7 +214,7 @@ export default {
     },
     async fetchTeamsForUser() {
       try {
-        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
       } catch (e) {

@@ -142,8 +142,8 @@ public class SmartlistController {
   }
 
   @GetMapping(value = "/{smartlistId}/field", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFields(@PathVariable Long smartlistId) {
-    return new ResponseEntity<>(smartlistService.getFields(smartlistId), HttpStatus.OK);
+  public ResponseEntity<List<SmartlistFieldAssignment>> getAssignedFields(@PathVariable Long smartlistId, @RequestParam(required = false) String timezone) {
+    return new ResponseEntity<>(smartlistService.getFields(smartlistId, timezone != null ? timezone.replace("_", " ") : null), HttpStatus.OK);
   }
 
 //  @DeleteMapping(value = "{smartlistId}/access/{smartlistAccessControlId}")

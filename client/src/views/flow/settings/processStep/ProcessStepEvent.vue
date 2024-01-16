@@ -1465,7 +1465,6 @@ export default {
       }
     },
     async saveFunctionToAction(action) {
-      console.log('save fn to action here')
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {

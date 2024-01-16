@@ -52,7 +52,9 @@ BEGIN
                when cancelled_date is not null  then
                  0
                when foo.commission_strategy =23610 and foo.substantial_completion_date is not null then
-                   (foo.red_line_m1_allocation + foo.red_line_m2_allocation) * foo.total_commissions
+                   (foo.red_line_m1_allocation + case when foo.substantial_completion_date is not null and
+                                                           foo.substantial_completion_date <= v_period_end_date then
+                                                        foo.red_line_m2_allocation else 0 end) * foo.total_commissions
                when foo.commission_strategy =23610 and foo.substantial_completion_date is null then
                    (foo.red_line_m1_allocation) * foo.total_commissions
                when foo.substantial_completion_date is null then
@@ -80,7 +82,8 @@ BEGIN
                    pd.system_size                            as system_size,
                    opru1.m1_allocation + opru1.m2_allocation as user_allocation,
                    opru1.m1_allocation                       as milestone1_amount,
-                   opru1.m2_allocation                       as milestone2_amount,
+                   case when pd.substantial_completion_date is not null and pd.substantial_completion_date <= v_period_end_date then
+                     opru1.m2_allocation  else 0 end                     as milestone2_amount,
                    opru1.red_line_m1_allocation              as red_line_m1_allocation,
                    opru1.red_line_m2_allocation              as red_line_m2_allocation,
                    fd.total_commissions,
@@ -107,6 +110,7 @@ BEGIN
                               on opru1.override_plan_id = op.id
                    inner join flow.user u on u.id = opru1.user_id
             where p1.id = p_payroll_id
+              and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
               and op.position_id = 1
             union
             select pd.project_id                               as project_id,
@@ -147,6 +151,7 @@ BEGIN
                              where opru1.user_id = pcl.user_id
                                and opru1.override_plan_id = fd.override_plan_id)
             where p1.id = p_payroll_id
+              and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
               and p1.position_id = 1) as foo
     order by 1;
 

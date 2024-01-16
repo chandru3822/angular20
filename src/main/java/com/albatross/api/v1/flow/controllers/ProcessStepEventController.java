@@ -4,7 +4,6 @@ import com.albatross.api.v1.flow.model.processStep.*;
 import com.albatross.api.v1.flow.services.ProcessStepEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,42 +17,42 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/processStep/{stepId}/event")
 public class ProcessStepEventController {
 
   private final ProcessStepEventService processStepEventService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepEvent> getStepEvents (@PathVariable Long stepId) {
+  public List<ProcessStepEvent> getStepEvents(@PathVariable Long stepId) {
     return processStepEventService.getStepEvents(stepId, false);
   }
 
   @GetMapping(value = "/admin", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepEvent> getStepEventsForAdminScreen (@PathVariable Long stepId) {
+  public List<ProcessStepEvent> getStepEventsForAdminScreen(@PathVariable Long stepId) {
     return processStepEventService.getStepEvents(stepId, true);
   }
 
   @GetMapping(value = "/{psEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepEvent> getEventDetails (@PathVariable Long psEventId) {
+  public Optional<ProcessStepEvent> getEventDetails(@PathVariable Long psEventId) {
     return processStepEventService.getProcessStepEvent(psEventId);
   }
 
   @GetMapping(value = "/available", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ProcessStepEvent> getAvailableEventsForStep (@PathVariable Long stepId) {
+  public List<ProcessStepEvent> getAvailableEventsForStep(@PathVariable Long stepId) {
     return processStepEventService.getAvailableEventsForStep(stepId);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepEvent> addEventToStep (@PathVariable Long stepId,
-                                                    @RequestBody ProcessStepEvent processStepEvent) {
+  public Optional<ProcessStepEvent> addEventToStep(@PathVariable Long stepId,
+                                                   @RequestBody ProcessStepEvent processStepEvent) {
     return processStepEventService.addEventToStep(stepId, processStepEvent);
   }
 
   @PutMapping(value = "/{eventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateStepEvent (@PathVariable Long stepId,
-                               @PathVariable Long eventId,
-                               @RequestBody ProcessStepEvent processStepEvent) {
+  public void updateStepEvent(@PathVariable Long stepId,
+                              @PathVariable Long eventId,
+                              @RequestBody ProcessStepEvent processStepEvent) {
     processStepEventService.updateStepEvent(stepId, eventId, processStepEvent);
   }
 
@@ -63,7 +62,7 @@ public class ProcessStepEventController {
   }
 
   @DeleteMapping(value = "/{processStepEventId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteEventFromStep (@PathVariable Long processStepEventId) {
+  public void deleteEventFromStep(@PathVariable Long processStepEventId) {
     processStepEventService.deleteEventFromStep(processStepEventId);
   }
 
@@ -71,7 +70,7 @@ public class ProcessStepEventController {
   @PutMapping(value = "/{processStepEventId}/saveReadOnlyWhiteList")
   public void saveReadOnlyWhiteList(@RequestParam(required = false) Boolean savePositions,
                                     @RequestBody ProcessStepEvent processStepEvent) {
-      processStepEventService.saveProcessStepEventReadonlyWhiteList(processStepEvent, savePositions);
+    processStepEventService.saveProcessStepEventReadonlyWhiteList(processStepEvent, savePositions);
   }
 
   //this endpoint is specifically made for the BR mobile app, BUT it is generic and anyone could use it so i put it here
@@ -82,19 +81,19 @@ public class ProcessStepEventController {
 
   //event actions
   @PostMapping(value = "/{eventId}/action", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepEventAction> addStepEventAction (@PathVariable Long stepId,
-                                                              @PathVariable Long eventId,
-                                                              @RequestBody ProcessStepEventAction processStepEventAction) {
+  public Optional<ProcessStepEventAction> addStepEventAction(@PathVariable Long stepId,
+                                                             @PathVariable Long eventId,
+                                                             @RequestBody ProcessStepEventAction processStepEventAction) {
     return processStepEventService.saveStepEventAction(stepId, eventId, processStepEventAction);
   }
 
   @GetMapping(value = "/{eventId}/action/{actionId}/logicString", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getActionLogicString (@PathVariable Long actionId) {
+  public String getActionLogicString(@PathVariable Long actionId) {
     return processStepEventService.getActionLogicString(actionId);
   }
 
   @PutMapping(value = "/{eventId}/action/{actionId}/duplicate", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<ProcessStepEventAction>  duplicateAction (@PathVariable Long actionId) {
+  public Optional<ProcessStepEventAction> duplicateAction(@PathVariable Long actionId) {
     return processStepEventService.duplicateAction(actionId);
   }
 
@@ -104,14 +103,14 @@ public class ProcessStepEventController {
   }
 
   @DeleteMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void deleteStepEventAction (@PathVariable Long actionId) {
+  public void deleteStepEventAction(@PathVariable Long actionId) {
     processStepEventService.deleteActionFromEvent(actionId);
   }
 
   // event action child links
   @PostMapping(value = "/{eventId}/action/{actionId}/addLinkToAction", produces = MediaType.APPLICATION_JSON_VALUE)
   public ProcessStepEventActionLink addLinkToAction(@PathVariable Long actionId,
-                                               @RequestBody ProcessStepEventActionLink link) {
+                                                    @RequestBody ProcessStepEventActionLink link) {
     return processStepEventService.addLinkToAction(actionId, link);
   }
 
@@ -147,8 +146,8 @@ public class ProcessStepEventController {
 
   //fields
   @PutMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Long updateRequiredFieldStatus (@PathVariable Long actionId,
-                                         @RequestBody ProcessStepEventActionField processStepEventActionField) {
+  public Long updateRequiredFieldStatus(@PathVariable Long actionId,
+                                        @RequestBody ProcessStepEventActionField processStepEventActionField) {
     return processStepEventService.updateRequiredFieldStatus(actionId, processStepEventActionField);
   }
 

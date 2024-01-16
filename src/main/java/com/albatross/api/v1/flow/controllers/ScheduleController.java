@@ -1,13 +1,12 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ListOfValue;
-import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.model.ScheduleEvent;
+import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.services.ScheduleService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -48,7 +47,7 @@ public class ScheduleController {
 
   @PostMapping(value = "/projects")
   public ResponseEntity<Page<ScheduleEvent>> getScheduleProjects(@RequestBody EventSearchParams params,
-                                                                Pageable pageable) {
+                                                                 Pageable pageable) {
     return new ResponseEntity<>(scheduleService.getScheduleProjects(params, pageable), HttpStatus.OK);
   }
 
@@ -70,9 +69,9 @@ public class ScheduleController {
 
   @PostMapping(value = "/saveEvent")
   public ResponseEntity<Object> saveEvent(@RequestBody ScheduleEvent ev) {
-    if(ev.getForceSave() == null || !ev.getForceSave()){
+    if (ev.getForceSave() != null && !ev.getForceSave()) {
       List<ScheduleEvent> conflictList = scheduleService.checkForSchedulingConflict(ev, ev.getProjectProcessStepId());
-      if(conflictList != null && conflictList.size() > 0){
+      if (conflictList != null && conflictList.size() > 0) {
         return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
       }
     }

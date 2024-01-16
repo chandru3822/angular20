@@ -4,13 +4,14 @@ import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.enums.RoundRobinUserType;
-import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.PostalCode;
-import com.albatross.api.v1.flow.model.roundRobin.RoundRobinAllocationUser;
+import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.model.UserPosition;
 import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
+import com.albatross.api.v1.flow.model.roundRobin.RoundRobinAllocationUser;
 import com.albatross.api.v1.flow.model.roundRobin.RoundRobinUser;
-import com.albatross.api.v1.flow.queries.RoundRobinQuery;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
+import com.albatross.api.v1.flow.queries.RoundRobinQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +60,7 @@ public class RoundRobinService {
 
     Boolean viewCustom = false;
     //only check view downline if they dont have view all
-    if(!viewAll) {
+    if (!viewAll) {
       viewCustom =
         securityService.userHasFeatureAccessLevel(
           user.getId(),
@@ -117,7 +118,7 @@ public class RoundRobinService {
   }
 
   public List<RoundRobinAllocationUser> saveManualUserAllocations(
-      Long roundRobinId, List<RoundRobinAllocationUser> allocationUsers) {
+    Long roundRobinId, List<RoundRobinAllocationUser> allocationUsers) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -154,7 +155,7 @@ public class RoundRobinService {
     params.put("companyTimezoneId", roundRobin.getCompanyTimezoneId());
     params.put("distributionTimeFrameDays", roundRobin.getDistributionTimeFrameDays());
     params.put("schedulableFutureDays", roundRobin.getSchedulableFutureDays());
-    params.put("usesTotalLeadAllocation", roundRobin.getUsesTotalLeadAllocation());
+    params.put("usesTotalLeadAllocation", null != roundRobin.getUsesTotalLeadAllocation() && roundRobin.getUsesTotalLeadAllocation());
 
     Long id;
     if (null != roundRobin.getId()) {
@@ -196,7 +197,7 @@ public class RoundRobinService {
   }
 
   public List<RoundRobinAllocationUser> insertAllocationUser(
-      Long roundRobinId, RoundRobinUser roundRobinUser) {
+    Long roundRobinId, RoundRobinUser roundRobinUser) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -241,7 +242,7 @@ public class RoundRobinService {
   }
 
   public List<RoundRobinAllocationUser> deleteAllocationUser(
-      Long roundRobinId, Long roundRobinUserId) {
+    Long roundRobinId, Long roundRobinUserId) {
     // delete the user like normal but return the adjusted allocation values
     deleteUser(roundRobinUserId);
     // if users get terminated then they are still in zones. archiving them here ensures that if an
@@ -251,7 +252,7 @@ public class RoundRobinService {
     return getScheduleToUsers(roundRobinId);
   }
 
-  public RoundRobinUser getRoundRobinUser (Long id) {
+  public RoundRobinUser getRoundRobinUser(Long id) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
 
@@ -306,13 +307,13 @@ public class RoundRobinService {
       // had to change this so that a parent looking at a child project could still see project tabs
       params.put("projectId", projectId);
       Optional<Long> overrideCompanyId =
-          sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
+        sqlCache.queryForObjectOptionalBySql(ProjectQuery.getCompanyId, params, Long.class);
       if (overrideCompanyId.isPresent()) {
         companyId = overrideCompanyId.get();
       } else {
         log.error("PCS: No Company ID found for project. {}", projectId);
         throw new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
+          HttpStatus.NOT_FOUND, "No Company ID found for that project", new Exception());
       }
     }
 
@@ -320,8 +321,8 @@ public class RoundRobinService {
     params.put("companyId", companyId);
 
     return sqlCache
-        .getBySql(RoundRobinQuery.getRoundRobinByPostalCode, params, RoundRobin.class)
-        .orElse(null);
+      .getBySql(RoundRobinQuery.getRoundRobinByPostalCode, params, RoundRobin.class)
+      .orElse(null);
   }
 
   public Boolean userCanSchedule(String postalCode) {
@@ -357,8 +358,8 @@ public class RoundRobinService {
 
     return sqlCache.queryBySql(
       RoundRobinQuery.getAllRoundRobinUsers,
-        params,
-        new RoundRobinUserMapper<>(RoundRobinUser.class, om));
+      params,
+      new RoundRobinUserMapper<>(RoundRobinUser.class, om));
   }
 
   public List<RoundRobinUser> getRoundRobinUsersByDownline(List<Integer> roundRobinIds) throws SQLException {
@@ -374,7 +375,7 @@ public class RoundRobinService {
 
     Boolean viewCustom = false;
     //only check view downline if they dont have view all
-    if(!viewAll) {
+    if (!viewAll) {
       viewCustom =
         securityService.userHasFeatureAccessLevel(
           user.getId(),
@@ -394,8 +395,8 @@ public class RoundRobinService {
 
     return sqlCache.queryBySql(
       RoundRobinQuery.getRoundRobinUsersByDownline,
-        params,
-        new RoundRobinUserMapper<>(RoundRobinUser.class, om));
+      params,
+      new RoundRobinUserMapper<>(RoundRobinUser.class, om));
   }
 
   public PostalCode getPostalCode(Long id) {
@@ -403,8 +404,8 @@ public class RoundRobinService {
     params.put("id", id);
 
     return sqlCache
-        .getBySql(RoundRobinQuery.getPostalCode, params, PostalCode.class)
-        .orElse(null);
+      .getBySql(RoundRobinQuery.getPostalCode, params, PostalCode.class)
+      .orElse(null);
   }
 
   public static class RoundRobinMapper<T> extends BeanPropertyRowMapper<T> {
@@ -417,21 +418,24 @@ public class RoundRobinService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<PostalCode>> postalCodesRef = new TypeReference<>() {};
+      TypeReference<List<PostalCode>> postalCodesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class, "postalCodes", new JsonCollectionDeserializer(postalCodesRef, objectMapper));
+        List.class, "postalCodes", new JsonCollectionDeserializer(postalCodesRef, objectMapper));
 
-      TypeReference<List<RoundRobinUser>> scheduleToUsersRef = new TypeReference<>() {};
+      TypeReference<List<RoundRobinUser>> scheduleToUsersRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "scheduleToUsers",
-          new JsonCollectionDeserializer(scheduleToUsersRef, objectMapper));
+        List.class,
+        "scheduleToUsers",
+        new JsonCollectionDeserializer(scheduleToUsersRef, objectMapper));
 
-      TypeReference<List<RoundRobinUser>> scheduleByUsersRef = new TypeReference<>() {};
+      TypeReference<List<RoundRobinUser>> scheduleByUsersRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "scheduleByUsers",
-          new JsonCollectionDeserializer(scheduleByUsersRef, objectMapper));
+        List.class,
+        "scheduleByUsers",
+        new JsonCollectionDeserializer(scheduleByUsersRef, objectMapper));
     }
   }
 
@@ -445,11 +449,12 @@ public class RoundRobinService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {};
+      TypeReference<List<UserPosition>> userPositionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-          List.class,
-          "userPositions",
-          new JsonCollectionDeserializer(userPositionsRef, objectMapper));
+        List.class,
+        "userPositions",
+        new JsonCollectionDeserializer(userPositionsRef, objectMapper));
     }
   }
 }

@@ -13,7 +13,7 @@
 
 <script setup>
 import { AppMutations } from '@/stores/AppStore'
-import { getRequest, getSnackbar, logError } from '@/helpers/helpers'
+import { getRequestWithParams, getSnackbar, logError } from '@/helpers/helpers'
 import { DateTime } from 'luxon'
 import { saveAs } from 'file-saver'
 import { getCurrentInstance } from 'vue'
@@ -44,7 +44,8 @@ let exportSmartlist = async () => {
 
   try {
     store.commit(AppMutations.SET_LOADING, true)
-    const {data} = await getRequest(`/smartlist/${props.smartlist.id}/export`)
+    const params = {timezone: store.state.user.details.timezone.value}
+    const {data} = await getRequestWithParams(`/smartlist/${props.smartlist.id}/export`, {params})
     let blob = new Blob([data], {
       type: 'text/csv;charset=utf-8'
     })

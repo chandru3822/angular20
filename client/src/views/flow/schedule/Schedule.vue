@@ -227,17 +227,23 @@
                      class="white--text schedule-row-go-button"
                      :disabled="fieldsSaving || saveInvalid || !userCanEdit || selectedProject.processStepStatusTypeId !== 1 || selectedProject.eventStatusTypeId !== 1"
                      @click="[fieldsSaving = true, checkForSchedulingConflicts()]">Save</v-btn>
-              <ConfirmationDialog v-if="conflictingEvent != null" :open-dialog="conflictingEvent != null" @confirm="scheduleProject(true)" @close-dialog="conflictingEvent = null; fieldsSaving = false">
-                <template v-slot:title>Conflict</template>
-                <div>
-                  Resource <b>{{this.selectedProject.resourceName}}</b>
-                  has another event on their calendar on <b>{{this.conflictingEvent.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
-                  - {{this.conflictingEvent.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+              <ConfirmationDialog v-if="conflictingEvents != null" :open-dialog="conflictingEvents != null && conflictingEvents.length > 0" @confirm="scheduleProject(true)" @close-dialog="cancelDialog()">
+                <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
+                <template v-else v-slot:title>Conflict</template>
+                Resource <b>{{selectedProject.resourceName}}</b>
+                has another event on their calendar for:
+                <br><br>
+                <ol>
+                <li v-for="conflictingEvent in conflictingEvents">
+                  <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+                  - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
                   <b></b>
-                </div>
                 <br>
-                <b>Existing Event:</b> {{ conflictingEvent.eventName }} ({{ conflictingEvent.projectName }}, ID: {{ conflictingEvent.projectId }})
-                <template v-slot:no>Cancel</template>
+                <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
+                  <br><br>
+                </li>
+                </ol>
+                  <template v-slot:no>Cancel</template>
                 <template v-slot:yes>Schedule Anyway</template>
 
               </ConfirmationDialog>
@@ -392,7 +398,7 @@
         scheduleConflict: false,
         confirmSchedule: false,
         center: null,
-        conflictingEvent: null,
+        conflictingEvents: null,
         startTime: null,
         endTime: null,
         mapResources: [],
@@ -513,6 +519,11 @@
       async checkForSchedulingConflicts(){
           this.scheduleProject(false);
       },
+      async cancelDialog(){
+        this.conflictingEvents = null
+        this.fieldsSaving = false
+        this.$refs.calendar.getEvents(false, true)
+      },
       async scheduleProject(forceSave) {
 
         this.selectedProject.resourceId = this.selectedProject.resource.id
@@ -531,7 +542,7 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } catch (e) {
           if(e.status == 409){
-            this.conflictingEvent = e.data[0];
+            this.conflictingEvents = e.data;
             this.fieldsSaving = false
             this.$store.commit(AppMutations.SET_LOADING, false)
           }

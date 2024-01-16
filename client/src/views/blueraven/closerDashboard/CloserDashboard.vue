@@ -5,6 +5,7 @@
         <v-app-bar id="date-range-btns-toolbar" class="elevation-1">
           <v-toolbar-items>
             <v-btn-toggle v-model="timeIntervalBtnGroup" mandatory>
+              <v-btn text @click="setTimeInterval('WTD')">WTD</v-btn>
               <v-btn text @click="setTimeInterval('MTD')">MTD</v-btn>
               <v-btn text @click="setTimeInterval('60 days')" class="text-lowercase">60 days</v-btn>
               <v-btn text @click="setTimeInterval('90 days')" class="text-lowercase">90 days</v-btn>
@@ -61,6 +62,8 @@
             <th class="center-text">Lead-Gen FDC %</th>
             <th class="center-text">Self-Gen FDC</th>
             <th class="center-text">Average Availability</th>
+<!--            <th class="center-text">Future Availability</th>-->
+            <th class="center-text">7-day Availability Look Ahead</th>
             <th class="center-text">Lead Allocation %</th>
           </tr>
 
@@ -77,6 +80,7 @@
             <td class="center-text">{{ row.leadGenFdc || 0 }}%</td>
             <td class="center-text">{{ row.selfGen || 0 }}</td>
             <td class="center-text">{{ row.averageAvailability || 0 }}</td>
+            <td class="center-text">{{ row.futureAvailability || 0 }}</td>
             <td class="center-text">
               <span v-if="row.score || row.score === 0">{{ row.score | percent(1) }}</span>
               <span v-else>--</span>
@@ -295,7 +299,7 @@
       return {
         snackbar: {},
         constants,
-        currentUserId: null,
+        currentUserId: this.$store.state.user.details.id,
         currentUserOrgId: null,
         selectedQuarter: 1,
         userCanViewAll: this.$store.getters.userHasFeatureAccessLevel('CLOSER_DASHBOARD', 'VIEW_ALL'),
@@ -453,6 +457,9 @@
         this.timeIntervalString = timeIntervalString
 
         switch (this.timeIntervalString) {
+          case 'WTD':
+            this.timeInterval = moment().isoWeekday() - 1 // WTD
+            break
           case 'MTD':
             this.timeInterval = +moment().format('DD') // MTD
             break
@@ -565,58 +572,26 @@
       /* RANKING TABLES-RELATED CODE END */
     },
     async created () {
-      this.currentUserId = this.$store.state.user.details.id
-
       if (this.$store.state.user.details.userPositions?.length > 0) {
-        let positionId = null
+        let usersPrimaryPosition = this.$store.state.user.details.userPositions.find(p => {
+          return (!p.archived && p.primaryFlag)
+        })
 
-        this.isCloser = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.positionId === 1 && !position.endDate && !position.archived && position.primaryFlag)
-        }).length > 0
-
-        this.isCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.positionId === 2 && !position.endDate && !position.archived && position.primaryFlag)
-        }).length > 0
-
-        this.isCloserDistrictMgr = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.positionId === 517 && !position.endDate && !position.archived && position.primaryFlag)
-        }).length > 0
-
-        let fakeCloserMgr = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.positionId === 326 && !position.endDate && !position.archived && position.primaryFlag)
-        }).length > 0
-
-        this.isCloserRegional = this.$store.state.user.details.userPositions.filter(position => {
-          return (position.positionId === 3 && !position.endDate && !position.archived && position.primaryFlag)
-        }).length > 0
-
-        if (this.isCloser) {
-          positionId = 1
-        } else if (this.isCloserMgr) {
-          positionId = 2
-        } else if (this.isCloserDistrictMgr) {
-          positionId = 517
-        } else if (this.isCloserRegional) {
-          positionId = 3
-        } else if (fakeCloserMgr) {
-          positionId = 326
+        if(null != usersPrimaryPosition && [1, 2, 3, 517, 326].includes(usersPrimaryPosition.positionId)) {
+          this.currentUserOrgId = usersPrimaryPosition.orgId
         }
 
-        if (this.isCloser || this.isCloserMgr || this.isCloserDistrictMgr || this.isCloserRegional) {
-          this.currentUserOrgId = this.$store.state.user.details.userPositions.filter(position => {
-            return (position.positionId === positionId && !position.endDate && !position.archived && position.primaryFlag)
-          })[0]?.orgId
-        }
-
-        if(fakeCloserMgr || this.isCloserDistrictMgr) {
-          this.isCloserMgr = true
-        }
       }
+      let requests = [
+        this.loadRoundRobins(),
+        this.loadCloserOffices(),
+        this.loadRankingTables()
+      ]
 
-      await this.loadRoundRobins()
-      await this.loadCloserOffices()
-      await this.loadRankingTables()
-      this.dashboardWasLoaded = true
+      await Promise.all(requests).then(() => {
+        this.dashboardWasLoaded = true
+      })
+
     },
   }
 </script>

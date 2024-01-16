@@ -10,8 +10,6 @@ import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -103,8 +101,7 @@ public class CompanyDashboardService {
     params.put("trendStart", trendStart);
     params.put("trendEnd", trendEnd);
 
-    String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
-    return results;
+      return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
   }
 
   public String getDrilldownValues(String startDate, String endDate, Long milestoneTypeId, Boolean loadPartners) {

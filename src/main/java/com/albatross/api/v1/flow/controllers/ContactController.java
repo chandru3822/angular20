@@ -2,10 +2,7 @@ package com.albatross.api.v1.flow.controllers;
 
 
 import com.albatross.api.exception.NotFoundException;
-import com.albatross.api.v1.flow.model.Attachment;
-import com.albatross.api.v1.flow.model.CompanyProcess;
-import com.albatross.api.v1.flow.model.Contact;
-import com.albatross.api.v1.flow.model.Owner;
+import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.Project;
 import com.albatross.api.v1.flow.services.ContactService;
 import lombok.RequiredArgsConstructor;
@@ -48,7 +45,15 @@ public class ContactController {
       }
     }
 
-    @PostMapping(value = "")
+    @PostMapping(value = "/custom")
+    public ResponseEntity<ContactWithCfvs> updateContactCustom(
+                                @RequestParam(required = false) Long contactId,
+                                @RequestBody ContactWithCfvs req) throws Exception {
+      return contactService.updateContactCustom(contactId, req);
+    }
+
+
+  @PostMapping(value = "")
     public Contact updateContact(@RequestBody Contact contact) throws Exception {
         return contactService.updateContact(contact);
     }
@@ -120,7 +125,7 @@ public class ContactController {
   public ResponseEntity<Attachment> uploadContactAttachment(@PathVariable Long contactId,
                                                             @RequestParam Long attachmentTypeId,
                                                             @RequestParam String displayName,
-                                                            @RequestParam("file") MultipartFile file) throws IOException {
+                                                            @RequestParam MultipartFile file) throws IOException {
     return new ResponseEntity<>(contactService.addAttachment(file, contactId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 }

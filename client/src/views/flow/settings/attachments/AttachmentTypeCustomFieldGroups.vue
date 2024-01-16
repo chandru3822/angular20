@@ -353,7 +353,6 @@ export default {
       }
     },
     async deleteWithChecks() {
-      debugger
       this.$store.commit(AppMutations.SET_LOADING, true)
       let item = this.cfGroupToDelete ? this.cfGroupToDelete : this.customFieldToDelete ? this.customFieldToDelete : null
       let customFieldGroupId = this.cfGroupToDelete ? this.cfGroupToDelete.id : null

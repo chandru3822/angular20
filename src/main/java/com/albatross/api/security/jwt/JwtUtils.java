@@ -1,6 +1,7 @@
 package com.albatross.api.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -13,7 +14,6 @@ import org.springframework.security.jwt.crypto.sign.InvalidSignatureException;
 import org.springframework.security.jwt.crypto.sign.MacSigner;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;

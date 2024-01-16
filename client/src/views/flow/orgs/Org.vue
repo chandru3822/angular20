@@ -123,7 +123,7 @@
               </div>
             </v-toolbar-items>
           </v-toolbar>
-          <div v-if="org && org.id && !fieldsLoading" style="overflow-x: hidden">
+          <div v-if="org && org.id && !fieldsLoading" class="org-fields-container">
             <div class="px-4">
               <v-btn @click="[showChildOrgs = !showChildOrgs, showUsersAssignedToOrg = false]" :text="showChildOrgs"
                      color="primary" small>
@@ -630,6 +630,14 @@ export default {
   overflow: hidden;
 }
 
+#three-column-container {
+  div.org-fields-container {
+    overflow: auto ;
+    overflow-x: hidden;
+    height: calc(100vh - 200px);
+    padding-bottom: 0;
+  }
+}
 .cfg-detail-header {
   background-color: var(--v-secondary-base) !important;
   margin-left: -10px;

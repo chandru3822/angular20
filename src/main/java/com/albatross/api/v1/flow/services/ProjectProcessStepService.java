@@ -74,7 +74,7 @@ public class ProjectProcessStepService {
   private final ProcessStepActionService processStepActionService;
   private final ObjectMapper om;
   private final ProjectProcessStepRequirementService projectProcessStepRequirementService;
-  private final CustomFieldValueService customFieldValueService;
+  private final CustomFieldGroupAssignmentService cfgaService;
   private final GoodleapService goodleapService;
   private final AuroraProxy auroraService;
   private final MarketoService marketoService;
@@ -481,6 +481,7 @@ public class ProjectProcessStepService {
 
     User cronUser = new User();
     cronUser.setId(SystemSettings.CRON_USER.getId());
+    cronUser.setHasAccess(true);
 
     final List<Map<String, Object>> results = sqlCache.queryBySql(ProjectProcessStepQuery.getTimeBasedAutoTriggerPps, null, new ColumnMapRowMapper());
 
@@ -491,7 +492,7 @@ public class ProjectProcessStepService {
     for (Map<String, Object> result : results) {
       cronUser.setCompanyId(Long.valueOf(result.get("companyId").toString()));
       try {
-        log.info(String.format("TRIGGERS: Starting #%s for ppsId: %s", counter++, result.get("ppsId")));
+        log.info("TRIGGERS: Starting #%s for ppsId: %s".formatted(counter++, result.get("ppsId")));
         PpsActionResult ppsActionResult = performAutoTriggerActions(Long.valueOf(result.get("ppsId").toString()), new UserAccountDetails(cronUser, Collections.emptyList()));
         if (!ppsActionResult.getPpsIds().isEmpty()) {
           createdPpsIds.addAll(ppsActionResult.getPpsIds());
@@ -587,7 +588,7 @@ public class ProjectProcessStepService {
       }
 
       if (actionsWerePerformed) {
-        List<Long> cfgaIds = customFieldValueService.getIdsByPPSId(ppsId);
+        List<Long> cfgaIds = cfgaService.getIdsByPPSId(ppsId);
         if (!cfgaIds.isEmpty()) {
           List<Long> ppsIds = getIdsForAutoTriggerByCfgaIds(pps.getProjectId(), null, cfgaIds);
           for (Long checkingPpsId : ppsIds) {
@@ -1441,10 +1442,10 @@ public class ProjectProcessStepService {
           passed = !intersection.isEmpty();
           break;
         default:
-          throw new Exception(String.format("Unable to parse multiselect data type, operator ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse multiselect data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare multiselect values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare multiselect values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
     return passed;
   }
@@ -1516,10 +1517,10 @@ public class ProjectProcessStepService {
           passed = !Objects.equals(number, compareNumber);
           break;
         default:
-          throw new Exception(String.format("Unable to parse dropdown data type, operator ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse dropdown data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare dropdown values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare dropdown values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1594,10 +1595,10 @@ public class ProjectProcessStepService {
           passed = (number != null && compareNumber != null) && number < compareNumber;
           break;
         default:
-          throw new RuntimeException(String.format("Unable to parse int data type, operator of ID: %s", operatorTypeId));
+          throw new RuntimeException("Unable to parse int data type, operator of ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare int values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare int values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1676,10 +1677,10 @@ public class ProjectProcessStepService {
         case 4:
           break;
         default:
-          throw new RuntimeException(String.format("Unable to parse text data type, operator ID: %s", operatorTypeId));
+          throw new RuntimeException("Unable to parse text data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare text values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare text values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1755,10 +1756,10 @@ public class ProjectProcessStepService {
           passed = (number != null && compareNumber != null) && number < compareNumber;
           break;
         default:
-          throw new Exception(String.format("Unable to parse numeric data type, operator ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse numeric data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare numeric values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare numeric values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1887,10 +1888,10 @@ public class ProjectProcessStepService {
         case 4:
           break;
         default:
-          throw new Exception(String.format("Unable to parse null timestamp data type, operator ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse null timestamp data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare null timestamp values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare null timestamp values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1912,10 +1913,10 @@ public class ProjectProcessStepService {
         case 4:
           break;
         default:
-          throw new Exception(String.format("Unable to parse non null timestamp data type, operator of ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse non null timestamp data type, operator of ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare non null timestamp values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare non null timestamp values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -1940,10 +1941,10 @@ public class ProjectProcessStepService {
           passed = date != null && date.isBefore(compareDate);
           break;
         default:
-          throw new Exception(String.format("Unable to parse timestamp data type, operator ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse timestamp data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare timestamp values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare timestamp values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -2016,10 +2017,10 @@ public class ProjectProcessStepService {
         case 4:
           break;
         default:
-          throw new Exception(String.format("Unable to parse non null date data type, operator ID: %s", operatorTypeId));
+          throw new Exception("Unable to parse non null date data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare non null date values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare non null date values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -2042,10 +2043,10 @@ public class ProjectProcessStepService {
           passed = false;
           break;
         default:
-          throw new RuntimeException(String.format("Unable to parse null date data type, operator ID: %s", operatorTypeId));
+          throw new RuntimeException("Unable to parse null date data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare null date values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare null date values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;
@@ -2078,10 +2079,10 @@ public class ProjectProcessStepService {
           passed = date != null && date.isBefore(compareDate.toLocalDateTime());
           break;
         default:
-          throw new RuntimeException(String.format("Unable to parse date data type, operator ID: %s", operatorTypeId));
+          throw new RuntimeException("Unable to parse date data type, operator ID: %s".formatted(operatorTypeId));
       }
     } catch (Exception e) {
-      throw new RuntimeException(String.format("Unable to compare date values, operator ID: %s *** %s", operatorTypeId, e.getMessage()));
+      throw new RuntimeException("Unable to compare date values, operator ID: %s *** %s".formatted(operatorTypeId, e.getMessage()));
     }
 
     return passed;

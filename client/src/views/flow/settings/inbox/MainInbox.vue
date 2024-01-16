@@ -650,7 +650,7 @@ export default {
     async fetchTeamsForUser() {
       this.showLoading(true)
       try {
-        const { data } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data } = await getRequest(`/smsTeam/getTeamsForUser`)
         this.showLoading(false)
         if (data && Array.isArray(data)) {
           this.teamsAssociatedToUser = data

@@ -59,12 +59,12 @@ public class FlatFile {
             rendered.add(renderRecord(rec));
         }
 
-        return String.format("HD|%s|%s\n%s\nTR|%s|%.2f\n",
-                controlNumber,
-                dateFormat.format(date),
-                rendered.toString(),
-                paymentCount,
-                paymentAmount);
+        return "HD|%s|%s\n%s\nTR|%s|%.2f\n".formatted(
+          controlNumber,
+          dateFormat.format(date),
+          rendered,
+          paymentCount,
+          paymentAmount);
     }
 
     private String renderRecord(FlatFileRecord rec) {
@@ -79,7 +79,7 @@ public class FlatFile {
             if (field instanceof Date) {
                 field = dateFormat.format(field);
             } else if (field instanceof Double) {
-                field = String.format("%.2f", field);
+                field = "%.2f".formatted(field);
             }
 
             sj.add(field != null ? field.toString() : "");

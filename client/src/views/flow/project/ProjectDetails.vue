@@ -358,7 +358,7 @@ export default {
           //this could probably even be cleaned up a little more. but this is working for my first cleanup attempt
           if (sourceId != null) {
             if(files.length > 1) {
-              console.log('doing multi')
+              // console.log('doing multi')
               const filesToUpload = [...files].map(file => {
                 return {
                   file,
@@ -375,7 +375,7 @@ export default {
             } else {
               let file = files[0]
               if(file?.size > 0) {
-                console.log('doing this')
+                // console.log('doing this')
                 await this.$store.dispatch(Actions.FILE_UPLOAD, {
                   file: file,
                   attachmentTypeId: type.attachmentTypeId,

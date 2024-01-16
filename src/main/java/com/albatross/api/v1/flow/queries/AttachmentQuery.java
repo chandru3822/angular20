@@ -247,6 +247,7 @@ INSERT INTO flow.attachment(filename, content_type, s3_key, size, date_created, 
       date_modified = now(),
       modified_by_id = :modifiedById
     WHERE id = :id
+    returning attachment_type_id
     """;
 
   //language=PostgreSQL

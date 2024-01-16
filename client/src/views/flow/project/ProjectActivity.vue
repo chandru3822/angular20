@@ -13,7 +13,7 @@
           <a v-if="!isSidebarCollapsed && messageProperties.projectName"
              v-bind="attrs" v-on="on"
              class="d-inline-block clickable conversation-name-link"
-             :href="`/project/${projectId}/details`">
+             :href="`/project/${projectId}/status`">
             {{ messageProperties.projectName }}
             <v-chip class="customer-chip" style="margin-left: 4px;" small>
               <span >Customer</span>
@@ -34,7 +34,7 @@
         <span v-else class="albatross-body-3">Go to user</span>
       </v-tooltip>
       <span v-else>{{ sidebarTitle }}</span>
-      <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+      <div v-if="showSmsTab && selectedOption === 0 && !$route.path.includes('inbox')" style="display: inline-flex">
         <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
           <span >Customer</span>
         </v-chip>
@@ -129,7 +129,14 @@
           @joinConversation="startJoinConversation"
       />
     </template>
-    <Messaging v-if="showSmsTab && selectedOption === 0" :primaryId="projectId" :userIdIn="userId" :user-assigned="userAssigned" />
+    <Messaging
+      v-if="showSmsTab && selectedOption === 0"
+      :primaryId="projectId"
+      :userIdIn="userId"
+      :user-assigned="userAssigned"
+      :teams-associated-to-user="teamsAssociatedToUser"
+    />
+
     <ActivitySection :contact-id="contactId" :user-id="userId"
                      :timeline-view="toggleTimelineView === 0"
                      :object-type-id="objectTypeId" :project-id="projectId"
@@ -226,7 +233,7 @@ export default {
       this.fetchTeamsForUser()
     }, 800),
     selectedOption: function() {
-      console.log('option changed to:', this.selectedOption)
+      // console.log('option changed to:', this.selectedOption)
       this.handlePageLoad()
     }
   },
@@ -269,26 +276,24 @@ export default {
         case 0:
           if (this.userCanViewSms) {
             if (this.projectId) {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Project Communication'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Communication'
             }
             else {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'User Communication'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'Communication'
             }
           } else {
             if (this.projectId) {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Project Communication (Read-only)'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.projectName : 'Communication (Read-only)'
             }
             else {
-              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'User Communication (Read-only)'
+              return this.$route.path.includes('inboxConversation') ? this.messageProperties.fullName : 'Communication (Read-only)'
             }
           }
 
         case 1:
-          return this.orgId ? 'Organization Notes & Activities' : this.userId ? 'User Notes & Activities'
-              : this.contactId ? 'Contact Notes & Activities' : this.projectId ? 'Project Notes & Activities' : null
+          return this.orgId || this.userId || this.contactId || this.projectId ? 'Notes & Activities' : null
         case 2:
-          return this.isMobile ? 'Documents' : this.orgId ? 'Organization Documents' : this.userId ? 'User Documents' : this.contactId ? 'Contact Documents'
-              : this.projectId ? 'Project Documents' : null
+          return this.orgId || this.userId || this.contactId || this.projectId ? 'Documents' : null
       }
     },
     isSidebarCollapsed() {
@@ -302,6 +307,9 @@ export default {
     }
   },
   methods: {
+    startReadNotesTimer(msg){
+      //do something here?
+    },
     handlePageLoad() {
       //dont load the sms stuff if they aren't on the sms tab
       if (this.userCanViewSms && this.selectedOption === 0) {
@@ -372,9 +380,9 @@ export default {
       if(this.showSmsTab) {
         try {
           this.conversationIsLoading = true
-          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`, null, [])
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`, null, [])
           // this.$store.commit(AppMutations.SET_LOADING, false)
-          this.teamsAssociatedToUser = data
+          this.teamsAssociatedToUser = data ?? []
 
           if (data != null && data.length > 0) {
             this.userHasTeam = true

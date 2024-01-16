@@ -84,7 +84,7 @@ public class IncentiveService {
     }
 
     blueravenCustomFieldValueService.handleSavingCustomFieldValuesUsingGroups(
-      ObjectType.SUPPLIERS, incentive.getCustomFieldGroups(), id);
+      ObjectType.INCENTIVE, incentive.getCustomFieldGroups(), id);
 
     return getIncentiveById(id);
   }

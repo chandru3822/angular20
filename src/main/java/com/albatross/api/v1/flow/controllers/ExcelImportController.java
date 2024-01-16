@@ -24,12 +24,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -93,7 +93,7 @@ public class ExcelImportController {
 
   @GetMapping("/baseConfirm/{baseId}/proposals/{proposalId}")
   public ResponseEntity<String> getProposalData(
-    @PathVariable("baseId") Long projectId, @PathVariable("proposalId") Long proposalId) {
+    @PathVariable("baseId") Long projectId, @PathVariable Long proposalId) {
     Map<String, Object> params = Map.of("projectId", projectId, "proposalId", proposalId);
 
     List<String> results = jdbc.queryForList(ExcelImportQuery.loadProposal, params, String.class);

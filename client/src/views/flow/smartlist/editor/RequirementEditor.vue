@@ -407,7 +407,10 @@ const afterFieldSelected = () => {
   const isPsEventSmartlistField = !!requirement.value?.smartlistFieldId && [4,6].includes(requirement.value?.objectTypeId)
 
   //check project/contact owner
-  if ([1,2].includes(requirement.value?.objectTypeId) && ['Project Owner','Contact Owner'].includes(requirement.value.name)) {
+  if (
+    [1,2].includes(requirement.value?.objectTypeId) &&
+    ['Project Owner','Contact Owner'].includes(requirement.value.name)
+  ) {
     getSystemListValues()
   }
 
@@ -424,7 +427,7 @@ const afterPsEventSelected = () => {
   }
 
   //@TODO: #smartlistsv2 - Maybe narrow this down
-  if (requirement.value.objectTypeId === 6) {
+  if ([4,6].includes(requirement.value.objectTypeId)) {
     getSystemListValues()
   }
 
@@ -519,6 +522,14 @@ const getSystemListValues = async () => {
     url = `/contact/owners`
   } else if (fieldName === 'Process Step Owner' && psEvent.value?.id) {
     url = `/processStep/${psEvent.value.id}/owners`
+  } else if(requirement.value.objectTypeId === 4) {
+    if (fieldName === 'Process Step Status') {
+      url = `/processStep/${psEvent.value.id}/lovStatus`
+    } else if (fieldName === 'Process Step Category') {
+      url = `/processStep/${psEvent.value.id}/lovCategory`
+    } else {
+      return
+    }
   } else if (requirement.value.objectTypeId === 6) {
     if (fieldName === 'Event Resource') {
       url = `/event/${psEvent.value.id}/owners`
@@ -538,10 +549,10 @@ const getSystemListValues = async () => {
 
     requirement.value.isCustomValue = true
     requirement.value.hasListValues = true
-    //Event data return correctly and doesn't need manipulation
-    requirement.value.listOfValues = (requirement.value.objectTypeId === 6) ? data : data.map(v => ({id: v.userPositionId, name: v.fullName}))
+    //Event and PS data return correctly and don't need manipulation
+    requirement.value.listOfValues = ([4,6].includes(requirement.value.objectTypeId)) ? data : data.map(v => ({id: v.userPositionId, name: v.fullName}))
   } catch (e) {
-    snackbar('ERROR', 'Error fetching available owners')
+    snackbar('ERROR', 'Error fetching list values')
   }
 }
 
@@ -626,11 +637,16 @@ const add = () => {
     newRequirement.secondaryRequirementValue = secondaryValue.value.trim()
   }
 
-  if (newRequirement.hasListValues) {
+  if (
+    newRequirement.hasListValues && (
+      newRequirement?.availableListOfValues?.length === 0 ||
+      !Object.keys(newRequirement).includes('availableListOfValues')
+    )
+  ) {
     newRequirement.availableListOfValues = newRequirement.listOfValues
   }
 
-  newRequirement.isCustomValue = (typeof value.value === 'string' || typeof value.value === 'object')
+  newRequirement.isCustomValue = typeof value.value === 'string'
 
   if (newRequirement.companyId === null) {
     newRequirement.companyId = companyId
@@ -667,7 +683,12 @@ onMounted(() => {
       operatorType: requirement.value.operatorType
     }
 
-    if (requirement.value.hasListValues) {
+    if (
+      requirement.value.hasListValues && (
+        requirement.value?.availableListOfValues?.length === 0 ||
+        !Object.keys(requirement.value).includes('availableListOfValues')
+      )
+    ) {
       requirement.value.availableListOfValues = requirement.value.listOfValues
     }
 

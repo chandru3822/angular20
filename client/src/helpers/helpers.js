@@ -282,7 +282,16 @@ export function responseInterceptor({ response }) {
       } else {
         localStorage.removeItem('store')
         store.commit(UserMutations.LOGIN_ERROR, msg)
-        router.push({ name: 'login' })
+
+        //this code handles redirecting them back to the page they were trying to get to after they login
+        let rt = {
+          name: 'login'
+        }
+        if( !['/', '/home'].includes(router.currentRoute?.path) || store.state.app.redirectUrl != null ) {
+          rt.query = { redirect: router.currentRoute?.path || store.state.app.redirectUrl }
+        }
+
+        router.push(rt)
       }
     } else if (response?.data?.message === constants.NOT_FOUND_404_TEXT && status === 404) {
       router.push({ path: `/dataNotFound` })
@@ -338,4 +347,39 @@ export function jsonToCsv(data) {
 
 export function UUID() {
   return crypto.randomUUID()
+}
+function hex2(c) {
+  c = Math.round(c);
+  if (c < 0) c = 0;
+  if (c > 255) c = 255;
+
+  var s = c.toString(16);
+  if (s.length < 2) s = "0" + s;
+
+  return s;
+}
+
+function color(r, g, b) {
+  return "#" + hex2(r) + hex2(g) + hex2(b);
+}
+
+export function shadeColorByPercent(col, light) {
+
+  // TODO: Assert that col is good and that -1 < light < 1
+
+  var r = parseInt(col.substr(1, 2), 16);
+  var g = parseInt(col.substr(3, 2), 16);
+  var b = parseInt(col.substr(5, 2), 16);
+
+  if (light < 0) {
+    r = (1 + light) * r;
+    g = (1 + light) * g;
+    b = (1 + light) * b;
+  } else {
+    r = (1 - light) * r + light * 255;
+    g = (1 - light) * g + light * 255;
+    b = (1 - light) * b + light * 255;
+  }
+
+  return color(r, g, b);
 }

@@ -10,8 +10,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -95,7 +95,7 @@ public class BlueravenProposalVersionController {
 
   @GetMapping(value = "/fields/{objectCode}")
   public List<ProposalFieldObjectType> getProposalCustomFieldsByObjectCode(
-    @PathVariable(name = "objectCode") String objectCode) {
+    @PathVariable String objectCode) {
     return proposalVersionService.getProposalFieldsByObjectCode(objectCode);
   }
 }

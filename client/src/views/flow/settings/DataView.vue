@@ -560,7 +560,7 @@ export default {
       }
     },
     resetAllFields() {
-      console.log('this ahppend')
+      // console.log('this ahppend')
       //gets called when the field type changes so that all data is clean again
       this.selectedDefaultField = {}
       this.selectedObjectTypeId = null

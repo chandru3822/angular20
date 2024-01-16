@@ -16,6 +16,7 @@ begin
                                                                                                   on opru.override_plan_id = f.override_plan_id
                                                                                 where current is true
                                                                                   and pay.position_id = 1
+                                                                                and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
                                                                                 union
                                                                                 select distinct l.user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
@@ -28,6 +29,7 @@ begin
                                                                                                      3
                                                                                 where current is true
                                                                                   and pay.position_id = 1
+                                                                                and ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
                                                                                 except
                                                                                 select distinct pd.closer_user_id as user_id, pd.closer_employee_id
                                                                                 from brs.payroll pay
@@ -54,12 +56,16 @@ begin
                                                                                     then
                                                                                     0::numeric
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
-                                                                                    (opru.red_line_m1_allocation + opru.red_line_m2_allocation) * fd.total_commissions
+                                                                                    (opru.red_line_m1_allocation +case when fd.substantial_completion_date is not null and
+                                                                                                                            fd.substantial_completion_date <= p.period_end then
+                                                                                                                         opru.red_line_m2_allocation else 0 end) * fd.total_commissions
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
                                                                                       (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
-                                                                                    (opru.m1_allocation + opru.m2_allocation) * fd.system_size
+                                                                                    (opru.m1_allocation + case when fd.substantial_completion_date is not null and
+                                                                                                                    fd.substantial_completion_date <= p.period_end then
+                                                                                                                    opru.m2_allocation else 0 end) * fd.system_size
                                                                                   else
                                                                                     opru.m1_allocation * fd.system_size
                                                                                   end       overrides_earned1,
@@ -88,7 +94,8 @@ begin
                                                                                   fd.commission_strategy,
                                                                                   opru.red_line_m1_allocation,
                                                                                   opru.red_line_m2_allocation,
-                                                                                  fd.total_commissions) as foo) as foo1),
+                                                                                  fd.total_commissions,
+                                                                                  p.period_end) as foo) as foo1),
                                                             0)   AS total_overrides,
 
                                                    (coalesce((select sum(amount)
@@ -115,7 +122,8 @@ begin
                                                                                               else 0::numeric end,
                                                     coalesce(fd.total_commissions_paid_to_date, 0),
                                                     coalesce(d.commission_forfeited_by_closer, 0),
-                                                    coalesce(fd.total_commissions_forfeited_paid_to_date, 0)) as current_pay on true) as foo1) as foo5
+                                                    coalesce(fd.total_commissions_forfeited_paid_to_date, 0)) as current_pay on true
+                                                  where ((d.on_hold_date is null) or (d.on_hold_date is not null and d.off_hold_date is not null))) as foo1) as foo5
                                       union
                                       select *,
                                              foo5.total_commission + foo5.total_overrides +
@@ -137,12 +145,16 @@ begin
                                                                                     then
                                                                                     0::numeric
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is not null then
-                                                                                      (opru.red_line_m1_allocation + opru.red_line_m2_allocation) * fd.total_commissions
+                                                                                      (opru.red_line_m1_allocation + case when fd.substantial_completion_date is not null and
+                                                                                                                               fd.substantial_completion_date <= p.period_end then
+                                                                                                                            opru.red_line_m2_allocation else 0 end) * fd.total_commissions
                                                                                   when fd.commission_strategy =23610 and fd.substantial_completion_date is null then
                                                                                       (opru.red_line_m1_allocation) * fd.total_commissions
                                                                                   when fd.substantial_completion_date is not null
                                                                                     then
-                                                                                    (opru.m1_allocation + opru.m2_allocation) * fd.system_size
+                                                                                    (opru.m1_allocation + case when fd.substantial_completion_date is not null and
+                                                                                                                    fd.substantial_completion_date <= p.period_end then
+                                                                                                                 opru.m2_allocation else 0 end) * fd.system_size
                                                                                   else
                                                                                     opru.m1_allocation * fd.system_size
                                                                                   end       overrides_earned1,
@@ -160,7 +172,8 @@ begin
                                                                                           on opru.override_plan_id =
                                                                                              op.id and
                                                                                              opru.user_id = ncu.user_id
-                                                                         where p.current is true
+                                                                         where p.current is true and
+                                                                           ((pd.on_hold_date is null) or (pd.on_hold_date is not null and off_hold_date is not null))
                                                                          group by fd.system_size, fd.project_id,
                                                                                   opru.m1_allocation,
                                                                                   opru.m2_allocation,
@@ -169,7 +182,8 @@ begin
                                                                                   fd.commission_strategy,
                                                                                   opru.red_line_m1_allocation,
                                                                                   opru.red_line_m2_allocation,
-                                                                                  fd.total_commissions) as foo) as foo1),
+                                                                                  fd.total_commissions,
+                                                                                  p.period_end) as foo) as foo1),
                                                             0)                            AS total_overrides,
 
                                                    0::numeric                             AS commission_adjustments

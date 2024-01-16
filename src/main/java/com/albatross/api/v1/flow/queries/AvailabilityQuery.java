@@ -248,6 +248,45 @@ public class AvailabilityQuery {
           order by ra.start_time, ra.end_time, ra.all_day
         """;
 
+  public final static String getAppointmentsForOneResourceInRange = """
+    SELECT
+        ra.id,
+        concat(u.first_name, ' ', u.last_name) as resource_name,
+        ra.org_id,
+        ra.start_time,
+        case when ra.recurrence is not null then true else false end as repeat,
+        ra.end_time,
+        ra.archived,
+        ra.description,
+        ra.company_id,
+        ra.title,
+        ra.location,
+        ra.latitude,
+        ra.longitude,
+        ra.all_day,
+        ra.recurrence,
+        ra.recurring_event_id,
+        ra.recurring_event_end_type,
+        ra.recurring_start_time as "recurringStartTime",
+        ra.recurring_end_time as "recurringEndTime",
+        ra.recurring_event_end_type as "recurringEventEndType",
+        ra.location,
+        ra.recurrence,
+        ra.origin_timezone as "originTimezone",
+        ra.origin_timezone_offset as "originTimezoneOffset",
+        ra.description
+    FROM flow.resource_appointment ra
+             LEFT JOIN flow.org o ON o.id = ra.org_id
+             LEFT JOIN flow.user u ON u.id = ra.user_id
+             LEFT JOIN flow.user_position up on up.user_id = u.id
+    WHERE (ra.org_id = any(array[ :orgIds ]::bigint[]) or up.id = :userId ::bigint)
+              and ra.company_id = :companyId
+              and ra.archived is not true
+              and ((ra.start_time between :startTime::timestamp AND :endTime::timestamp)
+                  OR (ra.end_time between :startTime::timestamp AND :endTime::timestamp))
+              order by ra.start_time, ra.end_time, ra.all_day
+            """;
+
   //language=PostgreSQL
   public final static String getAppointmentsForResource = """
     SELECT
@@ -441,11 +480,6 @@ public class AvailabilityQuery {
                                  ) appointments), '[]') AS "appointments"
            from recurring r
         """;
-
-  //language=PostgreSQL
-  public final static String cacheAvailability = """
-     select from brs.cache_available_time_slots()
-    """;
 
   //language=PostgreSQL
   public final static String updateSlotSchedule = """

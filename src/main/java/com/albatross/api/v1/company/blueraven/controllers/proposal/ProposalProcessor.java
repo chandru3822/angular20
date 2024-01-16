@@ -22,7 +22,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -79,7 +78,7 @@ public class ProposalProcessor {
       log.debug("[Proposal] Saving attachment to projectId={}", proposal.getProjectId());
 
       String displayName = getDisplayName(result);
-      String filename = String.format("%s.pdf", displayName);
+      String filename = "%s.pdf".formatted(displayName);
 
       Resource resource = result.resource();
 
@@ -110,7 +109,7 @@ public class ProposalProcessor {
     Object loanTerm = getDefaultValue(context, "loan_term", "");
     Object product = getDefaultValue(context, "product_name", "");
 
-    return String.format("%s %s %s %s", proposal.getDisplayName(), financier, loanTerm, product).trim();
+    return "%s %s %s %s".formatted(proposal.getDisplayName(), financier, loanTerm, product).trim();
   }
 
   private String getDefaultValue(Map<String, Object> context, String key, String defaultValue) {
@@ -129,6 +128,7 @@ public class ProposalProcessor {
     user.setId(brSystemUser.getId());
     user.setCompanyId(brSystemUser.getCompanyId());
     user.setHighestCompanyId(brSystemUser.getCompanyId());
+    user.setHasAccess(true);
     user.setHighestParentCompanyId(brSystemUser.getCompanyId());
 
     final FeatureAccessControl proposalAdminFac = new FeatureAccessControl();

@@ -40,12 +40,13 @@ BEGIN
          inner join flow.process_step_process psp on ps.id = psp.process_step_id
   where ppse.id = p_pps_event_id;
 
-  --get the process_id for the process step
+  --get the process_id for the process step (ensure it is the same process as the event or you might get 2 results here)
   select psp.company_process_id
   into v_process_step_process_id
   from flow.process_step ps
          inner join flow.process_step_process psp on ps.id = psp.process_step_id
-  where ps.id = p_process_step_id_to_create;
+  where ps.id = p_process_step_id_to_create
+  and psp.company_process_id = v_event_process_id;
 
   -- get the number of statuses assigned to the event that match the initial and cancelled status (we verify that this is 2 every time)
   select count(1)

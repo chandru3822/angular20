@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>2.7.3</version>
+    <version>3.2.1</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
 
@@ -16,13 +16,13 @@
   <description>Albatross API</description>
 
   <properties>
-    <java.version>16</java.version>
+    <java.version>21</java.version>
+    <feign.version>13.1</feign.version>
     <spring-cloud.version>2020.0.3</spring-cloud.version>
-    <aws-springcloud.version>2.4.2</aws-springcloud.version>
-    <aws-sdk.version>1.12.285</aws-sdk.version>
-    <!--  Keeping at 6.2.x for now - See: https://github.com/spring-projects/spring-boot/issues/26705-->
-    <hibernate-validator.version>6.2.4.Final</hibernate-validator.version>
-    <spring-cloud-starter.version>3.1.3</spring-cloud-starter.version>
+    <aws-springcloud.version>2.4.4</aws-springcloud.version>
+    <aws-sdk.version>1.12.447</aws-sdk.version>
+    <hibernate-validator.version>8.0.0.Final</hibernate-validator.version>
+    <spring-cloud-starter.version>4.1.0</spring-cloud-starter.version>
   </properties>
 
   <dependencies>
@@ -30,10 +30,18 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-thymeleaf</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>io.micrometer</groupId>
       <artifactId>micrometer-registry-prometheus</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.mail</groupId>
+      <artifactId>jakarta.mail-api</artifactId>
     </dependency>
 
     <dependency>
@@ -68,31 +76,25 @@
     <dependency>
       <groupId>org.dmfs</groupId>
       <artifactId>lib-recur</artifactId>
-      <version>0.12.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.sun.mail</groupId>
-      <artifactId>javax.mail</artifactId>
-      <version>1.6.2</version>
+      <version>0.15.0</version>
     </dependency>
 
     <dependency>
       <groupId>com.twilio.sdk</groupId>
       <artifactId>twilio</artifactId>
-      <version>8.30.1</version>
+      <version>9.7.0</version>
     </dependency>
 
     <dependency>
       <groupId>com.googlecode.libphonenumber</groupId>
       <artifactId>libphonenumber</artifactId>
-      <version>8.12.54</version>
+      <version>8.13.26</version>
     </dependency>
 
     <dependency>
       <groupId>org.springdoc</groupId>
-      <artifactId>springdoc-openapi-ui</artifactId>
-      <version>1.7.0</version>
+      <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      <version>2.3.0</version>
     </dependency>
 
     <dependency>
@@ -155,19 +157,18 @@
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20230227</version>
+      <version>20231013</version>
     </dependency>
 
     <dependency>
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
-      <version>2.8.0</version>
     </dependency>
 
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.11.0</version>
+      <version>2.15.1</version>
     </dependency>
 
     <dependency>
@@ -205,6 +206,11 @@
       <artifactId>spring-security-jwt</artifactId>
       <version>1.1.1.RELEASE</version>
     </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -220,47 +226,42 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.13.4</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-core -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>2.13.3</version>
     </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jsr310</artifactId>
-      <version>2.13.3</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/commons-codec/commons-codec -->
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
-      <version>1.15</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/com.ibm.icu/icu4j -->
     <dependency>
       <groupId>com.ibm.icu</groupId>
       <artifactId>icu4j</artifactId>
-      <version>71.1</version>
+      <version>74.1</version>
     </dependency>
 
     <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>1.9</version>
+      <version>1.11.0</version>
     </dependency>
 
     <dependency>
       <groupId>org.freemarker</groupId>
       <artifactId>freemarker</artifactId>
-      <version>2.3.31</version>
     </dependency>
 
     <dependency>
@@ -272,28 +273,28 @@
     <dependency>
       <groupId>org.graalvm.js</groupId>
       <artifactId>js</artifactId>
-      <version>22.3.2</version>
+      <version>23.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.graalvm.js</groupId>
       <artifactId>js-scriptengine</artifactId>
-      <version>22.3.2</version>
+      <version>23.1.1</version>
     </dependency>
 
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-core</artifactId>
-      <version>11.10</version>
+      <version>${feign.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-jackson</artifactId>
-      <version>11.10</version>
+      <version>${feign.version}</version>
     </dependency>
     <dependency>
       <groupId>io.github.openfeign</groupId>
       <artifactId>feign-okhttp</artifactId>
-      <version>11.10</version>
+      <version>${feign.version}</version>
     </dependency>
   </dependencies>
 
@@ -319,8 +320,7 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>16</source>
-          <target>16</target>
+          <release>${java.version}</release>
         </configuration>
       </plugin>
       <plugin>
@@ -339,20 +339,5 @@
       </plugins>
     </pluginManagement>
   </build>
-
-  <repositories>
-    <repository>
-      <id>spring-releases</id>
-      <name>Spring Releases</name>
-      <url>https://repo.spring.io/release</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>spring-releases</id>
-      <name>Spring Releases</name>
-      <url>https://repo.spring.io/release</url>
-    </pluginRepository>
-  </pluginRepositories>
 
 </project>

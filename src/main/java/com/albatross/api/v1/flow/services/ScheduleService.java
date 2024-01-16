@@ -7,6 +7,7 @@ import com.albatross.api.v1.flow.controllers.ScheduleController;
 import com.albatross.api.v1.flow.model.*;
 import com.albatross.api.v1.flow.model.project.ProjectWithEvents;
 import com.albatross.api.v1.flow.model.projectProcessStep.ProjectProcessStepEvent;
+import com.albatross.api.v1.flow.queries.AvailabilityQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepEventQuery;
 import com.albatross.api.v1.flow.queries.ProjectProcessStepQuery;
 import com.albatross.api.v1.flow.queries.ScheduleQuery;
@@ -25,6 +26,7 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +48,7 @@ public class ScheduleService {
   private final SecurityService securityService;
 
   private final UserPositionService userPositionService;
+
 
   private final ObjectMapper om;
 
@@ -88,6 +91,45 @@ public class ScheduleService {
             List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
             event.setCustomFieldDisplayValue(cfvs.get(0));
         }
+    }
+    return results;
+  }
+
+  public List<ScheduleEvent> getConflictingEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {
+    User user = securityService.getCurrentUser();
+    Boolean isParent = user.getCompanyId().equals(user.getHighestParentCompanyId());
+    List<Long> combined;
+
+    if(null != esp.getUserPositionIds()) {
+      combined = esp.getUserPositionIds();
+    } else {
+      HashMap<String, Object> p2 = new HashMap<>();
+      p2.put("userIds", esp.getUserIds());
+      combined = sqlCache.queryBySql(ScheduleQuery.getUserPositionIdsForUsers, p2, new SingleColumnRowMapper<>(Long.class));
+    }
+
+    if(null != esp.getOrgIds()) {
+      combined.addAll(esp.getOrgIds());
+    }
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("companyId", user.getCompanyId());
+    params.put("combined", combined );
+    params.put("includeCancelled", esp.getIncludeCancelled() != null ? esp.getIncludeCancelled() : false );
+    params.put("startTime", esp.getStartTime());
+    params.put("endTime", esp.getEndTime());
+    params.put("parentCompanyId", user.getHighestParentCompanyId());
+    params.put("isParent", isParent);
+    List<ScheduleEvent> results = sqlCache.queryBySql(ScheduleQuery.getConflictingEvents, params, ScheduleEvent.class);
+    for(ScheduleEvent event : results) {
+      if(event.getCustomFieldDisplayValueGroupAssignmentId() != null) {
+        HashMap<String, Object> moreParams = new HashMap<>();
+        moreParams.put("objectTypeId", 6); //6 is the event object type
+        moreParams.put("cfgaId", event.getCustomFieldDisplayValueGroupAssignmentId());
+        moreParams.put("primaryId", event.getProjectProcessStepEventId());
+        List<CustomFieldValueDisplay> cfvs = sqlCache.queryBySql(ProjectProcessStepQuery.getOneCustomFieldValue, moreParams, new CustomFieldValueDisplayMapper(CustomFieldValueDisplay.class, om));
+        event.setCustomFieldDisplayValue(cfvs.get(0));
+      }
     }
     return results;
   }
@@ -205,24 +247,79 @@ public class ScheduleService {
   }
 
   public List<ScheduleEvent> checkForSchedulingConflict(ScheduleEvent saveEvent, Long eventId){
+    if(saveEvent.getStart() == null || saveEvent.getEnd() == null){
+      return null;
+    }
+    List<ScheduleEvent> eventList = new ArrayList<>();
+
+    List<ResourceAppointment> appointments = getResourceAppointmentsInRange(saveEvent.getResourceId(), null, saveEvent.getStart().toString(), saveEvent.getEnd().toString());
+
+    for(ResourceAppointment appointment : appointments){
+      ScheduleEvent appointmentEvent = new ScheduleEvent();
+      appointmentEvent.setResourceName(saveEvent.getResourceName());
+      appointmentEvent.setStart(new Timestamp(appointment.getStartTime().getTime()));
+      appointmentEvent.setEnd(new Timestamp(appointment.getEndTime().getTime()));
+      appointmentEvent.setEventName(appointment.getTitle());
+      appointmentEvent.setProjectName("Personal Appointment");
+      appointmentEvent.setProjectId(999L);
+      eventList.add(appointmentEvent);
+    }
+
+    ArrayList<Long> resourceIds = new ArrayList<>();
+    resourceIds.add(saveEvent.getResourceId());
     ScheduleController.EventSearchParams params = new ScheduleController.EventSearchParams();
-    ArrayList<Long> userIds = new ArrayList<Long>();
-    userIds.add(saveEvent.getResourceId());
-    params.setUserPositionIds(userIds);
+    params.setUserPositionIds(resourceIds);
     params.setStartTime(saveEvent.getStart().toString());
     params.setEndTime(saveEvent.getEnd().toString());
-    List<ScheduleEvent> events = getEventsForCompanyByOrgAndUser(params);
+    List<ScheduleEvent> events = getConflictingEventsForCompanyByOrgAndUser(params);
     for(ScheduleEvent event : events){
-      if(event.getProjectProcessStepEventId() == saveEvent.getProcessStepEventId()){
+      if(event.getProjectProcessStepEventId().equals(saveEvent.getProjectProcessStepEventId()) || event.getStart().equals(saveEvent.getEnd()) || event.getEnd().equals(saveEvent.getStart())){
         continue;
       }
       else{
-        List<ScheduleEvent> eventList = new ArrayList<>();
         eventList.add(event);
-        return eventList;
       }
     }
-    return null;
+    return eventList;
+  }
+
+  public List<ResourceAppointment> getResourceAppointmentsInRange(
+    Long userId, List<Long> orgIds, String startTime, String endTime) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgIds", orgIds);
+    params.put("startTime", startTime);
+    params.put("endTime", endTime);
+    params.put("companyId", user.getCompanyId());
+    List<ResourceAppointment> results =
+      sqlCache.queryBySql(
+        AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
+
+    return results;
+  }
+
+  public Page<ResourceAppointment> getResourceAppointments(
+    Long userId, Long orgId, Pageable pageable) {
+    User user = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("orgId", orgId);
+    params.put("companyId", user.getCompanyId());
+    params.put("limit", pageable.getPageSize());
+    params.put("offset", pageable.getOffset());
+
+    List<ResourceAppointment> results =
+      sqlCache.queryBySql(
+        AvailabilityQuery.getAppointmentsForResource, params, ResourceAppointment.class);
+    Integer count =
+      sqlCache.queryForObjectBySql(
+        AvailabilityQuery.getAppointmentsForResourceCount, params, Integer.class);
+
+    return new PageImpl<>(
+      results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
   public static class ScheduleEventMapper<T> extends BeanPropertyRowMapper<T> {

@@ -841,6 +841,112 @@ public class SmartlistQuery {
   """;
 
   //language=PostgreSQL
+  public final static String getProjectDetailsRequirements = """
+    select sr.id,
+    sr.display_order,
+    sr.smartlist_id,
+    sr.operator_type_id,
+    sr.requirement_value,
+    sr.secondary_requirement_value,
+    sr.data_type_requirement_id,
+    sr.list_of_value_id,
+      case when sr.data_type_requirement_id is null then true else false end            as is_custom_value,
+    opt.operator_type,
+      case
+    when sr.data_type_requirement_id is null then null
+      else jsonb_build_object(
+             'id', dtr.id,
+             'dataTypeValue', dtr.data_type_value,
+             'secondaryRequirement', dtr.secondary_requirement
+             )
+    end                                                                               as data_type_requirement,
+      null                                                                              as process_step_event_id,
+    coalesce(pdc.second_field_to_update, sr.project_details_column)                   as project_details_column,
+    pdc.display_name                                                                  as name,
+    coalesce(pdc.second_data_type_id, pdc.data_type_id) as data_type_id,
+    case when cdt.has_list_values or cf.custom_field_sql_key is not null then true else false end as has_list_values,
+    cf.custom_field_sql_key,
+    cf.custom_field_sql,
+    cf.custom_field_sql_smartlist,
+    case
+      when cf.custom_field_sql_smartlist is not null then (
+        select to_jsonb(array_agg(row_to_json(listOfValues)))
+        from (
+          select * from flow.exec_custom_field_sql(cf.custom_field_sql_smartlist)
+        ) listOfValues
+      )
+    end as available_list_of_values
+    from flow.smartlist_requirement sr
+    inner join (
+      select distinct field_to_update, display_name, data_type_id, second_field_to_update, second_data_type_id, custom_field_group_assignment_id
+      from brs.project_details_config
+    ) pdc on coalesce(pdc.second_field_to_update, pdc.field_to_update) = sr.project_details_column
+    inner join flow.operator_type opt on opt.id = sr.operator_type_id
+    left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
+    left join flow.custom_field_group_assignment cfga on cfga.id = pdc.custom_field_group_assignment_id
+    left join flow.custom_field cf on cfga.custom_field_id = cf.id
+    left join flow.company_data_type cdt on cf.company_data_type_id = cdt.id
+    where sr.smartlist_id = :smartlistId and
+    sr.archived is not true
+    union
+    select sr.id,
+    sr.display_order,
+    sr.smartlist_id,
+    sr.operator_type_id,
+    sr.requirement_value,
+    sr.secondary_requirement_value,
+    sr.data_type_requirement_id,
+    sr.list_of_value_id,
+      case when sr.data_type_requirement_id is null then true else false end as is_custom_value,
+    opt.operator_type,
+      case
+    when sr.data_type_requirement_id is null then null
+      else jsonb_build_object(
+             'id', dtr.id,
+             'dataTypeValue', dtr.data_type_value,
+             'secondaryRequirement', dtr.secondary_requirement
+             )
+    end                                                                    as data_type_requirement,
+    pdec.process_step_event_id,
+    coalesce(pdec.second_field_to_update, sr.project_details_column)       as project_details_column,
+    pdec.display_name                                                      as name,
+      case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then 6
+      else 2
+    end                                                                    as data_type_id,
+      case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then true
+    end                                                                    as has_list_values,
+    null                                                                   as custom_field_sql_key,
+    null as custom_field_sql,
+    null as custom_field_sql_smartlist,
+         case
+    when coalesce(pdec.second_field_to_update, pdec.field_to_update) like '%_resource%' then
+      (
+        select to_jsonb(array_agg(row_to_json(listOfValues)))
+    from (
+      select *
+      from flow.get_system_list_options(3, cf.company_system_list_id, true,
+      cf.system_list_option_ids)
+                    ) listOfValues
+             )
+    end                                                                    as available_list_of_values
+    from flow.smartlist_requirement sr
+    inner join (
+      select distinct field_to_update, display_name, second_field_to_update, process_step_event_id
+      from brs.project_detail_events_config
+    ) pdec on coalesce(pdec.second_field_to_update, pdec.field_to_update) = sr.project_details_column
+    inner join flow.process_step_event pse on pdec.process_step_event_id = pse.id
+    inner join flow.event e on pse.event_id = e.id
+    inner join flow.custom_field cf on cf.id = e.resource_custom_field_id
+    inner join flow.operator_type opt on opt.id = sr.operator_type_id
+    left join flow.data_type_requirement dtr on dtr.id = sr.data_type_requirement_id
+    where sr.smartlist_id = :smartlistId and
+    sr.archived is not true
+    order by display_order
+  """;
+
+  //language=PostgreSQL
   public final static String addRequirement = """
     insert into flow.smartlist_requirement (smartlist_id, process_step_id, custom_field_group_assignment_id, operator_type_id, requirement_value, secondary_requirement_value, data_type_requirement_id, display_order, smartlist_field_id, list_of_value_id, list_of_value_ids, system_list_option_id, custom_sql_option_id, project_details_column, process_step_event_id, created_by_id, date_created, modified_by_id, date_modified)
     values (:smartlistId, :processStepId, :customFieldGroupAssignmentId, :operatorTypeId, :requirementValue, :secondaryRequirementValue, :dataTypeRequirementId, :displayOrder, :smartlistFieldId, :listOfValueId, array[ :listOfValueIds ]::bigint[], :systemListOptionId, :customSqlOptionId, :projectDetailsColumn, :processStepEventId, :createdById, now(), :createdById, now())

@@ -3,18 +3,17 @@ package com.albatross.api.v1.flow.services;
 import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.PostalCode;
+import com.albatross.api.v1.flow.model.PostalCodeZone;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.PostalCodeQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,7 +65,7 @@ public class PostalCodeService {
     params.put("userId", user.trueUserId());
     Long id;
 
-    if(null != postalCode.getId()) {
+    if (null != postalCode.getId()) {
       id = postalCode.getId();
       params.put("id", id);
       sqlCache.updateBySql(PostalCodeQuery.updatePostalCode, params);
@@ -111,7 +110,7 @@ public class PostalCodeService {
     params.put("userId", user.trueUserId());
     Long id;
 
-    if(null != postalCodeZone.getId()) {
+    if (null != postalCodeZone.getId()) {
       id = postalCodeZone.getId();
       params.put("id", id);
       sqlCache.updateBySql(PostalCodeQuery.updatePostalCodeZone, params);
@@ -165,11 +164,12 @@ public class PostalCodeService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<PostalCode>> postalCodeRef = new TypeReference<>() {};
+      TypeReference<List<PostalCode>> postalCodeRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
-              List.class,
-              "postalCodes",
-              new JsonCollectionDeserializer(postalCodeRef, objectMapper));
+        List.class,
+        "postalCodes",
+        new JsonCollectionDeserializer(postalCodeRef, objectMapper));
 
     }
   }

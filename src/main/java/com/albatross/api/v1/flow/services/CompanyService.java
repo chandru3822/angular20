@@ -1,5 +1,8 @@
 package com.albatross.api.v1.flow.services;
 
+import com.albatross.api.pubsub.PubSubService;
+import com.albatross.api.pubsub.model.EventChannel;
+import com.albatross.api.pubsub.model.ThemeUpdateMessage;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.flow.model.Attachment;
@@ -26,6 +29,7 @@ public class CompanyService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final AttachmentService attachmentService;
+  private final PubSubService pubSubService;
 
   public List<Company> getCompanies() {
     List<Company> results = sqlCache.queryBySql(CompanyQuery.getAll, null, Company.class);
@@ -34,6 +38,9 @@ public class CompanyService {
       // set the attachment presigned url, 29 = COMPANY_LOGO
       Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 29L);
       c.setLogoPresignedUrl(null != a ? a.getPresignedUrl() : null);
+
+      Attachment b = attachmentService.getOneBySourceIdAndType(c.getId(), 987L);
+      c.setSpinnerPresignedUrl(null != b ? b.getPresignedUrl() : null);
     }
     return results;
   }
@@ -49,6 +56,9 @@ public class CompanyService {
       // set the attachment presigned url, 29 = COMPANY_LOGO
       Attachment a = attachmentService.getOneBySourceIdAndType(c.getId(), 29L);
       c.setLogoPresignedUrl(null != a ? a.getPresignedUrl() : null);
+
+      Attachment b = attachmentService.getOneBySourceIdAndType(c.getId(), 987L);
+      c.setSpinnerPresignedUrl(null != b ? b.getPresignedUrl() : null);
     }
 
     return results;
@@ -77,7 +87,14 @@ public class CompanyService {
     params.put("companyName", company.getCompanyName());
     params.put("defaultPassword", company.getDefaultPassword());
     params.put("minuteIncrement", company.getMinuteIncrement());
+    params.put("bannerColor", company.getBannerColor());
+    params.put("primaryColor", company.getPrimaryColor());
     sqlCache.updateBySql(CompanyQuery.updateCompany, params);
+
+    //tell front end to update (could refactor to only send update if the colors actually changed. but they dont often change stuff with company unless it is the color
+    ThemeUpdateMessage tum = new ThemeUpdateMessage();
+    pubSubService.publish(EventChannel.NOTIFICATION, tum);
+
     return getCompany(company.getId());
   }
 

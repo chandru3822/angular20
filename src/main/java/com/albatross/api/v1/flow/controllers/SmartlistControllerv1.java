@@ -1,14 +1,14 @@
 package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.security.SecurityService;
-import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.model.CompanyObjectType;
+import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.smartlistv1.*;
 import com.albatross.api.v1.flow.services.CustomFieldService;
 import com.albatross.api.v1.flow.services.ObjectTypeService;
 import com.albatross.api.v1.flow.services.SmartlistServicev1;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,16 +19,14 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/smartlistv1")
 public class SmartlistControllerv1 {
 
 
   private final SmartlistServicev1 smartlistServicev1;
-
   private final CustomFieldService customFieldService;
   private final ObjectTypeService objectTypeService;
-
   private final SecurityService securityService;
 
   @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,8 +50,8 @@ public class SmartlistControllerv1 {
   //humes dont hate, i added an endpoint so i could get the sql string on the frontend.
   //this has helped me a ton with work queues especially when the say it is only failing in prod
   @GetMapping(value = "/{smartlistId}/getSqlString", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getSqlString (@PathVariable Long smartlistId) {
-    return smartlistServicev1.getSmartlistSqlString(smartlistId);
+  public String getSqlString(@PathVariable Long smartlistId, @RequestParam(required = false) String timezone) {
+    return smartlistServicev1.getSmartlistSqlString(smartlistId, timezone != null ? timezone.replace("_", " ") : null);
   }
 
   @GetMapping(value = "/{smartlistId}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -99,9 +97,9 @@ public class SmartlistControllerv1 {
     List<SmartlistFieldAssignment> fields;
 
     if (smartlist.isProjectDetails()) {
-      fields = smartlistServicev1.getAssignedProjectDetailsFields(smartlistId);
+      fields = smartlistServicev1.getAssignedProjectDetailsFields(smartlistId, null);
     } else {
-      fields = smartlistServicev1.getAssignedFields(smartlistId);
+      fields = smartlistServicev1.getAssignedFields(smartlistId, null);
     }
 
     return new ResponseEntity<>(fields, HttpStatus.OK);
@@ -160,25 +158,26 @@ public class SmartlistControllerv1 {
   public ResponseEntity<String> getSmartlistCsvById(@PathVariable Long smartlistId,
                                                     @RequestParam(required = false) String timezone) throws JsonProcessingException {
     try {
-        return new ResponseEntity<>(smartlistServicev1.getCsv(smartlistId, timezone), HttpStatus.OK);
+      return new ResponseEntity<>(smartlistServicev1.getCsv(smartlistId, timezone), HttpStatus.OK);
     } catch (RuntimeException e) {
-        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate CSV file", e);
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate CSV file", e);
     }
   }
 
   @GetMapping(value = "/{smartlistId}/data", produces = MediaType.APPLICATION_JSON_VALUE)
-  public ResponseEntity<SmartlistResult> getSmartlistDataById(@PathVariable Long smartlistId) {
-      try {
-          return new ResponseEntity<>(smartlistServicev1.getSmartlistResults(smartlistId), HttpStatus.OK);
-      } catch (RuntimeException e) {
-          throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate results", e);
-      }
+  public ResponseEntity<SmartlistResult> getSmartlistDataById(@PathVariable Long smartlistId,
+                                                              @RequestParam(required = false) String timezone) {
+    try {
+      return new ResponseEntity<>(smartlistServicev1.getSmartlistResults(smartlistId, timezone != null ? timezone.replace("_", " ") : null), HttpStatus.OK);
+    } catch (RuntimeException e) {
+      throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to generate results", e);
+    }
   }
 
   @GetMapping(value = "/companyObjectTypes", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<List<CompanyObjectType>> getCompanyObjectTypes() {
-      List<CompanyObjectType> types = objectTypeService.getSmartlistCompanyObjectTypes();
-      return new ResponseEntity<>(types, HttpStatus.OK);
+    List<CompanyObjectType> types = objectTypeService.getSmartlistCompanyObjectTypes();
+    return new ResponseEntity<>(types, HttpStatus.OK);
   }
 
   @GetMapping(value = "/availableFieldsByType", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -188,7 +187,7 @@ public class SmartlistControllerv1 {
 
   @GetMapping(value = "/availableFieldByCfgaId/{cfgaId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SmartlistFieldAssignment> getAvailableSmarlistFieldByCfgaId(@PathVariable Long cfgaId) {
-      return new ResponseEntity<>(smartlistServicev1.getAvailableFieldByCfgaId(cfgaId), HttpStatus.OK);
+    return new ResponseEntity<>(smartlistServicev1.getAvailableFieldByCfgaId(cfgaId), HttpStatus.OK);
   }
 
   @GetMapping(value = "/availableProjectDetailsFields", produces = MediaType.APPLICATION_JSON_VALUE)

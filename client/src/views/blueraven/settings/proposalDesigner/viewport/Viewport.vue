@@ -37,11 +37,6 @@ export default {
       .getElementsByClassName('viewport')[0]
       .addEventListener('mousedown', this.handleClick, false)
   },
-  beforeDestroy() {
-    // document
-    //   .getElementsByClassName('viewport')[0]
-    //   .removeEventListener('mousedown', this.handleClick, false)
-  },
   data() {
     return {
       isZoomable: false,
