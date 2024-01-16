@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center" no-gutters>
-    <v-col cols="12" id="incentive-container" class="justify-end" :style="{'background-image':null != backgroundImage?.image?.presignedUrl ? `url(${backgroundImage.image.presignedUrl})` : ''}">
+    <v-col v-if="backgroundImageLoaded === true" cols="12" id="incentive-container" class="justify-end" :style="{'background-image':null != backgroundImage?.image?.presignedUrl ? `url(${backgroundImage.image.presignedUrl})` : ''}">
       <img id="incentive-banner" v-if="headerImage?.image?.presignedUrl" :src="headerImage.image.presignedUrl" alt="incentive competition banner">
       <div id="milestones-container">
         <incentive-milestone
@@ -92,7 +92,8 @@ const percentAchieved = ref(0),
     headerImageTypeId=ref(991),
     backgroundImage=ref({}),
     backgroundImageTypeId=ref(992),
-    companyId = store.state.user.details.companyId
+    companyId = store.state.user.details.companyId,
+    backgroundImageLoaded=ref(false)
 
 const windowInnerWidth = computed(() => { return window.innerWidth})
 
@@ -122,6 +123,9 @@ const calcYearPercentage= () => {
 watch(() => props.yearlyPointTotal, () => {
   calcYearPercentage()
 })
+watch(backgroundImageLoaded, () => {
+  console.log(backgroundImageLoaded.value)
+})
 
 const loadImages = async () => {
   await loadImage(headerImageTypeId.value, headerImage.value)
@@ -136,12 +140,18 @@ const loadImage= async (typeId, imageType) => {
       sourceId: companyId,
       callback: async (img) => {
         imageType.image = img
+        if(typeId === backgroundImageTypeId.value){
+          backgroundImageLoaded.value = true
+        }
         store.commit(AppMutations.SET_LOADING, false)
       }
     })
   } catch(e) {
     console.error('*** ERROR ***', e)
     snackbar = getSnackbar('ERROR', `Error Loading ${imageType}`)
+    if(typeId === backgroundImageTypeId.value){
+      backgroundImageLoaded.value = true
+    }
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     store.commit(AppMutations.SET_LOADING, false)
   }
