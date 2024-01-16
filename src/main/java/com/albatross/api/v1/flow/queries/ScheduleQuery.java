@@ -260,7 +260,7 @@ public class ScheduleQuery {
           p.latitude,
           p.contact_id,
           p.longitude,
-          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name, ' - ', p.position) end as resource_name,
+          case when sl.system_list_type_id = 1 then o.org_name else concat(u.first_name, ' ', u.last_name, ' - ', pos.position) end as resource_name,
           p.project_name,
           ps.process_step_name,
           p.company_state_id,
@@ -287,7 +287,7 @@ public class ScheduleQuery {
                inner join flow.company_system_list csl on csl.id = cf.company_system_list_id
                inner join flow.system_list sl on sl.id = csl.system_list_id
                left join flow.user_position up on up.id = ppse.resource_id and sl.system_list_type_id = 2
-               left join flow.position p on p.id = up.position_id
+               left join flow.position pos on pos.id = up.position_id
                left join flow.user u on u.id = up.user_id
                left join flow.org o on o.id = ppse.resource_id and sl.system_list_type_id = 1
         where case when :isParent
