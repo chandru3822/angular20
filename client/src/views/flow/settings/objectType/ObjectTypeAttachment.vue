@@ -10,7 +10,7 @@
       <v-row>
         <v-col cols="12" class="pt-0 px-0">
           <v-toolbar flat class="cfg-header-bar">
-            <v-toolbar-title class="title-large">Ancillary Custom Field Groups</v-toolbar-title>
+            <v-toolbar-title class="title-large text-wrap">Ancillary Custom Field Groups</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
               <v-btn text color="primary" v-if="!createNew && userCanAdd" @click="createNew = !createNew">
