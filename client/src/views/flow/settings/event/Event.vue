@@ -6,9 +6,9 @@
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
         </v-btn>
-        <v-toolbar flat class="app-toolbar">
+        <v-toolbar id="event-name-toolbar" flat class="app-toolbar">
           <span class="headline-small" v-if="!editName">{{ event.eventName }}</span>
-          <v-text-field v-else color="primary"
+          <v-text-field v-else color="primary" class=""
                         :readonly="!userCanEdit"
                         :disabled="!userCanEdit"
                         v-model="event.eventName"
@@ -23,7 +23,8 @@
               <v-icon>save</v-icon>
             </v-btn>
             <v-btn text color="primary" v-if="userCanEdit && editName" class="" @click="[event.eventName = oldName, editName = !editName]">
-              cancel
+              <v-icon v-if="$vuetify.breakpoint.smAndDown">close</v-icon>
+              <span v-else>cancel</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -143,4 +144,10 @@ export default {
     color: var(--v-primary-base);
   }
 }
+</style>
+<style lang="scss">
+#event-name-toolbar > div {
+  padding: 4px 0;
+}
+
 </style>
