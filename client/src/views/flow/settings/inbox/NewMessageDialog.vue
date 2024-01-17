@@ -464,7 +464,7 @@ export default {
     },
     async getUsers() {
       try {
-        const { data } = await getRequest(`/messaging/availableUsers/`)
+        const { data } = await getRequest(`/messaging/availableUsers`)
         this.availableUsers = data
 
         if (this.availableUsers) {
