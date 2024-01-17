@@ -77,7 +77,8 @@
     <v-form ref="proposalForm">
       <v-row>
         <v-col cols="12" sm="4">
-          <v-dialog v-model="showCommissionModal" class="square-card">
+          <v-dialog v-model="showCommissionModal" class="square-card"
+            max-width="500">
             <CommissionDetailsModal :proposal-id="this.proposalId"
                                     :current-commission-value="currentCommissionValue"
                                     :select-callback="saveDesiredCommissionAmountValue"
@@ -133,7 +134,7 @@
             </div>
           </v-card>
         </v-col>
-        <v-col cols="12" sm="8">
+        <v-col cols="12" sm="8" v-if="false">
           <v-card class="proposal-container">
             <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
                  v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
