@@ -695,6 +695,10 @@ BEGIN
     perform flow.add_system_activity((select id from flow.activity where activity_code = 'PS_STATUS_CHANGED'),
                                      1, new.project_id,
                                      new.modified_by_id, new.id, null, old.company_process_step_status_type_id, new.company_process_step_status_type_id);
+  elsif (old.id is null and new.id is not null) THEN
+      perform flow.add_system_activity((select id from flow.activity where activity_code = 'PROCESS_STEP_CREATED'),
+                                       1, new.project_id,
+                                       new.modified_by_id, new.id, null, null, null);
   end if;
 
   RETURN NULL;
