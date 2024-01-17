@@ -18,51 +18,43 @@
     <v-data-table
       class="elevation-1"
       :items="dashValues"
+      :headers="headers"
       fixed-header
       ref="pageable-table"
       disable-sort
       :footer-props="footerProps"
       :loading="isLoading"
       :hide-default-footer="true"
+      mobile-breakpoint="0"
     >
 
       <template #no-data>
         <span class="default-text-color">No available data</span>
       </template>
 
-                    <template v-slot:header>
-                      <thead id="main-table-header">
-                        <tr>
-                          <th id="milestone-col-header" colspan="1">Milestones</th>
-                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
-                        </tr>
-                      </thead>
-                    </template>
 
-      <template #item="{ item, index }">
-                        <tr v-if="item.major_milestone || !viewMajorMilestones" :class="{'light-blue-row': (item.major_milestone)}">
-                          <td class="milestone-col-td">{{ item.name }}</td>
-                          <td class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
-                            <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                            <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                            <span v-if="viewTrends && (item.trend_count ==null || item.trend_count==0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-                          </td>
+      <template #header.milestone="{}" id="milestone-col-header">Milestones</template>
+      <template #header.actualTotal="{}" id="milestone-col-header"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
+      <template #header.actualTotal2="{}" id="milestone-col-header"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
+      <template #header.actualTotal3="{}" id="milestone-col-header"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
 
-                          <td class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
-                            <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                            <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                            <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-                          </td>
-                          <td class="milestone-col-td" v-else></td>
-                          <td class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">{{column3Values[index].company_count?column3Values[index].company_count:0}}
-                            <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                            <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                            <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-                          </td>
-                          <td class="milestone-col-td" v-else></td>
-                        </tr>
+
+      <template #item.milestone="{item, index}" class="milestone-col-td" :class="{'light-blue-row': (item.major_milestone)}">{{ item.name }}</template>
+      <template #item.actualTotal="{item, index}" class="milestone-col-td" :class="{'light-blue-row': (item.major_milestone)}">{{ item.company_count?item.company_count:0 }}
+        <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+        <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+        <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+      </template>
+
+      <template #item.actualTotal2="{item, index}" class="milestone-col-td" :class="{'light-blue-row': (item.major_milestone)}" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
+        <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+        <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+        <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+      </template>
+      <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">{{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
+        <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+        <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+        <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
       </template>
     </v-data-table>
     <ConfirmationDialog v-if="selectingCustomDates" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
@@ -102,6 +94,7 @@
   import {handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
   import cloneDeep from 'lodash.clonedeep'
   import {DateTime} from "luxon";
+  import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 
   export default {
@@ -109,7 +102,8 @@
     components: {
       DatetimePickerInput,
       CompanyDashboardDrilldown,
-      Snackbar
+      Snackbar,
+      ConfirmationDialog
     },
     data () {
       return {
@@ -169,6 +163,12 @@
       // visibleHeaders () {
       //   return this.headers.filter(header => header.show === true)
       // },
+      filteredDashValues(){
+        if(this.viewMajorMilestones){
+          return this.dashValues.filter(dv => dv.major_milestone)
+        }
+        return this.dashValues
+      },
       additionalStartWeek () {
         if (this.currentPeriod > 9) {
           return 1;
@@ -573,9 +573,9 @@
       this.headers = [
         { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true },
         { text: 'Today', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-        { text: 'Today2', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-        { text: 'Today3', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-
+        { text: 'Today2', value: 'actualTotal2', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+        { text: 'Today3', value: 'actualTotal3', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+      ]
 
         // { text: 'Total', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
         // { text: 'BRS', value: 'actualBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
@@ -586,7 +586,7 @@
         // { text: 'Total', value: 'differenceTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
         // { text: 'BRS', value: 'differenceBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
         // { text: 'Partners', value: 'differencePartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser }
-      ]
+
 
       if (this.$store?.state?.user?.details?.timezone?.value) {
         this.timezone = this.$store.state.user.details.timezone.value
