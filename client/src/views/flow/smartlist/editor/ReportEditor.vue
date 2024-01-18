@@ -36,11 +36,10 @@
               >
                 {{ report.name }}
 
-                <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               </span>
+              <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               <v-btn
                 v-if=" report?.id && (isOwner || isSmartlistAdmin || isSystemAdmin)"
-                class="ml-6 mt-1"
                 text
                 @click="router.push(`/smartlistv1/${report.id}`)"
               >
@@ -745,6 +744,11 @@ const windowLeave = async (event) => {
     font-size: 20px;
     font-weight: 700;
     letter-spacing: normal;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 200px;
 
     &:hover {
       cursor: pointer;
