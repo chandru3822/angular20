@@ -184,9 +184,24 @@
         firstDateRange: 2,
         secondDateRange: null,
         thirdDateRange: null,
-        firstCustom: null,
-        secondCustom: null,
-        thirdCustom: null,
+        firstCustom: {
+          startDate: "",
+          endDate: "",
+          trendStart: "",
+          trendEnd: ""
+        },
+        secondCustom: {
+          startDate: "",
+          endDate: "",
+          trendStart: "",
+          trendEnd: ""
+        },
+        thirdCustom: {
+          startDate: "",
+          endDate: "",
+          trendStart: "",
+          trendEnd: ""
+        },
         singleDateRange: false,
         singleDateRanges: ['Yesterday', 'Today', 'Tomorrow'],
         loadTargetsRanges:  ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'],
@@ -303,16 +318,16 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         if(column === 1){
-          this.startDate = this.dropdownValues.find(x => x.id == this.firstDateRange).startDate;
-          this.endDate = this.dropdownValues.find(x => x.id == this.firstDateRange).endDate;
+          this.startDate = this.dropdownValues.find(x => x.id == this.firstDateRange).startDate? this.dropdownValues.find(x => x.id == this.firstDateRange).startDate : moment(this.firstCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.endDate = this.dropdownValues.find(x => x.id == this.firstDateRange).endDate ? this.dropdownValues.find(x => x.id == this.firstDateRange).endDate : moment(this.firstCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
         }
         else if(column === 2){
-          this.startDate = this.dropdownValues.find(x => x.id == this.secondDateRange).startDate;
-          this.endDate = this.dropdownValues.find(x => x.id == this.secondDateRange).endDate;
+          this.startDate = this.dropdownValues.find(x => x.id == this.secondDateRange).startDate? this.dropdownValues.find(x => x.id == this.secondDateRange).startDate : moment(this.secondCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.endDate = this.dropdownValues.find(x => x.id == this.secondDateRange).endDate ? this.dropdownValues.find(x => x.id == this.secondDateRange).endDate : moment(this.secondCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
         }
         else if(column === 3){
-          this.startDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).startDate;
-          this.endDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).endDate;
+          this.startDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).startDate? this.dropdownValues.find(x => x.id == this.thirdDateRange).startDate : moment(this.thirdCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.endDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).endDate ? this.dropdownValues.find(x => x.id == this.thirdDateRange).endDate : moment(this.thirdCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
         }
         try {
           const params = {
@@ -424,13 +439,15 @@
           if(result == null){
             return null;
           }
-          if(result.startDate == null){
-            if(this.customDate.startDate.length == 0) {
+          if(result.startDate === null){
+            if(this.firstCustom.startDate.length === 0) {
+              this.customColumn = 1;
               this.selectingCustomDates = true;
               return;
             }
             else{
-              result = this.customDate;
+              result = cloneDeep(this.firstCustom);
+              this.resetCustomDate();
             }
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
@@ -441,12 +458,13 @@
             return null;
           }
           if(result.startDate == null){
-            if(this.customDate.startDate.length == 0) {
+            if(this.secondCustom.startDate.length == 0) {
+              this.customColumn = 2;
               this.selectingCustomDates = true;
               return;
             }
             else{
-              result = cloneDeep(this.customDate);
+              result = cloneDeep(this.secondCustom);
               this.resetCustomDate();
             }
           }
@@ -458,12 +476,13 @@
             return null;
           }
           if(result.startDate == null){
-            if(this.customDate.startDate.length == 0) {
+            if(this.thirdCustom.startDate.length == 0) {
+              this.customColumn = 3;
               this.selectingCustomDates = true;
               return;
             }
             else{
-              result = cloneDeep(this.customDate);
+              result = cloneDeep(this.thirdCustom);
               this.resetCustomDate();
             }
           }
@@ -477,18 +496,28 @@
         this.customDate.trendEnd = "";
       },
       async applyCustomDates(){
-        this.customDate.startDate = moment(this.customDate.startDate);
-        this.customDate.endDate = moment(this.customDate.endDate);
+        if(this.customColumn === 1) {
+          this.firstCustom.startDate = moment(this.customDate.startDate);
+          this.firstCustom.endDate = moment(this.customDate.endDate);
+          let dateDiff = this.firstCustom.endDate.diff(this.firstCustom.startDate, 'days');
+          this.firstCustom.trendEnd = this.firstCustom.startDate.clone().subtract(1, 'days');
+          this.firstCustom.trendStart = this.firstCustom.trendEnd.clone().subtract(dateDiff, 'days');
+        }
+        else if(this.customColumn === 2){
+          this.secondCustom.startDate = moment(this.customDate.startDate);
+          this.secondCustom.endDate = moment(this.customDate.endDate);
+          let dateDiff = this.secondCustom.endDate.diff(this.secondCustom.startDate, 'days');
+          this.secondCustom.trendEnd = this.secondCustom.startDate.clone().subtract(1, 'days');
+          this.secondCustom.trendStart = this.secondCustom.trendEnd.clone().subtract(dateDiff, 'days');
+        }
+        else if(this.customColumn === 3){
+          this.thirdCustom.startDate = moment(this.customDate.startDate);
+          this.thirdCustom.endDate = moment(this.customDate.endDate);
+          let dateDiff = this.thirdCustom.endDate.diff(this.thirdCustom.startDate, 'days');
+          this.thirdCustom.trendEnd = this.thirdCustom.startDate.clone().subtract(1, 'days');
+          this.thirdCustom.trendStart = this.thirdCustom.trendEnd.clone().subtract(dateDiff, 'days');
+        }
 
-
-        let dateDiff = this.customDate.endDate.diff(this.customDate.startDate, 'days');
-        this.customDate.trendEnd = this.customDate.startDate.clone().subtract(1, 'days');
-        // console.log(this.customDate.startDate);
-        this.customDate.trendStart = this.customDate.trendEnd.clone().subtract(dateDiff, 'days');
-        // this.customDate.startDate = this.customDate.startDate.format('YYYY-MM-DD');
-        // this.customDate.endDate = this.customDate.endDate.format('YYYY-MM-DD');brs
-        // console.log(this.customDate.startDate);
-        // this.customDate.startDate.format('YYYY-MM-DD')
         await this.getDashboardValues();
       },
       async exportCsv () {
