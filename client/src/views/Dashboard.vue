@@ -35,6 +35,7 @@
     </v-card>
     <br>
     <v-data-table
+        id="company-dash-table"
       class="elevation-1"
       :items="dashValues"
       :headers="headers"
@@ -45,7 +46,7 @@
       :footer-props="footerProps"
       :loading="isLoading"
       :hide-default-footer="true"
-
+      :mobile-breakpoint="0"
     >
 
       <template #no-data>
@@ -53,13 +54,13 @@
       </template>
 
 
-      <template #header.milestone="{}"  class="milestone-name-col-td">Milestones</template>
+      <template #header.milestone="{}" id="milestones-header">Milestones</template>
       <template #header.actualTotal="{}" ><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
       <template #header.actualTotal2="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
       <template #header.actualTotal3="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
 
 
-      <template #item.milestone="{item, index}" class="milestone-name-col-td">{{ item.name }}</template>
+      <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td">{{ item.name }}</template>
       <template #item.actualTotal="{item, index}" class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
         <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
         <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
@@ -601,32 +602,6 @@
 </script>
 
 <style lang="scss" scoped>
-
-  thead th:first-child{
-    left: 0;
-    z-index: 1 !important;
-  }
-
-  .milestone-name-col-td{
-    left: 0;
-    z-index: 2 !important;
-    position:sticky;
-    background-color: white;
-  }
-
-  .major-milestone-name-col-td{
-    left: 0;
-    z-index: 2 !important;
-    position:sticky;
-    background-color: var(--v-primary-lighten9);
-    font-weight: bold;
-  }
-
-  .milestone-col-td{
-    z-index: 1 !important;
-  }
-
-
   .v-data-table{
     overflow-x: auto;
   }
@@ -693,26 +668,6 @@
     }
   }
 
-  .milestone-name-col-td{
-    left: 0;
-    z-index: 2 !important;
-    position:sticky;
-    background-color: white;
-  }
-
-  .major-milestone-name-col-td{
-    left: 0;
-    z-index: 2 !important;
-    position:sticky;
-    background-color: var(--v-primary-lighten9);
-    font-weight: bold;
-  }
-
-  .milestone-col-td{
-    z-index: 1 !important;
-  }
-
-
   .v-card__title {
     display: flex;
     flex-flow: row nowrap;
@@ -735,4 +690,18 @@
       padding-left: 20px;
     }
   }
+</style>
+<style lang="scss">
+
+#company-dash-table > div > table > thead > tr > th {
+  z-index: 1 !important;
+}
+
+#company-dash-table > div > table > thead > tr > th.text-start.milestone-col-th,
+#company-dash-table > div > table > tbody > tr > td.text-start{
+  position: sticky;
+  left: 0;
+  z-index: 2 !important;
+}
+
 </style>
