@@ -41,10 +41,15 @@
               <span v-else-if="item.date_type === 'timestamp'">{{ item.date_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>
               <span v-else>{{ item.date_value }}</span>
             </td>
-            <td class="text-left" v-if="milestone.has_additional_column">
-              <span v-if="item.additional_field_type === 'date'">{{ item.additional_field_value | formatDate('date', 'MM/DD/YYYY') }}</span>
-              <span v-else-if="item.additional_field_type === 'timestamp'">{{ item.additional_field_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>
-              <span v-else>{{ item.additional_field_value }}</span>
+<!--            <td class="text-left" v-if="milestone.has_additional_column">-->
+<!--              <span v-if="item.additional_field_type === 'date'">{{ item.additional_field_value | formatDate('date', 'MM/DD/YYYY') }}</span>-->
+<!--              <span v-else-if="item.additional_field_type === 'timestamp'">{{ item.additional_field_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>-->
+<!--              <span v-else>{{ item.additional_field_value }}</span>-->
+<!--            </td>-->
+            <td class="text-left" v-for="additionalColumn in item.additional_columns">
+              <span v-if="additionalColumn.data_type === 'date'">{{ additionalColumn.value | formatDate('date', 'MM/DD/YYYY') }}</span>
+              <span v-else-if="additionalColumn.data_type === 'timestamp'">{{ additionalColumn.value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>
+              <span v-else>{{ additionalColumn.value }}</span>
             </td>
           </tr>
         </template>
@@ -89,13 +94,14 @@
       loadPartners: Boolean,
       closeCallback: Function,
       startDate: String,
-      endDate: String
+      endDate: String,
+      additionalHeaders: Array
     },
     created() {
       if (this.$store?.state?.user?.details?.timezone?.value) {
         this.timezone = this.$store.state.user.details.timezone.value
       }
-      // this.getDrilldownData()
+      this.addHeaders();
     },
     data() {
       return {
@@ -127,6 +133,15 @@
     methods: {
       filteredHeaders () {
         return this.drilldownHeaders.filter(header => header.show === true)
+      },
+      addHeaders(){
+        for(let header of this.additionalHeaders) {
+          this.drilldownHeaders.push({
+            text: header,
+            value: 'value',
+            show: true
+          })
+        }
       },
       exportCsv() {
         let csv = ''

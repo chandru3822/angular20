@@ -36,13 +36,17 @@ public class CompanyDashboardController {
   @GetMapping(value = "/drilldownData")
   public String getDrilldownValues(@RequestParam String startDate,
                                    @RequestParam String endDate,
-                                   @RequestParam Long milestoneTypeId,
-                                   @RequestParam Boolean loadPartners) {
-    return companyDashboardService.getDrilldownValues(startDate, endDate, milestoneTypeId, loadPartners);
+                                   @RequestParam Long milestoneTypeId) {
+    return companyDashboardService.getDrilldownValues(startDate, endDate, milestoneTypeId);
   }
 
   @GetMapping(value = "/dropdownValues")
   public List<CompanyDashboardDateRange> getDropdownValues(@RequestParam String today) {
     return companyDashboardService.getDropdownValues(Instant.parse(today + "Z"));
+  }
+
+  @GetMapping(value = "/drilldownHeaders")
+  public List<String> getDrilldownHeaders(@RequestParam Long milestoneTypeId) {
+    return companyDashboardService.getDrilldownHeaders(milestoneTypeId);
   }
 }

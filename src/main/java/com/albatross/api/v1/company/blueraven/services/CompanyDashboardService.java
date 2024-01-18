@@ -6,10 +6,12 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardDateRange;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
+import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.google.common.collect.Maps;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
@@ -104,20 +106,24 @@ public class CompanyDashboardService {
       return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
   }
 
-  public String getDrilldownValues(String startDate, String endDate, Long milestoneTypeId, Boolean loadPartners) {
-    User user = securityService.getCurrentUser();
+  public String getDrilldownValues(String startDate, String endDate, Long milestoneTypeId) {
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("startDate", startDate);
     params.put("endDate", endDate);
-    params.put("companyId", user.getCompanyId());
     params.put("milestoneTypeId", milestoneTypeId);
-    params.put("loadPartners", loadPartners);
-    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
     String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
 
     return results;
+  }
+
+  public List<String> getDrilldownHeaders(Long milestoneTypeId){
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("milestoneTypeId", milestoneTypeId);
+
+    return sqlCache.queryBySql(CompanyDashboardQuery.getCompanyDashboardDrilldownHeaders, params, new SingleColumnRowMapper<>(String.class));
+
   }
 
   public ArrayList<CompanyDashboardDateRange> getDropdownValues(Instant today) {

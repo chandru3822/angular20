@@ -53,30 +53,30 @@
                       <thead id="main-table-header">
                         <tr>
                           <th id="milestone-col-name-header" colspan="1">Milestones</th>
-                          <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
+                          <th id="milestone-col-header" colspan="1"><v-select clearable :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></th>
+                          <th id="milestone-col-header" colspan="1"><v-select clearable placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
                           <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
                         </tr>
                       </thead>
                     </template>
 
-      <template #item="{ item, index }">
+                    <template #item="{ item, index }">
                         <tr v-if="item.major_milestone || !viewMajorMilestones" :class="{'light-blue-row': (item.major_milestone)}">
                           <td :class="[{'major-milestone-name-col-td': (item.major_milestone)}, {'milestone-name-col-td': (!item.major_milestone)}]">{{ item.name }}</td>
-                          <td class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
-                            <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                          <td class="milestone-col-td" @click="openDrilldown(item, 1)">{{ item.company_count?item.company_count:0 }}
+                            <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">+{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                             <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                             <span v-if="viewTrends && (item.trend_count ==null || item.trend_count==0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
                           </td>
 
-                          <td class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
-                            <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                          <td class="milestone-col-td" @click="openDrilldown(item, 2)" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
+                            <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">+{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                             <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                             <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
                           </td>
                           <td class="milestone-col-td" v-else></td>
-                          <td class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">{{column3Values[index].company_count?column3Values[index].company_count:0}}
-                            <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                          <td class="milestone-col-td" @click="openDrilldown(item, 3)" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">{{column3Values[index].company_count?column3Values[index].company_count:0}}
+                            <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">+{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                             <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                             <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
                           </td>
@@ -108,6 +108,17 @@
       <template v-slot:yes>Confirm</template>
 
     </ConfirmationDialog>
+          <v-dialog v-model="showDrilldown">
+            <CompanyDashboardDrilldown v-if="!drilldownIsLoading" :milestone="selectedMilestone"
+                                       :load-partners="false"
+                                       :drilldown-data="drilldownData"
+                                       :start-date="startDate"
+                                       :end-date="endDate"
+                                       :additionalHeaders="drilldownHeaders"
+                                       :close-callback="closeDrilldown">
+
+            </CompanyDashboardDrilldown>
+          </v-dialog>
   </v-container>
 </template>
 
@@ -163,6 +174,7 @@
         column2Values: [],
         column3Values: [],
         drilldownData: [],
+        drilldownHeaders: [],
         customDate: {
           startDate: "",
           endDate: "",
@@ -172,6 +184,9 @@
         firstDateRange: 2,
         secondDateRange: null,
         thirdDateRange: null,
+        firstCustom: null,
+        secondCustom: null,
+        thirdCustom: null,
         singleDateRange: false,
         singleDateRanges: ['Yesterday', 'Today', 'Tomorrow'],
         loadTargetsRanges:  ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'],
@@ -181,6 +196,16 @@
           lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
           itemsPerPageText: constants.IS_MOBILE ? '' : 'Rows per page:',
           itemsPerPageOptions: [100, 500, 1000, 2000]
+        }
+      }
+    },
+    watch: {
+      secondDateRange(value) {
+        if (!value) {
+          console.log("Column 2 has been cleared");
+        }
+        else{
+          console.log("Column 2 has been changed");
         }
       }
     },
@@ -247,28 +272,58 @@
         this.drilldownIsLoading = false
         this.showDrilldown = false
       },
-      async openDrilldown(item, loadPartners) {
+      async openDrilldown(item, column) {
         this.selectedMilestone = item
-        this.loadPartners = loadPartners
-        await this.getDrilldownData()
+        console.log(this.selectedMilestone);
+        await this.getDrilldownHeaders()
+        await this.getDrilldownData(column)
         this.showDrilldown = true
       },
-      async getDrilldownData() {
+      async getDrilldownHeaders() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            milestoneTypeId: this.selectedMilestone.milestone_type_id,
+          }
+
+          const {data, status} = await getRequestWithParams('/companyDashboard/drilldownHeaders', {params}, 'blueraven', [])
+          this.drilldownHeaders = data;
+          this.drilldownIsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.drilldownIsLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getDrilldownData(column) {
         //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
         this.drilldownIsLoading = true
         this.$store.commit(AppMutations.SET_LOADING, true)
 
+        if(column === 1){
+          this.startDate = this.dropdownValues.find(x => x.id == this.firstDateRange).startDate;
+          this.endDate = this.dropdownValues.find(x => x.id == this.firstDateRange).endDate;
+        }
+        else if(column === 2){
+          this.startDate = this.dropdownValues.find(x => x.id == this.secondDateRange).startDate;
+          this.endDate = this.dropdownValues.find(x => x.id == this.secondDateRange).endDate;
+        }
+        else if(column === 3){
+          this.startDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).startDate;
+          this.endDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).endDate;
+        }
         try {
           const params = {
             startDate: this.startDate,
             endDate: this.endDate,
             milestoneTypeId: this.selectedMilestone.milestone_type_id,
-            loadPartners: this.loadPartners
           }
 
           const {data, status} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven', [])
           this.drilldownData = data
-
+          console.log(this.drilldownData)
           this.drilldownIsLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -366,6 +421,9 @@
       async changeDropdownSelection(dropdown){
         if(dropdown == 1){
           let result = this.dropdownValues.find(x => x.id == this.firstDateRange)
+          if(result == null){
+            return null;
+          }
           if(result.startDate == null){
             if(this.customDate.startDate.length == 0) {
               this.selectingCustomDates = true;
@@ -379,6 +437,9 @@
         }
         else if(dropdown == 2){
           let result = this.dropdownValues.find(x => x.id == this.secondDateRange)
+          if(result == null){
+            return null;
+          }
           if(result.startDate == null){
             if(this.customDate.startDate.length == 0) {
               this.selectingCustomDates = true;
@@ -393,6 +454,9 @@
         }
         else if(dropdown == 3){
           let result = this.dropdownValues.find(x => x.id == this.thirdDateRange)
+          if(result == null){
+            return null;
+          }
           if(result.startDate == null){
             if(this.customDate.startDate.length == 0) {
               this.selectingCustomDates = true;
@@ -600,14 +664,23 @@
 
   thead th:first-child{
     left: 0;
-    z-index: 1 !important;
+    z-index: 10 !important;
   }
 
   .milestone-name-col-td{
     left: 0;
     z-index: 2 !important;
     position:sticky;
-    background-color: white;
+  }
+
+  @media (max-width: 600px) {
+    .milestone-name-col-td {
+      background-color: white;
+    }
+
+    thead th:first-child{
+      background-color: white !important;
+    }
   }
 
   .major-milestone-name-col-td{
@@ -746,9 +819,9 @@
         min-width: 250px !important;
       }
 
-      tr:hover {
-        background-color: initial !important;
-      }
+      //tr:hover {
+      //  background-color: initial !important;
+      //}
 
       th {
         border-top: 3px solid var(--v-primary-base);
@@ -764,9 +837,9 @@
       background-color: var(--v-primary-lighten8);
       font-weight: bold;
 
-      &:hover {
-        background-color: var(--v-primary-lighten8);
-      }
+      //&:hover {
+      //  background-color: var(--v-primary-lighten8);
+      //}
     }
 
     ::v-deep {
@@ -798,10 +871,10 @@
       .data-col-td {
         border-left: 1px solid rgba(240, 240, 240, 0.75);
       }
-
-      tr:hover {
-        background-color: transparent;
-      }
+      //
+      //tr:hover {
+      //  background-color: transparent;
+      //}
 
       th, td, span {
         text-align: center;
@@ -821,9 +894,9 @@
   .light-blue-row {
     background-color: var(--v-primary-lighten9) !important;
 
-    &:hover {
-      background-color: var(--v-primary-lighten9);
-    }
+    //&:hover {
+    //  background-color: var(--v-primary-lighten9);
+    //}
   }
 
   .v-card__title {

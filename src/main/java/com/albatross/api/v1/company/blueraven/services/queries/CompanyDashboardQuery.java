@@ -62,6 +62,10 @@ public class CompanyDashboardQuery {
 
   //language=PostgreSQL
   public final static String getCompanyDashboardDrilldown = """
-    select * from brs.rpt_company_dashboard_drilldown(:startDate::date, :endDate::date, :companyId::bigint, :milestoneTypeId::bigint, :loadPartners::boolean, :currentUserId::bigint);
+    select * from brs.rpt_company_dashboard_drilldown(:startDate::date, :endDate::date, :milestoneTypeId::bigint);
+    """;
+
+  public final static String getCompanyDashboardDrilldownHeaders = """
+    select title from brs.dashboard_milestone_column where dashboard_milestone_id = :milestoneTypeId::bigint;
     """;
 }
