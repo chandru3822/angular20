@@ -1,10 +1,9 @@
 package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.v1.company.blueraven.integration.birdeye.Domain;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-
-import jakarta.validation.constraints.NotNull;
 
 @Data
 @ConfigurationProperties(prefix = "birdeye.api")
