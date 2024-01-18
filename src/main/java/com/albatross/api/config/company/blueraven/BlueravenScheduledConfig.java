@@ -2,6 +2,7 @@ package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
+import com.albatross.api.v1.company.blueraven.services.CompanyDashboardService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
 import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
@@ -21,6 +22,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -53,6 +55,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   private final SecurityService securityService;
 
+  private final CompanyDashboardService companyDashboardService;
   /*
   //
   // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN (8 am utc), THAT IS WHEN AUTO TRIGGERS
@@ -131,6 +134,17 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   public Executor blueravenTaskExecutor() {
     return Executors.newScheduledThreadPool(10);
   }
+
+  @Scheduled(cron = "0 0 3 * * *", zone = "America/Denver")
+  public void dailyCompanyDashboardSetup() {
+    companyDashboardService.callCompanyDashboardSetup(null);
+  }
+
+  @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
+  public void companyDashboardSetup() {
+    companyDashboardService.callCompanyDashboardSetup(LocalDate.now());
+  }
+
 
   private void setBlueravenSystemUser() {
     log.debug("Setting BR System User");

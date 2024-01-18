@@ -3,9 +3,7 @@ package com.albatross.api.v1.flow.queries;
 public class OrgQuery {
 
   //language=PostgreSQL
-  public final static String orgStructureRefresh = """
-    call flow.process_org_structure_refresh()
-        """;
+  public final static String orgStructureRefresh = "call flow.process_org_structure_refresh()";
 
   //language=PostgreSQL
   public final static String getAllForCompany = """

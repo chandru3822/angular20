@@ -64,4 +64,6 @@ public class CompanyDashboardQuery {
   public final static String getCompanyDashboardDrilldown = """
     select * from brs.rpt_company_dashboard_drilldown(:startDate::date, :endDate::date, :companyId::bigint, :milestoneTypeId::bigint, :loadPartners::boolean, :currentUserId::bigint);
     """;
+
+  public final static String callCompanyDashboardSetup = "call brs.rpt_company_dashboard_setup(:date)";
 }
