@@ -36,11 +36,11 @@
             <td class="text-left customer-name">{{ item.customer_name }}</td>
             <td class="text-left">{{ item.state }}</td>
             <td class="text-left">{{ item.source_name }}</td>
-            <td class="text-left">
-              <span v-if="item.date_type === 'date'">{{ item.date_value | formatDate('date', 'MM/DD/YYYY') }}</span>
-              <span v-else-if="item.date_type === 'timestamp'">{{ item.date_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>
-              <span v-else>{{ item.date_value }}</span>
-            </td>
+<!--            <td class="text-left">-->
+<!--              <span v-if="item.date_type === 'date'">{{ item.date_value | formatDate('date', 'MM/DD/YYYY') }}</span>-->
+<!--              <span v-else-if="item.date_type === 'timestamp'">{{ item.date_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>-->
+<!--              <span v-else>{{ item.date_value }}</span>-->
+<!--            </td>-->
 <!--            <td class="text-left" v-if="milestone.has_additional_column">-->
 <!--              <span v-if="item.additional_field_type === 'date'">{{ item.additional_field_value | formatDate('date', 'MM/DD/YYYY') }}</span>-->
 <!--              <span v-else-if="item.additional_field_type === 'timestamp'">{{ item.additional_field_value | formatDate('timestamp', 'MM/DD/YYYY') }}</span>-->
@@ -117,8 +117,8 @@
           {text: 'Customer Name', value: 'customer_name', show: true}, // 2
           {text: 'State', value: 'state', show: true}, // 3
           {text: 'Source', value: 'source_name', show: true}, // 4
-          {text: '', value: 'date_value', show: true}, // 5
-          {text: '', value: 'additional_field_value', show: this.milestone.has_additional_column}, // 6
+          // {text: '', value: 'date_value', show: true}, // 5
+          // {text: '', value: 'additional_field_value', show: this.milestone.has_additional_column}, // 6
         ],
         // drilldownData: [],
         footerProps: {
@@ -135,13 +135,15 @@
         return this.drilldownHeaders.filter(header => header.show === true)
       },
       addHeaders(){
-        for(let header of this.additionalHeaders) {
+        this.additionalHeaders.forEach((header, index)=> {
           this.drilldownHeaders.push({
             text: header,
             value: 'value',
-            show: true
+            show: true,
+            additional: true,
+            index: index
           })
-        }
+        })
       },
       exportCsv() {
         let csv = ''
@@ -153,26 +155,31 @@
         })
 
         this.drilldownData.forEach((o, idx) => {
-          if(idx === 0) {
-            csv += `${o.date_label},`
-
-            if(o.additional_field_label) {
-              csv += `${o.additional_field_label},`
-            }
-          }
-
           csv += `\n`
 
-          this.filteredHeaders().forEach(h => {
+          this.filteredHeaders().forEach((h, i) => {
 
-            if(h.value === 'date_value') {
-              csv += '"'+`${o.date_value === null || o.date_value === undefined ? '' : this.$filters.formatDate(o.date_value, o.date_type, 'MM/DD/YYYY')}`+'",'
-            } else if (h.value === 'additional_field_value') {
-              csv += '"'+`${o.additional_field_value === null || o.additional_field_value === undefined ? '' : this.$filters.formatDate(o.additional_field_value, o.additional_field_type, 'MM/DD/YYYY')}`+'",'
-            } else if (h.text !== '') {
-              csv += '"'+`${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}`+'",'
+            if(i != 0) {
+              if (h.value === 'date_value') {
+                csv += '"' + `${o.date_value === null || o.date_value === undefined ? '' : this.$filters.formatDate(o.date_value, o.date_type, 'MM/DD/YYYY')}` + '",'
+              } else if (h.value === 'additional_field_value') {
+                csv += '"' + `${o.additional_field_value === null || o.additional_field_value === undefined ? '' : this.$filters.formatDate(o.additional_field_value, o.additional_field_type, 'MM/DD/YYYY')}` + '",'
+              } else if(h.additional){
+                if(o.additional_columns[h.index].data_type === 'timestamp') {
+                  csv += '"' + `${this.$filters.formatDate(o.additional_columns[h.index].value, 'MM/DD/YYYY')}` + '",'
+                }
+                else if(o.additional_columns[h.index].data_type === 'timestamp') {
+                  csv += '"' + `${this.$filters.formatDate(o.additional_columns[h.index].value, 'MM/DD/YYYY')}` + '",'
+                }
+                else{
+                  csv += o.additional_columns[h.index].value + ',';
+                }
+              } else if (h.text !== '') {
+                csv += '"' + `${o[h.value] === null || o[h.value] === undefined ? '' : o[h.value]}` + '",'
+              }
             }
           })
+
           csv += `\n`
         })
 
