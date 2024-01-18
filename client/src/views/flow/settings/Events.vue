@@ -75,6 +75,7 @@
               ></v-text-field>
             </v-card-title>
             <v-data-table
+                id="events-settings-table"
               :headers="headers"
               :items="filterEvents()"
               :fixed-header="true"
@@ -82,12 +83,10 @@
               :search="search"
               :footer-props="footerProps"
               hide-default-header
-              class="elevation-1 square-card"
+              class="elevation-1 square-card table-striped"
             >
-              <template #item="{ item, index }">
-                <tr :class="{'shaded-row': index % 2}">
-                  <td class="text-left clickable" @click="goToEvent(item.id)">{{item.eventName}}</td>
-                  <td class="text-right">
+              <template #item.eventName="{ item }" class="clickable" @click="goToEvent(item.id)">{{item.eventName}}</template>
+              <template #item.icons="{item}" class="text-end">
                     <v-btn small text color="primary" @click="goToEvent(item.id)">
                       <v-icon>edit</v-icon>
                     </v-btn>
@@ -96,10 +95,8 @@
                            @click="eventToDelete=item">
                       <v-icon>delete</v-icon>
                     </v-btn>
-                  </td>
+                  </template>
 
-                </tr>
-              </template>
             </v-data-table>
           </v-card>
           <ConfirmationDialog :open-dialog="!!eventToDelete" @confirm="deleteEvent" @close-dialog="eventToDelete=null">
@@ -250,5 +247,44 @@ export default {
   height: calc(100vh - 310px);
   min-height: 300px;
 }
+#events-settings-table > div.v-data-table__wrapper > table > tbody > tr {
+  td {
+    justify-content: center;
+  }
+  td:last-child {
+    text-align: end !important;
+  }
+}
+@media (max-width: 770px) {
+  #events-settings-table {
+    padding-bottom: 12px;
+    div.v-data-footer {
+      display: inline-block;
+      width: 100%;
+      padding-bottom: 12px;
+
+      div.v-data-footer__select {
+        justify-content: center;
+      }
+
+      div.v-data-footer__pagination {
+
+      }
+
+      div.v-data-footer__icons-before {
+        display: inline;
+        margin-left: calc(50% - 36px);
+
+
+      }
+
+      div.v-data-footer__icons-after {
+        display: inline;
+      }
+
+    }
+  }
+}
+
 
 </style>
