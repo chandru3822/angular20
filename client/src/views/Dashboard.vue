@@ -1,9 +1,10 @@
 <template>
   <v-container id="company-dash-container">
-    <v-card >
-        <v-card-title class="dashboard-header">
+    <v-card class="filter-bar">
+      <v-row align="center">
+        <div class="dashboard-header">
           Company Dashboard
-        </v-card-title>
+        </div>
         <div class="checkbox-container">
           <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
         </div>
@@ -11,6 +12,26 @@
           <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
         </div>
         <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon>Export</a>
+      </v-row>
+    </v-card>
+
+    <v-card class="filter-bar-mini">
+      <v-row>
+        <div class="dashboard-header">
+          Company Dashboard
+        </div>
+      </v-row>
+      <v-row>
+        <div class="checkbox-container-mini">
+          <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
+        </div>
+        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon></a>
+      </v-row>
+      <v-row>
+        <div class="checkbox-container-mini">
+          <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
+        </div>
+      </v-row>
     </v-card>
     <br>
     <v-data-table
@@ -24,7 +45,7 @@
       :footer-props="footerProps"
       :loading="isLoading"
       :hide-default-footer="true"
-      mobile-breakpoint="0"
+
     >
 
       <template #no-data>
@@ -32,10 +53,10 @@
       </template>
 
 
-      <template #header.milestone="{}" id="milestone-col-header milestone-name-col-td">Milestones</template>
-      <template #header.actualTotal="{}" id="milestone-col-header"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
-      <template #header.actualTotal2="{}" id="milestone-col-header"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
-      <template #header.actualTotal3="{}" id="milestone-col-header"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
+      <template #header.milestone="{}"  class="milestone-name-col-td">Milestones</template>
+      <template #header.actualTotal="{}" ><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
+      <template #header.actualTotal2="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
+      <template #header.actualTotal3="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
 
 
       <template #item.milestone="{item, index}" class="milestone-name-col-td">{{ item.name }}</template>
@@ -434,47 +455,25 @@
           csvData += '\n';
 
           this.dashValues.forEach((p, i) => {
-            csvData +=
-              // p.userFirstName + ',"' +
-              // p.userLastName + '",' +
-              // p.employeeId + ',"' +
-              // p.regionName + '",' +
-              // "\"" + p.officeName +  '\",' +
-              // p.officeState + ',' +
-              // p.userPositionName + ',"' +
-              // p.userStatus + '",' +
-              // p.hireDate + ',' +
-              // p.userFullName + ',' +
-              // p.residualStartDate + ',' +
-              // p.lifetimeQualifiedFds + ',' +
-              // p.qualifiedFdcInPeriod + ',' +
-              // p.fdcNotQualifiedInPeriod + ',' +
-              // p.requiredFdcPerMonth + ',' +
-              // p.residualEarned + ',' +
-              // p.percentOfResidualEarned + ',"' +
-              // p.potentialResidual + '",' +
-              // p.earnedResidual + ',' +
-              // p.clawback + ',' +
-              // p.adjustmentOverride + ',' +
-              // p.residualTotal + ',' +
-              // p.paidInPeriod
-              p.name + ',' + (p.company_count? p.company_count: 0);
-            if(this.viewTrends){
-              csvData += ', ' + (p.trend_count?p.trend_count : 0) + '%';
-            }
-            if(this.secondDateRange){
-              csvData += ', ' + (this.column2Values[i].company_count?this.column2Values[i].company_count : 0)
-              if(this.viewTrends){
-                csvData += ', ' + (this.column2Values[i].trend_count?this.column2Values[i].trend_count : 0) + '%';
+            if (p.major_milestone || !this.viewMajorMilestones) {
+              csvData += p.name + ',' + (p.company_count ? p.company_count : 0);
+              if (this.viewTrends) {
+                csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%';
               }
-            }
-            if(this.thirdDateRange){
-              csvData += ', ' + (this.column3Values[i].company_count?this.column3Values[i].company_count : 0)
-              if(this.viewTrends){
-                csvData += ', ' + (this.column3Values[i].trend_count?this.column3Values[i].trend_count : 0) + '%';
+              if (this.secondDateRange) {
+                csvData += ', ' + (this.column2Values[i].company_count ? this.column2Values[i].company_count : 0)
+                if (this.viewTrends) {
+                  csvData += ', ' + (this.column2Values[i].trend_count ? this.column2Values[i].trend_count : 0) + '%';
+                }
               }
+              if (this.thirdDateRange) {
+                csvData += ', ' + (this.column3Values[i].company_count ? this.column3Values[i].company_count : 0)
+                if (this.viewTrends) {
+                  csvData += ', ' + (this.column3Values[i].trend_count ? this.column3Values[i].trend_count : 0) + '%';
+                }
+              }
+              csvData += '\n';
             }
-            csvData += '\n';
           })
 
 
@@ -602,6 +601,35 @@
 </script>
 
 <style lang="scss" scoped>
+
+  thead th:first-child{
+    left: 0;
+    z-index: 1 !important;
+  }
+
+  .milestone-name-col-td{
+    left: 0;
+    z-index: 2 !important;
+    position:sticky;
+    background-color: white;
+  }
+
+  .major-milestone-name-col-td{
+    left: 0;
+    z-index: 2 !important;
+    position:sticky;
+    background-color: var(--v-primary-lighten9);
+    font-weight: bold;
+  }
+
+  .milestone-col-td{
+    z-index: 1 !important;
+  }
+
+
+  .v-data-table{
+    overflow-x: auto;
+  }
   .dashboard-header{
     padding-left: 20px;
     padding-right: 16px;
@@ -650,149 +678,12 @@
     overflow: auto;
   }
 
-  #company-dash-toolbar-container {
-    margin: 0 auto;
-
-    #company-dash-toolbar {
-      display: flex;
-      flex-flow: row nowrap;
-      justify-content: space-between;
-      padding: 0;
-
-      header {
-        background-color: #fff !important;
-      }
-
-      ::v-deep {
-        .v-toolbar__title {
-          font-size: 10px;
-          min-width: 30%;
-        }
-
-        #toolbar-right-side {
-          display: flex;
-          justify-content: flex-end;
-          width: 100%;
-
-          .v-input {
-            font-size: 7px;
-            max-width: 65px;
-
-            label {
-              font-size: 8px;
-            }
-
-            .v-input__append-inner {
-              display: none;
-            }
-          }
-
-          .date-range-date {
-            margin-left: 5px !important;
-          }
-
-          .dash-btn {
-            box-shadow: none;
-            font-size: 14px;
-            font-weight: 500;
-            margin-left: 5px;
-            height: 40px;
-          }
-        }
-      }
-    }
-  }
 
   .v-select ::v-deep .v-select__selection {
     color: var(--v-primaryText-base) !important;
   }
 
-  #company-funnel-background {
-    display: none;
-  }
 
-  #company-dash-table {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    margin: 0 auto 12px auto !important;
-
-    #main-table-header {
-      #milestone-col-header {
-        text-align: left;
-        min-width: 250px;
-      }
-
-      tr:hover {
-        background-color: initial !important;
-      }
-
-      th {
-        border-top: 3px solid var(--v-primary-base);
-        border-bottom: none;
-        color: var(--v-primaryText-base);
-        font-size: 12px !important;
-        text-align: center;
-        padding-top: 10px;
-      }
-    }
-
-    .blue-row {
-      background-color: var(--v-primary-lighten8);
-      font-weight: bold;
-
-      &:hover {
-        background-color: var(--v-primary-lighten8);
-      }
-    }
-
-    ::v-deep {
-      table {
-        border-collapse: collapse !important;
-      }
-
-      tbody > tr > td {
-        height: 26px;
-      }
-
-      .milestone-col-th, .milestone-col-td {
-        min-width: 175px;
-      }
-
-      .milestone-col-td {
-        text-align: left;
-      }
-
-      .total-col-th, .total-col-td {
-        border-left: 2px solid var(--v-primary-base) !important;
-      }
-
-      .data-col-th, .data-col-td {
-        padding: 0 3px;
-        min-width: 50px;
-      }
-
-      .data-col-td {
-        border-left: 1px solid rgba(240, 240, 240, 0.75);
-      }
-
-      tr:hover {
-        background-color: transparent;
-      }
-
-      th, td, span {
-        text-align: center;
-        font-size: 10px;
-      }
-
-      .pos_diff > span {
-        color: var(--v-primaryText-base);
-      }
-
-      .neg_diff > span {
-        color: red;
-      }
-    }
-  }
 
   .light-blue-row {
     background-color: var(--v-primary-lighten9) !important;
@@ -829,205 +720,19 @@
     align-items: center;
   }
 
-  @media (min-width: 450px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 12px;
-          }
 
-          #toolbar-right-side {
-            .v-input {
-              font-size: 10px;
-              max-width: 90px;
-
-              label {
-                font-size: 10px;
-              }
-            }
-
-            .date-range-date {
-              margin-left: 10px !important;
-            }
-
-            #targets-btn {
-              font-size: 10px;
-              margin-left: 10px;
-            }
-          }
-        }
-      }
+  @media (min-width: 600px){
+    .filter-bar-mini{
+      display: none;
+      flex-wrap: wrap;
     }
   }
-
-  @media (min-width: 600px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 14px;
-          }
-
-          #toolbar-right-side {
-            .v-input {
-              font-size: 12px;
-              max-width: 100px;
-
-              label {
-                font-size: 12px;
-              }
-            }
-
-            #targets-btn {
-              font-size: 12px;
-            }
-          }
-        }
-      }
+  @media(max-width: 600px){
+    .filter-bar{
+      display: none;
     }
-
-    #company-dash-table {
-      #main-table-header {
-        th {
-          font-size: 14px !important;
-        }
-      }
-
-      ::v-deep {
-        th, td, span {
-          position: relative;
-          z-index: 1;
-          font-size: 12px !important;
-        }
-      }
-    }
-  }
-
-  @media (min-width: 769px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 16px;
-          }
-
-          #toolbar-right-side {
-            .v-input {
-              font-size: 14px;
-              max-width: 110px;
-
-              label {
-                font-size: 14px;
-              }
-            }
-
-            #targets-btn {
-              font-size: 14px;
-            }
-          }
-        }
-      }
-    }
-
-    #company-funnel-background {
-      display: block;
-      position: relative;
-      border-top-style: solid;
-      border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 546px;
-      border-left: 40px solid transparent;
-      border-right: 40px solid transparent;
-      margin-top: -546px;
-      margin-bottom: -48px;
-      left: 9px;
-      width: 250px;
-      height: 0;
-    }
-
-    #company-dash-table {
-      margin: 0 auto 24px auto !important;
-
-      #main-table-header {
-        #milestone-col-header {
-          text-align: center;
-        }
-
-        th {
-          padding-top: 15px;
-        }
-      }
-
-      ::v-deep {
-        .milestone-col-th, .milestone-col-td {
-          text-align: center;
-          width: 270px;
-        }
-
-        .data-col-th, .data-col-td {
-          padding: 0 2px;
-          min-width: 50px;
-        }
-
-        th, td {
-          font-size: 12px !important;
-        }
-      }
-    }
-
-  }
-
-  @media (min-width: 1070px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 20px;
-          }
-        }
-      }
-    }
-
-    #company-funnel-background {
-      border-left: 120px solid transparent;
-      border-right: 120px solid transparent;
-      left: 40px;
-      width: 420px;
-    }
-
-    #company-dash-table {
-      ::v-deep {
-        .milestone-col-th, .milestone-col-td {
-          width: 500px;
-        }
-
-        th, td {
-          font-size: 12px !important;
-        }
-      }
-    }
-  }
-
-  @media (min-width: 1135px) {
-    #company-funnel-background {
-      left: 80px;
-      width: 440px;
-    }
-
-    #company-dash-table {
-      max-width: 1130px;
-
-      #main-table-header {
-        th {
-          font-size: 20px !important;
-        }
-      }
-
-      ::v-deep {
-        .milestone-col-th, .milestone-col-td {
-          width: 600px;
-        }
-      }
+    .checkbox-container-mini{
+      padding-left: 20px;
     }
   }
 </style>
