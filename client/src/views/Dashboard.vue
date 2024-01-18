@@ -1,10 +1,9 @@
 <template>
   <v-container id="company-dash-container">
     <v-card >
-      <v-row align="center">
-        <div class="dashboard-header">
+        <v-card-title class="dashboard-header">
           Company Dashboard
-        </div>
+        </v-card-title>
         <div class="checkbox-container">
           <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
         </div>
@@ -12,7 +11,6 @@
           <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
         </div>
         <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon>Export</a>
-      </v-row>
     </v-card>
     <br>
     <v-data-table
@@ -22,6 +20,7 @@
       fixed-header
       ref="pageable-table"
       disable-sort
+      :item-class="itemRowBackground"
       :footer-props="footerProps"
       :loading="isLoading"
       :hide-default-footer="true"
@@ -33,20 +32,20 @@
       </template>
 
 
-      <template #header.milestone="{}" id="milestone-col-header">Milestones</template>
+      <template #header.milestone="{}" id="milestone-col-header milestone-name-col-td">Milestones</template>
       <template #header.actualTotal="{}" id="milestone-col-header"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
       <template #header.actualTotal2="{}" id="milestone-col-header"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
       <template #header.actualTotal3="{}" id="milestone-col-header"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
 
 
-      <template #item.milestone="{item, index}" class="milestone-col-td" :class="{'light-blue-row': (item.major_milestone)}">{{ item.name }}</template>
-      <template #item.actualTotal="{item, index}" class="milestone-col-td" :class="{'light-blue-row': (item.major_milestone)}">{{ item.company_count?item.company_count:0 }}
+      <template #item.milestone="{item, index}" class="milestone-name-col-td">{{ item.name }}</template>
+      <template #item.actualTotal="{item, index}" class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
         <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
         <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
         <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
       </template>
 
-      <template #item.actualTotal2="{item, index}" class="milestone-col-td" :class="{'light-blue-row': (item.major_milestone)}" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
+      <template #item.actualTotal2="{item, index}" class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
         <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
         <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
         <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
@@ -221,6 +220,9 @@
         let calcTotal = this.singleDateRange ? total / this.dividerForSingleDayTargets : total
         return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
       },
+      itemRowBackground(item){
+        return item.major_milestone ? 'shaded-row' : ''
+      },
       closeDrilldown() {
         this.selectedMilestone = {}
         this.drilldownData = []
@@ -345,10 +347,10 @@
         await this.getDashboardValues();
       },
       async changeDropdownSelection(dropdown){
-        if(dropdown == 1){
-          let result = this.dropdownValues.find(x => x.id == this.firstDateRange)
+        if(dropdown === 1){
+          let result = this.dropdownValues.find(x => x.id === this.firstDateRange)
           if(result.startDate == null){
-            if(this.customDate.startDate.length == 0) {
+            if(this.customDate.startDate.length === 0) {
               this.selectingCustomDates = true;
               return;
             }
@@ -358,10 +360,10 @@
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         }
-        else if(dropdown == 2){
-          let result = this.dropdownValues.find(x => x.id == this.secondDateRange)
+        else if(dropdown === 2){
+          let result = this.dropdownValues.find(x => x.id === this.secondDateRange)
           if(result.startDate == null){
-            if(this.customDate.startDate.length == 0) {
+            if(this.customDate.startDate.length === 0) {
               this.selectingCustomDates = true;
               return;
             }
@@ -372,10 +374,10 @@
           }
           this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         }
-        else if(dropdown == 3){
-          let result = this.dropdownValues.find(x => x.id == this.thirdDateRange)
+        else if(dropdown === 3){
+          let result = this.dropdownValues.find(x => x.id === this.thirdDateRange)
           if(result.startDate == null){
-            if(this.customDate.startDate.length == 0) {
+            if(this.customDate.startDate.length === 0) {
               this.selectingCustomDates = true;
               return;
             }
@@ -413,18 +415,18 @@
         try {
           let filename = 'CompanyDashboard.csv'
 
-          let csvData = ' , ' + this.dropdownValues.find(x => x.id == this.firstDateRange).friendlyName;
+          let csvData = ' , ' + this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName;
           if(this.viewTrends){
             csvData += ', ' +  'Trend 1'
           }
           if(this.secondDateRange){
-            csvData += ', ' + this.dropdownValues.find(x => x.id == this.secondDateRange).friendlyName;
+            csvData += ', ' + this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName;
             if(this.viewTrends){
               csvData += ', ' +  'Trend 2'
             }
           }
           if(this.thirdDateRange){
-            csvData += ', ' + this.dropdownValues.find(x => x.id == this.thirdDateRange).friendlyName;
+            csvData += ', ' + this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName;
             if(this.viewTrends){
               csvData += ', ' +  'Trend 3'
             }
@@ -799,6 +801,26 @@
       background-color: var(--v-primary-lighten9);
     }
   }
+
+  .milestone-name-col-td{
+    left: 0;
+    z-index: 2 !important;
+    position:sticky;
+    background-color: white;
+  }
+
+  .major-milestone-name-col-td{
+    left: 0;
+    z-index: 2 !important;
+    position:sticky;
+    background-color: var(--v-primary-lighten9);
+    font-weight: bold;
+  }
+
+  .milestone-col-td{
+    z-index: 1 !important;
+  }
+
 
   .v-card__title {
     display: flex;
