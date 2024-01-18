@@ -131,9 +131,55 @@ public class CompanyDashboardService {
 
     ArrayList<CompanyDashboardDateRange> ranges = new ArrayList<>();
 
-    String[] rangeNames = {"Yesterday", "Today", "Tomorrow", "Current Week", "Current Period", "Last Week",
+     String[] rangeNames = {"Yesterday", "Today", "Tomorrow", "Current Week", "Current Period", "Last Week",
     "Last 30 Days", "Last Period", "Period", "Custom", "Current Month", "Current Quarter", "Current Year",
     "All Time"};
+
+    Instant lastMonthEnd = today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth(), ChronoUnit.DAYS);
+    Instant lastMonthStart = lastMonthEnd.minus(lastMonthEnd.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS);
+
+    Instant currentQuarterStart = today;
+    Instant currentQuarterEnd = today;
+    Instant currentMonthEnd = today;
+    Instant currentYearStart = today.minus(today.atZone(ZoneId.of("UTC")).getDayOfYear()-1, ChronoUnit.DAYS);
+    Instant currentYearEnd = currentYearStart.plus(364, ChronoUnit.DAYS);
+
+    //Its a leap year
+    if(currentYearEnd.plus(1, ChronoUnit.DAYS).atZone(ZoneId.of("UTC")).getYear() == currentYearStart.atZone(ZoneId.of("UTC")).getYear()){
+      currentYearEnd = currentYearEnd.plus(1, ChronoUnit.DAYS);
+    }
+
+    while((currentQuarterStart.atZone(ZoneId.of("UTC")).getMonth().getValue()-1)%3 != 0){
+      currentQuarterStart.minus((currentQuarterStart.atZone(ZoneId.of("UTC")).getDayOfMonth()), ChronoUnit.DAYS);
+    }
+    currentQuarterStart = currentQuarterStart.minus(currentQuarterStart.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS);
+
+    while((currentQuarterEnd.atZone(ZoneId.of("UTC")).getMonth().getValue())%3 != 0) {
+      currentQuarterEnd = currentQuarterEnd.plus(27, ChronoUnit.DAYS);
+    }
+    while(((currentQuarterEnd.plus(1, ChronoUnit.DAYS).atZone(ZoneId.of("UTC")).getMonth().getValue()-1)%3) != 0){
+      currentQuarterEnd = currentQuarterEnd.plus(1, ChronoUnit.DAYS);
+    }
+
+    while(currentMonthEnd.plus(1, ChronoUnit.DAYS).atZone(ZoneId.of("UTC")).getMonth().getValue() == today.atZone(ZoneId.of("UTC")).getMonth().getValue()){
+      currentMonthEnd = currentMonthEnd.plus(1, ChronoUnit.DAYS);
+    }
+
+    Instant previousQuarterEnd = currentQuarterStart.minus(1, ChronoUnit.DAYS);
+    Instant previousQuarterStart = previousQuarterEnd;
+    Instant lastYearEnd = currentYearStart.minus(1, ChronoUnit.DAYS);
+    Instant lastYearStart = lastYearEnd.minus(364, ChronoUnit.DAYS);
+
+    //Its a leap year
+    if(lastYearStart.minus(1, ChronoUnit.DAYS).atZone(ZoneId.of("UTC")).getYear() ==  lastYearEnd.atZone(ZoneId.of("UTC")).getYear()){
+      lastYearStart = lastYearStart.minus(1, ChronoUnit.DAYS);
+    }
+
+    while((previousQuarterStart.atZone(ZoneId.of("UTC")).getMonth().getValue()-1)%3 != 0){
+      previousQuarterStart = previousQuarterStart.minus((previousQuarterStart.atZone(ZoneId.of("UTC")).getDayOfMonth()), ChronoUnit.DAYS);
+    }
+    previousQuarterStart = previousQuarterStart.minus(previousQuarterStart.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS);
+
 
     ranges.add(new CompanyDashboardDateRange(1, "Yesterday", "YESTERDAY", today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS), today.minus(2, ChronoUnit.DAYS), today.minus(2, ChronoUnit.DAYS)));
     ranges.add(new CompanyDashboardDateRange(2, "Today", "TODAY", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
@@ -148,14 +194,18 @@ public class CompanyDashboardService {
    // ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
     //ranges.add(new CompanyDashboardDateRange(9, "Period", "PERIOD", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
     ranges.add(new CompanyDashboardDateRange(10, "Custom", "CUSTOM", null, null, null, null));
-   // ranges.add(new CompanyDashboardDateRange(11, "Current Month", "CURRENT_MONTH", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
-    //ranges.add(new CompanyDashboardDateRange(12, "Current Quarter", "CURRENT_QUARTER", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
-   // ranges.add(new CompanyDashboardDateRange(13, "Current Year", "CURRENT_YEAR", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+    ranges.add(new CompanyDashboardDateRange(11, "Current Month", "CURRENT_MONTH", today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS), currentMonthEnd,
+      lastMonthStart, lastMonthEnd));
+    ranges.add(new CompanyDashboardDateRange(12, "Current Quarter", "CURRENT_QUARTER", currentQuarterStart, currentQuarterEnd,
+      previousQuarterStart, previousQuarterEnd));
+    ranges.add(new CompanyDashboardDateRange(13, "Current Year", "CURRENT_YEAR", currentYearStart, currentYearEnd, lastYearStart, lastYearEnd));
 
     LocalDate leapYearTest = LocalDate.of(today.atZone(ZoneId.of("UTC")).getYear(), 01, 01);
     Boolean isLeapYear = leapYearTest.isLeapYear();
 //    System.out.println(today);
-//    System.out.println(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue());
+    System.out.println(lastYearStart);
+
+    System.out.println(lastYearEnd);
 //    System.out.println("Current Month Start: ");
 //    System.out.println(today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS));
 //    System.out.println("Last week Saturday: ");
