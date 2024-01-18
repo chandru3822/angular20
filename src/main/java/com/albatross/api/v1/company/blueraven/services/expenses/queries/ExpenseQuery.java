@@ -100,7 +100,7 @@ public class ExpenseQuery {
       and e.archived is not true
       AND e.rejected_date is null
       AND (rr.reimbursement_request_status_id is null or rr.reimbursement_request_status_id != 6)
-   order by e.date_submitted
+   order by e.date_submitted desc
     """;
 
   //language=PostgreSQL
@@ -154,7 +154,7 @@ public class ExpenseQuery {
                 AND e.skip_approval is not true
                 AND e.rejected_date is null
                 AND (rr.reimbursement_request_status_id is null or rr.reimbursement_request_status_id not in (2,6))
-          order by e.date_submitted
+          order by e.date_submitted desc
     """;
 
   //language=PostgreSQL

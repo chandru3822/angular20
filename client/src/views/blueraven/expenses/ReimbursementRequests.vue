@@ -38,8 +38,8 @@
           <v-autocomplete v-model="newReimbursementRequest.glCodeId"
                           :items="glCodes"
                           label="GL Code"
-                          item-text="code"
                           item-value="id"
+                          :filter="searchGlCodes"
           >
             <template slot='item' slot-scope='{ item }'>
               {{ item.code }} - {{ item.description }}
@@ -254,8 +254,8 @@
                                       label="GL Code"
                                       hide-details
                                       single-line
-                                      item-text="code"
                                       item-value="id"
+                                      :filter="searchGlCodes"
                       >
                         <template slot='item' slot-scope='{ item }'>
                           {{ item.code }} - {{ item.description }}
@@ -410,6 +410,10 @@ export default {
     },
   },
   methods: {
+    searchGlCodes(item, queryText) {
+      let data = item.code.toLowerCase() + ' - ' + item.description.toLowerCase()
+      return data.includes(queryText.toLowerCase())
+    },
     removeExpenseItem(itemTempId) {
       this.selectedRequest.expenses = this.selectedRequest.expenses.filter((item) => {
         return item.tempId !== itemTempId

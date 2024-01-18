@@ -13,14 +13,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.sql.SQLException;
 import java.util.*;
 
-/** Created by randanunn on 2019-05-20. !Describe Purpose! */
+/**
+ * Created by randanunn on 2019-05-20. !Describe Purpose!
+ */
 @Slf4j
 @Service
 @PreAuthorize("hasCompanyAccess(3) && hasFeatureAccess('DATA_VIEW')")
@@ -31,14 +32,12 @@ public class DataViewService {
   private final SqlArrayService sqlArrayService;
   private final SecurityService securityService;
   private final ObjectMapper om;
-  private final NamedParameterJdbcTemplate jdbc;
 
   public List<DataView> getCompanyDataViews() {
     User user = securityService.getCurrentUser();
     Map<String, Object> params = new HashMap<>();
     params.put("companyId", user.getCompanyId());
-    List<DataView> results = sqlCache.queryBySql(DataViewQuery.getAllForCompany, params, new DataViewMapper<>(DataView.class, om));
-    return results;
+    return sqlCache.queryBySql(DataViewQuery.getAllForCompany, params, new DataViewMapper<>(DataView.class, om));
   }
 
   public Optional<DataView> getDataView(Long companyId, String tableName) {
@@ -57,8 +56,8 @@ public class DataViewService {
     params.put("displayName", dataView.getDisplayName());
     params.put("userId", user.trueUserId());
     Long id;
-    if(null != dataView.getId()) {
-      id= dataView.getId();
+    if (null != dataView.getId()) {
+      id = dataView.getId();
       params.put("id", id);
 
       sqlCache.updateBySql(DataViewQuery.update, params);
@@ -80,8 +79,7 @@ public class DataViewService {
 //    use company id to verify user has access to this view
     params.put("companyId", user.getCompanyId());
     params.put("viewId", viewId);
-    Optional<DataView> result = sqlCache.getBySql(DataViewQuery.getOne, params, new DataViewMapper<>(DataView.class, om));
-    return result;
+    return sqlCache.getBySql(DataViewQuery.getOne, params, new DataViewMapper<>(DataView.class, om));
   }
 
   public Optional<DataViewChildFieldConfig> saveChildFieldConfig(Long viewId, Long fieldId, DataViewChildFieldConfig childField) {
@@ -99,19 +97,19 @@ public class DataViewService {
 
 //    if(!invalid) {
     Long id;
-      if(childField.getId() != null) {
-        id = childField.getId();
-        params.put("id", id);
-        //user can currently only change the display name
-        sqlCache.updateBySql(DataViewQuery.updateChildFieldConfig, params);
-      } else {
-        id = sqlCache.updateBySqlReturningId(DataViewQuery.addChildFieldConfig, params, "id").longValue();
-        params.put("id", id);
-        //only on insert add child column to table
-        sqlCache.queryBySql(DataViewQuery.addChildColumnToTable, params, String.class);
-      }
+    if (childField.getId() != null) {
+      id = childField.getId();
+      params.put("id", id);
+      //user can currently only change the display name
+      sqlCache.updateBySql(DataViewQuery.updateChildFieldConfig, params);
+    } else {
+      id = sqlCache.updateBySqlReturningId(DataViewQuery.addChildFieldConfig, params, "id").longValue();
+      params.put("id", id);
+      //only on insert add child column to table
+      sqlCache.queryBySql(DataViewQuery.addChildColumnToTable, params, String.class);
+    }
 
-      return getDataViewChildFieldConfig(id);
+    return getDataViewChildFieldConfig(id);
 //    } else {
 //      throw new ResponseStatusException(
 //        HttpStatus.BAD_REQUEST,
@@ -125,8 +123,7 @@ public class DataViewService {
   public Optional<DataViewChildFieldConfig> getDataViewChildFieldConfig(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<DataViewChildFieldConfig> result = sqlCache.getBySql(DataViewQuery.getChildFieldConfig, params, DataViewChildFieldConfig.class);
-    return result;
+    return sqlCache.getBySql(DataViewQuery.getChildFieldConfig, params, DataViewChildFieldConfig.class);
   }
 
   public Optional<DataViewFieldConfig> saveFieldConfig(Long viewId, DataViewFieldConfig field) {
@@ -137,7 +134,7 @@ public class DataViewService {
     params.put("userId", user.trueUserId());
 
     Long id;
-    if(null != field.getId()) {
+    if (null != field.getId()) {
       id = field.getId();
       params.put("id", id);
       sqlCache.updateBySql(DataViewQuery.updateFieldConfig, params);
@@ -146,21 +143,21 @@ public class DataViewService {
       //Boolean invalid = fieldConflictWithDefault(field.getFieldToUpdate());
 
 //      if(!invalid) {
-        params.put("defaultFieldId", field.getDefaultFieldId());
-        params.put("processStepEventId", field.getProcessStepEventId());
-        params.put("processStepId", field.getProcessStepId());
-        params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
-        params.put("fieldToUpdate", field.getFieldToUpdate());
-        params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
-        params.put("resetOnNew", null != field.getResetOnNew() && field.getResetOnNew());
-        params.put("resetValuesOnMain", null != field.getResetValuesOnMain() && field.getResetValuesOnMain());
-        params.put("ignoreIfNull", null != field.getIgnoreIfNull() && field.getIgnoreIfNull());
+      params.put("defaultFieldId", field.getDefaultFieldId());
+      params.put("processStepEventId", field.getProcessStepEventId());
+      params.put("processStepId", field.getProcessStepId());
+      params.put("customFieldGroupAssignmentId", field.getCustomFieldGroupAssignmentId());
+      params.put("fieldToUpdate", field.getFieldToUpdate());
+      params.put("updateFirstValueOnly", null != field.getUpdateFirstValueOnly() && field.getUpdateFirstValueOnly());
+      params.put("resetOnNew", null != field.getResetOnNew() && field.getResetOnNew());
+      params.put("resetValuesOnMain", null != field.getResetValuesOnMain() && field.getResetValuesOnMain());
+      params.put("ignoreIfNull", null != field.getIgnoreIfNull() && field.getIgnoreIfNull());
 
-        id = sqlCache.updateBySqlReturningId(DataViewQuery.addFieldConfig, params, "id").longValue();
+      id = sqlCache.updateBySqlReturningId(DataViewQuery.addFieldConfig, params, "id").longValue();
 
-        HashMap<String, Object> params2 = new HashMap<>();
-        params2.put("id", id);
-        sqlCache.queryBySql(DataViewQuery.addColumnToTable, params2, String.class);
+      HashMap<String, Object> params2 = new HashMap<>();
+      params2.put("id", id);
+      sqlCache.queryBySql(DataViewQuery.addColumnToTable, params2, String.class);
 //      } else {
 //        throw new ResponseStatusException(
 //          HttpStatus.BAD_REQUEST,
@@ -176,8 +173,8 @@ public class DataViewService {
     //this function checks that the fieldToUpdate is not one of the default fields to update
     List<DefaultField> defaultFields = getAllDefaultFields();
 
-    for(DefaultField df : defaultFields) {
-      if(df.getColumnName().equals(fieldToUpdate)) {
+    for (DefaultField df : defaultFields) {
+      if (df.getColumnName().equals(fieldToUpdate)) {
         return true;
       }
     }
@@ -196,15 +193,13 @@ public class DataViewService {
   public Optional<DataViewFieldConfig> getDataViewFieldConfig(Long id) {
     Map<String, Object> params = new HashMap<>();
     params.put("id", id);
-    Optional<DataViewFieldConfig> result = sqlCache.getBySql(DataViewQuery.getFieldConfig, params, new DataViewFieldConfigMapper<>(DataViewFieldConfig.class, om));
-    return result;
+    return sqlCache.getBySql(DataViewQuery.getFieldConfig, params, new DataViewFieldConfigMapper<>(DataViewFieldConfig.class, om));
   }
 
   public List<DefaultField> getAvailableDefaultFields(Long viewId) {
     Map<String, Object> params = new HashMap<>();
     params.put("viewId", viewId);
-    List<DefaultField> result = sqlCache.queryBySql(DataViewQuery.getAvailableDefaultFields, params, DefaultField.class);
-    return result;
+    return sqlCache.queryBySql(DataViewQuery.getAvailableDefaultFields, params, DefaultField.class);
   }
 
   public List<ProcessStepEvent> getAvailablePsEventsForDefaultField(Long viewId, Long defaultFieldId) {
@@ -213,8 +208,7 @@ public class DataViewService {
     params.put("viewId", viewId);
     params.put("companyId", user.getCompanyId());
     params.put("defaultFieldId", defaultFieldId);
-    List<ProcessStepEvent> result = sqlCache.queryBySql(DataViewQuery.getAvailablePsEventsForDefaultField, params, ProcessStepEvent.class);
-    return result;
+    return sqlCache.queryBySql(DataViewQuery.getAvailablePsEventsForDefaultField, params, ProcessStepEvent.class);
   }
 
   public List<ProcessStep> getAvailablePsForDefaultField(Long viewId, Long defaultFieldId) {
@@ -223,21 +217,18 @@ public class DataViewService {
     params.put("viewId", viewId);
     params.put("companyId", user.getCompanyId());
     params.put("defaultFieldId", defaultFieldId);
-    List<ProcessStep> result = sqlCache.queryBySql(DataViewQuery.getAvailablePsForDefaultField, params, ProcessStep.class);
-    return result;
+    return sqlCache.queryBySql(DataViewQuery.getAvailablePsForDefaultField, params, ProcessStep.class);
   }
 
   public List<UniqueBehaviorType> getUniqueBehaviorTypes() {
-    List<UniqueBehaviorType> results = sqlCache.queryBySql(DataViewQuery.getUniqueBehaviorTypes, Collections.emptyMap(), UniqueBehaviorType.class);
-    return results;
+    return sqlCache.queryBySql(DataViewQuery.getUniqueBehaviorTypes, Collections.emptyMap(), UniqueBehaviorType.class);
   }
 
   public void runViewMaintenance() {
-
     sqlCache.updateBySql(DataViewQuery.runMaintenance, Collections.emptyMap());
   }
 
-      public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
+  public static class DataViewMapper<T> extends BeanPropertyRowMapper<T> {
     private final ObjectMapper objectMapper;
 
     public DataViewMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
@@ -247,19 +238,22 @@ public class DataViewService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<DataViewFieldConfig>> fieldConfigsRef = new TypeReference<>() {};
+      TypeReference<List<DataViewFieldConfig>> fieldConfigsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "dataViewFieldConfigs",
         new JsonCollectionDeserializer(fieldConfigsRef, objectMapper));
 
-      TypeReference<List<Long>> companyProcessIdsRef = new TypeReference<>() {};
+      TypeReference<List<Long>> companyProcessIdsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "companyProcessIds",
         new JsonCollectionDeserializer(companyProcessIdsRef, objectMapper));
 
-      TypeReference<List<CompanyProcess>> companyProcessesRef = new TypeReference<>() {};
+      TypeReference<List<CompanyProcess>> companyProcessesRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "companyProcesses",
@@ -277,7 +271,8 @@ public class DataViewService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<DataViewChildFieldConfig>> childFieldConfigsRef = new TypeReference<>() {};
+      TypeReference<List<DataViewChildFieldConfig>> childFieldConfigsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(
         List.class,
         "childFieldConfigs",
