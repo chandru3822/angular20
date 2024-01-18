@@ -734,15 +734,6 @@
   }
 
   @media (min-width: 1070px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 20px;
-          }
-        }
-      }
-    }
 
     #company-funnel-background {
       border-left: 120px solid transparent;

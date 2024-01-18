@@ -35,53 +35,53 @@
     </v-card>
     <br>
     <v-data-table
+        id="company-dash-table"
       class="elevation-1"
       :items="dashValues"
+      :headers="headers"
       fixed-header
       ref="pageable-table"
       disable-sort
+      :item-class="itemRowBackground"
       :footer-props="footerProps"
       :loading="isLoading"
       :hide-default-footer="true"
+      :mobile-breakpoint="0"
     >
 
       <template #no-data>
         <span class="default-text-color">No available data</span>
       </template>
 
-                    <template v-slot:header>
-                      <thead id="main-table-header">
-                        <tr>
-                          <th id="milestone-col-name-header" colspan="1">Milestones</th>
-                          <th id="milestone-col-header" colspan="1"><v-select clearable :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select clearable placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
-                          <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
-                        </tr>
-                      </thead>
-                    </template>
 
-                    <template #item="{ item, index }">
-                        <tr v-if="item.major_milestone || !viewMajorMilestones" :class="{'light-blue-row': (item.major_milestone)}">
-                          <td :class="[{'major-milestone-name-col-td': (item.major_milestone)}, {'milestone-name-col-td': (!item.major_milestone)}]">{{ item.name }}</td>
-                          <td class="milestone-col-td" @click="openDrilldown(item, 1)">{{ item.company_count?item.company_count:0 }}
-                            <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">+{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                            <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                            <span v-if="viewTrends && (item.trend_count ==null || item.trend_count==0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-                          </td>
+      <template #header.milestone="{}" id="milestones-header">Milestones</template>
+      <template #header.actualTotal="{}" ><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
+      <template #header.actualTotal2="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
+      <template #header.actualTotal3="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
 
-                          <td class="milestone-col-td" @click="openDrilldown(item, 2)" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">{{column2Values[index].company_count?column2Values[index].company_count:0}}
-                            <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">+{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                            <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                            <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-                          </td>
-                          <td class="milestone-col-td" v-else></td>
-                          <td class="milestone-col-td" @click="openDrilldown(item, 3)" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">{{column3Values[index].company_count?column3Values[index].company_count:0}}
-                            <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">+{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                            <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                            <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-                          </td>
-                          <td class="milestone-col-td" v-else></td>
-                        </tr>
+
+      <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td">{{ item.name }}</template>
+      <template #item.actualTotal="{item, index}" class="milestone-col-td" >
+        <div @click="openDrilldown(item, 1)">{{ item.company_count?item.company_count:0 }}
+        <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+        <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+        <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+      </div>
+      </template>
+
+      <template #item.actualTotal2="{item, index}" class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">
+        <div @click="openDrilldown(item, 2)">{{column2Values[index].company_count?column2Values[index].company_count:0}}
+        <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+        <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+        <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+        </div>
+      </template>
+      <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
+        <div @click="openDrilldown(item, 3)">{{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
+        <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+        <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+        <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+        </div>
       </template>
     </v-data-table>
     <ConfirmationDialog v-if="selectingCustomDates" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
@@ -132,6 +132,7 @@
   import {handleHidingGlobalLoader, getRequestWithParams, getSnackbar, logError, postRequest} from '@/helpers/helpers'
   import cloneDeep from 'lodash.clonedeep'
   import {DateTime} from "luxon";
+  import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
 
   export default {
@@ -139,7 +140,8 @@
     components: {
       DatetimePickerInput,
       CompanyDashboardDrilldown,
-      Snackbar
+      Snackbar,
+      ConfirmationDialog
     },
     data () {
       return {
@@ -228,6 +230,12 @@
       // visibleHeaders () {
       //   return this.headers.filter(header => header.show === true)
       // },
+      filteredDashValues(){
+        if(this.viewMajorMilestones){
+          return this.dashValues.filter(dv => dv.major_milestone)
+        }
+        return this.dashValues
+      },
       additionalStartWeek () {
         if (this.currentPeriod > 9) {
           return 1;
@@ -279,6 +287,9 @@
       getClass(total) {
         let calcTotal = this.singleDateRange ? total / this.dividerForSingleDayTargets : total
         return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
+      },
+      itemRowBackground(item){
+        return item.major_milestone ? 'shaded-row' : ''
       },
       closeDrilldown() {
         this.selectedMilestone = {}
@@ -525,18 +536,18 @@
         try {
           let filename = 'CompanyDashboard.csv'
 
-          let csvData = ' , ' + this.dropdownValues.find(x => x.id == this.firstDateRange).friendlyName;
+          let csvData = ' , ' + this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName;
           if(this.viewTrends){
             csvData += ', ' +  'Trend 1'
           }
           if(this.secondDateRange){
-            csvData += ', ' + this.dropdownValues.find(x => x.id == this.secondDateRange).friendlyName;
+            csvData += ', ' + this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName;
             if(this.viewTrends){
               csvData += ', ' +  'Trend 2'
             }
           }
           if(this.thirdDateRange){
-            csvData += ', ' + this.dropdownValues.find(x => x.id == this.thirdDateRange).friendlyName;
+            csvData += ', ' + this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName;
             if(this.viewTrends){
               csvData += ', ' +  'Trend 3'
             }
@@ -663,9 +674,9 @@
       this.headers = [
         { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true },
         { text: 'Today', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-        { text: 'Today2', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-        { text: 'Today3', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-
+        { text: 'Today2', value: 'actualTotal2', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+        { text: 'Today3', value: 'actualTotal3', align: 'center', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+      ]
 
         // { text: 'Total', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
         // { text: 'BRS', value: 'actualBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
@@ -676,7 +687,7 @@
         // { text: 'Total', value: 'differenceTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
         // { text: 'BRS', value: 'differenceBrs', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser },
         // { text: 'Partners', value: 'differencePartner', align: 'center', class: 'data-col-th', show: this.isBrCorporateUser }
-      ]
+
 
       if (this.$store?.state?.user?.details?.timezone?.value) {
         this.timezone = this.$store.state.user.details.timezone.value
@@ -690,41 +701,6 @@
 </script>
 
 <style lang="scss" scoped>
-
-  thead th:first-child{
-    left: 0;
-    z-index: 10 !important;
-  }
-
-  .milestone-name-col-td{
-    left: 0;
-    z-index: 2 !important;
-    position:sticky;
-  }
-
-  @media (max-width: 600px) {
-    .milestone-name-col-td {
-      background-color: white;
-    }
-
-    thead th:first-child{
-      background-color: white !important;
-    }
-  }
-
-  .major-milestone-name-col-td{
-    left: 0;
-    z-index: 2 !important;
-    position:sticky;
-    background-color: var(--v-primary-lighten9);
-    font-weight: bold;
-  }
-
-  .milestone-col-td{
-    z-index: 1 !important;
-  }
-
-
   .v-data-table{
     overflow-x: auto;
   }
@@ -776,149 +752,12 @@
     overflow: auto;
   }
 
-  #company-dash-toolbar-container {
-    margin: 0 auto;
-
-    #company-dash-toolbar {
-      display: flex;
-      flex-flow: row nowrap;
-      justify-content: space-between;
-      padding: 0;
-
-      header {
-        background-color: #fff !important;
-      }
-
-      ::v-deep {
-        .v-toolbar__title {
-          font-size: 10px;
-          min-width: 30%;
-        }
-
-        #toolbar-right-side {
-          display: flex;
-          justify-content: flex-end;
-          width: 100%;
-
-          .v-input {
-            font-size: 7px;
-            max-width: 65px;
-
-            label {
-              font-size: 8px;
-            }
-
-            .v-input__append-inner {
-              display: none;
-            }
-          }
-
-          .date-range-date {
-            margin-left: 5px !important;
-          }
-
-          .dash-btn {
-            box-shadow: none;
-            font-size: 14px;
-            font-weight: 500;
-            margin-left: 5px;
-            height: 40px;
-          }
-        }
-      }
-    }
-  }
 
   .v-select ::v-deep .v-select__selection {
     color: var(--v-primaryText-base) !important;
   }
 
-  #company-funnel-background {
-    display: none;
-  }
 
-  #company-dash-table {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    margin: 0 auto 12px auto !important;
-
-    #main-table-header {
-      #milestone-col-header {
-        text-align: left;
-        min-width: 250px !important;
-      }
-
-      //tr:hover {
-      //  background-color: initial !important;
-      //}
-
-      th {
-        border-top: 3px solid var(--v-primary-base);
-        border-bottom: none;
-        color: var(--v-primaryText-base);
-        font-size: 12px !important;
-        text-align: center;
-        padding-top: 10px;
-      }
-    }
-
-    .blue-row {
-      background-color: var(--v-primary-lighten8);
-      font-weight: bold;
-
-      //&:hover {
-      //  background-color: var(--v-primary-lighten8);
-      //}
-    }
-
-    ::v-deep {
-      table {
-        border-collapse: collapse !important;
-      }
-
-      tbody > tr > td {
-        height: 26px;
-      }
-
-      .milestone-col-th, .milestone-col-td {
-        min-width: 250px !important;
-      }
-
-      .milestone-col-td {
-        text-align: left;
-      }
-
-      .total-col-th, .total-col-td {
-        border-left: 2px solid var(--v-primary-base) !important;
-      }
-
-      .data-col-th, .data-col-td {
-        padding: 0 3px;
-        min-width: 50px;
-      }
-
-      .data-col-td {
-        border-left: 1px solid rgba(240, 240, 240, 0.75);
-      }
-      //
-      //tr:hover {
-      //  background-color: transparent;
-      //}
-
-      th, td, span {
-        text-align: center;
-        font-size: 10px;
-      }
-
-      .pos_diff > span {
-        color: var(--v-primaryText-base);
-      }
-
-      .neg_diff > span {
-        color: red;
-      }
-    }
-  }
 
   .light-blue-row {
     background-color: var(--v-primary-lighten9) !important;
@@ -935,37 +774,6 @@
     align-items: center;
   }
 
-  @media (min-width: 450px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 12px;
-          }
-
-          #toolbar-right-side {
-            .v-input {
-              font-size: 10px;
-              max-width: 90px;
-
-              label {
-                font-size: 10px;
-              }
-            }
-
-            .date-range-date {
-              margin-left: 10px !important;
-            }
-
-            #targets-btn {
-              font-size: 10px;
-              margin-left: 10px;
-            }
-          }
-        }
-      }
-    }
-  }
 
   @media (min-width: 600px){
     .filter-bar-mini{
@@ -981,179 +789,23 @@
       padding-left: 20px;
     }
   }
-  @media (min-width: 600px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 14px;
-          }
-
-          #toolbar-right-side {
-            .v-input {
-              font-size: 12px;
-              max-width: 100px;
-
-              label {
-                font-size: 12px;
-              }
-            }
-
-            #targets-btn {
-              font-size: 12px;
-            }
-          }
-        }
-      }
-    }
-
-    #company-dash-table {
-      #main-table-header {
-        th {
-          font-size: 14px !important;
-        }
-      }
-
-      ::v-deep {
-        th, td, span {
-          position: relative;
-          z-index: 1;
-          font-size: 12px !important;
-        }
-      }
-    }
-  }
-
-  @media (min-width: 769px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 16px;
-          }
-
-          #toolbar-right-side {
-            .v-input {
-              font-size: 14px;
-              max-width: 110px;
-
-              label {
-                font-size: 14px;
-              }
-            }
-
-            #targets-btn {
-              font-size: 14px;
-            }
-          }
-        }
-      }
-    }
-
-    #company-funnel-background {
-      display: block;
-      position: relative;
-      border-top-style: solid;
-      border-top-color: rgba(0, 110, 200, 0.05);
-      border-top-width: 546px;
-      border-left: 40px solid transparent;
-      border-right: 40px solid transparent;
-      margin-top: -546px;
-      margin-bottom: -48px;
-      left: 9px;
-      width: 250px;
-      height: 0;
-    }
-
-    #company-dash-table {
-      margin: 0 auto 24px auto !important;
-
-      #main-table-header {
-        #milestone-col-header {
-          text-align: center;
-        }
-
-        th {
-          padding-top: 15px;
-        }
-      }
-
-      ::v-deep {
-        .milestone-col-th, .milestone-col-td {
-          text-align: center;
-          width: 270px;
-        }
-
-        .data-col-th, .data-col-td {
-          padding: 0 2px;
-          min-width: 50px;
-        }
-
-        th, td {
-          font-size: 12px !important;
-        }
-      }
-    }
-
-  }
-
-  @media (min-width: 1070px) {
-    #company-dash-toolbar-container {
-      #company-dash-toolbar {
-        ::v-deep {
-          .v-toolbar__title {
-            font-size: 20px;
-          }
-        }
-      }
-    }
-
-    #company-funnel-background {
-      border-left: 120px solid transparent;
-      border-right: 120px solid transparent;
-      left: 40px;
-      width: 420px;
-    }
-
-    #company-dash-table {
-      ::v-deep {
-        .milestone-col-th, .milestone-col-td {
-          width: 500px;
-        }
-
-        th, td {
-          font-size: 12px !important;
-        }
-      }
-    }
-  }
-
-  @media (min-width: 1135px) {
-    #company-funnel-background {
-      left: 80px;
-      width: 440px;
-    }
-
-    #company-dash-table {
-      max-width: 1130px;
-
-      #main-table-header {
-        th {
-          font-size: 20px !important;
-        }
-      }
-
-      ::v-deep {
-        .milestone-col-th, .milestone-col-td {
-          width: 600px;
-        }
-      }
-    }
-  }
 </style>
-
 <style lang="scss">
-#company-dash-container > div.v-data-table.elevation-1.v-data-table--fixed-header.theme--light.v-data-table--mobile > div > table > tbody{
-  display: contents !important;
+
+#company-dash-table > div > table > thead > tr > th {
+  z-index: 1 !important;
 }
+
+#company-dash-table > div > table > thead > tr > th.text-start.milestone-col-th,
+#company-dash-table > div > table > tbody > tr > td.text-start{
+  position: sticky;
+  left: 0;
+  z-index: 2 !important;
+  background-color: white;
+}
+
+#company-dash-table > div > table > tbody > tr.shaded-row > td.text-start{
+  background-color: var(--v-primary-lighten9);
+}
+
 </style>
