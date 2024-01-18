@@ -1,6 +1,6 @@
 <template>
   <v-container id="company-dash-container">
-    <v-card >
+    <v-card class="filter-bar">
       <v-row align="center">
         <div class="dashboard-header">
           Company Dashboard
@@ -12,6 +12,25 @@
           <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
         </div>
         <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon>Export</a>
+      </v-row>
+    </v-card>
+
+    <v-card class="filter-bar-mini">
+      <v-row>
+        <div class="dashboard-header">
+          Company Dashboard
+        </div>
+      </v-row>
+      <v-row>
+        <div class="checkbox-container-mini">
+          <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
+        </div>
+        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon></a>
+      </v-row>
+      <v-row>
+        <div class="checkbox-container-mini">
+          <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
+        </div>
       </v-row>
     </v-card>
     <br>
@@ -33,7 +52,7 @@
                     <template v-slot:header>
                       <thead id="main-table-header">
                         <tr>
-                          <th id="milestone-col-header" colspan="1">Milestones</th>
+                          <th id="milestone-col-name-header" colspan="1">Milestones</th>
                           <th id="milestone-col-header" colspan="1"><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></th>
                           <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></th>
                           <th id="milestone-col-header" colspan="1"><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></th>
@@ -43,7 +62,7 @@
 
       <template #item="{ item, index }">
                         <tr v-if="item.major_milestone || !viewMajorMilestones" :class="{'light-blue-row': (item.major_milestone)}">
-                          <td class="milestone-col-td">{{ item.name }}</td>
+                          <td :class="[{'major-milestone-name-col-td': (item.major_milestone)}, {'milestone-name-col-td': (!item.major_milestone)}]">{{ item.name }}</td>
                           <td class="milestone-col-td">{{ item.company_count?item.company_count:0 }}
                             <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                             <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
@@ -432,47 +451,25 @@
           csvData += '\n';
 
           this.dashValues.forEach((p, i) => {
-            csvData +=
-              // p.userFirstName + ',"' +
-              // p.userLastName + '",' +
-              // p.employeeId + ',"' +
-              // p.regionName + '",' +
-              // "\"" + p.officeName +  '\",' +
-              // p.officeState + ',' +
-              // p.userPositionName + ',"' +
-              // p.userStatus + '",' +
-              // p.hireDate + ',' +
-              // p.userFullName + ',' +
-              // p.residualStartDate + ',' +
-              // p.lifetimeQualifiedFds + ',' +
-              // p.qualifiedFdcInPeriod + ',' +
-              // p.fdcNotQualifiedInPeriod + ',' +
-              // p.requiredFdcPerMonth + ',' +
-              // p.residualEarned + ',' +
-              // p.percentOfResidualEarned + ',"' +
-              // p.potentialResidual + '",' +
-              // p.earnedResidual + ',' +
-              // p.clawback + ',' +
-              // p.adjustmentOverride + ',' +
-              // p.residualTotal + ',' +
-              // p.paidInPeriod
-              p.name + ',' + (p.company_count? p.company_count: 0);
-            if(this.viewTrends){
-              csvData += ', ' + (p.trend_count?p.trend_count : 0) + '%';
-            }
-            if(this.secondDateRange){
-              csvData += ', ' + (this.column2Values[i].company_count?this.column2Values[i].company_count : 0)
-              if(this.viewTrends){
-                csvData += ', ' + (this.column2Values[i].trend_count?this.column2Values[i].trend_count : 0) + '%';
+            if (p.major_milestone || !this.viewMajorMilestones) {
+              csvData += p.name + ',' + (p.company_count ? p.company_count : 0);
+              if (this.viewTrends) {
+                csvData += ', ' + (p.trend_count ? p.trend_count : 0) + '%';
               }
-            }
-            if(this.thirdDateRange){
-              csvData += ', ' + (this.column3Values[i].company_count?this.column3Values[i].company_count : 0)
-              if(this.viewTrends){
-                csvData += ', ' + (this.column3Values[i].trend_count?this.column3Values[i].trend_count : 0) + '%';
+              if (this.secondDateRange) {
+                csvData += ', ' + (this.column2Values[i].company_count ? this.column2Values[i].company_count : 0)
+                if (this.viewTrends) {
+                  csvData += ', ' + (this.column2Values[i].trend_count ? this.column2Values[i].trend_count : 0) + '%';
+                }
               }
+              if (this.thirdDateRange) {
+                csvData += ', ' + (this.column3Values[i].company_count ? this.column3Values[i].company_count : 0)
+                if (this.viewTrends) {
+                  csvData += ', ' + (this.column3Values[i].trend_count ? this.column3Values[i].trend_count : 0) + '%';
+                }
+              }
+              csvData += '\n';
             }
-            csvData += '\n';
           })
 
 
@@ -600,6 +597,35 @@
 </script>
 
 <style lang="scss" scoped>
+
+  thead th:first-child{
+    left: 0;
+    z-index: 1 !important;
+  }
+
+  .milestone-name-col-td{
+    left: 0;
+    z-index: 2 !important;
+    position:sticky;
+    background-color: white;
+  }
+
+  .major-milestone-name-col-td{
+    left: 0;
+    z-index: 2 !important;
+    position:sticky;
+    background-color: var(--v-primary-lighten9);
+    font-weight: bold;
+  }
+
+  .milestone-col-td{
+    z-index: 1 !important;
+  }
+
+
+  .v-data-table{
+    overflow-x: auto;
+  }
   .dashboard-header{
     padding-left: 20px;
     padding-right: 16px;
@@ -717,7 +743,7 @@
     #main-table-header {
       #milestone-col-header {
         text-align: left;
-        min-width: 250px;
+        min-width: 250px !important;
       }
 
       tr:hover {
@@ -753,7 +779,7 @@
       }
 
       .milestone-col-th, .milestone-col-td {
-        min-width: 175px;
+        min-width: 250px !important;
       }
 
       .milestone-col-td {
@@ -839,6 +865,20 @@
     }
   }
 
+  @media (min-width: 600px){
+    .filter-bar-mini{
+      display: none;
+      flex-wrap: wrap;
+    }
+  }
+  @media(max-width: 600px){
+    .filter-bar{
+      display: none;
+    }
+    .checkbox-container-mini{
+      padding-left: 20px;
+    }
+  }
   @media (min-width: 600px) {
     #company-dash-toolbar-container {
       #company-dash-toolbar {
@@ -1008,4 +1048,10 @@
       }
     }
   }
+</style>
+
+<style lang="scss">
+#company-dash-container > div.v-data-table.elevation-1.v-data-table--fixed-header.theme--light.v-data-table--mobile > div > table > tbody{
+  display: contents !important;
+}
 </style>
