@@ -62,26 +62,47 @@
 
       <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td">{{ item.name }}</template>
       <template #item.actualTotal="{item, index}" class="milestone-col-td" >
-        <div @click="openDrilldown(item, 1)">{{ item.company_count?item.company_count:0 }}
-        <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-        <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-        <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-      </div>
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on }">
+              <div v-on="viewTrends?on:null" @click="openDrilldown(item, 1)">{{ item.company_count?item.company_count:0 }}
+                <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+                <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+                </div>
+            </template>
+            <span v-if="viewTrends && item.trend_count>0"> {{Math.abs(item.trend_count)/100 | percent}} higher than {{getDropdownById(firstDateRange).trendText}}</span>
+            <span v-if="viewTrends && item.trend_count<0"> {{Math.abs(item.trend_count)/100 | percent}} less than {{getDropdownById(firstDateRange).trendText}}</span>
+            <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{getDropdownById(firstDateRange).trendText}}</span>
+          </v-tooltip>
       </template>
 
       <template #item.actualTotal2="{item, index}" class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">
-        <div @click="openDrilldown(item, 2)">{{column2Values[index].company_count?column2Values[index].company_count:0}}
-        <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-        <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-        <span v-if="viewTrends && (column2Values[index].trend_count === null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-        </div>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <div v-on="viewTrends?on:null" @click="openDrilldown(item, 2)">{{column2Values[index].company_count?column2Values[index].company_count:0}}
+              <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+              <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+              <span v-if="viewTrends && (column2Values[index].trend_count === null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+            </div>
+          </template>
+          <span v-if="viewTrends && item.trend_count>0"> {{Math.abs(item.trend_count)/100 | percent}} higher than {{getDropdownById(secondDateRange).trendText}}</span>
+          <span v-if="viewTrends && item.trend_count<0"> {{Math.abs(item.trend_count)/100 | percent}} less than {{getDropdownById(secondDateRange).trendText}}</span>
+          <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{getDropdownById(secondDateRange).trendText}}</span>
+        </v-tooltip>
       </template>
       <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
-        <div @click="openDrilldown(item, 3)">{{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
-        <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-        <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-        <span v-if="viewTrends && (column3Values[index].trend_count === null || column3Values[index].trend_count === 0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
-        </div>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <div v-on="viewTrends?on:null" @click="openDrilldown(item, 3)">{{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
+              <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+              <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+              <span v-if="viewTrends && (column3Values[index].trend_count === null || column3Values[index].trend_count === 0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+            </div>
+          </template>
+          <span v-if="viewTrends && item.trend_count>0"> {{Math.abs(item.trend_count)/100 | percent}} higher than {{getDropdownById(thirdDateRange).trendText}}</span>
+          <span v-if="viewTrends && item.trend_count<0"> {{Math.abs(item.trend_count)/100 | percent}} less than {{getDropdownById(thirdDateRange).trendText}}</span>
+          <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)"> Same as {{getDropdownById(thirdDateRange).trendText}}</span>
+        </v-tooltip>
       </template>
     </v-data-table>
     <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
@@ -284,6 +305,9 @@
       }
     },
     methods: {
+      getDropdownById(id){
+        return this.dropdownValues.find(x => x.id === id)
+      },
       getClass(total) {
         let calcTotal = this.singleDateRange ? total / this.dividerForSingleDayTargets : total
         return calcTotal < 0 ? 'neg_diff' : 'pos_diff'
@@ -300,7 +324,6 @@
       },
       async openDrilldown(item, column) {
         this.selectedMilestone = item
-        console.log(this.selectedMilestone);
         await this.getDrilldownHeaders()
         await this.getDrilldownData(column)
         this.showDrilldown = true
@@ -349,7 +372,6 @@
 
           const {data, status} = await getRequestWithParams('/companyDashboard/drilldownData', {params}, 'blueraven', [])
           this.drilldownData = data
-          console.log(this.drilldownData)
           this.drilldownIsLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
