@@ -638,18 +638,19 @@
         try {
           let filename = 'CompanyDashboard.csv'
 
-          let csvData = ' , ' + this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName;
+          let csvData = ' , ' + ((this.dropdownValues.find(x => x.id === this.firstDateRange).name==='CUSTOM')?this.firstCustom.name:this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName);
           if(this.viewTrends){
             csvData += ', ' +  'Trend 1'
           }
           if(this.secondDateRange){
-            csvData += ', ' + this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName;
+            console.log("HELLO");
+            csvData += ' , ' + ((this.dropdownValues.find(x => x.id === this.secondDateRange).name==='CUSTOM')?this.secondCustom.name:this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
             if(this.viewTrends){
               csvData += ', ' +  'Trend 2'
             }
           }
           if(this.thirdDateRange){
-            csvData += ', ' + this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName;
+            csvData += ' , ' + ((this.dropdownValues.find(x => x.id === this.thirdDateRange).name==='CUSTOM')?this.thirdCustom.name:this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName);
             if(this.viewTrends){
               csvData += ', ' +  'Trend 3'
             }
