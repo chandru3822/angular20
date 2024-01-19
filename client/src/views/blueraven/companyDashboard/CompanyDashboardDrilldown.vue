@@ -135,15 +135,51 @@
         return this.drilldownHeaders.filter(header => header.show === true)
       },
       addHeaders(){
-        this.additionalHeaders.forEach((header, index)=> {
-          this.drilldownHeaders.push({
-            text: header,
-            value: 'value',
-            show: true,
-            additional: true,
-            index: index
+        console.log("HERE")
+        console.log(this.drilldownData);
+        if(this.drilldownData.length > 0) {
+          this.drilldownData[0].additional_columns.forEach((header, index) => {
+            console.log(header);
+            this.drilldownHeaders.push({
+              text: header.label,
+              value: 'additional_columns['+index+'].value',
+              show: true,
+              additional: true,
+              index: index,
+              sort: (a, b) => {
+                //dataTypeId = 6 is an int
+                let dataTypeId = parseInt(header.data_type_id);
+                if ([4,6].includes(dataTypeId)) {
+                  return (a === null) - (b === null) || a - b
+                }
+
+                  //if it is a date, format the string as a date and sort by that value
+                  //without the .toString() this fails for numeric values
+                //this does a lot of extra checking we probably dont need now that we know the data type id of the column, but i am keeping it cuz i am not sure what it all does
+                else if ( [1,2].includes(dataTypeId)) {
+                  //todo: keep an eye on if Date.parse returns false for regular numbers and such
+                  //note: firefox doesn't support date formats with hyphens. only with /
+                  return (new Date(a) - new Date(b))
+                } else {
+                  //otherwise sort normally
+                  //nulls were sorting super weird when the normal options had special characters in them, like '#BQ-1234', setting nulls to '' before sorting seems to fix that, plus saves some null checks for localeCompare
+                  let newA = null == a ? '' : a.trim().toLowerCase()
+                  let newB = null == b ? '' : b.trim().toLowerCase()
+                  return newA.localeCompare(newB)
+                }
+              },
+            })
           })
-        })
+        }
+        // this.additionalHeaders.forEach((header, index)=> {
+        //   this.drilldownHeaders.push({
+        //     text: header,
+        //     value: 'additionalColumns[0].value',
+        //     show: true,
+        //     additional: true,
+        //     index: index
+        //   })
+        // })
       },
       exportCsv() {
         let csv = ''

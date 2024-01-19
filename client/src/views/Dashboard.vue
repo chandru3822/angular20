@@ -73,18 +73,18 @@
         <div @click="openDrilldown(item, 2)">{{column2Values[index].company_count?column2Values[index].company_count:0}}
         <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
         <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-        <span v-if="viewTrends && (column2Values[index].trend_count ==null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+        <span v-if="viewTrends && (column2Values[index].trend_count === null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
         </div>
       </template>
       <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
         <div @click="openDrilldown(item, 3)">{{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
         <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
         <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-        <span v-if="viewTrends && (column3Values[index].trend_count ==null || column3Values[index].trend_count==0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+        <span v-if="viewTrends && (column3Values[index].trend_count === null || column3Values[index].trend_count === 0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
         </div>
       </template>
     </v-data-table>
-    <ConfirmationDialog v-if="selectingCustomDates" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
+    <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
       <template v-slot:title>Custom Date Range</template>
       <div>
         <DatetimePickerInput
@@ -163,7 +163,7 @@
         endDateColumn2: moment().format('YYYY-MM-DD'),
         endDateColumn3: moment().format('YYYY-MM-DD'),
         weekNum: 1,
-        currentPeriod: Math.ceil((moment().isoWeek() - (moment().isoWeek()%13 == 0)) / 4),
+        currentPeriod: Math.ceil((moment().isoWeek() - (moment().isoWeek()%13 === 0)) / 4),
         dateRanges: ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Current Period', 'Last Week', 'Last 30 Days', 'Last Period', 'Custom', 'This Month', 'This Quarter', 'This Year', 'All Time'],
         isLoading: true,
         loadingData: false,
@@ -329,16 +329,16 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
 
         if(column === 1){
-          this.startDate = this.dropdownValues.find(x => x.id == this.firstDateRange).startDate? this.dropdownValues.find(x => x.id == this.firstDateRange).startDate : moment(this.firstCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
-          this.endDate = this.dropdownValues.find(x => x.id == this.firstDateRange).endDate ? this.dropdownValues.find(x => x.id == this.firstDateRange).endDate : moment(this.firstCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.startDate = this.dropdownValues.find(x => x.id === this.firstDateRange).startDate? this.dropdownValues.find(x => x.id === this.firstDateRange).startDate : moment(this.firstCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.endDate = this.dropdownValues.find(x => x.id === this.firstDateRange).endDate ? this.dropdownValues.find(x => x.id === this.firstDateRange).endDate : moment(this.firstCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
         }
         else if(column === 2){
-          this.startDate = this.dropdownValues.find(x => x.id == this.secondDateRange).startDate? this.dropdownValues.find(x => x.id == this.secondDateRange).startDate : moment(this.secondCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
-          this.endDate = this.dropdownValues.find(x => x.id == this.secondDateRange).endDate ? this.dropdownValues.find(x => x.id == this.secondDateRange).endDate : moment(this.secondCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.startDate = this.dropdownValues.find(x => x.id === this.secondDateRange).startDate? this.dropdownValues.find(x => x.id === this.secondDateRange).startDate : moment(this.secondCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.endDate = this.dropdownValues.find(x => x.id === this.secondDateRange).endDate ? this.dropdownValues.find(x => x.id === this.secondDateRange).endDate : moment(this.secondCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
         }
         else if(column === 3){
-          this.startDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).startDate? this.dropdownValues.find(x => x.id == this.thirdDateRange).startDate : moment(this.thirdCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
-          this.endDate = this.dropdownValues.find(x => x.id == this.thirdDateRange).endDate ? this.dropdownValues.find(x => x.id == this.thirdDateRange).endDate : moment(this.thirdCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.startDate = this.dropdownValues.find(x => x.id === this.thirdDateRange).startDate? this.dropdownValues.find(x => x.id === this.thirdDateRange).startDate : moment(this.thirdCustom.startDate).format('YYYY-MM-DDTHH:mm:ss')
+          this.endDate = this.dropdownValues.find(x => x.id === this.thirdDateRange).endDate ? this.dropdownValues.find(x => x.id === this.thirdDateRange).endDate : moment(this.thirdCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
         }
         try {
           const params = {
@@ -445,9 +445,9 @@
         await this.getDashboardValues();
       },
       async changeDropdownSelection(dropdown){
-        if(dropdown == 1){
-          let result = this.dropdownValues.find(x => x.id == this.firstDateRange)
-          if(result == null){
+        if(dropdown === 1){
+          let result = this.dropdownValues.find(x => x.id === this.firstDateRange)
+          if(result === null){
             return null;
           }
           if(result.startDate === null){
@@ -463,13 +463,13 @@
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         }
-        else if(dropdown == 2){
-          let result = this.dropdownValues.find(x => x.id == this.secondDateRange)
-          if(result == null){
+        else if(dropdown === 2){
+          let result = this.dropdownValues.find(x => x.id === this.secondDateRange)
+          if(result === null){
             return null;
           }
-          if(result.startDate == null){
-            if(this.secondCustom.startDate.length == 0) {
+          if(result.startDate === null){
+            if(this.secondCustom.startDate.length === 0) {
               this.customColumn = 2;
               this.selectingCustomDates = true;
               return;
@@ -481,13 +481,13 @@
           }
           this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         }
-        else if(dropdown == 3){
-          let result = this.dropdownValues.find(x => x.id == this.thirdDateRange)
+        else if(dropdown === 3){
+          let result = this.dropdownValues.find(x => x.id === this.thirdDateRange)
           if(result == null){
             return null;
           }
-          if(result.startDate == null){
-            if(this.thirdCustom.startDate.length == 0) {
+          if(result.startDate === null){
+            if(this.thirdCustom.startDate.length === 0) {
               this.customColumn = 3;
               this.selectingCustomDates = true;
               return;
@@ -802,6 +802,11 @@
   left: 0;
   z-index: 2 !important;
   background-color: white;
+}
+
+#company-dash-table > div > table > thead > tr:hover,
+#company-dash-table > div > table > tbody > tr:hover{
+  background-color: transparent;
 }
 
 #company-dash-table > div > table > tbody > tr.shaded-row > td.text-start{
