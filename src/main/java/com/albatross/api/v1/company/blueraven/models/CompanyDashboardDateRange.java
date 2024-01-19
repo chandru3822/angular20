@@ -10,10 +10,11 @@ import java.time.Instant;
 @Data
 public class CompanyDashboardDateRange {
     private int id;
-    private String friendlyName, name;
+    private String friendlyName, name, trendText;
     private Instant startDate, endDate, trendStart, trendEnd;
 
-  public CompanyDashboardDateRange(int id, String friendlyName, String name, Instant startDate, Instant endDate, Instant trendStart, Instant trendEnd) {
+  public CompanyDashboardDateRange(int id, String friendlyName, String name, Instant startDate, Instant endDate, Instant trendStart, Instant trendEnd,
+  String trendText) {
     this.id = id;
     this.friendlyName = friendlyName;
     this.name = name;
@@ -21,5 +22,6 @@ public class CompanyDashboardDateRange {
     this.endDate = endDate;
     this.trendStart = trendStart;
     this.trendEnd = trendEnd;
+    this.trendText = trendText;
   }
 }
