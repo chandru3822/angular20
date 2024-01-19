@@ -9,9 +9,10 @@
           <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
         </div>
         <div class="checkbox-container">
+
           <v-checkbox label="Only View Major Milestones" v-model="viewMajorMilestones"></v-checkbox>
         </div>
-        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon>Export</a>
+        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon>Export</a>
       </v-row>
     </v-card>
 
@@ -25,7 +26,7 @@
         <div class="checkbox-container-mini">
           <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
         </div>
-        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">download</v-icon></a>
+        <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon></a>
       </v-row>
       <v-row>
         <div class="checkbox-container-mini">
@@ -37,7 +38,7 @@
     <v-data-table
         id="company-dash-table"
       class="elevation-1"
-      :items="dashValues"
+      :items="filteredDashValues"
       :headers="headers"
       fixed-header
       ref="pageable-table"
@@ -55,9 +56,48 @@
 
 
       <template #header.milestone="{}" id="milestones-header">Milestones</template>
-      <template #header.actualTotal="{}" ><v-select class="dropdown-header" :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
-      <template #header.actualTotal2="{}" ><v-select class="dropdown-header" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
-      <template #header.actualTotal3="{}" ><v-select class="dropdown-header" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
+      <template #header.actualTotal="{}" >
+        <v-select class="dropdown-header body-small selected-option" id="company-dash-first-header" :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)">
+          <template #selection="{item}">
+              <span v-if="item.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===item.id)}]">
+                      {{firstCustom.name}}</span>
+            <span v-else :class="[{'selected-option':(firstDateRange===item.id)}]">
+                      {{item.friendlyName}}</span>
+          </template>
+          <template #item="{item}">
+              <span :class="[{'selected-option':(firstDateRange===item.id)}]">
+                      {{item.friendlyName}}</span>
+          </template>
+        </v-select>
+      </template>
+      <template #header.actualTotal2="{}" >
+        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)">
+          <template #selection="{item}">
+              <span v-if="item.name === 'CUSTOM' && secondCustom.name != null" :class="[{'selected-option':(secondDateRange===item.id)}]">
+                      {{secondCustom.name}}</span>
+            <span v-else :class="[{'selected-option':(secondDateRange===item.id)}]">
+                      {{item.friendlyName}}</span>
+          </template>
+          <template #item="{item}">
+              <span :class="[{'selected-option':(secondDateRange===item.id)}]">
+                      {{item.friendlyName}}</span>
+          </template>
+        </v-select>
+      </template>
+      <template #header.actualTotal3="{}" >
+        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)">
+          <template #selection="{item}">
+              <span v-if="item.name === 'CUSTOM' && thirdCustom.name != null" :class="[{'selected-option':(thirdDateRange===item.id)}]">
+                      {{thirdCustom.name}}</span>
+            <span v-else :class="[{'selected-option':(thirdDateRange===item.id)}]">
+                      {{item.friendlyName}}</span>
+          </template>
+          <template #item="{item}">
+              <span :class="[{'selected-option':(thirdDateRange===item.id)}]">
+                      {{item.friendlyName}}</span>
+          </template>
+        </v-select>
+      </template>
 
 
       <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td"><span :class="{'label-medium': item.major_milestone}">{{ item.name }}</span></template>
@@ -217,7 +257,8 @@
           startDate: "",
           endDate: "",
           trendStart: "",
-          trendEnd: ""
+          trendEnd: "",
+          isActive: false
         },
         thirdCustom: {
           startDate: "",
@@ -238,12 +279,27 @@
       }
     },
     watch: {
+      firstDateRange(value) {
+        if (this.getDropdownById(value).name === 'CUSTOM') {
+          this.firstCustom.isActive = true;
+        } else {
+          this.firstCustom.isActive = false;
+        }
+      },
       secondDateRange(value) {
-        if (!value) {
-          console.log("Column 2 has been cleared");
+        if (this.getDropdownById(value).name === 'CUSTOM') {
+          this.secondCustom.isActive = true;
         }
         else{
-          console.log("Column 2 has been changed");
+          this.secondCustom.isActive = false;
+        }
+      },
+      thirdDateRange(value) {
+        if (this.getDropdownById(value).name === 'CUSTOM') {
+          this.thirdCustom.isActive = true;
+        }
+        else{
+          this.thirdCustom.isActive = false;
         }
       }
     },
@@ -473,8 +529,14 @@
             return null;
           }
           if(result.startDate === null){
-            if(this.firstCustom.startDate.length === 0) {
+            if(!this.firstCustom.isActive) {
               this.customColumn = 1;
+              if (this.firstCustom.startDate.toString().length > 0) {
+                this.customDate.startDate = this.firstCustom.startDate.format('YYYY-MM-DD').toString();
+              }
+              if (this.firstCustom.endDate.toString().length > 0) {
+                this.customDate.endDate = this.firstCustom.endDate.format('YYYY-MM-DD').toString();
+              }
               this.selectingCustomDates = true;
               return;
             }
@@ -491,8 +553,14 @@
             return null;
           }
           if(result.startDate === null){
-            if(this.secondCustom.startDate.length === 0) {
+            if(!this.secondCustom.isActive) {
               this.customColumn = 2;
+              if (this.secondCustom.startDate.toString().length > 0) {
+               this.customDate.startDate = this.secondCustom.startDate.format('YYYY-MM-DD').toString();
+              }
+              if (this.secondCustom.endDate.toString().length > 0) {
+                this.customDate.endDate = this.secondCustom.endDate.format('YYYY-MM-DD').toString();
+              }
               this.selectingCustomDates = true;
               return;
             }
@@ -509,8 +577,14 @@
             return null;
           }
           if(result.startDate === null){
-            if(this.thirdCustom.startDate.length === 0) {
+            if(!this.thirdCustom.isActive) {
               this.customColumn = 3;
+              if (this.thirdCustom.startDate.toString().length > 0) {
+                this.customDate.startDate = this.thirdCustom.startDate.format('YYYY-MM-DD').toString();
+              }
+              if (this.thirdCustom.endDate.toString().length > 0) {
+                this.customDate.endDate = this.thirdCustom.endDate.format('YYYY-MM-DD').toString();
+              }
               this.selectingCustomDates = true;
               return;
             }
@@ -535,6 +609,8 @@
           let dateDiff = this.firstCustom.endDate.diff(this.firstCustom.startDate, 'days');
           this.firstCustom.trendEnd = this.firstCustom.startDate.clone().subtract(1, 'days');
           this.firstCustom.trendStart = this.firstCustom.trendEnd.clone().subtract(dateDiff, 'days');
+          this.getDropdownById(this.firstDateRange).trendText = moment(this.firstCustom.trendStart).format('MM/DD/YYYY') + ' - ' + moment(this.firstCustom.trendEnd).format('MM/DD/YYYY');
+          this.firstCustom.name=moment(this.firstCustom.startDate).format('MM/DD/YY') + '-' + moment(this.firstCustom.endDate).format('MM/DD/YY');
         }
         else if(this.customColumn === 2){
           this.secondCustom.startDate = moment(this.customDate.startDate);
@@ -542,6 +618,8 @@
           let dateDiff = this.secondCustom.endDate.diff(this.secondCustom.startDate, 'days');
           this.secondCustom.trendEnd = this.secondCustom.startDate.clone().subtract(1, 'days');
           this.secondCustom.trendStart = this.secondCustom.trendEnd.clone().subtract(dateDiff, 'days');
+          this.getDropdownById(this.secondDateRange).trendText = moment(this.secondCustom.trendStart).format('MM/DD/YYYY') + ' - ' + moment(this.secondCustom.trendEnd).format('MM/DD/YYYY');
+          this.secondCustom.name=moment(this.secondCustom.startDate).format('MM/DD/YY') + '-' + moment(this.secondCustom.endDate).format('MM/DD/YY');
         }
         else if(this.customColumn === 3){
           this.thirdCustom.startDate = moment(this.customDate.startDate);
@@ -549,6 +627,8 @@
           let dateDiff = this.thirdCustom.endDate.diff(this.thirdCustom.startDate, 'days');
           this.thirdCustom.trendEnd = this.thirdCustom.startDate.clone().subtract(1, 'days');
           this.thirdCustom.trendStart = this.thirdCustom.trendEnd.clone().subtract(dateDiff, 'days');
+          this.getDropdownById(this.thirdDateRange).trendText = moment(this.thirdCustom.trendStart).format('MM/DD/YYYY') + ' - ' + moment(this.thirdCustom.trendEnd).format('MM/DD/YYYY');
+          this.thirdCustom.name=moment(this.thirdCustom.startDate).format('MM/DD/YY') + '-' + moment(this.thirdCustom.endDate).format('MM/DD/YY');
         }
 
         await this.getDashboardValues();
@@ -723,8 +803,12 @@
 </script>
 
 <style lang="scss" scoped>
+  .selected-option{
+    color: var(--v-primary-base) !important;
+  }
   .dropdown-header{
-    width: auto !important;
+    width: 210px;
+    top: 16%;
   }
   .v-data-table{
     overflow-x: auto;
@@ -778,12 +862,13 @@
   }
 
 
-  .v-select ::v-deep .v-select__selection {
-    color: var(--v-primaryText-base) !important;
-  }
+  //.v-select ::v-deep .v-select__selection {
+  //  color: var(--v-primaryText-base) !important;
+  //}
 
   .company-dashboard-header{
-    margin-left: 28px
+    margin-left: 28px;
+    margin-right: 12px;
   }
 
 
@@ -820,6 +905,9 @@
   }
 </style>
 <style lang="scss">
+#company-dash-table > div > table > thead > tr > th > div > div > div.v-input__slot > div.v-select__slot > div.v-select__selections > div, .selected-option{
+  color: var(--v-primary-base) !important;
+}
 
 #company-dash-table > div > table > thead > tr > th {
   z-index: 1 !important;
