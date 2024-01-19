@@ -9,7 +9,7 @@
             <v-btn text color="primary" @click="[showPastBudgets = !showPastBudgets]">
               {{showPastBudgets ? 'Hide Past Budgets' : 'Show Past Budgets'}}
             </v-btn>
-            <v-btn text color="primary" @click="[createNew = !createNew, newBudget = {}, getAvailableUsers()]">
+            <v-btn text color="primary" @click="[createNew = !createNew, newBudget = {}, expanded = [], getAvailableUsers()]">
               <v-icon v-if="!createNew">add</v-icon>
               {{createNew ? 'cancel' : 'Add Budget'}}
             </v-btn>
@@ -24,31 +24,25 @@
                           item-text="fullName"
                           item-value="id"
           ></v-autocomplete>
-          <v-autocomplete v-model="newBudget.budgetTypeId"
-                          :items="budgetTypes"
-                          label="Budget Type"
-                          item-text="name"
-                          item-value="id"
-          ></v-autocomplete>
           <v-text-field text
                         type="number"
                         label="Amount"
                         v-model.number="newBudget.amount">
           </v-text-field>
-          <DatetimePickerInput
-            v-model="newBudget.startDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MM/DD/YYYY'"
-            label="Start Date"
-          />
-          <DatetimePickerInput
-            v-model="newBudget.endDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MM/DD/YYYY'"
-            label="End Date"
-          />
+          <v-select v-model="selectedMonth"
+                    :items="months"
+                    class="mr-3 reimbursement-range-selector"
+                    label="Month"
+                    item-text="name"
+                    item-value="id"
+          ></v-select>
+          <v-select v-model="selectedYear"
+                    :items="years"
+                    class="reimbursement-range-selector"
+                    label="Year"
+                    item-text="name"
+                    item-value="id"
+          ></v-select>
           <v-textarea class="py-2" hide-details
                       auto-grow filled
                       rows="4"
@@ -56,8 +50,8 @@
                       v-model="newBudget.notes">
           </v-textarea>
           <v-btn color="primary" class="white--text"
-                 :disabled="!newBudget.userId || !newBudget.budgetTypeId
-                    || !newBudget.amount || !newBudget.startDate || !newBudget.endDate"
+                 :disabled="!newBudget.userId
+                    || !newBudget.amount || !selectedYear || !selectedMonth"
                  @click="saveBudget(newBudget, true)">
             Save
           </v-btn>
@@ -90,31 +84,25 @@
                               disabled
                               v-model="item.userFullName">
                 </v-text-field>
-                <v-autocomplete v-model="item.budgetTypeId"
-                                :items="budgetTypes"
-                                label="Budget Type"
-                                item-text="name"
-                                item-value="id"
-                ></v-autocomplete>
                 <v-text-field text
                               type="number"
                               label="Amount"
                               v-model.number="item.amount">
                 </v-text-field>
-                <DatetimePickerInput
-                  v-model="item.startDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :format="'MM/DD/YYYY'"
-                  label="Start Date"
-                />
-                <DatetimePickerInput
-                  v-model="item.endDate"
-                  :timezone="timezone"
-                  :type="'date'"
-                  :format="'MM/DD/YYYY'"
-                  label="End Date"
-                />
+                <v-select v-model="selectedMonth"
+                          :items="months"
+                          class="mr-3 reimbursement-range-selector"
+                          label="Month"
+                          item-text="name"
+                          item-value="id"
+                ></v-select>
+                <v-select v-model="selectedYear"
+                          :items="years"
+                          class="reimbursement-range-selector"
+                          label="Year"
+                          item-text="name"
+                          item-value="id"
+                ></v-select>
                 <v-textarea class="py-2" hide-details
                             auto-grow filled
                             rows="4"
@@ -133,13 +121,11 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{ item.userFullName }}</td>
-              <td class="text-left">{{ item.budgetType }}</td>
               <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
-              <td class="text-left">{{ item.startDate| formatDate('date')}}</td>
-              <td class="text-left">{{ item.endDate| formatDate('date')}}</td>
+              <td class="text-left">{{ item.startDate | formatDate('date', 'MMMM YYYY')}}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[handleItemClick(item), expanded = [item]]">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
@@ -164,7 +150,6 @@
 <script>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
-import {getBudgetTypes} from './expenseService'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
@@ -185,6 +170,25 @@ export default {
     return {
       snackbar: {},
       constants,
+      years: [],
+      selectedMonth: parseInt(moment().format('M')),
+      selectedYear: parseInt(moment().format('YYYY')),
+      yearStart: 2017,
+      yearEnd: parseInt(moment().format('YYYY')),
+      months: [
+        {id: 1, name: 'January'},
+        {id: 2, name: 'February'},
+        {id: 3, name: 'March'},
+        {id: 4, name: 'April'},
+        {id: 5, name: 'May'},
+        {id: 6, name: 'June'},
+        {id: 7, name: 'July'},
+        {id: 8, name: 'August'},
+        {id: 9, name: 'September'},
+        {id: 10, name: 'October'},
+        {id: 11, name: 'November'},
+        {id: 12, name: 'December'}
+      ],
       createNew: false,
       newBudget: {},
       footerProps: {
@@ -192,18 +196,15 @@ export default {
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       showPastBudgets: false,
-      budgetTypes: [],
       availableUsers: [],
       timezone: this.$store.state.user.details.timezone.value,
       budgets: [],
       expanded: [],
       headers: [
         {text: 'User', value: 'userFullName', show: true},
-        {text: 'Budget Type', value: 'budgetType', show: true},
         {text: 'Amount', value: 'amount', show: true},
-        {text: 'Start Date', value: 'startDate', show: true},
-        {text: 'End Date', value: 'endDate', show: true},
-        {text: null, value: 'icons', show: true}
+        {text: 'Budget Month', value: 'startDate', show: true},
+        {text: null, value: 'icons', show: true, sortable: false}
       ],
       deleteConfirm: false,
       itemToDelete: null
@@ -211,10 +212,18 @@ export default {
     }
   },
   created() {
+    for (let i = this.yearStart; i <= this.yearEnd; i++) {
+      this.years.push(i)
+    }
+
     this.getBudgets()
-    this.getBudgetTypes()
   },
   methods: {
+    handleItemClick(item) {
+      this.createNew = false
+      this.selectedMonth = parseInt(moment(item.startDate).format('M'))
+      this.selectedYear = parseInt(moment(item.endDate).format('YYYY'))
+    },
     filterBudgets() {
       if(this.showPastBudgets) {
         return this.budgets.filter(b => !b.archived)
@@ -266,22 +275,14 @@ export default {
       }
       this.closeDeleteDialog()
     },
-    async getBudgetTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getBudgetTypes()
-        this.budgetTypes = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async saveBudget(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
+        let startDate = moment([this.selectedYear, this.selectedMonth - 1]).format("YYYY-MM-DD")
+        let endDate = moment(startDate).endOf('month').format("YYYY-MM-DD")
+        item.startDate = startDate
+        item.endDate = endDate
+
         const {data, status} = await postRequest(`/expenseBudgets`, item, 'blueraven')
         if(isNew) {
           this.budgets.push(data)

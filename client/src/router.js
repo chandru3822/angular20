@@ -230,6 +230,7 @@ const router = new Router({
         }, {
           path: '/expenses',
           name: 'expenses',
+          alias: '/expenses/manage',
           meta: {title: 'Albatross - Expenses'},
           component: () => {
             if (store.getters.userHasFeature('EXPENSES')) {

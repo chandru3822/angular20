@@ -60,46 +60,39 @@ public class ExpenseBudgetQuery {
   public final static String getAllTemplates = """
     SELECT
       tem.id,
-      bt.name as budget_type,
-      tem.budget_type_id,
       tem.amount,
       tem.archived,
       tem.user_id,
       u.first_name || ' ' || u.last_name as user_full_name
     FROM brs.budget_template tem
-      INNER JOIN brs.budget_type bt on bt.id = tem.budget_type_id
       INNER JOIN flow."user" u on u.id = tem.user_id
     WHERE tem.archived is not true
-    ORDER BY user_full_name, budget_type
+    ORDER BY user_full_name
     """;
 
   //language=PostgreSQL
   public final static String getOneTemplates = """
     SELECT
       tem.id,
-      bt.name as budget_type,
-      tem.budget_type_id,
       tem.amount,
       tem.archived,
       tem.user_id,
       u.first_name || ' ' || u.last_name as user_full_name
     FROM brs.budget_template tem
-      INNER JOIN brs.budget_type bt on bt.id = tem.budget_type_id
       INNER JOIN flow."user" u on u.id = tem.user_id
     WHERE tem.id = :id
     """;
 
   //language=PostgreSQL
   public final static String insertBudgetTemplate = """
-    INSERT INTO brs.budget_template(user_id, budget_type_id, amount, created_by_id)
-    values(:userId, :budgetTypeId, :amount, :createdById)
+    INSERT INTO brs.budget_template(user_id, amount, created_by_id)
+    values(:userId, :amount, :createdById)
     """;
 
   //language=PostgreSQL
   public final static String updateBudgetTemplate = """
     UPDATE brs.budget_template
       SET user_id = :userId,
-          budget_type_id = :budgetTypeId,
           amount = :amount,
           date_modified = now(),
           modified_by_id = :updatedById
@@ -119,16 +112,13 @@ public class ExpenseBudgetQuery {
   public final static String getAll = """
     WITH single_row AS (SELECT
                           eb.user_id,
-                          eb.budget_type_id,
                           eb.original_expense_budget_id,
                           max(eb.date_created) date_created
                         FROM brs.expense_budget eb
                         WHERE eb.archived is not true
-                        GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id)
+                        GROUP BY eb.user_id, eb.original_expense_budget_id)
     SELECT
       eb.id,
-      bt.name as budget_type,
-      eb.budget_type_id,
       eb.start_date,
       eb.end_date,
       eb.notes,
@@ -141,7 +131,6 @@ public class ExpenseBudgetQuery {
       eb.original_expense_budget_id
     FROM brs.expense_budget eb
            INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
-           INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
            INNER JOIN flow."user" u on u.id = eb.user_id
     WHERE eb.archived is not true
     ORDER BY user_full_name, start_date
@@ -151,16 +140,13 @@ public class ExpenseBudgetQuery {
   public final static String getOne = """
     WITH single_row AS (SELECT
                           eb.user_id,
-                          eb.budget_type_id,
                           eb.original_expense_budget_id,
                           max(eb.date_created) date_created
                         FROM brs.expense_budget eb
                         WHERE eb.archived is not true
-                        GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id)
+                        GROUP BY eb.user_id, eb.original_expense_budget_id)
     SELECT
       eb.id,
-      bt.name as budget_type,
-      eb.budget_type_id,
       eb.start_date,
       eb.end_date,
       eb.archived,
@@ -173,15 +159,14 @@ public class ExpenseBudgetQuery {
       eb.original_expense_budget_id
     FROM brs.expense_budget eb
            INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
-           INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
            INNER JOIN flow."user" u on u.id = eb.user_id
     WHERE eb.id = :id
     """;
 
   //language=PostgreSQL
   public final static String insertOriginalExpenseBudget = """
-    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, created_by_id, notes) VALUES
-    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :createdById, :notes)
+    INSERT INTO brs.expense_budget(start_date, end_date, amount, user_id, created_by_id, notes) VALUES
+    (:startDate, :endDate, :amount, :userId, :createdById, :notes)
     """;
 
   //language=PostgreSQL
@@ -193,13 +178,8 @@ public class ExpenseBudgetQuery {
 
   //language=PostgreSQL
   public final static String insertExpenseBudget = """
-    INSERT INTO brs.expense_budget(budget_type_id, start_date, end_date, amount, user_id, original_expense_budget_id, created_by_id, notes) VALUES
-    (:budgetTypeId, :startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :notes)
-    """;
-
-  //language=PostgreSQL
-  public final static String getAvailableBudgetsForUser = """
-    SELECT * FROM brs.get_available_budgets_for_user(:userId::bigint, :expenseDate::DATE)
+    INSERT INTO brs.expense_budget(start_date, end_date, amount, user_id, original_expense_budget_id, created_by_id, notes) VALUES
+    (:startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :notes)
     """;
 
   //language=PostgreSQL
@@ -232,18 +212,15 @@ public class ExpenseBudgetQuery {
   public final static String getBudgetExpensesVsRemaining = """
     WITH single_row AS (SELECT
         eb.user_id,
-        eb.budget_type_id,
         eb.original_expense_budget_id,
         max(eb.date_created) date_created
         FROM brs.expense_budget eb
         WHERE eb.archived is not true
-        GROUP BY eb.user_id, eb.budget_type_id, eb.original_expense_budget_id
+        GROUP BY eb.user_id, eb.original_expense_budget_id
         )
         SELECT eb.id,
         eb.user_id,
         u.first_name || ' ' || u.last_name user_full_name,
-        eb.budget_type_id,
-        bt.name budget_type,
         eb.amount,
         eb.start_date,
         eb.end_date,
@@ -251,8 +228,7 @@ public class ExpenseBudgetQuery {
         eb.amount - (coalesce(sum(e.expense_amount),0)) balance
         from brs.expense_budget eb
         INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
-        INNER JOIN brs."user" u on u.id = eb.user_id
-        INNER JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+        INNER JOIN flow."user" u on u.id = eb.user_id
         LEFT JOIN brs.expense e on e.expense_budget_id = eb.id and e.rejected_date is null
         where eb.user_id = :userId
         and ( eb.start_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
@@ -263,11 +239,9 @@ public class ExpenseBudgetQuery {
         eb.user_id,
         u.first_name,
         u.last_name,
-        eb.budget_type_id,
         eb.amount,
         eb.start_date,
-        eb.end_date,
-        bt.name
+        eb.end_date
     """;
 
   //language=PostgreSQL
@@ -288,8 +262,7 @@ public class ExpenseBudgetQuery {
   //language=PostgreSQL
   public final static String checkIfExistsByTemplate = """
     with bt as (
-        select user_id,
-          budget_type_id
+        select user_id
         from brs.budget_template
         where id = :id
     )
@@ -298,7 +271,7 @@ public class ExpenseBudgetQuery {
       eb.start_date,
       eb.end_date
     from brs.expense_budget eb
-      INNER JOIN bt on bt.user_id = eb.user_id and bt.budget_type_id = eb.budget_type_id
+      INNER JOIN bt on bt.user_id = eb.user_id
     WHERE (:startDate between eb.start_date AND eb.end_date
            OR :endDate between eb.start_date AND eb.end_date
            OR eb.start_date between :startDate AND :endDate
@@ -307,14 +280,13 @@ public class ExpenseBudgetQuery {
     """;
 
   //language=PostgreSQL
-  public final static String checkIfExistsByUserAndBudgetType = """
+  public final static String checkIfExistsByUser = """
     select
       eb.id,
       eb.start_date,
       eb.end_date
     from brs.expense_budget eb
     WHERE eb.user_id = :userId
-        AND eb.budget_type_id = :budgetTypeId
         AND (:startDate between eb.start_date AND eb.end_date
           OR :endDate between eb.start_date AND eb.end_date
           OR eb.start_date between :startDate AND :endDate

@@ -15,7 +15,7 @@ public class ExpenseBudget {
 
   private Long id;
   private String userFullName, budgetType, notes, fullBudgetName;
-  private Long userId, budgetTypeId, originalExpenseBudgetId;
+  private Long userId, originalExpenseBudgetId;
   private Double amount, totalExpenses, balance;
   private Date dateCreated, dateModified;
   private Boolean archived;

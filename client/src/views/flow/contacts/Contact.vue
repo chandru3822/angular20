@@ -147,9 +147,7 @@
 
 
       <template v-slot:back-btn>
-        <v-btn fab text small color="primary" class="mr-2 hide-xs" @click="goToPath('/contacts')">
-          <v-icon>mdi-view-list</v-icon>
-        </v-btn>
+
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
@@ -773,7 +771,9 @@ export default {
       this.$router.push(path)
     },
     async validateFields(saveContact) {
-      let valid = this.$refs.contactForm?.validate()
+      let valid = this.$ref        <v-btn fab text small color="primary" class="mr-2 hide-xs" @click="goToPath('/contacts')">
+          <v-icon>mdi-view-list</v-icon>
+    </v-btn>s.contactForm?.validate()
       if (valid && saveContact) {
         this.fieldsSaving = true
         await this.saveCustomFieldValues()

@@ -66,12 +66,6 @@ public class ExpenseBudgetController {
     return expenseBudgetService.getBudgets();
   }
 
-  @GetMapping(value = "/availableForUser", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getAvailableBudgetsForUser(@RequestParam Long userId,
-                                           @RequestParam String expenseDate) {
-    return expenseBudgetService.getAvailableBudgetsForUser(userId, expenseDate);
-  }
-
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<ExpenseBudget> updateBudget(@RequestBody ExpenseBudget expenseBudget) {
     return expenseBudgetService.updateBudget(expenseBudget);

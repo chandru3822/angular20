@@ -92,7 +92,6 @@ public class ExpenseBudgetService {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("budgetTypeId", budgetTemplate.getBudgetTypeId());
     params.put("userId", budgetTemplate.getUserId());
     params.put("amount", budgetTemplate.getAmount());
     params.put("updatedById", currentUser.trueUserId());
@@ -175,7 +174,6 @@ public class ExpenseBudgetService {
 
     HashMap<String, Object> params = new HashMap<>();
 
-    params.put("budgetTypeId", expenseBudget.getBudgetTypeId());
     params.put("amount", expenseBudget.getAmount());
     params.put("startDate", expenseBudget.getStartDate());
     params.put("endDate", expenseBudget.getEndDate());
@@ -228,11 +226,10 @@ public class ExpenseBudgetService {
       templateParams.put("userId", expenseBudget.getUserId());
       templateParams.put("startDate", expenseBudget.getStartDate());
       templateParams.put("endDate", expenseBudget.getEndDate());
-      templateParams.put("budgetTypeId", expenseBudget.getBudgetTypeId());
 
       Optional<ExpenseBudget> existingExpenseBudget =
           sqlCache.getBySql(
-              ExpenseBudgetQuery.checkIfExistsByUserAndBudgetType,
+              ExpenseBudgetQuery.checkIfExistsByUser,
               templateParams,
               ExpenseBudget.class);
       if (existingExpenseBudget.isEmpty()) {
@@ -264,16 +261,6 @@ public class ExpenseBudgetService {
 
   public List<User> getUsersWithBudget() {
     return sqlCache.queryBySql(ExpenseBudgetQuery.getUsersWithBudget, Collections.emptyMap(), User.class);
-  }
-
-  public String getAvailableBudgetsForUser(Long userId, String expenseDate) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
-    params.put("expenseDate", expenseDate);
-
-    String updated =
-        sqlCache.queryForObjectBySql(ExpenseBudgetQuery.getAvailableBudgetsForUser, params, String.class);
-    return null != updated ? updated : "[]";
   }
 
   public List<ExpenseBudget> getBudgetExpensesVsRemaining(

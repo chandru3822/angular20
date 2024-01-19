@@ -6,7 +6,8 @@
           <v-toolbar-title class="app-title">Reimbursement Requests</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}]">
+            <v-btn text color="primary"
+                   @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}]">
               <v-icon v-if="!createNew">add</v-icon>
               {{ createNew ? 'cancel' : 'Add Reimbursement Request' }}
             </v-btn>
@@ -28,13 +29,18 @@
                           @click:clear="users = []"
           ></v-autocomplete>
           <DatetimePickerInput
-            v-model="newReimbursementRequest.expenseDate"
-            :timezone="timezone"
-            :type="'date'"
-            :format="'MM/DD/YYYY'"
-            label="Expense Date"
-            :change-callback="getBudgetTypesForUser"
+              v-model="newReimbursementRequest.expenseDate"
+              :timezone="timezone"
+              :type="'date'"
+              :format="'MM/DD/YYYY'"
+              label="Expense Date"
           />
+          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
+                          :items="usersWithBudget"
+                          label="Budget User"
+                          item-text="fullName"
+                          item-value="id"
+          ></v-autocomplete>
           <v-autocomplete v-model="newReimbursementRequest.glCodeId"
                           :items="glCodes"
                           label="GL Code"
@@ -45,17 +51,10 @@
               {{ item.code }} - {{ item.description }}
             </template>
           </v-autocomplete>
-          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
-                          :items="usersWithBudget"
-                          label="Budget User"
-                          item-text="fullName"
-                          item-value="id"
-                          @input="getBudgetTypesForUserNew"
-          ></v-autocomplete>
-          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetId"
-                          :items="budgetTypesForUser"
+          <v-autocomplete v-model="newReimbursementRequest.budgetTypeId"
+                          :items="budgetTypes"
                           label="Budget Type"
-                          item-text="budgetType"
+                          item-text="name"
                           item-value="id"
           ></v-autocomplete>
           <v-text-field text
@@ -79,13 +78,13 @@
         </v-card>
         <v-divider v-if="createNew"></v-divider>
         <v-data-table
-          :headers="headers"
-          :items="filterReimbursementRequests()"
-          :items-per-page="100"
-          :mobile-breakpoint="0"
-          fixed-header
-          :footer-props="footerProps"
-          class="elevation-1 fix-column-width-bug square-card"
+            :headers="headers"
+            :items="filterReimbursementRequests()"
+            :items-per-page="100"
+            :mobile-breakpoint="0"
+            fixed-header
+            :footer-props="footerProps"
+            class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
             <span class="default-text-color">No Reimbursement Requests</span>
@@ -106,7 +105,8 @@
               <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text color="primary" @click="[selectedRequest = item, getRequestAttachmentPresignedUrl(item)]">
+                  <v-btn small text color="primary"
+                         @click="[selectedRequest = item, getRequestAttachmentPresignedUrl(item)]">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
@@ -225,14 +225,14 @@
             </v-col>
             <v-col cols="12" sm="7" class="pt-0">
               <v-data-table
-                v-if="selectedRequest.expenses.length > 0"
-                :headers="expenseHeaders"
-                :items="selectedRequest.expenses"
-                disable-sort
-                :items-per-page="-1"
-                :mobile-breakpoint="0"
-                hide-default-footer
-                class="elevation-0 fix-column-width-bug square-card"
+                  v-if="selectedRequest.expenses.length > 0"
+                  :headers="expenseHeaders"
+                  :items="selectedRequest.expenses"
+                  disable-sort
+                  :items-per-page="-1"
+                  :mobile-breakpoint="0"
+                  hide-default-footer
+                  class="elevation-0 fix-column-width-bug square-card"
               >
                 <template #header.icons="{}">
                   <div class="text-right mr-2">
@@ -272,17 +272,16 @@
                                       type="search"
                                       item-value="id"
                                       class="clickable"
-                                      @input="getBudgetTypesForUser(item, selectedRequest.expenseDate)"
                       ></v-autocomplete>
                     </td>
                     <td class="text-left">
-                      <v-autocomplete v-model="item.expenseBudgetId"
-                                      :items="budgetTypesForUser"
+                      <v-autocomplete v-model="item.budgetTypeId"
+                                      :items="budgetTypes"
                                       label="Budget Type"
                                       class="clickable"
                                       hide-details
                                       single-line
-                                      item-text="budgetType"
+                                      item-text="name"
                                       item-value="id"
                       ></v-autocomplete>
                     </td>
@@ -312,7 +311,7 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-dialog = deleteConfirm
+        :open-dialog=deleteConfirm
         @confirm=deleteReimbursementRequest(itemToDelete)
         @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this Reimbursement Request for <strong>{{ itemToDeleteCreatedBy }}:
@@ -324,9 +323,17 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, deleteRequest, getRequestWithParams, postRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  deleteRequest,
+  getRequestWithParams,
+  postRequest,
+  putRequest,
+  getSnackbar
+} from '@/helpers/helpers'
 import constants from "@/helpers/constants";
-import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
+import {getGlCodes, getBudgetTypes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -364,7 +371,7 @@ export default {
       userId: this.$store.state.user.details.id,
       usersLoading: false,
       userSearchText: null,
-      budgetTypesForUser: [],
+      budgetTypes: [],
       glCodes: [],
       headers: [
         {text: 'Rep', value: 'createdBy', show: true},
@@ -395,7 +402,8 @@ export default {
   },
   created() {
     this.getReimbursementRequests()
-    this.getGlCodes()
+    this.getGlCodeList()
+    this.getBudgetTypes()
     this.getUsersWithBudget()
   },
   watch: {
@@ -547,28 +555,18 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getBudgetTypesForUserNew() {
-      return this.getBudgetTypesForUser(this.newReimbursementRequest, this.newReimbursementRequest.expenseDate)
-    },
-    async getBudgetTypesForUser(item, expenseDate) {
+    async getBudgetTypes() {
       //reset the budget id every time a user or expense date changes
-      item.expenseBudgetId = null
-      if (null != item.expenseBudgetUserId && null != expenseDate) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            userId: item.expenseBudgetUserId,
-            expenseDate: expenseDate
-          }
-          const {data, status} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
-          this.budgetTypesForUser = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getBudgetTypes()
+        this.budgetTypes = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     getReimbursementUsersDebounced(val) {
@@ -593,7 +591,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getGlCodes() {
+    async getGlCodeList() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getGlCodes()

@@ -38,7 +38,7 @@ public class ReimbursementQuery {
        inner join flow.position p on p.id = up.position_id and p.company_id = 3
        LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
        LEFT JOIN flow."user" ebu on ebu.id = eb.user_id
-       LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+       LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
     WHERE rr.reimbursement_request_status_id = 3
       and rr.archived is not true
     """;
@@ -60,7 +60,7 @@ public class ReimbursementQuery {
     FROM brs.reimbursement_request rr
       INNER JOIN flow."user" u on u.id = rr.created_by_id
       LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
-      LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+      LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
     WHERE rr.reimbursement_request_status_id = :statusId
         and rr.expense_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
         and u.id = :userId
@@ -150,7 +150,7 @@ public class ReimbursementQuery {
     FROM brs.reimbursement_request rr
       INNER JOIN flow."user" u on u.id = rr.created_by_id
       LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
-      LEFT JOIN brs.budget_type bt on bt.id = eb.budget_type_id
+      LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
     WHERE rr.reimbursement_request_status_id = :statusId
         and eb.user_id = :supervisorId
         and rr.archived is not true
