@@ -2,7 +2,7 @@
   <v-container id="company-dash-container">
     <v-card class="filter-bar">
       <v-row align="center">
-        <div class="dashboard-header">
+        <div class="title-large company-dashboard-header">
           Company Dashboard
         </div>
         <div class="checkbox-container">
@@ -55,12 +55,12 @@
 
 
       <template #header.milestone="{}" id="milestones-header">Milestones</template>
-      <template #header.actualTotal="{}" ><v-select :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
-      <template #header.actualTotal2="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
-      <template #header.actualTotal3="{}" ><v-select placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
+      <template #header.actualTotal="{}" ><v-select class="dropdown-header" :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)" name="hI"></v-select></template>
+      <template #header.actualTotal2="{}" ><v-select class="dropdown-header" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)"></v-select></template>
+      <template #header.actualTotal3="{}" ><v-select class="dropdown-header" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)"></v-select></template>
 
 
-      <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td">{{ item.name }}</template>
+      <template #item.milestone="{item, index}" id="milestones-col" class="milestone-name-col-td"><span :class="{'label-medium': item.major_milestone}">{{ item.name }}</span></template>
       <template #item.actualTotal="{item, index}" class="milestone-col-td" >
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
@@ -723,6 +723,9 @@
 </script>
 
 <style lang="scss" scoped>
+  .dropdown-header{
+    width: auto !important;
+  }
   .v-data-table{
     overflow-x: auto;
   }
@@ -777,6 +780,10 @@
 
   .v-select ::v-deep .v-select__selection {
     color: var(--v-primaryText-base) !important;
+  }
+
+  .company-dashboard-header{
+    margin-left: 28px
   }
 
 
