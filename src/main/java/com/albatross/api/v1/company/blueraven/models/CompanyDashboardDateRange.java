@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.models;
 import lombok.Data;
 
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Created by Joseph Canto on 2020-09-15.
@@ -12,6 +13,8 @@ public class CompanyDashboardDateRange {
     private int id;
     private String friendlyName, name, trendText;
     private Instant startDate, endDate, trendStart, trendEnd;
+
+    private List<CompanyPeriod> periodList;
 
   public CompanyDashboardDateRange(int id, String friendlyName, String name, Instant startDate, Instant endDate, Instant trendStart, Instant trendEnd,
   String trendText) {
@@ -24,4 +27,6 @@ public class CompanyDashboardDateRange {
     this.trendEnd = trendEnd;
     this.trendText = trendText;
   }
+
+  public CompanyDashboardDateRange(){};
 }

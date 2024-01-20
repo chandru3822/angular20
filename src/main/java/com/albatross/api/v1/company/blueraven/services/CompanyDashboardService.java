@@ -4,6 +4,7 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardDateRange;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
+import com.albatross.api.v1.company.blueraven.models.CompanyPeriod;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
@@ -131,7 +132,20 @@ public class CompanyDashboardService {
 
     ArrayList<CompanyDashboardDateRange> ranges = new ArrayList<>();
 
-     String[] rangeNames = {"Yesterday", "Today", "Tomorrow", "Current Week", "Current Period", "Last Week",
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("today", today.toString());
+    List<CompanyPeriod> companyPeriods = sqlCache.queryBySql(CompanyDashboardQuery.getCompanyDashboardPeriods, params, CompanyPeriod.class);
+    CompanyPeriod currentPeriod = null;
+    CompanyPeriod previousPeriod = null;
+    CompanyPeriod doublePreviousPeriod = null;
+    for(int x = 0; x < companyPeriods.size(); x++){
+      if(companyPeriods.get(x).getEndDate().after(Date.from(today)) || companyPeriods.get(x).getEndDate().equals(Date.from(today))){
+        currentPeriod = companyPeriods.get(x);
+        previousPeriod = companyPeriods.get(x-1);
+        doublePreviousPeriod = companyPeriods.get(x-2);
+      }
+    }
+    String[] rangeNames = {"Yesterday", "Today", "Tomorrow", "Current Week", "Current Period", "Last Week",
     "Last 30 Days", "Last Period", "Period", "Custom", "Current Month", "Current Quarter", "Current Year",
     "All Time"};
 
@@ -189,11 +203,17 @@ public class CompanyDashboardService {
       today.minus(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue()+7, ChronoUnit.DAYS),
       today.minus(today.atZone(ZoneId.of("UTC")).getDayOfWeek().getValue()+1, ChronoUnit.DAYS),
       "last week"));
-   // ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD", today.plus(1, ChronoUnit.DAYS), today.plus(1, ChronoUnit.DAYS), today, today));
+    ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD", currentPeriod.getStartDate().toInstant(), currentPeriod.getEndDate().toInstant(), previousPeriod.getStartDate().toInstant(), previousPeriod.getStartDate().toInstant(), "last period"));
     ranges.add(new CompanyDashboardDateRange(6, "Last Week", "LAST WEEK", today.minus(6, ChronoUnit.DAYS), today, today.minus(13, ChronoUnit.DAYS), today.minus(7, ChronoUnit.DAYS), "the week before last week"));
     ranges.add(new CompanyDashboardDateRange(7, "Last 30 Days", "LAST_30_DAYS", today.minus(29, ChronoUnit.DAYS), today, today.minus(59, ChronoUnit.DAYS), today.minus(30, ChronoUnit.DAYS), "30 days before last 30 days"));
-   // ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
-    //ranges.add(new CompanyDashboardDateRange(9, "Period", "PERIOD", today, today, today.minus(1, ChronoUnit.DAYS), today.minus(1, ChronoUnit.DAYS)));
+    ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", previousPeriod.getStartDate().toInstant(), previousPeriod.getEndDate().toInstant(), doublePreviousPeriod.getStartDate().toInstant(), doublePreviousPeriod.getEndDate().toInstant(), "the period before the selected period"));
+    CompanyDashboardDateRange periodRange = new CompanyDashboardDateRange();
+    periodRange.setId(9);
+    periodRange.setPeriodList(companyPeriods);
+    periodRange.setTrendText("the period before the selected period");
+    periodRange.setFriendlyName("Period");
+    periodRange.setName("PERIOD");
+    ranges.add(periodRange);
     ranges.add(new CompanyDashboardDateRange(10, "Custom", "CUSTOM", null, null, null, null, null));
     ranges.add(new CompanyDashboardDateRange(11, "Current Month", "CURRENT_MONTH", today.minus(today.atZone(ZoneId.of("UTC")).getDayOfMonth()-1, ChronoUnit.DAYS), currentMonthEnd,
       lastMonthStart, lastMonthEnd, "last month"));
