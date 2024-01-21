@@ -131,7 +131,6 @@ public class CompanyDashboardService {
     User user = securityService.getCurrentUser();
 
     ArrayList<CompanyDashboardDateRange> ranges = new ArrayList<>();
-
     HashMap<String, Object> params = new HashMap<>();
     params.put("today", today.toString());
     List<CompanyPeriod> companyPeriods = sqlCache.queryBySql(CompanyDashboardQuery.getCompanyDashboardPeriods, params, CompanyPeriod.class);
@@ -139,7 +138,8 @@ public class CompanyDashboardService {
     CompanyPeriod previousPeriod = null;
     CompanyPeriod doublePreviousPeriod = null;
     for(int x = 0; x < companyPeriods.size(); x++){
-      if(companyPeriods.get(x).getEndDate().after(Date.from(today)) || companyPeriods.get(x).getEndDate().equals(Date.from(today))){
+      if(LocalDateTime.ofInstant(today, ZoneId.of("UTC")).truncatedTo(ChronoUnit.DAYS).isBefore(LocalDateTime.ofInstant(companyPeriods.get(x).getEndDate().toInstant(), ZoneId.of("UTC")))
+        || LocalDateTime.ofInstant(today, ZoneId.of("UTC")).truncatedTo(ChronoUnit.DAYS).equals(LocalDateTime.ofInstant(companyPeriods.get(x).getEndDate().toInstant(), ZoneId.of("UTC")))){
         currentPeriod = companyPeriods.get(x);
         previousPeriod = companyPeriods.get(x-1);
         doublePreviousPeriod = companyPeriods.get(x-2);
@@ -209,7 +209,7 @@ public class CompanyDashboardService {
     ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", previousPeriod.getStartDate().toInstant(), previousPeriod.getEndDate().toInstant(), doublePreviousPeriod.getStartDate().toInstant(), doublePreviousPeriod.getEndDate().toInstant(), "the period before the selected period"));
     CompanyDashboardDateRange periodRange = new CompanyDashboardDateRange();
     periodRange.setId(9);
-    periodRange.setPeriodList(companyPeriods);
+    periodRange.setPeriodList(companyPeriods.reversed());
     periodRange.setTrendText("the period before the selected period");
     periodRange.setFriendlyName("Period");
     periodRange.setName("PERIOD");
