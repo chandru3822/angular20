@@ -57,18 +57,69 @@
 
       <template #header.milestone="{}" id="milestones-header">Milestones</template>
       <template #header.actualTotal="{}" >
-        <v-select class="dropdown-header body-small selected-option" id="company-dash-first-header" :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)">
-          <template #selection="{item}">
-              <span v-if="item.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===item.id)}]">
+<!--        <v-select class="dropdown-header body-small selected-option" id="company-dash-first-header" :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)">-->
+<!--          <template #selection="{item}">-->
+<!--              <span v-if="item.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===item.id)}]">-->
+<!--                      {{firstCustom.name}}</span>-->
+<!--            <span v-else :class="[{'selected-option':(firstDateRange===item.id)}]">-->
+<!--                      {{item.friendlyName}}</span>-->
+<!--          </template>-->
+<!--          <template #item="{item}">-->
+<!--              <span :class="[{'selected-option':(firstDateRange===item.id)}]">-->
+<!--                      {{item.friendlyName}}</span>-->
+<!--          </template>-->
+<!--        </v-select>-->
+        <v-menu data-app left
+                offset-y
+                :max-height="`calc(100vh - 20px)`"
+                class="account-menu"
+                v-model="openMenu"
+                :close-on-content-click="true">
+          <template v-slot:activator="{ on }">
+            <v-btn class="account-menu-button label-medium px-1"
+                   dark
+                   v-on="on"
+            >
+              <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===getDropdownById(firstDateRange).id)}]">
                       {{firstCustom.name}}</span>
-            <span v-else :class="[{'selected-option':(firstDateRange===item.id)}]">
-                      {{item.friendlyName}}</span>
+              <span v-else-if="getDropdownById(firstDateRange)?.name === 'PERIOD'">
+              {{ getDropdownById(firstDateRange).periodList[firstPeriod].shortLabel}}
+              </span>
+              <span v-else>
+              {{ getDropdownById(firstDateRange)?.friendlyName}}
+              </span>
+              <v-icon>mdi-chevron-down</v-icon>
+            </v-btn>
           </template>
-          <template #item="{item}">
-              <span :class="[{'selected-option':(firstDateRange===item.id)}]">
-                      {{item.friendlyName}}</span>
-          </template>
-        </v-select>
+          <div>
+            <v-list>
+              <v-list-item v-for="(item, index) in dropdownValues">
+                <v-list-item-title v-if="item.name === 'PERIOD'">
+                  <v-menu open-on-hover location="end">
+                    <template v-slot:activator="{ on }">
+                      <span v-on="on">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                    </template>
+                    <div>
+                      <v-list>
+                        <v-list-item v-for="(period, index) in item.periodList" @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openMenu = false">
+                          <v-list-item-title>
+                            {{ period.label }}
+                          </v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </div>
+                  </v-menu>
+
+                </v-list-item-title>
+                <v-list-item-title v-else @click="firstDateRange = item.id; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM');">{{item.friendlyName}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
+        </v-menu>
+
       </template>
       <template #header.actualTotal2="{}" >
         <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)">
@@ -209,6 +260,7 @@
         snackbar: {},
         constants,
         showDrilldown: false,
+        openMenu: false,
         selectedMilestone: {},
         loadPartners: false,
         dividerForSingleDayTargets: 6,
@@ -251,7 +303,8 @@
           startDate: "",
           endDate: "",
           trendStart: "",
-          trendEnd: ""
+          trendEnd: "",
+          isActive: false
         },
         secondCustom: {
           startDate: "",
@@ -266,6 +319,9 @@
           trendStart: "",
           trendEnd: ""
         },
+        firstPeriod: null,
+        secondPeriod: null,
+        thirdPeriod: null,
         singleDateRange: false,
         singleDateRanges: ['Yesterday', 'Today', 'Tomorrow'],
         loadTargetsRanges:  ['Yesterday', 'Today', 'Tomorrow', 'Current Week', 'Last Week'],
@@ -530,15 +586,29 @@
           }
           if(result.startDate === null){
             if(!this.firstCustom.isActive) {
-              this.customColumn = 1;
-              if (this.firstCustom.startDate.toString().length > 0) {
-                this.customDate.startDate = this.firstCustom.startDate.format('YYYY-MM-DD').toString();
+              if(result.name === 'CUSTOM') {
+                this.customColumn = 1;
+                if (this.firstCustom.startDate.toString().length > 0) {
+                  this.customDate.startDate = this.firstCustom.startDate.format('YYYY-MM-DD').toString();
+                }
+                if (this.firstCustom.endDate.toString().length > 0) {
+                  this.customDate.endDate = this.firstCustom.endDate.format('YYYY-MM-DD').toString();
+                }
+                this.selectingCustomDates = true;
+                return;
               }
-              if (this.firstCustom.endDate.toString().length > 0) {
-                this.customDate.endDate = this.firstCustom.endDate.format('YYYY-MM-DD').toString();
+              else if(result.name === 'PERIOD'){
+                result.startDate = result.periodList[this.firstPeriod].startDate;
+                result.endDate = result.periodList[this.firstPeriod].endDate;
+                if(this.firstPeriod != result.periodList.length-1){
+                  result.trendStart = result.periodList[this.firstPeriod+1].startDate;
+                  result.trendEnd = result.periodList[this.firstPeriod+1].endDate;
+                }
+                else{
+                  result.trendStart = null;
+                  result.trendEnd = null;
+                }
               }
-              this.selectingCustomDates = true;
-              return;
             }
             else{
               result = cloneDeep(this.firstCustom);
@@ -643,7 +713,6 @@
             csvData += ', ' +  'Trend 1'
           }
           if(this.secondDateRange){
-            console.log("HELLO");
             csvData += ' , ' + ((this.dropdownValues.find(x => x.id === this.secondDateRange).name==='CUSTOM')?this.secondCustom.name:this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
             if(this.viewTrends){
               csvData += ', ' +  'Trend 2'

@@ -6,6 +6,6 @@ import java.util.Date;
 
 @Data
 public class CompanyPeriod {
-  String label;
+  String label, shortLabel;
   Date startDate, endDate;
 }

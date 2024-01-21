@@ -70,6 +70,6 @@ public class CompanyDashboardQuery {
     """;
 
   public final static String getCompanyDashboardPeriods = """
-    select CONCAT('Period ', min(period), ' (', min(year), '): ', to_char(min(start_date), 'MM/DD/YYYY'), ' - ', to_char(max(end_date), 'MM/DD/YYYY')) AS label, min(start_date) AS start_date, max(end_date) AS end_date from brs.reporting_period where start_date >= '2019-01-01' AND start_date <= :today::date GROUP BY year, period ORDER BY start_date;
+    select CONCAT('Period ', min(period), ' (', min(year), '): ', to_char(min(start_date), 'MM/DD/YYYY'), ' - ', to_char(max(end_date), 'MM/DD/YYYY')) AS label, CONCAT('Period ', min(period), ' (', min(year), ')') AS short_label, min(start_date) AS start_date, max(end_date) AS end_date from brs.reporting_period where start_date >= '2019-01-01' AND start_date <= :today::date GROUP BY year, period ORDER BY start_date;
                                         """;
 }
