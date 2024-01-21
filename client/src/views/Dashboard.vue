@@ -580,7 +580,7 @@
       },
       async changeDropdownSelection(dropdown){
         if(dropdown === 1){
-          let result = this.dropdownValues.find(x => x.id === this.firstDateRange)
+          let result = cloneDeep(this.dropdownValues.find(x => x.id === this.firstDateRange))
           if(result === null){
             return null;
           }
@@ -598,6 +598,7 @@
                 return;
               }
               else if(result.name === 'PERIOD'){
+                console.log("New Period")
                 result.startDate = result.periodList[this.firstPeriod].startDate;
                 result.endDate = result.periodList[this.firstPeriod].endDate;
                 if(this.firstPeriod != result.periodList.length-1){
