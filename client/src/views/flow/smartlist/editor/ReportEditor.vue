@@ -43,7 +43,6 @@
                 color="primary"
                 text
                 @click="router.push(`/smartlistv1/${report.id}`)"
-                color="primary"
               >
                 <v-icon class="mr-1">mdi-eye</v-icon>
                 View old smartlist editor
