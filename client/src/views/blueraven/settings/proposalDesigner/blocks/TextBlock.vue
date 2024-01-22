@@ -1,7 +1,9 @@
 <template>
   <div class="proposal-text" :style="styles">
-    <fragment v-if="!editable" v-html="html" v-bind="$attrs"/>
-    <text-editor v-else :value="blockValue" @blur="updateValue" @init="register" :tags="tags"/>
+    <fragment v-if="!editable || editable && (selectedId !== id)" v-html="html" v-bind="$attrs"/>
+    <fragment v-else>
+      <text-editor v-if="editor.current" :editor="editor.current"/>
+    </fragment>
   </div>
 </template>
 <script>
@@ -9,13 +11,13 @@ import TextEditor from './text/TextEditor'
 import {generateHTMLFromJSON} from './text/utils'
 import {mapState} from 'vuex'
 import {Fragment} from 'vue-frag'
-import {ProposalMutations} from '@/views/blueraven/settings/proposalDesigner/store'
 
 const xmlSerializer = new XMLSerializer()
 
 export default {
   name: 'TextBlock',
   components: {TextEditor, Fragment},
+  inject: ['editor'],
   props: {
     id: {
       required: true
@@ -48,8 +50,8 @@ export default {
       return {...themeStyles, ...this.blockStyle}
     },
     ...mapState({
-      theme: (state) => state.proposal.theme,
-      tags: (state) => state.proposal.tags?.map(t => t.tagName)
+      selectedId: state => state.proposal.selectedId,
+      theme: (state) => state.proposal.theme
     })
   },
   watch: {
@@ -61,12 +63,6 @@ export default {
     }
   },
   methods: {
-    updateValue(payload) {
-      this.$store.commit(ProposalMutations.SET_VALUE, {blockId: this.id, value: payload})
-    },
-    register(editor) {
-      this.$store.commit(ProposalMutations.REGISTER_EDITOR, {blockId: this.id, editor})
-    },
     generateHtml(val) {
       try {
         //trick the fragment into always updating

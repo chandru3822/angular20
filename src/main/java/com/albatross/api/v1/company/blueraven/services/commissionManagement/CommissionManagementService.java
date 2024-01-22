@@ -561,11 +561,13 @@ public class CommissionManagementService {
     public BackdatedPlanApprovalRequiredException(
         Date userStartDate, Long payrollId, Date payrollEndDate) {
       super(
-          String.format(
-              "Provided user start date (%s) is before most"
-                  + " recent payroll's end date (payroll id %d; end date %s);"
-                  + " executive approval required",
-              userStartDate, payrollId, payrollEndDate));
+        (
+          """
+          Provided user start date (%s) is before most
+           recent payroll's end date (payroll id %d; end date %s);
+           executive approval required
+          """).formatted(
+          userStartDate, payrollId, payrollEndDate));
       this.userStartDate = userStartDate;
       this.payrollId = payrollId;
       this.payrollEndDate = payrollEndDate;

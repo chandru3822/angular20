@@ -112,10 +112,7 @@
         loadComplete: false,
         mutableCompanyTools: this.companyTools,
         userId: this.$store.state.user.details.id,
-        headerColor: VITE_ENV === 'local' ? constants.LOCAL_COLOR :
-                     VITE_ENV === 'dev' || VITE_ENV === 'stage' ?  constants.STAGE_COLOR :
-                     VITE_ENV === 'flux' ? constants.FLUX_COLOR :
-                     VITE_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
+        headerColor: constants.ENV_COLOR,
         menuOpen: false,
         highestCompanyId: this.$store.state.user.details.highestCompanyId,
         databaseLoaded: false,

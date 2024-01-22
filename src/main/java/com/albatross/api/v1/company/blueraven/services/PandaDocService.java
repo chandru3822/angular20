@@ -77,7 +77,7 @@ public class PandaDocService {
    * @throws Exception
    */
   private String findTemplateId(PandaDocProjectDetails deets, Boolean isSpanish) throws Exception {
-    String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
+    String name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName(), deets.getIsBatteryOnly());
     String tplId = findTemplateIdByName(name);
 
     log.debug(
@@ -86,13 +86,13 @@ public class PandaDocService {
     if (tplId == null) {
       log.debug("PANDADOC: falling back to generic utility company");
       deets.setUtilityCompany(pandaDoc.getGenericName());
-      name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName());
+      name = deets.getTemplateName(isSpanish, pandaDoc.getGenericName(), deets.getIsBatteryOnly());
       tplId = findTemplateIdByName(name);
     }
 
     // if we're still not finding a match, abort
     if (tplId == null) {
-      String err = String.format("No PandaDoc template matching '%s'", name);
+      String err = "No PandaDoc template matching '%s'".formatted(name);
       throw new Exception(err);
     }
 
@@ -232,8 +232,7 @@ public class PandaDocService {
     setRecipientInfoElecDocs(template, tokens, body);
     HttpResponse resp = POST("/documents", body.toString());
     JSONObject respBody = resp.getJSON();
-    return String.format(
-        "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets", respBody.get("id"));
+    return "https://app.pandadoc.com/a/#/document/v1/editor/%s/widgets".formatted(respBody.get("id"));
   }
 
   /**
@@ -252,7 +251,7 @@ public class PandaDocService {
     } else if (!installAgreementRepository.isSunlightProject(financier)
         && !installAgreementRepository.isSunpowerProject(financier)) {
       throw new Exception(
-          String.format("unexpected financier for project %d: %s", projectId, financier));
+        "unexpected financier for project %d: %s".formatted(projectId, financier));
     }
   }
 
@@ -318,13 +317,13 @@ public class PandaDocService {
       Double value = tokens.getDouble(key);
       log.debug("PANDADOC: field {}: {}", key, value);
       if (value == null) {
-        errors.add(String.format("%s is undefined", key));
+        errors.add("%s is undefined".formatted(key));
       } else if (value <= 0) {
-        errors.add(String.format("%s must be greater than 0", key));
+        errors.add("%s must be greater than 0".formatted(key));
       }
     } catch (JSONException ex) {
       Object obj = tokens.opt(key);
-      errors.add(String.format("%s is an invalid field (%s)", key, obj));
+      errors.add("%s is an invalid field (%s)".formatted(key, obj));
     }
 
     return errors;
@@ -419,7 +418,7 @@ public class PandaDocService {
         pandaDoc.getDocumentPrefix(),
         tokens.getString("Deal.Contact.Name"),
         tokens.optString("Deal.Proposal Number"),
-        "Installation Agreement");
+        "Home Improvement Contract");
     }
     else {
       name = joinIfPresent(
@@ -553,6 +552,7 @@ public class PandaDocService {
     log.debug("PANDADOC: sending projectId {} document {}", projectId, documentId);
     JSONObject body = new JSONObject();
     body.put("message", getNotification(tokens, leadSource));
+    body.put("sender", Map.of("email", "support@blueravensolar.com"));
 
     HttpResponse resp = POST("/documents/" + documentId + "/send", body.toString());
     String respBody = resp.getBody();
@@ -682,6 +682,7 @@ public class PandaDocService {
 
       tokens.put("Proposal.Number Of Batteries", numberOfBatteries);
       tokens.put("Proposal.Storage Size", storageSize);
+      tokens.put("Proposal.Battery Brand", deets.getStorageBrand());
       tokens.put("Proposal.Estimated Backup Days", result.get("custom_fields.Estimated Backup Days"));
       tokens.put("Proposal.Solar Rebate For HIC", result.get("custom_fields.Solar Rebate for HIC"));
       tokens.put("Proposal.Solar Below the Line Rebates", result.get("custom_fields.Solar Below the Line Rebates"));
@@ -773,6 +774,7 @@ public class PandaDocService {
     // New params format, keeping the Deal. params until all templates are updated with the new parameter names
     tokens.put("Project.Id", deets.getProjectId());
     tokens.put("Project.Name", deets.getProjectName());
+    tokens.put("Project.Closer Name", deets.getCloserFirstName() + " " + deets.getCloserLastName());
     tokens.put("Project.Address", getContactAddress(deets));
     tokens.put(
       "Project.Contact Name", deets.getCustomerFirstName() + " " + deets.getCustomerLastName());

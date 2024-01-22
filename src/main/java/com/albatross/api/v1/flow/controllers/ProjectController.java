@@ -164,13 +164,24 @@ public class ProjectController {
     @PathVariable Long projectId,
     @RequestParam Long attachmentTypeId,
     @RequestParam(required = false) String displayName,
-    @RequestParam("file") MultipartFile file)
+    @RequestParam MultipartFile file)
     throws IOException {
     if (displayName == null) {
       displayName = file.getOriginalFilename();
     }
     return new ResponseEntity<>(
       projectService.addAttachment(file, projectId, attachmentTypeId, displayName), HttpStatus.OK);
+  }
+
+  @PostMapping(value = "/{projectId}/attachments")
+  public ResponseEntity<List<Attachment>> uploadMultipleProjectAttachments(
+    @PathVariable Long projectId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam("files") MultipartFile[] files)
+    throws IOException {
+
+    return new ResponseEntity<>(
+      projectService.addAttachments(files, projectId, attachmentTypeId), HttpStatus.OK);
   }
 
   // status stuff - i cant move these to their own controller because mobile uses some of them and i dont want to find out which ones right now.

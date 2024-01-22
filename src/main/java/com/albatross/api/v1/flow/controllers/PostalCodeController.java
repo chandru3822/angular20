@@ -7,7 +7,6 @@ import com.albatross.api.v1.flow.services.PostalCodeService;
 import com.albatross.api.v1.flow.services.RoundRobinService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +15,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/postalCode")
 public class PostalCodeController {
 

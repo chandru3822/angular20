@@ -163,7 +163,7 @@
           </template>
           <template #item-@="{ item }">
             <div class="user">
-                  ({{ item.value }})
+                  {{ item.value }}({{item["email"]}})
             </div>
           </template>
         </Mentionable>
@@ -278,7 +278,7 @@ export default {
       filterMenuOpen: false,
       //should probably load this but hardcoding for now
       activityTypes: [
-        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: true},
+        {id: 1, activityType: 'Activities', activityTypeSingularLabel: 'Activity', show: false},
         {id: 2, activityType: 'Notes', activityTypeSingularLabel: 'Note', show: true},
       ],
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN'),
@@ -295,9 +295,6 @@ export default {
       } else {
         this.getActivityTopics()
       }
-    },
-    sortedFilteredActivities: function (){
-      this.getPinnedActivitiesOnly()
     },
     searchText: function () {
       this.$emit('scrollToTop')
@@ -333,6 +330,7 @@ export default {
 
       }), ['dateCreated'], [ this.sortDirection])
 
+      this.getPinnedActivitiesOnly(this.activities)
       if(sortedList.length > (this.activitiesToShow * this.bottomHitCount) ) {
         if(this.$refs.activityList) {
           this.$refs.activityList.infiniteStateLoaded(false)
@@ -414,8 +412,8 @@ export default {
       })
 
     },
-    getPinnedActivitiesOnly() {
-      const sortedFilteredPinnedActivities = cloneDeep(this.sortedFilteredActivities).filter(a => a.pinned)
+    getPinnedActivitiesOnly(activities) {
+      const sortedFilteredPinnedActivities = activities.filter(a => a.pinned)
       if(this.pinnedActivitiesOnly.length === 0 || sortedFilteredPinnedActivities.length !== this.pinnedActivitiesOnly.length){
         //if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
         // but we still get the update when we pin/unpin a note
@@ -496,7 +494,6 @@ export default {
       try {
         const {data} = await getRequest('/user/mentionableUsers', null, [])
         this.users = data
-
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')

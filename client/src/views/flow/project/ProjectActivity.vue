@@ -34,7 +34,7 @@
         <span v-else class="albatross-body-3">Go to user</span>
       </v-tooltip>
       <span v-else>{{ sidebarTitle }}</span>
-      <div v-if="showSmsTab && selectedOption === 0" style="display: inline-flex">
+      <div v-if="showSmsTab && selectedOption === 0 && !$route.path.includes('inbox')" style="display: inline-flex">
         <v-chip v-if="messageProperties.projectName" class="customer-chip" style="margin-left: 4px;" small>
           <span >Customer</span>
         </v-chip>
@@ -306,6 +306,9 @@ export default {
     }
   },
   methods: {
+    startReadNotesTimer(msg){
+      //do something here?
+    },
     handlePageLoad() {
       //dont load the sms stuff if they aren't on the sms tab
       if (this.userCanViewSms && this.selectedOption === 0) {
@@ -376,7 +379,7 @@ export default {
       if(this.showSmsTab) {
         try {
           this.conversationIsLoading = true
-          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`, null, [])
+          const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`, null, [])
           // this.$store.commit(AppMutations.SET_LOADING, false)
           this.teamsAssociatedToUser = data ?? []
 

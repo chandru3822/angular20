@@ -16,23 +16,23 @@ public class ImageOptions {
   public String getParams() {
     List<String> params = new ArrayList<>();
     if (w != null) {
-      params.add(String.format("w:%d", w));
+      params.add("w:%d".formatted(w));
     }
 
     if (h != null) {
-      params.add(String.format("h:%d", w));
+      params.add("h:%d".formatted(w));
     }
 
     if (q != null) {
-      params.add(String.format("q:%d", q));
+      params.add("q:%d".formatted(q));
     }
 
     if (ext != null) {
-      params.add(String.format("ext:%s", ext));
+      params.add("ext:%s".formatted(ext));
     }
 
     if (dpr != null && dpr > 0) {
-      params.add(String.format("dpr:%s", dpr));
+      params.add("dpr:%s".formatted(dpr));
     }
 
     return String.join("/", params);

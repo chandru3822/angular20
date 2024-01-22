@@ -56,6 +56,7 @@ export default {
   background-color: white;
   box-shadow: 0 0 5px 0 darkgrey;
   box-sizing: border-box;
+  position:relative;
 
   &:not(:last-child) {
     margin-bottom: 10px;

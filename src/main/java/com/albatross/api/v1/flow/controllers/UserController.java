@@ -292,7 +292,7 @@ public class UserController {
       @PathVariable Long userId,
       @RequestParam Long attachmentTypeId,
       @RequestParam String displayName,
-      @RequestParam("file") MultipartFile file)
+      @RequestParam MultipartFile file)
       throws IOException {
     return new ResponseEntity<>(
         userService.addAttachment(file, userId, attachmentTypeId, displayName), HttpStatus.OK);

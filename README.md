@@ -3,7 +3,7 @@
 ## Frontend (Vue2.x/Vite)
 
 ### System Requirements
-* Node 18+
+* Node 20+
 
 #### Prerequisites
 1. Create a PAT on GitHub
@@ -65,7 +65,7 @@ color="primaryCustom"
 ## Backend (Spring/Java)
 
 ### System Requirements
-* Java 16
+* Java 21
 * Maven
 
 #### Start postgres and redis

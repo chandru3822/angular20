@@ -221,8 +221,6 @@ create type brs.excluded_proposal_value as
   project_id                                     bigint,
   proposal_archived                              boolean,
   panel_brand                                    character varying,
-  inverter_brand_id                              bigint,
-  inverter_brand                                 varchar,
   aurora_design_id                               text,
   proposal_nbr                                   bigint,
   storage_type_id                                bigint,

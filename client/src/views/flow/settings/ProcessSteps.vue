@@ -81,12 +81,12 @@
               class="elevation-1 square-card table-striped"
             >
 
-                  <template #item.processStepName="{item}"  class="text-left pr-0">
+                  <template #item.processStepName="{item}" >
                     <v-btn small text :to="`/settings/processStep/${item.id}/components`" class="one-hunned process-step-button">
                       {{item.processStepName}}
                     </v-btn>
                   </template>
-                  <template #item.icons="{item}" class="text-right pl-0">
+                  <template #item.icons="{item}" >
                     <v-btn small text color="primary" :to="`/settings/processStep/${item.id}/components`">
                       <v-icon>edit</v-icon>
                     </v-btn>
@@ -252,6 +252,10 @@
   .process-step-button .v-btn__content {
     text-transform: none;
     justify-content: flex-start;
+  }
+
+  #process-steps-table > div.v-data-table__wrapper > table > tbody > tr > td {
+    justify-content: center;
   }
 
   @media (max-width: 770px) {

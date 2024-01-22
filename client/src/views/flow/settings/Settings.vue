@@ -169,6 +169,10 @@ export default {
         title: 'Message Templates',
         show: this.hasSettingsAccess
       }, {
+        path: '/settings/announcements',
+        title: 'Announcements',
+        show: this.hasSettingsAccess
+      }, {
         path: '/settings/hashtags',
         title: 'Topic Hashtags',
         show: this.hasSettingsAccess
@@ -235,7 +239,7 @@ export default {
       if(this.hasSettingsAccess) {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`)
+          const {data, status} = await getRequest(`/objectType/getCompanyObjectTypes`, null,[])
           this.companyObjectTypes = data
           this.setTitle()
           handleHidingGlobalLoader(this, status)

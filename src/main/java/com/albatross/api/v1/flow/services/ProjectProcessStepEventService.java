@@ -73,8 +73,6 @@ public class ProjectProcessStepEventService {
   private final BirdEyeService birdeyeService;
   private final StripeService stripeService;
 
-  private final ScheduleService scheduleService;
-
   @Value("${aws.storageBucket}")
   private String storageBucket;
 
@@ -184,7 +182,7 @@ public class ProjectProcessStepEventService {
           // if the action doesn't change the pps status then allow it
           // or if the root pps status is currently active, then allow
 
-          // get the requirements here - sames as humes, pass to canPermform
+          // get the requirements here - sames as humes, pass to canPerform
           List<Long> requirementIds =
             Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
               .filter(step -> step.getProcessStepEventRequirementId() != null)
@@ -201,7 +199,7 @@ public class ProjectProcessStepEventService {
       if (null != event.getEventBanners() && !event.getEventBanners().isEmpty()) {
         // if there are event banners, do the checks
         for (ProcessStepEventAction action : event.getEventBanners()) {
-          // get the requirements here - sames as humes, pass to canPermform
+          // get the requirements here - sames as humes, pass to canPerform
           List<Long> requirementIds =
             Objects.requireNonNull(action).getProcessStepEventLogicList().stream()
               .filter(step -> step.getProcessStepEventRequirementId() != null)
@@ -707,6 +705,17 @@ public class ProjectProcessStepEventService {
     sqlCache.updateBySql(sql, params);
   }
 
+  public List<Attachment> addAttachments(MultipartFile[] files, Long projectProcessStepEventId, Long attachmentTypeId) throws IOException {
+    List<Attachment> results = new ArrayList<>();
+    Attachment a;
+    for(MultipartFile file : files) {
+      a = addAttachment(file, projectProcessStepEventId, attachmentTypeId, file.getOriginalFilename());
+      results.add(a);
+    }
+
+    return results;
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(
@@ -919,12 +928,9 @@ public class ProjectProcessStepEventService {
     params.put("startTime", startTime);
     params.put("endTime", endTime);
     params.put("companyId", user.getCompanyId());
-    System.out.println(params);
-    List<ResourceAppointment> results =
-      sqlCache.queryBySql(
-        AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
 
-    return results;
+    return sqlCache.queryBySql(
+        AvailabilityQuery.getAppointmentsForOneResourceInRange, params, ResourceAppointment.class);
   }
 
   public List<ScheduleEvent> getConflictingEventsForCompanyByOrgAndUser(ScheduleController.EventSearchParams esp) {

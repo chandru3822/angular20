@@ -1,7 +1,6 @@
 package com.albatross.api.v1.flow.enums;
 
 import com.albatross.api.v1.flow.queries.*;
-import com.albatross.api.v1.flow.queries.EventQuery;
 import com.albatross.api.v1.flow.queries.customFieldValues.*;
 
 public enum ObjectType {

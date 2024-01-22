@@ -169,7 +169,7 @@ public class Ap6DelimitedSingleLineRecord {
             final LocalDate today = LocalDate.now();
 
             checkArgument(d.isEqual(today) || d.isAfter(today),
-                    String.format("payment date must be on or after today (%s)", LocalDate.now()));
+              "payment date must be on or after today (%s)".formatted(LocalDate.now()));
             this.date = d;
         }
 

@@ -464,7 +464,7 @@ export default {
     },
     async getUsers() {
       try {
-        const { data } = await getRequest(`/messaging/availableUsers/`)
+        const { data } = await getRequest(`/messaging/availableUsers`)
         this.availableUsers = data
 
         if (this.availableUsers) {
@@ -482,7 +482,7 @@ export default {
     async fetchTeamsForUser() {
       try {
         this.conversationIsLoading = true
-        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser/`)
+        const { data, status } = await getRequest(`/smsTeam/getTeamsForUser`)
         this.$store.commit(AppMutations.SET_LOADING, false)
         this.teamsAssociatedToUser = data
         if (this.teamsAssociatedToUser && this.teamsAssociatedToUser.length > 0) {

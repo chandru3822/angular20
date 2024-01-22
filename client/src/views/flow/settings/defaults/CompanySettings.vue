@@ -205,7 +205,8 @@ const LogoTypeEnum = {
     add: false,
     saving: false,
     image: {}
-  }
+  },
+
 }
 
 export default {

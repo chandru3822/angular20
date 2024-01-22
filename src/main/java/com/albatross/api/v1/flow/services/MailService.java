@@ -14,23 +14,23 @@ import com.amazonaws.util.IOUtils;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.RateLimiter;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
+import jakarta.mail.*;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.mail.*;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.util.ByteArrayDataSource;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,32 +41,32 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MailService {
 
   private final PropertiesConfiguration propConfig;
-  private final ThreadPoolTaskExecutor taskExecutor;
+  private final SimpleAsyncTaskExecutor taskExecutor;
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final AttachmentService attachmentService;
   private final ObjectMapper om;
 
   public void sendMessage(
-      String to,
-      String subject,
-      String message,
-      String sentByEmail,
-      String sentByName,
-      Long sentByUserId,
-      String cc) {
+    String to,
+    String subject,
+    String message,
+    String sentByEmail,
+    String sentByName,
+    Long sentByUserId,
+    String cc) {
     sendMessage(to, subject, message, null, sentByEmail, sentByName, sentByUserId, cc);
   }
 
   public void sendMessage(
-      String to,
-      String subject,
-      String message,
-      Map<String, DataSource> attachments,
-      String sentByEmail,
-      String sentByName,
-      Long sentByUserId,
-      String cc) {
+    String to,
+    String subject,
+    String message,
+    Map<String, DataSource> attachments,
+    String sentByEmail,
+    String sentByName,
+    Long sentByUserId,
+    String cc) {
 
     Session session = getSession();
     if (null == sentByEmail) {
@@ -79,19 +79,19 @@ public class MailService {
       InternetAddress salesOperationsEmail = new InternetAddress(sentByEmail, sentByName);
 
       msg.setFrom(salesOperationsEmail);
-      msg.setReplyTo(new Address[] {salesOperationsEmail});
-      if(to != null){
+      msg.setReplyTo(new Address[]{salesOperationsEmail});
+      if (to != null) {
         List<String> tos = Arrays.asList(to.split("\\s*,\\s*"));
-        for(String recipient : tos){
+        for (String recipient : tos) {
           msg.addRecipient(
-                  Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+            Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
         }
       }
-      if(cc != null) {
+      if (cc != null) {
         List<String> ccs = Arrays.asList(cc.split("\\s*,\\s*"));
-        for(String recipient : ccs){
+        for (String recipient : ccs) {
           msg.addRecipient(
-                  Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+            Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
         }
       }
 
@@ -119,7 +119,7 @@ public class MailService {
       Transport.send(msg);
 
       insertEmail(
-          sentByEmail, to, subject, message, attachmentNames, sentByUserId, true, sentByName, cc);
+        sentByEmail, to, subject, message, attachmentNames, sentByUserId, true, sentByName, cc);
       log.debug("EMAIL: MESSAGE SENT");
     } catch (Exception e) {
       log.error("EMAIL: SEND_MAIL_EXCEPTION", e);
@@ -133,7 +133,7 @@ public class MailService {
   public void sendUnprocessedEmails() throws InterruptedException {
     // get all unprocessed emails
     List<EmailMessage> unprocessedEmails =
-        sqlCache.queryBySql(EmailQuery.getAllUnprocessed, Collections.emptyMap(), new EmailMessageMapper<>(EmailMessage.class, om));
+      sqlCache.queryBySql(EmailQuery.getAllUnprocessed, Collections.emptyMap(), new EmailMessageMapper<>(EmailMessage.class, om));
 
     // TODO: it would be cool if this could send "templated" emails, and pass in an array of params
     // so we could make .ftl files for these and format them more easily
@@ -149,14 +149,14 @@ public class MailService {
    *
    * @param messages
    * @param attachments
-   * @throws InterruptedException
    * @return
+   * @throws InterruptedException
    */
   public int sendBulkMessages(
-      List<EmailMessage> messages,
-      Map<String, DataSource> attachments,
-      Boolean sendingUnprocessedEmails)
-      throws InterruptedException {
+    List<EmailMessage> messages,
+    Map<String, DataSource> attachments,
+    Boolean sendingUnprocessedEmails)
+    throws InterruptedException {
 
     Session session = getSession();
 
@@ -168,101 +168,101 @@ public class MailService {
       rateLimiter.acquire();
 
       taskExecutor.submit(
-          () -> {
-            try (final Transport transport = session.getTransport("smtp")) {
-              transport.connect();
+        () -> {
+          try (final Transport transport = session.getTransport("smtp")) {
+            transport.connect();
 
-              final MimeMessage mimeMessage = new MimeMessage(session);
+            final MimeMessage mimeMessage = new MimeMessage(session);
 
-              String from = message.getFrom();
-              if (null == from) {
-                from = getDefaultSenderEmailAddress();
-              }
-
-              final InternetAddress fromAddress =
-                  new InternetAddress(
-                      StringUtils.trimWhitespace(from), message.getFromDisplayName());
-              mimeMessage.setFrom(fromAddress);
-              mimeMessage.setReplyTo(new Address[] {fromAddress});
-              if(message.getTo() != null){
-                List<String> tos = Arrays.asList(message.getTo().split("\\s*,\\s*"));
-                for(String recipient : tos){
-                  mimeMessage.addRecipient(
-                          Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
-                }
-              }
-              if(message.getCc() != null) {
-
-                List<String> ccs = Arrays.asList(message.getCc().split("\\s*,\\s*"));
-                for(String recipient : ccs){
-                  mimeMessage.addRecipient(
-                          Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
-                }
-              }
-              mimeMessage.setSubject(message.getSubject());
-
-              MimeBodyPart bodyPart = new MimeBodyPart();
-              bodyPart.setContent(message.getContent(), "text/html; charset=utf-8");
-
-              Multipart multiPart = new MimeMultipart();
-              multiPart.addBodyPart(bodyPart);
-              ArrayList<String> attachmentNames = new ArrayList<>();
-              if (attachments != null && attachments.size() > 0) {
-                for (String attachmentName : attachments.keySet()) {
-                  DataSource attachment = attachments.get(attachmentName);
-
-                  MimeBodyPart attachmentPart = new MimeBodyPart();
-                  attachmentPart.setDataHandler(new DataHandler(attachment));
-                  attachmentPart.setFileName(attachmentName);
-                  multiPart.addBodyPart(attachmentPart);
-                  attachmentNames.add(attachmentName);
-                }
-              } else if(null != message.getAttachmentIds() && message.getAttachmentIds().size() > 0) {
-                for(Long attachmentId : message.getAttachmentIds()) {
-                  Optional<Attachment> a = attachmentService.findSimpleById(attachmentId);
-
-                  if(a.isPresent() && a.get().getS3Key() != null) {
-                    MimeBodyPart attachmentPart = new MimeBodyPart();
-                    attachmentPart.setFileName(a.get().getFilename());
-                    S3Object s3Object = attachmentService.getS3ObjectByAttachment(a.get());
-                    byte[] byteArray = IOUtils.toByteArray(s3Object.getObjectContent());
-                    DataSource source = new ByteArrayDataSource(byteArray,a.get().getContentType());
-                    attachmentPart.setDataHandler(new DataHandler(source));
-                    multiPart.addBodyPart(attachmentPart);
-                  }
-                }
-              }
-
-
-              mimeMessage.setContent(multiPart);
-              mimeMessage.saveChanges();
-              log.debug("EMAIL: Sending email to {}", message.getTo());
-              transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
-
-              if (sendingUnprocessedEmails) {
-                markEmailProcessed(message.getId());
-              } else {
-                insertEmail(
-                    from,
-                    message.getTo(),
-                    message.getSubject(),
-                    message.getContent(),
-                    attachmentNames,
-                    message.getSentByUserId(),
-                    true,
-                    message.getFromDisplayName(),
-                    message.getCc());
-              }
-
-              // count the number of successful emails sent
-              counter.getAndIncrement();
-
-            } catch (Exception e) {
-              log.error("EMAIL: {}", e.getMessage());
-            } finally {
-              latch.countDown();
+            String from = message.getFrom();
+            if (null == from) {
+              from = getDefaultSenderEmailAddress();
             }
-          });
+
+            final InternetAddress fromAddress =
+              new InternetAddress(
+                StringUtils.trimWhitespace(from), message.getFromDisplayName());
+            mimeMessage.setFrom(fromAddress);
+            mimeMessage.setReplyTo(new Address[]{fromAddress});
+            if (message.getTo() != null) {
+              List<String> tos = Arrays.asList(message.getTo().split("\\s*,\\s*"));
+              for (String recipient : tos) {
+                mimeMessage.addRecipient(
+                  Message.RecipientType.TO, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+              }
+            }
+            if (message.getCc() != null) {
+
+              List<String> ccs = Arrays.asList(message.getCc().split("\\s*,\\s*"));
+              for (String recipient : ccs) {
+                mimeMessage.addRecipient(
+                  Message.RecipientType.CC, new InternetAddress(StringUtils.trimWhitespace(recipient)));
+              }
+            }
+            mimeMessage.setSubject(message.getSubject());
+
+            MimeBodyPart bodyPart = new MimeBodyPart();
+            bodyPart.setContent(message.getContent(), "text/html; charset=utf-8");
+
+            Multipart multiPart = new MimeMultipart();
+            multiPart.addBodyPart(bodyPart);
+            ArrayList<String> attachmentNames = new ArrayList<>();
+            if (attachments != null && attachments.size() > 0) {
+              for (String attachmentName : attachments.keySet()) {
+                DataSource attachment = attachments.get(attachmentName);
+
+                MimeBodyPart attachmentPart = new MimeBodyPart();
+                attachmentPart.setDataHandler(new DataHandler(attachment));
+                attachmentPart.setFileName(attachmentName);
+                multiPart.addBodyPart(attachmentPart);
+                attachmentNames.add(attachmentName);
+              }
+            } else if (null != message.getAttachmentIds() && message.getAttachmentIds().size() > 0) {
+              for (Long attachmentId : message.getAttachmentIds()) {
+                Optional<Attachment> a = attachmentService.findSimpleById(attachmentId);
+
+                if (a.isPresent() && a.get().getS3Key() != null) {
+                  MimeBodyPart attachmentPart = new MimeBodyPart();
+                  attachmentPart.setFileName(a.get().getFilename());
+                  S3Object s3Object = attachmentService.getS3ObjectByAttachment(a.get());
+                  byte[] byteArray = IOUtils.toByteArray(s3Object.getObjectContent());
+                  DataSource source = new ByteArrayDataSource(byteArray, a.get().getContentType());
+                  attachmentPart.setDataHandler(new DataHandler(source));
+                  multiPart.addBodyPart(attachmentPart);
+                }
+              }
+            }
+
+
+            mimeMessage.setContent(multiPart);
+            mimeMessage.saveChanges();
+            log.debug("EMAIL: Sending email to {}", message.getTo());
+            transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+
+            if (sendingUnprocessedEmails) {
+              markEmailProcessed(message.getId());
+            } else {
+              insertEmail(
+                from,
+                message.getTo(),
+                message.getSubject(),
+                message.getContent(),
+                attachmentNames,
+                message.getSentByUserId(),
+                true,
+                message.getFromDisplayName(),
+                message.getCc());
+            }
+
+            // count the number of successful emails sent
+            counter.getAndIncrement();
+
+          } catch (Exception e) {
+            log.error("EMAIL: {}", e.getMessage());
+          } finally {
+            latch.countDown();
+          }
+        });
     }
 
     // wait for everything to complete
@@ -300,7 +300,7 @@ public class MailService {
   }
 
   public List<EmailSender> updateSenderEmailAddress(
-      EmailSender emailAddress, boolean updateDefault) {
+    EmailSender emailAddress, boolean updateDefault) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", emailAddress.getId());
     params.put("senderName", emailAddress.getSenderName());
@@ -336,8 +336,8 @@ public class MailService {
       props.put("mail.smtp.user", propConfig.getSmtpUser());
       props.put("mail.smtp.auth", "true");
       session =
-          Session.getInstance(
-              props, new SMTPAuthenticator(propConfig.getSmtpUser(), propConfig.getSmtpPassword()));
+        Session.getInstance(
+          props, new SMTPAuthenticator(propConfig.getSmtpUser(), propConfig.getSmtpPassword()));
     } else {
       session = Session.getDefaultInstance(props, null);
     }
@@ -352,15 +352,15 @@ public class MailService {
   }
 
   private void insertEmail(
-      String from,
-      String to,
-      String subject,
-      String message,
-      List<String> attachments,
-      Long userId,
-      Boolean processed,
-      String fromDisplayName,
-      String cc) {
+    String from,
+    String to,
+    String subject,
+    String message,
+    List<String> attachments,
+    Long userId,
+    Boolean processed,
+    String fromDisplayName,
+    String cc) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("from", from);
     params.put("to", to);
@@ -372,8 +372,8 @@ public class MailService {
     params.put("processed", processed);
     params.put("fromDisplayName", fromDisplayName);
     params.put(
-        "attachments",
-        attachments.isEmpty() ? null : attachments.toString().replace("[", "").replace("]", ""));
+      "attachments",
+      attachments.isEmpty() ? null : attachments.toString().replace("[", "").replace("]", ""));
     params.put("userId", userId);
     params.put("cc", cc);
 
@@ -386,7 +386,7 @@ public class MailService {
     params.put("companyId", companyId);
 
     String defaultEmail =
-        sqlCache.queryForObjectBySql(EmailQuery.getDefaultSenderByCompanyId, params, String.class);
+      sqlCache.queryForObjectBySql(EmailQuery.getDefaultSenderByCompanyId, params, String.class);
     if (null == defaultEmail) {
       throw new RuntimeException("SentByEmail cannot be null");
     }
@@ -396,12 +396,11 @@ public class MailService {
   private Long getCompanyIdFromUser() {
     User user = securityService.getCurrentUser();
     return null == user
-        ? 3
-        : user
-            .getCompanyId(); // todo: sitewide admin doesn't necessarily have user for current
-                             // company, so we need to figure out how to get the right id
+      ? 3
+      : user
+      .getCompanyId(); // todo: sitewide admin doesn't necessarily have user for current
+    // company, so we need to figure out how to get the right id
   }
-
 
 
   public static class EmailMessageMapper<T> extends BeanPropertyRowMapper<T> {
@@ -414,7 +413,8 @@ public class MailService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Long>> attachmentIdsRef = new TypeReference<>() {};
+      TypeReference<List<Long>> attachmentIdsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "attachmentIds",
         new JsonCollectionDeserializer(attachmentIdsRef, objectMapper));
     }

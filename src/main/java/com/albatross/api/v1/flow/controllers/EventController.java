@@ -10,7 +10,6 @@ import com.albatross.api.v1.flow.services.EventService;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +25,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/event")
 public class EventController {
 
@@ -45,7 +44,7 @@ public class EventController {
   @PutMapping(value = "/saveHiddenAndWhiteList", produces = MediaType.APPLICATION_JSON_VALUE)
   public void saveHiddenAndWhiteList(@RequestParam(required = false) Boolean positionsChanged,
                                      @RequestBody Event event) {
-      eventService.saveHiddenAndWhiteList(event, positionsChanged);
+    eventService.saveHiddenAndWhiteList(event, positionsChanged);
   }
 
   @PostMapping(value = "/{id}/saveChangesToDefaultFields", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -121,9 +120,9 @@ public class EventController {
     eventService.saveCompanyEventStatuses(statuses);
   }
 
-  @GetMapping(value="/companyStatusUses/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/companyStatusUses/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<ObjectsUsingEventStatus> getObjectsUsingEventStatus(@PathVariable Long id) {
-      return new ResponseEntity<>(eventService.getObjectsUsingEventStatus(id), HttpStatus.OK);
+    return new ResponseEntity<>(eventService.getObjectsUsingEventStatus(id), HttpStatus.OK);
   }
 
   @DeleteMapping(value = "/companyStatus/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -138,7 +137,7 @@ public class EventController {
   }
 
   @GetMapping(value = "/status/company/availableForEvent/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<CompanyEventStatusType> getAvailableStatusesForEvent (@PathVariable Long id) {
+  public List<CompanyEventStatusType> getAvailableStatusesForEvent(@PathVariable Long id) {
     return eventService.getAvailableStatusesForEvent(id);
   }
 

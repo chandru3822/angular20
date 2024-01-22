@@ -3,8 +3,8 @@ package com.albatross.api.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 
 @Data
@@ -36,7 +36,7 @@ public class AppProperties {
     }
 
     public boolean isURLSignatureCheckingEnabled(){
-      return key != null && key.trim().length() != 0 && salt != null && salt.trim().length() != 0;
+      return key != null && !key.trim().isEmpty() && salt != null && !salt.trim().isEmpty();
     }
   }
 }

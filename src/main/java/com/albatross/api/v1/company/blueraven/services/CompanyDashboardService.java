@@ -6,11 +6,10 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
@@ -106,8 +105,7 @@ public class CompanyDashboardService {
     params.put("targetTypeId", targetTypeId);
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
-    return results;
+      return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
   }
 
   public String getDrilldownValues(String startDate, String endDate, Long milestoneTypeId, Boolean loadPartners) {
@@ -121,7 +119,13 @@ public class CompanyDashboardService {
     params.put("loadPartners", loadPartners);
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    String results = sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
-    return results;
+      return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
+  }
+
+  public void callCompanyDashboardSetup(@Nullable LocalDate date){
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("date", date);
+
+    sqlCache.updateBySql(CompanyDashboardQuery.callCompanyDashboardSetup, params);
   }
 }

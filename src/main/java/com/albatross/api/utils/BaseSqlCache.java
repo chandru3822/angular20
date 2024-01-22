@@ -8,7 +8,6 @@ import org.postgresql.util.PGobject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.dao.DataAccessException;
-import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -32,47 +31,13 @@ public class BaseSqlCache {
   @Autowired
   private ConversionService conversionService;
 
-  @Autowired
-  private SqlXmlParser sqlXmlParser;
-
   public void setJdbc(NamedParameterJdbcTemplate in) {
     jdbc = in;
-  }
-
-  @Deprecated
-  public String getByKey(String key) {
-    return sqlXmlParser.getSqlByKey(key);
-  }
-
-  public int update(String key, Map<String, Object> params, String... queryArgs) {
-    MapSqlParameterSource paramSource = scrubParams(params);
-    return update(key, paramSource, queryArgs);
-  }
-
-  @Deprecated
-  public int update(String key, SqlParameterSource params, String... queryArgs) {
-    String sql = getByKey(key);
-    if (queryArgs.length > 0) {
-      sql = String.format(sql, queryArgs);
-    }
-
-    return jdbc.update(sql, params);
   }
 
   public int updateBySql(String sql, Map<String, Object> params) {
     MapSqlParameterSource paramSource = scrubParams(params);
     return jdbc.update(sql, paramSource);
-  }
-
-  @Deprecated
-  public Number updateReturningId(String key, Map<String, Object> params, String keyColumn) {
-    MapSqlParameterSource paramSource = new MapSqlParameterSource(params);
-    String sql = getByKey(key);
-
-    GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-    jdbc.update(sql, paramSource, generatedKeyHolder, new String[]{keyColumn});
-
-    return generatedKeyHolder.getKey();
   }
 
   public Number updateBySqlReturningId(String sql, Map<String, Object> params, String keyColumn) {
@@ -84,77 +49,9 @@ public class BaseSqlCache {
     return generatedKeyHolder.getKey();
   }
 
-  @Deprecated
-  public <T> T queryForObject(String key, Map<String, Object> params, Class<T> elementType) {
-    MapSqlParameterSource paramSource = scrubParams(params);
-    String sql = getByKey(key);
-
-    return (T) jdbc.queryForObject(sql, paramSource, elementType);
-  }
-
-  @Deprecated
-  public <T> List<T> queryForList(String key, Map<String, Object> params, Class<T> elementType) {
-    MapSqlParameterSource paramSource = scrubParams(params);
-    String sql = getByKey(key);
-    return jdbc.queryForList(sql, paramSource, elementType);
-  }
-
-  @Deprecated
-  public <T> T queryForMap(String key, Map<String, Object> params) {
-    MapSqlParameterSource paramSource = scrubParams(params);
-    String sql = getByKey(key);
-
-    return (T) jdbc.queryForMap(sql, paramSource);
-  }
-
   public <T> T queryForMapBySql(String sql, Map<String, Object> params) {
     MapSqlParameterSource paramSource = scrubParams(params);
     return (T) jdbc.queryForMap(sql, paramSource);
-  }
-
-  @Deprecated
-  public <T> Optional<T> queryForObjectOptional(
-    String key, Map<String, Object> params, Class<T> elementType) {
-    try {
-      MapSqlParameterSource paramSource = scrubParams(params);
-      String sql = getByKey(key);
-
-      return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
-    } catch (DataAccessException e) {
-      return Optional.empty();
-    }
-  }
-
-  @Deprecated
-  public void query(String key, Map<String, Object> params, RowCallbackHandler rse) {
-    MapSqlParameterSource paramSource = scrubParams(params);
-    String sql = getByKey(key);
-    jdbc.query(sql, paramSource, rse);
-  }
-
-  @Deprecated
-  public <T> List<T> query(String key, Map<String, Object> params, Class<T> elementType) {
-    return queryBySql(getByKey(key), params, elementType);
-  }
-
-  @Deprecated
-  public <T> List<T> query(
-    String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
-    String sql = String.format(getByKey(key), queryArgs);
-    return queryBySql(sql, params, elementType);
-  }
-
-  @Deprecated
-  public <T> List<T> query(String key, Map<String, Object> params, RowMapper<T> rowMapper) {
-    String sql = getByKey(key);
-    return queryBySql(sql, params, rowMapper);
-  }
-
-  @Deprecated
-  public <T> List<T> query(
-    String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
-    String sql = String.format(getByKey(key), queryArgs);
-    return queryBySql(sql, params, rowMapper);
   }
 
   public <T> List<T> queryBySql(String sql, Map<String, Object> params, Class<T> elementType) {
@@ -182,30 +79,12 @@ public class BaseSqlCache {
     try {
       MapSqlParameterSource paramSource = scrubParams(params);
 
-      return Optional.ofNullable((T) jdbc.queryForObject(sql, paramSource, elementType));
+      return Optional.ofNullable(jdbc.queryForObject(sql, paramSource, elementType));
     } catch (DataAccessException e) {
       return Optional.empty();
     }
   }
 
-  @Deprecated
-  public <T> Optional<T> get(String key, Map<String, Object> params, Class<T> elementType, String... queryArgs) {
-    String sql = String.format(getByKey(key), queryArgs);
-    return getBySql(sql, params, elementType);
-  }
-
-  @Deprecated
-  public <T> Optional<T> get(String key, Map<String, Object> params, RowMapper<T> rowMapper) {
-    String sql = getByKey(key);
-    return getBySql(sql, params, rowMapper);
-  }
-
-  @Deprecated
-  public <T> Optional<T> get(
-    String key, Map<String, Object> params, RowMapper<T> rowMapper, String... queryArgs) {
-    String sql = String.format(getByKey(key), queryArgs);
-    return getBySql(sql, params, rowMapper);
-  }
 
   public <T> Optional<T> getBySql(String sql, Map<String, Object> params, Class<T> elementType) {
     List<T> results = queryBySql(sql, params, elementType);
@@ -231,12 +110,6 @@ public class BaseSqlCache {
     return results.isEmpty() ? Optional.empty() : Optional.ofNullable(results.get(0));
   }
 
-  @Deprecated
-  public void updateBatch(final String key, final List<?> objects) {
-    String sql = getByKey(key);
-    SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(objects.toArray());
-    jdbc.batchUpdate(sql, batch);
-  }
 
   public void updateBatchBySql(final String sql, final List<?> objects) {
     SqlParameterSource[] batch = SqlParameterSourceUtils.createBatch(objects.toArray());

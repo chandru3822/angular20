@@ -10,6 +10,10 @@ constants.STAGE_COLOR = 'orange'
 constants.FLUX_COLOR = 'purple'
 constants.UAT_COLOR = 'blue' //this is a light blue color
 constants.PROD_COLOR = 'banner' //this is whatever BR has it set to in the defaultTheme or in the company settings
+constants.ENV_COLOR = VITE_ENV === 'local' ? constants.LOCAL_COLOR :
+  VITE_ENV === 'dev' || VITE_ENV === 'stage' ?  constants.STAGE_COLOR :
+    VITE_ENV === 'flux' ? constants.FLUX_COLOR :
+      VITE_ENV === 'uat' ? constants.UAT_COLOR : constants.PROD_COLOR,
 constants.VUE_APP_ENV = VITE_ENV
 constants.VUE_APP_BASE_API = VITE_BASE_API
 constants.VUE_APP_API_PATH = '/api/v1'

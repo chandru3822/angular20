@@ -6,7 +6,6 @@ import com.albatross.api.v1.flow.model.ActivityType;
 import com.albatross.api.v1.flow.services.ActivityService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +19,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/flow/activity")
 public class ActivityController {
 
@@ -40,10 +39,12 @@ public class ActivityController {
   public void deleteProjectActivity(@PathVariable("id") Long activityId) {
     activityService.deleteActivityById(ObjectType.PROJECT.id, activityId);
   }
+
   @PostMapping(value = "/{id}/pin/project", produces = MediaType.APPLICATION_JSON_VALUE)
   public void pinProjectActivity(@PathVariable("id") Long activityId, @RequestParam Boolean pinned) {
     activityService.pinActivity(ObjectType.PROJECT.id, activityId, pinned);
   }
+
   @PostMapping(value = "/project/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Activity> addProjectActivity(@PathVariable Long id, @RequestBody Activity activity) {
     return activityService.addActivityByObject(ObjectType.PROJECT.id, id, activity);

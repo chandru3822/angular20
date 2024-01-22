@@ -68,7 +68,8 @@ BEGIN
                                                              updated,
                                                              commission_forfeited_by_closer,
                                                              commission_forfeited_paid_to_date,
-                                                             forfeited_amount)
+                                                             forfeited_amount,
+                                                             commission_strategy_name)
 
                 VALUES (p_payroll_id,
                         d.project_id,
@@ -107,7 +108,8 @@ BEGIN
                         now(),
                         d.commission_forfeited_by_closer,
                         d.commission_forfeited_paid_to_date,
-                        d.forfeited_amount)
+                        d.forfeited_amount,
+                        d.commission_strategy_name)
                 ON CONFLICT (payroll_id,project_id) DO NOTHING
                 RETURNING id INTO v_snapshot_id;
 

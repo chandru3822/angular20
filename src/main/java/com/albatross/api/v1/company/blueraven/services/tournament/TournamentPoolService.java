@@ -13,7 +13,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Service;
@@ -26,7 +25,7 @@ import java.util.Optional;
  * Created by Randa Nunn on 2021-03-12.
  */
 @Service
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RequiredArgsConstructor
 public class TournamentPoolService {
 
   @Value("${aws.storageBucket}")
@@ -43,7 +42,7 @@ public class TournamentPoolService {
     params.put("tournamentId", tournamentId);
     params.put("tournamentPoolTypeId", tournamentPoolTypeId);
     Optional<TournamentPool> result = sqlCache.getBySql(TournamentPoolQuery.getDetails, params, new TournamentPoolMapper<>(TournamentPool.class, om));
-    if(result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
+    if (result.isPresent() && null != result.get().getBackgroundAttachmentId()) {
       result.get().setBackgroundAttachmentPresignedUrl(attachmentService.getAttachmentPresignedUrlById(bucket, result.get().getBackgroundAttachmentId()));
     }
     return result;
@@ -156,10 +155,12 @@ public class TournamentPoolService {
 
     @Override
     protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<TournamentPoolUser>> usersRef = new TypeReference<>() {};
+      TypeReference<List<TournamentPoolUser>> usersRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "users",
         new JsonCollectionDeserializer(usersRef, objectMapper));
-      TypeReference<List<TournamentPoolPosition>> positionsRef = new TypeReference<>() {};
+      TypeReference<List<TournamentPoolPosition>> positionsRef = new TypeReference<>() {
+      };
       bw.registerCustomEditor(List.class, "positions",
         new JsonCollectionDeserializer(positionsRef, objectMapper));
     }

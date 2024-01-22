@@ -5,7 +5,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.CleanString;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomBehaviorService;
-import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.ObjectType;
 import com.albatross.api.v1.flow.enums.SystemActivity;
@@ -118,7 +117,7 @@ public class ContactService {
     List<Contact> results =
         sqlCache.queryBySql(searchSql, params, new ContactMapper<>(Contact.class, om));
 
-    Integer count = 10000;
+    int count = 10000;
     return new PageImpl<>(
         results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
