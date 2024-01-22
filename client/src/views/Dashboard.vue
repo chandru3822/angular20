@@ -6,7 +6,7 @@
           Company Dashboard
         </div>
         <div class="checkbox-container">
-          <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
+          <v-checkbox label="View Trends" v-model="viewTrends"></v-checkbox>
         </div>
         <div class="checkbox-container">
 
@@ -24,7 +24,7 @@
       </v-row>
       <v-row>
         <div class="checkbox-container-mini">
-          <v-checkbox label="View Trends" v-model="viewTrends" @change="toggleTrends()"></v-checkbox>
+          <v-checkbox label="View Trends" v-model="viewTrends"></v-checkbox>
         </div>
         <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon></a>
       </v-row>
@@ -262,7 +262,7 @@
           <v-tooltip bottom>
             <template v-slot:activator="{ on }">
               <div v-on="viewTrends?on:null" @click="openDrilldown(item, 1)">{{ item.company_count?item.company_count:0 }}
-                <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">+{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                 <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                 <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
                 </div>
@@ -277,7 +277,7 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <div v-on="viewTrends?on:null" @click="openDrilldown(item, 2)">{{column2Values[index].company_count?column2Values[index].company_count:0}}
-              <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+              <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">+{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
               <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
               <span v-if="viewTrends && (column2Values[index].trend_count === null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
             </div>
@@ -291,7 +291,7 @@
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <div v-on="viewTrends?on:null" @click="openDrilldown(item, 3)">{{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
-              <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+              <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">+{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
               <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
               <span v-if="viewTrends && (column3Values[index].trend_count === null || column3Values[index].trend_count === 0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
             </div>
@@ -674,12 +674,6 @@
             break
         }
       },
-
-      async toggleTrends(){
-        // if(this.viewTrends){
-        //   await this.getDashboardValues();
-        // }
-      },
       async resetFilters(){
         this.viewTrends = false;
         this.firstDateRange = 2;
@@ -687,15 +681,15 @@
         this.thirdDateRange = null;
         await this.getDashboardValues();
       },
-      async changeDropdownSelection(dropdown){
-        if(dropdown === 1){
+      changeDropdownSelection: async function (dropdown) {
+        if (dropdown === 1) {
           let result = cloneDeep(this.dropdownValues.find(x => x.id === this.firstDateRange))
-          if(result === null){
+          if (result === null) {
             return null;
           }
-          if(result.startDate === null){
-            if(!this.firstCustom.isActive) {
-              if(result.name === 'CUSTOM') {
+          if (result.startDate === null) {
+            if (!this.firstCustom.isActive) {
+              if (result.name === 'CUSTOM') {
                 this.customColumn = 1;
                 if (this.firstCustom.startDate.toString().length > 0) {
                   this.customDate.startDate = this.firstCustom.startDate.format('YYYY-MM-DD').toString();
@@ -705,36 +699,34 @@
                 }
                 this.selectingCustomDates = true;
                 return;
-              }
-              else if(result.name === 'PERIOD'){
+              } else if (result.name === 'PERIOD') {
                 result.startDate = result.periodList[this.firstPeriod].startDate;
                 result.endDate = result.periodList[this.firstPeriod].endDate;
-                if(this.firstPeriod != result.periodList.length-1){
-                  result.trendStart = result.periodList[this.firstPeriod+1].startDate;
-                  result.trendEnd = result.periodList[this.firstPeriod+1].endDate;
-                }
-                else{
-                  result.trendStart = null;
-                  result.trendEnd = null;
+                if (this.firstPeriod != result.periodList.length - 1) {
+                  console.log(this.firstPeriod);
+                  console.log(result.periodList.length - 1);
+                  result.trendStart = result.periodList[this.firstPeriod + 1].startDate;
+                  result.trendEnd = result.periodList[this.firstPeriod + 1].endDate;
+                } else {
+                  delete result.trendStart;
+                  delete result.trendEnd;
                 }
               }
-            }
-            else{
+            } else {
               result = cloneDeep(this.firstCustom);
               this.resetCustomDate();
               this.firstCustom.isActive = false;
             }
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
-        }
-        else if(dropdown === 2){
+        } else if (dropdown === 2) {
           let result = this.dropdownValues.find(x => x.id === this.secondDateRange)
-          if(result === null){
+          if (result === null) {
             return null;
           }
-          if(result.startDate === null){
-            if(!this.secondCustom.isActive) {
-              if(result.name === 'CUSTOM') {
+          if (result.startDate === null) {
+            if (!this.secondCustom.isActive) {
+              if (result.name === 'CUSTOM') {
                 this.customColumn = 2;
                 if (this.secondCustom.startDate.toString().length > 0) {
                   this.customDate.startDate = this.secondCustom.startDate.format('YYYY-MM-DD').toString();
@@ -744,36 +736,32 @@
                 }
                 this.selectingCustomDates = true;
                 return;
-              }
-              else if(result.name === 'PERIOD'){
+              } else if (result.name === 'PERIOD') {
                 result.startDate = result.periodList[this.secondPeriod].startDate;
                 result.endDate = result.periodList[this.secondPeriod].endDate;
-                if(this.secondPeriod != result.periodList.length-1){
-                  result.trendStart = result.periodList[this.secondPeriod+1].startDate;
-                  result.trendEnd = result.periodList[this.secondPeriod+1].endDate;
-                }
-                else{
-                  result.trendStart = null;
-                  result.trendEnd = null;
+                if (this.secondPeriod != result.periodList.length - 1) {
+                  result.trendStart = result.periodList[this.secondPeriod + 1].startDate;
+                  result.trendEnd = result.periodList[this.secondPeriod + 1].endDate;
+                } else {
+                  delete result.trendStart;
+                  delete result.trendEnd;
                 }
               }
-            }
-            else{
+            } else {
               result = cloneDeep(this.secondCustom);
               this.resetCustomDate();
               this.secondCustom.isActive = false;
             }
           }
           this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
-        }
-        else if(dropdown === 3){
+        } else if (dropdown === 3) {
           let result = this.dropdownValues.find(x => x.id === this.thirdDateRange)
-          if(result == null){
+          if (result == null) {
             return null;
           }
-          if(result.startDate === null){
-            if(!this.thirdCustom.isActive) {
-              if(result.name === 'CUSTOM') {
+          if (result.startDate === null) {
+            if (!this.thirdCustom.isActive) {
+              if (result.name === 'CUSTOM') {
                 this.customColumn = 3;
                 if (this.thirdCustom.startDate.toString().length > 0) {
                   this.customDate.startDate = this.thirdCustom.startDate.format('YYYY-MM-DD').toString();
@@ -783,22 +771,18 @@
                 }
                 this.selectingCustomDates = true;
                 return;
-              }
-              else if(result.name === 'PERIOD'){
+              } else if (result.name === 'PERIOD') {
                 result.startDate = result.periodList[this.thirdPeriod].startDate;
                 result.endDate = result.periodList[this.thirdPeriod].endDate;
-                if(this.thirdPeriod != result.periodList.length-1){
-                  result.trendStart = result.periodList[this.thirdPeriod+1].startDate;
-                  result.trendEnd = result.periodList[this.thirdPeriod+1].endDate;
+                if (this.thirdPeriod != result.periodList.length - 1) {
+                  result.trendStart = result.periodList[this.thirdPeriod + 1].startDate;
+                  result.trendEnd = result.periodList[this.thirdPeriod + 1].endDate;
+                } else {
+                  delete result.trendStart;
+                  delete result.trendEnd;
                 }
-                else{
-                  result.trendStart = null;
-                  result.trendEnd = null;
-                  this.thirdCustom.isActive = false;
-                }
-             }
-            }
-            else{
+              }
+            } else {
               result = cloneDeep(this.thirdCustom);
               this.resetCustomDate();
             }
