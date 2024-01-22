@@ -12,7 +12,7 @@
             <div class="d-flex justify-start align-center">
               <v-btn
                 icon
-                @click="router.go(-1)"
+                @click="router.push('/smartlist')"
               >
                 <v-icon>mdi-chevron-left</v-icon>
               </v-btn>
