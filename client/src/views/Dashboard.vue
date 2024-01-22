@@ -73,7 +73,7 @@
                 offset-y
                 :max-height="`calc(100vh - 20px)`"
                 class="dropdown-header body-small"
-                v-model="openMenu"
+                v-model="openFirstMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
             <v-btn class="dropdown-header body-small"
@@ -104,7 +104,7 @@
                     </template>
                     <div>
                       <v-list>
-                        <v-list-item v-for="(period, index) in item.periodList" @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openMenu = false">
+                        <v-list-item v-for="(period, index) in item.periodList" @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openFirstMenu = false">
                           <v-list-item-title>
                             {{ period.label }}
                           </v-list-item-title>
@@ -122,32 +122,138 @@
 
       </template>
       <template #header.actualTotal2="{}" >
-        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)">
-          <template #selection="{item}">
-              <span v-if="item.name === 'CUSTOM' && secondCustom.name != null" :class="[{'selected-option':(secondDateRange===item.id)}]">
+<!--        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)">-->
+<!--          <template #selection="{item}">-->
+<!--              <span v-if="item.name === 'CUSTOM' && secondCustom.name != null" :class="[{'selected-option':(secondDateRange===item.id)}]">-->
+<!--                      {{secondCustom.name}}</span>-->
+<!--            <span v-else :class="[{'selected-option':(secondDateRange===item.id)}]">-->
+<!--                      {{item.friendlyName}}</span>-->
+<!--          </template>-->
+<!--          <template #item="{item}">-->
+<!--              <span :class="[{'selected-option':(secondDateRange===item.id)}]">-->
+<!--                      {{item.friendlyName}}</span>-->
+<!--          </template>-->
+<!--        </v-select>-->
+        <v-menu data-app left
+                offset-y
+                :max-height="`calc(100vh - 20px)`"
+                class="dropdown-header body-small"
+                v-model="openSecondMenu"
+                :close-on-content-click="true">
+          <template v-slot:activator="{ on }">
+            <v-btn class="dropdown-header body-small"
+                   v-on="on"
+                   plain
+            >
+              <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null" :class="[{'selected-option':(secondDateRange===getDropdownById(secondDateRange).id)}]">
                       {{secondCustom.name}}</span>
-            <span v-else :class="[{'selected-option':(secondDateRange===item.id)}]">
-                      {{item.friendlyName}}</span>
+              <span v-else-if="getDropdownById(secondDateRange)?.name === 'PERIOD'">
+              {{ getDropdownById(secondDateRange).periodList[secondPeriod].shortLabel}}
+              </span>
+              <span v-else-if="secondDateRange != null">
+              {{ getDropdownById(secondDateRange)?.friendlyName}}
+              </span>
+              <span v-else>
+                Select Date Range
+              </span>
+              <v-icon>mdi-menu-down</v-icon>
+            </v-btn>
           </template>
-          <template #item="{item}">
-              <span :class="[{'selected-option':(secondDateRange===item.id)}]">
-                      {{item.friendlyName}}</span>
-          </template>
-        </v-select>
+          <div>
+            <v-list>
+              <v-list-item v-for="(item, index) in dropdownValues">
+                <v-list-item-title v-if="item.name === 'PERIOD'">
+                  <v-menu open-on-hover location="end" :offset-x="true">
+                    <template v-slot:activator="{ on }">
+                      <span v-on="on">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                    </template>
+                    <div>
+                      <v-list>
+                        <v-list-item v-for="(period, index) in item.periodList" @click="secondDateRange = item.id; secondPeriod = index; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM'); openSecondMenu = false">
+                          <v-list-item-title>
+                            {{ period.label }}
+                          </v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </div>
+                  </v-menu>
+
+                </v-list-item-title>
+                <v-list-item-title v-else @click="secondDateRange = item.id; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');">{{item.friendlyName}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
+        </v-menu>
       </template>
       <template #header.actualTotal3="{}" >
-        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)">
-          <template #selection="{item}">
-              <span v-if="item.name === 'CUSTOM' && thirdCustom.name != null" :class="[{'selected-option':(thirdDateRange===item.id)}]">
+<!--        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)">-->
+<!--          <template #selection="{item}">-->
+<!--              <span v-if="item.name === 'CUSTOM' && thirdCustom.name != null" :class="[{'selected-option':(thirdDateRange===item.id)}]">-->
+<!--                      {{thirdCustom.name}}</span>-->
+<!--            <span v-else :class="[{'selected-option':(thirdDateRange===item.id)}]">-->
+<!--                      {{item.friendlyName}}</span>-->
+<!--          </template>-->
+<!--          <template #item="{item}">-->
+<!--              <span :class="[{'selected-option':(thirdDateRange===item.id)}]">-->
+<!--                      {{item.friendlyName}}</span>-->
+<!--          </template>-->
+<!--        </v-select>-->
+        <v-menu data-app left
+                offset-y
+                :max-height="`calc(100vh - 20px)`"
+                class="dropdown-header body-small"
+                v-model="openthirdMenu"
+                :close-on-content-click="true">
+          <template v-slot:activator="{ on }">
+            <v-btn class="dropdown-header body-small"
+                   v-on="on"
+                   plain
+            >
+              <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null" :class="[{'selected-option':(thirdDateRange===getDropdownById(thirdDateRange).id)}]">
                       {{thirdCustom.name}}</span>
-            <span v-else :class="[{'selected-option':(thirdDateRange===item.id)}]">
-                      {{item.friendlyName}}</span>
+              <span v-else-if="getDropdownById(thirdDateRange)?.name === 'PERIOD'">
+              {{ getDropdownById(thirdDateRange).periodList[thirdPeriod].shortLabel}}
+              </span>
+              <span v-else-if="thirdDateRange != null">
+              {{ getDropdownById(thirdDateRange)?.friendlyName}}
+              </span>
+              <span v-else>
+                Select Date Range
+              </span>
+              <v-icon>mdi-menu-down</v-icon>
+            </v-btn>
           </template>
-          <template #item="{item}">
-              <span :class="[{'selected-option':(thirdDateRange===item.id)}]">
-                      {{item.friendlyName}}</span>
-          </template>
-        </v-select>
+          <div>
+            <v-list>
+              <v-list-item v-for="(item, index) in dropdownValues">
+                <v-list-item-title v-if="item.name === 'PERIOD'">
+                  <v-menu open-on-hover location="end">
+                    <template v-slot:activator="{ on }">
+                      <span v-on="on">
+                        {{ item.friendlyName }}
+                        <v-icon>mdi-chevron-right</v-icon>
+                      </span>
+                    </template>
+                    <div>
+                      <v-list>
+                        <v-list-item v-for="(period, index) in item.periodList" @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openthirdMenu = false">
+                          <v-list-item-title>
+                            {{ period.label }}
+                          </v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </div>
+                  </v-menu>
+
+                </v-list-item-title>
+                <v-list-item-title v-else @click="thirdDateRange = item.id; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');">{{item.friendlyName}}</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </div>
+        </v-menu>
       </template>
 
 
@@ -260,7 +366,9 @@
         snackbar: {},
         constants,
         showDrilldown: false,
-        openMenu: false,
+        openFirstMenu: false,
+        openSecondMenu: false,
+        openThirdMenu: false,
         selectedMilestone: {},
         loadPartners: false,
         dividerForSingleDayTargets: 6,
