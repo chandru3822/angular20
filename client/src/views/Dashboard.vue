@@ -722,6 +722,7 @@
             else{
               result = cloneDeep(this.firstCustom);
               this.resetCustomDate();
+              this.firstCustom.isActive = false;
             }
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
@@ -760,6 +761,7 @@
             else{
               result = cloneDeep(this.secondCustom);
               this.resetCustomDate();
+              this.secondCustom.isActive = false;
             }
           }
           this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
@@ -792,6 +794,7 @@
                 else{
                   result.trendStart = null;
                   result.trendEnd = null;
+                  this.thirdCustom.isActive = false;
                 }
              }
             }
