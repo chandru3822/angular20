@@ -80,12 +80,12 @@
                    v-on="on"
                    plain
             >
-              <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===getDropdownById(firstDateRange).id)}]">
+              <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" class="selected-option body-small">
                       {{firstCustom.name}}</span>
-              <span v-else-if="getDropdownById(firstDateRange)?.name === 'PERIOD'">
+              <span v-else-if="getDropdownById(firstDateRange)?.name === 'PERIOD'" class="selected-option body-small">
               {{ getDropdownById(firstDateRange).periodList[firstPeriod].shortLabel}}
               </span>
-              <span v-else>
+              <span v-else class="selected-option body-small">
               {{ getDropdownById(firstDateRange)?.friendlyName}}
               </span>
               <v-icon>mdi-menu-down</v-icon>
@@ -93,13 +93,13 @@
           </template>
           <div>
             <v-list>
-              <v-list-item v-for="(item, index) in dropdownValues">
+              <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                 <v-list-item-title v-if="item.name === 'PERIOD'">
-                  <v-menu open-on-hover location="end">
+                  <v-menu open-on-hover v-model="openFirstPeriodMenu" offset-x>
                     <template v-slot:activator="{ on }">
-                      <span v-on="on">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
                         {{ item.friendlyName }}
-                        <v-icon>mdi-chevron-right</v-icon>
+                        <v-icon style="display: flex">mdi-chevron-right</v-icon>
                       </span>
                     </template>
                     <div>
@@ -114,7 +114,7 @@
                   </v-menu>
 
                 </v-list-item-title>
-                <v-list-item-title v-else @click="firstDateRange = item.id; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM');">{{item.friendlyName}}</v-list-item-title>
+                <v-list-item-title v-else @click="firstDateRange = item.id; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM');" class="dashboard-menu-option">{{item.friendlyName}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </div>
@@ -145,15 +145,15 @@
                    v-on="on"
                    plain
             >
-              <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null" :class="[{'selected-option':(secondDateRange===getDropdownById(secondDateRange).id)}]">
+              <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null" class="selected-option body-small">
                       {{secondCustom.name}}</span>
-              <span v-else-if="getDropdownById(secondDateRange)?.name === 'PERIOD'">
+              <span v-else-if="getDropdownById(secondDateRange)?.name === 'PERIOD'" class="selected-option body-small">
               {{ getDropdownById(secondDateRange).periodList[secondPeriod].shortLabel}}
               </span>
-              <span v-else-if="secondDateRange != null">
+              <span v-else-if="secondDateRange != null" class="selected-option body-small">
               {{ getDropdownById(secondDateRange)?.friendlyName}}
               </span>
-              <span v-else>
+              <span v-else class="body-small">
                 Select Date Range
               </span>
               <v-icon>mdi-menu-down</v-icon>
@@ -161,11 +161,11 @@
           </template>
           <div>
             <v-list>
-              <v-list-item v-for="(item, index) in dropdownValues">
+              <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end" :offset-x="true">
                     <template v-slot:activator="{ on }">
-                      <span v-on="on">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -182,7 +182,7 @@
                   </v-menu>
 
                 </v-list-item-title>
-                <v-list-item-title v-else @click="secondDateRange = item.id; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');">{{item.friendlyName}}</v-list-item-title>
+                <v-list-item-title v-else @click="secondDateRange = item.id; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM');" class="dashboard-menu-option">{{item.friendlyName}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </div>
@@ -205,22 +205,22 @@
                 offset-y
                 :max-height="`calc(100vh - 20px)`"
                 class="dropdown-header body-small"
-                v-model="openthirdMenu"
+                v-model="openThirdMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
             <v-btn class="dropdown-header body-small"
                    v-on="on"
                    plain
             >
-              <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null" :class="[{'selected-option':(thirdDateRange===getDropdownById(thirdDateRange).id)}]">
+              <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null" class="selected-option body-small">
                       {{thirdCustom.name}}</span>
-              <span v-else-if="getDropdownById(thirdDateRange)?.name === 'PERIOD'">
+              <span v-else-if="getDropdownById(thirdDateRange)?.name === 'PERIOD'" class="selected-option body-small">
               {{ getDropdownById(thirdDateRange).periodList[thirdPeriod].shortLabel}}
               </span>
-              <span v-else-if="thirdDateRange != null">
+              <span v-else-if="thirdDateRange != null" class="selected-option body-small">
               {{ getDropdownById(thirdDateRange)?.friendlyName}}
               </span>
-              <span v-else>
+              <span v-else class="body-small">
                 Select Date Range
               </span>
               <v-icon>mdi-menu-down</v-icon>
@@ -228,18 +228,18 @@
           </template>
           <div>
             <v-list>
-              <v-list-item v-for="(item, index) in dropdownValues">
+              <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end">
                     <template v-slot:activator="{ on }">
-                      <span v-on="on">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
                     </template>
                     <div>
                       <v-list>
-                        <v-list-item v-for="(period, index) in item.periodList" @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openthirdMenu = false">
+                        <v-list-item v-for="(period, index) in item.periodList" @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openThirdMenu = false">
                           <v-list-item-title>
                             {{ period.label }}
                           </v-list-item-title>
@@ -249,7 +249,7 @@
                   </v-menu>
 
                 </v-list-item-title>
-                <v-list-item-title v-else @click="thirdDateRange = item.id; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');">{{item.friendlyName}}</v-list-item-title>
+                <v-list-item-title v-else @click="thirdDateRange = item.id; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM');" class="dashboard-menu-option">{{item.friendlyName}}</v-list-item-title>
               </v-list-item>
             </v-list>
           </div>
@@ -366,6 +366,7 @@
         snackbar: {},
         constants,
         showDrilldown: false,
+        openFirstPeriodMenu: false,
         openFirstMenu: false,
         openSecondMenu: false,
         openThirdMenu: false,
@@ -982,6 +983,13 @@
 </script>
 
 <style lang="scss" scoped>
+  .dashboard-menu-option{
+    display: flex;
+    min-height: 48px;
+    align-items: center!important;
+    padding-right: 16px;
+    padding-left: 16px;
+  }
   .selected-option{
     color: var(--v-primary-base) !important;
   }
