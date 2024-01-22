@@ -15,7 +15,7 @@
                 small
                 class="mr-3"
                 color="primary"
-                @click="$router.push('/smartlistv1')"
+                @click="$router.push('/smartlist')"
               >
                 <v-icon>mdi-arrow-left</v-icon>
               </v-btn>
