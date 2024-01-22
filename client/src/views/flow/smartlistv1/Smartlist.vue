@@ -25,8 +25,9 @@
                 class="ml-6 mt-3"
                 text
                 @click="$router.push(`/smartlist/editor/${smartlist.id}`)"
+                color="primary"
               >
-                <v-icon>mdi-eye</v-icon>
+                <v-icon class="mr-1">mdi-eye</v-icon>
                 View new smartlist editor
               </v-btn>
               <v-spacer></v-spacer>

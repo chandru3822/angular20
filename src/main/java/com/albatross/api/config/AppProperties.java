@@ -36,7 +36,7 @@ public class AppProperties {
     }
 
     public boolean isURLSignatureCheckingEnabled(){
-      return key != null && key.trim().length() != 0 && salt != null && salt.trim().length() != 0;
+      return key != null && !key.trim().isEmpty() && salt != null && !salt.trim().isEmpty();
     }
   }
 }

@@ -162,7 +162,6 @@ const showDeleteDialog = ref(false)
 const calculatedAvailableFields = computed(() => {
   return props.availableFields.filter(f => {
     let keep = false
-    let suffix = ''
     if (f?.smartlistFieldId) {
       keep = props.fields.findIndex(field => {
         return (field?.smartlistFieldId === f.smartlistFieldId && field?.updateType !== props.updateTypes.DELETE) &&
@@ -178,31 +177,32 @@ const calculatedAvailableFields = computed(() => {
         field?.customFieldGroupAssignmentId === f.customFieldGroupAssignmentId &&
         field?.updateType !== props.updateTypes.DELETE
       ) === -1
-      if (keep) {
-        switch (f.objectTypeId) {
-          case 1:
-            suffix = ` - Project`
-            break
-          case 2:
-            suffix = ` - Contact`
-            break
-          case 3:
-            suffix = ` - User`
-            break
-          case 4:
-            suffix = ` - ${f.processStepName}`
-            break
-          case 5:
-            suffix = ` - Org`
-            break
-          case 6:
-            suffix = ` - ${f.eventName} - ${f.processStepName}`
-        }
-      }
+    }
+    return keep
+  }).map(f => {
+    let suffix = ''
+
+    switch (f.objectTypeId) {
+      case 1:
+        suffix = ` - Project`
+        break
+      case 2:
+        suffix = ` - Contact`
+        break
+      case 3:
+        suffix = ` - User`
+        break
+      case 4:
+        suffix = ` - ${f.processStepName}`
+        break
+      case 5:
+        suffix = ` - Org`
+        break
+      case 6:
+        suffix = ` - ${f.eventName} - ${f.processStepName}`
     }
 
-    f.calculatedName = `${f.name}${suffix}`
-    return keep
+    return {...f, calculatedName: `${f.name}${suffix}`}
   })
 })
 

@@ -6,6 +6,7 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -119,5 +120,12 @@ public class CompanyDashboardService {
     params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
       return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboardDrilldown, params, String.class);
+  }
+
+  public void callCompanyDashboardSetup(@Nullable LocalDate date){
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("date", date);
+
+    sqlCache.updateBySql(CompanyDashboardQuery.callCompanyDashboardSetup, params);
   }
 }
