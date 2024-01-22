@@ -24,12 +24,19 @@
             :type="'date'"
             :format="'MM/DD/YYYY'"
             label="Expense Date"
-            :change-callback="getBudgetsForUserForExpenseDate"
           />
-          <v-autocomplete v-model="newReimbursement.expenseBudgetId"
+          <v-autocomplete v-model="selectedBudgetId"
                           :items="availableBudgets"
+                          disabled
+                          readonly
                           label="Expense Budget"
                           item-text="fullBudgetName"
+                          item-value="id"
+          ></v-autocomplete>
+          <v-autocomplete v-model="newReimbursement.budgetTypeId"
+                          :items="budgetTypes"
+                          label="Budget Type"
+                          item-text="name"
                           item-value="id"
           ></v-autocomplete>
           <label>Details:</label>
@@ -56,8 +63,8 @@
             <img class="receipt-image" :src="receiptLogo.presignedUrl">
           </div>
           <v-btn color="primary" class="white--text"
-                 :disabled="!newReimbursement.expenseDate || !newReimbursement.expenseBudgetId || !newReimbursement.amount
-                            || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
+                 :disabled="!newReimbursement.expenseDate || !selectedBudgetId || !newReimbursement.amount || !newReimbursement.budgetTypeId
+                             || !newReimbursement.details"
                  @click="submitReimbursementRequest()">
             Submit
           </v-btn>
@@ -68,7 +75,8 @@
       </v-col>
       <v-col cols="12" sm="6">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Viewing Budget Data For:
+          <v-toolbar-title class="app-title">
+            Viewing Budget Data For:
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
@@ -98,7 +106,8 @@
             </div>
           </v-toolbar-items>
         </v-toolbar>
-        <v-sheet flat class="square-card pa-5">
+        <SpinnerInline v-if="dataLoading" :size="20" color="primary"/>
+        <v-sheet v-else flat class="square-card pa-5">
 
           <v-card v-if="rejectedRequests.length > 0">
             <v-card-title class="grey lighten-2" primary-title>
@@ -107,135 +116,14 @@
             <v-card-text class="pt-4">
               <table>
                 <thead>
-                <th>Expense Date</th>
-                <th>Amount</th>
-                <th>Details</th>
+                <th class="pr-3">Expense Date</th>
+                <th class="pr-3">Amount</th>
+                <th class="pr-3">Details</th>
                 </thead>
                 <tr v-for="req in rejectedRequests">
                   <td>{{ req.expenseDate | formatDate('date') }}</td>
                   <td>{{ req.amount | currency('$', 2) }}</td>
-                  <td>{{ req.details }}</td>
-                </tr>
-              </table>
-            </v-card-text>
-          </v-card>
-
-          <v-card v-if="requestsNeedingApproval.length > 0">
-            <v-card-title class="grey lighten-2" primary-title>
-              Requests Needing Approval
-            </v-card-title>
-            <v-card-text class="pt-4">
-              <table v-if="!needsApprovalRequest || !needsApprovalRequest.id">
-                <tr v-for="req in requestsNeedingApproval">
-                  <td>
-                    <a @click="[needsApprovalRequest = req, getRequestAttachmentPresignedUrl()]">
-                      {{ req.createdBy }} - {{ req.expenseDate | formatDate('date') }} - Click for more details
-                    </a>
-                  </td>
-                </tr>
-              </table>
-              <div v-else>
-                <table class="pb-3">
-                  <tr>
-                    <td class="left-column pb-3">
-                      <v-btn @click="needsApprovalRequest = {}">Back</v-btn>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="left-column">Created By:</td>
-                    <td>{{ needsApprovalRequest.createdBy }}</td>
-                  </tr>
-                  <tr>
-                    <td class="left-column">Created Date:</td>
-                    <td>{{ needsApprovalRequest.dateCreated | formatDate('date') }}</td>
-                  </tr>
-                  <tr>
-                    <td class="left-column">Budget Type:</td>
-                    <td>{{ needsApprovalRequest.budgetType }}</td>
-                  </tr>
-                  <tr>
-                    <td class="left-column">Expense Date:</td>
-                    <td>{{ needsApprovalRequest.expenseDate | formatDate('date') }}</td>
-                  </tr>
-                  <tr>
-                    <td class="left-column">Amount:</td>
-                    <td>{{ needsApprovalRequest.amount | currency('$', 2) }}</td>
-                  </tr>
-                  <tr>
-                    <td class="left-column">Details:</td>
-                    <td>{{ needsApprovalRequest.details }}</td>
-                  </tr>
-                </table>
-                <v-divider></v-divider>
-                <div class="receipt-image-background" v-if="renderApprovalRequestImage && needsApprovalRequest.presignedUrl">
-                  <v-tooltip bottom max-width="300px" content-class="receipt-image-tooltip">
-                    <template v-slot:activator="{ on:tooltip }">
-                        <v-img name="receiptImg" class="receipt-image"
-                               v-on="{ ...tooltip }"
-                               alt="receipt-image" :src="needsApprovalRequest.presignedUrl"></v-img>
-                    </template>
-                    <v-card class="receipt-image-hover-container">
-                      <img class="receipt-image-hovered" :src="needsApprovalRequest.presignedUrl">
-                    </v-card>
-                  </v-tooltip>
-                </div>
-                <v-divider class="mt-3" v-if="renderApprovalRequestImage && needsApprovalRequest.presignedUrl"></v-divider>
-                <div class="pt-3">
-                  <label>Notes: (required for rejecting)</label>
-                  <v-textarea class="py-2" hide-details
-                              auto-grow filled
-                              rows="4"
-                              background-color="#F2F6F8"
-                              v-model="needsApprovalRequest.notes">
-                  </v-textarea>
-                  <v-btn color="primary"
-                         @click="setRequestStatusWithNotes(needsApprovalRequest, 3)"
-                         class="white--text">Approve</v-btn>
-                  <v-btn color="red"
-                         @click="setRequestStatusWithNotes(needsApprovalRequest, 2)"
-                         :disabled="!needsApprovalRequest.notes"
-                         class="white--text ml-3">Reject
-                  </v-btn>
-                </div>
-              </div>
-            </v-card-text>
-          </v-card>
-
-          <v-card class="mt-3">
-            <v-card-title class="primary lighten-9" primary-title>
-              Submitted Reimbursements
-            </v-card-title>
-            <v-card-text class="pt-4">
-              <table class="detail-table">
-                <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = 'Submitted Reimbursements - Pending Review',
-                               loadDrilldown('PENDING_REVIEW')]">
-                    Pending Review:
-                  </td>
-                  <td class="detail-column default-text-color text-right">{{ submittedReport.pending_review || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = 'Submitted Reimbursements - Pending Approval',
-                               loadDrilldown('PENDING_APPROVAL')]">Pending Approval:</td>
-                  <td class="detail-column default-text-color text-right">{{ submittedReport.pending_approval || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = 'Submitted Reimbursements - Pending Payment',
-                               loadDrilldown('PENDING_PAYMENT')]">Pending Payment:</td>
-                  <td class="detail-column default-text-color text-right">{{ submittedReport.pending_payment || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = 'Submitted Reimbursements - Paid',
-                               loadDrilldown('PAID')]">Paid:</td>
-                  <td class="detail-column default-text-color text-right">{{ submittedReport.paid || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr class="total-row">
-                  <td class="detail-column default-text-color">Total Reimbursements:</td>
-                  <td class="detail-column default-text-color text-right">{{ submittedReport.total || 0 | currency('$', 2) }}</td>
+                  <td>{{ req.notes }}</td>
                 </tr>
               </table>
             </v-card-text>
@@ -243,13 +131,13 @@
 
           <v-card class="mt-3">
             <v-card-title class="primary lighten-9" primary-title>
-              Budgets
+              Budget
             </v-card-title>
             <v-card-text class="pt-4">
               <table class="detail-table" v-for="br in budgetReport">
                 <tr>
                   <td class="detail-column detail-column-header" colspan="2">
-                    {{br.budget_name}} {{br.start_date | formatDate('date')}} - {{br.end_date | formatDate('date')}}
+                    {{br.budget_name}}
                   </td>
                 </tr>
                 <tr>
@@ -285,8 +173,8 @@
 <!--                  <td class="detail-column text-right">{{ br.paid || 0 | currency('$', 2) }}</td>-->
 <!--                </tr>-->
                 <tr>
-                  <td class="detail-column default-text-color">Remaining Budget:</td>
-                  <td class="detail-column default-text-color text-right">{{ br.remaining_budget || 0 | currency('$', 2) }}</td>
+                  <td class="detail-column default-text-color bold">Remaining Budget:</td>
+                  <td class="detail-column default-text-color text-right bold">{{ br.remaining_budget || 0 | currency('$', 2) }}</td>
                 </tr>
               </table>
             </v-card-text>
@@ -294,42 +182,6 @@
         </v-sheet>
       </v-col>
     </v-row>
-
-    <v-dialog v-model="showDrilldown">
-      <v-card id="funnel-drilldown">
-        <v-card-title class="mb-1">
-          {{drilldownTitle}}
-        </v-card-title>
-        <v-divider></v-divider>
-        <v-card-text>
-          <v-data-table
-            :headers="headers"
-            fixed-header
-            :items="drilldownData"
-          >
-            <template #no-data>
-              <span class="default-text-color">No data available</span>
-            </template>
-
-            <template #no-results>
-              <span class="default-text-color">No data available</span>
-            </template>
-
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': !(index % 2)}">
-                <td>{{ item.purchaser }}</td>
-                <td>{{ item.budget }}</td>
-                <td>{{ item.expense_date  | formatDate('date')}}</td>
-                <td>{{ item.expense_amount | currency('$', 2)}}</td>
-                <td>{{ item.approval_date  | formatDate('date')}}</td>
-                <td>{{ item.paid_date  | formatDate('date')}}</td>
-              </tr>
-            </template>
-
-          </v-data-table>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
 
   </v-container>
 </template>
@@ -341,31 +193,29 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
 import {Actions} from "@/store"
 import moment from 'moment'
-import {getReimbursementRequestImage} from './expenseService'
+import {getBudgetsForUser, getBudgetTypes, getReimbursementRequestImage} from './expenseService'
+import SpinnerInline from "@/components/SpinnerInline.vue";
 
 export default {
   name: 'Reimbursement',
   components: {
+    SpinnerInline,
     DatetimePickerInput
   },
-  computed: {},
+  computed: {
+    selectedBudgetId () {
+      return this.newReimbursement.expenseDate != null ? this.availableBudgets.find(b => {
+        return moment(this.newReimbursement.expenseDate).isBetween(b.startDate, b.endDate, null, '[]')
+      })?.id : null
+    }
+  },
   data() {
     return {
       snackbar: {},
       createNew: true,
+      dataLoading: true,
       savingReceiptImage: false,
       attachmentTypeId: 4,
-      showDrilldown: false,
-      drilldownTitle: '',
-      headers: [
-        { text: 'User', value: 'purchaser', show: true},
-        { text: 'Budget', value: 'budget', show: true},
-        { text: 'Expense Date', value: 'expense_date', show: true},
-        { text: 'Expense Amount', value: 'expense_amount', show: true},
-        { text: 'Approval Date', value: 'approval_date', show: true},
-        { text: 'Paid Date', value: 'paid_date', show: true},
-      ],
-      drilldownData: [],
       timezone: this.$store.state.user.details.timezone.value,
       userId: this.$store.state.user.details.id,
       receiptLogo: {},
@@ -374,10 +224,9 @@ export default {
       renderApprovalRequestImage: false,
       needsApprovalRequest: {},
       availableBudgets: [],
+      budgetTypes: [],
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-      submittedReport: {},
       rejectedRequests: [],
-      requestsNeedingApproval: [],
       budgetReport: [],
       months: [
         {id: 1, name: 'January'},
@@ -396,7 +245,6 @@ export default {
       yearStart: 2017,
       yearEnd: parseInt(moment().format('YYYY')),
       years: [],
-      showingRejected: false,
       selectedMonth: parseInt(moment().format('M')),
       selectedYear: parseInt(moment().format('YYYY'))
     }
@@ -407,6 +255,8 @@ export default {
     }
     //init
     this.setDataForMonth()
+    this.getBudgetTypes()
+    this.getBudgetsForUser()
 
   },
   methods: {
@@ -414,13 +264,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         this.newReimbursement.attachmentId = this.receiptLogo.id
-
-        if (this.newReimbursement.expenseBudgetId === -1) {
-          this.newReimbursement.expenseBudgetId = null
-        }
-
-        let selectedBudget = this.newReimbursement.expenseBudgetId ? this.availableBudgets.find(ab => ab.id === this.newReimbursement.expenseBudgetId) : null
-        this.newReimbursement.expenseBudgetUserId = selectedBudget ? selectedBudget.userId : null
+        this.newReimbursement.expenseBudgetId = this.selectedBudgetId
 
         const {status} = await postRequest(`/reimbursement/request`, this.newReimbursement, 'blueraven')
         this.newReimbursement = {}
@@ -435,6 +279,20 @@ export default {
           msg = 'Error, Request exceeds budget. Please contact Administrator for assistance.'
         }
         this.snackbar = getSnackbar('ERROR', msg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getBudgetTypes() {
+      //reset the budget id every time a user or expense date changes
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getBudgetTypes()
+        this.budgetTypes = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -487,25 +345,18 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getBudgetsForUserForExpenseDate() {
-      let date = moment(this.newReimbursement.expenseDate).format('YYYY-MM-DD')
-      const {data} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {
-        params: {
-          userId: this.userId,
-          expenseDate: date
-        }
-      }, 'blueraven')
-      this.availableBudgets = data || []
-    },
-    async getMonthlySubmittedReport() {
-      const {data} = await getRequestWithParams(`/reimbursement/getMonthlySubmittedReport`, {
-          params: {
-            startDate: this.startDate,
-            endDate: this.endDate
-          }
-        }, 'blueraven'
-      )
-      this.submittedReport = data && data[0] ? data[0] : {}
+    async getBudgetsForUser() {
+      this.budgetsLoading = true
+      try {
+        const {data, status} = await getBudgetsForUser(this.userId)
+        this.availableBudgets = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.budgetsLoading = false
+      }
     },
     async getMonthlyBudgetReport() {
       const {data} = await getRequestWithParams(`/expenseBudgets/getMonthlyBudgetReport`, {
@@ -527,17 +378,6 @@ export default {
         }, 'blueraven'
       )
       this.rejectedRequests = data
-    },
-    async getRequestsForSupervisorByStatus(statusId) {
-      const {data} = await getRequestWithParams(`/reimbursement/requests/supervisor/byStatus`, {
-          params: {
-            statusId,
-            startDate: this.startDate,
-            endDate: this.endDate
-          }
-        }, 'blueraven'
-      )
-      this.requestsNeedingApproval = data
     },
     async loadDrilldown(statusText, budgetId) {
       this.showDrilldown = false
@@ -577,43 +417,21 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    setRequestStatusWithNotes(request, statusId) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        request.reimbursementRequestStatusId = statusId
-        const {status} = postRequest(`/reimbursement/request/updateStatus`, request, 'blueraven')
-        this.needsApprovalRequest = {}
-        //dont show the one that just got approved/rejected
-        this.requestsNeedingApproval = this.requestsNeedingApproval.filter((r) => r.id !== request.id)
-        let reqStatus = statusId === 2 ? 'Rejected' : 'Approved'
-        let msg = 'Reimbursement Request ' + reqStatus
-        this.snackbar = getSnackbar('SUCCESS', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Status')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    setDataForMonth() {
+    async setDataForMonth() {
+      this.dataLoading = true
       let dateRange = this.getMonthDateRange(this.selectedMonth, this.selectedYear)
       this.startDate = dateRange.startDate
       this.endDate = dateRange.endDate
 
-      //get rejected requests for user
-      this.getRejectedRequests(2)
-
-      //requests that supervisors need to approve
-      this.getRequestsForSupervisorByStatus(6)
-
-      //the the monthly submitted report
-      this.getMonthlySubmittedReport()
-
-      // if (this.$store.getters.userHasAnyPosition([3, 6])) {
+      let requests = [
+        //get rejected requests for user
+        this.getRejectedRequests(2),
         this.getMonthlyBudgetReport()
-      // }
+
+      ]
+      await Promise.all(requests).then(() => {
+        this.dataLoading = false
+      })
     },
     getMonthDateRange(month, year) {
       let startDate = moment([year, month - 1]).format("YYYY-MM-DD")

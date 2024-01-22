@@ -8,6 +8,7 @@ public class ReimbursementQuery {
        rr.amount,
        rr.date_created,
        rr.details,
+       rr.notes,
        rr.attachment_id,
        rr.expense_date,
        rr.reimbursement_request_status_id,
@@ -15,6 +16,8 @@ public class ReimbursementQuery {
        eb.user_id as expense_budget_user_id,
        ebu.first_name || ' ' || ebu.last_name as expense_budget_user,
        bt.name as budget_type,
+       rr.budget_type_id,
+       rr.gl_code_id,
        rr.created_by_id,
        u.first_name || ' ' || u.last_name as created_by,
        p.position as position_name,
@@ -41,6 +44,7 @@ public class ReimbursementQuery {
        LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
     WHERE rr.reimbursement_request_status_id = 3
       and rr.archived is not true
+    order by rr.date_created desc
     """;
 
   //language=PostgreSQL
@@ -69,8 +73,8 @@ public class ReimbursementQuery {
 
   //language=PostgreSQL
   public final static String insert = """
-    INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id, expense_date, reimbursement_request_status_id)
-    values(:amount, :details, :attachmentId, :expenseBudgetId, :createdById, :expenseDate, :statusId);
+    INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id, expense_date, reimbursement_request_status_id, budget_type_id, gl_code_id)
+    values(:amount, :details, :attachmentId, :expenseBudgetId, :createdById, :expenseDate, :statusId, :budgetTypeId, :glCodeId);
     """;
 
   //language=PostgreSQL
@@ -80,6 +84,8 @@ public class ReimbursementQuery {
        details = :details,
        attachment_id = :attachmentId,
        expense_budget_id = :expenseBudgetId,
+       gl_code_id = :glCodeId,
+       budget_type_id = :budgetTypeId,
        modified_by_id = :createdById,
        expense_date = :expenseDate,
        reimbursement_request_status_id = :statusId
@@ -100,129 +106,6 @@ public class ReimbursementQuery {
     UPDATE brs.reimbursement_request
       SET notes = :notes
     WHERE id = :id;
-    """;
-
-  //language=PostgreSQL
-  public final static String getAllReimbursementUsers = """
-    SELECT distinct u.id,
-      u.first_name || ' ' || u.last_name full_name
-    from flow.user_positions_vw u
-    where  u.first_name || ' ' || u.last_name ILIKE '%' || replace(translate(trim(:searchText), ',.&^%#[]()$*-+=', ''), ' ', '%') || '%'
-          and upv.start_date < now()
-          and (upv.end_date is null or upv.end_date > now())
-          and u.position_id in (1,4,10)
-    ORDER BY full_name
-    """;
-
-  //language=PostgreSQL
-  public final static String getAllActiveUsers = """
-    SELECT distinct upv.user_id as id,
-                    upv.first_name || ' ' || upv.last_name full_name
-    from flow.user_positions_vw upv
-    where  upv.first_name || ' ' || upv.last_name ILIKE '%' || replace(translate(trim(:searchText), ',.&^%#[]()$*-+=', ''), ' ', '%') || '%'
-      and upv.archived is false
-      and upv.start_date < now()
-      and (upv.end_date is null or upv.end_date > now())
-    ORDER BY full_name
-    """;
-
-  //language=PostgreSQL
-  public final static String updateLineItemsToNewBudgetId = """
-    UPDATE brs.reimbursement_request
-      SET expense_budget_id = :newBudgetId
-    WHERE expense_budget_id = :oldBudgetId;
-    """;
-
-  //language=PostgreSQL
-  public final static String getRequestsForSupervisorByStatus = """
-    SELECT rr.id,
-           rr.amount,
-           rr.date_created,
-           rr.details,
-           rr.expense_date,
-           rr.reimbursement_request_status_id,
-           rr.notes,
-           rr.expense_budget_id,
-           eb.user_id as expense_budget_user_id,
-           bt.name as budget_type,
-           rr.created_by_id,
-           u.first_name || ' ' || u.last_name as created_by
-    FROM brs.reimbursement_request rr
-      INNER JOIN flow."user" u on u.id = rr.created_by_id
-      LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
-      LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
-    WHERE rr.reimbursement_request_status_id = :statusId
-        and eb.user_id = :supervisorId
-        and rr.archived is not true
-    """;
-
-  //language=PostgreSQL
-  public final static String getMonthlySubmittedReport = """
-    select array_to_json(array_agg(row_to_json(results)))
-      from (
-       with pending_review as (
-         select e.user_id,
-                sum(coalesce(e.expense_amount,0)) expense_amount
-         from brs.expense e
-         where e.rejected_date is null
-           and e.archived is not true
-           and e.paid_date is null
-           and e.approval_date is null
-           and e.gl_code_id is null
-           and e.skip_approval is not true
-           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-         GROUP BY e.user_id
-       ), pending_approval as (
-         select e.user_id,
-                sum(coalesce(e.expense_amount,0)) expense_amount
-         from brs.expense e
-         where e.rejected_date is null
-           and e.archived is not true
-           and e.paid_date is null
-           and e.approval_date is null
-           and e.gl_code_id is not null
-           and e.skip_approval is not true
-           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-         GROUP BY e.user_id
-       ), pending_payment as (
-         select e.user_id,
-                sum(coalesce(e.expense_amount,0)) expense_amount
-         from brs.expense e
-         where e.rejected_date is null
-           and e.archived is not true
-           and e.paid_date is null
-           and e.approval_date is not null
-           and e.skip_approval is not true
-           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-         GROUP BY e.user_id
-       ), paid as (
-         select e.user_id,
-                sum(coalesce(e.expense_amount,0)) expense_amount
-         from brs.expense e
-         where e.rejected_date is null
-           and e.archived is not true
-           and e.paid_date is not null
-           and e.approval_date is not null
-           and e.skip_approval is not true
-           and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-         GROUP BY e.user_id
-       )
-
-       select e.user_id,
-              coalesce(pr.expense_amount,0) pending_review,
-              coalesce(pa.expense_amount,0) pending_approval,
-              coalesce(pp.expense_amount,0) pending_payment,
-              coalesce(p.expense_amount,0) paid,
-              coalesce(pa.expense_amount,0) + coalesce(pp.expense_amount,0) + coalesce(p.expense_amount,0) total
-       from brs.expense e
-              left OUTER JOIN pending_review pr on pr.user_id = e.user_id
-              left OUTER JOIN pending_approval pa on pa.user_id = e.user_id
-              left OUTER JOIN pending_payment pp on pp.user_id = e.user_id
-              left OUTER JOIN paid p on p.user_id = e.user_id
-       where e.user_id = :userId
-         and e.archived is not true
-         and e.expense_date::DATE BETWEEN :startDate::DATE and :endDate::DATE
-       GROUP BY e.user_id, pending_review, pending_approval, pending_payment, paid ) results;
     """;
 
   //language=PostgreSQL

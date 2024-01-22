@@ -16,18 +16,34 @@
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>Add Expense Item</h3>
-          <v-autocomplete v-model="newReimbursementRequest.userId"
-                          :items="users"
-                          :loading="usersLoading"
-                          :search-input.sync="userSearchText"
+<!--          <v-autocomplete v-model="newReimbursementRequest.userId"-->
+<!--                          :items="users"-->
+<!--                          :loading="usersLoading"-->
+<!--                          :search-input.sync="userSearchText"-->
+<!--                          label="Purchaser"-->
+<!--                          clearable-->
+<!--                          item-text="fullName"-->
+<!--                          item-value="id"-->
+<!--                          autocomplete="off"-->
+<!--                          type="search"-->
+<!--                          @click:clear="users = []"-->
+<!--          ></v-autocomplete>-->
+          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
+                          :items="usersWithBudget"
                           label="Purchaser"
-                          clearable
                           item-text="fullName"
                           item-value="id"
-                          autocomplete="off"
-                          type="search"
-                          @click:clear="users = []"
+                          @input="[newReimbursementRequest.expenseBudgetId = null, getBudgetsForUser(newReimbursementRequest.expenseBudgetUserId)]"
           ></v-autocomplete>
+          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetId"
+                          :items="budgetsForUser"
+                          label="Selected Budget"
+                          :loading="budgetsLoading"
+                          :disabled="!newReimbursementRequest.expenseBudgetUserId"
+                          item-text="fullBudgetName"
+                          item-value="id"
+          >
+          </v-autocomplete>
           <DatetimePickerInput
               v-model="newReimbursementRequest.expenseDate"
               :timezone="timezone"
@@ -35,15 +51,10 @@
               :format="'MM/DD/YYYY'"
               label="Expense Date"
           />
-          <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
-                          :items="usersWithBudget"
-                          label="Budget User"
-                          item-text="fullName"
-                          item-value="id"
-          ></v-autocomplete>
           <v-autocomplete v-model="newReimbursementRequest.glCodeId"
                           :items="glCodes"
                           label="GL Code"
+                          item-text="code"
                           item-value="id"
                           :filter="searchGlCodes"
           >
@@ -60,7 +71,7 @@
           <v-text-field text
                         type="number"
                         label="Amount"
-                        v-model.number="newReimbursementRequest.expenseAmount">
+                        v-model.number="newReimbursementRequest.amount">
           </v-text-field>
           <label>Notes:</label>
           <v-textarea class="py-2" hide-details
@@ -70,8 +81,8 @@
                       v-model="newReimbursementRequest.notes">
           </v-textarea>
           <v-btn color="primary" class="white--text"
-                 :disabled="!newReimbursementRequest.userId || !newReimbursementRequest.expenseDate || !newReimbursementRequest.glCodeId
-                            || !newReimbursementRequest.expenseBudgetUserId || !newReimbursementRequest.expenseBudgetId || !newReimbursementRequest.expenseAmount"
+                 :disabled="!newReimbursementRequest.expenseDate || !newReimbursementRequest.glCodeId || !newReimbursementRequest.budgetTypeId
+                             || !newReimbursementRequest.expenseBudgetId || !newReimbursementRequest.amount"
                  @click="saveReimbursementRequest(newReimbursementRequest, true)">
             Save
           </v-btn>
@@ -96,17 +107,15 @@
 
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
-              <td class="text-left">{{ item.createdBy }}</td>
-              <td class="text-left">{{ item.positionName }}</td>
+              <td class="text-left">{{ item.expenseBudgetUser }}</td>
               <td class="text-left">{{ item.dateCreated | formatDate('date') }}</td>
               <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
               <td class="text-left">{{ item.budgetType }}</td>
-              <td class="text-left">{{ item.expenseBudgetUser }}</td>
               <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
                   <v-btn small text color="primary"
-                         @click="[selectedRequest = item, getRequestAttachmentPresignedUrl(item)]">
+                         @click="[selectedRequest = item, getBudgetsForUser(item.expenseBudgetUserId), getRequestAttachmentPresignedUrl(item)]">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
@@ -128,8 +137,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div class="pt-3">
-              <v-btn @click="approveRequest"
-                     :disabled="selectedRequest.expenses.length < 1"
+              <v-btn @click="validateAndApprove"
                      color="primary"
                      class="white--text">
                 Approve & Submit
@@ -148,7 +156,7 @@
                               background-color="#F2F6F8"
                               v-model="selectedRequest.notes">
                   </v-textarea>
-                  <v-btn @click="rejectRequest(selectedRequest.notes)"
+                  <v-btn @click="rejectRequest(selectedRequest)"
                          :disabled="!selectedRequest.notes"
                          class="white--text" color="error">Reject
                   </v-btn>
@@ -159,152 +167,82 @@
             </div>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card flat class="pa-4">
+        <v-card flat class="px-4">
           <v-row class="px-4">
             <v-col cols="12" sm="5">
               <h3 class="mb-5">Reimbursement Request Details</h3>
-              <table>
-                <tr>
-                  <td class="left-column">Submitted By:</td>
-                  <td>{{ selectedRequest.createdBy }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Position:</td>
-                  <td>{{ selectedRequest.positionName }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Amount:</td>
-                  <td>{{ selectedRequest.amount | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Expense Date:</td>
-                  <td>{{ selectedRequest.expenseDate | formatDate('date') }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Budget User:</td>
-                  <td>{{ selectedRequest.expenseBudgetUser }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Budget Type:</td>
-                  <td>{{ selectedRequest.budgetType }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Request Created On:</td>
-                  <td>{{ selectedRequest.dateCreated | formatDate('date') }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">ID Number:</td>
-                  <td>{{ selectedRequest.id }}</td>
-                </tr>
-                <tr>
-                  <td class="left-column">Request Details:</td>
-                  <td>
-                    <v-card flat class="detail-container">
-                      {{ selectedRequest.details }}
-                    </v-card>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="left-column">Receipt Image:</td>
-                  <td class="receipt-image-background">
-                    <v-tooltip bottom max-width="300px"
-                               v-if="renderRequestImage && selectedRequest.presignedUrl"
-                               content-class="receipt-image-tooltip">
-                      <template v-slot:activator="{ on:tooltip }">
-                        <v-img name="receiptImg" class="receipt-image"
-                               v-on="{ ...tooltip }"
-                               alt="receipt-image" :src="selectedRequest.presignedUrl"></v-img>
-                      </template>
-                      <v-card class="receipt-image-hover-container">
-                        <img class="receipt-image-hovered" :src="selectedRequest.presignedUrl">
-                      </v-card>
-                    </v-tooltip>
-                  </td>
-                </tr>
-              </table>
+              <v-form ref="editRequestForm">
+                <v-autocomplete v-model="selectedRequest.expenseBudgetUserId"
+                                :items="usersWithBudget"
+                                label="Purchaser"
+                                :rules="requiredRules"
+                                item-text="fullName"
+                                item-value="id"
+                                @input="[selectedRequest.expenseBudgetId = null, getBudgetsForUser(selectedRequest.expenseBudgetUserId)]"
+                ></v-autocomplete>
+                <v-autocomplete v-model="selectedRequest.expenseBudgetId"
+                                :items="budgetsForUser"
+                                label="Selected Budget"
+                                :rules="requiredRules"
+                                :loading="budgetsLoading"
+                                :disabled="!selectedRequest.expenseBudgetUserId"
+                                item-text="fullBudgetName"
+                                item-value="id"
+                >
+                </v-autocomplete>
+                <DatetimePickerInput
+                    v-model="selectedRequest.expenseDate"
+                    :timezone="timezone"
+                    :type="'date'"
+                    :rules="requiredRules"
+                    :format="'MM/DD/YYYY'"
+                    label="Expense Date"
+                />
+                <v-autocomplete v-model="selectedRequest.glCodeId"
+                                :items="glCodes"
+                                label="GL Code"
+                                item-text="code"
+                                :rules="requiredRules"
+                                item-value="id"
+                                :filter="searchGlCodes"
+                >
+                  <template slot='item' slot-scope='{ item }'>
+                    {{ item.code }} - {{ item.description }}
+                  </template>
+                </v-autocomplete>
+                <v-autocomplete v-model="selectedRequest.budgetTypeId"
+                                :items="budgetTypes"
+                                label="Budget Type"
+                                :rules="requiredRules"
+                                item-text="name"
+                                item-value="id"
+                ></v-autocomplete>
+                <v-text-field text
+                              type="number"
+                              label="Amount"
+                              :rules="requiredRules"
+                              v-model.number="selectedRequest.amount">
+                </v-text-field>
+                <label>Request Details:</label>
+                <v-textarea class="py-2" hide-details
+                            auto-grow filled
+                            rows="4"
+                            background-color="#F2F6F8"
+                            v-model="selectedRequest.details">
+                </v-textarea>
+                <label>Admin Notes:</label>
+                <v-textarea class="py-2" hide-details
+                            auto-grow filled
+                            rows="4"
+                            background-color="#F2F6F8"
+                            v-model="selectedRequest.notes">
+                </v-textarea>
+              </v-form>
             </v-col>
             <v-col cols="12" sm="7" class="pt-0">
-              <v-data-table
-                  v-if="selectedRequest.expenses.length > 0"
-                  :headers="expenseHeaders"
-                  :items="selectedRequest.expenses"
-                  disable-sort
-                  :items-per-page="-1"
-                  :mobile-breakpoint="0"
-                  hide-default-footer
-                  class="elevation-0 fix-column-width-bug square-card"
-              >
-                <template #header.icons="{}">
-                  <div class="text-right mr-2">
-                    <v-btn text color="primary" x-small @click="[selectedRequest.expenses.push({
-                            tempId: tempIdCount,
-                            glCode: null,
-                            budgets: []
-                          }), tempIdCount++]">
-                      <v-icon>add</v-icon>
-                    </v-btn>
-                  </div>
-                </template>
-
-                <template #item="{ item, index }">
-                  <tr :class="{'shaded-row': index % 2}">
-                    <td class="text-left">
-                      <v-autocomplete v-model="item.glCodeId"
-                                      :items="glCodes"
-                                      label="GL Code"
-                                      hide-details
-                                      single-line
-                                      item-value="id"
-                                      :filter="searchGlCodes"
-                      >
-                        <template slot='item' slot-scope='{ item }'>
-                          {{ item.code }} - {{ item.description }}
-                        </template>
-                      </v-autocomplete>
-                    </td>
-                    <td class="text-left">
-                      <v-autocomplete v-model="item.expenseBudgetUserId"
-                                      :items="usersWithBudget"
-                                      label="Budget User"
-                                      item-text="fullName"
-                                      single-line
-                                      hide-details
-                                      type="search"
-                                      item-value="id"
-                                      class="clickable"
-                      ></v-autocomplete>
-                    </td>
-                    <td class="text-left">
-                      <v-autocomplete v-model="item.budgetTypeId"
-                                      :items="budgetTypes"
-                                      label="Budget Type"
-                                      class="clickable"
-                                      hide-details
-                                      single-line
-                                      item-text="name"
-                                      item-value="id"
-                      ></v-autocomplete>
-                    </td>
-                    <td>
-                      <v-text-field text
-                                    type="number"
-                                    hide-details
-                                    single-line
-                                    label="Amount"
-                                    v-model.number="item.expenseAmount">
-                      </v-text-field>
-                    </td>
-                    <td class="text-left px-0">
-                      <v-btn x-small v-if="!item.id" fab color="primary" dark
-                             @click="removeExpenseItem(item.tempId)">
-                        <v-icon>close</v-icon>
-                      </v-btn>
-                    </td>
-
-                  </tr>
-                </template>
-              </v-data-table>
-
+              <h3 class="mb-5">Receipt Image</h3>
+              <v-img name="receiptImg" class="receipt-image" v-if="renderRequestImage"
+                     alt="receipt-image" :src="selectedRequest.presignedUrl"></v-img>
             </v-col>
           </v-row>
         </v-card>
@@ -333,7 +271,13 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import constants from "@/helpers/constants";
-import {getGlCodes, getBudgetTypes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
+import {
+  getGlCodes,
+  getBudgetTypes,
+  getReimbursementRequestImage,
+  getUsersWithBudget,
+  getBudgetsForUser
+} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -355,9 +299,11 @@ export default {
     return {
       snackbar: {},
       createNew: false,
+      budgetsLoading: false,
       newReimbursementRequest: {
         expenseBudgetId: null
       },
+      requiredRules: constants.BASIC_REQUIRED_RULE,
       timezone: this.$store.state.user.details.timezone.value,
       selectedRequest: {},
       editIndex: null,
@@ -366,20 +312,16 @@ export default {
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
       reimbursementRequests: [],
+      budgetsForUser: [],
       usersWithBudget: [],
-      users: [],
       userId: this.$store.state.user.details.id,
-      usersLoading: false,
-      userSearchText: null,
       budgetTypes: [],
       glCodes: [],
       headers: [
-        {text: 'Rep', value: 'createdBy', show: true},
-        {text: 'Position', value: 'positionName', show: true},
-        {text: 'Submitted Date', value: 'dateCreated', show: true},
+        {text: 'Purchaser', value: 'expenseBudgetUser', show: true},
+        {text: 'Created Date', value: 'dateCreated', show: true},
         {text: 'Amount', value: 'amount', show: true},
         {text: 'Budget Type', value: 'budgetType', show: true},
-        {text: 'Budget User', value: 'expenseBudgetUser', show: true},
         {text: 'Expense Date', value: 'expenseDate', show: true},
         {text: null, value: 'icons', show: true}
       ],
@@ -402,7 +344,7 @@ export default {
   },
   created() {
     this.getReimbursementRequests()
-    this.getGlCodeList()
+    this.getGlCodes()
     this.getBudgetTypes()
     this.getUsersWithBudget()
   },
@@ -460,11 +402,8 @@ export default {
     async saveReimbursementRequest(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        //not sure what this is yet
-        // item.skipApproval = self.skipApproval;
-        //there is already an endpoint for lists of these so just sending up as a list
-        let listOfItem = [item]
-        const {status} = await postRequest(`/expenses/addExpenseItems`, listOfItem, 'blueraven')
+        item.reimbursementRequestStatusId = 1 //override the status to be approved since this came from an admin
+        await putRequest(`/reimbursement/request`, item, 'blueraven')
         if (isNew) {
           //do not add the new one to the list cuz it already got approved
           this.newReimbursementRequest = {}
@@ -480,73 +419,40 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async approveRequest() {
-      this.glError = false;
-      this.budgetError = false;
-      this.amountError = false;
-      this.selectedRequest.expenses.forEach((item) => {
-        if (item.glCodeId == null) {
-          this.glError = true
-        } else if (item.expenseAmount == null) {
-          this.amountError = true
-        } else if (item.expenseBudgetUserId == null || (item.expenseBudgetId == null && item.expenseBudgetUserId !== -1)) {
-          this.budgetError = true
-        } else {
-          item.userId = this.selectedRequest.createdById;
-          item.expenseDate = this.selectedRequest.expenseDate;
-          item.notes = null;
-          item.reimbursementRequestId = this.selectedRequest.id
-          item.submittedById = this.userId
-          item.updatedById = this.userId
-        }
-      })
-
-      if (this.glError) {
-        this.snackbar = getSnackbar('ERROR', 'All Items Must Have a GL Code')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else if (this.amountError) {
-        this.snackbar = getSnackbar('ERROR', 'All Items Must Have an Amount')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else if (this.budgetError) {
-        this.snackbar = getSnackbar('ERROR', 'All Items Must Have a Budget User and Budget Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      } else {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          //1 = approve
-          this.selectedRequest.reimbursementRequestStatusId = 1
-          await putRequest(`/reimbursement/request`, this.selectedRequest, 'blueraven')
-
-          await postRequest(`/expenses/addExpenseItems`, this.selectedRequest.expenses, 'blueraven')
-          this.snackbar = getSnackbar('SUCCESS', 'Request Approved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          await this.resetPage()
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Approving Reimbursement Request')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+    async validateAndApprove() {
+      if(this.$refs.editRequestForm.validate()) {
+        await this.approveRequest()
       }
     },
-    async resetPage() {
-      //reload the data cuz things changed that we don't pass back to the UI
-      this.selectedRequest = {}
-      this.rejectDropdown = false
-      await this.getReimbursementRequests()
-    },
-    async rejectRequest(notes) {
-      this.selectedRequest.expenses.forEach(e => {
-        e.notes = notes
-      })
-
+    async approveRequest() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await postRequest(`/expenses/markExpensesRejected`, this.selectedRequest.expenses, 'blueraven')
-        this.snackbar = getSnackbar('SUCCESS', 'Expenses Rejected.')
+        //1 = approve
+        this.selectedRequest.reimbursementRequestStatusId = 1
+        await putRequest(`/reimbursement/request`, this.selectedRequest, 'blueraven')
+        this.snackbar = getSnackbar('SUCCESS', 'Request Approved')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.selectedRequest = {}
+        this.rejectDropdown = false
+        this.reimbursementRequests = this.reimbursementRequests.filter(rr => rr.id !== this.selectedRequest.id)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Approving Reimbursement Request')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async rejectRequest(item) {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        item.reimbursementRequestStatusId = 2
+        const {status} = await postRequest(`/reimbursement/request/updateStatus`, item, 'blueraven')
+        this.snackbar = getSnackbar('SUCCESS', 'Request Rejected.')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
 
-        await this.resetPage()
+        this.selectedRequest = {}
+        this.rejectDropdown = false
+        this.reimbursementRequests = this.reimbursementRequests.filter(rr => rr.id !== item.id)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -569,29 +475,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    getReimbursementUsersDebounced(val) {
-      clearTimeout(this._searchTimerId)
-      this._searchTimerId = setTimeout(() => {
-        this.getReimbursementUsers(val)
-      }, 500) /* 500ms throttle */
-    },
-    async getReimbursementUsers() {
-      this.usersLoading = true
-      try {
-        let body = {
-          query: this.userSearchText
-        }
-        const {data} = await postRequest(`/reimbursement/users`, body, 'blueraven')
-        this.users = data
-        this.usersLoading = false
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.usersLoading = false
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    async getGlCodeList() {
+    async getGlCodes() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getGlCodes()
@@ -615,6 +499,19 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getBudgetsForUser(userId) {
+      this.budgetsLoading = true
+      try {
+        const {data, status} = await getBudgetsForUser(userId)
+        this.budgetsForUser = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.budgetsLoading = false
       }
     },
     async getRequestAttachmentPresignedUrl(item) {

@@ -138,13 +138,6 @@ public class ExpenseBudgetQuery {
 
   //language=PostgreSQL
   public final static String getOne = """
-    WITH single_row AS (SELECT
-                          eb.user_id,
-                          eb.original_expense_budget_id,
-                          max(eb.date_created) date_created
-                        FROM brs.expense_budget eb
-                        WHERE eb.archived is not true
-                        GROUP BY eb.user_id, eb.original_expense_budget_id)
     SELECT
       eb.id,
       eb.start_date,
@@ -155,44 +148,56 @@ public class ExpenseBudgetQuery {
       eb.user_id,
       u.first_name || ' ' || u.last_name as user_full_name,
       eb.date_created,
-      eb.date_modified,
-      eb.original_expense_budget_id
+      eb.date_modified
     FROM brs.expense_budget eb
-           INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
            INNER JOIN flow."user" u on u.id = eb.user_id
     WHERE eb.id = :id
     """;
 
   //language=PostgreSQL
-  public final static String insertOriginalExpenseBudget = """
+  public final static String updateExpenseBudget = """
+    UPDATE brs.expense_budget
+      SET amount = :amount,
+          notes = :notes,
+          date_modified = now(),
+          modified_by_id = :userId
+    WHERE id = :id
+    """;
+
+  //language=PostgreSQL
+  public final static String insertExpenseBudget = """
     INSERT INTO brs.expense_budget(start_date, end_date, amount, user_id, created_by_id, notes) VALUES
     (:startDate, :endDate, :amount, :userId, :createdById, :notes)
     """;
 
   //language=PostgreSQL
-  public final static String updateOriginalExpenseBudget = """
-    UPDATE brs.expense_budget eb
-    SET original_expense_budget_id = :id
-    where eb.id = :id;
-    """;
-
-  //language=PostgreSQL
-  public final static String insertExpenseBudget = """
-    INSERT INTO brs.expense_budget(start_date, end_date, amount, user_id, original_expense_budget_id, created_by_id, notes) VALUES
-    (:startDate, :endDate, :amount, :userId, :originalExpenseBudgetId, :createdById, :notes)
-    """;
-
-  //language=PostgreSQL
   public final static String getUsersWithBudget = """
-    select DISTINCT u.user_id as id,
+    select DISTINCT u.id,
         u.first_name || ' ' || u.last_name as full_name
-    from flow.user_positions_vw u
-           INNER JOIN brs.expense_budget eb on eb.user_id = u.user_id
+    from flow."user" u
+           INNER JOIN brs.expense_budget eb on eb.user_id = u.id
+           inner join flow.user_position up on u.id = up.user_id
     where u.archived is false
-      and u.start_date < now()
-      and (u.end_date is null or u.end_date > now())
+      and up.primary_flag is true
+      and up.start_date < now()
+      and (up.end_date is null or up.end_date > now())
       and eb.archived is not true
     ORDER BY full_name;
+    """;
+
+  //language=PostgreSQL
+  public final static String getBudgetsForUser = """
+    SELECT eb.id,
+           eb.user_id,
+           u.first_name || ' ' || u.last_name user_full_name,
+           eb.amount,
+           eb.start_date,
+           concat(u.first_name, ' ', u.last_name, ' - ', to_char(eb.start_date, 'FMMonth YYYY'))  as full_budget_name,
+           eb.end_date
+      from brs.expense_budget eb
+      inner join flow."user" u on eb.user_id = u.id
+      where eb.user_id = :userId
+      order by eb.start_date desc
     """;
 
   //language=PostgreSQL
@@ -292,25 +297,6 @@ public class ExpenseBudgetQuery {
           OR eb.start_date between :startDate AND :endDate
           OR eb.end_date between :startDate AND :endDate)
         AND eb.archived is not true
-    """;
-
-  //language=PostgreSQL
-  public final static String checkLineItemDates = """
-    select e.id
-    from brs.expense_budget eb
-      INNER JOIN brs.expense e on e.expense_budget_id = eb.id
-    where eb.id = :id
-          and e.archived is not true
-          and e.expense_date::DATE NOT BETWEEN :startDate::DATE AND :endDate::DATE
-
-    UNION
-
-    select r.id
-    from brs.expense_budget eb
-      INNER JOIN brs.reimbursement_request r on r.expense_budget_id = eb.id
-    where eb.id = :id
-        and r.archived is not true
-        and r.expense_date::DATE NOT BETWEEN :startDate::DATE AND :endDate::DATE
     """;
 
   //language=PostgreSQL

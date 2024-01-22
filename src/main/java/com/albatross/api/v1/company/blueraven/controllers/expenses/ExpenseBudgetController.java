@@ -5,6 +5,7 @@ import com.albatross.api.v1.company.blueraven.models.expenses.BudgetType;
 import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
 import com.albatross.api.v1.flow.model.User;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -71,14 +72,22 @@ public class ExpenseBudgetController {
     return expenseBudgetService.updateBudget(expenseBudget);
   }
 
+  //this is users who can be assigned a budget
   @GetMapping(value = "/availableUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<User> getAvailableUsers() {
+  public List<BudgetUser> getAvailableUsers() {
     return expenseBudgetService.getAvailableUsers();
   }
 
+  //this is users who have a budget
   @GetMapping(value = "/usersWithBudget", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<User> getUsersWithBudget() {
+  public List<BudgetUser> getUsersWithBudget() {
     return expenseBudgetService.getUsersWithBudget();
+  }
+
+  //this is budgets for a specific user
+  @GetMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ExpenseBudget> getBudgetsForUser(@PathVariable Long id) {
+    return expenseBudgetService.getBudgetsForUser(id);
   }
 
   @GetMapping(value = "/userBudgetDetails/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -107,4 +116,9 @@ public class ExpenseBudgetController {
     return expenseBudgetService.getBudgetRemainingById(budgetId);
   }
 
+  @Data
+  public static class BudgetUser {
+    Long id;
+    String fullName;
+  }
 }

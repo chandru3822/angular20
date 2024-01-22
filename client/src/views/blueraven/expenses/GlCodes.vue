@@ -156,7 +156,7 @@ export default {
     async deleteGlCode(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await deleteRequest(`/expenses/glCode/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/glCodes/${item.id}`, 'blueraven')
         item.archived = true
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -170,7 +170,7 @@ export default {
     async saveGlCode(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await postRequest(`/expenses/glCode`, item, 'blueraven')
+        const {data, status} = await postRequest(`/glCodes`, item, 'blueraven')
         if(isNew) {
           this.glCodes.push(data)
           this.newGlCode = {}

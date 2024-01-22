@@ -5,8 +5,6 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.expenses.Expense;
 import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementRequest;
-import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementUserSearch;
-import com.albatross.api.v1.company.blueraven.services.expenses.queries.ExpenseQuery;
 import com.albatross.api.v1.company.blueraven.services.expenses.queries.ReimbursementQuery;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -37,46 +35,27 @@ public class ReimbursementService {
   public Long updateRequest(ReimbursementRequest reimbursementRequest) {
     User currentUser = securityService.getCurrentUser();
 
-    Long statusId = 3L;
+    Long statusId = 3L; //pending
 
-    //add the sales area
     HashMap<String, Object> params = new HashMap<>();
     params.put("amount", reimbursementRequest.getAmount());
     params.put("details", reimbursementRequest.getDetails());
     params.put("attachmentId", reimbursementRequest.getAttachmentId());
     params.put("expenseBudgetId", reimbursementRequest.getExpenseBudgetId());
+    params.put("budgetTypeId", reimbursementRequest.getBudgetTypeId());
+    params.put("glCodeId", reimbursementRequest.getGlCodeId());
     params.put("createdById", currentUser.trueUserId());
     params.put("expenseDate", reimbursementRequest.getExpenseDate());
+    //null id with a status_id = 1 means an admin submitted it and it should be marked approved
+    params.put("statusId", reimbursementRequest.getId() == null && reimbursementRequest.getReimbursementRequestStatusId() != null && reimbursementRequest.getReimbursementRequestStatusId() == 1L ? 1L : statusId);
     Long id;
-    if (reimbursementRequest.getId() != null && reimbursementRequest.getReimbursementRequestStatusId() == null) {
+
+    if (reimbursementRequest.getId() != null) {
+      id = reimbursementRequest.getId();
       params.put("id", reimbursementRequest.getId());
-      params.put("statusId", statusId);
-      id = sqlCache.updateBySqlReturningId(ReimbursementQuery.update, params, "id").longValue();
-    } else if (reimbursementRequest.getId() != null
-               && reimbursementRequest.getReimbursementRequestStatusId() != null
-               && reimbursementRequest.getReimbursementRequestStatusId() == 1L) {
-      //use this if they are approving the request to go to the finance screen
-      params.put("id", reimbursementRequest.getId());
-      params.put("statusId", reimbursementRequest.getReimbursementRequestStatusId());
-      id = sqlCache.updateBySqlReturningId(ReimbursementQuery.update, params, "id").longValue();
+      sqlCache.updateBySql(ReimbursementQuery.update, params);
     } else {
-      //if this is a new request and the user making request is not the same as the budget user, mark it as pending supervisor approval
-      //unless it is Austin Thompson submitting to Dane's budget
-      Long userId = currentUser.trueUserId();
-
-      if (reimbursementRequest.getExpenseBudgetUserId() != null
-          && !userId.equals(reimbursementRequest.getExpenseBudgetUserId())
-          && !(userId.equals(2354046L) && reimbursementRequest.getExpenseBudgetUserId().equals(2353912L))) {
-        statusId = 6L;
-      }
-      params.put("statusId", statusId);
-
-      if (reimbursementRequest.getId() != null) {
-        params.put("id", reimbursementRequest.getId());
-        id = sqlCache.updateBySqlReturningId(ReimbursementQuery.update, params, "id").longValue();
-      } else {
-        id = sqlCache.updateBySqlReturningId(ReimbursementQuery.insert, params, "id").longValue();
-      }
+      id = sqlCache.updateBySqlReturningId(ReimbursementQuery.insert, params, "id").longValue();
     }
     return id;
   }
@@ -94,11 +73,6 @@ public class ReimbursementService {
       params.put("notes", reimbursementRequest.getNotes());
       sqlCache.updateBySql(ReimbursementQuery.saveReimbursementNote, params);
     }
-
-    //if they reject the request then we need to also reject the expenses associated with the request
-    if (reimbursementRequest.getReimbursementRequestStatusId() == 2) {
-      sqlCache.updateBySql(ExpenseQuery.rejectExpensesWhenRequestIsRejected, params);
-    }
   }
 
   public List<ReimbursementRequest> getPendingReimbursementRequests() {
@@ -115,36 +89,6 @@ public class ReimbursementService {
     params.put("endDate", endDate);
 
     return sqlCache.queryBySql(ReimbursementQuery.getRequestsForUserByStatus, params, ReimbursementRequest.class);
-  }
-
-  public List<User> getAllReimbursementUsers(ReimbursementUserSearch usersSearch) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("searchText", usersSearch.getQuery());
-//        leaving this here in case they change their minds. this line only show those who can submit a request, the new one just shows all active users
-//        List<User> results = sqlCache.queryBySql(ReimbursementQuery.getAllReimbursementUsers", params, User.class);
-    return sqlCache.queryBySql(ReimbursementQuery.getAllActiveUsers, params, User.class);
-  }
-
-  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(Long statusId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("supervisorId", currentUser.getId());
-    params.put("statusId", statusId);
-
-    return sqlCache.queryBySql(ReimbursementQuery.getRequestsForSupervisorByStatus, params, ReimbursementRequest.class);
-  }
-
-  public String getMonthlySubmittedReport(String startDate, String endDate) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
-
-    Optional<String> result = sqlCache.getBySql(ReimbursementQuery.getMonthlySubmittedReport, params, new SingleColumnRowMapper<>(String.class));
-    return result.orElse("{}");
   }
 
   public void deleteRequest(Long id) {

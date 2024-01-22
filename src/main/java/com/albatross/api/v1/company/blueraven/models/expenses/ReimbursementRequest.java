@@ -13,10 +13,9 @@ import java.util.List;
 @Setter
 public class ReimbursementRequest {
 
-  private Long id;
+  private Long id, attachmentId, glCodeId, expenseBudgetId, createdById, reimbursementRequestStatusId, expenseBudgetUserId, budgetTypeId;
   private String details, createdBy, userType, budgetType, expenseBudgetUser, notes, positionName;
   private Double amount;
-  private Long attachmentId, expenseBudgetId, createdById, reimbursementRequestStatusId, expenseBudgetUserId;
   private Date expenseDate, dateCreated;
   private List<Expense> expenses;
   private Boolean archived;

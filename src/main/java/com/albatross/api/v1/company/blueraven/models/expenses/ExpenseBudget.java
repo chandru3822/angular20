@@ -13,9 +13,8 @@ import java.util.Date;
 @Setter
 public class ExpenseBudget {
 
-  private Long id;
+  private Long id, userId;
   private String userFullName, budgetType, notes, fullBudgetName;
-  private Long userId, originalExpenseBudgetId;
   private Double amount, totalExpenses, balance;
   private Date dateCreated, dateModified;
   private Boolean archived;
