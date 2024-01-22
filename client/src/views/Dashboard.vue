@@ -92,7 +92,7 @@
             </v-btn>
           </template>
           <div>
-            <v-list>
+            <v-list style="height: 400px; overflow-y:auto">
               <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover v-model="openFirstPeriodMenu" offset-x>
@@ -103,7 +103,7 @@
                       </span>
                     </template>
                     <div>
-                      <v-list>
+                      <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openFirstMenu = false">
                           <v-list-item-title>
                             {{ period.label }}
@@ -160,7 +160,7 @@
             </v-btn>
           </template>
           <div>
-            <v-list>
+            <v-list style="height: 400px; overflow-y:auto">
               <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end" :offset-x="true">
@@ -171,7 +171,7 @@
                       </span>
                     </template>
                     <div>
-                      <v-list>
+                      <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="secondDateRange = item.id; secondPeriod = index; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM'); openSecondMenu = false">
                           <v-list-item-title>
                             {{ period.label }}
@@ -227,7 +227,7 @@
             </v-btn>
           </template>
           <div>
-            <v-list>
+            <v-list style="height: 400px; overflow-y:auto">
               <v-list-item v-for="(item, index) in dropdownValues" style="padding: 0px">
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end">
@@ -238,7 +238,7 @@
                       </span>
                     </template>
                     <div>
-                      <v-list>
+                      <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openThirdMenu = false">
                           <v-list-item-title>
                             {{ period.label }}
@@ -707,7 +707,6 @@
                 return;
               }
               else if(result.name === 'PERIOD'){
-                console.log("New Period")
                 result.startDate = result.periodList[this.firstPeriod].startDate;
                 result.endDate = result.periodList[this.firstPeriod].endDate;
                 if(this.firstPeriod != result.periodList.length-1){
@@ -734,15 +733,29 @@
           }
           if(result.startDate === null){
             if(!this.secondCustom.isActive) {
-              this.customColumn = 2;
-              if (this.secondCustom.startDate.toString().length > 0) {
-               this.customDate.startDate = this.secondCustom.startDate.format('YYYY-MM-DD').toString();
+              if(result.name === 'CUSTOM') {
+                this.customColumn = 2;
+                if (this.secondCustom.startDate.toString().length > 0) {
+                  this.customDate.startDate = this.secondCustom.startDate.format('YYYY-MM-DD').toString();
+                }
+                if (this.secondCustom.endDate.toString().length > 0) {
+                  this.customDate.endDate = this.secondCustom.endDate.format('YYYY-MM-DD').toString();
+                }
+                this.selectingCustomDates = true;
+                return;
               }
-              if (this.secondCustom.endDate.toString().length > 0) {
-                this.customDate.endDate = this.secondCustom.endDate.format('YYYY-MM-DD').toString();
+              else if(result.name === 'PERIOD'){
+                result.startDate = result.periodList[this.secondPeriod].startDate;
+                result.endDate = result.periodList[this.secondPeriod].endDate;
+                if(this.secondPeriod != result.periodList.length-1){
+                  result.trendStart = result.periodList[this.secondPeriod+1].startDate;
+                  result.trendEnd = result.periodList[this.secondPeriod+1].endDate;
+                }
+                else{
+                  result.trendStart = null;
+                  result.trendEnd = null;
+                }
               }
-              this.selectingCustomDates = true;
-              return;
             }
             else{
               result = cloneDeep(this.secondCustom);
@@ -758,15 +771,29 @@
           }
           if(result.startDate === null){
             if(!this.thirdCustom.isActive) {
-              this.customColumn = 3;
-              if (this.thirdCustom.startDate.toString().length > 0) {
-                this.customDate.startDate = this.thirdCustom.startDate.format('YYYY-MM-DD').toString();
+              if(result.name === 'CUSTOM') {
+                this.customColumn = 3;
+                if (this.thirdCustom.startDate.toString().length > 0) {
+                  this.customDate.startDate = this.thirdCustom.startDate.format('YYYY-MM-DD').toString();
+                }
+                if (this.thirdCustom.endDate.toString().length > 0) {
+                  this.customDate.endDate = this.thirdCustom.endDate.format('YYYY-MM-DD').toString();
+                }
+                this.selectingCustomDates = true;
+                return;
               }
-              if (this.thirdCustom.endDate.toString().length > 0) {
-                this.customDate.endDate = this.thirdCustom.endDate.format('YYYY-MM-DD').toString();
-              }
-              this.selectingCustomDates = true;
-              return;
+              else if(result.name === 'PERIOD'){
+                result.startDate = result.periodList[this.thirdPeriod].startDate;
+                result.endDate = result.periodList[this.thirdPeriod].endDate;
+                if(this.thirdPeriod != result.periodList.length-1){
+                  result.trendStart = result.periodList[this.thirdPeriod+1].startDate;
+                  result.trendEnd = result.periodList[this.thirdPeriod+1].endDate;
+                }
+                else{
+                  result.trendStart = null;
+                  result.trendEnd = null;
+                }
+             }
             }
             else{
               result = cloneDeep(this.thirdCustom);
@@ -817,19 +844,37 @@
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           let filename = 'CompanyDashboard.csv'
-
-          let csvData = ' , ' + ((this.dropdownValues.find(x => x.id === this.firstDateRange).name==='CUSTOM')?this.firstCustom.name:this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName);
+          let csvData = ' , '
+          if(this.dropdownValues.find(x => x.id === this.firstDateRange).name==='PERIOD'){
+            csvData += this.dropdownValues.find(x => x.id === this.firstDateRange).periodList[this.firstPeriod].shortLabel;
+          }
+          else
+          {
+            csvData += ((this.dropdownValues.find(x => x.id === this.firstDateRange).name === 'CUSTOM') ? this.firstCustom.name : this.dropdownValues.find(x => x.id === this.firstDateRange).friendlyName);
+          }
           if(this.viewTrends){
             csvData += ', ' +  'Trend 1'
           }
           if(this.secondDateRange){
-            csvData += ' , ' + ((this.dropdownValues.find(x => x.id === this.secondDateRange).name==='CUSTOM')?this.secondCustom.name:this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
+            if(this.dropdownValues.find(x => x.id === this.secondDateRange).name==='PERIOD'){
+              csvData += ' , ' + this.dropdownValues.find(x => x.id === this.secondDateRange).periodList[this.secondPeriod].shortLabel;
+            }
+            else
+            {
+              csvData += ((this.dropdownValues.find(x => x.id === this.secondDateRange).name === 'CUSTOM') ? this.secondCustom.name : this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
+            }
             if(this.viewTrends){
               csvData += ', ' +  'Trend 2'
             }
           }
           if(this.thirdDateRange){
-            csvData += ' , ' + ((this.dropdownValues.find(x => x.id === this.thirdDateRange).name==='CUSTOM')?this.thirdCustom.name:this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName);
+            if(this.dropdownValues.find(x => x.id === this.thirdDateRange).name==='PERIOD'){
+              csvData += ' , ' + this.dropdownValues.find(x => x.id === this.thirdDateRange).periodList[this.thirdPeriod].shortLabel;
+            }
+            else
+            {
+              csvData += ((this.dropdownValues.find(x => x.id === this.thirdDateRange).name === 'CUSTOM') ? this.thirdCustom.name : this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName);
+            }
             if(this.viewTrends){
               csvData += ', ' +  'Trend 3'
             }
