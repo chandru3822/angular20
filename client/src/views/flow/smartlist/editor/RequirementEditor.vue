@@ -342,8 +342,7 @@ const calculatedAvailableFields = computed(() => {
         }
       }
 
-      f.calculatedName = `${f.name} ${suffix}`
-      return f
+      return {...f, calculatedName:`${f.name} ${suffix}`}
     })
 })
 
