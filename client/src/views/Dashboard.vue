@@ -72,13 +72,13 @@
         <v-menu data-app left
                 offset-y
                 :max-height="`calc(100vh - 20px)`"
-                class="account-menu"
+                class="dropdown-header body-small"
                 v-model="openMenu"
                 :close-on-content-click="true">
           <template v-slot:activator="{ on }">
-            <v-btn class="account-menu-button label-medium px-1"
-                   dark
+            <v-btn class="dropdown-header body-small"
                    v-on="on"
+                   plain
             >
               <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===getDropdownById(firstDateRange).id)}]">
                       {{firstCustom.name}}</span>
@@ -88,7 +88,7 @@
               <span v-else>
               {{ getDropdownById(firstDateRange)?.friendlyName}}
               </span>
-              <v-icon>mdi-chevron-down</v-icon>
+              <v-icon>mdi-menu-down</v-icon>
             </v-btn>
           </template>
           <div>
@@ -878,8 +878,8 @@
     color: var(--v-primary-base) !important;
   }
   .dropdown-header{
-    width: 210px;
-    top: 16%;
+    border: 1px solid black;
+    text-transform: unset !important;
   }
   .v-data-table{
     overflow-x: auto;
