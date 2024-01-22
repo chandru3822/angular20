@@ -73,6 +73,7 @@
         </template>
       </v-autocomplete>
       <v-btn v-if="userCanEdit && saveButton" color="primary" dark class="d-inline-block white--text mt-4"
+             :class="{'full-size': fullSize}"
              @click="save()">
         <v-icon class="mr-2">save</v-icon>
         {{saveButtonText || 'Save'}}

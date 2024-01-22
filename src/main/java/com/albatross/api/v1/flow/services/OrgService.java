@@ -61,7 +61,7 @@ public class OrgService {
   private String storageBucket;
 
   public void doOrgStructureRefresh() {
-    sqlCache.updateBySql(OrgQuery.orgStructureRefresh, Collections.emptyMap());
+    sqlCache.updateBySql(OrgQuery. orgStructureRefresh, Collections.emptyMap());
   }
 
   public List<Org> getOrgsForCompany() {
@@ -179,7 +179,7 @@ public class OrgService {
 
     if (null != org.getCustomFieldGroups() && !org.getCustomFieldGroups().isEmpty()) {
       customFieldValueService.updateCustomFieldValues(
-          org.getCustomFieldGroups().get(0).getCustomFieldValues(),
+          org.getCustomFieldGroups().getFirst().getCustomFieldValues(),
           id,
           ObjectType.ORGANIZATION);
     }

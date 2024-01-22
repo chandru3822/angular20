@@ -7,7 +7,8 @@ CREATE OR REPLACE FUNCTION brs.get_closer_manager(p_closer_user_id bigint defaul
             user_id          bigint,
             full_name        text,
             phone_number     varchar,
-            s3_key           varchar
+            s3_key           varchar,
+            s3_uuid          uuid
           )
   LANGUAGE plpgsql
 AS
@@ -65,16 +66,18 @@ BEGIN
              up.user_id,
              concat(u.first_name, ' ', u.last_name) AS full_name,
              u.phone_number,
-             (select a.s3_key   FROM flow.attachment a
-                     INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
-              where src.source_id = u.id
-                and a.attachment_type_id = 9
-                and a.archived is false) as s3_key
+             att.s3_key,
+             att.s3_uuid
       from flow.user_position up
              INNER JOIN flow.position p on up.position_id = p.id
              INNER JOIN flow."user" u on up.user_id = u.id
              INNER JOIN flow.company_user_status cus on cus.user_id = u.id
              INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = p.company_id
+             LEFT JOIN (select a.uuid as s3_uuid, a.s3_key, src.source_id
+                        FROM flow.attachment a
+                               INNER JOIN flow.attachment_source src ON src.attachment_id = a.id
+                        where a.attachment_type_id = 9
+                          and a.archived is false) att on att.source_id = u.id
       where up.org_id = v_org_id_to_use
         and up.position_id = v_manager_position_id
         and up.archived is false

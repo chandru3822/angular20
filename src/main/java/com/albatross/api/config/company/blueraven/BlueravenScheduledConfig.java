@@ -2,9 +2,10 @@ package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
+import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
+import com.albatross.api.v1.company.blueraven.services.CompanyDashboardService;
 import com.albatross.api.v1.company.blueraven.services.GenesysService;
 import com.albatross.api.v1.company.blueraven.services.MarketoService;
-import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -13,17 +14,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.annotation.SchedulingConfigurer;
-import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -32,7 +29,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled.blueraven", value = "enabled")
-public class BlueravenScheduledConfig implements SchedulingConfigurer {
+public class BlueravenScheduledConfig {
 
   @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
@@ -53,6 +50,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
 
   private final SecurityService securityService;
 
+  private final CompanyDashboardService companyDashboardService;
   /*
   //
   // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN (8 am utc), THAT IS WHEN AUTO TRIGGERS
@@ -65,11 +63,6 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
   // WARNING: ENSURE THAT ANY FUNCTIONS RUNNING ARE SPECIFIC TO BLUERAVEN DATA
   //
   */
-
-  @Override
-  public void configureTasks(ScheduledTaskRegistrar blueravenTaskRegistrar) {
-    blueravenTaskRegistrar.setScheduler(blueravenTaskExecutor());
-  }
 
   @PostConstruct
   public void init() {
@@ -96,18 +89,18 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     }
   }
 
-  // daily at 4:00am mountain timec
-   @Scheduled(cron = "0 0 10 * * *", zone = "UTC")
+  // daily at 4:00am mountain time
+  @Scheduled(cron = "0 0 10 * * *", zone = "UTC")
   public void pushProjectsToMarketo() {
-      if (marketoEnabled) {
-          log.info("*** CRON: start pushing projects to Marketo ***");
-          marketoService.pushDailyUpdatedProjects();
-          log.info("*** CRON: end pushing projects to Marketo ***");
-      }
+    if (marketoEnabled) {
+      log.info("*** CRON: start pushing projects to Marketo ***");
+      marketoService.pushDailyUpdatedProjects();
+      log.info("*** CRON: end pushing projects to Marketo ***");
+    }
   }
 
   @Scheduled(fixedDelay = 1, timeUnit = TimeUnit.HOURS)
-  public void syncBirdeyeResponses(){
+  public void syncBirdeyeResponses() {
     log.debug("*** CRON: start sync surveys from BirdEye ***");
     setBlueravenSystemUser();
 
@@ -115,9 +108,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     log.debug("*** CRON: end sync surveys from BirdEye ***");
   }
 
-
   @Scheduled(cron = "0 0 12 * * *", zone = "UTC") //12pm UTC / 6am-ish Mountain
-  public void syncBirdeyeReviews(){
+  public void syncBirdeyeReviews() {
     log.debug("*** CRON: start sync reviews from BirdEye ***");
     Instant startTime = Instant.now();
     setBlueravenSystemUser();
@@ -127,9 +119,14 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
   }
 
-  @Bean(destroyMethod = "shutdown")
-  public Executor blueravenTaskExecutor() {
-    return Executors.newScheduledThreadPool(10);
+  @Scheduled(cron = "0 0 3 * * *", zone = "America/Denver")
+  public void dailyCompanyDashboardSetup() {
+    companyDashboardService.callCompanyDashboardSetup(null);
+  }
+
+  @Scheduled(fixedDelay = 5, timeUnit = TimeUnit.MINUTES)
+  public void companyDashboardSetup() {
+    companyDashboardService.callCompanyDashboardSetup(LocalDate.now());
   }
 
   private void setBlueravenSystemUser() {
