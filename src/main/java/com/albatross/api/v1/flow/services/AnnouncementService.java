@@ -102,7 +102,7 @@ public class AnnouncementService {
     return result;
   }
 
-  public Optional<Announcement> saveAnnouncement(Announcement a) {
+  public Optional<Announcement> saveAnnouncement(Announcement a, MultipartFile file) {
     User user = securityService.getCurrentUser();
     Long id;
 
@@ -127,6 +127,14 @@ public class AnnouncementService {
     } else {
       id = sqlCache.updateBySqlReturningId(AnnouncementQuery.insert, params, "id").longValue();
       //they should only be able to upload a file and save at the same time if it was an insert
+    }
+
+    if(file != null && !file.isEmpty()) {
+      try {
+        attachmentService.create(file, id, 990L, file.getName(), false);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     Optional<Announcement> announcement = getOneAnnouncement(id);

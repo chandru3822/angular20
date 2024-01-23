@@ -40,8 +40,9 @@ public class AnnouncementController {
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
-  public Optional<Announcement> saveAnnouncement(@RequestBody Announcement announcement) {
-    return announcementService.saveAnnouncement(announcement);
+  public Optional<Announcement> saveAnnouncement(@RequestPart Announcement announcement,
+                                                 @RequestPart MultipartFile uploadFile) {
+    return announcementService.saveAnnouncement(announcement, uploadFile);
   }
 
   @PostMapping(value = "/{id}/mark", produces = MediaType.APPLICATION_JSON_VALUE)

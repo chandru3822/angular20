@@ -41,10 +41,12 @@
                 <span v-else-if="item.showOnMobile">Mobile</span>
               </td>
               <td>
-                <v-btn small text color="primary" @click="goToPath(item.id)">
+                <v-btn small text color="primary"
+                       v-if="current"
+                       @click="goToPath(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                <v-btn small text color="primary" v-if="current && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
                   <v-icon >delete</v-icon>
                 </v-btn>
               </td>

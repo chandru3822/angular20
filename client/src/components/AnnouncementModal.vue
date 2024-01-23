@@ -1,6 +1,6 @@
 <template>
   <v-card class="coversheet-container">
-    <v-card-text class="px-0 pb-4">
+    <v-card-text class="px-3 pb-4 pt-3">
       <v-toolbar flat dense class="app-toolbar announcement-toolbar">
         <v-toolbar-title class="title-large">{{ announcement.title }}</v-toolbar-title>
         <v-spacer/>
@@ -10,12 +10,12 @@
           </v-btn>
         </v-toolbar-items>
       </v-toolbar>
-      <div class="px-4">
-        <h3>{{announcement.subtitle}}</h3>
+      <div class="px-4 pt-4">
+        <div class="announcement-subtitle">{{announcement.subtitle}}</div>
         <div v-if="announcement.presignedUrl" class="py-3">
           <img class="announcement-image" :src="announcement.presignedUrl">
         </div>
-        <a v-if="announcement.hyperlink" target="_blank"
+        <a class="ml-3 announcement-hyperlink" v-if="announcement.hyperlink" target="_blank"
            :href="announcement.hyperlink">
           {{announcement.hyperlink}}
         </a>
@@ -120,6 +120,16 @@ export default {
 
 .announcement-toolbar {
   border-bottom: none !important;
+}
+
+.announcement-subtitle {
+  color: rgba(0, 0, 0, 0.87);
+  font-size: 14px;
+}
+
+.announcement-hyperlink {
+  font-size: 16px;
+  font-weight: 600;
 }
 
 </style>
