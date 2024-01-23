@@ -69,6 +69,7 @@
                           item-value="id"
           ></v-autocomplete>
           <v-text-field text
+                        prepend-icon="mdi-currency-usd"
                         type="number"
                         label="Amount"
                         v-model.number="newReimbursementRequest.amount">
@@ -220,6 +221,7 @@
                 <v-text-field text
                               type="number"
                               label="Amount"
+                              prepend-icon="mdi-currency-usd"
                               :rules="requiredRules"
                               v-model.number="selectedRequest.amount">
                 </v-text-field>
@@ -435,6 +437,7 @@ export default {
         this.selectedRequest = {}
         this.rejectDropdown = false
         this.reimbursementRequests = this.reimbursementRequests.filter(rr => rr.id !== this.selectedRequest.id)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Approving Reimbursement Request')

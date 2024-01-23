@@ -90,25 +90,10 @@ public class ExpenseBudgetController {
     return expenseBudgetService.getBudgetsForUser(id);
   }
 
-  @GetMapping(value = "/userBudgetDetails/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ExpenseBudget> getBudgetExpensesVsRemaining(@PathVariable("id") Long userId,
-                                                          @RequestParam String startDate,
-                                                          @RequestParam String endDate) {
-    return expenseBudgetService.getBudgetExpensesVsRemaining(userId, startDate, endDate);
-  }
-
   @GetMapping(value = "/getMonthlyBudgetReport", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getMonthlyBudgetReport(@RequestParam String startDate,
                                        @RequestParam String endDate) {
     return expenseBudgetService.getMonthlyBudgetReport(startDate, endDate);
-  }
-
-  @GetMapping(value = "/getExpenseDrilldown", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getExpenseDrilldown(@RequestParam String startDate,
-                                    @RequestParam String endDate,
-                                    @RequestParam String status,
-                                    @RequestParam(required = false) Long budgetId) {
-    return expenseBudgetService.getExpenseDrilldown(startDate, endDate, status, budgetId);
   }
 
   @GetMapping(value = "/budgetRemaining/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -26,6 +26,7 @@
           ></v-autocomplete>
           <v-text-field text
                         type="number"
+                        prepend-icon="mdi-currency-usd"
                         label="Amount"
                         v-model.number="newBudget.amount">
           </v-text-field>
@@ -87,6 +88,7 @@
                 <v-text-field text
                               type="number"
                               label="Amount"
+                              prepend-icon="mdi-currency-usd"
                               v-model.number="item.amount">
                 </v-text-field>
                 <v-select v-model="selectedMonth"

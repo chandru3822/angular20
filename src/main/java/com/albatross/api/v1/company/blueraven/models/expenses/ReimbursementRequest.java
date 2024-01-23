@@ -13,11 +13,10 @@ import java.util.List;
 @Setter
 public class ReimbursementRequest {
 
-  private Long id, attachmentId, glCodeId, expenseBudgetId, createdById, reimbursementRequestStatusId, expenseBudgetUserId, budgetTypeId;
-  private String details, createdBy, userType, budgetType, expenseBudgetUser, notes, positionName;
+  private Long id, attachmentId, glCodeId, expenseBudgetId, createdById, reimbursementRequestStatusId, expenseBudgetUserId, budgetTypeId, approvedById, submittedById;
+  private String details, createdBy, userType, budgetType, expenseBudgetUser, notes, positionName, submittedBy, approvedBy, glCode;
   private Double amount;
   private Date expenseDate, dateCreated;
-  private List<Expense> expenses;
   private Boolean archived;
 
 }

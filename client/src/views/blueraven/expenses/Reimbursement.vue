@@ -145,27 +145,19 @@
                   <td class="detail-column default-text-color text-right">{{ br.amount || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column clickable default-text-color"
-                      @click="[drilldownTitle = `${br.budget_name} Budget - Pending Review`,
-                               loadDrilldown('PENDING_REVIEW', br.budget_id)]">Pending Review:</td>
+                  <td class="detail-column clickable default-text-color">Pending Review:</td>
                   <td class="detail-column default-text-color text-right">{{ br.pending_review || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = `${br.budget_name} Budget - Pending Approval`,
-                               loadDrilldown('PENDING_APPROVAL', br.budget_id)]">Pending Approval:</td>
+                  <td class="detail-column default-text-color clickable">Pending Approval:</td>
                   <td class="detail-column default-text-color text-right">{{ br.pending_approval || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = `${br.budget_name} Budget - Pending Payment`,
-                               loadDrilldown('PENDING_PAYMENT', br.budget_id)]">Pending Payment:</td>
+                  <td class="detail-column default-text-color clickable">Pending Payment:</td>
                   <td class="detail-column default-text-color text-right">{{ br.pending_payment || 0 | currency('$', 2) }}</td>
                 </tr>
                 <tr>
-                  <td class="detail-column default-text-color clickable"
-                      @click="[drilldownTitle = `${br.budget_name} Budget - Paid`,
-                               loadDrilldown('PAID', br.budget_id)]">Paid:</td>
+                  <td class="detail-column default-text-color clickable">Paid:</td>
                   <td class="detail-column default-text-color text-right">{{ br.paid || 0 | currency('$', 2) }}</td>
                 </tr>
 <!--                <tr>-->
@@ -378,29 +370,6 @@ export default {
         }, 'blueraven'
       )
       this.rejectedRequests = data
-    },
-    async loadDrilldown(statusText, budgetId) {
-      this.showDrilldown = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.drilldownData = []
-      try {
-        let params = {
-          startDate: this.startDate,
-          endDate: this.endDate,
-          budgetId: budgetId,
-          status: statusText //not sure about this yet
-        }
-        const {data, status} = await getRequestWithParams(`/expenseBudgets/getExpenseDrilldown`, {params}, 'blueraven')
-        this.drilldownData = data
-        this.showDrilldown = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.paymentConfirmLoading = false
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
     },
     async confirmPayment() {
       this.$store.commit(AppMutations.SET_LOADING, true)

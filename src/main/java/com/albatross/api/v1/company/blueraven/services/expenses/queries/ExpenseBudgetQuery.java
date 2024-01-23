@@ -214,52 +214,15 @@ public class ExpenseBudgetQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getBudgetExpensesVsRemaining = """
-    WITH single_row AS (SELECT
-        eb.user_id,
-        eb.original_expense_budget_id,
-        max(eb.date_created) date_created
-        FROM brs.expense_budget eb
-        WHERE eb.archived is not true
-        GROUP BY eb.user_id, eb.original_expense_budget_id
-        )
-        SELECT eb.id,
-        eb.user_id,
-        u.first_name || ' ' || u.last_name user_full_name,
-        eb.amount,
-        eb.start_date,
-        eb.end_date,
-        coalesce(sum(e.expense_amount),0) total_expenses,
-        eb.amount - (coalesce(sum(e.expense_amount),0)) balance
-        from brs.expense_budget eb
-        INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
-        INNER JOIN flow."user" u on u.id = eb.user_id
-        LEFT JOIN brs.expense e on e.expense_budget_id = eb.id and e.rejected_date is null
-        where eb.user_id = :userId
-        and ( eb.start_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
-        OR eb.end_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE)
-        and eb.archived is not true
-        and e.archived is not true
-        GROUP BY eb.id,
-        eb.user_id,
-        u.first_name,
-        u.last_name,
-        eb.amount,
-        eb.start_date,
-        eb.end_date
-    """;
-
-  //language=PostgreSQL
   public final static String getBudgetRemainingById = """
     SELECT eb.id,
            eb.amount,
-           coalesce(sum(e.expense_amount),0) total_expenses,
-           eb.amount - (coalesce(sum(e.expense_amount),0)) balance
+           coalesce(sum(rr.amount),0) total_expenses,
+           eb.amount - (coalesce(sum(rr.amount),0)) balance
            from brs.expense_budget eb
-           LEFT JOIN brs.expense e on e.expense_budget_id = eb.id and e.rejected_date is null
+           LEFT JOIN brs.reimbursement_request rr on eb.id = rr.expense_budget_id and rr.rejected_date is null and rr.archived is not true
            where eb.id = :budgetId
            and eb.archived is not true
-           and e.archived is not true
            GROUP BY eb.id,
            eb.amount
     """;
@@ -302,10 +265,5 @@ public class ExpenseBudgetQuery {
   //language=PostgreSQL
   public final static String getMonthlyBudgetReport = """
     select * from brs.get_monthly_expense_budget_report(:userId::bigint, :startDate::DATE, :endDate::DATE)
-    """;
-
-  //language=PostgreSQL
-  public final static String getExpenseDrilldown = """
-    select * from brs.get_expense_drilldown(:userId::bigint, :startDate::DATE, :endDate::DATE, :status::varchar, :budgetId::bigint)
     """;
 }

@@ -221,17 +221,6 @@ public class ExpenseBudgetService {
     return sqlCache.queryBySql(ExpenseBudgetQuery.getBudgetsForUser, params, ExpenseBudget.class);
   }
 
-  public List<ExpenseBudget> getBudgetExpensesVsRemaining(
-      Long userId, String startDate, String endDate) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", userId);
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
-
-    return sqlCache.queryBySql(
-        ExpenseBudgetQuery.getBudgetExpensesVsRemaining, params, ExpenseBudget.class);
-  }
-
   public Optional<ExpenseBudget> getBudgetRemainingById(Long budgetId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("budgetId", budgetId);
@@ -250,24 +239,6 @@ public class ExpenseBudgetService {
     return sqlCache
         .getBySql(
             ExpenseBudgetQuery.getMonthlyBudgetReport,
-            params,
-            new SingleColumnRowMapper<>(String.class))
-        .orElse("{}");
-  }
-
-  public String getExpenseDrilldown(String startDate, String endDate, String status, Long budgetId) {
-    User currentUser = securityService.getCurrentUser();
-
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
-    params.put("status", status);
-    params.put("budgetId", budgetId);
-
-    return sqlCache
-        .getBySql(
-            ExpenseBudgetQuery.getExpenseDrilldown,
             params,
             new SingleColumnRowMapper<>(String.class))
         .orElse("{}");

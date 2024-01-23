@@ -20,17 +20,7 @@ public class ReimbursementQuery {
        rr.gl_code_id,
        rr.created_by_id,
        u.first_name || ' ' || u.last_name as created_by,
-       p.position as position_name,
-       coalesce((SELECT array_to_json(array_agg(row_to_json(expenses)))
-                 FROM (
-                        SELECT e.id,
-                               e.date_created "dateCreated",
-                               e.expense_amount "expenseAmount",
-                               e.reimbursement_request_id as "reimbursementRequestId"
-                        FROM brs.expense e
-                        WHERE e.reimbursement_request_id = rr.id
-                          AND e.rejected_date is null
-                      ) AS expenses), '[]') AS expenses
+       p.position as position_name
     FROM brs.reimbursement_request rr
        INNER JOIN flow."user" u on u.id = rr.created_by_id
        inner JOIN flow.user_position up on up.user_id = u.id
@@ -117,10 +107,37 @@ public class ReimbursementQuery {
     """;
 
   //language=PostgreSQL
-  public final static String deleteExpensesForRequest = """
-    UPDATE brs.expense
-        SET archived = TRUE,
-            date_modified = now()
-    where reimbursement_request_id = :id
+  public final static String getUnpaidRequests = """
+    SELECT rr.id,
+           rr.amount,
+           rr.date_created,
+           rr.details,
+           rr.expense_date,
+           rr.reimbursement_request_status_id,
+           rr.notes,
+           rr.submitted_by_id,
+           concat(su.first_name, ' ', su.last_name) as submitted_by,
+           rr.approved_by_id,
+           concat(au.first_name, ' ', au.last_name) as approved_by,
+           rr.expense_budget_id,
+           eb.user_id as expense_budget_user_id,
+           bt.name as budget_type,
+           gl.code as gl_code,
+           rr.gl_code_id,
+           rr.budget_type_id,
+           rr.created_by_id,
+           eb.user_id as expense_budget_user_id,
+           ebu.first_name || ' ' || ebu.last_name as expense_budget_user
+    FROM brs.reimbursement_request rr
+      LEFT JOIN flow."user" su on su.id = rr.submitted_by_id
+      LEFT JOIN flow."user" au on au.id = rr.approved_by_id
+      LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
+      left join flow.user ebu on ebu.id = eb.user_id
+      LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
+      LEFT JOIN brs.gl_code gl on gl.id = rr.gl_code_id
+    WHERE rr.expense_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
+        and rr.reimbursement_request_status_id = 1
+        and rr.paid_date is null
+        and rr.archived is not true
     """;
 }

@@ -132,15 +132,11 @@
                 <td>
                   <v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
-                <td class="text-left">{{ item.createdBy }}</td>
-                <td class="text-left">{{ item.positionName }}</td>
-                <td class="text-left">{{ item.expenseAmount | currency('$', 2) }}</td>
-                <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
-                <td class="text-left">{{ item.glCode }}</td>
-                <td class="text-left">{{ item.budgetType }}</td>
                 <td class="text-left">{{ item.expenseBudgetUser }}</td>
-                <td class="text-left">{{ item.dateCreated | formatDate('date') }}</td>
-                <td class="text-left">{{ item.createdBy }}</td>
+                <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
+                <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
+                <td class="text-left">{{ item.budgetType }}</td>
+                <td class="text-left">{{ item.glCode }}</td>
                 <td class="text-left">{{ item.dateSubmitted | formatDate('date') }}</td>
                 <td class="text-left">{{ item.submittedBy }}</td>
                 <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
@@ -150,7 +146,7 @@
                 <td>
                   <div style="display: flex; justify-content: flex-end">
                     <v-btn small text color="primary"
-                           @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getGlCodes(), getUsersWithBudget(), getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)]">
+                           @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getBudgetsForUser(selectedExpense.expenseBudgetUserId)]">
                       <v-icon>edit</v-icon>
                     </v-btn>
                     <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
@@ -176,11 +172,21 @@
         </v-toolbar>
         <v-card flat class="px-5">
           <v-card-text class="py-1">
-            <v-text-field text
-                          :disabled="true"
-                          label="Purchaser"
-                          v-model="selectedExpense.createdBy">
-            </v-text-field>
+            <v-autocomplete v-model="selectedExpense.expenseBudgetUserId"
+                            :items="usersWithBudget"
+                            label="Purchaser"
+                            :disabled="selectedExpense.approvalDate !== null"
+                            item-text="fullName"
+                            item-value="id"
+                            @input="getBudgetsForUser(selectedExpense.expenseBudgetUserId)"
+            ></v-autocomplete>
+            <v-autocomplete v-model="selectedExpense.expenseBudgetId"
+                            :items="budgetsForUser"
+                            label="Selected Budget"
+                            :disabled="selectedExpense.approvalDate !== null"
+                            item-text="fullBudgetName"
+                            item-value="id"
+            ></v-autocomplete>
             <DatetimePickerInput
               v-model="selectedExpense.expenseDate"
               :timezone="timezone"
@@ -195,36 +201,26 @@
                             :disabled="selectedExpense.approvalDate !== null"
                             item-text="code"
                             item-value="id"
+                            :filter="searchGlCodes"
             >
               <template slot='item' slot-scope='{ item }'>
                 {{ item.code }} - {{ item.description }}
               </template>
             </v-autocomplete>
-            <v-autocomplete v-model="selectedExpense.expenseBudgetUserId"
-                            :items="usersWithBudget"
-                            label="Budget User"
-                            :disabled="selectedExpense.approvalDate !== null"
-                            item-text="fullName"
-                            item-value="id"
-                            @input="getBudgetTypesForUser(selectedExpense, selectedExpense.expenseDate)"
-            ></v-autocomplete>
-            <v-autocomplete v-model="selectedExpense.expenseBudgetId"
-                            :items="budgetTypesForUser"
+
+            <v-autocomplete v-model="selectedExpense.budgetTypeId"
+                            :items="budgetTypes"
                             label="Budget Type"
-                            :disabled="selectedExpense.approvalDate !== null"
-                            item-text="budgetType"
+                            disabled
+                            item-text="name"
                             item-value="id"
             ></v-autocomplete>
             <v-text-field text
                           type="number"
+                          prepend-icon="mdi-currency-usd"
                           :disabled="selectedExpense.approvalDate !== null"
                           label="Amount"
-                          v-model.number="selectedExpense.expenseAmount">
-            </v-text-field>
-            <v-text-field text
-                          :disabled="true"
-                          label="ID Number"
-                          v-model.number="selectedExpense.reimbursementRequestId">
+                          v-model.number="selectedExpense.amount">
             </v-text-field>
             <label>Details:</label>
             <v-textarea class="py-2" hide-details
@@ -232,7 +228,7 @@
                         :disabled="true"
                         rows="4"
                         background-color="#F2F6F8"
-                        v-model="selectedExpense.reimbursementRequestDetails">
+                        v-model="selectedExpense.details">
             </v-textarea>
             <label>Notes:</label>
             <v-textarea class="py-2" hide-details
@@ -265,7 +261,7 @@
             <v-btn color="primary" text @click="selectedExpense = {}">Cancel</v-btn>
             <v-btn color="primary" class="white--text" raised
                    :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
-                            || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.expenseAmount"
+                            || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.amount"
                    @click="saveSubmittedExpense(selectedExpense)">Save Changes
             </v-btn>
           </v-card-actions>
@@ -293,7 +289,13 @@ import {
   getSnackbar
 } from '@/helpers/helpers'
 import constants from "@/helpers/constants";
-import {getGlCodes, getReimbursementRequestImage, getUsersWithBudget} from './expenseService'
+import {
+  getBudgetsForUser,
+  getBudgetTypes,
+  getGlCodes,
+  getReimbursementRequestImage,
+  getUsersWithBudget
+} from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import moment from 'moment'
 import {saveAs} from 'file-saver'
@@ -331,23 +333,20 @@ export default {
       userId: this.$store.state.user.details.id,
       usersLoading: false,
       userSearchText: '',
-      budgetTypesForUser: [],
+      budgetsForUser: [],
       selectedExpenses: [],
       selectAllExpenses: false,
       glCodes: [],
+      budgetTypes: [],
       headers: [
         {text: '', value: 'selectBox', selectFilter: true, show: true, width: '50px'},
-        {text: 'Rep', value: 'createdBy', show: true},
-        {text: 'Position', value: 'positionName', show: true},
+        {text: 'Purchaser', value: 'expenseBudgetUser', show: true},
         {text: 'Amount', value: 'amount', show: true},
         {text: 'Expense Date', value: 'expenseDate', show: true},
-        {text: 'GL Code', value: 'glCode', show: true},
         {text: 'Budget Type', value: 'budgetType', show: true},
-        {text: 'Budget User', value: 'expenseBudgetUser', show: true},
+        {text: 'GL Code', value: 'glCode', show: true},
         {text: 'Submitted Date', value: 'dateCreated', show: true},
         {text: 'Submitted By', value: 'createdBy', show: true},
-        {text: 'Reviewed Date', value: 'reviewedDate', show: true},
-        {text: 'Reviewed By', value: 'reviewedBy', show: true},
         {text: 'Approved Date', value: 'approvedDate', show: true},
         {text: 'Approved By', value: 'approvedBy', show: true},
         {text: 'Paid Date', value: 'paidDate', show: true},
@@ -367,6 +366,9 @@ export default {
     }
   },
   created() {
+    this.getGlCodes()
+    this.getUsersWithBudget()
+    this.getBudgetTypes()
     this.getSubmittedExpenses()
   },
   computed: {
@@ -374,10 +376,14 @@ export default {
       return this.itemToDelete ? this.itemToDelete.createdBy : ''
     },
     itemToDeleteAmount(){
-      return this.itemToDelete ? this.itemToDelete.expenseAmount : ''
+      return this.itemToDelete ? this.itemToDelete.amount : ''
     }
   },
   methods: {
+    searchGlCodes(item, queryText) {
+      let data = item.code.toLowerCase() + ' - ' + item.description.toLowerCase()
+      return data.includes(queryText.toLowerCase())
+    },
     changeRange() {
       this.rangeChanged = true
     },
@@ -453,7 +459,7 @@ export default {
       try {
         let date1 = moment(this.startDate).format('MM/DD/YYYY')
         let date2 = moment(this.endDate).format('MM/DD/YYYY')
-        let url = showAll ? `/expenses/list` : `/expenses/unpaid`
+        let url = showAll ? `/expenses/list` : `/reimbursement/requests/unpaid`
         const {data, status} = await getRequestWithParams(url, {
           params: {
             startDate: date1,
@@ -473,7 +479,7 @@ export default {
     async deleteSubmittedExpense(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {status} = await deleteRequest(`/expenses/${item.id}`, 'blueraven')
+        const {status} = await deleteRequest(`/reimbursement/${item.id}`, 'blueraven')
         item.archived = true
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -523,7 +529,7 @@ export default {
           csvData +=
             '"' + r.createdBy + '",' +
             '"' + r.positionName + '",' +
-            r.expenseAmount + ',' +
+            r.amount + ',' +
             moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
             r.glCode + ',' +
             r.budgetType + ',' +
@@ -636,27 +642,31 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
-    async getBudgetTypesForUser(item, expenseDate, reloadForChange) {
-      //reset the budget id if they change it but not if loading for the first time on this screen
-      if (reloadForChange) {
-        item.expenseBudgetId = null
+    async getBudgetsForUser(userId) {
+      this.budgetsLoading = true
+      try {
+        const {data, status} = await getBudgetsForUser(userId)
+        this.budgetsForUser = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      } finally {
+        this.budgetsLoading = false
       }
-      if (null != item.expenseBudgetUserId && null != expenseDate) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            userId: item.expenseBudgetUserId,
-            expenseDate: expenseDate
-          }
-          const {data, status} = await getRequestWithParams(`/expenseBudgets/availableForUser`, {params}, 'blueraven')
-          this.budgetTypesForUser = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+    },
+    async getBudgetTypes() {
+      //reset the budget id every time a user or expense date changes
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getBudgetTypes()
+        this.budgetTypes = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getGlCodes() {
@@ -689,8 +699,8 @@ export default {
       this.renderRequestImage = false
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getReimbursementRequestImage(item.reimbursementRequestId)
-        item.presignedUrl = data
+        const {data, status} = await getReimbursementRequestImage(item.id)
+        this.selectedExpense.presignedUrl = data
         //this forces the dom to re-render the presignedUrl and i hate myself
         this.renderRequestImage = true
         handleHidingGlobalLoader(this, status)

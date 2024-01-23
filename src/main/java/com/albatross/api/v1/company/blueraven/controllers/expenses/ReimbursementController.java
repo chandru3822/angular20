@@ -90,4 +90,10 @@ public class ReimbursementController {
   public void deleteRequest(@PathVariable Long id) {
     reimbursementService.deleteRequest(id);
   }
+
+  @GetMapping(value = "/requests/unpaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getUnpaidRequests(@RequestParam String startDate,
+                                                      @RequestParam String endDate) {
+    return reimbursementService.getUnpaidRequests(startDate, endDate);
+  }
 }
