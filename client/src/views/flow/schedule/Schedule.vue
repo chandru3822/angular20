@@ -121,7 +121,7 @@
           'items-per-page-options': [25, 50, 100],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
-        showMap: true
+        showMap: false
         // masterProjects: []
       }
     },

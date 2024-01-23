@@ -216,7 +216,7 @@
         </v-col>
       </v-row>
     </div>
-    <div class="calendar-resize-container">
+    <div class="calendar-resize-container background-white pa-6">
       <div id="calendar-loader" v-if="calendarLoading">
         <v-progress-circular
           indeterminate
@@ -224,15 +224,15 @@
           :color="'primary'"
         ></v-progress-circular>
       </div>
-      <div class="d-flex">
-        <v-spacer></v-spacer>
-      <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>
-      <v-menu activator="#day-selection-btn" nudge-bottom="40px">
-        <v-list>
-          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="body-large py-4">{{option.formattedDate}}</span></v-list-item>
-        </v-list>
-      </v-menu>
-      </div>
+<!--      <div class="d-flex">-->
+<!--        <v-spacer></v-spacer>-->
+<!--      <v-btn id="day-selection-btn" ref="daySelectionbtn" class="invisible-btn"></v-btn>-->
+<!--      <v-menu activator="#day-selection-btn" nudge-bottom="40px">-->
+<!--        <v-list>-->
+<!--          <v-list-item v-for="(option, index) in dayOptions" @click="switchToDayView(option)" class="clickable"><span class="body-large py-4">{{option.formattedDate}}</span></v-list-item>-->
+<!--        </v-list>-->
+<!--      </v-menu>-->
+<!--      </div>-->
       <FullCalendar ref="eventCalendar" id="event-calendar"
                     :title-format="calendar.options.titleFormat"
                     :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
@@ -1088,13 +1088,32 @@
   height: 100%;
   display: flex;
   flex-flow: column;
+  overflow-y: hidden;
+  background-color: white;
+}
+
+#calendar-filter-container {
+  border-bottom: 1px black solid;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  z-index: 1;
+  background-color: var(--v-grey-lighten4)
 }
 .calendar-resize-container {
   /* without this when you resize the screen the calendar goes whackadoodle */
-  flex: 1 1 auto;
+  //flex: 1 1 auto;
   position: relative;
+  height: calc(100% - 250px);
+}
+
+.border-bottom {
+  border-bottom: 1px solid #C7C7CC;
 
 }
+
+.background-white {
+  background-color: white;
+}
+
 #calendar-loader {
   height: 100%;
   width: 100%;
