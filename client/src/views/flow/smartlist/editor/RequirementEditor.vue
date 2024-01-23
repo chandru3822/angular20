@@ -106,7 +106,7 @@
         ref="valueField"
         v-model="value"
         :key="UUID()"
-        :items="availableDataTypeRequirements"
+        :items="calculatedAvailableValues"
         item-text="dataTypeValue"
         item-value="id"
         return-object
