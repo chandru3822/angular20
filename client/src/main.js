@@ -68,11 +68,6 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
   }
 })
 
-router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'Albatross'
-  next()
-})
-
 axios.interceptors.request.use(requestInterceptor)
 axios.interceptors.response.use((r) => r, responseInterceptor)
 
