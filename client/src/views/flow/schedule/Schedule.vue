@@ -1,10 +1,33 @@
 <template>
-  <v-container>
+  <component :is="activeComp"
+      id="schedule-container"
+      :header-hidden="true"
+      :right-hidden="!showMap"
+      :left-hidden="true"
+      :auto-overflow-left="true"
+  >
+    <template v-slot:main-column>
+      <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click="showMap = !showMap"><v-icon>mdi-map</v-icon></v-btn>
     <Calendar :map-resources="mapResources"
               ref="calendar"
               :states="states"
-              :callback="this.resourceMapCallback"
-              :date-callback="this.dateCallback"></Calendar>  </v-container>
+              :callback="resourceMapCallback"
+              :date-callback="dateCallback"/>
+    </template>
+    <template v-slot:right-column>
+      <v-row class="map-row">
+        <v-col cols="12" class="pa-0 ml-3">
+          <Map v-if="showMap" :latitude="state.mapLatitude"
+               :markers="selectedRows"
+               :longitude="state.mapLongitude"
+               :zoom="state.mapZoom"
+               :map-resources="mapResources"
+               @close-map="showMap = false"
+          />
+        </v-col>
+      </v-row>
+    </template>
+  </component>
 </template>
 
 <script>
@@ -23,10 +46,14 @@
     getEventStatusTypes
   } from "@/services/eventStatusTypeService";
   import debounce from 'lodash.debounce'
+  import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
+  import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
 
   export default {
     name: 'Schedule',
     components: {
+      ThreeColumnLayout,
+      ThreeColumnLayoutMobile,
       Map,
       Calendar,
       DatetimePickerInput
@@ -94,7 +121,13 @@
           'items-per-page-options': [25, 50, 100],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
+        showMap: true
         // masterProjects: []
+      }
+    },
+    computed: {
+      activeComp() {
+        return this.$vuetify.breakpoint.smAndDown ? 'ThreeColumnLayoutMobile' : 'ThreeColumnLayout'
       }
     },
     watch: {
@@ -476,6 +509,10 @@
     height: 30px;
   }
 
+  #map-btn {
+    border-radius: 4px;
+  }
+
   #schedule-project-toolbar .v-toolbar__content {
     padding: 4px 0 !important;
   }
@@ -487,8 +524,9 @@
 
 <style lang="scss" scoped>
   .map-row {
-    height: 60%;
+    height: 100%;
     min-height: 300px;
+    max-width: 100%;
   }
 
   .schedule-row {

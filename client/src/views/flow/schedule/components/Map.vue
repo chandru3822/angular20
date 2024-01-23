@@ -2,7 +2,9 @@
   <MglMap id="map" :accessToken="map.accessToken"
           :mapStyle="map.style"
           @load="onMapLoad">
-    <div id="find-drive-time">
+
+    <div id="find-drive-time" class="d-flex justify-start">
+      <v-btn color="primary" class="rounded-tile-btn ml-4 mr-3" fab tile @click="$emit('close-map')"><v-icon>mdi-chevron-right</v-icon></v-btn>
       <v-menu data-app bottom
               offset-y
               content-class="drive-time-menu"
@@ -12,7 +14,7 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn small :color="menuOpen ? 'grey lighten-4' : 'primary'" v-on="on">Find Drive Time</v-btn>
+          <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
         </template>
         <v-card color="white" class="square-card px-4 pb-4 pt-2">
           <div class="address-container">
@@ -87,6 +89,7 @@
           </div>
         </v-card>
       </v-menu>
+      <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
     </div>
     <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
@@ -446,9 +449,19 @@ export default {
 .drive-time-menu {
   border-radius: 0 !important;
 }
+
 </style>
 
 <style scoped lang="scss">
+
+#find-drive-time > button.rounded-tile-btn.v-btn.v-btn--fab.v-btn--round.v-btn--tile  {
+  border-radius: 4px;
+
+  &.white-background {
+    background-color: white;
+  }
+}
+
 #find-drive-time {
   position: absolute;
   top: 10px;

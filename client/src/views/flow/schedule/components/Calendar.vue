@@ -1,9 +1,11 @@
 <template>
   <div id="calendar-container">
-    <div class="mb-2">
+
+    <div id="calendar-filter-container" class="pa-6 pt-4">
+
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="2">
+        <v-col class="py-0" cols="12" md="3">
           <v-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -44,7 +46,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="2">
+        <v-col class="py-0" cols="12" md="3">
           <v-autocomplete v-model="selectedOrgTypes"
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
@@ -86,7 +88,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="2">
+        <v-col class="py-0" cols="12" md="3">
 
           <v-autocomplete v-model="selectedPositions"
                     :items="sortedPositions"
@@ -131,7 +133,9 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="2">
+      </v-row>
+      <v-row class="pt-4 pb-0 d-flex align-baseline">
+        <v-col class="py-0" cols="12" md="3">
           <v-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
@@ -150,7 +154,7 @@
                           attach
           >
             <template
-            v-slot:selection="{item, index}"
+                v-slot:selection="{item, index}"
             >
               <span v-if="index === 0" class="primary--text text-caption">
                 {{ selectedOrgs.length }} selected
@@ -158,7 +162,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="2">
+        <v-col class="py-0" cols="12" md="3">
 
           <v-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
@@ -186,33 +190,29 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0 text-right align-self-end" cols="12" md="2">
-          <v-btn large color="primary" class="mt-1 mb-n1"><v-icon>mdi-map</v-icon></v-btn>
-        </v-col>
-      </v-row>
-      <v-row class="py-0 d-flex align-baseline">
-      <v-col class="py-4" cols="12" md="3">
+        <v-col cols="12" md="3">
           <v-select
               v-model="timezone"
               :items="timezones"
               label="Current Time Zone"
               item-text="friendlyValue"
-              :item-value="{friendlyValue, value}"
+              :hide-details="true"
+              return-object
               prepend-icon="mdi-web"
               outlined
-              />
+          />
         </v-col>
-        <v-col class="py-0" cols="12" md="4">
-          <div>
+      </v-row>
+      <v-row>
+        <v-col class="py-0 d-flex align-start" cols="12" md="4">
             <v-switch
               v-model="includeCancelled"
               dense
               hide-details
-              class="fix-switch-color cancelled-event-switch"
+              class="fix-switch-color cancelled-event-switch mt-0"
               label="Cancelled Events"
               @change="getEvents(null)"
             />
-          </div>
         </v-col>
       </v-row>
     </div>
@@ -258,7 +258,9 @@
                     @eventClick="(info) => handleEventClick(info)"
                     @eventRender="(info) => handleEventRender(info)"
                     @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
-      ></FullCalendar>
+      >
+        <template v-slot:resourceLabelContent="{}">Test Text</template>
+      </FullCalendar>
     </div>
   </div>
 </template>
@@ -981,7 +983,6 @@
 
       },
       async changeTimezone (tz) {
-        debugger
         await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
         //todo: actually save it to the DB
         // i dont think we have to refresh, the filter should do that for us

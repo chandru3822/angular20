@@ -1,7 +1,7 @@
 <template>
   <v-container id="schedule-container" class="py-0">
     <v-row class="map-row">
-      <v-col cols="12" md="5">¡
+      <v-col cols="12" md="5">
         <Map :latitude="state.mapLatitude"
              :markers="selectedRows"
              :longitude="state.mapLongitude"
