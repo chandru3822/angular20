@@ -2056,6 +2056,7 @@ const router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  document.title = to.meta.title || 'Albatross'
   //if the global spinner is on and the request takes a while, then you move to a different page that doesn't toggle the global
   //spinner then it stays on the screen until the previous request finishes.  this fixes that.
   store.commit(AppMutations.SET_LOADING, false)
