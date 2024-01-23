@@ -34,13 +34,13 @@ declare
   v_penultimate_quarter_end date;
 
   x record;
-  v_count int = 1;
 BEGIN
 
 --populate the periods
     for x in
         select min(start_date) AS start_date,
-               max(end_date) AS end_date
+               max(end_date) AS end_date,
+               row_number() over (order by min(start_date) desc) as row_number
         from brs.reporting_period
         where start_date >= p_today_date::date - '6 months'::interval
           AND start_date <= p_today_date::date
@@ -48,27 +48,23 @@ BEGIN
         ORDER BY start_date desc
         limit 3
     loop
-        if(v_count = 1) then
+        case when x.row_number = 1 then
             v_current_period_start = x.start_date;
             v_current_period_end = x.end_date;
-        elsif(v_count = 2) then
+        when x.row_number = 2 then
             v_last_period_start = x.start_date;
             v_last_period_end = x.end_date;
-        elsif(v_count = 3) then
+        when x.row_number = 3 then
             v_penultimate_period_start = x.start_date;
             v_penultimate_period_end = x.end_date;
-        end if;
-
-        v_count = v_count + 1;
-
+        end case;
     end loop;
 
 --populate quarter data
-    v_count = 1;
-
 for x in
     select min(start_date) AS start_date,
-           max(end_date) AS end_date
+           max(end_date) AS end_date,
+           row_number() over (order by min(start_date) desc) as row_number
     from brs.reporting_period
     where start_date >= p_today_date::date - '12 months'::interval
       AND start_date <= p_today_date::date
@@ -76,18 +72,16 @@ for x in
     ORDER BY start_date desc
     limit 3
     loop
-        if(v_count = 1) then
+        case when x.row_number = 1 then
             v_current_quarter_start = x.start_date;
             v_current_quarter_end = x.end_date;
-        elsif(v_count = 2) then
+        when x.row_number = 2 then
             v_last_quarter_start = x.start_date;
             v_last_quarter_end = x.end_date;
-        elsif(v_count = 3) then
+        when x.row_number = 3 then
             v_penultimate_quarter_start = x.start_date;
             v_penultimate_quarter_end = x.end_date;
-        end if;
-
-        v_count = v_count + 1;
+        end case;
 
     end loop;
 
