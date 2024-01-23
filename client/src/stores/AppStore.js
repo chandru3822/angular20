@@ -1,6 +1,5 @@
 import theme from "@/helpers/defaultTheme";
 import { shadeColorByPercent } from "@/helpers/helpers"
-import Vue from 'vue'
 // import colors from 'vuetify/lib/util/colors'
 
 export const AppMutations = {

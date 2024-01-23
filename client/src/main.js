@@ -13,7 +13,7 @@ import VueGtag from 'vue-gtag'
 import { createPinia, PiniaVuePlugin } from 'pinia'
 
 import '@/styles/main.scss'
-import { requestInterceptor, responseInterceptor } from '@/helpers/helpers'
+import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
 
 // @todo: make PWA awesomeness
 // import './registerServiceWorker.js'
