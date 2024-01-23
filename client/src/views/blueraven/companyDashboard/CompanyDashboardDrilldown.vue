@@ -11,7 +11,7 @@
       <v-data-table
         id="drilldown-table"
         :headers="filteredHeaders()"
-        :items="drilldownData"
+        :items="filteredData()"
         :footer-props="footerProps"
         :items-per-page="500"
         :mobile-breakpoint="0"
@@ -21,15 +21,15 @@
       >
 
         <template #header.additional_field_value="{}">
-          <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].additional_field_label }}</span>
+          <span v-if="filteredData() && filteredData()[0]">{{ filteredData()[0].additional_field_label }}</span>
         </template>
 
 
         <template #header.date_value="{}">
-          <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].date_label }}</span>
+          <span v-if="filteredData() && filteredData()[0]">{{ filteredData()[0].date_label }}</span>
         </template>
 
-        <template v-if="drilldownData.length > 0" #item="{ item, index }">
+        <template v-if="filteredData().length > 0" #item="{ item, index }">
           <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
             <td class="text-left">{{ index + 1 }}</td>
             <td class="text-left">{{ item.project_id }}</td>
@@ -134,12 +134,12 @@
       filteredHeaders () {
         return this.drilldownHeaders.filter(header => header.show === true)
       },
+      filteredData(){
+        return this.drilldownData;
+      },
       addHeaders(){
-        console.log("HERE")
-        console.log(this.drilldownData);
         if(this.drilldownData.length > 0) {
           this.drilldownData[0].additional_columns.forEach((header, index) => {
-            console.log(header);
             this.drilldownHeaders.push({
               text: header.label,
               value: 'additional_columns['+index+'].value',
@@ -171,15 +171,6 @@
             })
           })
         }
-        // this.additionalHeaders.forEach((header, index)=> {
-        //   this.drilldownHeaders.push({
-        //     text: header,
-        //     value: 'additionalColumns[0].value',
-        //     show: true,
-        //     additional: true,
-        //     index: index
-        //   })
-        // })
       },
       exportCsv() {
         let csv = ''

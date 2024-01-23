@@ -206,7 +206,7 @@ public class CompanyDashboardService {
     ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD", currentPeriod.getStartDate().toInstant(), currentPeriod.getEndDate().toInstant(), previousPeriod.getStartDate().toInstant(), previousPeriod.getStartDate().toInstant(), "last period"));
     ranges.add(new CompanyDashboardDateRange(6, "Last Week", "LAST WEEK", today.minus(6, ChronoUnit.DAYS), today, today.minus(13, ChronoUnit.DAYS), today.minus(7, ChronoUnit.DAYS), "the week before last week"));
     ranges.add(new CompanyDashboardDateRange(7, "Last 30 Days", "LAST_30_DAYS", today.minus(29, ChronoUnit.DAYS), today, today.minus(59, ChronoUnit.DAYS), today.minus(30, ChronoUnit.DAYS), "30 days before last 30 days"));
-    ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", previousPeriod.getStartDate().toInstant(), previousPeriod.getEndDate().toInstant(), doublePreviousPeriod.getStartDate().toInstant(), doublePreviousPeriod.getEndDate().toInstant(), "the period before the selected period"));
+    ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD", previousPeriod.getStartDate().toInstant(), previousPeriod.getEndDate().toInstant(), doublePreviousPeriod.getStartDate().toInstant(), doublePreviousPeriod.getEndDate().toInstant(), "the period before the last period"));
     CompanyDashboardDateRange periodRange = new CompanyDashboardDateRange();
     periodRange.setId(9);
     periodRange.setPeriodList(companyPeriods.reversed());
