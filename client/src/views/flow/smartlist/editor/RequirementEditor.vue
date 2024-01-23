@@ -342,8 +342,7 @@ const calculatedAvailableFields = computed(() => {
         }
       }
 
-      f.calculatedName = `${f.name} ${suffix}`
-      return f
+      return {...f, calculatedName:`${f.name} ${suffix}`}
     })
 })
 
@@ -646,7 +645,10 @@ const add = () => {
     newRequirement.availableListOfValues = newRequirement.listOfValues
   }
 
-  newRequirement.isCustomValue = typeof value.value === 'string'
+  newRequirement.isCustomValue = (
+    typeof value.value === 'string' ||
+    (typeof value.value === 'object' && value.value?.isDataTypeRequirement !== true)
+  )
 
   if (newRequirement.companyId === null) {
     newRequirement.companyId = companyId
