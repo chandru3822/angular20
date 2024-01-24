@@ -52,7 +52,10 @@
         <template v-if="drilldownData.length > 0" #item="{ item, index }">
           <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
             <td class="text-left">{{ index + 1 }}</td>
-            <td class="text-left">{{ item.project_id }}</td>
+            <router-link class="text-left" :to="`/project/${item.project_id}/details`">
+              {{ item.project_id }}
+            </router-link>
+<!--            <td class="text-left">{{ item.project_id }}</td>-->
             <td class="text-left customer-name">{{ item.customer_name }}</td>
             <td class="text-left">{{ item.state }}</td>
             <td class="text-left">{{ item.source_name }}</td>
