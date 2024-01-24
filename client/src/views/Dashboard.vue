@@ -1058,6 +1058,7 @@
     text-transform: unset !important;
     background-color: transparent !important;
     box-shadow: none;
+    height: 40px !important;
   }
   .v-data-table{
     overflow-x: auto;
