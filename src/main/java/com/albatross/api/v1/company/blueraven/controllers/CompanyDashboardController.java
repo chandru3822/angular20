@@ -4,6 +4,7 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardDateRange;
 import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.services.CompanyDashboardService;
 import lombok.RequiredArgsConstructor;
+import org.joda.time.LocalDate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -41,8 +42,8 @@ public class CompanyDashboardController {
   }
 
   @GetMapping(value = "/dropdownValues")
-  public List<CompanyDashboardDateRange> getDropdownValues(@RequestParam String today) {
-    return companyDashboardService.getDropdownValues(Instant.parse(today + "Z"));
+  public List<CompanyDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
+    return companyDashboardService.randaTesting(today);
   }
 
   @GetMapping(value = "/drilldownHeaders")

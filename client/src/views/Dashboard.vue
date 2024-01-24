@@ -6,7 +6,7 @@
           Company Dashboard
         </div>
         <div class="checkbox-container">
-          <v-checkbox label="View Trends" v-model="viewTrends"></v-checkbox>
+          <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewTrends"></v-checkbox>
         </div>
         <div class="checkbox-container">
 
@@ -24,7 +24,7 @@
       </v-row>
       <v-row>
         <div class="checkbox-container-mini">
-          <v-checkbox label="View Trends" v-model="viewTrends"></v-checkbox>
+          <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewTrends"></v-checkbox>
         </div>
         <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon></a>
       </v-row>
@@ -454,27 +454,13 @@
     },
     watch: {
       firstDateRange(value) {
-        if (this.getDropdownById(value).name === 'CUSTOM') {
-          this.firstCustom.isActive = true;
-        } else {
-          this.firstCustom.isActive = false;
-        }
+        this.firstCustom.isActive = (this.getDropdownById(value).name === 'CUSTOM')
       },
       secondDateRange(value) {
-        if (this.getDropdownById(value).name === 'CUSTOM') {
-          this.secondCustom.isActive = true;
-        }
-        else{
-          this.secondCustom.isActive = false;
-        }
+        this.secondCustom.isActive = (this.getDropdownById(value).name === 'CUSTOM')
       },
       thirdDateRange(value) {
-        if (this.getDropdownById(value).name === 'CUSTOM') {
-          this.thirdCustom.isActive = true;
-        }
-        else{
-          this.thirdCustom.isActive = false;
-        }
+        this.firstCustom.isActive = (this.getDropdownById(value).name === 'CUSTOM')
       }
     },
     computed: {
@@ -486,6 +472,9 @@
           return this.dashValues.filter(dv => dv.major_milestone)
         }
         return this.dashValues
+      },
+      disableTrends(){
+        return ((this.getDropdownById(this.firstDateRange)?.name === 'ALL_TIME') || (this.getDropdownById(this.secondDateRange)?.name === 'ALL_TIME') || (this.getDropdownById(this.thirdDateRange)?.name === 'ALL_TIME'));
       },
       additionalStartWeek () {
         if (this.currentPeriod > 9) {
@@ -730,8 +719,6 @@
                 result.startDate = result.periodList[this.firstPeriod].startDate;
                 result.endDate = result.periodList[this.firstPeriod].endDate;
                 if (this.firstPeriod != result.periodList.length - 1) {
-                  console.log(this.firstPeriod);
-                  console.log(result.periodList.length - 1);
                   result.trendStart = result.periodList[this.firstPeriod + 1].startDate;
                   result.trendEnd = result.periodList[this.firstPeriod + 1].endDate;
                 } else {
@@ -744,6 +731,11 @@
               this.resetCustomDate();
               this.firstCustom.isActive = false;
             }
+          }
+          else if(result.name === 'ALL_TIME'){
+            delete result.trendStart;
+            delete result.trendEnd;
+            this.viewTrends = false;
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         } else if (dropdown === 2) {
@@ -780,6 +772,11 @@
               this.secondCustom.isActive = false;
             }
           }
+          else if(result.name === 'ALL_TIME'){
+            delete result.trendStart;
+            delete result.trendEnd;
+            this.viewTrends = false;
+          }
           this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         } else if (dropdown === 3) {
           let result = this.dropdownValues.find(x => x.id === this.thirdDateRange)
@@ -813,6 +810,11 @@
               result = cloneDeep(this.thirdCustom);
               this.resetCustomDate();
             }
+          }
+          else if(result.name === 'ALL_TIME'){
+            delete result.trendStart;
+            delete result.trendEnd;
+            this.viewTrends = false;
           }
           this.column3Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         }
@@ -996,7 +998,7 @@
           this.$store.commit(AppMutations.SET_LOADING, true)
 
           const params = {
-            today: moment().format('YYYY-MM-DDTHH:mm:ss')
+            today: moment().format('YYYY-MM-DD')
           }
 
           const {data, status} = await getRequestWithParams('/companyDashboard/dropdownValues', {params}, 'blueraven', [])

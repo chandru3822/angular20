@@ -1,8 +1,9 @@
 package com.albatross.api.v1.company.blueraven.models;
 
 import lombok.Data;
+import org.springframework.cglib.core.Local;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -12,12 +13,12 @@ import java.util.List;
 public class CompanyDashboardDateRange {
     private int id;
     private String friendlyName, name, trendText;
-    private Instant startDate, endDate, trendStart, trendEnd;
+    private LocalDate startDate, endDate, trendStart, trendEnd;
 
     private List<CompanyPeriod> periodList;
 
-  public CompanyDashboardDateRange(int id, String friendlyName, String name, Instant startDate, Instant endDate, Instant trendStart, Instant trendEnd,
-  String trendText) {
+  public CompanyDashboardDateRange(int id, String friendlyName, String name, LocalDate startDate, LocalDate endDate, LocalDate trendStart, LocalDate trendEnd,
+                                   String trendText) {
     this.id = id;
     this.friendlyName = friendlyName;
     this.name = name;
