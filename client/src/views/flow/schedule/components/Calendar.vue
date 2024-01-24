@@ -4,8 +4,8 @@
     <div id="calendar-filter-container" class="pa-6 pt-4">
 
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
-      <v-row class="py-0">
-        <v-col class="py-0" cols="12" md="3">
+      <v-row class="py-0 d-flex align-baseline">
+        <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3">
           <v-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -46,7 +46,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="3">
+        <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3">
           <v-autocomplete v-model="selectedOrgTypes"
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
@@ -88,7 +88,8 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="3">
+        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>
+        <v-col id="position-resource-types-col" class="py-0" cols="9" sm="4" md="3">
 
           <v-autocomplete v-model="selectedPositions"
                     :items="sortedPositions"
@@ -133,9 +134,8 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-      </v-row>
-      <v-row class="pt-4 pb-0 d-flex align-baseline">
-        <v-col class="py-0" cols="12" md="3">
+        <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.mdAndUp" cols="0" md="3" class="py-0"/>
+        <v-col id="org-resources-col" class="py-0" cols="9" sm="4" md="3">
           <v-autocomplete v-model="selectedOrgs"
                           ref="orgSelector"
                           :items="sortedOrgs"
@@ -162,7 +162,8 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col class="py-0" cols="12" md="3">
+        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>
+        <v-col id="user-resources-col" class="py-0" cols="9" sm="4" md="3">
 
           <v-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
@@ -190,7 +191,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col cols="12" md="3">
+        <v-col id="time-zone-col" cols="9" sm="4" md="3">
           <v-select
               v-model="timezone"
               :items="timezones"
@@ -202,9 +203,7 @@
               outlined
           />
         </v-col>
-      </v-row>
-      <v-row>
-        <v-col class="py-0 d-flex align-start" cols="12" md="4">
+        <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4">
             <v-switch
               v-model="includeCancelled"
               dense
@@ -378,6 +377,9 @@
       firstDayOption(){
         return moment.utc(this.calendarStartTime).format('dddd MMM Do, YYYY')
       },
+      isMobile(){
+        return this.$vuetify.breakpoint.smAndDown
+      }
     },
     mounted () {
       this.calendarApi = this.$refs.eventCalendar.getApi()
@@ -414,7 +416,7 @@
       },
       timezone : function () {
         this.changeTimezone(this.timezone)
-      }
+      },
     },
     created() {
       // this.selectedOrgs = JSON.parse(localStorage.getItem('scheduleOrgs')) || []

@@ -31,8 +31,9 @@ const props = defineProps({
   headerHeight: String, //@optional
   headerColor: String, //@optional
   viewChangeCallback: Function, //@required,
-  subMenuSelectedView: Object //@optional, allows us to close the menu when using a submenu and the route doesn't change
-
+  subMenuSelectedView: Object, //@optional, allows us to close the menu when using a submenu and the route doesn't change
+  useRightPanelMobile:Boolean,
+  rightOpen:Boolean,
 })
 const emit = defineEmits(['selectMenuItem'])
 
@@ -89,6 +90,10 @@ const chooseSelectedView = (view, id) => {
     <slot name="main-column"/>
     </v-col>
   </v-row>
+    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped>
+      <slot name="right-column"/>
+    </v-navigation-drawer>
+
   </v-container>
 </template>
 

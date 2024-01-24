@@ -1,10 +1,12 @@
 <template>
   <component :is="activeComp"
-      id="schedule-container"
-      :header-hidden="true"
-      :right-hidden="!showMap"
-      :left-hidden="true"
-      :auto-overflow-left="true"
+             id="schedule-container"
+             :header-hidden="true"
+             :right-hidden="!showMap"
+             :left-hidden="true"
+             :auto-overflow-left="true"
+             :useRightPanelMobile="true"
+             :right-open="showMap"
   >
     <template v-slot:main-column>
       <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click="showMap = !showMap"><v-icon>mdi-map</v-icon></v-btn>
