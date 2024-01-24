@@ -3,6 +3,7 @@ package com.albatross.api.v1.company.blueraven.services;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.services.queries.CustomBehaviorQuery;
+import com.albatross.api.v1.flow.model.CustomFieldGroup;
 import com.albatross.api.v1.flow.model.CustomFieldValue;
 import com.albatross.api.v1.flow.model.User;
 import com.mypurecloud.sdk.v2.ApiException;
@@ -12,10 +13,7 @@ import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 
 /**
@@ -30,8 +28,10 @@ public class BlueravenCustomBehaviorService {
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final GenesysService genesysService;
+  private final Five9Service five9Service;
 
-  public void handleCustomContactCreation(Long contactId, Boolean isNew, List<CustomFieldValue> cfvs) {
+  public void handleCustomContactCreation(Long contactId, Boolean isNew, List<CustomFieldValue> cfvs, List<CustomFieldGroup> cfgs) {
+    Long leadLevel = getContactLeadLevel(cfgs);
 
     if(isNew) {
       User user = securityService.getCurrentUser();
@@ -53,21 +53,50 @@ public class BlueravenCustomBehaviorService {
         sqlCache.queryBySql(CustomBehaviorQuery.saveValueFromOrg, params, String.class);
       }
 
-      //add contact to genesys stuff
-      genesysService.handleAddContact(contactId, cfvs);
+      if (leadLevel != null && (leadLevel == 40L || (leadLevel >= 201L && leadLevel <= 209L))) {
+        five9Service.handleContact(contactId, cfvs, false, false, leadLevel);
+      }
+      else {
+        genesysService.handleAddContact(contactId, cfvs);
+      }
     }
     else {
-      try {
-        genesysService.updateContact(contactId);
-      } catch (ApiException e) {
-        JSONObject apiException = new JSONObject(e.getRawBody());
-        String msg = "GENE: Error updating contact: {}";
-        //log.error(msg, apiException.getString("message"));
+      if (leadLevel != null && (leadLevel == 40L || (leadLevel >= 201L && leadLevel <= 209L))) {
+        five9Service.handleContact(contactId, cfvs, true, false, leadLevel);
       }
-      catch (IOException e) {
-        String msg = "GENE: Error updating contact: {}";
-        //log.error(msg, e.getMessage());
+      else {
+        try {
+          genesysService.updateContact(contactId);
+        } catch (ApiException e) {
+          JSONObject apiException = new JSONObject(e.getRawBody());
+          String msg = "GENE: Error updating contact: {}";
+          //log.error(msg, apiException.getString("message"));
+        }
+        catch (IOException e) {
+          String msg = "GENE: Error updating contact: {}";
+          //log.error(msg, e.getMessage());
+        }
       }
     }
+  }
+
+  private Long getContactLeadLevel(List<CustomFieldGroup> cfgs) {
+    CustomFieldGroup paidLeadGen = cfgs.stream()
+      .filter(cfv -> cfv.getGroupName().equals("Paid Lead Gen"))
+      .findFirst()
+      .orElse(null);
+
+    if (paidLeadGen != null) {
+      Optional<Long> leadLevel = paidLeadGen.getCustomFieldValues().stream()
+        .filter(cfv -> cfv.getFieldName().equals("Lead Level"))
+        .map(CustomFieldValue::getIntValue)
+        .filter(Objects::nonNull)
+        .findFirst();
+
+      if (leadLevel.isPresent()) {
+        return leadLevel.get();
+      }
+    }
+    return null;
   }
 }

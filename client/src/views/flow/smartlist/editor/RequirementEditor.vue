@@ -106,7 +106,7 @@
         ref="valueField"
         v-model="value"
         :key="UUID()"
-        :items="availableDataTypeRequirements"
+        :items="calculatedAvailableValues"
         item-text="dataTypeValue"
         item-value="id"
         return-object
@@ -696,6 +696,7 @@ onMounted(() => {
 
     if (requirement.value.dataTypeRequirementId) {
       value.value = requirement.value.dataTypeRequirement
+      value.value.isDataTypeRequirement = true
     } else if (requirement.value.listOfValueId) {
       requirement.value.listOfValues = requirement.value.availableListOfValues
       value.value = requirement.value.availableListOfValues.find(v => v.id === requirement.value.listOfValueId)

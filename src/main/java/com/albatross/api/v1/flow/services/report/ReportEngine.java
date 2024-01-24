@@ -2320,9 +2320,9 @@ public class ReportEngine {
       sortedFields.forEach(f -> {
         if (f.getProcessStepId() != null) {
           if (f.getProcessStepId().equals(id)) {
-            selectClause.append(String.format("\"%s\".\"%s\" as \"%s\", ", f.getProcessStepName() + f.getProcessStepId(), f.getId(), f.getName()));
+            selectClause.append(String.format("\"%s\".\"%s\" as \"%s\", ", f.getProcessStepName() + f.getProcessStepId(), f.getId(), f.getName() + " - " + f.getProcessStepName()));
           } else {
-            selectClause.append(String.format("null as \"%s\", ", f.getName()));
+            selectClause.append(String.format("null as \"%s\", ", f.getName() + " - " + f.getProcessStepName()));
           }
         } else {
           //project and contact fields
@@ -3248,9 +3248,9 @@ public class ReportEngine {
       sortedFields.forEach(f -> {
         if (f.getProcessStepEventId() != null) {
           if (f.getProcessStepEventId().equals(usedField.getProcessStepEventId())) {
-            selectClause.append(String.format("\"%s\".\"%s\" as \"%s\", ", f.getEventName() + f.getProcessStepEventId(), f.getId(), f.getName()));
+            selectClause.append(String.format("\"%s\".\"%s\" as \"%s\", ", f.getEventName() + f.getProcessStepEventId(), f.getId(), f.getName() + " - " + f.getEventName()));
           } else {
-            selectClause.append(String.format("null as \"%s\", ", f.getName()));
+            selectClause.append(String.format("null as \"%s\", ", f.getName() + " - " + f.getEventName()));
           }
         } else if (f.getProcessStepId() != null) {
           if (f.getProcessStepId().equals(usedField.getProcessStepId())) {
