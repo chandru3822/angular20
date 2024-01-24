@@ -1051,12 +1051,13 @@
     color: var(--v-primary-base) !important;
   }
   .placeholder-option{
-    color: #000000 !important;
+    color: var(--v-grey-lighten1) !important;
   }
   .dropdown-header{
-    border: 1px solid #000000;
+    border: 1px solid var(--v-grey-lighten1);
     text-transform: unset !important;
     background-color: transparent !important;
+    box-shadow: none;
   }
   .v-data-table{
     overflow-x: auto;
