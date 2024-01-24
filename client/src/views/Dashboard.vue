@@ -1051,7 +1051,7 @@
     color: var(--v-primary-base) !important;
   }
   .placeholder-option{
-    color: var(--v-grey-lighten1) !important;
+    color: var(--v-grey-darken2) !important;
   }
   .dropdown-header{
     border: 1px solid var(--v-grey-lighten1);
