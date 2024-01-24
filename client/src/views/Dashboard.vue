@@ -40,7 +40,6 @@
       class="elevation-1"
       :items="filteredDashValues"
       :headers="headers"
-      fixed-header
       ref="pageable-table"
       disable-sort
       :item-class="itemRowBackground"
@@ -78,7 +77,6 @@
           <template v-slot:activator="{ on }">
             <v-btn class="dropdown-header body-small"
                    v-on="on"
-                   plain
             >
               <span v-if="getDropdownById(firstDateRange)?.name === 'CUSTOM' && firstCustom.name != null" class="selected-option body-small">
                       {{firstCustom.name}}</span>
@@ -143,7 +141,6 @@
           <template v-slot:activator="{ on }">
             <v-btn class="dropdown-header body-small"
                    v-on="on"
-                   plain
             >
               <span v-if="getDropdownById(secondDateRange)?.name === 'CUSTOM' && secondCustom.name != null" class="selected-option body-small">
                       {{secondCustom.name}}</span>
@@ -153,7 +150,7 @@
               <span v-else-if="secondDateRange != null" class="selected-option body-small">
               {{ getDropdownById(secondDateRange)?.friendlyName}}
               </span>
-              <span v-else class="body-small">
+              <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
               <v-icon>mdi-menu-down</v-icon>
@@ -210,7 +207,6 @@
           <template v-slot:activator="{ on }">
             <v-btn class="dropdown-header body-small"
                    v-on="on"
-                   plain
             >
               <span v-if="getDropdownById(thirdDateRange)?.name === 'CUSTOM' && thirdCustom.name != null" class="selected-option body-small">
                       {{thirdCustom.name}}</span>
@@ -220,7 +216,7 @@
               <span v-else-if="thirdDateRange != null" class="selected-option body-small">
               {{ getDropdownById(thirdDateRange)?.friendlyName}}
               </span>
-              <span v-else class="body-small">
+              <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
               <v-icon>mdi-menu-down</v-icon>
@@ -1054,9 +1050,13 @@
   .selected-option{
     color: var(--v-primary-base) !important;
   }
+  .placeholder-option{
+    color: #000000 !important;
+  }
   .dropdown-header{
-    border: 1px solid black;
+    border: 1px solid #000000;
     text-transform: unset !important;
+    background-color: transparent !important;
   }
   .v-data-table{
     overflow-x: auto;
@@ -1159,6 +1159,7 @@
 
 #company-dash-table > div > table > thead > tr > th {
   z-index: 1 !important;
+  height: 68px;
 }
 
 #company-dash-table > div > table > thead > tr > th.text-start.milestone-col-th,
