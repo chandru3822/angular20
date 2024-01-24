@@ -57,14 +57,16 @@ public class AnnouncementService {
     params.put("userId", user.getId());
 
     List<Announcement> results = sqlCache.queryBySql(AnnouncementQuery.getActive, params, Announcement.class);
-    for(Announcement a : results) {
-      Attachment attachment = attachmentService.getOneBySourceIdAndType(a.getId(), 990L);
-      if(null != attachment) {
-        attachmentService.setAttachmentPresignedUrl(attachment);
-        a.setPresignedUrl(attachment.getPresignedUrl());
-        a.setAttachmentId(attachment.getId());
-      }
-    }
+
+//    taking this out for now to see if loading the image when needed is fast enough
+//    for(Announcement a : results) {
+//      Attachment attachment = attachmentService.getOneBySourceIdAndType(a.getId(), 990L);
+//      if(null != attachment) {
+//        attachmentService.setAttachmentPresignedUrl(attachment);
+//        a.setPresignedUrl(attachment.getPresignedUrl());
+//        a.setAttachmentId(attachment.getId());
+//      }
+//    }
     return results;
   }
 
