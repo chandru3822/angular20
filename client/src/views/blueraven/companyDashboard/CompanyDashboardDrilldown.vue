@@ -3,33 +3,53 @@
     <v-card-title class="mb-1">
       <span v-if="startDate === endDate" class="drilldown-title">{{ milestone.name }} on {{ startDate | formatDate('date', 'MM/DD/YYYY') }}</span>
       <span v-else class="drilldown-title">{{ milestone.name }} {{ startDate | formatDate('date', 'MM/DD/YYYY') }} - {{ endDate | formatDate('date', 'MM/DD/YYYY') }}</span>
-
+      <v-spacer></v-spacer>
+      <v-btn color="primary" class="mr-4 mb-2"
+             @click="exportCsv()">
+        Export
+      </v-btn>
       <a class="close-modal-x pb-3" title="Close" @click="closeCallback">×</a>
+    </v-card-title>
+    <v-divider></v-divider>
+    <v-card-title v-if="drilldownData.length > 0" id="funnel-drilldown-search" class="pt-2">
+      <v-text-field v-model="drilldownSearch"
+                    placeholder="Type to filter..."
+                    class="drilldown-filter"
+                    single-line
+                    hide-details
+                    outlined
+                    dense
+      ></v-text-field>
+      <span id="funnel-drilldown-row-count">
+            Records: {{ drilldownRowCount + '/' + drilldownData.length }}
+          </span>
     </v-card-title>
 
     <v-card-text>
       <v-data-table
         id="drilldown-table"
         :headers="filteredHeaders()"
-        :items="filteredData()"
+        :items="drilldownData"
         :footer-props="footerProps"
         :items-per-page="500"
         :mobile-breakpoint="0"
+        :search="drilldownSearch"
+        @current-items="filteredDrilldownItems"
         fixed-header
         dense
         class="elevation-1"
       >
 
         <template #header.additional_field_value="{}">
-          <span v-if="filteredData() && filteredData()[0]">{{ filteredData()[0].additional_field_label }}</span>
+          <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].additional_field_label }}</span>
         </template>
 
 
         <template #header.date_value="{}">
-          <span v-if="filteredData() && filteredData()[0]">{{ filteredData()[0].date_label }}</span>
+          <span v-if="drilldownData && drilldownData[0]">{{ drilldownData[0].date_label }}</span>
         </template>
 
-        <template v-if="filteredData().length > 0" #item="{ item, index }">
+        <template v-if="drilldownData.length > 0" #item="{ item, index }">
           <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
             <td class="text-left">{{ index + 1 }}</td>
             <td class="text-left">{{ item.project_id }}</td>
@@ -63,10 +83,6 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-btn color="primary" class="mr-4 mb-2"
-             @click="exportCsv()">
-        Export
-      </v-btn>
       <v-spacer></v-spacer>
       <v-btn id="drilldown-close-btn" class="white--text text-capitalize mr-4 mb-2"
              color="primary" @click="closeCallback">
@@ -127,15 +143,19 @@
           lastIcon: constants.IS_MOBILE ? '' : 'mdi-page-last',
           itemsPerPageText: constants.IS_MOBILE ? '' : 'Rows per page:',
           itemsPerPageOptions: [100, 500, 1000, 2000]
-        }
+        },
+        drilldownSearch: '',
+        drilldownRowCount: 0,
+        filteredDrilldownData: [],
       }
     },
     methods: {
+      filteredDrilldownItems(filteredItems) {
+        this.filteredDrilldownData = filteredItems
+        this.drilldownRowCount = filteredItems.length
+      },
       filteredHeaders () {
         return this.drilldownHeaders.filter(header => header.show === true)
-      },
-      filteredData(){
-        return this.drilldownData;
       },
       addHeaders(){
         if(this.drilldownData.length > 0) {
@@ -219,6 +239,10 @@
 </script>
 
 <style lang="scss">
+  .drilldown-filter{
+    max-width: 1000px;
+  }
+
   #drilldown-table .v-data-table__wrapper {
     height: calc(100vh - 330px);
     min-height: 300px;
