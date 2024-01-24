@@ -2,10 +2,7 @@ package com.albatross.api.config.company.blueraven;
 
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
-import com.albatross.api.v1.company.blueraven.services.BlueravenProjectService;
-import com.albatross.api.v1.company.blueraven.services.CompanyDashboardService;
-import com.albatross.api.v1.company.blueraven.services.GenesysService;
-import com.albatross.api.v1.company.blueraven.services.MarketoService;
+import com.albatross.api.v1.company.blueraven.services.*;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -30,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled.blueraven", value = "enabled")
 public class BlueravenScheduledConfig {
+  @Value(value = "${app.cron.blueraven.processFive9Contacts.enabled:false}")
+  private Boolean updateFive9Contacts;
 
   @Value(value = "${app.cron.blueraven.processGenesysContacts.enabled:false}")
   private Boolean updateGenesysContacts;
@@ -39,6 +38,8 @@ public class BlueravenScheduledConfig {
 
   @Value(value = "${app.cron.blueraven.processMetroPostalCodes.enabled:false}")
   private Boolean processMetroPostalCodes;
+
+  private final Five9Service five9Service;
 
   private final GenesysService genesysService;
 
@@ -76,6 +77,16 @@ public class BlueravenScheduledConfig {
       log.info("*** CRON: start processing Genesys contacts ***");
       genesysService.processGenesysContacts();
       log.info("*** CRON: end processing Genesys contacts ***");
+    }
+  }
+
+  //    every  day at 1 am - mtn
+  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
+  public void updateFive9Contacts() {
+    if (updateFive9Contacts) {
+      log.info("*** CRON: start processing Five 9 contacts ***");
+      five9Service.processFive9Contacts();
+      log.info("*** CRON: end processing Five 9 contacts ***");
     }
   }
 
