@@ -231,7 +231,6 @@ public class Five9Service {
             b.addParameter("DNC", "false");
           }
           dncValueSet = true;
-
           b.addParameter("unqualified_reason", value);
         } else if (cfv.getFieldName().equals("Lead Follow-up Date")) {
           b.addParameter("follow_up_date_time", cfv.getTimestampValue() == null ? "" : cfv.getTimestampValue().toString());
