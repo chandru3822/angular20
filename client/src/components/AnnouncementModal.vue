@@ -1,6 +1,9 @@
 <template>
-  <v-card class="coversheet-container">
-    <v-card-text class="px-3 pb-4 pt-3">
+  <v-card class="coversheet-container" >
+    <v-card-text class="px-3 pb-4 pt-3" v-if="!announcement">
+      <SpinnerInline  :size="20" color="primary"/>
+    </v-card-text>
+    <v-card-text class="px-3 pb-4 pt-3" v-else>
       <v-toolbar flat dense class="app-toolbar announcement-toolbar">
         <v-toolbar-title class="title-large">{{ announcement.title }}</v-toolbar-title>
         <v-spacer/>
@@ -15,11 +18,14 @@
         <div v-if="announcement.presignedUrl" class="py-3">
           <img class="announcement-image" :src="announcement.presignedUrl">
         </div>
-        <a class="ml-3 announcement-hyperlink" v-if="announcement.hyperlink" target="_blank"
+        <div :class="{'pt-3': !announcement.presignedUrl}">
+        <a class="announcement-hyperlink"
+           v-if="announcement.hyperlink" target="_blank"
            :href="announcement.hyperlink">
           {{announcement.hyperlink}}
         </a>
-        <div class="mt-3" v-if="announcement.description">
+        </div>
+        <div class="mt-2" v-if="announcement.description">
           <quill-editor
               :options="toolbarOptions"
               class="rich-text-editor rich-text-editor-readonly albatross-body-2"
@@ -37,6 +43,7 @@
 
 import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
+import SpinnerInline from '@/components/SpinnerInline'
 
 export default {
   name: "AttachmentCoversheetModal",
@@ -45,7 +52,8 @@ export default {
     closeCallback: Function,
   },
   components: {
-    QuillEditor: quillEditor
+    QuillEditor: quillEditor,
+    SpinnerInline
   },
   watch: {},
   data() {
@@ -71,6 +79,7 @@ export default {
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
     },
+
   },
   methods: {
     closeModal() {
@@ -114,8 +123,10 @@ export default {
 
 <style lang="scss" scoped>
 .announcement-image {
-  width: 100%;
+  max-width: 100%;
   height: auto;
+  max-height: 380px;
+  width: auto;
 }
 
 .announcement-toolbar {
