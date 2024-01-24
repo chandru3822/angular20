@@ -538,34 +538,6 @@
         this.showDrilldown = false
       },
       async openDrilldown(item, column) {
-        this.selectedMilestone = item
-        await this.getDrilldownHeaders()
-        await this.getDrilldownData(column)
-        this.showDrilldown = true
-      },
-      async getDrilldownHeaders() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const params = {
-            milestoneTypeId: this.selectedMilestone.milestone_type_id,
-          }
-
-          const {data, status} = await getRequestWithParams('/companyDashboard/drilldownHeaders', {params}, 'blueraven', [])
-          this.drilldownHeaders = data;
-          this.drilldownIsLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
-          this.drilldownIsLoading = false
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getDrilldownData(column) {
-        //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
-        this.drilldownIsLoading = true
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
         if(column === 1){
           if(this.dropdownValues.find(x => x.id === this.firstDateRange).name === 'PERIOD'){
             this.startDate = moment(this.dropdownValues.find(x => x.id === this.firstDateRange).periodList[this.firstPeriod].startDate).format('YYYY-MM-DDTHH:mm:ss');
@@ -596,6 +568,36 @@
             this.endDate = this.dropdownValues.find(x => x.id === this.thirdDateRange).endDate ? this.dropdownValues.find(x => x.id === this.thirdDateRange).endDate : moment(this.thirdCustom.endDate).format('YYYY-MM-DDTHH:mm:ss')
           }
         }
+        if((moment(this.endDate).diff(moment(this.startDate), 'days')+1) > 100){
+          return;
+        }
+        this.selectedMilestone = item
+        await this.getDrilldownHeaders()
+        await this.getDrilldownData(column)
+        this.showDrilldown = true
+      },
+      async getDrilldownHeaders() {
+        this.$store.commit(AppMutations.SET_LOADING, true)
+        try {
+          const params = {
+            milestoneTypeId: this.selectedMilestone.milestone_type_id,
+          }
+
+          const {data, status} = await getRequestWithParams('/companyDashboard/drilldownHeaders', {params}, 'blueraven', [])
+          this.drilldownHeaders = data;
+          this.drilldownIsLoading = false
+          handleHidingGlobalLoader(this, status)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error retrieving drilldown data')
+          this.drilldownIsLoading = false
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async getDrilldownData(column) {
+        //i couldn't get the v-dialog to reload the data every time it opened so i load it here but this is dumb
+        this.drilldownIsLoading = true
+        this.$store.commit(AppMutations.SET_LOADING, true)
         try {
           const params = {
             startDate: this.startDate,
