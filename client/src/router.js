@@ -287,7 +287,20 @@ const router = new Router({
                   return accessDenied()
                 }
               },
-            }, {
+            },
+            {
+              path: 'budgetTemplates',
+              name: 'budgetTemplates',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import ( './views/blueraven/expenses/BudgetTemplates.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
               path: 'budgetTypes',
               name: 'expenseBudgetTypes',
               meta: {title: 'Albatross - Budget Types'},

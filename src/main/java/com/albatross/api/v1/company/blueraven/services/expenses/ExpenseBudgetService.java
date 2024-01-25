@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
 import com.albatross.api.v1.company.blueraven.services.expenses.queries.ExpenseBudgetQuery;
 import com.albatross.api.v1.flow.model.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
@@ -86,69 +87,35 @@ public class ExpenseBudgetService {
         ExpenseBudgetQuery.getAllTemplates, Collections.emptyMap(), BudgetTemplate.class);
   }
 
+  public void generateNextMonthBudgets() {
+    sqlCache.updateBySql(ExpenseBudgetQuery.generateNextMonthBudgets, Collections.emptyMap());
+  }
+
   public Optional<BudgetTemplate> updateBudgetTemplate(BudgetTemplate budgetTemplate) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", budgetTemplate.getUserId());
     params.put("amount", budgetTemplate.getAmount());
-    params.put("updatedById", currentUser.trueUserId());
+    params.put("userId", currentUser.trueUserId());
     params.put("notes", "");
 
     Long templateId;
     if (null != budgetTemplate.getId()) {
       templateId = budgetTemplate.getId();
-      params.put("id", budgetTemplate.getId());
+      params.put("id", templateId);
       sqlCache.updateBySql(ExpenseBudgetQuery.updateBudgetTemplate, params);
     } else {
-      params.put("createdById", currentUser.trueUserId());
-      Long id =
-          sqlCache
-              .updateBySqlReturningId(ExpenseBudgetQuery.insertBudgetTemplate, params, "id")
-              .longValue();
-      templateId = id;
-
-      Date today = new Date();
-      Calendar calendar = Calendar.getInstance();
-      calendar.setTime(today);
-      calendar.set(Calendar.DAY_OF_MONTH, 1);
-      Date firstDayOfMonth = calendar.getTime();
-      calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
-      Date lastDayOfMonth = calendar.getTime();
-
-      HashMap<String, Object> templateParams = new HashMap<>();
-      templateParams.put("id", id);
-      templateParams.put("startDate", firstDayOfMonth);
-      templateParams.put("endDate", lastDayOfMonth);
-
-      // creates an expense budget if a budget does not already exist for this user, budget type,
-      // and month
-      Optional<ExpenseBudget> expenseBudget =
-          sqlCache.getBySql(
-              ExpenseBudgetQuery.checkIfExistsByTemplate, templateParams, ExpenseBudget.class);
-
-      if (expenseBudget.isEmpty()) {
-
-        params.put("startDate", firstDayOfMonth);
-        params.put("endDate", lastDayOfMonth);
-
-//        long newId =
-//            sqlCache
-//                .updateBySqlReturningId(ExpenseBudgetQuery.insertOriginalExpenseBudget, params, "id")
-//                .longValue();
-
-//        if (newId > 0) {
-//          HashMap<String, Object> updateOriginal = new HashMap<>();
-//          updateOriginal.put("id", newId);
-//          sqlCache.updateBySql(ExpenseBudgetQuery.updateOriginalExpenseBudget, updateOriginal);
-//        }
-//        //                sqlCache.updateBySql(ExpenseBudgetQuery.insertExpenseBudget, params);
+      params.put("userId", budgetTemplate.getUserId());
+      try {
+        templateId = sqlCache.updateBySqlReturningId(ExpenseBudgetQuery.insertBudgetTemplate, params, "id").longValue();
+      } catch (DuplicateKeyException e) {
+        String msg = "A budget template already exists for this user";
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, msg);
       }
     }
 
-    HashMap<String, Object> tParams = new HashMap<>();
-    tParams.put("id", templateId);
-    return sqlCache.getBySql(ExpenseBudgetQuery.getOneTemplates, tParams, BudgetTemplate.class);
+    params.put("id", templateId);
+    return sqlCache.getBySql(ExpenseBudgetQuery.getOneTemplates, params, BudgetTemplate.class);
   }
 
   public void deleteBudgetTemplate(Long id) {
@@ -165,6 +132,9 @@ public class ExpenseBudgetService {
 
   public List<ExpenseBudget> getBudgets() {
     return sqlCache.queryBySql(ExpenseBudgetQuery.getAll, Collections.emptyMap(), ExpenseBudget.class);
+  }
+
+  public void generateCurrentMonthBudgetFromTemplate(BudgetTemplate template) {
   }
 
   public Optional<ExpenseBudget> updateBudget(ExpenseBudget expenseBudget) {

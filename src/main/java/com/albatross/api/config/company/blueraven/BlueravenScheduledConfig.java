@@ -3,6 +3,7 @@ package com.albatross.api.config.company.blueraven;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.v1.company.blueraven.integration.birdeye.BirdEyeSyncService;
 import com.albatross.api.v1.company.blueraven.services.*;
+import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
 import com.albatross.api.v1.flow.enums.SystemSettings;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.UserAccountDetails;
@@ -52,6 +53,8 @@ public class BlueravenScheduledConfig {
   private final SecurityService securityService;
 
   private final CompanyDashboardService companyDashboardService;
+
+  private final ExpenseBudgetService expenseBudgetService;
   /*
   //
   // FYI: DON'T SCHEDULE ANYTHING FOR 2AM MOUNTAIN (8 am utc), THAT IS WHEN AUTO TRIGGERS
@@ -77,6 +80,16 @@ public class BlueravenScheduledConfig {
       log.info("*** CRON: start processing Genesys contacts ***");
       genesysService.processGenesysContacts();
       log.info("*** CRON: end processing Genesys contacts ***");
+    }
+  }
+
+  //    27th of every month at 7 am utc
+  @Scheduled(cron = "0 0 7 27 * *", zone = "UTC")
+  public void generateNextMonthBudgetsFromTemplate() {
+    if (updateGenesysContacts) {
+      log.info("*** CRON: start generating monthly budgets ***");
+      expenseBudgetService.generateNextMonthBudgets();
+      log.info("*** CRON: end generating monthly budgets ***");
     }
   }
 

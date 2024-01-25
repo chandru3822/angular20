@@ -69,6 +69,7 @@ public class ReimbursementController {
     reimbursementService.updateRequestStatus(reimbursementRequest);
   }
 
+  //endpoint used for the requests screen
   @GetMapping(value = "/requests/pending", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ReimbursementRequest> getPendingReimbursementRequests() {
     return reimbursementService.getPendingReimbursementRequests();
@@ -91,9 +92,9 @@ public class ReimbursementController {
     reimbursementService.deleteRequest(id);
   }
 
-  @GetMapping(value = "/requests/unpaid", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ReimbursementRequest> getUnpaidRequests(@RequestParam String startDate,
-                                                      @RequestParam String endDate) {
-    return reimbursementService.getUnpaidRequests(startDate, endDate);
+  @GetMapping(value = "/requests/approved", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getApprovedRequests(@RequestParam String startDate,
+                                                        @RequestParam String endDate) {
+    return reimbursementService.getApprovedRequests(startDate, endDate);
   }
 }

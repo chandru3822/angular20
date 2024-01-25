@@ -63,12 +63,22 @@ public class ExpenseBudgetQuery {
       tem.amount,
       tem.archived,
       tem.user_id,
-      u.first_name || ' ' || u.last_name as user_full_name
+      u.first_name || ' ' || u.last_name as user_full_name,
+      (select id
+           from brs.expense_budget eb
+           where eb.user_id = tem.user_id
+           and eb.archived is false
+           and eb.start_date = date_trunc('month', current_date)::date) as current_month_budget_id
     FROM brs.budget_template tem
       INNER JOIN flow."user" u on u.id = tem.user_id
     WHERE tem.archived is not true
     ORDER BY user_full_name
     """;
+
+  //language=PostgreSQL
+  public final static String generateNextMonthBudgets = """
+    select from brs.cron_generate_next_month_budgets();
+  """;
 
   //language=PostgreSQL
   public final static String getOneTemplates = """
@@ -77,7 +87,12 @@ public class ExpenseBudgetQuery {
       tem.amount,
       tem.archived,
       tem.user_id,
-      u.first_name || ' ' || u.last_name as user_full_name
+      u.first_name || ' ' || u.last_name as user_full_name,
+      (select id
+           from brs.expense_budget eb
+           where eb.user_id = tem.user_id
+           and eb.archived is false
+           and eb.start_date = date_trunc('month', current_date)::date) as current_month_budget_id
     FROM brs.budget_template tem
       INNER JOIN flow."user" u on u.id = tem.user_id
     WHERE tem.id = :id
@@ -86,16 +101,15 @@ public class ExpenseBudgetQuery {
   //language=PostgreSQL
   public final static String insertBudgetTemplate = """
     INSERT INTO brs.budget_template(user_id, amount, created_by_id)
-    values(:userId, :amount, :createdById)
+    values(:userId, :amount, :userId)
     """;
 
   //language=PostgreSQL
   public final static String updateBudgetTemplate = """
     UPDATE brs.budget_template
-      SET user_id = :userId,
-          amount = :amount,
+      SET amount = :amount,
           date_modified = now(),
-          modified_by_id = :updatedById
+          modified_by_id = :userId
     WHERE id = :id
     """;
 
@@ -104,7 +118,7 @@ public class ExpenseBudgetQuery {
     UPDATE brs.budget_template
       SET archived = true,
           date_modified = now(),
-          modified_by_id = :updatedById
+          modified_by_id = :userId
     WHERE id = :id
     """;
 
@@ -225,26 +239,6 @@ public class ExpenseBudgetQuery {
            and eb.archived is not true
            GROUP BY eb.id,
            eb.amount
-    """;
-
-  //language=PostgreSQL
-  public final static String checkIfExistsByTemplate = """
-    with bt as (
-        select user_id
-        from brs.budget_template
-        where id = :id
-    )
-    select
-      eb.id,
-      eb.start_date,
-      eb.end_date
-    from brs.expense_budget eb
-      INNER JOIN bt on bt.user_id = eb.user_id
-    WHERE (:startDate between eb.start_date AND eb.end_date
-           OR :endDate between eb.start_date AND eb.end_date
-           OR eb.start_date between :startDate AND :endDate
-           OR eb.end_date between :startDate AND :endDate)
-           and eb.archived is not true
     """;
 
   //language=PostgreSQL

@@ -16,7 +16,7 @@ public class ReimbursementRequest {
   private Long id, attachmentId, glCodeId, expenseBudgetId, createdById, reimbursementRequestStatusId, expenseBudgetUserId, budgetTypeId, approvedById, submittedById;
   private String details, createdBy, userType, budgetType, expenseBudgetUser, notes, positionName, submittedBy, approvedBy, glCode;
   private Double amount;
-  private Date expenseDate, dateCreated;
+  private Date expenseDate, dateCreated, dateSubmitted;
   private Boolean archived;
 
 }

@@ -50,6 +50,12 @@
             display: this.$store.getters.userHasFeature('EXPENSES')
           },
           {
+            label: 'Budget Templates',
+            path: '/expenses/manage/budgetTemplates',
+            manage: true,
+            display: this.$store.getters.userHasFeature('EXPENSES')
+          },
+          {
             label: 'Budget Types',
             path: '/expenses/manage/budgetTypes',
             manage: true,

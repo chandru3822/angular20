@@ -107,7 +107,7 @@ public class ReimbursementQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getUnpaidRequests = """
+  public final static String getApprovedRequests = """
     SELECT rr.id,
            rr.amount,
            rr.date_created,
@@ -115,6 +115,7 @@ public class ReimbursementQuery {
            rr.expense_date,
            rr.reimbursement_request_status_id,
            rr.notes,
+           rr.date_submitted,
            rr.submitted_by_id,
            concat(su.first_name, ' ', su.last_name) as submitted_by,
            rr.approved_by_id,
@@ -137,7 +138,6 @@ public class ReimbursementQuery {
       LEFT JOIN brs.gl_code gl on gl.id = rr.gl_code_id
     WHERE rr.expense_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
         and rr.reimbursement_request_status_id = 1
-        and rr.paid_date is null
         and rr.archived is not true
     """;
 }

@@ -3,22 +3,19 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Monthly Budgets</v-toolbar-title>
+          <v-toolbar-title class="app-title">Budget Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[showPastBudgets = !showPastBudgets]">
-              {{showPastBudgets ? 'Hide Past Budgets' : 'Show Past Budgets'}}
-            </v-btn>
-            <v-btn text color="primary" @click="[createNew = !createNew, newBudget = {}, expanded = [], getAvailableUsers()]">
+            <v-btn text color="primary" @click="[createNew = !createNew, newTemplate = {}, expanded = [], getAvailableUsers()]">
               <v-icon v-if="!createNew">add</v-icon>
-              {{createNew ? 'cancel' : 'Add Budget'}}
+              {{createNew ? 'cancel' : 'Add Template'}}
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
-          <h3>New Budget</h3>
-          <v-autocomplete v-model="newBudget.userId"
+          <h3>New Template</h3>
+          <v-autocomplete v-model="newTemplate.userId"
                           :items="availableUsers"
                           label="Assign to User"
                           item-text="fullName"
@@ -28,39 +25,19 @@
                         type="number"
                         prepend-icon="mdi-currency-usd"
                         label="Amount"
-                        v-model.number="newBudget.amount">
+                        v-model.number="newTemplate.amount">
           </v-text-field>
-          <v-select v-model="selectedMonth"
-                    :items="months"
-                    class="mr-3 reimbursement-range-selector"
-                    label="Month"
-                    item-text="name"
-                    item-value="id"
-          ></v-select>
-          <v-select v-model="selectedYear"
-                    :items="years"
-                    class="reimbursement-range-selector"
-                    label="Year"
-                    item-text="name"
-                    item-value="id"
-          ></v-select>
-          <v-textarea class="py-2" hide-details
-                      auto-grow filled
-                      rows="4"
-                      background-color="#F2F6F8"
-                      v-model="newBudget.notes">
-          </v-textarea>
           <v-btn color="primary" class="white--text"
-                 :disabled="!newBudget.userId
-                    || !newBudget.amount || !selectedYear || !selectedMonth"
-                 @click="saveBudget(newBudget, true)">
+                 :disabled="!newTemplate.userId
+                    || !newTemplate.amount"
+                 @click="saveTemplate(newTemplate, true)">
             Save
           </v-btn>
         </v-card>
         <v-divider v-if="createNew" ></v-divider>
         <v-data-table
           :headers="headers"
-          :items="filterBudgets()"
+          :items="filterTemplates()"
           :items-per-page="100"
           :mobile-breakpoint="0"
           single-expand
@@ -70,15 +47,15 @@
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
-            <span class="default-text-color">No Budgets</span>
+            <span class="default-text-color">No Templates</span>
           </template>
 
           <template #no-results>
-            <span class="default-text-color">No Budgets</span>
+            <span class="default-text-color">No Templates</span>
           </template>
 
           <template #expanded-item="{ headers, item }">
-            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': budgets.indexOf(item) % 2}">
+            <td :colspan="headers.length" class="pa-4" :class="{'shaded-row': templates.indexOf(item) % 2}">
               <v-card flat color="transparent" class="pa-4">
                 <v-text-field text
                               label="Assign to User"
@@ -91,29 +68,9 @@
                               prepend-icon="mdi-currency-usd"
                               v-model.number="item.amount">
                 </v-text-field>
-                <v-select v-model="selectedMonth"
-                          :items="months"
-                          class="mr-3 reimbursement-range-selector"
-                          label="Month"
-                          item-text="name"
-                          item-value="id"
-                ></v-select>
-                <v-select v-model="selectedYear"
-                          :items="years"
-                          class="reimbursement-range-selector"
-                          label="Year"
-                          item-text="name"
-                          item-value="id"
-                ></v-select>
-                <v-textarea class="py-2" hide-details
-                            auto-grow filled
-                            rows="4"
-                            background-color="#F2F6F8"
-                            v-model="item.notes">
-                </v-textarea>
                 <v-btn :disabled="false"
                        color="primary" class="white--text mr-2"
-                       @click="saveBudget(item, false)">
+                       @click="saveTemplate(item, false)">
                   Save
                 </v-btn>
               </v-card>
@@ -124,10 +81,17 @@
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{ item.userFullName }}</td>
               <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
-              <td class="text-left">{{ item.startDate | formatDate('date', 'MMMM YYYY')}}</td>
+              <td class="text-left">
+                <div v-if="item.currentMonthBudgetId">
+                  Already Exists
+                </div>
+                <v-btn v-else color="primary" @click="generateCurrentMonthBudget(item)">
+                  Generate
+                </v-btn>
+              </td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[handleItemClick(item), expanded = [item]]">
+                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[createNew = false, expanded = [item]]">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
@@ -141,9 +105,9 @@
     </v-row>
     <ConfirmationDialog
         :open-dialog = deleteConfirm
-        @confirm="[itemToDelete.archived=true,deleteBudget(itemToDeleteId)]"
+        @confirm="[itemToDelete.archived=true,deleteTemplate(itemToDeleteId)]"
         @close-dialog="closeDeleteDialog">
-      There may already be expenses assigned to this budget. Are you sure you want to delete?
+      Are you sure you want to this template for {{itemToDelete.userFullName}}: {{ itemToDelete.amount | currency('$', 0)}}?
 
     </ConfirmationDialog>
   </v-container>
@@ -158,7 +122,7 @@ import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default {
-  name: 'MonthlyBudgets',
+  name: 'BudgetTemplates',
   components: {
     ConfirmationDialog,
     DatetimePickerInput
@@ -179,54 +143,60 @@ export default {
       yearEnd: parseInt(moment().format('YYYY')),
       months: constants.MONTHS,
       createNew: false,
-      newBudget: {},
+      newTemplate: {},
       footerProps: {
         'items-per-page-options': [25, 50, 100, 500],
         'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
       },
-      showPastBudgets: false,
       availableUsers: [],
       timezone: this.$store.state.user.details.timezone.value,
-      budgets: [],
+      templates: [],
       expanded: [],
       headers: [
         {text: 'User', value: 'userFullName', show: true},
         {text: 'Amount', value: 'amount', show: true},
-        {text: 'Budget Month', value: 'startDate', show: true},
+        {text: 'Current Month Budget', value: 'amount', show: true},
         {text: null, value: 'icons', show: true, sortable: false}
       ],
       deleteConfirm: false,
-      itemToDelete: null
+      itemToDelete: {}
 
     }
   },
   created() {
-    for (let i = this.yearStart; i <= this.yearEnd; i++) {
-      this.years.push(i)
-    }
-
-    this.getBudgets()
+    this.getAvailableUsers()
+    this.getTemplates()
   },
   methods: {
-    handleItemClick(item) {
-      this.createNew = false
-      this.selectedMonth = parseInt(moment(item.startDate).format('M'))
-      this.selectedYear = parseInt(moment(item.endDate).format('YYYY'))
-    },
-    filterBudgets() {
-      if(this.showPastBudgets) {
-        return this.budgets.filter(b => !b.archived)
-      } else {
-        return this.budgets.filter(b => {
-          return moment(b.endDate).isSameOrAfter(moment().startOf('day')) && !b.archived
-        })
-      }
-    },
-    async getBudgets() {
+    async generateCurrentMonthBudget(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/expenseBudgets/list`, 'blueraven')
-        this.budgets = data
+        //try to add a new budget
+        let params = {
+          userId: item.userId,
+          amount: item.amount,
+          startDate: moment().startOf('month').format('YYYY-MM-DD'),
+          endDate: moment().endOf('month').format('YYYY-MM-DD')
+        }
+        const {data, status} = await postRequest(`/expenseBudgets`, params, 'blueraven')
+        item.currentMonthBudgetId = data.id
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        let msg = e?.data?.detail || 'Error Generating a Budget for this User'
+        this.snackbar = getSnackbar('ERROR', msg)
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    filterTemplates() {
+      return this.templates.filter(b => !b.archived)
+    },
+    async getTemplates() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest(`/expenseBudgets/templates`, 'blueraven')
+        this.templates = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -250,11 +220,11 @@ export default {
         }
       }
     },
-    async deleteBudget (id) {
+    async deleteTemplate (id) {
       this.$store.commit(AppMutations.SET_LOADING, true)
 
       try {
-        const {status} = await deleteRequest(`/expenseBudgets/${id}`, 'blueraven')
+        const {status} = await deleteRequest(`/expenseBudgets/templates/${id}`, 'blueraven')
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -264,18 +234,13 @@ export default {
       }
       this.closeDeleteDialog()
     },
-    async saveBudget(item, isNew) {
+    async saveTemplate(item, isNew) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let startDate = moment([this.selectedYear, this.selectedMonth - 1]).format("YYYY-MM-DD")
-        let endDate = moment(startDate).endOf('month').format("YYYY-MM-DD")
-        item.startDate = startDate
-        item.endDate = endDate
-
-        const {data, status} = await postRequest(`/expenseBudgets`, item, 'blueraven')
+        const {data, status} = await postRequest(`/expenseBudgets/templates`, item, 'blueraven')
         if(isNew) {
-          this.budgets.push(data)
-          this.newBudget = {}
+          this.templates.push(data)
+          this.newTemplate = {}
           this.createNew = false
         } else {
           this.expanded = []
@@ -283,14 +248,14 @@ export default {
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', e?.data?.message || 'Error Saving Budget')
+        this.snackbar = getSnackbar('ERROR', e?.data?.detail || 'Error Saving Template')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     closeDeleteDialog() {
       this.deleteConfirm = false
-      this.itemToDelete = null
+      this.itemToDelete = {}
     }
   }
 }

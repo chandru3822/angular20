@@ -95,7 +95,7 @@ public class ReimbursementService {
     sqlCache.updateBySql(ReimbursementQuery.deleteRequest, params);
   }
 
-  public List<ReimbursementRequest> getUnpaidRequests(String startDate, String endDate) {
+  public List<ReimbursementRequest> getApprovedRequests(String startDate, String endDate) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -103,7 +103,7 @@ public class ReimbursementService {
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 
-    return sqlCache.queryBySql(ReimbursementQuery.getUnpaidRequests, params, ReimbursementRequest.class);
+    return sqlCache.queryBySql(ReimbursementQuery.getApprovedRequests, params, ReimbursementRequest.class);
   }
 
 

@@ -180,7 +180,13 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  postRequest,
+  getSnackbar,
+  getRequestWithParams,
+  getMonthDateRange
+} from '@/helpers/helpers'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
 import {Actions} from "@/store"
@@ -220,20 +226,7 @@ export default {
       acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
       rejectedRequests: [],
       budgetReport: [],
-      months: [
-        {id: 1, name: 'January'},
-        {id: 2, name: 'February'},
-        {id: 3, name: 'March'},
-        {id: 4, name: 'April'},
-        {id: 5, name: 'May'},
-        {id: 6, name: 'June'},
-        {id: 7, name: 'July'},
-        {id: 8, name: 'August'},
-        {id: 9, name: 'September'},
-        {id: 10, name: 'October'},
-        {id: 11, name: 'November'},
-        {id: 12, name: 'December'}
-      ],
+      months: constants.MONTHS,
       yearStart: 2017,
       yearEnd: parseInt(moment().format('YYYY')),
       years: [],
@@ -388,7 +381,7 @@ export default {
     },
     async setDataForMonth() {
       this.dataLoading = true
-      let dateRange = this.getMonthDateRange(this.selectedMonth, this.selectedYear)
+      let dateRange = getMonthDateRange(this.selectedMonth, this.selectedYear)
       this.startDate = dateRange.startDate
       this.endDate = dateRange.endDate
 
@@ -402,11 +395,6 @@ export default {
         this.dataLoading = false
       })
     },
-    getMonthDateRange(month, year) {
-      let startDate = moment([year, month - 1]).format("YYYY-MM-DD")
-      let endDate = moment(startDate).endOf('month').format("YYYY-MM-DD")
-      return {startDate, endDate}
-    }
   }
 }
 </script>
