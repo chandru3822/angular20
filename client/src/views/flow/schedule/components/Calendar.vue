@@ -232,58 +232,37 @@
 <!--        </v-list>-->
 <!--      </v-menu>-->
 <!--      </div>-->
-      <FullCalendar ref="eventCalendar" id="event-calendar"
-                    :title-format="calendar.options.titleFormat"
-                    :schedulerLicenseKey="licenseKey" :plugins="calendarPlugins"
-                    :defaultView="calendar.options.defaultView"
-                    :resources="resources"
-                    theme-system="standard"
-                    :resources-initially-expanded="true"
-                    :time-zone="calendar.options.timezone"
-                    :header="calendar.options.header"
-                    :editable="calendar.options.editable"
-                    :event-sources="eventSources"
-                    :now-indicator="true"
-                    :slot-duration="calendar.options.slotDuration"
-                    :slot-label-interval="calendar.options.slotLabelInterval"
-                    :slot-width="calendar.options.slotWidth"
-                    :min-time="calendar.options.minTime"
-                    :max-time="calendar.options.maxTime"
-                    :height="calendar.options.height"
-                    :scroll-time="calendar.options.scrollTime"
-                    :first-day="calendar.options.firstDay"
-                    :hidden-days="calendar.options.hiddenDays"
-                    :custom-buttons="calendar.options.customButtons"
-                    @eventClick="(info) => handleEventClick(info)"
-                    @eventRender="(info) => handleEventRender(info)"
-                    @resourceRender="(renderInfo) => handleResourceRender(renderInfo)"
-      >
-        <template v-slot:resourceLabelContent="{}">Test Text</template>
+      <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
+        <template v-slot:resourceLabelContent="{resource, index}">
+          <div class="d-flex justify-space-between align-baseline">
+            <a class="body-medium">{{ resource.title }}</a>
+            <div>
+              <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-map-marker</v-icon></v-btn>
+              <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-calendar-plus</v-icon></v-btn>
+              <v-btn icon x-small color="grey darken-1" class="mx-1"><v-icon>close</v-icon></v-btn>
+            </div>
+          </div>
+        </template>
       </FullCalendar>
     </div>
   </div>
 </template>
 
 <script>
-  import '@fullcalendar/core/main.css'
-  import '@fullcalendar/timeline/main.css'
-  import '@fullcalendar/resource-timeline/main.css'
+import FullCalendar from '@fullcalendar/vue'
+import moment from 'moment'
+import cloneDeep from 'lodash.clonedeep'
+import {getSchedulingOrgTypes} from '@/services/orgService'
+import {AppMutations} from '@/stores/AppStore'
 
-  import FullCalendar from '@fullcalendar/vue'
-  import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
-  import interaction from '@fullcalendar/interaction'
-  import momentPlugin from '@fullcalendar/moment'
-  import moment from 'moment'
-  import cloneDeep from 'lodash.clonedeep'
-  import {getSchedulingOrgTypes} from '@/services/orgService'
-  // import momentTimezonePlugin from '@fullcalendar/moment-timezone'
-  import momentTimezonePlugin from '@/plugins/fc-moment-timezone'
-  import {AppMutations} from '@/stores/AppStore'
-
-  import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
-  import {UserActions} from "@/stores/UserStore";
+import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
+import {UserActions} from "@/stores/UserStore";
+import interaction from "@fullcalendar/interaction";
+import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
+import momentPlugin from "@fullcalendar/moment";
+import momentTimezonePlugin from "@fullcalendar/moment-timezone"
 
   export default {
     name: 'ScheduleCalendar',
@@ -370,6 +349,7 @@
       },
       //users
       sortedUsers(){
+
         const selectedUsers = this.users.filter(user => this.selectedUsers.includes(user));
         const unselectedUsers = this.users.filter(user => !this.selectedUsers.includes(user));
         return selectedUsers.concat(unselectedUsers)
@@ -396,11 +376,18 @@
       },
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
       'selectedUsers': function () {
-        this.resources = this.selectedOrgs.concat(this.selectedUsers)
+        this.calendarOptions.resources = this.selectedOrgs.concat(this.selectedUsers)
+        //temp for dev:
+        if(this.calendarOptions.resources.length === 0){
+          this.calendarOptions.resources =  [
+            {id: 123, title: "Default User1",}, {id: 456, title: "Default User2"}
+          ]
+        }
+        //end temp
         this.handleResourceColors()
       },
       'selectedOrgs': function () {
-        this.resources = this.selectedOrgs.concat(this.selectedUsers)
+        this.calendarOptions.resources = this.selectedOrgs.concat(this.selectedUsers)
         this.handleResourceColors()
         this.$refs.orgSelector.setSearch('')//prevents weird scroll bug
       },
@@ -429,6 +416,104 @@
     },
     data() {
       return {
+        resources: [],
+        calendarPlugins: [ resourceTimelinePlugin],
+        calendarOptions: {
+          plugins: [
+              resourceTimelinePlugin
+          ],
+          initialView: 'resourceTimelineDay',
+
+          resources: [],
+          resourceAreaWidth: 300,
+          events:[
+            {
+              resourceId:123,
+              title:'This is an Event',
+              start: new Date(),
+            }
+          ],
+          eventTextColor:'#378006',
+
+          headerToolbar:{
+            left: 'customPrev,customToday,customNext',
+            center: 'title',
+            right: 'customTimelineDay,customTimelineWeek'          },
+          titleFormat:{ month: 'long',
+            year: 'numeric',
+            day: 'numeric',
+            weekday: 'long'
+          },
+          height: '100%',
+          customButtons: {
+            customToday: {
+              text: 'Today',
+              click: () => {
+                let calendarApi = this.$refs.eventCalendar.getApi()
+                calendarApi.gotoDate(new Date)
+                // this.setCalendarStartAndEndTimes()
+                this.getEvents(false, true)
+              }
+            },
+            customPrev: {
+              text: '',
+              icon: 'chevron-left',
+              click: () => {
+                let calendarApi = this.$refs.eventCalendar.getApi()
+                calendarApi.prev()
+                // this.setCalendarStartAndEndTimes()
+                this.getEvents(false, true)
+                this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+              }
+            },
+            customNext: {
+              text: '',
+              icon: 'chevron-right',
+              click: () => {
+                let calendarApi = this.$refs.eventCalendar.getApi()
+                calendarApi.next()
+                // this.setCalendarStartAndEndTimes()
+                this.getEvents(false, true)
+                this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+              }
+            },
+            customTimelineDay: {
+              text: 'day',
+              id:'customTimelineDay',
+              click: () => {
+                let calendarApi = this.$refs.eventCalendar.getApi()
+                if(calendarApi.view.type !== 'resourceTimelineDay') {
+                  this.$refs.daySelectionbtn.$el.click()
+                  //this is very hacky; it would be way better if we could update the library to the version where the weekday header
+                  //click works instead of doing this wacky work around, but that requires a major refactor
+                } else {
+                  this.switchToDayView()
+                }
+              }
+            },
+            customTimelineWeek: {
+              text: 'week',
+              click: () => {
+                this.calendar.options.minTime = '06:00:00'
+                this.calendar.options.maxTime = '22:00:00'
+                this.calendar.options.slotDuration = '01:00:00'
+                this.calendar.options.slotLabelInterval = '02:00:00'
+                this.calendar.options.slotWidth = 25
+                this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
+
+                let calendarApi = this.$refs.eventCalendar.getApi()
+                calendarApi.changeView('resourceTimelineWeek')
+                this.getEvents(false, true)
+                this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+              }
+            },
+          }
+
+        },
+
+
+
+
         snackbar: {},
         calendarLoading: false,
         includeCancelled: false,
@@ -470,9 +555,7 @@
         previousTypeCount: 0,
         previousPositionCount: 0,
         positionsLoading: true,
-        resources: [],
         mapResourceEvents: [],
-        calendarPlugins: [ interaction, resourceTimelinePlugin, momentPlugin, momentTimezonePlugin ],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
         dayOptions: [],
@@ -592,7 +675,7 @@
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
       handleResourceColors() {
-        this.resources.forEach((r, index) => {
+        this.calendarOptions.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
           r.eventBorderColor = '#919191'
 
@@ -781,7 +864,7 @@
           //we do this for every resource, regardless of if they already have an availability or not
           // if they already have one it still works as it should and doesn't block out the time, but if they
           // dont already have one then this will block/grey out the day so it doesn't look like they are available
-          this.resources.forEach(r => {
+          this.calendarOptions.resources.forEach(r => {
             data.push({
                 start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
                 end: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
@@ -852,13 +935,14 @@
                 includeCancelled: this.includeCancelled
               }
               const {data} = await postRequest(`/schedule`, params)
+              debugger
               data.forEach(d => {
                 // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
                 // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
                 d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
                 d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.eventName}`
                 d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
-                let matchingResource = this.resources.find(r => r.id === d.resourceId)
+                let matchingResource = this.calendarOptions.resources.find(r => r.id === d.resourceId)
                 if(d.eventStatusTypeId === 3) {
                   d.colorForBorder = '#919191'
                   d.textColor = '#919191'
