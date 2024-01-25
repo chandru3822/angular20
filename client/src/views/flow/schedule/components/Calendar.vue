@@ -243,6 +243,9 @@
             </div>
           </div>
         </template>
+<!--        <template v-slot:eventContent="{event}">-->
+<!--          <div class="label-medium" style="height: 30px">{{ event.title }}</div>-->
+<!--        </template>-->
       </FullCalendar>
     </div>
   </div>
@@ -420,7 +423,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
         calendarPlugins: [ resourceTimelinePlugin],
         calendarOptions: {
           plugins: [
-              resourceTimelinePlugin
+              resourceTimelinePlugin, interaction
           ],
           initialView: 'resourceTimelineDay',
 
@@ -429,11 +432,13 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
           events:[
             {
               resourceId:123,
-              title:'This is an Event',
+              title:'Annette Mayo',
               start: new Date(),
+              classNames:['label-medium','event-style', 'pl-5'],
+              textColor:" var(--v-accent-base)"
             }
           ],
-          eventTextColor:'#378006',
+          defaultTimedEventDuration:'02:00',
 
           headerToolbar:{
             left: 'customPrev,customToday,customNext',
@@ -445,6 +450,12 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
             weekday: 'long'
           },
           height: '100%',
+          dateClick: (info) => {
+            let calendarApi = this.$refs.eventCalendar.getApi()
+            calendarApi.gotoDate(info.date)
+            // this.setCalendarStartAndEndTimes()
+            this.getEvents(false, true)
+          },
           customButtons: {
             customToday: {
               text: 'Today',
@@ -584,6 +595,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
               center: 'title',
               right: 'customTimelineDay,customTimelineWeek'
             },
+
             customButtons: {
               customToday: {
                 text: 'Today',
@@ -1167,6 +1179,9 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
     font-size: 0.875rem !important;
   }
 
+  .event-style{
+    background-image: linear-gradient(to right, purple 20px, rgba(0,0,0,0) 20px) !important;
+  }
 </style>
 
 <style lang="scss" scoped>
