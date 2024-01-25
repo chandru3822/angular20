@@ -31,7 +31,7 @@ public class ReimbursementService {
   private final SecurityService securityService;
 
 
-  public Long updateRequest(ReimbursementRequest reimbursementRequest) {
+  public Long updateRequest(ReimbursementRequest reimbursementRequest, Boolean doApproval) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -41,8 +41,9 @@ public class ReimbursementService {
     params.put("expenseBudgetId", reimbursementRequest.getExpenseBudgetId());
     params.put("budgetTypeId", reimbursementRequest.getBudgetTypeId());
     params.put("glCodeId", reimbursementRequest.getGlCodeId());
-    params.put("createdById", currentUser.trueUserId());
+    params.put("userId", currentUser.trueUserId());
     params.put("expenseDate", reimbursementRequest.getExpenseDate());
+    params.put("setApprovalFields", doApproval);
     //null id with a status_id = 1 means an admin submitted it and it should be marked approved
     params.put("statusId", reimbursementRequest.getReimbursementRequestStatusId() != null ? reimbursementRequest.getReimbursementRequestStatusId() : 3L); //3 = pending
     Long id;

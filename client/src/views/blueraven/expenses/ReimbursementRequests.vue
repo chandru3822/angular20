@@ -195,7 +195,7 @@
                     v-model="selectedRequest.expenseDate"
                     :timezone="timezone"
                     :type="'date'"
-                    :rules="requiredRules"
+                    :required="true"
                     :format="'MM/DD/YYYY'"
                     label="Expense Date"
                 />

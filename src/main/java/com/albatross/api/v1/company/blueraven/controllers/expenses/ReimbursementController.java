@@ -45,7 +45,7 @@ public class ReimbursementController {
     if (null == reimbursementRequest.getExpenseBudgetId() || (expenseBudget.isPresent() && expenseBudget.get().getBalance() >= reimbursementRequest.getAmount())) {
 
       //save the request first
-      Long id = reimbursementService.updateRequest(reimbursementRequest);
+      Long id = reimbursementService.updateRequest(reimbursementRequest, false);
       reimbursementRequest.setId(id);
 
       if(null != reimbursementRequest.getId() && null != reimbursementRequest.getAttachmentId()){
@@ -61,7 +61,7 @@ public class ReimbursementController {
 
   @PutMapping(value = "/request", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateReimbursementRequest(@RequestBody ReimbursementRequest reimbursementRequest) {
-    reimbursementService.updateRequest(reimbursementRequest);
+    reimbursementService.updateRequest(reimbursementRequest, true);
   }
 
   @PostMapping(value = "/request/updateStatus", produces = MediaType.APPLICATION_JSON_VALUE)

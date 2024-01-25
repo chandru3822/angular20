@@ -86,11 +86,9 @@ public class BlueravenScheduledConfig {
   //    27th of every month at 7 am utc
   @Scheduled(cron = "0 0 7 27 * *", zone = "UTC")
   public void generateNextMonthBudgetsFromTemplate() {
-    if (updateGenesysContacts) {
-      log.info("*** CRON: start generating monthly budgets ***");
-      expenseBudgetService.generateNextMonthBudgets();
-      log.info("*** CRON: end generating monthly budgets ***");
-    }
+    log.info("*** CRON: start generating monthly budgets ***");
+    expenseBudgetService.generateNextMonthBudgets();
+    log.info("*** CRON: end generating monthly budgets ***");
   }
 
   //    every  day at 1 am - mtn

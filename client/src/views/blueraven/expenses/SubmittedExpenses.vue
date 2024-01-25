@@ -109,7 +109,7 @@
                 <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
                 <td class="text-left">{{ item.budgetType }}</td>
                 <td class="text-left">{{ item.glCode }}</td>
-                <td class="text-left">{{ item.dateApproved | formatDate('date') }}</td>
+                <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
                 <td class="text-left">{{ item.approvedBy }}</td>
                 <td>
                   <div style="display: flex; justify-content: flex-end">
@@ -528,7 +528,7 @@ export default {
 
 <style lang="scss">
 #submitted-expense-container .v-data-table__wrapper {
-  height: calc(100vh - 450px);
+  height: calc(100vh - 500px);
   min-height: 300px;
 }
 

@@ -63,7 +63,8 @@ public class ReimbursementQuery {
 
   //language=PostgreSQL
   public final static String insert = """
-    INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id, expense_date, reimbursement_request_status_id, budget_type_id, gl_code_id)
+    INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id, 
+          expense_date, reimbursement_request_status_id, budget_type_id, gl_code_id)
     values(:amount, :details, :attachmentId, :expenseBudgetId, :createdById, :expenseDate, :statusId, :budgetTypeId, :glCodeId);
     """;
 
@@ -76,9 +77,12 @@ public class ReimbursementQuery {
        expense_budget_id = :expenseBudgetId,
        gl_code_id = :glCodeId,
        budget_type_id = :budgetTypeId,
-       modified_by_id = :createdById,
+       modified_by_id = :userId,
+       date_modified = now(),
        expense_date = :expenseDate,
-       reimbursement_request_status_id = :statusId
+       reimbursement_request_status_id = :statusId,
+       approved_by_id = case when approved_by_id is null and :setApprovalFields::boolean then :userId else approved_by_id end,
+       approval_date = case when approval_date is null and :setApprovalFields::boolean then now() else approval_date end
     WHERE id = :id;
     """;
 
@@ -119,6 +123,7 @@ public class ReimbursementQuery {
            rr.submitted_by_id,
            concat(su.first_name, ' ', su.last_name) as submitted_by,
            rr.approved_by_id,
+           rr.approval_date,
            concat(au.first_name, ' ', au.last_name) as approved_by,
            rr.expense_budget_id,
            eb.user_id as expense_budget_user_id,
@@ -139,5 +144,6 @@ public class ReimbursementQuery {
     WHERE rr.expense_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
         and rr.reimbursement_request_status_id = 1
         and rr.archived is not true
+    order by rr.expense_date desc, expense_budget_user desc
     """;
 }

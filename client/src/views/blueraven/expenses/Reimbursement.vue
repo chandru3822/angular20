@@ -364,21 +364,6 @@ export default {
       )
       this.rejectedRequests = data
     },
-    async confirmPayment() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      this.paymentConfirmLoading = true
-      try {
-        await postRequest(`/expenses/markExpensesPaid`, this.selectedExpenses, 'blueraven')
-        //coolness
-        window.location.reload()
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Marking Selected Expenses as Paid')
-        this.paymentConfirmLoading = false
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
     async setDataForMonth() {
       this.dataLoading = true
       let dateRange = getMonthDateRange(this.selectedMonth, this.selectedYear)
