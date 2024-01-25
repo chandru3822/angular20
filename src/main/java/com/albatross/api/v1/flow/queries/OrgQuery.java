@@ -406,6 +406,7 @@ select oat.id,
       where uoa.user_id = :userId
           and uoa.archived is not true
           and o.archived is not true
+          and o.active_flag is true
           and (o.company_id = :companyId OR o.available_to_children is true)
       order by o.org_name
     """;
@@ -424,6 +425,7 @@ select oat.id,
       where uoa.user_id = :userId
           and uoa.archived is not true
           and o.archived is not true
+          and o.active_flag is true
           and (o.company_id = :companyId OR o.available_to_children is true)
       order by o.org_name
     """;
