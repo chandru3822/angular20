@@ -252,7 +252,6 @@
 </template>
 
 <script>
-import FullCalendar from '@fullcalendar/vue'
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import {getSchedulingOrgTypes} from '@/services/orgService'
@@ -262,10 +261,10 @@ import {handleHidingGlobalLoader, getRequest, getHostUrl, getRequestWithParams, 
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "../../../../components/ConfirmationDialog.vue";
 import {UserActions} from "@/stores/UserStore";
-import interaction from "@fullcalendar/interaction";
+import FullCalendar from "@fullcalendar/vue";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
-import momentPlugin from "@fullcalendar/moment";
-import momentTimezonePlugin from "@fullcalendar/moment-timezone"
+import interaction from "@fullcalendar/interaction";
+
 
   export default {
     name: 'ScheduleCalendar',
@@ -429,15 +428,29 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
 
           resources: [],
           resourceAreaWidth: 300,
-          events:[
-            {
-              resourceId:123,
-              title:'Annette Mayo',
-              start: new Date(),
-              classNames:['label-medium','event-style', 'pl-5'],
-              textColor:" var(--v-accent-base)"
-            }
+          eventSources: [
+            { name: 'Regular Events',
+              events:[
+                {
+                  resourceId:123,
+                  title:'Annette Mayo',
+                  start: new Date(),
+                  classNames:['label-medium','event-style', 'pl-5'],
+                  textColor:" var(--v-accent-base)"
+                }
+              ],},
+            { name: 'Appt Events',
+              events: [] }
           ],
+          // events:[
+          //   {
+          //     resourceId:123,
+          //     title:'Annette Mayo',
+          //     start: new Date(),
+          //     classNames:['label-medium','event-style', 'pl-5'],
+          //     textColor:" var(--v-accent-base)"
+          //   }
+          // ],
           defaultTimedEventDuration:'02:00',
 
           headerToolbar:{
@@ -536,7 +549,15 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
         calendarEndTime: null,
         eventSources: [
           { name: 'Regular Events',
-            events: [] },
+            events:[
+              {
+                resourceId:123,
+                title:'Annette Mayo',
+                start: new Date(),
+                classNames:['label-medium','event-style', 'pl-5'],
+                textColor:" var(--v-accent-base)"
+              }
+            ],},
           { name: 'Appt Events',
             events: [] }
         ],
@@ -890,7 +911,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
               })
           })
 
-          this.eventSources[1].events = cloneDeep(data)
+          this.calendarOptions.eventSources[1].events = cloneDeep(data)
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
@@ -925,7 +946,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
           }
           this.calendarInitialRender = false
           // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
-          this.eventSources = [
+          this.calendarOptions.eventSources = [
             { name: 'Regular Events',
               events: [] },
             { name: 'Appt Events',
@@ -963,7 +984,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
                 }
               })
               // console.log('the events: ',data)
-              this.eventSources[0].events = cloneDeep(data)
+              this.calendarOptions.eventSources[0].events = cloneDeep(data)
 
               this.calendarLoading = false
             } catch (e) {
@@ -1039,7 +1060,7 @@ import momentTimezonePlugin from "@fullcalendar/moment-timezone"
         checkbox.onchange = (event) => {
           if(event.target.checked) {
             let resource = renderInfo.resource
-            let resourceEvents = this.eventSources[0].events.filter(e => {
+            let resourceEvents = this.calendarOptions.eventSources[0].events.filter(e => {
               return e.resourceId === resource.id
             })
             resourceEvents.forEach(re => {
