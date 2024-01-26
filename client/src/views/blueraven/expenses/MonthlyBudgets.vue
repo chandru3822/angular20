@@ -63,6 +63,7 @@
           :items="filterBudgets()"
           :items-per-page="100"
           :mobile-breakpoint="0"
+          :loading="dataLoading"
           single-expand
           fixed-header
           :expanded.sync="expanded"
@@ -172,6 +173,7 @@ export default {
     return {
       snackbar: {},
       constants,
+      dataLoading: true,
       years: [],
       selectedMonth: parseInt(moment().format('M')),
       selectedYear: parseInt(moment().format('YYYY')),
@@ -223,16 +225,15 @@ export default {
       }
     },
     async getBudgets() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.dataLoading = true
       try {
         const {data, status} = await getRequest(`/expenseBudgets/list`, 'blueraven')
         this.budgets = data
-        handleHidingGlobalLoader(this, status)
+        this.dataLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getAvailableUsers() {

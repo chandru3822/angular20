@@ -41,6 +41,7 @@
           :items-per-page="100"
           :mobile-breakpoint="0"
           single-expand
+          :loading="dataLoading"
           fixed-header
           :expanded.sync="expanded"
           :footer-props="footerProps"
@@ -136,12 +137,7 @@ export default {
     return {
       snackbar: {},
       constants,
-      years: [],
-      selectedMonth: parseInt(moment().format('M')),
-      selectedYear: parseInt(moment().format('YYYY')),
-      yearStart: 2017,
-      yearEnd: parseInt(moment().format('YYYY')),
-      months: constants.MONTHS,
+      dataLoading: true,
       createNew: false,
       newTemplate: {},
       footerProps: {
@@ -164,7 +160,6 @@ export default {
     }
   },
   created() {
-    this.getAvailableUsers()
     this.getTemplates()
   },
   methods: {
@@ -193,16 +188,15 @@ export default {
       return this.templates.filter(b => !b.archived)
     },
     async getTemplates() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.dataLoading = true
       try {
         const {data, status} = await getRequest(`/expenseBudgets/templates`, 'blueraven')
         this.templates = data
-        handleHidingGlobalLoader(this, status)
+        this.dataLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getAvailableUsers() {

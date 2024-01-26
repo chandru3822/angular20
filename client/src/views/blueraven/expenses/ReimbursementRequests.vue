@@ -53,6 +53,7 @@
           />
           <v-autocomplete v-model="newReimbursementRequest.glCodeId"
                           :items="glCodes"
+                          :loading="glCodesLoading"
                           label="GL Code"
                           item-text="code"
                           item-value="id"
@@ -64,6 +65,7 @@
           </v-autocomplete>
           <v-autocomplete v-model="newReimbursementRequest.budgetTypeId"
                           :items="budgetTypes"
+                          :loading="budgetTypesLoading"
                           label="Budget Type"
                           item-text="name"
                           item-value="id"
@@ -94,6 +96,7 @@
             :items="filterReimbursementRequests()"
             :items-per-page="100"
             :mobile-breakpoint="0"
+            :loading="dataLoading"
             fixed-header
             :footer-props="footerProps"
             class="elevation-1 fix-column-width-bug square-card"
@@ -301,6 +304,7 @@ export default {
     return {
       snackbar: {},
       createNew: false,
+      dataLoading: true,
       budgetsLoading: false,
       newReimbursementRequest: {
         expenseBudgetId: null
@@ -341,6 +345,8 @@ export default {
       amountError: false,
       renderRequestImage: false,
       deleteConfirm: false,
+      budgetTypesLoading: true,
+      glCodesLoading: true,
       itemToDelete: null
     }
   },
@@ -375,16 +381,15 @@ export default {
       return this.reimbursementRequests.filter(glc => !glc.archived)
     },
     async getReimbursementRequests() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.dataLoading = true
       try {
         const {data, status} = await getRequest(`/reimbursement/requests/pending`, 'blueraven')
         this.reimbursementRequests = data
-        handleHidingGlobalLoader(this, status)
+        this.dataLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async deleteReimbursementRequest(item) {
@@ -466,42 +471,37 @@ export default {
     },
     async getBudgetTypes() {
       //reset the budget id every time a user or expense date changes
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.budgetTypesLoading = true
       try {
         const {data, status} = await getBudgetTypes()
         this.budgetTypes = data
-        handleHidingGlobalLoader(this, status)
+        this.budgetTypesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getGlCodes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.glCodesLoading = true
       try {
         const {data, status} = await getGlCodes()
         this.glCodes = data
-        handleHidingGlobalLoader(this, status)
+        this.glCodesLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getUsersWithBudget() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getUsersWithBudget()
         this.usersWithBudget = data
-        handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getBudgetsForUser(userId) {

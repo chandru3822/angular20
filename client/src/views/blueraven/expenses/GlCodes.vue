@@ -36,6 +36,7 @@
           :headers="headers"
           :items="filterGlCodes()"
           :items-per-page="-1"
+          :loading="dataLoading"
           :mobile-breakpoint="0"
           hide-default-footer
           class="elevation-1 fix-column-width-bug square-card"
@@ -121,6 +122,7 @@ export default {
     return {
       snackbar: {},
       createNew: false,
+      dataLoading: true,
       newGlCode: {},
       editIndex: null,
       glCodes: [],
@@ -141,16 +143,15 @@ export default {
       return this.glCodes.filter(glc => !glc.archived)
     },
     async getGlCodes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.dataLoading = true
       try {
         const {data, status} = await getGlCodes()
         this.glCodes = data
-        handleHidingGlobalLoader(this, status)
+        this.dataLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async deleteGlCode(item) {
