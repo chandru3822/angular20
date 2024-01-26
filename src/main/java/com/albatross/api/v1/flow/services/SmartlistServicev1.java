@@ -965,14 +965,14 @@ public class SmartlistServicev1 {
           query.append(String.format("  (select %s from %s where %s.id = \"%s\".process_step_id) as \"%s\", ", f.getReferenceColumn(), f.getReferenceTable(), f.getReferenceTable(), f.getValueReferenceTable(), f.getName()));
         }
       } else if (f.getDataTypeId() == 1) {
-        if (null != timezone) {
+        if (null != timezone && !location.contains("time zone")) {
           query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD') as \"%s\", ", location, timezone, f.getName()));
         }
         else {
           query.append(String.format("  to_char(%s, 'YYYY-MM-DD') as \"%s\", ", location, f.getName()));
         }
       } else if (f.getDataTypeId() == 2) {
-        if (null != timezone) {
+        if (null != timezone && !location.contains("time zone")) {
           query.append(String.format("  to_char(%s at time zone 'UTC' at time zone '%s', 'YYYY-MM-DD HH:MI am') as \"%s\", ", location, timezone, f.getName()));
         }
         else {
