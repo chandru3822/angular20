@@ -70,6 +70,7 @@ public class Five9Service {
       b.addParameter("last_name", contact.getLastName() != null ? contact.getLastName() : "");
       b.addParameter("number1", phone);
       b.addParameter("id", contactId.toString());
+      b.addParameter("contactid", contactId.toString());
       b.addParameter("contact_type_id", contact.getContactTypeId() != null ? contact.getContactTypeId().toString() : "");
       b.addParameter("street", contact.getStreet1() != null ? contact.getStreet1() : "");
       b.addParameter("city", contact.getCity() != null ? contact.getCity() : "");
@@ -82,6 +83,8 @@ public class Five9Service {
 
       // Only set the date/time created fields when Contact is created
       if (!isUpdate) {
+        formatterTime.setTimeZone(TimeZone.getTimeZone("US/Mountain"));
+        formatterDate.setTimeZone(TimeZone.getTimeZone("US/Mountain"));
         ZonedDateTime zonedDateTime = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
         b.addParameter("time_created_mst", formatterTime.format(Date.from(zonedDateTime.toInstant())));
         b.addParameter("date_created_mst", formatterDate.format(new Date()));
@@ -174,10 +177,10 @@ public class Five9Service {
       sqlCache.getBySql(
         Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
     if (retargetValue.isPresent()) {
-      b.addParameter("retarget", retargetValue.get().toString());
+      b.addParameter("retargeted", retargetValue.get().toString());
     }
     else {
-      b.addParameter("retarget", "false");
+      b.addParameter("retargeted", "false");
     }
   }
 
