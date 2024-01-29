@@ -64,7 +64,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_details(p_proposal_id bigint)
             commission_strategy_id                  bigint,
             qualifies_for_incentive                 bigint[],
             adder_amount numeric,
-            company_process_id  bigint
+            company_process_id  bigint,
+            virtual_sales_price_adjustment numeric
           )
 
 AS
@@ -139,7 +140,8 @@ BEGIN
            ppscfv44.int_value,
            pcfv23.int_array_value,
            ppscfv45.numeric_value,
-           p.company_process_id
+           p.company_process_id,
+           pcfv24.numeric_value
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
@@ -242,7 +244,8 @@ BEGIN
                      on ppscfv35.project_process_step_id = pps.id and
                         ppscfv35.custom_field_group_assignment_id = 23802
            left join brs.feat_db_utility utility35 on utility35.id = ppscfv35.int_value
-
+           left join brs.proposal_custom_field_value pcfv24 on prop.id = pcfv24.proposal_id and
+                                                               pcfv24.custom_field_group_assignment_id = 517
 
     where prop.id = p_proposal_id;
 
