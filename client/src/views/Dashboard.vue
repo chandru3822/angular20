@@ -74,6 +74,7 @@
               <span v-else class="selected-option body-small">
               {{ getDropdownById(firstDateRange)?.friendlyName}}
               </span>
+              <v-spacer></v-spacer>
               <v-icon>mdi-menu-down</v-icon>
             </v-btn>
           </template>
@@ -129,6 +130,7 @@
               <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
+              <v-spacer></v-spacer>
               <v-icon>mdi-menu-down</v-icon>
             </v-btn>
           </template>
@@ -183,6 +185,7 @@
               <span v-else class="placeholder-option body-small">
                 Select Date Range
               </span>
+              <v-spacer></v-spacer>
               <v-icon>mdi-menu-down</v-icon>
             </v-btn>
           </template>
@@ -1048,7 +1051,8 @@
     background-color: transparent !important;
     box-shadow: none;
     height: 40px !important;
-    width: fit-content;
+    width: 210px;
+    justify-content: left;
   }
   .v-data-table{
     overflow-x: auto;
