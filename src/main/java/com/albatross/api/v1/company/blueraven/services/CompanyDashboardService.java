@@ -159,8 +159,8 @@ public class CompanyDashboardService {
     LocalDate previousMonthEnd = currentMonthStart.minusDays(1);
     LocalDate currentYearStart = today.with(firstDayOfYear());
     LocalDate currentYearEnd = today.with(lastDayOfYear());
-    LocalDate previousYearStart = currentYearEnd. plusDays(1);
-    LocalDate previousYearEnd = previousYearStart.with(lastDayOfYear());
+    LocalDate previousYearEnd = currentYearStart.minusDays(1);
+    LocalDate previousYearStart = previousYearEnd.with(firstDayOfYear());
 
 
     Triumvirate triumvirate = sqlCache.queryBySql(CompanyDashboardQuery.getGetCompanyDashboardTriumvirate, params, Triumvirate.class).get(0);
