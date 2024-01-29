@@ -245,7 +245,7 @@ BEGIN
                         ppscfv35.custom_field_group_assignment_id = 23802
            left join brs.feat_db_utility utility35 on utility35.id = ppscfv35.int_value
            left join brs.proposal_custom_field_value pcfv24 on prop.id = pcfv24.proposal_id and
-                                                               pcfv24.custom_field_group_assignment_id = 518
+                                                               pcfv24.custom_field_group_assignment_id = 517
 
     where prop.id = p_proposal_id;
 

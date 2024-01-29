@@ -936,7 +936,8 @@ BEGIN
         v_maximum_funding_amount_per_watt +
         v_max_price_adjustment;
   end if;
-
+  --raise notice 'v_virtual_sales_price_adjustment = %',v_virtual_sales_price_adjustment;
+  --raise notice 'v_virtual_sales_base_price = %',v_virtual_sales_base_price;
   --raise notice 'v_commission_strategy_id = %',v_commission_strategy_id;
   --raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
 
@@ -1818,7 +1819,9 @@ BEGIN
                                          storage_name,
                                          all_rebates,
                                          net_system_cost,
-                                         eto_rebate_amount)
+                                         eto_rebate_amount,
+                                         virtual_sales_price_adjustment,
+                                         virtual_sales_base_price)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1933,7 +1936,9 @@ BEGIN
             v_storage_name,
             v_rebates,
             v_net_system_cost,
-            v_eto_rebate_amount);
+            v_eto_rebate_amount,
+            v_virtual_sales_price_adjustment,
+            v_virtual_sales_base_price);
   end if;
 
   return query
