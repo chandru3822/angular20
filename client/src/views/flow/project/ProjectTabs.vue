@@ -2,9 +2,10 @@
   <SidePanelExpansionPanel header="Details" :section-expanded="sectionExpanded" @click="toggleCollapseExpand">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
-          text color="primary" class="px-0" small
+          text color="primary" class="pa-2 mx-2" max-width="48px"
           v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
           :to="`/projectAdmin/${projectId}/processSteps`"
+          @click.stop
       >
         <v-icon>mdi-cog</v-icon>
       </v-btn>

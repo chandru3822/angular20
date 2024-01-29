@@ -9,7 +9,8 @@ CREATE OR REPLACE FUNCTION brs.get_proposal_pricing(p_version_id bigint,p_utilit
                   current_estimated_cost_per_kwh numeric,
                   utility_cost_escalator numeric,
                   red_line_funding_amount numeric,
-                  closer_gen_discount numeric) AS
+                  closer_gen_discount numeric,
+                  virtual_sales_base_price numeric) AS
 $BODY$
 declare
 
@@ -25,7 +26,8 @@ BEGIN
          (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 87)') ->> 'value')::numeric  as current_estimated_cost_per_kwh,
          (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 94)') ->> 'value')::numeric  as utility_cost_escalator,
          (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 380)') ->> 'value')::numeric as red_line_funding_amount,
-         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 381)') ->> 'value')::numeric as closer_gen_discount
+         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 381)') ->> 'value')::numeric as closer_gen_discount,
+         (jsonb_path_query(get_proposal_version_value, '$.fields[*] ? (@.fieldId == 445)') ->> 'value')::numeric as virtual_sales_base_price
       from brs.get_proposal_version_value(p_version_id, array [(85, null, p_utility_company_id, null)::ProposalFieldFilter],
                                           'PROPOSAL_PRICING');
 

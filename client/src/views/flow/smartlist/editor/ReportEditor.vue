@@ -39,7 +39,7 @@
               </span>
               <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               <v-btn
-                v-if=" report?.id && (isOwner || isSmartlistAdmin || isSystemAdmin)"
+                v-if="report?.id && canView"
                 color="primary"
                 text
                 @click="router.push(`/smartlistv1/${report.id}`)"
