@@ -25,7 +25,7 @@
           </span>
     </v-card-title>
 
-    <v-card-text>
+    <v-card-text class="drilldown-card">
       <v-data-table
         id="drilldown-table"
         :headers="filteredHeaders()"
@@ -242,6 +242,9 @@
 </script>
 
 <style lang="scss">
+  .drilldown-card{
+    padding-bottom: 8px!important;
+  }
   .drilldown-filter{
     max-width: 1000px;
   }
@@ -282,6 +285,7 @@
   #drilldown-close-btn {
     font-size: 10px;
     height: 25px;
+    margin-bottom: 16px;
   }
 
   @media (min-width: 450px) {
@@ -310,6 +314,7 @@
     #drilldown-close-btn {
       font-size: 14px;
       height: 35px;
+      margin-bottom: 16px;
     }
   }
 </style>
