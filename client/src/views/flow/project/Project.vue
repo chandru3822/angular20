@@ -122,7 +122,7 @@
         <ProjectTabs :project="project" hideAdminBtn :tab-change-callback="changeTabs" class="mx-2"></ProjectTabs>
       </template>
       <template v-slot:subMenu_2>
-        <ActiveProcessSteps :project="project" :update-key="updatePpsKey" :hide-add-btn="true" class="mx-2"></ActiveProcessSteps>
+        <ActiveProcessSteps :project="project" :update-key="updatePpsKey" class="mx-2"></ActiveProcessSteps>
       </template>
       <template v-slot:subMenu_3>
         <ActiveEvents v-if="userHasEventsFeature"
