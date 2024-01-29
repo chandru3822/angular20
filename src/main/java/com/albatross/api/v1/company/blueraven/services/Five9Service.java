@@ -66,6 +66,7 @@ public class Five9Service {
       URIBuilder b = new URIBuilder(apiUrl + "/AddToList");
       b.addParameter("F9domain", "BRSolar");
       b.addParameter("F9CallASAP", "true");
+      b.addParameter("F9key", "contactid");
       b.addParameter("first_name", contact.getFirstName() != null ? contact.getFirstName() : "");
       b.addParameter("last_name", contact.getLastName() != null ? contact.getLastName() : "");
       b.addParameter("number1", phone);
