@@ -489,6 +489,8 @@ declare
   v_battery_workmanship_warranty                        bigint;
   v_adder_amount                                        numeric;
   v_company_process_id integer;
+v_virtual_sales_price_adjustment numeric;
+v_virtual_sales_base_price numeric;
 BEGIN
   select proposal_id,
          version_id,
@@ -552,7 +554,8 @@ BEGIN
          commission_strategy_id,
          qualifies_for_incentive,
          adder_amount,
-         company_process_id
+         company_process_id,
+         virtual_sales_price_adjustment
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -615,7 +618,8 @@ BEGIN
     v_commission_strategy_id,
     v_qualifies_for_incentive,
     v_adder_amount,
-    v_company_process_id
+    v_company_process_id,
+    v_virtual_sales_price_adjustment
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -772,10 +776,12 @@ BEGIN
          current_estimated_cost_per_kwh,
          utility_cost_escalator,
          red_line_funding_amount,
-         closer_gen_discount
+         closer_gen_discount,
+         virtual_sales_base_price
   into v_instant_use_assumption,v_net_metring_rate,v_production_factor_east_west,
     v_production_factor_south,v_maximum_funding_amount_per_watt,v_minimum_funding_amount_per_watt,
-    v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_red_line_funding_amount,v_closer_gen_discount
+    v_current_estimated_cost_per_kwh,v_utility_cost_escalator,v_red_line_funding_amount,v_closer_gen_discount,
+    v_virtual_sales_base_price
   from brs.get_proposal_pricing(v_version_id, v_utility_company_id);
 
 
@@ -923,6 +929,8 @@ BEGIN
     --raise notice 'v_lead_source_discount = %',v_lead_source_discount;
     --raise notice 'v_adjusted_price_per_watt = %',v_adjusted_price_per_watt;
     --raise notice 'v_red_line_funding_amount = %',v_red_line_funding_amount;
+  elsif v_virtual_sales_price_adjustment is not null and v_virtual_sales_base_price is not null then
+    v_adjusted_price_per_watt  = v_virtual_sales_base_price + v_virtual_sales_price_adjustment;
   else
     v_adjusted_price_per_watt =
         v_maximum_funding_amount_per_watt +
