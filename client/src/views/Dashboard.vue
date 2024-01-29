@@ -95,7 +95,7 @@
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover v-model="openFirstPeriodMenu" offset-x>
                     <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-small">
                         {{ item.friendlyName }}
                         <v-icon style="display: flex">mdi-chevron-right</v-icon>
                       </span>
@@ -103,7 +103,7 @@
                     <div>
                       <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openFirstMenu = false">
-                          <v-list-item-title>
+                          <v-list-item-title class="body-small">
                             {{ period.label }}
                           </v-list-item-title>
                         </v-list-item>
@@ -162,7 +162,7 @@
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end" :offset-x="true">
                     <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-small">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -170,7 +170,7 @@
                     <div>
                       <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="secondDateRange = item.id; secondPeriod = index; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM'); openSecondMenu = false">
-                          <v-list-item-title>
+                          <v-list-item-title class="body-small">
                             {{ period.label }}
                           </v-list-item-title>
                         </v-list-item>
@@ -228,7 +228,7 @@
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end">
                     <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-small">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -236,7 +236,7 @@
                     <div>
                       <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openThirdMenu = false">
-                          <v-list-item-title>
+                          <v-list-item-title class="body-small">
                             {{ period.label }}
                           </v-list-item-title>
                         </v-list-item>
@@ -307,7 +307,7 @@
         </v-tooltip>
       </template>
     </v-data-table>
-    <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @close-dialog="selectingCustomDates = false">
+    <ConfirmationDialog v-if="selectingCustomDates" :disableConfirm="customDate.startDate === null || customDate.endDate === null || customDate.startDate?.length === 0 || customDate.endDate?.length === 0" :open-dialog="selectingCustomDates" @confirm="applyCustomDates()" @cancel="cancelCustomDialogue()" @close-dialog="selectingCustomDates = false">
       <template v-slot:title>Custom Date Range</template>
       <div>
         <DatetimePickerInput
@@ -413,6 +413,9 @@
         firstDateRange: 2,
         secondDateRange: null,
         thirdDateRange: null,
+        previousSelection: 2,
+        secondColPreviousSelection: null,
+        thirdColPreviousSelection: null,
         firstCustom: {
           startDate: "",
           endDate: "",
@@ -450,13 +453,22 @@
     },
     watch: {
       firstDateRange(value) {
-        this.firstCustom.isActive = (this.getDropdownById(value).name === 'CUSTOM')
+        this.firstCustom.isActive = (this.getDropdownById(value)?.name === 'CUSTOM')
+        if(!this.firstCustom.isActive){
+          this.previousSelection = value;
+        }
       },
       secondDateRange(value) {
-        this.secondCustom.isActive = (this.getDropdownById(value).name === 'CUSTOM')
+        this.secondCustom.isActive = (this.getDropdownById(value)?.name === 'CUSTOM')
+        if(!this.secondCustom.isActive){
+          this.secondColPreviousSelection = value;
+        }
       },
       thirdDateRange(value) {
-        this.firstCustom.isActive = (this.getDropdownById(value).name === 'CUSTOM')
+        this.thirdCustom.isActive = (this.getDropdownById(value)?.name === 'CUSTOM')
+        if(!this.thirdCustom.isActive){
+          this.thirdColPreviousSelection = value;
+        }
       }
     },
     computed: {
@@ -823,6 +835,17 @@
         this.customDate.trendStart = "";
         this.customDate.trendEnd = "";
       },
+      async cancelCustomDialogue() {
+        if(this.customColumn === 1) {
+          this.firstDateRange = this.previousSelection
+        }
+        else if(this.customColumn === 2) {
+          this.secondDateRange = this.secondColPreviousSelection
+        }
+        else if(this.customColumn === 3) {
+          this.thirdDateRange = this.thirdColPreviousSelection
+        }
+      },
       async applyCustomDates(){
         if(this.customColumn === 1) {
           this.firstCustom.startDate = moment(this.customDate.startDate);
@@ -1042,6 +1065,12 @@
 </script>
 
 <style lang="scss" scoped>
+  .v-list-item__title.dashboard-menu-option{
+    font-family: lato;
+    font-weight: 400;
+    font-size: .75rem;
+    line-height: 1.6;
+  }
   .dashboard-menu-option{
     display: flex;
     min-height: 48px;
