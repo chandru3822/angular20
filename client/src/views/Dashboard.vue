@@ -6,7 +6,7 @@
           Company Dashboard
         </div>
         <div class="checkbox-container">
-          <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewTrends"></v-checkbox>
+          <v-checkbox label="View Trends" v-model="viewTrends"></v-checkbox>
         </div>
         <div class="checkbox-container">
 
@@ -24,7 +24,7 @@
       </v-row>
       <v-row>
         <div class="checkbox-container-mini">
-          <v-checkbox label="View Trends" :disabled="disableTrends" v-model="viewTrends"></v-checkbox>
+          <v-checkbox label="View Trends" v-model="viewTrends"></v-checkbox>
         </div>
         <a class="export-button" @click="exportCsv"><v-icon class="export-icon">mdi-tray-arrow-down</v-icon></a>
       </v-row>
@@ -56,18 +56,6 @@
 
       <template #header.milestone="{}" id="milestones-header">Milestones</template>
       <template #header.actualTotal="{}" >
-<!--        <v-select class="dropdown-header body-small selected-option" id="company-dash-first-header" :items="dropdownValues" outlined item-text="friendlyName" item-value="id" v-model="firstDateRange" v-on:change="changeDropdownSelection(1)">-->
-<!--          <template #selection="{item}">-->
-<!--              <span v-if="item.name === 'CUSTOM' && firstCustom.name != null" :class="[{'selected-option':(firstDateRange===item.id)}]">-->
-<!--                      {{firstCustom.name}}</span>-->
-<!--            <span v-else :class="[{'selected-option':(firstDateRange===item.id)}]">-->
-<!--                      {{item.friendlyName}}</span>-->
-<!--          </template>-->
-<!--          <template #item="{item}">-->
-<!--              <span :class="[{'selected-option':(firstDateRange===item.id)}]">-->
-<!--                      {{item.friendlyName}}</span>-->
-<!--          </template>-->
-<!--        </v-select>-->
         <v-menu data-app left
                 offset-y
                 :max-height="`calc(100vh - 20px)`"
@@ -95,7 +83,7 @@
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover v-model="openFirstPeriodMenu" offset-x>
                     <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-small">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-large">
                         {{ item.friendlyName }}
                         <v-icon style="display: flex">mdi-chevron-right</v-icon>
                       </span>
@@ -103,7 +91,7 @@
                     <div>
                       <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="firstDateRange = item.id; firstPeriod = index; changeDropdownSelection(1); firstCustom.isActive = (item.name === 'CUSTOM'); openFirstMenu = false">
-                          <v-list-item-title class="body-small">
+                          <v-list-item-title class="body-large">
                             {{ period.label }}
                           </v-list-item-title>
                         </v-list-item>
@@ -120,18 +108,6 @@
 
       </template>
       <template #header.actualTotal2="{}" >
-<!--        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="secondDateRange" v-on:change="changeDropdownSelection(2)">-->
-<!--          <template #selection="{item}">-->
-<!--              <span v-if="item.name === 'CUSTOM' && secondCustom.name != null" :class="[{'selected-option':(secondDateRange===item.id)}]">-->
-<!--                      {{secondCustom.name}}</span>-->
-<!--            <span v-else :class="[{'selected-option':(secondDateRange===item.id)}]">-->
-<!--                      {{item.friendlyName}}</span>-->
-<!--          </template>-->
-<!--          <template #item="{item}">-->
-<!--              <span :class="[{'selected-option':(secondDateRange===item.id)}]">-->
-<!--                      {{item.friendlyName}}</span>-->
-<!--          </template>-->
-<!--        </v-select>-->
         <v-menu data-app left
                 offset-y
                 :max-height="`calc(100vh - 20px)`"
@@ -162,7 +138,7 @@
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end" :offset-x="true">
                     <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-small">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-large">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -170,7 +146,7 @@
                     <div>
                       <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="secondDateRange = item.id; secondPeriod = index; changeDropdownSelection(2); secondCustom.isActive = (item.name === 'CUSTOM'); openSecondMenu = false">
-                          <v-list-item-title class="body-small">
+                          <v-list-item-title class="body-large">
                             {{ period.label }}
                           </v-list-item-title>
                         </v-list-item>
@@ -186,18 +162,6 @@
         </v-menu>
       </template>
       <template #header.actualTotal3="{}" >
-<!--        <v-select class="dropdown-header body-small" placeholder="Select Date Range" outlined :items="dropdownValues" item-text="friendlyName" item-value="id" v-model="thirdDateRange" v-on:change="changeDropdownSelection(3)">-->
-<!--          <template #selection="{item}">-->
-<!--              <span v-if="item.name === 'CUSTOM' && thirdCustom.name != null" :class="[{'selected-option':(thirdDateRange===item.id)}]">-->
-<!--                      {{thirdCustom.name}}</span>-->
-<!--            <span v-else :class="[{'selected-option':(thirdDateRange===item.id)}]">-->
-<!--                      {{item.friendlyName}}</span>-->
-<!--          </template>-->
-<!--          <template #item="{item}">-->
-<!--              <span :class="[{'selected-option':(thirdDateRange===item.id)}]">-->
-<!--                      {{item.friendlyName}}</span>-->
-<!--          </template>-->
-<!--        </v-select>-->
         <v-menu data-app left
                 offset-y
                 :max-height="`calc(100vh - 20px)`"
@@ -228,7 +192,7 @@
                 <v-list-item-title v-if="item.name === 'PERIOD'">
                   <v-menu open-on-hover location="end">
                     <template v-slot:activator="{ on }">
-                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-small">
+                      <span v-on="on" class="d-flex justify-space-between dashboard-menu-option body-large">
                         {{ item.friendlyName }}
                         <v-icon>mdi-chevron-right</v-icon>
                       </span>
@@ -236,7 +200,7 @@
                     <div>
                       <v-list style="height: 300px; overflow-y:auto">
                         <v-list-item v-for="(period, index) in item.periodList" @click="thirdDateRange = item.id; thirdPeriod = index; changeDropdownSelection(3); thirdCustom.isActive = (item.name === 'CUSTOM'); openThirdMenu = false">
-                          <v-list-item-title class="body-small">
+                          <v-list-item-title class="body-large">
                             {{ period.label }}
                           </v-list-item-title>
                         </v-list-item>
@@ -259,7 +223,7 @@
             <template v-slot:activator="{ on }">
               <span @click="openDrilldown(item, 1)">
               {{ item.company_count?item.company_count:0 }}
-              <span v-on="viewTrends?on:null">
+              <span v-if="getDropdownById(firstDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
                 <span v-if="viewTrends && item.trend_count>0" class="positive-percentage">+{{item.trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                 <span v-if="viewTrends && item.trend_count<0" class="negative-percentage">{{item.trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                 <span v-if="viewTrends && (item.trend_count ===null || item.trend_count===0)" class="neutral-percentage">{{item.trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
@@ -277,7 +241,7 @@
           <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 2)">
               {{column2Values[index].company_count?column2Values[index].company_count:0}}
-              <span v-on="viewTrends?on:null">
+              <span v-if="getDropdownById(secondDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
                 <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">+{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                 <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                 <span v-if="viewTrends && (column2Values[index].trend_count === null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
@@ -294,7 +258,7 @@
           <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 3)">
             {{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
-              <span v-on="viewTrends?on:null">
+              <span v-if="getDropdownById(thirdDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
                 <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">+{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
                 <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
                 <span v-if="viewTrends && (column3Values[index].trend_count === null || column3Values[index].trend_count === 0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
@@ -480,9 +444,6 @@
           return this.dashValues.filter(dv => dv.major_milestone)
         }
         return this.dashValues
-      },
-      disableTrends(){
-        return ((this.getDropdownById(this.firstDateRange)?.name === 'ALL_TIME') || (this.getDropdownById(this.secondDateRange)?.name === 'ALL_TIME') || (this.getDropdownById(this.thirdDateRange)?.name === 'ALL_TIME'));
       },
       additionalStartWeek () {
         if (this.currentPeriod > 9) {
@@ -745,7 +706,6 @@
           else if(result.name === 'ALL_TIME'){
             delete result.trendStart;
             delete result.trendEnd;
-            this.viewTrends = false;
           }
           this.dashValues = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         } else if (dropdown === 2) {
@@ -785,7 +745,6 @@
           else if(result.name === 'ALL_TIME'){
             delete result.trendStart;
             delete result.trendEnd;
-            this.viewTrends = false;
           }
           this.column2Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         } else if (dropdown === 3) {
@@ -824,7 +783,6 @@
           else if(result.name === 'ALL_TIME'){
             delete result.trendStart;
             delete result.trendEnd;
-            this.viewTrends = false;
           }
           this.column3Values = await this.getDashBoardData(moment(result.startDate).format('YYYY-MM-DD'), moment(result.endDate).format('YYYY-MM-DD'), moment(result.trendStart).format('YYYY-MM-DD'), moment(result.trendEnd).format('YYYY-MM-DD'));
         }
@@ -1036,10 +994,10 @@
     },
       created () {
       this.headers = [
-        { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true },
-        { text: 'Today', value: 'actualTotal', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-        { text: 'Today2', value: 'actualTotal2', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
-        { text: 'Today3', value: 'actualTotal3', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser },
+        { text: 'Milestones', value: 'milestone', sortable: false, class: 'milestone-col-th', show: true, width: '25%' },
+        { text: 'Today', value: 'actualTotal', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser, width: '25%' },
+        { text: 'Today2', value: 'actualTotal2', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser, width: '25%' },
+        { text: 'Today3', value: 'actualTotal3', align: 'left', class: 'total-col-th data-col-th', show: !this.isBrCorporateUser, width: '25%' },
       ]
 
         // { text: 'Total', value: 'actualTotal', align: 'center', class: 'total-col-th data-col-th', show: this.isBrCorporateUser },
@@ -1068,8 +1026,8 @@
   .v-list-item__title.dashboard-menu-option{
     font-family: lato;
     font-weight: 400;
-    font-size: .75rem;
-    line-height: 1.6;
+    line-height: 1.563rem;
+    font-size: 1rem;
   }
   .dashboard-menu-option{
     display: flex;
@@ -1090,6 +1048,7 @@
     background-color: transparent !important;
     box-shadow: none;
     height: 40px !important;
+    width: fit-content;
   }
   .v-data-table{
     overflow-x: auto;
