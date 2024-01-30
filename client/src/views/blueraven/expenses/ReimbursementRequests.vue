@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Reimbursement Requests</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary"
+            <v-btn text color="primary" v-if="userCanAdd"
                    @click="[createNew = !createNew, selectedBudgetReport = {},
                             newReimbursementRequest = {expenseBudgetId: null}]">
               <v-icon v-if="!createNew">add</v-icon>
@@ -122,7 +122,7 @@
               <td class="text-left">{{ item.budgetType }}</td>
               <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
               <td>
-                <div style="display: flex; justify-content: flex-end">
+                <div style="display: flex; justify-content: flex-end" v-if="userCanEdit">
                   <v-btn small text color="primary"
                          @click="[selectedRequest = item, getBudgetsForUser(item.expenseBudgetUserId, true, false), getRequestAttachmentPresignedUrl(item)]">
                     <v-icon>edit</v-icon>
@@ -318,6 +318,8 @@ export default {
       createNew: false,
       dataLoading: true,
       budgetsLoading: false,
+      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADD'),
+      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'EDIT'),
       newReimbursementRequest: {
         expenseBudgetId: null
       },

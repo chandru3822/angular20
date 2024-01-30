@@ -119,13 +119,17 @@
             </template>
 
             <template #header.selectBox="{}">
-              <v-checkbox v-model="selectAllExpenses" @change="toggleSelectAllExpenses()"></v-checkbox>
+              <v-checkbox v-model="selectAllExpenses"
+                          v-if="userCanAdmin || userCanManage"
+                          @change="toggleSelectAllExpenses()"></v-checkbox>
             </template>
 
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
                 <td>
-                  <v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
+                  <v-checkbox v-model="item.selected"
+                              v-if="userCanAdmin || (userCanManage && !item.paidDate)"
+                              @change="toggleSingleSelect(item)"></v-checkbox>
                 </td>
                 <td class="text-left">{{ item.expenseBudgetUser }}</td>
                 <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
@@ -137,7 +141,7 @@
                 <td class="text-left">{{ item.paidDate | formatDate('date') }}</td>
                 <td class="text-left">{{ item.paidBy }}</td>
                 <td>
-                  <div style="display: flex; justify-content: flex-end">
+                  <div style="display: flex; justify-content: flex-end" v-if="userCanAdmin || (userCanManage && !item.paidDate)">
                     <v-btn small text color="primary"
                            @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getBudgetsForUser(selectedExpense.expenseBudgetUserId)]">
                       <v-icon>edit</v-icon>
@@ -306,6 +310,8 @@ export default {
       snackbar: {},
       timezone: this.$store.state.user.details.timezone.value,
       userFullName: this.$store.state.user.details.fullName,
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE'),
+      userCanAdmin: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN'),
       selectedExpense: {},
       approveDropdown: false,
       approveConfirmLoading: false,
@@ -331,7 +337,7 @@ export default {
       glCodes: [],
       budgetTypes: [],
       headers: [
-        {text: '', value: 'selectBox', selectFilter: true, show: true, width: '50px'},
+        {text: '', value: 'selectBox', selectFilter: true, show: true, width: '50px', sortable: false},
         {text: 'Purchaser', value: 'expenseBudgetUser', show: true},
         {text: 'Amount', value: 'amount', show: true},
         {text: 'Expense Date', value: 'expenseDate', show: true},

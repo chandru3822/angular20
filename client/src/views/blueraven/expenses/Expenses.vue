@@ -4,7 +4,8 @@
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1 mb-1">
           <v-toolbar-title>
-            <v-btn fab text small color="primary" class="mr-2 hide-xs" @click="goToPath('')">
+            <v-btn fab text v-if="userIsAdmin"
+                   small color="primary" class="mr-2 hide-xs" @click="goToPath('')">
               <v-icon v-if="manage">mdi-view-list</v-icon>
               <v-icon v-else>settings</v-icon>
             </v-btn>
@@ -42,6 +43,7 @@
       return {
         snackbar: {},
         model: '',
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN'),
         tabs: [
           {
             label: 'Monthly Budgets',

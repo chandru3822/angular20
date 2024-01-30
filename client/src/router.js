@@ -244,25 +244,13 @@ const router = new Router({
               path: 'reimbursementRequests',
               name: 'reimbursementRequests',
               meta: {title: 'Albatross - Reimbursement Requests'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import ( './views/blueraven/expenses/ReimbursementRequests.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
+              component: () => import ( './views/blueraven/expenses/ReimbursementRequests.vue')
             },
             {
               path: 'submittedExpenses',
               name: 'submittedExpenses',
               meta: {title: 'Albatross - Submitted Expenses'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import ( './views/blueraven/expenses/SubmittedExpenses.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
+              component: () => import ( './views/blueraven/expenses/SubmittedExpenses.vue')
             },
             {
               path: 'glCodes',
