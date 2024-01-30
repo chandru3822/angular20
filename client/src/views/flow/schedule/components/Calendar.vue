@@ -213,6 +213,7 @@
               @change="getEvents(null)"
             />
         </v-col>
+        <v-col><v-btn @click="testEvents">test</v-btn></v-col>
       </v-row>
     </div>
     <div class="calendar-resize-container background-white pa-6">
@@ -428,21 +429,7 @@ import interaction from "@fullcalendar/interaction";
 
           resources: [],
           resourceAreaWidth: 300,
-          eventSources: [
-            { name: 'Regular Events',
-              events:[
-                {
-                  resourceId:123,
-                  title:'Annette Mayo',
-                  start: new Date(),
-                  classNames:['label-medium','event-style', 'pl-5'],
-                  textColor:" var(--v-accent-base)"
-                }
-              ],},
-            { name: 'Appt Events',
-              events: [] }
-          ],
-          // events:[
+          events:[
           //   {
           //     resourceId:123,
           //     title:'Annette Mayo',
@@ -450,7 +437,7 @@ import interaction from "@fullcalendar/interaction";
           //     classNames:['label-medium','event-style', 'pl-5'],
           //     textColor:" var(--v-accent-base)"
           //   }
-          // ],
+          ],
           defaultTimedEventDuration:'02:00',
 
           headerToolbar:{
@@ -694,6 +681,23 @@ import interaction from "@fullcalendar/interaction";
       }
     },
     methods: {
+      testEvents(){
+        this.calendarApi.addEventSource( [
+          {
+            allDay: false,
+            dayOfWeekId: 5,
+            daylightSavings: null,
+            end: "2024-01-29T21:30:00+00:00",
+            isSlotTime:true,
+            display: "inverse-background",
+            backgroundColor: 'lightpink',
+            resourceId: 123,
+            groupId: 123,
+            start: "2024-01-29T20:00:00+00:00",
+            systemListTypeId: 2,
+          }
+        ])
+      },
       switchToDayView(dayOption){
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
@@ -865,17 +869,19 @@ import interaction from "@fullcalendar/interaction";
             timezone: this.timezone
           }
           const {data} = await postRequest(`/schedule/availability`, params)
+          debugger
+          console.log('return data', data);
           data?.forEach(d => {
             if (d.allDay) {
               d.start = moment.utc(d.start).format('YYYY-MM-DD')
               d.end = moment.utc(d.end).format('YYYY-MM-DD')
             }
 
-            d.groupId = `${d.systemListTypeId}${d.resourceId}`
-            d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-            d.color = 'var(--v-grey-darken1)'
+            d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
+            d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
+            d.backgroundColor = 'var(--v-grey-darken1)'
 
-            if(!d.isSlotTime && d.rendering === 'inverse-background') {
+            if(!d.isSlotTime && (d.display === 'inverse-background' || d.display ==='inverse-background')) {
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -900,18 +906,20 @@ import interaction from "@fullcalendar/interaction";
           this.calendarOptions.resources.forEach(r => {
             data.push({
                 start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-                end: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+                end: moment.utc(this.calendarStartTime).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
                 title: null,
-                rendering: 'inverse-background',
+                display: 'background',
                 allDay: false,
                 //these values have already been pre-appended with the 1 or 2
                 groupId: r.id,
                 resourceId: r.id,
-                color: 'var(--v-grey-darken1)'
+                backgroundColor: 'var(--v-grey-darken1)'
               })
           })
 
           this.calendarOptions.eventSources[1].events = cloneDeep(data)
+          this.calendarApi.addEventSource(this.calendarOptions.eventSources[1])
+          debugger
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
@@ -985,6 +993,7 @@ import interaction from "@fullcalendar/interaction";
               })
               // console.log('the events: ',data)
               this.calendarOptions.eventSources[0].events = cloneDeep(data)
+              this.calendarApi.addEventSource(this.calendarOptions.eventSources[0])
 
               this.calendarLoading = false
             } catch (e) {
@@ -1029,7 +1038,7 @@ import interaction from "@fullcalendar/interaction";
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
       handleEventClick (info) {
-        if(info.event.title && !info.event.rendering) {
+        if(info.event.title && !info.event.display && !info.event.display) {
           let props = info.event.extendedProps
           //open event clicks in new window every time so they dont have to keep reloading the calendar
           let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
@@ -1038,14 +1047,14 @@ import interaction from "@fullcalendar/interaction";
         }
       },
       handleEventRender (info) {
-        //3 types of rendering. null = regular scheduled events,
+        //3 types of display. null = regular scheduled events,
         // background = blocked out from start to end, (resource_appointments)
         // inverse-background = blocked before start and after end (resource_schedule_availability)
-        if(info.event.rendering === 'background') {
+        if(info.event.display === 'background' || info.event.display === 'background') {
           info.el.textContent = info.event.title
           info.el.style.cssText += `font-size: 11px; padding-left: 5px; cursor: default; margin-left: 1px; margin-right: 1px; opacity: 1; color: black; overflow: hidden; border: solid 1px black;`
           info.el.title = info.event.title + ': ' + moment(info.event.start).format('h:mm') + '-' + moment(info.event.end).format('h:mm')
-        } else if(info.event.rendering !== 'inverse-background') {
+        } else if(info.event.display !== 'inverse-background' && info.event.display !== 'inverse-background') {
           info.el.querySelector('.fc-title').innerHTML = info.event.title
           info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
           //this gives normal events a hover

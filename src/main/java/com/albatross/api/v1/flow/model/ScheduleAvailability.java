@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 public class ScheduleAvailability {
 
   private Long resourceId, dayOfWeekId, systemListTypeId;
-  private String rendering, title;
+  private String display, title;
   private Boolean allDay;
   private Timestamp start, end;
 
