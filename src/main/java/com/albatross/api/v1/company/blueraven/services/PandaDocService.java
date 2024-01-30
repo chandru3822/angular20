@@ -552,6 +552,7 @@ public class PandaDocService {
     log.debug("PANDADOC: sending projectId {} document {}", projectId, documentId);
     JSONObject body = new JSONObject();
     body.put("message", getNotification(tokens, leadSource));
+    body.put("sender", Map.of("email", "support@blueravensolar.com"));
 
     HttpResponse resp = POST("/documents/" + documentId + "/send", body.toString());
     String respBody = resp.getBody();

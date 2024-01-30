@@ -261,7 +261,7 @@ public class ContactService {
     //we can check the user_id cuz if they are saving to the contact it should be the same
     if(user.getCompanyId() == 3L) {
       //if BR call blueraven service level stuff
-      blueravenCustomBehaviorService.handleCustomContactCreation(contactId, null == cId, request.getCfvs());
+      blueravenCustomBehaviorService.handleCustomContactCreation(contactId, null == cId, request.getCfvs(), cfgs);
     }
 
     ContactWithCfvs responseBody = new ContactWithCfvs();

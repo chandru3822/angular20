@@ -10,6 +10,7 @@ import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQ
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.google.common.collect.Maps;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -253,5 +254,12 @@ public class CompanyDashboardService {
       null, null));
 
     return ranges;
+  }
+
+  public void callCompanyDashboardSetup(@Nullable LocalDate date){
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("date", date);
+
+    sqlCache.updateBySql(CompanyDashboardQuery.callCompanyDashboardSetup, params);
   }
 }

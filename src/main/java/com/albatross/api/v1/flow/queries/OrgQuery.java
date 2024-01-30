@@ -3,9 +3,7 @@ package com.albatross.api.v1.flow.queries;
 public class OrgQuery {
 
   //language=PostgreSQL
-  public final static String orgStructureRefresh = """
-    call flow.process_org_structure_refresh()
-        """;
+  public final static String orgStructureRefresh = "call flow.process_org_structure_refresh()";
 
   //language=PostgreSQL
   public final static String getAllForCompany = """
@@ -408,6 +406,7 @@ select oat.id,
       where uoa.user_id = :userId
           and uoa.archived is not true
           and o.archived is not true
+          and o.active_flag is true
           and (o.company_id = :companyId OR o.available_to_children is true)
       order by o.org_name
     """;
@@ -426,6 +425,7 @@ select oat.id,
       where uoa.user_id = :userId
           and uoa.archived is not true
           and o.archived is not true
+          and o.active_flag is true
           and (o.company_id = :companyId OR o.available_to_children is true)
       order by o.org_name
     """;

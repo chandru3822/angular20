@@ -76,4 +76,6 @@ public class CompanyDashboardQuery {
   public final static String getGetCompanyDashboardTriumvirate = """
       select * from brs.reporting_period_triumvirate(:today::date);
     """;
+
+  public final static String callCompanyDashboardSetup = "call brs.rpt_company_dashboard_setup(:date)";
 }

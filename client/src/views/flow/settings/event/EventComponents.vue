@@ -3,12 +3,12 @@
     <v-row>
       <v-col cols="12" class="pt-0 px-0">
         <v-toolbar flat class="header-bar">
-          <v-toolbar-title class="title-large">Event Status Types</v-toolbar-title>
+          <v-toolbar-title class="title-large text-wrap">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNewEventStatusType = !addNewEventStatusType, expanded = [], getCompanyEventStatusTypes()]" v-if="userCanAdd">
               <v-icon v-if="!addNewEventStatusType">add</v-icon>
-              {{ addNewEventStatusType ? 'Cancel' : 'Add Event Status Type' }}
+              <span v-if="$vuetify.breakpoint.mdAndUp">{{ addNewEventStatusType ? 'Cancel' : 'Add Event Status Type' }}</span>
             </v-btn>
             <v-btn text color="primary" @click="expandEsst = !expandEsst">
               <v-icon v-if="!expandEsst">mdi-chevron-down</v-icon>
@@ -41,7 +41,7 @@
             hide-default-footer
             :items-per-page="-1"
             disable-sort
-            class="elevation-1 square-card mb-2"
+            class="elevation-1 square-card mb-2 table-striped"
           >
             <template #no-data>
               <span class="default-text-color">No available event status types</span>
@@ -51,17 +51,15 @@
               <span class="default-text-color">No available event status types</span>
             </template>
 
-            <template #item="{ item, index }">
-              <tr class="clickable" :class="{'shaded-row': index % 2}">
-                <td class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></td>
-                <td class="text-left">{{ item.rootEventStatusType }}</td>
+
+                <template #item.statusType="{item}" class="text-left"><a href="/settings/eventStatuses">{{ item.eventStatusType }}</a></template>
+                <template #item.category="{item}" class="text-left">{{ item.rootEventStatusType }}</template>
                 <td class="text-right">
                   <div class="flex-display align-center">
                     <v-btn small text color="primary" v-if="userCanEdit" @click="eventStatusTypeToDelete=item"><v-icon>delete</v-icon></v-btn>
                   </div>
                 </td>
-              </tr>
-            </template>
+
           </v-data-table>
         </div>
       </v-col>
@@ -71,8 +69,8 @@
         <v-toolbar flat class="header-bar">
           <v-toolbar-title class="title-large">Event Access Control</v-toolbar-title>
         </v-toolbar>
-        <v-card flat color="rowShadeCustom" class="square-card mt-2">
-          <v-card-text>
+        <v-card flat color="rowShadeCustom" class="square-card mt-2 d-flex">
+          <v-card-text class="d-flex flex-column">
             <multi-select-group
               v-if="!eventLoading"
               :userCanEdit="userCanEdit"
@@ -85,15 +83,13 @@
               :alternateLabel = "'Denied Positions'"
               :allow="event.hiddenAllow"
               :contentLoading="positionsLoading"
+              :full-size="$vuetify.breakpoint.smAndDown"
+              :save-button="userCanEdit"
               @selected-changed="hiddenSelectedEventListener"
               @allow-changed="hiddenAllowEventListener"
-              @checkbox-changed="hiddenCheckboxEventListener"></multi-select-group>
-            <br/>
-            <v-btn v-if="userCanEdit" color="primary" class="d-inline-block"
-                   @click="saveHiddenAndWhiteList">
-              <v-icon class="mr-2">save</v-icon>
-              Save
-            </v-btn>
+              @checkbox-changed="hiddenCheckboxEventListener"
+              @save-multi-select="saveHiddenAndWhiteList"
+            ></multi-select-group>
           </v-card-text>
         </v-card>
       </v-col>
@@ -110,11 +106,13 @@ import Vue2Filters from "vue2-filters"
 import orderBy from "lodash.orderby"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import cloneDeep from "lodash.clonedeep";
+import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
 
 export default {
   name: 'EventComponents',
   mixins: [Vue2Filters.mixin],
   components: {
+    MultiSelectGroup,
     ConfirmationDialog,
     draggable
   },
@@ -315,4 +313,5 @@ export default {
   border-bottom: 1px solid #E6E6E6;
 
 }
+
 </style>

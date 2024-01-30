@@ -6,10 +6,10 @@
                            @click="toggleCollapseExpand"
   >
     <template v-slot:tool-btn>
-      <v-btn text color="primary" x-small class="d-inline-block" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon small>mdi-view-list</v-icon></v-btn>
+      <v-btn text color="primary" class="pa-2 mx-2" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon small>mdi-format-list-bulleted</v-icon></v-btn>
     </template>
     <template v-slot:expanded-content>
-      <ActiveProjectProcessStepSnippet class="px-4"
+      <ActiveProjectProcessStepSnippet class="px-3"
                                        :steps="processSteps"
                                        :projectId="projectId"
                                        :contactId="project.contactId"/>
@@ -27,7 +27,6 @@
               :process-id="project.processId"
               :contact-id="project.contactId"
               @step-added="getProcessSteps"
-              :largeBtn="true"
               :outlined="true"
           />
         </v-col>

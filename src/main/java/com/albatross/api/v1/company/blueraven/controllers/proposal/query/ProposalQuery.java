@@ -499,7 +499,7 @@ where p.id = :proposalId
 
   //language=PostgreSQL
   public final static String postalCodeApproved = """
-      select * from brs.check_project_zipcode(:projectId::bigint)
+      select * from brs.check_project_zipcode(:projectId::bigint) as approved
     """;
 
   //language=PostgreSQL

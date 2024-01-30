@@ -57,7 +57,7 @@
       </div>
 <!--Topic View-->
       <div v-if="!timelineView">
-        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available </div>
+        <div v-if="sortedFilteredActivities?.length === 0" class="body-large">No available notes or activities</div>
         <div v-else>
         <div v-for="type in filteredTopics" class="title-medium" id="topic-activity-type-header">
           <span>{{ type.activityType }}</span><!--Activity Type (Notes or Activities) Header-->
@@ -296,9 +296,6 @@ export default {
         this.getActivityTopics()
       }
     },
-    sortedFilteredActivities: function (){
-      this.getPinnedActivitiesOnly()
-    },
     searchText: function () {
       this.$emit('scrollToTop')
       if(!this.search.userId && !this.search.position && !this.search.teamId && this.search.categoryId !== -1) {
@@ -333,6 +330,7 @@ export default {
 
       }), ['dateCreated'], [ this.sortDirection])
 
+      this.getPinnedActivitiesOnly(this.activities)
       if(sortedList.length > (this.activitiesToShow * this.bottomHitCount) ) {
         if(this.$refs.activityList) {
           this.$refs.activityList.infiniteStateLoaded(false)
@@ -383,9 +381,6 @@ export default {
     this.getUsers()
   },
   methods: {
-    testing($event){
-      console.log($event)
-    },
     cloneDeep,
     bottomHitCallback() {
       this.bottomHitCount = this.bottomHitCount + 1
@@ -417,8 +412,8 @@ export default {
       })
 
     },
-    getPinnedActivitiesOnly() {
-      const sortedFilteredPinnedActivities = cloneDeep(this.sortedFilteredActivities).filter(a => a.pinned)
+    getPinnedActivitiesOnly(activities) {
+      const sortedFilteredPinnedActivities = activities.filter(a => a.pinned)
       if(this.pinnedActivitiesOnly.length === 0 || sortedFilteredPinnedActivities.length !== this.pinnedActivitiesOnly.length){
         //if-statement needed so we don't open the menu on the pinned note when we open the menu on the non-pinned copy of the note
         // but we still get the update when we pin/unpin a note
@@ -499,7 +494,6 @@ export default {
       try {
         const {data} = await getRequest('/user/mentionableUsers', null, [])
         this.users = data
-        console.log(this.users[0])
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')

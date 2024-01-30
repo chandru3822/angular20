@@ -12,7 +12,7 @@
             <div class="d-flex justify-start align-center">
               <v-btn
                 icon
-                @click="router.go(-1)"
+                @click="router.push('/smartlist')"
               >
                 <v-icon>mdi-chevron-left</v-icon>
               </v-btn>
@@ -36,15 +36,15 @@
               >
                 {{ report.name }}
 
-                <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               </span>
+              <span class="owner-display pl-2">{{ (isOwner) ? 'Owner' : report.owner }}</span>
               <v-btn
-                v-if=" report?.id && (isOwner || isSmartlistAdmin || isSystemAdmin)"
-                class="ml-6 mt-1"
+                v-if="report?.id && canView"
+                color="primary"
                 text
                 @click="router.push(`/smartlistv1/${report.id}`)"
               >
-                <v-icon>mdi-eye</v-icon>
+                <v-icon class="mr-1">mdi-eye</v-icon>
                 View old smartlist editor
               </v-btn>
             </div>
@@ -745,6 +745,11 @@ const windowLeave = async (event) => {
     font-size: 20px;
     font-weight: 700;
     letter-spacing: normal;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 200px;
 
     &:hover {
       cursor: pointer;

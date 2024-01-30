@@ -705,6 +705,17 @@ public class ProjectProcessStepEventService {
     sqlCache.updateBySql(sql, params);
   }
 
+  public List<Attachment> addAttachments(MultipartFile[] files, Long projectProcessStepEventId, Long attachmentTypeId) throws IOException {
+    List<Attachment> results = new ArrayList<>();
+    Attachment a;
+    for(MultipartFile file : files) {
+      a = addAttachment(file, projectProcessStepEventId, attachmentTypeId, file.getOriginalFilename());
+      results.add(a);
+    }
+
+    return results;
+  }
+
   // @TODO: this needs to work better with the attachment service's create method. Too much duped
   // code right now and I hate it
   public Attachment addAttachment(

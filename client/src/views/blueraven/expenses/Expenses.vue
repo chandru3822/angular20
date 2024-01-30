@@ -31,25 +31,29 @@
       return {
         snackbar: {},
         model: '',
-        tabs: [ {
+        tabs: [
+          {
+            label: 'Budget Types',
+            path: '/expenses/budgetTypes',
+            display: this.$store.getters.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'Monthly Budgets',
+            path: '/expenses/monthlyBudgets',
+            display: this.$store.getters.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'GL Codes',
+            path: '/expenses/glCodes',
+            display: this.$store.getters.userHasFeature('EXPENSES')
+          },
+        {
           label: 'Reimbursement Requests',
           path: '/expenses/reimbursementRequests',
           display: this.$store.getters.userHasFeature('EXPENSES')
         }, {
           label: 'Submitted Expenses',
           path: '/expenses/submittedExpenses',
-          display: this.$store.getters.userHasFeature('EXPENSES')
-        }, {
-          label: 'GL Codes',
-          path: '/expenses/glCodes',
-          display: this.$store.getters.userHasFeature('EXPENSES')
-        }, {
-          label: 'Monthly Budgets',
-          path: '/expenses/monthlyBudgets',
-          display: this.$store.getters.userHasFeature('EXPENSES')
-        }, {
-          label: 'Budget Types',
-          path: '/expenses/budgetTypes',
           display: this.$store.getters.userHasFeature('EXPENSES')
         }]
       }

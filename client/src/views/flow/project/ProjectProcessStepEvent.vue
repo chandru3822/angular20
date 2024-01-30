@@ -166,6 +166,7 @@
           </a>
         </div>
         <v-card class="square-card px-4 pt-4 mt-4">
+
           <v-autocomplete
             v-model="selectedEvent.companyEventStatusTypeId"
             :items="companyEventStatuses"
@@ -910,9 +911,9 @@ export default {
           //we only send up the status if it changed. sql handles whether to save the value or not
           companyEventStatusTypeId: this.statusChanged ? this.selectedEvent.companyEventStatusTypeId : null,
           customFieldValues: this.dirtyCfvs,
-          forceSave: forceSave
+          forceSave: (forceSave || (this.selectedEvent.companyEventStatusTypeId === 4))
         }
-        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/${forceSave}`, params)
+        const {data} = await putRequest(`/projectProcessStep/${this.projectProcessStepId}/event/${this.selectedEvent.id}/${params.forceSave}`, params)
         this.statusChanged = false
         this.dirtyCfvs = []
         this.$refs.ppseFieldsContainer.$el.scrollTop = 0

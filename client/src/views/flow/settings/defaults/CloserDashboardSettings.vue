@@ -84,6 +84,8 @@ const uploadFile = async(imageType, files, attachmentTypeId, sourceId, sizeLimit
       callback: async (img, error) => {
         if (error?.error) {
           snackbar = getSnackbar('ERROR', error.errorMsg)
+          store.commit(AppMutations.SHOW_SNACK, snackbar)
+          store.commit(AppMutations.SET_LOADING, false)
         } else {
           ImageTypeEnum.value[imageType.key].image = img
           ImageTypeEnum.value[imageType.key].add = false
@@ -186,5 +188,13 @@ onMounted(async () => {
 </template>
 
 <style scoped lang="scss">
-
+.company-logo-background {
+  background-color: #bbbbbb;
+}
+.company-logo {
+  margin-top: 15px;
+  max-width: 100%;
+  height: auto;
+  max-height: 300px;
+}
 </style>

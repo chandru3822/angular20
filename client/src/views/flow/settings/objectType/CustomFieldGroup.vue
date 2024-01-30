@@ -49,17 +49,13 @@
         :alternateLabel = "'Denied Positions'"
         :allow="objectType.ownerReadOnlyAllow"
         :contentLoading="objectTypeLoading"
+        :full-size="isMobile"
+        :save-button="true"
         @selected-changed="objectTypeReadOnlySelectedEventListener"
         @allow-changed="objectTypeReadOnlyAllowEventListener"
-        @checkbox-changed="objectTypeReadOnlyCheckboxEventListener"></multi-select-group>
-
-      <v-card-text>
-        <v-btn v-if="userCanEdit" color="primary" dark class="d-inline-block white--text"
-               @click="saveOwnerReadOnlyAndWhiteList()">
-          <v-icon class="mr-2">save</v-icon>
-          Save
-        </v-btn>
-      </v-card-text>
+        @checkbox-changed="objectTypeReadOnlyCheckboxEventListener"
+        @save-multi-select="saveOwnerReadOnlyAndWhiteList"
+      ></multi-select-group>
     </v-card>
     <v-row>
       <v-col cols="12" class="shrink pt-0">
@@ -438,11 +434,13 @@ import Sortable from 'sortablejs'
 import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getRequestWithParams, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import MultiSelectGroup from "@/components/MultiSelectGroup.vue";
 
 export default {
   name: 'CustomFieldGroup',
   mixins: [Vue2Filters.mixin],
   components: {
+    MultiSelectGroup,
     ConfirmationDialog,
     draggable,
   },
