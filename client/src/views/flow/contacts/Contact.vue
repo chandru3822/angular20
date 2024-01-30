@@ -771,9 +771,7 @@ export default {
       this.$router.push(path)
     },
     async validateFields(saveContact) {
-      let valid = this.$ref        <v-btn fab text small color="primary" class="mr-2 hide-xs" @click="goToPath('/contacts')">
-          <v-icon>mdi-view-list</v-icon>
-    </v-btn>s.contactForm?.validate()
+      let valid = this.$refs.contactForm?.validate()
       if (valid && saveContact) {
         this.fieldsSaving = true
         await this.saveCustomFieldValues()
