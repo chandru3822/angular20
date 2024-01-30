@@ -11,6 +11,23 @@ BEGIN
            (date_trunc('month', current_date) + interval '2 month' - interval '1 day')::date
            into v_next_month_start, v_next_month_end;
 
+    --archive any templates for inactive users
+    with inactive_user_templates  as (
+        select tem.id
+        from brs.budget_template tem
+         INNER JOIN flow.company_user_status cus on cus.user_id = tem.user_id
+         INNER JOIN flow.user_status_type ust on ust.id = cus.user_status_type_id and ust.company_id = 3
+        where ust.has_access is false
+        and tem.archived is false
+    )
+    update brs.budget_template tem2
+        set archived = true,
+            date_modified = now(),
+            modified_by_id = 99999999
+    from inactive_user_templates iut
+    where iut.id = tem2.id;
+
+    --create the new budgets
     for r in SELECT
                  tem.amount,
                  tem.user_id

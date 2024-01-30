@@ -130,11 +130,11 @@ public class ExpenseBudgetService {
   }
   // end budget templates here
 
-  public List<ExpenseBudget> getBudgets() {
-    return sqlCache.queryBySql(ExpenseBudgetQuery.getAll, Collections.emptyMap(), ExpenseBudget.class);
-  }
+  public List<ExpenseBudget> getBudgets(String startDate) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("startDate", startDate);
 
-  public void generateCurrentMonthBudgetFromTemplate(BudgetTemplate template) {
+    return sqlCache.queryBySql(ExpenseBudgetQuery.getAllInMonth, params, ExpenseBudget.class);
   }
 
   public Optional<ExpenseBudget> updateBudget(ExpenseBudget expenseBudget) {

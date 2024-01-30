@@ -63,8 +63,8 @@ public class ExpenseBudgetController {
   //end budget templates here
 
   @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ExpenseBudget> getBudgets() {
-    return expenseBudgetService.getBudgets();
+  public List<ExpenseBudget> getBudgets(@RequestParam String startDate) {
+    return expenseBudgetService.getBudgets(startDate);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)

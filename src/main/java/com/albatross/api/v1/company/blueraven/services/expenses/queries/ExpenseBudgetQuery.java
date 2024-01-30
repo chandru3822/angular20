@@ -123,14 +123,7 @@ public class ExpenseBudgetQuery {
     """;
 
   //language=PostgreSQL
-  public final static String getAll = """
-    WITH single_row AS (SELECT
-                          eb.user_id,
-                          eb.original_expense_budget_id,
-                          max(eb.date_created) date_created
-                        FROM brs.expense_budget eb
-                        WHERE eb.archived is not true
-                        GROUP BY eb.user_id, eb.original_expense_budget_id)
+  public final static String getAllInMonth = """
     SELECT
       eb.id,
       eb.start_date,
@@ -144,9 +137,9 @@ public class ExpenseBudgetQuery {
       eb.date_modified,
       eb.original_expense_budget_id
     FROM brs.expense_budget eb
-           INNER JOIN single_row sr on sr.user_id = eb.user_id and sr.original_expense_budget_id = eb.original_expense_budget_id and sr.date_created = eb.date_created
            INNER JOIN flow."user" u on u.id = eb.user_id
     WHERE eb.archived is not true
+      and eb.start_date = :startDate::date
     ORDER BY user_full_name, start_date
     """;
 

@@ -3,12 +3,37 @@
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar">
-          <v-toolbar-title class="app-title">Monthly Budgets</v-toolbar-title>
+          <v-toolbar-title class="app-title">
+            <div class="flex-display">
+              Monthly Budgets for:
+              <v-select v-model="startMonth"
+                        :items="months"
+                        hide-details
+                        class="mx-2 range-selector"
+                        single-line
+                        outlined
+                        dense
+                        label="Month"
+                        item-text="name"
+                        item-value="id"
+                        @input="getBudgets"
+              ></v-select>
+              <v-select v-model="startYear"
+                        :items="years"
+                        hide-details
+                        class="range-selector"
+                        single-line
+                        outlined
+                        dense
+                        label="Year"
+                        item-text="name"
+                        item-value="id"
+                        @input="getBudgets"
+              ></v-select>
+            </div>
+          </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[showPastBudgets = !showPastBudgets]">
-              {{showPastBudgets ? 'Hide Past Budgets' : 'Show Past Budgets'}}
-            </v-btn>
             <v-btn text color="primary" @click="[createNew = !createNew, newBudget = {}, expanded = [], getAvailableUsers()]">
               <v-icon v-if="!createNew">add</v-icon>
               {{createNew ? 'cancel' : 'Add Budget'}}
@@ -152,7 +177,15 @@
 
 <script>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  getRequestWithParams,
+  postRequest,
+  getSnackbar,
+  deleteRequest,
+  getMonthDateRange
+} from '@/helpers/helpers'
 import moment from 'moment'
 import constants from "@/helpers/constants"
 import DatetimePickerInput from "@/components/DatetimePickerInput"
@@ -177,6 +210,8 @@ export default {
       years: [],
       selectedMonth: parseInt(moment().format('M')),
       selectedYear: parseInt(moment().format('YYYY')),
+      startMonth: parseInt(moment().format('M')),
+      startYear: parseInt(moment().format('YYYY')),
       yearStart: 2017,
       yearEnd: parseInt(moment().format('YYYY')),
       months: constants.MONTHS,
@@ -216,18 +251,17 @@ export default {
       this.selectedYear = parseInt(moment(item.endDate).format('YYYY'))
     },
     filterBudgets() {
-      if(this.showPastBudgets) {
-        return this.budgets.filter(b => !b.archived)
-      } else {
-        return this.budgets.filter(b => {
-          return moment(b.endDate).isSameOrAfter(moment().startOf('day')) && !b.archived
-        })
-      }
+      return this.budgets?.filter(b => !b.archived)
     },
     async getBudgets() {
+      this.budgets = []
       this.dataLoading = true
       try {
-        const {data, status} = await getRequest(`/expenseBudgets/list`, 'blueraven')
+        const { startDate } = getMonthDateRange(this.startMonth, this.startYear)
+        let params = {
+          startDate
+        }
+        const {data, status} = await getRequestWithParams(`/expenseBudgets/list`, {params}, 'blueraven')
         this.budgets = data
         this.dataLoading = false
       } catch (e) {
