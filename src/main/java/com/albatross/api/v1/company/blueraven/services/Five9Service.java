@@ -89,14 +89,6 @@ public class Five9Service {
         ZonedDateTime zonedDateTime = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
         b.addParameter("time_created_mst", formatterTime.format(Date.from(zonedDateTime.toInstant())));
         b.addParameter("date_created_mst", formatterDate.format(new Date()));
-
-        if (!dncValueSet) {
-          b.addParameter("DNC", "false");
-        }
-
-        if (!referralValueSet) {
-          b.addParameter("referral", "false");
-        }
       }
 
       if (leadLevel == 40L) {
@@ -240,6 +232,14 @@ public class Five9Service {
           b.addParameter("follow_up_date_time", cfv.getTimestampValue() == null ? "" : cfv.getTimestampValue().toString());
         }
       }
+    }
+
+    if (!dncValueSet) {
+      b.addParameter("DNC", "false");
+    }
+
+    if (!referralValueSet) {
+      b.addParameter("referral", "false");
     }
   }
 
