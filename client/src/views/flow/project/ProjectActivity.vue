@@ -209,6 +209,7 @@ export default {
       type: Boolean,
       default: true
     },
+    showNotes: Boolean,
     collapseBtnIcon: String
   },
   watch: {
