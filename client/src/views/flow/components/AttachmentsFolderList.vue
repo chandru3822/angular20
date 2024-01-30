@@ -36,19 +36,33 @@
           single-line
           hide-details
         ></v-text-field>
-        <v-btn class="my-4 mr-3"  :color="compare ? 'white' : 'primary'"
-               :class="{'primary--text': compare, 'white--text' : !compare}"
-               small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
-               v-if="compare">
-          Cancel Comparison
-        </v-btn>
-        <v-btn color="primary" small class="my-4" @click="showCompareModal = true" v-if="compare "
-               :disabled="selectedAttachmentsForCompare.length === 0">
-          Confirm Comparison
-        </v-btn>
-        <v-btn small color="primary" class="my-4" @click="compare = true" v-else-if="!isMobile">
-          Compare
-        </v-btn>
+        <div class="d-flex justify-space-between flex-wrap">
+          <div class="my-2" :class="{'text-no-wrap' : $vuetify.breakpoint.lgAndUp}">
+            <v-btn  class="my-2 mr-3" :color="compare ? 'white' : 'primary'"
+                    :class="{'primary--text': compare, 'white--text' : !compare}"
+                    small @click="[cancelResetKey++, selectedAttachmentsForCompare = [], compare = false]"
+                    v-if="compare">
+              Cancel Comparison
+            </v-btn>
+            <v-btn color="primary" class="my-2" small @click="showCompareModal = true" v-if="compare "
+                   :disabled="selectedAttachmentsForCompare.length === 0">
+              Confirm Comparison
+            </v-btn>
+            <v-btn small color="primary" class="my-2" @click="compare = true" v-else-if="!isMobile">
+              Compare
+            </v-btn>
+          </div>
+          <div class="text-no-wrap display-empty-folder-toggle">
+            <label class="mr-3">
+              {{ this.hideEmptyFolderDisplayName }}
+            </label>
+            <v-switch
+              @change="$emit('toggleEmptyFolders')"
+              :disabled="disableHideEmptyFolderSwitch"
+              v-model="hideEmptyFolderStatus"
+            ></v-switch>
+          </div>
+        </div>
       </div>
       <v-toolbar v-if="this.search != null && this.search !== '' && filteredAttachmentTypes.length > 0" dense color="transparent" class="elevation-0 cfg-name-toolbar px-5">
         <v-toolbar-title :class="{'albatross-header-4-new': !this.smallTitle,
@@ -73,7 +87,7 @@
         <div v-if="filteredAttachmentTypes.length === 0" class="body-medium text-center">No documents found.</div>
         <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
           <v-expansion-panel v-for="(type, index) in filteredAttachmentTypes" :key="type.attachmentTypeId">
-            <v-expansion-panel-header class="albatross-body-1">
+            <v-expansion-panel-header v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === true" class="albatross-body-1">
               <template v-slot:default="{ open }">
                 <v-row v-if="(allowUpload || forceShowUploadBtn)"
                        class="file-hover d-flex"
@@ -141,7 +155,7 @@
                 :count-selected="selectedAttachmentsForCompare.length"
               ></AttachmentsTable>
             </v-expansion-panel-content>
-            <v-divider v-if="index !== attachmentTypes.length - 1" class="mx-3"></v-divider>
+            <v-divider v-if="index !== attachmentTypes.length - 1 && (getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === true)" class="mx-3"></v-divider>
           </v-expansion-panel>
         </v-expansion-panels>
       </v-card>
@@ -181,6 +195,7 @@ export default {
     allowUpload: Boolean,
     loadLinked: Boolean,
     focused: Boolean,
+    hideEmptyFolderStatus: Boolean,
     smallTitle: Boolean,
     title: String,
     activityTab: Boolean, //this tells us whether to show the search and compare buttons
@@ -228,7 +243,8 @@ export default {
       sortOldToNew: false,
       compare: false,
       showCompareModal: false,
-      opened:[]
+      opened:[],
+      emptyFolderToggleState: null,
     }
   },
   watch: {
@@ -289,7 +305,14 @@ export default {
     },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
+    },
+    hideEmptyFolderDisplayName() {
+      return this.hideEmptyFolderStatus === true ? 'Hide Empty Folders' : 'Show Empty Folders'
+    },
+    disableHideEmptyFolderSwitch() {
+      return this.search != null && this.search !== ''
     }
+
   },
   mounted() {
     if (this.loadLinked) {
@@ -397,6 +420,7 @@ export default {
       }
     },
     fetchAttachmentTypes: async function (typeParams) {
+      this.emptyFolderToggleState = this.hideEmptyFolderStatus
       this.attachmentTypesLoading = true
       const {data} = await getRequestWithParams(`/attachmentType${this.typePath}`, {
         params: {
@@ -424,6 +448,7 @@ export default {
       })
 
       this.attachments = orderBy(data, [a => a.dateCreated], this.sortOldToNew ? 'asc' : 'desc')
+      this.hideEmptyFolderStatus = this.emptyFolderToggleState
     },
 
     getTypeCount: function (typeId) {
@@ -603,4 +628,10 @@ export default {
 .child-drag-elements {
   pointer-events: none;
 }
+
+.display-empty-folder-toggle {
+  display: inline-flex;
+  align-items: center;
+}
+
 </style>
