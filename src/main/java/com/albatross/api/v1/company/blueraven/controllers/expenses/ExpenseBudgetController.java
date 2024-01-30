@@ -92,8 +92,9 @@ public class ExpenseBudgetController {
 
   @GetMapping(value = "/getMonthlyBudgetReport", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getMonthlyBudgetReport(@RequestParam String startDate,
-                                       @RequestParam String endDate) {
-    return expenseBudgetService.getMonthlyBudgetReport(startDate, endDate);
+                                       @RequestParam String endDate,
+                                       @RequestParam Long userId) {
+    return expenseBudgetService.getMonthlyBudgetReport(userId, startDate, endDate);
   }
 
   @GetMapping(value = "/budgetRemaining/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

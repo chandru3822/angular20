@@ -15,7 +15,7 @@ public class ExpenseBudget {
 
   private Long id, userId;
   private String userFullName, budgetType, notes, fullBudgetName;
-  private Double amount, totalExpenses, balance;
+  private Double amount, totalExpenses, balance, paid, pendingPayment, pendingApproval;
   private Date dateCreated, dateModified;
   private Boolean archived;
 

@@ -7,7 +7,8 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <v-btn text color="primary"
-                   @click="[createNew = !createNew, newReimbursementRequest = {expenseBudgetId: null}]">
+                   @click="[createNew = !createNew, selectedBudgetReport = {},
+                            newReimbursementRequest = {expenseBudgetId: null}]">
               <v-icon v-if="!createNew">add</v-icon>
               {{ createNew ? 'cancel' : 'Add Reimbursement Request' }}
             </v-btn>
@@ -16,24 +17,24 @@
         <v-divider></v-divider>
         <v-card flat v-if="createNew" class="pa-4">
           <h3>Add Expense Item</h3>
-<!--          <v-autocomplete v-model="newReimbursementRequest.userId"-->
-<!--                          :items="users"-->
-<!--                          :loading="usersLoading"-->
-<!--                          :search-input.sync="userSearchText"-->
-<!--                          label="Purchaser"-->
-<!--                          clearable-->
-<!--                          item-text="fullName"-->
-<!--                          item-value="id"-->
-<!--                          autocomplete="off"-->
-<!--                          type="search"-->
-<!--                          @click:clear="users = []"-->
-<!--          ></v-autocomplete>-->
+          <!--          <v-autocomplete v-model="newReimbursementRequest.userId"-->
+          <!--                          :items="users"-->
+          <!--                          :loading="usersLoading"-->
+          <!--                          :search-input.sync="userSearchText"-->
+          <!--                          label="Purchaser"-->
+          <!--                          clearable-->
+          <!--                          item-text="fullName"-->
+          <!--                          item-value="id"-->
+          <!--                          autocomplete="off"-->
+          <!--                          type="search"-->
+          <!--                          @click:clear="users = []"-->
+          <!--          ></v-autocomplete>-->
           <v-autocomplete v-model="newReimbursementRequest.expenseBudgetUserId"
                           :items="usersWithBudget"
                           label="Purchaser"
                           item-text="fullName"
                           item-value="id"
-                          @input="[newReimbursementRequest.expenseBudgetId = null, getBudgetsForUser(newReimbursementRequest.expenseBudgetUserId)]"
+                          @input="[newReimbursementRequest.expenseBudgetId = null, getBudgetsForUser(newReimbursementRequest.expenseBudgetUserId, false, true)]"
           ></v-autocomplete>
           <v-autocomplete v-model="newReimbursementRequest.expenseBudgetId"
                           :items="budgetsForUser"
@@ -42,8 +43,12 @@
                           :disabled="!newReimbursementRequest.expenseBudgetUserId"
                           item-text="fullBudgetName"
                           item-value="id"
-          >
+                          @change="getMonthlyBudgetReport(true)">
           </v-autocomplete>
+          <div v-if="newReimbursementRequest.expenseBudgetId">
+            <SpinnerInline v-if="loadingBudgetReport" :size="20" color="primary"/>
+            <BudgetReportTable v-else class="mb-4" :budget="selectedBudgetReport"></BudgetReportTable>
+          </div>
           <DatetimePickerInput
               v-model="newReimbursementRequest.expenseDate"
               :timezone="timezone"
@@ -119,7 +124,7 @@
               <td>
                 <div style="display: flex; justify-content: flex-end">
                   <v-btn small text color="primary"
-                         @click="[selectedRequest = item, getBudgetsForUser(item.expenseBudgetUserId), getRequestAttachmentPresignedUrl(item)]">
+                         @click="[selectedRequest = item, getBudgetsForUser(item.expenseBudgetUserId, true, false), getRequestAttachmentPresignedUrl(item)]">
                     <v-icon>edit</v-icon>
                   </v-btn>
                   <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
@@ -192,6 +197,7 @@
                                 :disabled="!selectedRequest.expenseBudgetUserId"
                                 item-text="fullBudgetName"
                                 item-value="id"
+                                @change="getMonthlyBudgetReport(false)"
                 >
                 </v-autocomplete>
                 <DatetimePickerInput
@@ -245,6 +251,8 @@
               </v-form>
             </v-col>
             <v-col cols="12" sm="7" class="pt-0">
+              <SpinnerInline v-if="loadingBudgetReport" :size="20" color="primary"/>
+              <BudgetReportTable v-else class="mb-4" :budget="selectedBudgetReport"></BudgetReportTable>
               <h3 class="mb-5">Receipt Image</h3>
               <v-img name="receiptImg" class="receipt-image" v-if="renderRequestImage"
                      alt="receipt-image" :src="selectedRequest.presignedUrl"></v-img>
@@ -285,12 +293,16 @@ import {
 } from './expenseService'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
+import SpinnerInline from "@/components/SpinnerInline.vue";
 
 export default {
   name: 'ReimbursementRequests',
   components: {
+    BudgetReportTable,
     ConfirmationDialog,
-    DatetimePickerInput
+    DatetimePickerInput,
+    SpinnerInline
   },
   computed: {
     itemToDeleteCreatedBy() {
@@ -319,6 +331,8 @@ export default {
       },
       reimbursementRequests: [],
       budgetsForUser: [],
+      selectedBudgetReport: {},
+      loadingBudgetReport: true,
       usersWithBudget: [],
       userId: this.$store.state.user.details.id,
       budgetTypes: [],
@@ -378,7 +392,7 @@ export default {
       })
     },
     filterReimbursementRequests() {
-      return this.reimbursementRequests.filter(glc => !glc.archived)
+      return this.reimbursementRequests?.filter(glc => !glc.archived)
     },
     async getReimbursementRequests() {
       this.dataLoading = true
@@ -427,7 +441,7 @@ export default {
       }
     },
     async validateAndApprove() {
-      if(this.$refs.editRequestForm.validate()) {
+      if (this.$refs.editRequestForm.validate()) {
         await this.approveRequest()
       }
     },
@@ -441,7 +455,7 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.selectedRequest = {}
         this.rejectDropdown = false
-        this.reimbursementRequests = this.reimbursementRequests.filter(rr => rr.id !== this.selectedRequest.id)
+        this.reimbursementRequests = this.reimbursementRequests?.filter(rr => rr.id !== this.selectedRequest.id)
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -460,7 +474,7 @@ export default {
 
         this.selectedRequest = {}
         this.rejectDropdown = false
-        this.reimbursementRequests = this.reimbursementRequests.filter(rr => rr.id !== item.id)
+        this.reimbursementRequests = this.reimbursementRequests?.filter(rr => rr.id !== item.id)
         handleHidingGlobalLoader(this, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -504,11 +518,38 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
       }
     },
-    async getBudgetsForUser(userId) {
+    async getMonthlyBudgetReport(isNew) {
+      let selectedBudget = this.budgetsForUser.find(b => b.id === (isNew ? this.newReimbursementRequest.expenseBudgetId : this.selectedRequest.expenseBudgetId))
+      if (selectedBudget && selectedBudget.startDate && selectedBudget.endDate) {
+        try {
+          this.loadingBudgetReport = true
+          const {data} = await getRequestWithParams(`/expenseBudgets/getMonthlyBudgetReport`, {
+                params: {
+                  startDate: selectedBudget.startDate,
+                  endDate: selectedBudget.endDate,
+                  userId: selectedBudget.userId
+                }
+              }, 'blueraven'
+              , [])
+          this.selectedBudgetReport = data && data.length > 0 ? data[0] : []
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.loadingBudgetReport = false
+        }
+      }
+    },
+    async getBudgetsForUser(userId, doReportLoad, isNew) {
       this.budgetsLoading = true
       try {
         const {data, status} = await getBudgetsForUser(userId)
         this.budgetsForUser = data
+        //dont await this. it will load separately
+        if(doReportLoad) {
+          this.getMonthlyBudgetReport(isNew)
+        }
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')

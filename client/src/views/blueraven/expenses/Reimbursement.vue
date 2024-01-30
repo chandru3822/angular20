@@ -129,48 +129,10 @@
             </v-card-text>
           </v-card>
 
-          <v-card class="mt-3">
-            <v-card-title class="primary lighten-9" primary-title>
-              Budget
-            </v-card-title>
-            <v-card-text class="pt-4">
-              <table class="detail-table" v-for="br in budgetReport">
-                <tr>
-                  <td class="detail-column detail-column-header" colspan="2">
-                    {{br.budget_name}}
-                  </td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color">Monthly Budget:</td>
-                  <td class="detail-column default-text-color text-right">{{ br.amount || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column clickable default-text-color">Pending Review:</td>
-                  <td class="detail-column default-text-color text-right">{{ br.pending_review || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color clickable">Pending Approval:</td>
-                  <td class="detail-column default-text-color text-right">{{ br.pending_approval || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color clickable">Pending Payment:</td>
-                  <td class="detail-column default-text-color text-right">{{ br.pending_payment || 0 | currency('$', 2) }}</td>
-                </tr>
-                <tr>
-                  <td class="detail-column default-text-color clickable">Paid:</td>
-                  <td class="detail-column default-text-color text-right">{{ br.paid || 0 | currency('$', 2) }}</td>
-                </tr>
-<!--                <tr>-->
-<!--                  <td class="detail-column">Other:</td>-->
-<!--                  <td class="detail-column text-right">{{ br.paid || 0 | currency('$', 2) }}</td>-->
-<!--                </tr>-->
-                <tr>
-                  <td class="detail-column default-text-color bold">Remaining Budget:</td>
-                  <td class="detail-column default-text-color text-right bold">{{ br.remaining_budget || 0 | currency('$', 2) }}</td>
-                </tr>
-              </table>
-            </v-card-text>
-          </v-card>
+          <div  v-for="br in budgetReport">
+            <BudgetReportTable :budget="br"></BudgetReportTable>
+          </div>
+
         </v-sheet>
       </v-col>
     </v-row>
@@ -193,12 +155,14 @@ import {Actions} from "@/store"
 import moment from 'moment'
 import {getBudgetsForUser, getBudgetTypes, getReimbursementRequestImage} from './expenseService'
 import SpinnerInline from "@/components/SpinnerInline.vue";
+import BudgetReportTable from "@/views/blueraven/expenses/BudgetReportTable.vue";
 
 export default {
   name: 'Reimbursement',
   components: {
     SpinnerInline,
-    DatetimePickerInput
+    DatetimePickerInput,
+    BudgetReportTable
   },
   computed: {
     selectedBudgetId () {
@@ -347,7 +311,8 @@ export default {
       const {data} = await getRequestWithParams(`/expenseBudgets/getMonthlyBudgetReport`, {
           params: {
             startDate: this.startDate,
-            endDate: this.endDate
+            endDate: this.endDate,
+            userId: this.userId
           }
         }, 'blueraven'
       , [])

@@ -198,11 +198,10 @@ public class ExpenseBudgetService {
     return sqlCache.getBySql(ExpenseBudgetQuery.getBudgetRemainingById, params, ExpenseBudget.class);
   }
 
-  public String getMonthlyBudgetReport(String startDate, String endDate) {
-    User currentUser = securityService.getCurrentUser();
+  public String getMonthlyBudgetReport(Long userId, String startDate, String endDate) {
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("userId", currentUser.getId());
+    params.put("userId", userId);
     params.put("startDate", startDate);
     params.put("endDate", endDate);
 

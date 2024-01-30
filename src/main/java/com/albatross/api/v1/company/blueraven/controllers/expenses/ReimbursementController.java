@@ -97,4 +97,14 @@ public class ReimbursementController {
                                                         @RequestParam String endDate) {
     return reimbursementService.getApprovedRequests(startDate, endDate);
   }
+
+  @GetMapping(value = "/requests/unpaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getUnpaidRequests() {
+    return reimbursementService.getUnpaidRequests();
+  }
+
+  @PostMapping(value = "/requests/markPaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void markRequestsPaid(@RequestBody List<ReimbursementRequest> requests) {
+    reimbursementService.markRequestsPaid(requests);
+  }
 }

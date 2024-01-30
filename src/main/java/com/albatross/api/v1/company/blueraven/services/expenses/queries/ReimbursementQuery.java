@@ -63,9 +63,11 @@ public class ReimbursementQuery {
 
   //language=PostgreSQL
   public final static String insert = """
-    INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id, 
-          expense_date, reimbursement_request_status_id, budget_type_id, gl_code_id)
-    values(:amount, :details, :attachmentId, :expenseBudgetId, :createdById, :expenseDate, :statusId, :budgetTypeId, :glCodeId);
+    INSERT INTO brs.reimbursement_request(amount, details, attachment_id, expense_budget_id, created_by_id,
+          expense_date, reimbursement_request_status_id, budget_type_id, gl_code_id,
+          approval_date, approved_by_id)
+    values(:amount, :details, :attachmentId, :expenseBudgetId, :userId, :expenseDate, :statusId, :budgetTypeId, :glCodeId,
+        case when :setApprovalFields::boolean is true then now() end, case when :setApprovalFields::boolean is true then :userId end);
     """;
 
   //language=PostgreSQL
@@ -106,12 +108,13 @@ public class ReimbursementQuery {
   public final static String deleteRequest = """
     UPDATE brs.reimbursement_request
         SET archived = TRUE,
-        date_modified = now()
+        date_modified = now(),
+        modified_by_id = :userId
     where id = :id
     """;
 
   //language=PostgreSQL
-  public final static String getApprovedRequests = """
+  public final static String getRequestList = """
     SELECT rr.id,
            rr.amount,
            rr.date_created,
@@ -119,9 +122,9 @@ public class ReimbursementQuery {
            rr.expense_date,
            rr.reimbursement_request_status_id,
            rr.notes,
-           rr.date_submitted,
-           rr.submitted_by_id,
-           concat(su.first_name, ' ', su.last_name) as submitted_by,
+           rr.paid_date,
+           rr.paid_by_id,
+           concat(pu.first_name, ' ', pu.last_name) as paid_by,
            rr.approved_by_id,
            rr.approval_date,
            concat(au.first_name, ' ', au.last_name) as approved_by,
@@ -135,15 +138,28 @@ public class ReimbursementQuery {
            eb.user_id as expense_budget_user_id,
            ebu.first_name || ' ' || ebu.last_name as expense_budget_user
     FROM brs.reimbursement_request rr
-      LEFT JOIN flow."user" su on su.id = rr.submitted_by_id
+      LEFT JOIN flow."user" pu on pu.id = rr.paid_by_id
       LEFT JOIN flow."user" au on au.id = rr.approved_by_id
       LEFT JOIN brs.expense_budget eb on eb.id = rr.expense_budget_id
       left join flow.user ebu on ebu.id = eb.user_id
       LEFT JOIN brs.budget_type bt on bt.id = rr.budget_type_id
       LEFT JOIN brs.gl_code gl on gl.id = rr.gl_code_id
-    WHERE rr.expense_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
-        and rr.reimbursement_request_status_id = 1
-        and rr.archived is not true
+    WHERE
+      case when :onlyUnpaid::boolean is true
+        then rr.paid_date is null
+        else rr.expense_date::DATE BETWEEN :startDate::DATE AND :endDate::DATE
+      end
+      and rr.reimbursement_request_status_id = 1
+      and rr.archived is not true
     order by rr.expense_date desc, expense_budget_user desc
+    """;
+
+  //language=PostgreSQL
+  public final static String markRequestPaid = """
+    UPDATE brs.reimbursement_request
+        SET paid_date = now(),
+            paid_by_id = :userId,
+            modified_by_id = :userId
+    where id = :id
     """;
 }

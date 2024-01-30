@@ -124,22 +124,38 @@ public class ExpenseBudgetQuery {
 
   //language=PostgreSQL
   public final static String getAllInMonth = """
-    SELECT
-      eb.id,
-      eb.start_date,
-      eb.end_date,
-      eb.notes,
-      eb.archived,
-      eb.amount,
-      eb.user_id,
-      u.first_name || ' ' || u.last_name as user_full_name,
-      eb.date_created,
-      eb.date_modified,
-      eb.original_expense_budget_id
-    FROM brs.expense_budget eb
-           INNER JOIN flow."user" u on u.id = eb.user_id
-    WHERE eb.archived is not true
-      and eb.start_date = :startDate::date
+    with results as (SELECT eb.id,
+                            eb.start_date,
+                            eb.end_date,
+                            eb.notes,
+                            eb.archived,
+                            eb.amount,
+                            eb.user_id,
+                            u.first_name || ' ' || u.last_name as user_full_name,
+                            eb.date_created,
+                            eb.date_modified,
+                            eb.original_expense_budget_id,
+                            (select * from brs.get_monthly_expense_budget_report(eb.user_id, eb.start_date, eb.end_date)) as budget_report
+                     FROM brs.expense_budget eb
+                              INNER JOIN flow."user" u on u.id = eb.user_id
+                     WHERE eb.archived is not true
+                       and eb.start_date = :startDate::date)
+    select id,
+           start_date,
+           end_date,
+           notes,
+           archived,
+           amount,
+           user_id,
+           user_full_name,
+           date_created,
+           date_modified,
+           original_expense_budget_id,
+           budget_report -> 0 -> 'pending_review' as pending_approval,
+           budget_report -> 0 -> 'pending_payment' as pending_payment,
+           budget_report -> 0 -> 'paid' as paid,
+           budget_report -> 0 -> 'remaining_budget' as balance
+    from results
     ORDER BY user_full_name, start_date
     """;
 

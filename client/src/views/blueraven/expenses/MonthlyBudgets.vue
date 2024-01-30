@@ -149,8 +149,12 @@
           <template #item="{ item, index }">
             <tr :class="{'shaded-row': index % 2}">
               <td class="text-left">{{ item.userFullName }}</td>
-              <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
               <td class="text-left">{{ item.startDate | formatDate('date', 'MMMM YYYY')}}</td>
+              <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.pendingApproval | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.pendingPayment | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.paid | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.balance | currency('$', 2) }}</td>
               <td>
                 <div style="display: flex; justify-content: flex-end">
                   <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="[handleItemClick(item), expanded = [item]]">
@@ -228,8 +232,12 @@ export default {
       expanded: [],
       headers: [
         {text: 'User', value: 'userFullName', show: true},
-        {text: 'Amount', value: 'amount', show: true},
         {text: 'Budget Month', value: 'startDate', show: true},
+        {text: 'Amount', value: 'amount', show: true},
+        {text: 'Pending Approval', value: 'pendingApproval', show: true},
+        {text: 'Pending Payment', value: 'pendingPayment', show: true},
+        {text: 'Paid', value: 'paid', show: true},
+        {text: 'Remaining Budget', value: 'balance', show: true},
         {text: null, value: 'icons', show: true, sortable: false}
       ],
       deleteConfirm: false,

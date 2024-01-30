@@ -83,21 +83,46 @@ public class ReimbursementService {
   }
 
   public void deleteRequest(Long id) {
+    User currentUser = securityService.getCurrentUser();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
     //mark the request as deleted
     sqlCache.updateBySql(ReimbursementQuery.deleteRequest, params);
   }
 
   public List<ReimbursementRequest> getApprovedRequests(String startDate, String endDate) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    params.put("onlyUnpaid", false);
+
+    return sqlCache.queryBySql(ReimbursementQuery.getRequestList, params, ReimbursementRequest.class);
+  }
+
+
+  public List<ReimbursementRequest> getUnpaidRequests() {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startDate", null);
+    params.put("endDate", null);
+    params.put("onlyUnpaid", true);
+    return sqlCache.queryBySql(ReimbursementQuery.getRequestList, params, ReimbursementRequest.class);
+  }
+
+  public void markRequestsPaid(List<ReimbursementRequest> requests) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.getId());
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
 
-    return sqlCache.queryBySql(ReimbursementQuery.getApprovedRequests, params, ReimbursementRequest.class);
+    for (ReimbursementRequest request : requests) {
+      params.put("id", request.getId());
+     sqlCache.updateBySql(ReimbursementQuery.markRequestPaid, params);
+
+    }
+
   }
 
 

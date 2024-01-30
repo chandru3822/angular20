@@ -17,8 +17,16 @@
                 hide-details
               ></v-text-field>
             </div>
+            <v-spacer v-if="showMiddleHeader"></v-spacer>
+            <div class="middle-header-bar" v-if="showMiddleHeader">
+              <v-btn @click="paymentDropdown = true" color="primary" class="ml-3">Mark as Paid</v-btn>
+              <ConfirmationDialog :open-dialog="paymentDropdown" @confirm="confirmPayment" @close-dialog="paymentDropdown=false">
+                <template v-slot:title>Confirm</template>
+                Are you sure you want to pay all selected expenses?
+                <template v-slot:yes>Pay</template>
+              </ConfirmationDialog>
+            </div>
             <v-spacer></v-spacer>
-
             <div class="right-header-bar elevation-1">
               <div>From:</div>
               <div class="flex-display">
@@ -75,8 +83,16 @@
                 Show All in Range
               </v-btn>
               <v-btn color="primary" class="white--text mt-2" small
-                     @click="exportExpenses()">
+                     @click="exportExpenses(false)">
                 Export All in Range
+              </v-btn>
+              <v-btn color="primary" class="white--text mt-2" small
+                     @click="getAllUnpaid">
+                Show All Unpaid
+              </v-btn>
+              <v-btn color="primary" class="white--text mt-2" small
+                     @click="exportExpenses(true)">
+                Export All Unpaid
               </v-btn>
             </div>
           </div>
@@ -102,8 +118,15 @@
               <span class="default-text-color">No Matching Expenses Found</span>
             </template>
 
+            <template #header.selectBox="{}">
+              <v-checkbox v-model="selectAllExpenses" @change="toggleSelectAllExpenses()"></v-checkbox>
+            </template>
+
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
+                <td>
+                  <v-checkbox v-model="item.selected" @change="toggleSingleSelect(item)"></v-checkbox>
+                </td>
                 <td class="text-left">{{ item.expenseBudgetUser }}</td>
                 <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
                 <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
@@ -111,6 +134,8 @@
                 <td class="text-left">{{ item.glCode }}</td>
                 <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
                 <td class="text-left">{{ item.approvedBy }}</td>
+                <td class="text-left">{{ item.paidDate | formatDate('date') }}</td>
+                <td class="text-left">{{ item.paidBy }}</td>
                 <td>
                   <div style="display: flex; justify-content: flex-end">
                     <v-btn small text color="primary"
@@ -254,7 +279,7 @@ import {
   getRequestWithParams,
   postRequest,
   putRequest,
-  getSnackbar, getMonthDateRange
+  getSnackbar, getMonthDateRange, getRequest
 } from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {
@@ -280,9 +305,12 @@ export default {
     return {
       snackbar: {},
       timezone: this.$store.state.user.details.timezone.value,
+      userFullName: this.$store.state.user.details.fullName,
       selectedExpense: {},
       approveDropdown: false,
       approveConfirmLoading: false,
+      paymentDropdown: false,
+      paymentConfirmLoading: false,
       dataLoading: true,
       editIndex: null,
       renderRequestImage: false,
@@ -303,6 +331,7 @@ export default {
       glCodes: [],
       budgetTypes: [],
       headers: [
+        {text: '', value: 'selectBox', selectFilter: true, show: true, width: '50px'},
         {text: 'Purchaser', value: 'expenseBudgetUser', show: true},
         {text: 'Amount', value: 'amount', show: true},
         {text: 'Expense Date', value: 'expenseDate', show: true},
@@ -310,6 +339,8 @@ export default {
         {text: 'GL Code', value: 'glCode', show: true},
         {text: 'Approved Date', value: 'dateApproved', show: true},
         {text: 'Approved By', value: 'approvedBy', show: true},
+        {text: 'Paid Date', value: 'datePaid', show: true},
+        {text: 'Paid By', value: 'paidBy', show: true},
         {text: null, value: 'icons', show: true}
       ],
       showAll: false,
@@ -318,6 +349,7 @@ export default {
       endDate: moment().endOf('month').format('YYYY-MM-DD'),
       deleteConfirm: false,
       itemToDelete: {},
+      canPay: false,
       approveConfirm: false,
       months: constants.MONTHS,
       yearStart: 2017,
@@ -339,6 +371,9 @@ export default {
     this.getSubmittedExpenses()
   },
   computed: {
+    showMiddleHeader() {
+      return this.selectedExpenses.length > 0 && this.canPay
+    },
     itemToDeleteUser(){
       return this.itemToDelete ? this.itemToDelete.expenseBudgetUser : ''
     },
@@ -353,6 +388,48 @@ export default {
     },
     filterSubmittedExpenses() {
       return this.submittedExpenses.filter(glc => !glc.archived)
+    },
+    toggleSelectAllExpenses() {
+      //reset these values first
+      this.canApprove = true
+      this.canReject = true
+      this.canPay = true
+
+      if (this.selectAllExpenses) {
+        this.selectedExpenses = cloneDeep(this.masterExpenses)
+      } else {
+        this.selectedExpenses = []
+      }
+
+      this.submittedExpenses.forEach(item => {
+        item.selected = this.selectAllExpenses
+
+        if (!item.approvalDate || item.paidDate != null) {
+          //if any selected do not have an approved date they cannot pay
+          //if any selected have a paid date they cannot do anything
+          this.canPay = false
+        }
+      })
+    },
+    toggleSingleSelect(item) {
+      //reset these values first
+      this.canPay = true
+
+      //set the selected item
+      if (item.selected) {
+        this.selectedExpenses.push(item)
+      } else {
+        this.selectedExpenses = this.selectedExpenses.filter(u => u.id !== item.id)
+        this.selectAllExpenses = false
+      }
+
+      this.selectedExpenses.forEach(item => {
+        if (!item.approvalDate || item.paidDate != null) {
+          //if any selected do not have an approved date they cannot pay
+          //if any selected have a paid date they cannot do anything
+          this.canPay = false
+        }
+      })
     },
     async getSubmittedExpenses() {
       try {
@@ -390,13 +467,12 @@ export default {
       }
       this.closeDeleteDialog()
     },
-    async exportExpenses() {
-      //not sure what these type Ids were, i just copied this over
+    async exportExpenses(unpaid) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        let filename = 'expenses.csv'
+        let filename = unpaid ? 'unpaid_expenses' : 'expenses.csv'
         let results = []
-        let url = '/reimbursement/requests/approved'
+        let url = unpaid ? '/reimbursement/requests/unpaid' : '/reimbursement/requests/approved'
         let date1 = moment(this.startDate).format('MM/DD/YYYY')
         let date2 = moment(this.endDate).format('MM/DD/YYYY')
         const {data} = await getRequestWithParams(url, {params: {startDate: date1, endDate: date2}}, 'blueraven')
@@ -412,8 +488,10 @@ export default {
             moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
             r.budgetType + ',' +
             r.glCode + ',' +
-            `${r.dateApproved ? moment.utc(r.dateApproved).format('MM/DD/YYYY') : null}` + ',' +
+            `${r.approvalDate ? moment(r.approvalDate).format('MM/DD/YYYY') : null}` + ',' +
             '"' + r.approvedBy + '",' +
+            `${r.paidDate ? moment(r.paidDate).format('MM/DD/YYYY') : null}` + ',' +
+            '"' + r.paidBy + '",' +
             '"' + r.details + '"'
 
           csvData += '\n'
@@ -427,7 +505,7 @@ export default {
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Exporting Selected Expenses')
+        this.snackbar = getSnackbar('ERROR', 'Error Exporting Expenses')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -442,15 +520,49 @@ export default {
         'GL Code',
         'Approved Date',
         'Approved By',
+        'Paid Date',
+        'Paid By',
         'Details'
       ]
+    },
+    async getAllUnpaid() {
+      try {
+        this.dataLoading = true
+        const {data, status} = await getRequest('/reimbursement/requests/unpaid', 'blueraven')
+        this.submittedExpenses = data
+        this.dataLoading = false
+        this.masterExpenses = cloneDeep(data)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async confirmPayment() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.paymentConfirmLoading = true
+      try {
+        await postRequest(`/reimbursement/requests/markPaid`, this.selectedExpenses, 'blueraven')
+
+        //reload the requests cuz a lot can change
+        await this.getSubmittedExpenses()
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Marking Selected Expenses as Paid')
+        this.paymentConfirmLoading = false
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
     async saveSubmittedExpense(item) {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
-        await putRequest(`/expenses`, item, 'blueraven')
-        //yep
-        window.location.reload()
+        await putRequest(`/reimbursement/request`, item, 'blueraven')
+        this.selectedExpense = {}
+        //reload them after saving changes
+        await this.getSubmittedExpenses()
+        this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Changes to Expense')
