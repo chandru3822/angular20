@@ -1,13 +1,10 @@
 package com.albatross.api.v1.company.blueraven.controllers.expenses;
 
-import com.albatross.api.v1.company.blueraven.models.expenses.Expense;
 import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
 import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementRequest;
-import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementUserSearch;
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
-import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseService;
+import com.albatross.api.v1.company.blueraven.services.expenses.GlCodeService;
 import com.albatross.api.v1.company.blueraven.services.expenses.ReimbursementService;
-import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.services.AttachmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,7 +25,6 @@ public class ReimbursementController {
 
   private final ReimbursementService reimbursementService;
   private final ExpenseBudgetService expenseBudgetService;
-  private final ExpenseService expenseService;
   private final AttachmentService attachmentService;
 
   @PostMapping(value = "/request", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -49,24 +45,13 @@ public class ReimbursementController {
     if (null == reimbursementRequest.getExpenseBudgetId() || (expenseBudget.isPresent() && expenseBudget.get().getBalance() >= reimbursementRequest.getAmount())) {
 
       //save the request first
-      Long id = reimbursementService.updateRequest(reimbursementRequest);
+      Long id = reimbursementService.updateRequest(reimbursementRequest, false);
       reimbursementRequest.setId(id);
 
-      if (null != reimbursementRequest.getId()) {
-
-        Expense expense = new Expense();
-        expense.setExpenseDate(reimbursementRequest.getExpenseDate());
-        expense.setReimbursementRequestId(reimbursementRequest.getId());
-        expense.setUserId(reimbursementRequest.getCreatedById());
-        expense.setExpenseAmount(reimbursementRequest.getAmount());
-        expense.setExpenseBudgetId(reimbursementRequest.getExpenseBudgetId());
-        expenseService.addDefaultLineItem(expense);
-
-        if (null != reimbursementRequest.getAttachmentId()) {
-          //add to the attachment join table
-          //todo: @randa this
-          attachmentService.addToJoinTable(reimbursementRequest.getAttachmentId(), reimbursementRequest.getId(), 4L, true);
-        }
+      if(null != reimbursementRequest.getId() && null != reimbursementRequest.getAttachmentId()){
+        //add to the attachment join table
+        //todo: @randa this
+        attachmentService.addToJoinTable(reimbursementRequest.getAttachmentId(), reimbursementRequest.getId(), 4L, true);
       }
 
     }
@@ -76,7 +61,7 @@ public class ReimbursementController {
 
   @PutMapping(value = "/request", produces = MediaType.APPLICATION_JSON_VALUE)
   public void updateReimbursementRequest(@RequestBody ReimbursementRequest reimbursementRequest) {
-    reimbursementService.updateRequest(reimbursementRequest);
+    reimbursementService.updateRequest(reimbursementRequest, true);
   }
 
   @PostMapping(value = "/request/updateStatus", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -84,6 +69,7 @@ public class ReimbursementController {
     reimbursementService.updateRequestStatus(reimbursementRequest);
   }
 
+  //endpoint used for the requests screen
   @GetMapping(value = "/requests/pending", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ReimbursementRequest> getPendingReimbursementRequests() {
     return reimbursementService.getPendingReimbursementRequests();
@@ -101,32 +87,24 @@ public class ReimbursementController {
     return reimbursementService.getRequestsForUserByStatus(statusId, startDate, endDate);
   }
 
-
-  @PostMapping(value = "/users", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<User> getAllReimbursementUsers(@RequestBody ReimbursementUserSearch usersSearch) {
-    //this returns all users that can submit reimbursement requests, used for when admin adds line directly to expense table
-    return reimbursementService.getAllReimbursementUsers(usersSearch);
-  }
-
-//  @RequestMapping(value = "/request/getSourceAttachments", method = RequestMethod.GET)
-//  public List<Attachment> getAttachmentsBySourceIdAndType(@RequestParam Long sourceId,
-//                                                          @RequestParam Long attachmentSourceTypeId) {
-//    return attachmentService.getAttachmentsBySourceIdAndType(bucket, sourceId, attachmentSourceTypeId);
-//  }
-
-  @GetMapping(value = "/requests/supervisor/byStatus", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(@RequestParam Long statusId) {
-    return reimbursementService.getRequestsForSupervisorByStatus(statusId);
-  }
-
-  @GetMapping(value = "/getMonthlySubmittedReport", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getMonthlySubmittedReport(@RequestParam String startDate,
-                                          @RequestParam String endDate) {
-    return reimbursementService.getMonthlySubmittedReport(startDate, endDate);
-  }
-
   @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
   public void deleteRequest(@PathVariable Long id) {
     reimbursementService.deleteRequest(id);
+  }
+
+  @GetMapping(value = "/requests/approved", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getApprovedRequests(@RequestParam String startDate,
+                                                        @RequestParam String endDate) {
+    return reimbursementService.getApprovedRequests(startDate, endDate);
+  }
+
+  @GetMapping(value = "/requests/unpaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ReimbursementRequest> getUnpaidRequests() {
+    return reimbursementService.getUnpaidRequests();
+  }
+
+  @PostMapping(value = "/requests/markPaid", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void markRequestsPaid(@RequestBody List<ReimbursementRequest> requests) {
+    reimbursementService.markRequestsPaid(requests);
   }
 }

@@ -1,6 +1,7 @@
 import axios from 'axios'
 import constants from './constants'
 import { AppMutations } from '@/stores/AppStore'
+import moment from 'moment'
 
 export function getSnackbar(type, text, displayMsgAsHtml) {
   //if you need a custom snackbar build it in your component
@@ -9,6 +10,12 @@ export function getSnackbar(type, text, displayMsgAsHtml) {
   snackbar.displayAsHtml = displayMsgAsHtml
   snackbar.enabled = true
   return snackbar
+}
+
+export function getMonthDateRange(month, year) {
+  let startDate = moment([year, month - 1]).format("YYYY-MM-DD")
+  let endDate = moment(startDate).endOf('month').format("YYYY-MM-DD")
+  return {startDate, endDate}
 }
 
 export function isLightColor(color) {

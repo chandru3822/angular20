@@ -230,6 +230,7 @@ const router = new Router({
         }, {
           path: '/expenses',
           name: 'expenses',
+          alias: '/expenses/manage',
           meta: {title: 'Albatross - Expenses'},
           component: () => {
             if (store.getters.userHasFeature('EXPENSES')) {
@@ -243,25 +244,13 @@ const router = new Router({
               path: 'reimbursementRequests',
               name: 'reimbursementRequests',
               meta: {title: 'Albatross - Reimbursement Requests'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import ( './views/blueraven/expenses/ReimbursementRequests.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
+              component: () => import ( './views/blueraven/expenses/ReimbursementRequests.vue')
             },
             {
               path: 'submittedExpenses',
               name: 'submittedExpenses',
               meta: {title: 'Albatross - Submitted Expenses'},
-              component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
-                  return import ( './views/blueraven/expenses/SubmittedExpenses.vue')
-                } else {
-                  return accessDenied()
-                }
-              },
+              component: () => import ( './views/blueraven/expenses/SubmittedExpenses.vue')
             },
             {
               path: 'glCodes',
@@ -286,7 +275,20 @@ const router = new Router({
                   return accessDenied()
                 }
               },
-            }, {
+            },
+            {
+              path: 'budgetTemplates',
+              name: 'budgetTemplates',
+              meta: {title: 'Albatross - Expense Budgets'},
+              component: () => {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                  return import ( './views/blueraven/expenses/BudgetTemplates.vue')
+                } else {
+                  return accessDenied()
+                }
+              },
+            },
+            {
               path: 'budgetTypes',
               name: 'expenseBudgetTypes',
               meta: {title: 'Albatross - Budget Types'},
