@@ -15,13 +15,13 @@
                 small
                 class="mr-3"
                 color="primary"
-                @click="$router.go(-1)"
+                @click="$router.push('/smartlist')"
               >
                 <v-icon>mdi-arrow-left</v-icon>
               </v-btn>
               <v-toolbar-title class="app-title">Smartlist Editor</v-toolbar-title>
               <v-btn
-                v-if="smartlist?.id && ($store.state.user.details.id === smartlist?.ownerId || $store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN') || is7oaksAdmin)"
+                v-if="smartlist?.id && userCanView"
                 class="ml-6 mt-3"
                 text
                 @click="$router.push(`/smartlist/editor/${smartlist.id}`)"
@@ -305,7 +305,11 @@ export default {
       projectDetailsColumns: [],
       sql: '',
       is7oaksAdmin: this.$store.getters.isFullAdmin,
+      isSmartlistAdmin: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN'),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD'),
+      hasViewAccess: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW'),
+      hasViewAllAccess: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'VIEW_ALL'),
+      hasManageAccess: this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'MANAGE'),
       userId: this.$store.state.user.details.id,
       refreshData: false,
       timezone: this.$store.state.user.details.timezone.value
@@ -349,6 +353,13 @@ export default {
 
       return Smartlist.userCanEdit(this.smartlist)
     },
+    userCanView () {
+      if (!this.hasViewAccess && !this.hasViewAllAccess && !this.hasManageAccess && !this.isSmartlistAdmin && !this.is7oaksAdmin) {
+        return false
+      }
+
+      return Smartlist.userCanView(this.smartlist)
+    },
     canDelete () {
       return ((!this.smartlist?.id || this.$store.state.user.details.id === this?.smartlist?.ownerId) && this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'DELETE')) || this.$store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADMIN')
     },
@@ -371,7 +382,8 @@ export default {
   methods: {
     async getSmartlist () {
       try {
-        const {data} = await getRequest(`/smartlistv1/${this.$route.params.smartlistId}`)
+        // hit v2 endpoint to get access control (needed for button to v2 editor)
+        const {data} = await getRequest(`/smartlist/${this.$route.params.smartlistId}?accessControl=true`)
         this.smartlist = data
         this.originalObjectTypeId = data.objectTypeId
       } catch (e) {

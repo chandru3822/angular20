@@ -27,6 +27,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class ContactLeadService {
   private final SqlCache sqlCache;
+  private final Five9Service five9Service;
   private final GenesysService genesysService;
   private final MapboxApiService mapboxApiService;
   private final SMSService smsService;
@@ -357,15 +358,32 @@ public class ContactLeadService {
       saveCustomFieldValue(cfv, contactId, currentUser.trueUserId());
     }
 
-    try {
-      genesysService.addContact(contactId, cfvList, false);
-    } catch (ApiException e) {
-      JSONObject apiException = new JSONObject(e.getRawBody());
-      String msg = "GENE: Error adding contact: {}";
-      log.error(msg, apiException.getString("message"));
-    } catch (IOException e) {
-      String msg = "GENE: Error adding contact: {}";
-      log.error(msg, e.getMessage());
+    final Long leadLevel = cfvList.stream()
+      .filter(cfv -> cfv.getFieldName() != null)
+      .filter(cfv -> cfv.getFieldName().equals("Lead Level"))
+      .map(CustomFieldValue::getIntValue)
+      .findFirst()
+      .orElse(null);
+
+    if (leadLevel != null && (leadLevel == 40L || (leadLevel >= 201L && leadLevel <= 209L))) {
+      try {
+        five9Service.handleContact(contactId, cfvList, false, false, leadLevel);
+      } catch (Exception e) {
+        String msg = "FIVE9: Error adding contact: {}";
+        log.error(msg, e.getMessage());
+      }
+    }
+    else {
+      try {
+        genesysService.addContact(contactId, cfvList, false);
+      } catch (ApiException e) {
+        JSONObject apiException = new JSONObject(e.getRawBody());
+        String msg = "GENE: Error adding contact: {}";
+        log.error(msg, apiException.getString("message"));
+      } catch (IOException e) {
+        String msg = "GENE: Error adding contact: {}";
+        log.error(msg, e.getMessage());
+      }
     }
   }
 

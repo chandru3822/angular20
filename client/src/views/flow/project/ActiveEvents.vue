@@ -6,12 +6,12 @@
                            @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
       <v-btn v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
-             text color="primary" x-small class="d-inline-block" :to="`/project/${projectId}/events`">
-        <v-icon small>mdi-view-list</v-icon>
+             text color="primary" @click.stop :to="`/project/${projectId}/events`" class="pa-2 mx-2" max-width="48px">
+        <v-icon small>mdi-format-list-bulleted</v-icon>
       </v-btn>
     </template>
     <template v-slot:expanded-content>
-      <ActiveEventSnippet class="px-4"
+      <ActiveEventSnippet class="px-3"
                           @refresh-upcoming-events="getEvents()"
                           :events="events"
                           :projectId="projectId"/>

@@ -27,7 +27,17 @@
       </v-btn>
     </template>
     <div>
-      <v-list v-if="$store.state.app.announcements?.length > 0">
+      <v-list v-if="loadingAgain">
+        <v-list-item class="pr-1">
+          <v-list-item-icon>
+            <SpinnerInline :size="20" color="primary"/>
+          </v-list-item-icon>
+          <v-list-item-content class="">
+            Loading
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+      <v-list v-else-if="$store.state.app.announcements?.length > 0">
         <template  v-for="(item, index) in $store.state.app.announcements">
         <v-list-item class="pr-1"
                      :key="item.id">
@@ -74,6 +84,8 @@
   const { VITE_ENV } =  import.meta.env
   import { AppMutations } from '@/stores/AppStore'
   import AnnouncementModal from "@/components/AnnouncementModal.vue";
+  import {Actions} from "@/store.js";
+  import {UserMutations} from "@/stores/UserStore.js";
 
   export default {
     name: 'AnnouncementDropdown',
@@ -84,7 +96,15 @@
     mixins: [Vue2Filters.mixin],
     props: {
     },
-    watch: {},
+    watch: {
+      menuOpen(newValue, oldValue) {
+        console.log('old',oldValue)
+        console.log('new',newValue)
+        if(newValue) {
+          this.getActiveAnnouncementsAgain()
+        }
+      }
+    },
     data () {
       return {
         constants,
@@ -92,7 +112,9 @@
         userId: this.$store.state.user.details.id,
         headerColor: constants.ENV_COLOR,
         menuOpen: false,
-        selectedAnnouncement: {}
+        selectedAnnouncement: {},
+        loadComplete: false,
+        loadingAgain: true
       }
     },
     computed: {
@@ -101,13 +123,44 @@
       }
     },
     created () {
-
     },
     methods: {
-      openModal(item) {
-        this.selectedAnnouncement = item
+      //we reload them again here in case something changes
+      async getActiveAnnouncementsAgain() {
+        try {
+          this.loadingAgain = true
+          const {data, status} = await getRequest(`/announcements/active`)
+          this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, data)
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        } finally {
+          this.loadingAgain = false
+        }
+      },
+      async openModal(item) {
         this.menuOpen = false
         this.showModal = true
+        this.loadComplete = false
+        await this.getAttachment(item)
+        this.selectedAnnouncement = item
+      },
+      async getAttachment(item) {
+        try {
+          await this.$store.dispatch(Actions.FILE_GET_ONE, {
+            attachmentTypeId: 990,
+            sourceId: item.id,
+            callback: async (img) => {
+              item.presignedUrl = img.presignedUrl
+              item.attachmentId = img.id
+              this.loadComplete = true
+            }
+          })
+        } catch(e) {
+          console.error('*** ERROR ***', e)
+          this.loadComplete = true
+        }
       },
       closeModal() {
         this.showModal = false

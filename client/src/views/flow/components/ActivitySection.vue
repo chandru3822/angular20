@@ -597,7 +597,10 @@ export default {
           //add to bottom of list
           this.activities.push(data)
         }
-        this.getActivityTopics();
+        if(!this.timelineView) {
+          //only reload the topics if on the topic view
+          this.getActivityTopics();
+        }
         this.addActivity = false
         this.editedActivity = {}
         this.savingActivity = false
