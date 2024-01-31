@@ -13,7 +13,7 @@ import VueGtag from 'vue-gtag'
 import { createPinia, PiniaVuePlugin } from 'pinia'
 
 import '@/styles/main.scss'
-import { requestInterceptor, responseInterceptor } from '@/helpers/helpers'
+import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
 
 // @todo: make PWA awesomeness
 // import './registerServiceWorker.js'
@@ -66,11 +66,6 @@ Vue.filter('formatDate', function(value, type, format, inputFormat) {
         .tz(timezone)
         .format(format)
   }
-})
-
-router.beforeEach((to, from, next) => {
-  document.title = to.meta.title || 'Albatross'
-  next()
 })
 
 axios.interceptors.request.use(requestInterceptor)

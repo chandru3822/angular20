@@ -447,33 +447,34 @@ import interaction from "@fullcalendar/interaction";
           customButtons: {
             customToday: {
               text: 'Today',
-              click: () => {
-                let calendarApi = this.$refs.eventCalendar.getApi()
+              click: async () => {                let calendarApi = this.$refs.eventCalendar.getApi()
                 calendarApi.gotoDate(new Date)
                 // this.setCalendarStartAndEndTimes()
-                this.getEvents(false, true)
+                await this.getEvents(false, true)
+                this.handlePinsOnDayChange()
               }
             },
             customPrev: {
               text: '',
               icon: 'chevron-left',
-              click: () => {
+              click: async () => {
                 let calendarApi = this.$refs.eventCalendar.getApi()
                 calendarApi.prev()
                 // this.setCalendarStartAndEndTimes()
-                this.getEvents(false, true)
+                await this.getEvents(false, true)
                 this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+                this.handlePinsOnDayChange()
               }
             },
             customNext: {
               text: '',
               icon: 'chevron-right',
-              click: () => {
-                let calendarApi = this.$refs.eventCalendar.getApi()
+              click: async () => {                let calendarApi = this.$refs.eventCalendar.getApi()
                 calendarApi.next()
                 // this.setCalendarStartAndEndTimes()
-                this.getEvents(false, true)
+                await this.getEvents(false, true)
                 this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+                this.handlePinsOnDayChange()
               }
             },
             customTimelineDay: {
@@ -492,7 +493,7 @@ import interaction from "@fullcalendar/interaction";
             },
             customTimelineWeek: {
               text: 'week',
-              click: () => {
+              click: async () => {
                 this.calendar.options.minTime = '06:00:00'
                 this.calendar.options.maxTime = '22:00:00'
                 this.calendar.options.slotDuration = '01:00:00'
@@ -502,8 +503,9 @@ import interaction from "@fullcalendar/interaction";
 
                 let calendarApi = this.$refs.eventCalendar.getApi()
                 calendarApi.changeView('resourceTimelineWeek')
-                this.getEvents(false, true)
+                await this.getEvents(false, true)
                 this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+                this.handlePinsOnDayChange()
               }
             },
           }
@@ -546,6 +548,7 @@ import interaction from "@fullcalendar/interaction";
         positionsLoading: true,
 
         mapResourceEvents: [],
+        checkedResources: [],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
         dayOptions: [],
@@ -606,7 +609,7 @@ import interaction from "@fullcalendar/interaction";
           }
         ])
       },
-      switchToDayView(dayOption){
+      async switchToDayView(dayOption){
         let calendarApi = this.$refs.eventCalendar.getApi()
         this.calendar.options.slotDuration = '00:30:00'
         this.calendar.options.minTime = '02:00:00'
@@ -616,8 +619,9 @@ import interaction from "@fullcalendar/interaction";
         this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
         let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
         calendarApi.changeView('resourceTimelineDay', day)
-        this.getEvents(false, true)
+        await this.getEvents(false, true)
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+        this.handlePinsOnDayChange()
       },
       handleResourceColors() {
         this.calendarOptions.resources.forEach((r, index) => {
@@ -969,32 +973,7 @@ import interaction from "@fullcalendar/interaction";
         checkbox.setAttribute('class', 'mr-2')
 
         checkbox.onchange = (event) => {
-          if(event.target.checked) {
-            let resource = renderInfo.resource
-            let resourceEvents = this.calendarOptions.eventSources[0].events.filter(e => {
-              return e.resourceId === resource.id
-            })
-            resourceEvents.forEach(re => {
-              let eventObj = {
-                id: resource.id,
-                projectName: re.projectName,
-                processStepName: re.processStepName,
-                city: re.city,
-                projectProcessStepEventId: re.projectProcessStepEventId,
-                stateAbbreviation: re.stateAbbreviation,
-                postalCode: re.postalCode,
-                street1: re.street1,
-                color: resource.extendedProps.color,
-                coordinates: [ re.longitude, re.latitude]
-              }
-              this.mapResourceEvents.push(eventObj)
-            })
-          } else {
-            this.mapResourceEvents = this.mapResourceEvents.filter(r => {
-              return r.id !== renderInfo.resource?.id
-            })
-          }
-          this.callback(this.mapResourceEvents)
+          this.handlePopulatingMapPins(event.target.checked, renderInfo.resource, true, true)
         }
 
         //if this is an org (first char === 1) then make it a hyperlink to the org screen
@@ -1011,6 +990,49 @@ import interaction from "@fullcalendar/interaction";
           "<span>" + renderInfo.resource.title + "</span>"
         renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
 
+      },
+      handlePinsOnDayChange() {
+        this.mapResourceEvents = []
+        this.checkedResources.forEach((r, idx) => {
+          this.handlePopulatingMapPins(true, r, false, idx === this.checkedResources.length - 1)
+        })
+      },
+      handlePopulatingMapPins(isChecked, resource, boxValueIsChanging, doCallback) {
+        if(isChecked) {
+          if(boxValueIsChanging) {
+            this.checkedResources.push(resource)
+          }
+          let resourceEvents = this.eventSources[0].events.filter(e => {
+            return e.resourceId === resource.id
+          })
+          resourceEvents.forEach(re => {
+            let eventObj = {
+              id: resource.id,
+              projectName: re.projectName,
+              processStepName: re.processStepName,
+              city: re.city,
+              projectProcessStepEventId: re.projectProcessStepEventId,
+              stateAbbreviation: re.stateAbbreviation,
+              postalCode: re.postalCode,
+              street1: re.street1,
+              color: resource.extendedProps.color,
+              coordinates: [ re.longitude, re.latitude]
+            }
+            this.mapResourceEvents.push(eventObj)
+          })
+        } else {
+          if(boxValueIsChanging) {
+            this.checkedResources = this.checkedResources.filter(r => {
+              return r.id !== resource?.id
+            })
+          }
+          this.mapResourceEvents = this.mapResourceEvents.filter(r => {
+            return r.id !== resource?.id
+          })
+        }
+        if(doCallback) {
+          this.callback(this.mapResourceEvents)
+        }
       },
       async changeTimezone (tz) {
         await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)

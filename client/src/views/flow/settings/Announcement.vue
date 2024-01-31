@@ -34,7 +34,6 @@
             <v-checkbox v-model="announcement.showOnMobile" dense
                         :rules="!announcement.showOnWeb && !announcement.showOnMobile ? onePlatformRequired : []"
                         label="Mobile"></v-checkbox>
-
           <DatetimePickerInput
               v-model="announcement.startTime"
               :timezone="timezone"
@@ -182,6 +181,16 @@ import {Actions} from "@/store";
       if(this.announcementId) {
         this.getAnnouncement(parseInt(this.announcementId))
       }
+      //for testing
+      // this.announcement = {
+      //   title: 'asdf',
+      //   alertText: 'asdf',
+      //   showOnWeb: true,
+      //   startTime: '2024-01-15T19:55:00.000Z',
+      //   endTime: '2024-01-25T19:55:00.000Z',
+      //   expandable: true,
+      //   subtitle: 'blah'
+      // }
     },
     methods: {
       urlRule(url) {
@@ -198,18 +207,24 @@ import {Actions} from "@/store";
         if (this.$refs.announcementForm.validate()) {
           this.saving = true
           try {
-            const {data, status} = await postRequest(`/announcements`,  this.announcement)
-            this.announcement = data
+            const formData = new FormData()
+
+            formData.append('announcement', new Blob([JSON.stringify({
+              ...this.announcement
+            })], {
+              type: "application/json"
+            }))
+
             if(this.announcementLogo.image !== {}) {
-              await this.uploadFile(null, this.announcementLogo.image)
-              this.snackbar = getSnackbar('SUCCESS', 'Announcement Saved')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$router.push(`/settings/announcements`)
-            } else {
-              this.snackbar = getSnackbar('SUCCESS', 'Announcement Saved')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$router.push(`/settings/announcements`)
+              formData.append('uploadFile', this.announcementLogo.image)
             }
+            console.log('randalogger',formData)
+
+            const {data, status} = await postRequest(`/announcements`, formData)
+            this.announcement = data
+            this.snackbar = getSnackbar('SUCCESS', 'Announcement Saved')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.$router.push(`/settings/announcements`)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Announcement')

@@ -1,57 +1,55 @@
 <template>
-<v-data-table
-  :loading="isDataLoading"
-  :headers="headers"
-  :items="reportData"
-  :items-per-page="25"
-  fixed-header
-  :footer-props="footerProps"
-  class="rounded-0"
->
-  <template #no-data>
-    <span v-if="requirements.length > 0">No available report data</span>
-    <span v-else>Select at least one column and one filter to view data preview</span>
-  </template>
-
-  <template #no-results>
-    No available report data
-  </template>
-
-  <template #item="{item}">
-    <tr>
-      <td
-        v-for="field in item"
-        :key="UUID()"
-        class="text-left"
+  <v-data-table
+    :loading="isDataLoading"
+    :headers="headers"
+    :items="reportData"
+    :items-per-page="25"
+    fixed-header
+    :footer-props="footerProps"
+    class="rounded-0"
+  >
+    <template #no-data>
+      <span v-if="requirements.length > 0">No available report data</span>
+      <span v-else
+        >Select at least one column and one filter to view data preview</span
       >
-        {{ field }}
-      </td>
-    </tr>
-  </template>
+    </template>
 
-  <template #top>
-    <v-btn
-      v-if="isSystemAdmin"
-      fab
-      absolute
-      bottom
-      right
-      color="info"
-      class="mb-16"
-      @click="getQuery"
-    >
-      <v-icon>mdi-database-eye-outline</v-icon>
-    </v-btn>
-  </template>
-</v-data-table>
+    <template #no-results> No available report data </template>
+
+    <template #item="{ item }">
+      <tr>
+        <td v-for="field in item" :key="UUID()" class="text-left">
+          {{ field }}
+        </td>
+      </tr>
+    </template>
+
+    <template #top>
+      <v-btn
+        v-if="isSystemAdmin"
+        fab
+        absolute
+        bottom
+        right
+        color="info"
+        class="mb-16"
+        @click="getQuery"
+      >
+        <v-icon>mdi-database-eye-outline</v-icon>
+      </v-btn>
+    </template>
+  </v-data-table>
 </template>
 
 <script setup>
-
-import { computed, getCurrentInstance, watch } from 'vue'
-import { logError, postRequest, requestInterceptor, responseInterceptor, UUID } from '@/helpers/helpers'
+import { computed, getCurrentInstance, ref, watch } from 'vue'
+import { logError, postRequest, UUID } from '@/helpers/helpers'
+import {
+  requestInterceptor,
+  responseInterceptor,
+} from '@/helpers/interceptors'
 import { AppMutations } from '@/stores/AppStore'
-import { ref } from 'vue'
 import isEqual from 'lodash.isequal'
 import axios from 'axios'
 import constants from '@/helpers/constants'
@@ -66,7 +64,7 @@ const http = axios.create({
 http.interceptors.request.use(requestInterceptor)
 http.interceptors.response.use((response) => {
   if (response.status !== 200 && response.status !== 500) {
-    responseInterceptor({response})
+    responseInterceptor({ response })
   }
 
   return response
@@ -101,27 +99,42 @@ const isUpdateQueued = ref(false)
 
 watch(
   () => [props.report, props.fields, props.requirements],
-  async ([newReport, newFields, newRequirements], [oldReport, oldFields, oldRequirements]) => {
-
+  async (
+    [newReport, newFields, newRequirements],
+    [oldReport, oldFields, oldRequirements]
+  ) => {
     if (isDataLoading.value) {
       return
     }
 
-    if (!props.report?.objectTypeId || props.fields?.length < 1 || props.requirements.length < 1) {
+    if (
+      !props.report?.objectTypeId ||
+      props.fields?.length < 1 ||
+      props.requirements.length < 1
+    ) {
       reportData.value = []
       return
     }
 
     //fetch new data only if report, fields, or reqs have changed
-    if (!isEqual(newReport, oldReport) || !isEqual(newFields, oldFields) || !isEqual(newRequirements, oldRequirements)) {
+    if (
+      !isEqual(newReport, oldReport) ||
+      !isEqual(newFields, oldFields) ||
+      !isEqual(newRequirements, oldRequirements)
+    ) {
       if (isDataLoading.value) {
         isUpdateQueued.value = true
         emit('queued')
       } else {
         // If data type is changed, only call processQueue if we aren't switching to/from Project Details
-        if (oldReport.objectType == newReport.objectType ||
+        if (
+          oldReport.objectType == newReport.objectType ||
           (oldReport.objectType != newReport.objectType &&
-          !(oldReport.objectType == 'Data View' || newReport.objectType == 'Data View'))) {
+            !(
+              oldReport.objectType == 'Data View' ||
+              newReport.objectType == 'Data View'
+            ))
+        ) {
           processQueue()
         }
       }
@@ -130,7 +143,7 @@ watch(
 )
 
 const headers = computed(() => {
-  return props.fields.map(f => ({
+  return props.fields.map((f) => ({
     text: f.name,
     value: f.name,
     id: UUID(),
@@ -145,11 +158,14 @@ const processQueue = async () => {
     isUpdateQueued.value = false
     reportData.value = []
 
-    const response = await http.post(`/smartlist/adhoc?timezone=${store.state.user.details.timezone.value}`, {
-      smartlist: props.report,
-      fields: props.fields,
-      requirements: props.requirements
-    })
+    const response = await http.post(
+      `/smartlist/adhoc?timezone=${store.state.user.details.timezone.value}`,
+      {
+        smartlist: props.report,
+        fields: props.fields,
+        requirements: props.requirements
+      }
+    )
     reportData.value = response.data
     emit('updated')
   } catch (e) {
@@ -172,15 +188,14 @@ const processQueue = async () => {
 
 const getQuery = async () => {
   try {
-    const {data} = await postRequest(`/smartlist/adhoc/query`, {
+    const { data } = await postRequest(`/smartlist/adhoc/query`, {
       smartlist: props.report,
       fields: props.fields,
       requirements: props.requirements
     })
 
-    navigator.clipboard.writeText(data.query);
+    navigator.clipboard.writeText(data.query)
     snackbar('SUCCESS', 'Query copied to clipboard')
-
   } catch (e) {
     logError(e)
     snackbar('ERROR', 'Error fetching query')
@@ -189,14 +204,13 @@ const getQuery = async () => {
 </script>
 
 <style scoped lang="scss">
-@import "@/styles/main.scss";
+@import '@/styles/main.scss';
 
 tr:nth-of-type(even) {
   @extend .shaded-row;
 }
 
 :deep(th) {
-
   span {
     font-size: 16px;
   }
@@ -213,5 +227,4 @@ tr:nth-of-type(even) {
 td:not(:last-child) {
   border-right: 1px solid var(--v-grey-lighten2) !important;
 }
-
 </style>

@@ -8,9 +8,9 @@
     style="z-index: 10"
 >
   <template #activator="{on}">
-    <v-btn text color="primary" class="text-capitalize add-process-step-menu-btn" :outlined="outlined" :small="false"  :large="false" v-on="on" @click="getSteps()" @blur="clear()">
+    <v-btn text color="primary" class="text-capitalize add-process-step-menu-btn one-hunned" :outlined="outlined" :small="false"  :large="false" v-on="on" @click="getSteps()" @blur="clear()">
       <v-icon>add</v-icon>
-      <span v-if="title != null && !isMobile">{{title}}</span>
+      <span v-if="title != null">{{title}}</span>
     </v-btn>
   </template>
 

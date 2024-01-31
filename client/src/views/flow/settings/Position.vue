@@ -216,7 +216,7 @@
             //removing for now since we dont know how to handle the data if we allow them to change this in the UI
             //if the position isn't schedulable, dont allow them to save a true value for useSlotSchedule
             // this.position.useSlotSchedule = this.position.schedulable ? this.position.useSlotSchedule : false
-            const {data, status} = await putRequest(`/position/`, this.position)
+            const {data, status} = await putRequest(`/position`, this.position)
             this.position = data
             this.accessControlKey++
             // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
