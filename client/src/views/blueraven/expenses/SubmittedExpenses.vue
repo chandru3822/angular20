@@ -172,7 +172,6 @@
             <v-autocomplete v-model="selectedExpense.expenseBudgetUserId"
                             :items="usersWithBudget"
                             label="Purchaser"
-                            :disabled="selectedExpense.approvalDate !== null"
                             item-text="fullName"
                             item-value="id"
                             @input="getBudgetsForUser(selectedExpense.expenseBudgetUserId)"
@@ -180,7 +179,6 @@
             <v-autocomplete v-model="selectedExpense.expenseBudgetId"
                             :items="budgetsForUser"
                             label="Selected Budget"
-                            :disabled="selectedExpense.approvalDate !== null"
                             item-text="fullBudgetName"
                             item-value="id"
             ></v-autocomplete>
@@ -188,14 +186,12 @@
               v-model="selectedExpense.expenseDate"
               :timezone="timezone"
               :type="'date'"
-              :readonly="selectedExpense.approvalDate !== null"
               :format="'MM/DD/YYYY'"
               label="Expense Date"
             />
             <v-autocomplete v-model="selectedExpense.glCodeId"
                             :items="glCodes"
                             label="GL Code"
-                            :disabled="selectedExpense.approvalDate !== null"
                             item-text="code"
                             item-value="id"
                             :filter="searchGlCodes"
@@ -211,21 +207,18 @@
             <v-autocomplete v-model="selectedExpense.budgetTypeId"
                             :items="budgetTypes"
                             label="Budget Type"
-                            disabled
                             item-text="name"
                             item-value="id"
             ></v-autocomplete>
             <v-text-field text
                           type="number"
                           prepend-icon="mdi-currency-usd"
-                          :disabled="selectedExpense.approvalDate !== null"
                           label="Amount"
                           v-model.number="selectedExpense.amount">
             </v-text-field>
             <label>Details:</label>
             <v-textarea class="py-2" hide-details
                         auto-grow filled
-                        :disabled="true"
                         rows="4"
                         background-color="#F2F6F8"
                         v-model="selectedExpense.details">
@@ -233,7 +226,6 @@
             <label>Notes:</label>
             <v-textarea class="py-2" hide-details
                         auto-grow filled
-                        :disabled="selectedExpense.approvalDate !== null"
                         rows="4"
                         background-color="#F2F6F8"
                         v-model="selectedExpense.notes">
