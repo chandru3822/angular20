@@ -152,10 +152,12 @@
                            :force-show-upload-btn="forceShowUploadBtn"
                            :activity-tab="true"
                            :focused="toggleFocused === 0"
+                           :hide-empty-folder-status="hideEmptyFolderStatus"
                            :project-id="projectId"
                            :reload-on-key-change="true"
                            :project-process-step-id="projectProcessStepId"
                            @scrollToTop="scrollToTop"
+                           @toggleEmptyFolders="hideEmptyFolderStatus = !hideEmptyFolderStatus"
     />
     <v-dialog v-model="showHistoryDialog" max-width="800px">
                 <OwnershipHistoryDrilldown
@@ -261,6 +263,7 @@ export default {
       toggleFocused: this.isMobile ? 1 : 0,
       toggleFocusedXs: 0,
       toggleTimelineView: this.$store.state.project.notesActivityView,
+      hideEmptyFolderStatus: false,
     }
   },
   created() {

@@ -9,7 +9,7 @@
             <v-card class="mx-4 square-card">
               <v-toolbar flat>
                 <v-toolbar-title class="app-title"  v-if="incentive && incentive.name">
-                  {{ incentive.name }}, {{ incentive.state }}, {{ incentive.managementCompany }}
+                  {{ incentive.name }}, {{ incentive.state }}
                 </v-toolbar-title>
               </v-toolbar>
             </v-card>

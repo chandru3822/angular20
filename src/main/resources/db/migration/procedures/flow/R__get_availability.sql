@@ -19,7 +19,11 @@ BEGIN
                        select *
                        from unnest(p_user_ids) as user_id) as foo) as foo2
                 inner join flow.user_position up on up.user_id = foo2.user_id
-                inner join flow.position p on p.id = up.position_id and p.use_slot_schedule is true) as foo3;
+                inner join flow.position p on p.id = up.position_id and p.use_slot_schedule is true
+         where up.primary_flag is true
+           and up.archived is false
+           and ((up.end_date is null and up.start_date <= now())
+             OR now() between up.start_date and up.end_date)) as foo3;
 
   select array_agg(distinct foo3.user_id)
   into v_user_non_sluts
@@ -31,7 +35,11 @@ BEGIN
                        select *
                        from unnest(p_user_ids) as user_id) as foo) as foo2
                 inner join flow.user_position up on up.user_id = foo2.user_id
-                inner join flow.position p on p.id = up.position_id and p.use_slot_schedule is not true) as foo3;
+                inner join flow.position p on p.id = up.position_id and p.use_slot_schedule is not true
+         where up.primary_flag is true
+           and up.archived is false
+           and ((up.end_date is null and up.start_date <= now())
+             OR now() between up.start_date and up.end_date)) as foo3;
 
   return query SELECT array_to_json(array_agg(row_to_json(sub_rows)))
                FROM (

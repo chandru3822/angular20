@@ -12,6 +12,8 @@ import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbContact;
 import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbLink;
 import com.albatross.api.v1.company.blueraven.models.featDB.Incentive;
 import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveDetail;
+import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveType;
+import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveStatus;
 import com.albatross.api.v1.company.blueraven.services.BlueravenCustomFieldValueService;
 import com.albatross.api.v1.flow.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Collections;
 
 @Slf4j
 @Service
@@ -50,6 +53,14 @@ public class IncentiveService {
       IncentiveQuery.detailById, params, new IncentiveDetailMapper<>(IncentiveDetail.class, om));
   }
 
+  public List<IncentiveType> getAllTypes() {
+    return sqlCache.queryBySql(IncentiveQuery.listAllType, Collections.emptyMap(), IncentiveType.class);
+  }
+
+  public List<IncentiveStatus> getAllStatuses() {
+    return sqlCache.queryBySql(IncentiveQuery.getAllStatus, Collections.emptyMap(), IncentiveStatus.class);
+  }
+
   public Optional<IncentiveDetail> simpleUpdate(Incentive incentive) {
     User currentUser = securityService.getCurrentUser();
 
@@ -57,6 +68,8 @@ public class IncentiveService {
     params.put("currentUser", currentUser.trueUserId());
     params.put("incentiveName", incentive.getName());
     params.put("companyStateId", incentive.getCompanyStateId());
+    params.put("typeId", incentive.getTypeId());
+    params.put("statusId", incentive.getStatusId());
     params.put("archived", incentive.getArchived());
     params.put("id", incentive.getId());
 
@@ -71,6 +84,8 @@ public class IncentiveService {
     params.put("currentUser", currentUser.trueUserId());
     params.put("incentiveName", incentive.getName());
     params.put("companyStateId", incentive.getCompanyStateId());
+    params.put("typeId", incentive.getTypeId());
+    params.put("statusId", incentive.getStatusId());
     params.put("archived", incentive.getArchived());
 
     Long id;

@@ -1,14 +1,12 @@
 package com.albatross.api.v1.company.blueraven.controllers.featDB.incentive;
 
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbContact;
-import com.albatross.api.v1.company.blueraven.models.featDB.FeatDbLink;
-import com.albatross.api.v1.company.blueraven.models.featDB.Incentive;
-import com.albatross.api.v1.company.blueraven.models.featDB.IncentiveDetail;
+import com.albatross.api.v1.company.blueraven.models.featDB.*;
 import com.albatross.api.v1.company.blueraven.services.featDB.IncentiveService;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +26,15 @@ public class IncentiveController {
   @GetMapping(value = "/{id}")
   public Optional<IncentiveDetail> getIncentiveById(@PathVariable Long id) {
     return incentiveService.getIncentiveById(id);
+  }
+
+  @GetMapping(value = "/list/type")
+  public List<IncentiveType> getAllType() {
+    return incentiveService.getAllTypes();
+  }
+  @GetMapping(value = "/list/status")
+  public List<IncentiveStatus> getAllStatus() {
+    return incentiveService.getAllStatuses();
   }
 
   @PostMapping(value = "")
