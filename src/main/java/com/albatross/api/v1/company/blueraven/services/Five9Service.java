@@ -47,7 +47,6 @@ public class Five9Service {
   private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
   private Boolean referralValueSet = false;
-  private Boolean dncValueSet = false;
 
   public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, boolean isRetarget, Long leadLevel) {
     if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
