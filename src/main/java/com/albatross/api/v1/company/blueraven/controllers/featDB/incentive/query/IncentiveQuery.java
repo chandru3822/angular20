@@ -10,10 +10,16 @@ public class IncentiveQuery {
                  cs.id as company_state_id,
                  cs.state_id,
                  s.state,
+                 lovit.id as type_id,
+                 lovit.name as type,
+                 lovis.id as status_id,
+                 lovis.name as status,
                  s.abbreviation as state_abbreviation,
                  h.date_created as "dateCreated",
                  h.archived
           FROM brs.feat_db_incentive h
+                   left join brs.list_of_value lovit on lovit.id = h.type_id and lovit.parent_id = 452
+                   left join brs.list_of_value lovis on lovis.id = h.status_id and lovis.parent_id = 2066
                    left join flow.company_state cs on cs.id = h.company_state_id
                    left join flow.state s on s.id = cs.state_id
           ORDER BY s.state, h.name
@@ -25,6 +31,8 @@ public class IncentiveQuery {
           SET name = :incentiveName,
             archived = :archived,
             company_state_id = :companyStateId,
+            type_id = :typeId,
+            status_id = :statusId,
             date_modified = now(),
             modified_by_id = :currentUser
           WHERE id = :id
@@ -37,6 +45,8 @@ public class IncentiveQuery {
             name = :incentiveName,
             archived = :archived,
             company_state_id = :companyStateId,
+            type_id = :typeId,
+            status_id = :statusId,
             date_modified = now(),
             modified_by_id = :currentUser
           WHERE id = :id
@@ -53,8 +63,8 @@ public class IncentiveQuery {
 
   //language=PostgreSQL
   public final static String insert = """
-          INSERT INTO brs.feat_db_incentive(name, archived, company_state_id, date_created, created_by_id,date_modified, modified_by_id)
-          VALUES (:incentiveName, false, :companyStateId, now(), :currentUser, now(), :currentUser)
+          INSERT INTO brs.feat_db_incentive(name, archived, company_state_id, type_id, status_id, date_created, created_by_id,date_modified, modified_by_id)
+          VALUES (:incentiveName, false, :companyStateId, :typeId, :statusId, now(), :currentUser, now(), :currentUser)
     """;
 
   //language=PostgreSQL
@@ -97,10 +107,35 @@ public class IncentiveQuery {
                                       AND aul.feat_db_incentive_id = h.id) links
                        ), '[]') AS links
           FROM brs.feat_db_incentive h
+                   left join brs.feat_db_incentive_custom_field_value fdicfvt on fdicfvt.int_value = h.type_id
+                   left join brs.feat_db_incentive_custom_field_value fdicfvs on fdicfvs.int_value = h.status_id
                    left join flow.company_state cs on cs.id = h.company_state_id
                    left join flow.state s on s.id = cs.state_id
           WHERE h.id = :id
     """;
 
+  //language=PostgreSQL
+  public final static String listAllType = """
+    SELECT
+            lov.id,
+            lov.name as "type",
+            lov.archived
+          FROM brs.list_of_value lov
+          WHERE lov.parent_id = 452
+            AND lov.archived IS FALSE
+          ORDER BY lov.name
+    """;
+
+  //language=PostgreSQL
+  public final static String getAllStatus= """
+    SELECT
+            lov.id,
+            lov.name as "status",
+            lov.archived
+          FROM brs.list_of_value lov
+          WHERE lov.parent_id = 2066
+            AND lov.archived IS FALSE
+          ORDER BY lov.name
+    """;
 
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class IncentiveDetail extends Supplier {
+public class IncentiveDetail extends Incentive {
   private List<FeatDbLink> links;
   private List<FeatDbContact> contacts;
 }

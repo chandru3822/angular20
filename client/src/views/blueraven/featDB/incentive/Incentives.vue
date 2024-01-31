@@ -36,13 +36,39 @@
                                 dense
                                 hide-details
                   ></v-text-field>
-                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select'"
+                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'state'"
                                   :items="states"
                                   v-model="incentiveFilters[header.value].value"
                                   :placeholder="'Select a ' + header.text.toLowerCase()"
                                   clearable
                                   filled
-                                  item-text="state"
+                                  :item-text=header.value
+                                  dense
+                                  type="search"
+                                  autocomplete="off"
+                                  hide-details
+                  ></v-autocomplete>
+                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'type'"
+                                  :items="types"
+                                  v-model="incentiveFilters[header.value].value"
+                                  :placeholder="'Select a ' + header.text.toLowerCase()"
+                                  clearable
+                                  filled
+                                  :item-text=header.value
+                                  item-value="type"
+                                  dense
+                                  type="search"
+                                  autocomplete="off"
+                                  hide-details
+                  ></v-autocomplete>
+                  <v-autocomplete v-else-if="incentiveFilters[header.value].type === 'select' && header.value === 'status'"
+                                  :items="statuses"
+                                  v-model="incentiveFilters[header.value].value"
+                                  :placeholder="'Select a ' + header.text.toLowerCase()"
+                                  clearable
+                                  filled
+                                  :item-text=header.value
+                                  item-value="status"
                                   dense
                                   type="search"
                                   autocomplete="off"
@@ -60,6 +86,12 @@
               </td>
               <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
                 {{ item.state || '' }}
+              </td>
+              <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
+                {{ item.type || '' }}
+              </td>
+              <td class="text-left clickable" @click="$router.push({ path: `incentive/${item.id}/details` })">
+                {{ item.status || '' }}
               </td>
               <td class="text-right">
                 <v-btn :to="`/database/incentive/${item.id}/details`" text x-small fab>
@@ -109,6 +141,24 @@
                           required
                           filled
           ></v-autocomplete>
+          <v-autocomplete label="Type"
+                          :items="types"
+                          v-model="editedItem.typeId"
+                          item-text="type"
+                          item-value="id"
+                          autocomplete="off"
+                          type="search"
+                          filled
+          ></v-autocomplete>
+          <v-autocomplete label="Status"
+                          :items="statuses"
+                          v-model="editedItem.statusId"
+                          item-text="status"
+                          item-value="id"
+                          autocomplete="off"
+                          type="search"
+                          filled
+          ></v-autocomplete>
         </v-card-text>
 
         <v-card-actions>
@@ -129,12 +179,16 @@
           <div class="label-large">Existing Incentive</div>
           <div class="body-medium"><span class="label-medium">Name:</span> {{duplicateIncentiveMatch.name}}</div>
           <div class="body-medium"><span class="label-medium">State:</span> {{duplicateIncentiveMatch.state}}</div>
+          <div class="body-medium"><span class="label-medium">Type:</span> {{duplicateIncentiveMatch.type}}</div>
+          <div class="body-medium"><span class="label-medium">Status:</span> {{duplicateIncentiveMatch.status}}</div>
           <div class="body-medium"><span class="label-medium">Date Created:</span> {{duplicateIncentiveMatch.dateCreated | formatDate('date')}}</div>
         </v-col>
         <v-col v-if="editedItem">
           <div class="label-large">New Data</div>
           <div class="body-medium"><span class="label-medium">Name:</span> {{editedItem.name}}</div>
           <div class="body-medium"><span class="label-medium">State:</span> {{editedItem.state}}</div>
+          <div class="body-medium"><span class="label-medium">Type:</span> {{editedItem.type}}</div>
+          <div class="body-medium"><span class="label-medium">Status:</span> {{editedItem.status}}</div>
         </v-col>
       </v-row>
       <template v-slot:yes>Create</template>
@@ -163,12 +217,18 @@ export default {
     incentiveFilters: {
       name: {value: '', type: 'text', model: 'name'},
       state: {value: [], type: 'select', model: 'state'},
+      type: {value: [], type: 'select', model: 'type'},
+      status: {value: [], type: 'select', model: 'status'}
     },
     states: [],
+    statuses: [],
+    types: [],
     tabs: FEAT_DB_TABS,
     headers: [
       {text: 'Name', value: 'name', width: constants.IS_MOBILE ? 200 : 300, show: true},
       {text: 'State', value: 'state', width: constants.IS_MOBILE ? 150 : 150, show: true},
+      {text: 'Type', value: 'type', width: constants.IS_MOBILE ? 150 : 150, show: true},
+      {text: 'Status', value: 'status', width: constants.IS_MOBILE ? 150 : 150, show: true},
       {text: null, value: 'icons', sortable: false, show: true, width: 50}
     ],
     footerProps: {
@@ -181,6 +241,9 @@ export default {
     incentiveDialog: false,
     editedItem: {
       name: '',
+      statusId: '',
+      typeId: '',
+
     },
     incentives: [],
     addMode: false,
@@ -208,6 +271,8 @@ export default {
             filter.value = []
           } else {
             filter.value = ''
+            // return true here or the first row in the incentive list will disappear when you clear the filters
+            return true
           }
         })
       })
@@ -225,10 +290,38 @@ export default {
   async created() {
     this.$store.commit(AppMutations.SET_LOADING, true)
     this.currentUser = this.$store.state.user.details.id
-    this.fetchStates()
+    await this.fetchStates()
+    await this.getTypes()
+    await this.getStatuses()
     await this.fetchIncentives()
   },
   methods: {
+    async getTypes() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest('/featDb/incentive/list/type', 'blueraven')
+        this.types = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getStatuses() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequest('/featDb/incentive/list/status', 'blueraven')
+        this.statuses = data
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status\'')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
     async fetchIncentives() {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
@@ -259,11 +352,15 @@ export default {
       }
     },
     addItem() {
+      this.getTypes()
+      this.getStatuses()
       this.addMode = true
       this.incentiveDialog = true
     },
     editIncentive (item) {
       this.editedItem = Object.assign({}, item)
+      this.getTypes()
+      this.getStatuses()
       this.addMode = false
       this.incentiveDialog = true
     },
@@ -304,6 +401,8 @@ export default {
         this.incentiveDialog = false
         //add state name for display purposes
         this.editedItem.state = this.states.find(state => state.id === this.editedItem.companyStateId)?.state
+        this.editedItem.type = this.types.find(type => type.id === this.editedItem.typeId)?.type
+        this.editedItem.status = this.statuses.find(status => status.id === this.editedItem.statusId)?.status
         this.duplicateDialog = true
       } else {
         this.saveIncentive()
@@ -314,7 +413,8 @@ export default {
       //step 1: remove all punctuation and whitespaces (we don't care if those match)
       const name1Clean = this.cleanName(name1)
       const name2Clean = this.cleanName(name2)
-      //step 2: check if name1 contains name2 or vice versa, if so they match
+      //step 2: check if name1 contains name2 or vice versa, if so they match.
+      //This is kind of weird but blue raven requested this behavior specifically
       return name2Clean && name1Clean &&
           ((name2Clean.length > 0 && name1Clean.indexOf(name2Clean) >= 0)
           || (name1Clean && name1Clean.length > 0 && name2Clean.indexOf(name1Clean) >= 0))

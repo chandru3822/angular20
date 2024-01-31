@@ -47,7 +47,6 @@ public class Five9Service {
   private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
   private Boolean referralValueSet = false;
-  private Boolean dncValueSet = false;
 
   public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, boolean isRetarget, Long leadLevel) {
     if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
@@ -89,10 +88,7 @@ public class Five9Service {
         ZonedDateTime zonedDateTime = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
         b.addParameter("time_created_mst", formatterTime.format(Date.from(zonedDateTime.toInstant())));
         b.addParameter("date_created_mst", formatterDate.format(new Date()));
-
-        if (!dncValueSet) {
-          b.addParameter("DNC", "false");
-        }
+        b.addParameter("DNC", "false");
 
         if (!referralValueSet) {
           b.addParameter("referral", "false");
@@ -119,6 +115,7 @@ public class Five9Service {
 
       url = b.build().toString().replaceAll("\\+", "%20");
       HttpResponse resp = POST(url, null);
+      log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
       return;
     } catch (Exception e) {
       String msg = "FIVE9: Error in posting contactId="+ contactId + ", msg=" +e.getMessage() + ", url="+url;
@@ -234,7 +231,6 @@ public class Five9Service {
           else {
             b.addParameter("DNC", "false");
           }
-          dncValueSet = true;
           b.addParameter("unqualified_reason", value);
         } else if (cfv.getFieldName().equals("Lead Follow-up Date")) {
           b.addParameter("follow_up_date_time", cfv.getTimestampValue() == null ? "" : cfv.getTimestampValue().toString());

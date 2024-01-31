@@ -41,7 +41,7 @@ public class AnnouncementController {
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
   public Optional<Announcement> saveAnnouncement(@RequestPart Announcement announcement,
-                                                 @RequestPart MultipartFile uploadFile) {
+                                                 @RequestPart(required = false) MultipartFile uploadFile) {
     return announcementService.saveAnnouncement(announcement, uploadFile);
   }
 
