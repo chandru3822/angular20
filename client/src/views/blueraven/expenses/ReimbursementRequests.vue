@@ -67,6 +67,9 @@
             <template slot='item' slot-scope='{ item }'>
               {{ item.code }} - {{ item.description }}
             </template>
+            <template slot='selection' slot-scope='{ item }'>
+              {{ item.code }} - {{ item.description }}
+            </template>
           </v-autocomplete>
           <v-autocomplete v-model="newReimbursementRequest.budgetTypeId"
                           :items="budgetTypes"
@@ -211,12 +214,14 @@
                 <v-autocomplete v-model="selectedRequest.glCodeId"
                                 :items="glCodes"
                                 label="GL Code"
-                                item-text="code"
                                 :rules="requiredRules"
                                 item-value="id"
                                 :filter="searchGlCodes"
                 >
                   <template slot='item' slot-scope='{ item }'>
+                    {{ item.code }} - {{ item.description }}
+                  </template>
+                  <template slot='selection' slot-scope='{ item }'>
                     {{ item.code }} - {{ item.description }}
                   </template>
                 </v-autocomplete>
