@@ -203,6 +203,9 @@
               <template slot='item' slot-scope='{ item }'>
                 {{ item.code }} - {{ item.description }}
               </template>
+              <template slot='selection' slot-scope='{ item }'>
+                {{ item.code }} - {{ item.description }}
+              </template>
             </v-autocomplete>
 
             <v-autocomplete v-model="selectedExpense.budgetTypeId"
@@ -479,8 +482,10 @@ export default {
         let filename = unpaid ? 'unpaid_expenses' : 'expenses.csv'
         let results = []
         let url = unpaid ? '/reimbursement/requests/unpaid' : '/reimbursement/requests/approved'
-        let date1 = moment(this.startDate).format('MM/DD/YYYY')
-        let date2 = moment(this.endDate).format('MM/DD/YYYY')
+        let dateRange1 = getMonthDateRange(this.startMonth, this.startYear)
+        let dateRange2 = getMonthDateRange(this.endMonth, this.endYear)
+        let date1 = dateRange1.startDate
+        let date2 = dateRange2.endDate
         const {data} = await getRequestWithParams(url, {params: {startDate: date1, endDate: date2}}, 'blueraven')
         results = data
 
