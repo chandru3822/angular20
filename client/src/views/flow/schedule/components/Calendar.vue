@@ -419,27 +419,15 @@ import interaction from "@fullcalendar/interaction";
     },
     data() {
       return {
-        resources: [],
-        calendarPlugins: [ resourceTimelinePlugin],
         calendarOptions: {
           plugins: [
               resourceTimelinePlugin, interaction
           ],
           initialView: 'resourceTimelineDay',
-
           resources: [],
           resourceAreaWidth: 300,
-          events:[
-          //   {
-          //     resourceId:123,
-          //     title:'Annette Mayo',
-          //     start: new Date(),
-          //     classNames:['label-medium','event-style', 'pl-5'],
-          //     textColor:" var(--v-accent-base)"
-          //   }
-          ],
-          defaultTimedEventDuration:'02:00',
-
+          events:[],
+          timezone: this.$store.state.user.details.timezone.value || {},
           headerToolbar:{
             left: 'customPrev,customToday,customNext',
             center: 'title',
@@ -521,10 +509,6 @@ import interaction from "@fullcalendar/interaction";
           }
 
         },
-
-
-
-
         snackbar: {},
         calendarLoading: false,
         includeCancelled: false,
@@ -534,24 +518,10 @@ import interaction from "@fullcalendar/interaction";
         calendarView: null,
         calendarStartTime: null,
         calendarEndTime: null,
-        eventSources: [
-          { name: 'Regular Events',
-            events:[
-              {
-                resourceId:123,
-                title:'Annette Mayo',
-                start: new Date(),
-                classNames:['label-medium','event-style', 'pl-5'],
-                textColor:" var(--v-accent-base)"
-              }
-            ],},
-          { name: 'Appt Events',
-            events: [] }
-        ],
-        events: [],
         countSelected: 0,
         maxSelectionAllowed: 10,
         countErrorMessage: 'Maximum Selection Reached',
+        //filters
         selectedStates: [],
         masterOrgs: [],
         orgValuesChanged: false,
@@ -574,6 +544,7 @@ import interaction from "@fullcalendar/interaction";
         previousTypeCount: 0,
         previousPositionCount: 0,
         positionsLoading: true,
+
         mapResourceEvents: [],
         licenseKey: 'GPL-My-Project-Is-Open-Source',
         daySelector: false,
@@ -581,11 +552,6 @@ import interaction from "@fullcalendar/interaction";
         timezone: this.$store.state.user.details.timezone.value,
         calendar: {
           options: {
-            titleFormat:{ month: 'long',
-              year: 'numeric',
-              day: 'numeric',
-              weekday: 'long'
-             },
             slotDuration: '00:30:00',
             slotLabelInterval: '01:00:00',
             slotWidth: 45,
@@ -596,77 +562,7 @@ import interaction from "@fullcalendar/interaction";
             height: 'parent',
             firstDay: 1,
             editable: true,
-            defaultView: 'resourceTimelineDay',
             timezone: this.$store.state.user.details.timezone.value || {},
-            header: {
-              left: 'customPrev,customToday,customNext',
-              center: 'title',
-              right: 'customTimelineDay,customTimelineWeek'
-            },
-
-            customButtons: {
-              customToday: {
-                text: 'Today',
-                click: () => {
-                  let calendarApi = this.$refs.eventCalendar.getApi()
-                  calendarApi.gotoDate(new Date)
-                  // this.setCalendarStartAndEndTimes()
-                  this.getEvents(false, true)
-                }
-              },
-              customPrev: {
-                text: '',
-                icon: 'chevron-left',
-                click: () => {
-                  let calendarApi = this.$refs.eventCalendar.getApi()
-                  calendarApi.prev()
-                  // this.setCalendarStartAndEndTimes()
-                  this.getEvents(false, true)
-                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-                }
-              },
-              customNext: {
-                text: '',
-                icon: 'chevron-right',
-                click: () => {
-                  let calendarApi = this.$refs.eventCalendar.getApi()
-                  calendarApi.next()
-                  // this.setCalendarStartAndEndTimes()
-                  this.getEvents(false, true)
-                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-                }
-              },
-              customTimelineDay: {
-                text: 'day',
-                id:'customTimelineDay',
-                click: () => {
-                  let calendarApi = this.$refs.eventCalendar.getApi()
-                  if(calendarApi.view.type !== 'resourceTimelineDay') {
-                    this.$refs.daySelectionbtn.$el.click()
-                    //this is very hacky; it would be way better if we could update the library to the version where the weekday header
-                    //click works instead of doing this wacky work around, but that requires a major refactor
-                  } else {
-                    this.switchToDayView()
-                  }
-                }
-              },
-              customTimelineWeek: {
-                text: 'week',
-                click: () => {
-                  this.calendar.options.minTime = '06:00:00'
-                  this.calendar.options.maxTime = '22:00:00'
-                  this.calendar.options.slotDuration = '01:00:00'
-                  this.calendar.options.slotLabelInterval = '02:00:00'
-                  this.calendar.options.slotWidth = 25
-                  this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
-
-                  let calendarApi = this.$refs.eventCalendar.getApi()
-                  calendarApi.changeView('resourceTimelineWeek')
-                  this.getEvents(false, true)
-                  this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-                }
-              },
-            }
           }
         },
         timezones: [
@@ -691,6 +587,18 @@ import interaction from "@fullcalendar/interaction";
             isSlotTime:true,
             display: "inverse-background",
             backgroundColor: 'lightpink',
+            resourceId: 123,
+            groupId: 123,
+            start: "2024-01-29T20:00:00+00:00",
+            systemListTypeId: 2,
+          }, {
+            allDay: false,
+            dayOfWeekId: 5,
+            daylightSavings: null,
+            end: "2024-01-29T21:30:00+00:00",
+            isSlotTime:true,
+            display: "background",
+            backgroundColor: 'purple',
             resourceId: 123,
             groupId: 123,
             start: "2024-01-29T20:00:00+00:00",
@@ -869,19 +777,21 @@ import interaction from "@fullcalendar/interaction";
             timezone: this.timezone
           }
           const {data} = await postRequest(`/schedule/availability`, params)
-          debugger
-          console.log('return data', data);
+
           data?.forEach(d => {
             if (d.allDay) {
               d.start = moment.utc(d.start).format('YYYY-MM-DD')
               d.end = moment.utc(d.end).format('YYYY-MM-DD')
+            }
+            if(d.rendering){
+              d.display = d.ren
             }
 
             d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
             d.backgroundColor = 'var(--v-grey-darken1)'
 
-            if(!d.isSlotTime && (d.display === 'inverse-background' || d.display ==='inverse-background')) {
+            if(!d.isSlotTime && d.display === 'inverse-background') {
               //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
               //do start time
               if(d.daylightSavings && !moment(d.start).isDST()) {
@@ -907,7 +817,7 @@ import interaction from "@fullcalendar/interaction";
             data.push({
                 start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
                 end: moment.utc(this.calendarStartTime).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-                title: null,
+                title: 'TEST',
                 display: 'background',
                 allDay: false,
                 //these values have already been pre-appended with the 1 or 2
@@ -916,10 +826,9 @@ import interaction from "@fullcalendar/interaction";
                 backgroundColor: 'var(--v-grey-darken1)'
               })
           })
+          let eventSource = cloneDeep(data)
+          this.calendarApi.addEventSource(eventSource)
 
-          this.calendarOptions.eventSources[1].events = cloneDeep(data)
-          this.calendarApi.addEventSource(this.calendarOptions.eventSources[1])
-          debugger
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
@@ -953,13 +862,6 @@ import interaction from "@fullcalendar/interaction";
             this.setCalendarStartAndEndTimes()
           }
           this.calendarInitialRender = false
-          // note: this gets called every render of the calendar which makes clicking the 'day' and 'week' buttons work
-          this.calendarOptions.eventSources = [
-            { name: 'Regular Events',
-              events: [] },
-            { name: 'Appt Events',
-              events: [] }
-          ]
           if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
             //i do this here instead of on its own because all of the code above here has to happen for get availability as well
             this.calendarLoading = true
@@ -976,7 +878,6 @@ import interaction from "@fullcalendar/interaction";
                 includeCancelled: this.includeCancelled
               }
               const {data} = await postRequest(`/schedule`, params)
-              debugger
               data.forEach(d => {
                 // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
                 // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
@@ -989,11 +890,12 @@ import interaction from "@fullcalendar/interaction";
                   d.textColor = '#919191'
                 } else {
                   d.colorForBorder = matchingResource?.color
+                  d.textColor = 'var(--v-primary-base)'
                 }
               })
               // console.log('the events: ',data)
-              this.calendarOptions.eventSources[0].events = cloneDeep(data)
-              this.calendarApi.addEventSource(this.calendarOptions.eventSources[0])
+              let events = cloneDeep(data)
+              this.calendarApi.addEventSource(events)
 
               this.calendarLoading = false
             } catch (e) {
