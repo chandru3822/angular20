@@ -36,7 +36,9 @@
           single-line
           hide-details
         ></v-text-field>
-        <div class="d-flex justify-space-between flex-wrap">
+        <div class="d-flex flex-wrap"
+             :class="{'justify-space-between' : $vuetify.breakpoint.smAndUp}">
+
           <div class="my-2" :class="{'text-no-wrap' : $vuetify.breakpoint.lgAndUp}">
             <v-btn  class="my-2 mr-3" :color="compare ? 'white' : 'primary'"
                     :class="{'primary--text': compare, 'white--text' : !compare}"
@@ -87,7 +89,7 @@
         <div v-if="filteredAttachmentTypes.length === 0" class="body-medium text-center">No documents found.</div>
         <v-expansion-panels v-model="opened" accordion multiple flat class=".rounded-0 condensed" v-if="!attachmentTypesLoading">
           <v-expansion-panel v-for="(type, index) in filteredAttachmentTypes" :key="type.attachmentTypeId">
-            <v-expansion-panel-header v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === true" class="albatross-body-1">
+            <v-expansion-panel-header v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false" class="albatross-body-1">
               <template v-slot:default="{ open }">
                 <v-row v-if="(allowUpload || forceShowUploadBtn)"
                        class="file-hover d-flex"
@@ -155,7 +157,7 @@
                 :count-selected="selectedAttachmentsForCompare.length"
               ></AttachmentsTable>
             </v-expansion-panel-content>
-            <v-divider v-if="index !== attachmentTypes.length - 1 && (getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === true)" class="mx-3"></v-divider>
+            <v-divider v-if="index !== attachmentTypes.length - 1 && (getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false)" class="mx-3"></v-divider>
           </v-expansion-panel>
         </v-expansion-panels>
       </v-card>
@@ -307,7 +309,7 @@ export default {
       return this.$vuetify.breakpoint.smAndDown
     },
     hideEmptyFolderDisplayName() {
-      return this.hideEmptyFolderStatus === true ? 'Hide Empty Folders' : 'Show Empty Folders'
+      return this.hideEmptyFolderStatus === false ? 'Hide Empty Folders' : 'Show Empty Folders'
     },
     disableHideEmptyFolderSwitch() {
       return this.search != null && this.search !== ''
