@@ -1148,7 +1148,6 @@
   @media (min-width: 600px){
     .filter-bar-mini{
       display: none;
-      flex-wrap: wrap;
     }
   }
   @media(max-width: 600px){
@@ -1157,6 +1156,11 @@
     }
     .checkbox-container-mini{
       padding-left: 20px;
+    }
+
+    #company-dash-container {
+      overflow: auto;
+      padding: 4px;
     }
   }
 </style>
