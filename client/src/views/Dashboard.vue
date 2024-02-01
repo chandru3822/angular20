@@ -239,38 +239,38 @@
           </v-tooltip>
       </template>
 
-      <template #item.actualTotal2="{item, index}" class="milestone-col-td" v-if="secondDateRange != null && column2Values != null && column2Values.length > 0">
+      <template #item.actualTotal2="{item, index}" class="milestone-col-td" v-if="secondDateRange != null && filteredColumn2Values != null && filteredColumn2Values.length > 0">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 2)">
-              {{column2Values[index].company_count?column2Values[index].company_count:0}}
+              {{filteredColumn2Values[index].company_count?filteredColumn2Values[index].company_count:0}}
               <span v-if="getDropdownById(secondDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
-                <span v-if="viewTrends && column2Values[index].trend_count>0" class="positive-percentage">+{{column2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                <span v-if="viewTrends && column2Values[index].trend_count<0" class="negative-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                <span v-if="viewTrends && (column2Values[index].trend_count === null || column2Values[index].trend_count==0)" class="neutral-percentage">{{column2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+                <span v-if="viewTrends && filteredColumn2Values[index].trend_count>0" class="positive-percentage">+{{filteredColumn2Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && filteredColumn2Values[index].trend_count<0" class="negative-percentage">{{filteredColumn2Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+                <span v-if="viewTrends && (filteredColumn2Values[index].trend_count === null || filteredColumn2Values[index].trend_count==0)" class="neutral-percentage">{{filteredColumn2Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
               </span>
             </span>
           </template>
-          <span v-if="viewTrends && column2Values[index].trend_count>0"> {{Math.abs(column2Values[index].trend_count)/100 | percent}} more than {{getDropdownById(secondDateRange).trendText}}</span>
-          <span v-if="viewTrends && column2Values[index].trend_count<0"> {{Math.abs(column2Values[index].trend_count)/100 | percent}} less than {{getDropdownById(secondDateRange).trendText}}</span>
-          <span v-if="viewTrends && (column2Values[index].trend_count ===null || column2Values[index].trend_count===0)"> Same as {{getDropdownById(secondDateRange).trendText}}</span>
+          <span v-if="viewTrends && filteredColumn2Values[index].trend_count>0"> {{Math.abs(filteredColumn2Values[index].trend_count)/100 | percent}} more than {{getDropdownById(secondDateRange).trendText}}</span>
+          <span v-if="viewTrends && filteredColumn2Values[index].trend_count<0"> {{Math.abs(filteredColumn2Values[index].trend_count)/100 | percent}} less than {{getDropdownById(secondDateRange).trendText}}</span>
+          <span v-if="viewTrends && (filteredColumn2Values[index].trend_count ===null || filteredColumn2Values[index].trend_count===0)"> Same as {{getDropdownById(secondDateRange).trendText}}</span>
         </v-tooltip>
       </template>
-      <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && column3Values != null && column3Values.length > 0">
+      <template #item.actualTotal3="{item, index}" class="milestone-col-td" v-if="thirdDateRange != null && filteredColumn3Values != null && filteredColumn3Values.length > 0">
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
             <span @click="openDrilldown(item, 3)">
-            {{column3Values[index]?.company_count ? column3Values[index].company_count : 0}}
+            {{filteredColumn3Values[index]?.company_count ? filteredColumn3Values[index].company_count : 0}}
               <span v-if="getDropdownById(thirdDateRange)?.name != 'ALL_TIME'" v-on="viewTrends?on:null">
-                <span v-if="viewTrends && column3Values[index].trend_count>0" class="positive-percentage">+{{column3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
-                <span v-if="viewTrends && column3Values[index].trend_count<0" class="negative-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
-                <span v-if="viewTrends && (column3Values[index].trend_count === null || column3Values[index].trend_count === 0)" class="neutral-percentage">{{column3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
+                <span v-if="viewTrends && filteredColumn3Values[index].trend_count>0" class="positive-percentage">+{{filteredColumn3Values[index].trend_count/100 | percent}}<v-icon class="positive-trendline">trending_up</v-icon></span>
+                <span v-if="viewTrends && filteredColumn3Values[index].trend_count<0" class="negative-percentage">{{filteredColumn3Values[index].trend_count/100 | percent}}<v-icon class="negative-trendline">trending_down</v-icon></span>
+                <span v-if="viewTrends && (filteredColumn3Values[index].trend_count === null || filteredColumn3Values[index].trend_count === 0)" class="neutral-percentage">{{filteredColumn3Values[index].trend_count/100 | percent}}<v-icon class="neutral-trendline">trending_flat</v-icon></span>
               </span>
             </span>
           </template>
-          <span v-if="viewTrends && column3Values[index].trend_count>0"> {{Math.abs(column3Values[index].trend_count)/100 | percent}} more than {{getDropdownById(thirdDateRange).trendText}}</span>
-          <span v-if="viewTrends && column3Values[index].trend_count<0"> {{Math.abs(column3Values[index].trend_count)/100 | percent}} less than {{getDropdownById(thirdDateRange).trendText}}</span>
-          <span v-if="viewTrends && (column3Values[index].trend_count ===null || column3Values[index].trend_count===0)"> Same as {{getDropdownById(thirdDateRange).trendText}}</span>
+          <span v-if="viewTrends && filteredColumn3Values[index].trend_count>0"> {{Math.abs(filteredColumn3Values[index].trend_count)/100 | percent}} more than {{getDropdownById(thirdDateRange).trendText}}</span>
+          <span v-if="viewTrends && filteredColumn3Values[index].trend_count<0"> {{Math.abs(filteredColumn3Values[index].trend_count)/100 | percent}} less than {{getDropdownById(thirdDateRange).trendText}}</span>
+          <span v-if="viewTrends && (filteredColumn3Values[index].trend_count ===null || filteredColumn3Values[index].trend_count===0)"> Same as {{getDropdownById(thirdDateRange).trendText}}</span>
         </v-tooltip>
       </template>
     </v-data-table>
@@ -447,6 +447,18 @@
           return this.dashValues.filter(dv => dv.major_milestone)
         }
         return this.dashValues
+      },
+      filteredColumn2Values(){
+        if(this.viewMajorMilestones){
+          return this.column2Values.filter(dv => dv.major_milestone)
+        }
+        return this.column2Values
+      },
+      filteredColumn3Values(){
+        if(this.viewMajorMilestones){
+          return this.column3Values.filter(dv => dv.major_milestone)
+        }
+        return this.column3Values
       },
       additionalStartWeek () {
         if (this.currentPeriod > 9) {
@@ -859,7 +871,7 @@
             }
             else
             {
-              csvData += ((this.dropdownValues.find(x => x.id === this.secondDateRange).name === 'CUSTOM') ? this.secondCustom.name : this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
+              csvData += ', ' + ((this.dropdownValues.find(x => x.id === this.secondDateRange).name === 'CUSTOM') ? this.secondCustom.name : this.dropdownValues.find(x => x.id === this.secondDateRange).friendlyName);
             }
             if(this.viewTrends){
               csvData += ', ' +  'Trend 2'
@@ -871,7 +883,7 @@
             }
             else
             {
-              csvData += ((this.dropdownValues.find(x => x.id === this.thirdDateRange).name === 'CUSTOM') ? this.thirdCustom.name : this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName);
+              csvData += ', ' + ((this.dropdownValues.find(x => x.id === this.thirdDateRange).name === 'CUSTOM') ? this.thirdCustom.name : this.dropdownValues.find(x => x.id === this.thirdDateRange).friendlyName);
             }
             if(this.viewTrends){
               csvData += ', ' +  'Trend 3'
