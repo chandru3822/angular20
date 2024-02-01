@@ -3,7 +3,14 @@
     <v-row>
       <v-col cols="12">
         <v-app-bar dense tabs color="white" class="elevation-1 mb-1">
-          <v-toolbar-title>Expense Management</v-toolbar-title>
+          <v-toolbar-title>
+            <v-btn fab text v-if="userIsAdmin"
+                   small color="primary" class="mr-2 hide-xs" @click="goToPath('')">
+              <v-icon v-if="manage">mdi-view-list</v-icon>
+              <v-icon v-else>settings</v-icon>
+            </v-btn>
+            Expense Management
+          </v-toolbar-title>
           <v-tabs :optional="false" color="primary"
                   slot="extension"
                   background-color="white" v-model="model" slider-color="primary">
@@ -24,41 +31,65 @@
     name: 'Expenses',
     computed: {
       displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
+        return this.tabs.filter(tab => tab.display && tab.manage === this.manage)
+      },
+      manage() {
+        return this.$route.path.includes('manage')
       }
+    },
+    created() {
     },
     data() {
       return {
         snackbar: {},
         model: '',
+        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN'),
         tabs: [
           {
-            label: 'Budget Types',
-            path: '/expenses/budgetTypes',
+            label: 'Monthly Budgets',
+            path: '/expenses/manage/monthlyBudgets',
+            manage: true,
             display: this.$store.getters.userHasFeature('EXPENSES')
           },
           {
-            label: 'Monthly Budgets',
-            path: '/expenses/monthlyBudgets',
+            label: 'Budget Templates',
+            path: '/expenses/manage/budgetTemplates',
+            manage: true,
+            display: this.$store.getters.userHasFeature('EXPENSES')
+          },
+          {
+            label: 'Budget Types',
+            path: '/expenses/manage/budgetTypes',
+            manage: true,
             display: this.$store.getters.userHasFeature('EXPENSES')
           },
           {
             label: 'GL Codes',
-            path: '/expenses/glCodes',
+            path: '/expenses/manage/glCodes',
+            manage: true,
             display: this.$store.getters.userHasFeature('EXPENSES')
           },
         {
           label: 'Reimbursement Requests',
           path: '/expenses/reimbursementRequests',
+          manage: false,
           display: this.$store.getters.userHasFeature('EXPENSES')
         }, {
           label: 'Submitted Expenses',
           path: '/expenses/submittedExpenses',
+            manage: false,
           display: this.$store.getters.userHasFeature('EXPENSES')
         }]
       }
     },
     methods: {
+      goToPath() {
+        if(this.manage) {
+          this.$router.push('/expenses/reimbursementRequests')
+        } else {
+          this.$router.push('/expenses/manage/monthlyBudgets')
+        }
+      },
     }
   }
 </script>

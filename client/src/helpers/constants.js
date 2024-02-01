@@ -26,6 +26,20 @@ constants.SCREEN_WIDTH = window.innerWidth
 constants.MAX_FILE_SIZE = 1048576000 //1 gb
 constants.ACTIVITIES_SHOWN = 20
 constants.BYPASS_REQUIREMENT_IMMUTABLE_TYPE_IDS=[7,8,9,10,11]
+constants.MONTHS = [
+  {id: 1, name: 'January'},
+  {id: 2, name: 'February'},
+  {id: 3, name: 'March'},
+  {id: 4, name: 'April'},
+  {id: 5, name: 'May'},
+  {id: 6, name: 'June'},
+  {id: 7, name: 'July'},
+  {id: 8, name: 'August'},
+  {id: 9, name: 'September'},
+  {id: 10, name: 'October'},
+  {id: 11, name: 'November'},
+  {id: 12, name: 'December'}
+]
 
 //dont put spaces in these strings of file extentions
 //all regular image files, plus some one-offs

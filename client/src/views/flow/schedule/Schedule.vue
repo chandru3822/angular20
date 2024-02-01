@@ -839,7 +839,7 @@
 
 <style lang="scss" scoped>
   .map-row {
-    height: 60%;
+    height: 100%;
     min-height: 300px;
   }
 

@@ -1,20 +1,11 @@
 package com.albatross.api.v1.company.blueraven.services.expenses;
 
-import com.albatross.api.convert.JsonCollectionDeserializer;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.models.expenses.Expense;
 import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementRequest;
-import com.albatross.api.v1.company.blueraven.models.expenses.ReimbursementUserSearch;
-import com.albatross.api.v1.company.blueraven.services.expenses.queries.ExpenseQuery;
 import com.albatross.api.v1.company.blueraven.services.expenses.queries.ReimbursementQuery;
 import com.albatross.api.v1.flow.model.User;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -31,52 +22,31 @@ public class ReimbursementService {
 
   private final SqlCache sqlCache;
   private final SecurityService securityService;
-  private final ObjectMapper om;
 
 
-  public Long updateRequest(ReimbursementRequest reimbursementRequest) {
+  public Long updateRequest(ReimbursementRequest reimbursementRequest, Boolean doApproval) {
     User currentUser = securityService.getCurrentUser();
 
-    Long statusId = 3L;
-
-    //add the sales area
     HashMap<String, Object> params = new HashMap<>();
     params.put("amount", reimbursementRequest.getAmount());
     params.put("details", reimbursementRequest.getDetails());
     params.put("attachmentId", reimbursementRequest.getAttachmentId());
     params.put("expenseBudgetId", reimbursementRequest.getExpenseBudgetId());
-    params.put("createdById", currentUser.trueUserId());
+    params.put("budgetTypeId", reimbursementRequest.getBudgetTypeId());
+    params.put("glCodeId", reimbursementRequest.getGlCodeId());
+    params.put("userId", currentUser.trueUserId());
     params.put("expenseDate", reimbursementRequest.getExpenseDate());
+    params.put("setApprovalFields", doApproval);
+    //null id with a status_id = 1 means an admin submitted it and it should be marked approved
+    params.put("statusId", reimbursementRequest.getReimbursementRequestStatusId() != null ? reimbursementRequest.getReimbursementRequestStatusId() : 3L); //3 = pending
     Long id;
-    if (reimbursementRequest.getId() != null && reimbursementRequest.getReimbursementRequestStatusId() == null) {
+
+    if (reimbursementRequest.getId() != null) {
+      id = reimbursementRequest.getId();
       params.put("id", reimbursementRequest.getId());
-      params.put("statusId", statusId);
-      id = sqlCache.updateBySqlReturningId(ReimbursementQuery.update, params, "id").longValue();
-    } else if (reimbursementRequest.getId() != null
-               && reimbursementRequest.getReimbursementRequestStatusId() != null
-               && reimbursementRequest.getReimbursementRequestStatusId() == 1L) {
-      //use this if they are approving the request to go to the finance screen
-      params.put("id", reimbursementRequest.getId());
-      params.put("statusId", reimbursementRequest.getReimbursementRequestStatusId());
-      id = sqlCache.updateBySqlReturningId(ReimbursementQuery.update, params, "id").longValue();
+      sqlCache.updateBySql(ReimbursementQuery.update, params);
     } else {
-      //if this is a new request and the user making request is not the same as the budget user, mark it as pending supervisor approval
-      //unless it is Austin Thompson submitting to Dane's budget
-      Long userId = currentUser.trueUserId();
-
-      if (reimbursementRequest.getExpenseBudgetUserId() != null
-          && !userId.equals(reimbursementRequest.getExpenseBudgetUserId())
-          && !(userId.equals(2354046L) && reimbursementRequest.getExpenseBudgetUserId().equals(2353912L))) {
-        statusId = 6L;
-      }
-      params.put("statusId", statusId);
-
-      if (reimbursementRequest.getId() != null) {
-        params.put("id", reimbursementRequest.getId());
-        id = sqlCache.updateBySqlReturningId(ReimbursementQuery.update, params, "id").longValue();
-      } else {
-        id = sqlCache.updateBySqlReturningId(ReimbursementQuery.insert, params, "id").longValue();
-      }
+      id = sqlCache.updateBySqlReturningId(ReimbursementQuery.insert, params, "id").longValue();
     }
     return id;
   }
@@ -94,15 +64,10 @@ public class ReimbursementService {
       params.put("notes", reimbursementRequest.getNotes());
       sqlCache.updateBySql(ReimbursementQuery.saveReimbursementNote, params);
     }
-
-    //if they reject the request then we need to also reject the expenses associated with the request
-    if (reimbursementRequest.getReimbursementRequestStatusId() == 2) {
-      sqlCache.updateBySql(ExpenseQuery.rejectExpensesWhenRequestIsRejected, params);
-    }
   }
 
   public List<ReimbursementRequest> getPendingReimbursementRequests() {
-    return sqlCache.queryBySql(ReimbursementQuery.getPendingRequests, Collections.emptyMap(), new ReimbursementRequestMapper<>(ReimbursementRequest.class, om));
+    return sqlCache.queryBySql(ReimbursementQuery.getPendingRequests, Collections.emptyMap(), ReimbursementRequest.class);
   }
 
   public List<ReimbursementRequest> getRequestsForUserByStatus(Long statusId, String startDate, String endDate) {
@@ -117,61 +82,48 @@ public class ReimbursementService {
     return sqlCache.queryBySql(ReimbursementQuery.getRequestsForUserByStatus, params, ReimbursementRequest.class);
   }
 
-  public List<User> getAllReimbursementUsers(ReimbursementUserSearch usersSearch) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("searchText", usersSearch.getQuery());
-//        leaving this here in case they change their minds. this line only show those who can submit a request, the new one just shows all active users
-//        List<User> results = sqlCache.queryBySql(ReimbursementQuery.getAllReimbursementUsers", params, User.class);
-    return sqlCache.queryBySql(ReimbursementQuery.getAllActiveUsers, params, User.class);
-  }
-
-  public List<ReimbursementRequest> getRequestsForSupervisorByStatus(Long statusId) {
+  public void deleteRequest(Long id) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
-    params.put("supervisorId", currentUser.getId());
-    params.put("statusId", statusId);
-
-    return sqlCache.queryBySql(ReimbursementQuery.getRequestsForSupervisorByStatus, params, ReimbursementRequest.class);
+    params.put("id", id);
+    params.put("userId", currentUser.trueUserId());
+    //mark the request as deleted
+    sqlCache.updateBySql(ReimbursementQuery.deleteRequest, params);
   }
 
-  public String getMonthlySubmittedReport(String startDate, String endDate) {
+  public List<ReimbursementRequest> getApprovedRequests(String startDate, String endDate) {
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    params.put("onlyUnpaid", false);
+
+    return sqlCache.queryBySql(ReimbursementQuery.getRequestList, params, ReimbursementRequest.class);
+  }
+
+
+  public List<ReimbursementRequest> getUnpaidRequests() {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("startDate", null);
+    params.put("endDate", null);
+    params.put("onlyUnpaid", true);
+    return sqlCache.queryBySql(ReimbursementQuery.getRequestList, params, ReimbursementRequest.class);
+  }
+
+  public void markRequestsPaid(List<ReimbursementRequest> requests) {
     User currentUser = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
     params.put("userId", currentUser.getId());
-    params.put("startDate", startDate);
-    params.put("endDate", endDate);
 
-    Optional<String> result = sqlCache.getBySql(ReimbursementQuery.getMonthlySubmittedReport, params, new SingleColumnRowMapper<>(String.class));
-    return result.orElse("{}");
-  }
+    for (ReimbursementRequest request : requests) {
+      params.put("id", request.getId());
+     sqlCache.updateBySql(ReimbursementQuery.markRequestPaid, params);
 
-  public void deleteRequest(Long id) {
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("id", id);
-    //mark the request as deleted
-    sqlCache.updateBySql(ReimbursementQuery.deleteRequest, params);
-
-    //delete any expenses with the same request
-    sqlCache.updateBySql(ReimbursementQuery.deleteExpensesForRequest, params);
-  }
-
-  public static class ReimbursementRequestMapper<T> extends BeanPropertyRowMapper<T> {
-    private final ObjectMapper objectMapper;
-
-    public ReimbursementRequestMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
-      super(mappedClass);
-      this.objectMapper = objectMapper;
     }
 
-    @Override
-    protected void initBeanWrapper(BeanWrapper bw) {
-      TypeReference<List<Expense>> expensesTypeRef = new TypeReference<>() {
-      };
-      bw.registerCustomEditor(List.class, "expenses",
-        new JsonCollectionDeserializer(expensesTypeRef, objectMapper));
-    }
   }
+
 
 }

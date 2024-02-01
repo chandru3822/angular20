@@ -147,9 +147,7 @@
 
 
       <template v-slot:back-btn>
-        <v-btn fab text small color="primary" class="mr-2 hide-xs" @click="goToPath('/contacts')">
-          <v-icon>mdi-view-list</v-icon>
-        </v-btn>
+
       </template>
       <template v-slot:header-btn>
         <div class="mt-3">
