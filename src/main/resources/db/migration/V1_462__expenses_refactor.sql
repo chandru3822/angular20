@@ -26,7 +26,7 @@ where t1.rr_id = rr.id;
 
 update brs.reimbursement_request rr
 set budget_type_id = (
-    select deprecated_budget_type_id from brs.expense_budget eb
+    select budget_type_id from brs.expense_budget eb
     where rr.expense_budget_id = eb.id
 )
 where rr.budget_type_id is null;
