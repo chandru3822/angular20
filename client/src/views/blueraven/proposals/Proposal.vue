@@ -43,7 +43,7 @@
                     :z-index="250"
                     :max-width="375">
               <template #activator="{on, attrs }">
-                <v-btn text v-on="on" v-bind="attrs" :disabled="!userIsAdmin"
+                <v-btn text v-on="on" v-bind="attrs" :disabled="!userIsAdmin && !userCanManage"
                        @click="loadProposalVersions()">
                   v.{{ proposal.version }}
                 </v-btn>
@@ -265,6 +265,7 @@ export default {
       isIntersecting: false,
       loading: false,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN'),
+      userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'MANAGE'),
       proposalId: parseInt(this.$route.params.proposalId),
       versionMenu: false,
       loadingVersions: true,
