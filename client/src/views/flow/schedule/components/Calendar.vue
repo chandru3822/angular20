@@ -150,7 +150,7 @@
                           item-text="orgName"
                           item-value="id"
                           @input="[orgValuesChanged = true, limiter()]"
-                          @blur="getEvents(true)"
+                          @blur="reloadCalendar"
                           attach
           >
             <template
@@ -178,7 +178,7 @@
                           item-text="fullName"
                           item-value="id"
                           @input="[userValuesChanged = true, limiter()]"
-                          @blur="getEvents(false)"
+                          @blur="reloadCalendar"
                           attach
           >
             <template
@@ -210,7 +210,7 @@
               hide-details
               class="fix-switch-color cancelled-event-switch mt-0"
               label="Cancelled Events"
-              @change="getEvents(null)"
+              @change="reloadCalendar"
             />
         </v-col>
         <v-col><v-btn @click="testEvents">test</v-btn></v-col>
@@ -370,7 +370,7 @@ import interaction from "@fullcalendar/interaction";
       this.setCalendarStartAndEndTimes()
       //when getEvents was placed in the calendar it loaded before the calendar dates were set: :view-skeleton-render="getEvents"
       //placing here seems to have solved that
-      this.getEvents()
+      // this.getEvents()
     },
     watch: {
       '$store.state.user.details.timezone.value': function () {
@@ -426,88 +426,77 @@ import interaction from "@fullcalendar/interaction";
           initialView: 'resourceTimelineDay',
           resources: [],
           resourceAreaWidth: 300,
-          events:[],
-          timezone: this.$store.state.user.details.timezone.value || {},
+          eventSources:[
+            (info, successCallback, failureCallback) => this.goGetEventsNow(info, successCallback, failureCallback)
+          ],
+          eventClick: (eventClickInfo) => this.handleEventClick(eventClickInfo),
+          navLinks: true,
+          navLinkDayClick: "resourceTimeline",
+          slotLabelDidMount:function ({el, date, view, level}) {
+            //this is a workaround because the day headers on the week view take you to the wrong view,
+            // and they don't trigger navLinkDayClick
+            if(view.type === "resourceTimelineWeek" && level === 0) {
+              let elA = el.querySelector('a')
+              if(elA.dataset.navlink === ''){
+                elA.onclick = () => {
+                  view.calendar.changeView("resourceTimelineDay", date);
+                }
+              }
+            }
+          },
           headerToolbar:{
-            left: 'customPrev,customToday,customNext',
+            left: 'prev,customToday,next',
             center: 'title',
-            right: 'customTimelineDay,customTimelineWeek'          },
+            right: 'resourceTimelineDay,resourceTimelineWeek'
+          },
           titleFormat:{ month: 'long',
             year: 'numeric',
             day: 'numeric',
             weekday: 'long'
           },
           height: '100%',
-          dateClick: (info) => {
-            let calendarApi = this.$refs.eventCalendar.getApi()
-            calendarApi.gotoDate(info.date)
-            // this.setCalendarStartAndEndTimes()
-            this.getEvents(false, true)
-          },
+
           customButtons: {
             customToday: {
               text: 'Today',
-              click: async () => {                let calendarApi = this.$refs.eventCalendar.getApi()
+              click: async () => {
+                let calendarApi = this.$refs.eventCalendar.getApi()
                 calendarApi.gotoDate(new Date)
-                // this.setCalendarStartAndEndTimes()
-                await this.getEvents(false, true)
                 this.handlePinsOnDayChange()
               }
             },
-            customPrev: {
-              text: '',
-              icon: 'chevron-left',
-              click: async () => {
-                let calendarApi = this.$refs.eventCalendar.getApi()
-                calendarApi.prev()
-                // this.setCalendarStartAndEndTimes()
-                await this.getEvents(false, true)
-                this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-                this.handlePinsOnDayChange()
-              }
-            },
-            customNext: {
-              text: '',
-              icon: 'chevron-right',
-              click: async () => {                let calendarApi = this.$refs.eventCalendar.getApi()
-                calendarApi.next()
-                // this.setCalendarStartAndEndTimes()
-                await this.getEvents(false, true)
-                this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-                this.handlePinsOnDayChange()
-              }
-            },
-            customTimelineDay: {
-              text: 'day',
-              id:'customTimelineDay',
-              click: () => {
-                let calendarApi = this.$refs.eventCalendar.getApi()
-                if(calendarApi.view.type !== 'resourceTimelineDay') {
-                  this.$refs.daySelectionbtn.$el.click()
-                  //this is very hacky; it would be way better if we could update the library to the version where the weekday header
-                  //click works instead of doing this wacky work around, but that requires a major refactor
-                } else {
-                  this.switchToDayView()
-                }
-              }
-            },
-            customTimelineWeek: {
-              text: 'week',
-              click: async () => {
-                this.calendar.options.minTime = '06:00:00'
-                this.calendar.options.maxTime = '22:00:00'
-                this.calendar.options.slotDuration = '01:00:00'
-                this.calendar.options.slotLabelInterval = '02:00:00'
-                this.calendar.options.slotWidth = 25
-                this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
-
-                let calendarApi = this.$refs.eventCalendar.getApi()
-                calendarApi.changeView('resourceTimelineWeek')
-                await this.getEvents(false, true)
-                this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-                this.handlePinsOnDayChange()
-              }
-            },
+            // customTimelineDay: {
+            //   text: 'day',
+            //   id:'customTimelineDay',
+            //   click: () => {
+            //     debugger
+            //     let calendarApi = this.$refs.eventCalendar.getApi()
+            //     if(calendarApi.view.type !== 'resourceTimelineDay') {
+            //       this.$refs.daySelectionbtn.$el.click()
+            //       //this is very hacky; it would be way better if we could update the library to the version where the weekday header
+            //       //click works instead of doing this wacky work around, but that requires a major refactor
+            //     } else {
+            //       this.switchToDayView()
+            //     }
+            //   }
+            // },
+            // customTimelineWeek: {
+            //   text: 'week',
+            //   click: async () => {
+            //     this.calendar.options.minTime = '06:00:00'
+            //     this.calendar.options.maxTime = '22:00:00'
+            //     this.calendar.options.slotDuration = '01:00:00'
+            //     this.calendar.options.slotLabelInterval = '02:00:00'
+            //     this.calendar.options.slotWidth = 25
+            //     this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric'}
+            //
+            //     let calendarApi = this.$refs.eventCalendar.getApi()
+            //     calendarApi.changeView('resourceTimelineWeek')
+            //     // await this.getEvents(false, true)
+            //     this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+            //     this.handlePinsOnDayChange()
+            //   }
+            // },
           }
 
         },
@@ -580,8 +569,77 @@ import interaction from "@fullcalendar/interaction";
       }
     },
     methods: {
+      reloadCalendar(){
+        let calendarApi = this.$refs.eventCalendar.getApi()
+        calendarApi.refetchEvents()
+      },
       testEvents(){
         this.calendarApi.addEventSource( [
+          {
+            resourceId: 123,
+            companyId: null,
+            systemListId: null,
+            processStepId: 1,
+            systemListTypeId: 2,
+            projectId: 928254,
+            projectProcessStepId: 7756519,
+            stateId: null,
+            processStepStatusTypeId: 1,
+            companyProcessStepStatusTypeId: 76,
+            startCustomFieldValueId: null,
+            startCustomFieldGroupAssignmentId: null,
+            endCustomFieldValueId: null,
+            endCustomFieldGroupAssignmentId: null,
+            resourceCustomFieldValueId: null,
+            resourceCustomFieldGroupAssignmentId: null,
+            contactId: 3137606,
+            eventId: 14,
+            projectProcessStepEventId: 1946171,
+            processStepEventId: 14,
+            companyEventStatusTypeId: null,
+            eventStatusTypeId: 1,
+            saveVersion: 1,
+            customFieldDisplayValueGroupAssignmentId: null,
+            userId: 2453218,
+            resourceName: "Aaron Jacobson",
+            groupName: null,
+            contactFirstName: "Ibrahim",
+            contactLastName: "Hassen",
+            contactFullName: null,
+            projectName: "Ibrahim Hassen",
+            processStepName: "Closer Appointment",
+            state: "Minnesota",
+            processStepStatusType: "Pending Event",
+            startFieldName: null,
+            endFieldName: null,
+            resourceFieldName: null,
+            street1: "412 egret Blvd nw coonrapids",
+            city: "MINNEAPOLIS",
+            stateAbbreviation: "MN",
+            postalCode: "55448",
+            phone: "+16129900659",
+            mobile: null,
+            eventName: "Closer Appointment",
+            eventStatusType: null,
+            companyEventStatusType: null,
+            archived: null,
+            startFieldReadOnly: null,
+            endFieldReadOnly: null,
+            resourceFieldReadOnly: null,
+            forceSave: null,
+            latitude: 45.1636,
+            longitude: -93.27732,
+            start: "2024-02-01T20:00:00.000+00:00",
+            end: "2024-02-01T21:30:00.000+00:00",
+            resources: null,
+            systemListOptionIds: null,
+            customFieldDisplayValue: null,
+            title: `<b>Ibrahim Hassen</b> <br/> Closer Appointment`,
+            hoverTitle: "Ibrahim Hassen \n Closer Appointment \n 2:00 pm - 3:30 pm",
+            colorForBorder: "#e7211b",
+            textColor: "var(--v-primary-base)",
+            classNames:['event-tile', 'event-tile-red']
+                    },
           {
             allDay: false,
             dayOfWeekId: 5,
@@ -609,24 +667,11 @@ import interaction from "@fullcalendar/interaction";
           }
         ])
       },
-      async switchToDayView(dayOption){
-        let calendarApi = this.$refs.eventCalendar.getApi()
-        this.calendar.options.slotDuration = '00:30:00'
-        this.calendar.options.minTime = '02:00:00'
-        this.calendar.options.maxTime = '23:00:00'
-        this.calendar.options.slotLabelInterval = '01:00:00'
-        this.calendar.options.slotWidth = 45
-        this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
-        let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
-        calendarApi.changeView('resourceTimelineDay', day)
-        await this.getEvents(false, true)
-        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-        this.handlePinsOnDayChange()
-      },
       handleResourceColors() {
         this.calendarOptions.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'
           r.eventBorderColor = '#919191'
+          r.eventColorClass = this.getColorClass(index)
 
           //the event will come get this later
           if(index <= 19) {
@@ -660,6 +705,9 @@ import interaction from "@fullcalendar/interaction";
         }
         this.dayOptions = dayOptions
       },
+
+
+      //filter functions
       toggleSelectAllStates () {
         this.$nextTick(() => {
           if (this.selectAllStates) {
@@ -771,75 +819,6 @@ import interaction from "@fullcalendar/interaction";
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async getAvailability() {
-        try {
-          let params = {
-            orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
-            startTime: this.calendarStartTime,
-            endTime: this.calendarEndTime,
-            timezone: this.timezone
-          }
-          const {data} = await postRequest(`/schedule/availability`, params)
-
-          data?.forEach(d => {
-            if (d.allDay) {
-              d.start = moment.utc(d.start).format('YYYY-MM-DD')
-              d.end = moment.utc(d.end).format('YYYY-MM-DD')
-            }
-            if(d.rendering){
-              d.display = d.ren
-            }
-
-            d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
-            d.backgroundColor = 'var(--v-grey-darken1)'
-
-            if(!d.isSlotTime && d.display === 'inverse-background') {
-              //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
-              //do start time
-              if(d.daylightSavings && !moment(d.start).isDST()) {
-                d.start = moment.utc(d.start).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              } else if (!d.daylightSavings && moment(d.start).isDST()) {
-                //else if the day was NOT saved during DST, but now IS DST, then add an hour
-                d.start = moment.utc(d.start).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              }
-              //do end time
-              if(d.daylightSavings && !moment(d.end).isDST()) {
-                d.end = moment.utc(d.end).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              } else if (!d.daylightSavings && moment(d.end).isDST()) {
-                //else if the day was NOT saved during DST, but now IS DST, then add an hour
-                d.end = moment.utc(d.end).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
-              }
-            }
-          })
-
-          //we do this for every resource, regardless of if they already have an availability or not
-          // if they already have one it still works as it should and doesn't block out the time, but if they
-          // dont already have one then this will block/grey out the day so it doesn't look like they are available
-          this.calendarOptions.resources.forEach(r => {
-            data.push({
-                start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-                end: moment.utc(this.calendarStartTime).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-                title: 'TEST',
-                display: 'background',
-                allDay: false,
-                //these values have already been pre-appended with the 1 or 2
-                groupId: r.id,
-                resourceId: r.id,
-                backgroundColor: 'var(--v-grey-darken1)'
-              })
-          })
-          let eventSource = cloneDeep(data)
-          this.calendarApi.addEventSource(eventSource)
-
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
       limiter() {
         this.countSelected = this.selectedOrgs?.length + this.selectedUsers?.length
         this.orgs.forEach(o => {
@@ -851,146 +830,54 @@ import interaction from "@fullcalendar/interaction";
           u.disabled = !match && this.countSelected >= this.maxSelectionAllowed
         })
       },
-      async getEvents(isOrgs, reload) {
-        //if `isOrgs` is not passed in, it is because we don't know it (came from v-switch change)
-        if(null == isOrgs) {
-          isOrgs = this.selectedOrgs?.length > 0
-          this.orgValuesChanged = true
-          this.userValuesChanged = true
-        }
-
-        //dont reload events if they deselected all of one type and only load if the selected values changed
-        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender))
-          || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
-          if (reload || !this.calendarInitialRender) {
-            this.setCalendarStartAndEndTimes()
-          }
-          this.calendarInitialRender = false
-          if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
-            //i do this here instead of on its own because all of the code above here has to happen for get availability as well
-            this.calendarLoading = true
-            await this.getAvailability()
-
-            try {
-              let params = {
-                orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
-                // this was the old way. leaving here in case
-                // userPositionIds: this.getUserPositionIds(),
-                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
-                startTime: this.calendarStartTime,
-                endTime: this.calendarEndTime,
-                includeCancelled: this.includeCancelled
-              }
-              const {data} = await postRequest(`/schedule`, params)
-              data.forEach(d => {
-                // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
-                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
-                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
-                d.title = `<b>${d.contactFirstName ?? ''} ${d.contactLastName ?? ''}</b> <br/> ${d.eventName}`
-                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
-                let matchingResource = this.calendarOptions.resources.find(r => r.id === d.resourceId)
-                if(d.eventStatusTypeId === 3) {
-                  d.colorForBorder = '#919191'
-                  d.textColor = '#919191'
-                } else {
-                  d.colorForBorder = matchingResource?.color
-                  d.textColor = 'var(--v-primary-base)'
-                }
-              })
-              // console.log('the events: ',data)
-              let events = cloneDeep(data)
-              this.calendarApi.addEventSource(events)
-
-              this.calendarLoading = false
-            } catch (e) {
-              console.error('*** ERROR ***', e)
-              this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.calendarLoading = false
-            } finally {
-              this.orgValuesChanged = false
-              this.userValuesChanged = false
+      filterOrgsAndUsers() {
+        //todo: figure out when this is used
+        //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
+        let stateFilterRequired = this.selectedStates?.length > 0
+        let stateReset = this.previousStateCount > 0 && this.selectedStates?.length === 0
+        this.previousStateCount = this.selectedStates?.length
+        let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
+        let typeReset = this.previousTypeCount > 0 && this.selectedOrgTypes?.length === 0
+        this.previousTypeCount = this.selectedOrgTypes?.length
+        let positionFilterRequired = this.selectedPositions?.length > 0
+        let positionReset = this.previousPositionCount > 0 && this.selectedOrgTypes?.length === 0
+        this.previousPositionCount = this.selectedPositions?.length
+        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
+          this.orgs = this.masterOrgs.filter(mo => {
+            let stateMatch = true
+            let orgTypeMatch = true
+            if(stateFilterRequired) {
+              let match = this.selectedStates.find(ss => ss.stateId === mo.stateId)
+              stateMatch = match !== null && match !== undefined
             }
-          }
+            if(orgTypeFilterRequired) {
+              let match = this.selectedOrgTypes.find(sot => sot.id === mo.orgTypeId)
+              orgTypeMatch = match !== null && match !== undefined
+            }
+            return stateMatch && orgTypeMatch
+          })
+          let selectedPositionIds = this.selectedPositions.map(p => p.id)
+          let selectedStateIds = this.selectedStates.map(s => s.stateId)
+          this.users = this.masterUsers.filter(mo => {
+            let stateMatch = true
+            let positionMatch = true
+            if(stateFilterRequired) {
+              stateMatch = mo.userPositions.some(up => {
+                return selectedStateIds.includes(up.stateId)
+              })
+            }
+            if(positionFilterRequired) {
+              positionMatch = mo?.userPositions.some(up => {
+                return selectedPositionIds.includes(up.positionId)
+              })
+            }
+            return stateMatch && positionMatch
+          })
         }
       },
-      // getUserPositionIds () {
-      //   let userPositionIds = []
-      //   this.selectedUsers?.forEach(su => {
-      //     su.userPositions.forEach(up => {
-      //       //up.id = userPositionId
-      //       userPositionIds.push(up.id)
-      //     })
-      //   })
-      //   return userPositionIds
-      // },
-      getFormattedDate(date) {
-        //used for formatting the start/end for the hoverTitle
-        return this.$filters.formatDate(date, 'timestamp', 'h:mm a')
-      },
-      setCalendarStartAndEndTimes () {
-        this.calendarStart = this.calendarApi.getDate()
-        this.calendarView = this.calendarApi.view?.type
-        if(this.calendarView === 'resourceTimelineDay') {
-          this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
-          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
-        } else {
-          //moment starts on sunday, isoWeek starts on monday
-          this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-          this.calendarEndTime = moment(this.calendarStart).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
-        }
-        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
-      },
-      handleEventClick (info) {
-        if(info.event.title && !info.event.display && !info.event.display) {
-          let props = info.event.extendedProps
-          //open event clicks in new window every time so they dont have to keep reloading the calendar
-          let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
-          window.open(routerData.href, '_blank')
-          // this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}`})
-        }
-      },
-      handleEventRender (info) {
-        //3 types of display. null = regular scheduled events,
-        // background = blocked out from start to end, (resource_appointments)
-        // inverse-background = blocked before start and after end (resource_schedule_availability)
-        if(info.event.display === 'background' || info.event.display === 'background') {
-          info.el.textContent = info.event.title
-          info.el.style.cssText += `font-size: 11px; padding-left: 5px; cursor: default; margin-left: 1px; margin-right: 1px; opacity: 1; color: black; overflow: hidden; border: solid 1px black;`
-          info.el.title = info.event.title + ': ' + moment(info.event.start).format('h:mm') + '-' + moment(info.event.end).format('h:mm')
-        } else if(info.event.display !== 'inverse-background' && info.event.display !== 'inverse-background') {
-          info.el.querySelector('.fc-title').innerHTML = info.event.title
-          info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
-          //this gives normal events a hover
-          info.el.title = info.event.extendedProps.hoverTitle
-        }
-      },
-      handleResourceRender (renderInfo) {
-        let checkbox = document.createElement('INPUT');
-        checkbox.setAttribute('type', 'checkbox')
-        checkbox.setAttribute('class', 'mr-2')
 
-        checkbox.onchange = (event) => {
-          this.handlePopulatingMapPins(event.target.checked, renderInfo.resource, true, true)
-        }
 
-        //if this is an org (first char === 1) then make it a hyperlink to the org screen
-        // console.log('resource: ', renderInfo)
-        let isOrg = false
-        let anchorHref = ''
-        if(renderInfo?.resource?.id?.charAt(0) === '1') {
-          isOrg = true
-          let orgId = renderInfo?.resource?.id?.substring(1)
-          anchorHref = getHostUrl() + '/org/' + orgId
-        }
-        renderInfo.el.querySelector('.fc-cell-text').innerHTML = isOrg ?
-          "<a target='_blank' href=" + anchorHref + ">" + renderInfo.resource.title + "</a>" :
-          "<span>" + renderInfo.resource.title + "</span>"
-        renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
-
-      },
+      //map functions
       handlePinsOnDayChange() {
         this.mapResourceEvents = []
         this.checkedResources.forEach((r, idx) => {
@@ -1034,62 +921,404 @@ import interaction from "@fullcalendar/interaction";
           this.callback(this.mapResourceEvents)
         }
       },
+
+
+      //calendar event functions
+      async getAvailability(info) {
+        try {
+          let params = {
+            orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+            userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+            startTime: info.start,
+            endTime: info.end,
+            timezone: this.timezone
+          }
+          const {data} = await postRequest(`/schedule/availability`, params)
+
+          data?.forEach(d => {
+            if (d.allDay) {
+              d.start = moment.utc(d.start).format('YYYY-MM-DD')
+              d.end = moment.utc(d.end).format('YYYY-MM-DD')
+            }
+            //todo: should probably find where this is coming from on the back end and fix it there
+            if(d.rendering){
+              d.display = d.rendering
+            }
+
+            d.groupId = Number(`${d.systemListTypeId}${d.resourceId}`)
+            d.resourceId = Number(`${d.systemListTypeId}${d.resourceId}`)
+            d.backgroundColor = 'var(--v-grey-darken1)'
+
+
+
+            if(!d.isSlotTime && d.display === 'inverse-background') {
+              //if the availability is not coming from a slot schedule AND not a personal appt then do some time adjustments re:DST
+              //do start time
+              if(d.daylightSavings && !moment(d.start).isDST()) {
+                d.start = moment.utc(d.start).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              } else if (!d.daylightSavings && moment(d.start).isDST()) {
+                //else if the day was NOT saved during DST, but now IS DST, then add an hour
+                d.start = moment.utc(d.start).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              }
+              //do end time
+              if(d.daylightSavings && !moment(d.end).isDST()) {
+                d.end = moment.utc(d.end).add(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              } else if (!d.daylightSavings && moment(d.end).isDST()) {
+                //else if the day was NOT saved during DST, but now IS DST, then add an hour
+                d.end = moment.utc(d.end).subtract(1, 'h').format('YYYY-MM-DDTHH:mm:ssZ')
+              }
+            }
+
+            if(d.display === 'background'){
+              d.title = d.title + ': ' + moment(d.start).format('h:mm') + '-' + moment(d.end).format('h:mm')
+            }
+          })
+
+          //we do this for every resource, regardless of if they already have an availability or not
+          // if they already have one it still works as it should and doesn't block out the time, but if they
+          // dont already have one then this will block/grey out the day so it doesn't look like they are available
+          this.calendarOptions.resources.forEach(r => {
+            data.push({
+              start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              end: moment.utc(this.calendarStartTime).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              title: '',
+              display: 'background',
+              allDay: false,
+              //these values have already been pre-appended with the 1 or 2
+              groupId: r.id,
+              resourceId: r.id,
+              backgroundColor: 'var(--v-grey-darken1)'
+            })
+          })
+          let eventSource = cloneDeep(data)
+          this.calendarApi.addEventSource(eventSource)
+
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Availability')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.$store.commit(AppMutations.SET_LOADING, false)
+        }
+      },
+      async goGetEventsNow(info, successCallback, failureCallback){
+        if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
+          //i do this here instead of on its own because all of the code above here has to happen for get availability as well
+          this.calendarLoading = true
+          await this.getAvailability(info)
+
+          try {
+            let params = {
+              orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+              // this was the old way. leaving here in case
+              // userPositionIds: this.getUserPositionIds(),
+              userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+              startTime: info.start,
+              endTime: info.end,
+              includeCancelled: this.includeCancelled
+            }
+            const {data} = await postRequest(`/schedule`, params)
+            data.forEach(d => {
+              d.id = d.eventId
+              // d.resourceId = `${d.systemListTypeId}${d.resourceId}`
+              // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+              d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+              d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
+              d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
+              let matchingResource = this.calendarOptions.resources.find(r => r.id === d.resourceId)
+              if(d.eventStatusTypeId === 3) {
+                d.colorForBorder = '#919191'
+                d.textColor = '#919191'
+              } else {
+                d.colorForBorder = matchingResource?.color
+                d.textColor = 'var(--v-primary-base)'
+                d.classNames=['event-tile', matchingResource?.eventColorClass]
+              }
+            })
+            // console.log('the events: ',data)
+            let events = cloneDeep(data)
+            successCallback(events)
+            this.calendarLoading = false
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
+            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            failureCallback(e)
+            this.calendarLoading = false
+          } finally {
+            this.orgValuesChanged = false
+            this.userValuesChanged = false
+          }
+        }
+        successCallback([])
+      },
+      handleEventClick (info) {
+        //todo: make this work again
+        if(info.event.title && !info.event.display && !info.event.display) {
+          let props = info.event.extendedProps
+          //open event clicks in new window every time so they dont have to keep reloading the calendar
+          let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
+          window.open(routerData.href, '_blank')
+          // this.$router.push({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}`})
+        }
+      },
+      getColorClass(index){
+        const colorClassList = [
+          'event-tile-red', 'event-tile-light-green', 'event-tile-teal', 'event-tile-yellow',
+          'event-tile-sky-blue', 'event-tile-purple', 'event-tile-grey', 'event-tile-orange',
+          'event-tile-dark-red', 'event-tile-blue', 'event-tile-green', 'event-tile-dark-purple',
+          'event-tile-brown', 'event-tile-seafoam', 'event-tile-pink', 'event-tile-light-teal',
+          'event-tile-dark-grey', 'event-tile-maroon', 'event-tile-navy', 'event-tile-olive'
+        ]
+        return colorClassList[index%20]
+      },
       async changeTimezone (tz) {
+        //todo: make this work only here
         await this.$store.dispatch(UserActions.CHANGE_TIMEZONE, tz)
-        //todo: actually save it to the DB
         // i dont think we have to refresh, the filter should do that for us
         // window.location.reload()
       },
-      filterOrgsAndUsers() {
-        //only filter if something is selected or deselected back down to 0 length - cant watch these values because we don't want to call the function on the change but only on blur
-        let stateFilterRequired = this.selectedStates?.length > 0
-        let stateReset = this.previousStateCount > 0 && this.selectedStates?.length === 0
-        this.previousStateCount = this.selectedStates?.length
-        let orgTypeFilterRequired = this.selectedOrgTypes?.length > 0
-        let typeReset = this.previousTypeCount > 0 && this.selectedOrgTypes?.length === 0
-        this.previousTypeCount = this.selectedOrgTypes?.length
-        let positionFilterRequired = this.selectedPositions?.length > 0
-        let positionReset = this.previousPositionCount > 0 && this.selectedOrgTypes?.length === 0
-        this.previousPositionCount = this.selectedPositions?.length
-        if(stateFilterRequired || orgTypeFilterRequired || positionFilterRequired || stateReset || typeReset || positionReset) {
-          this.orgs = this.masterOrgs.filter(mo => {
-            let stateMatch = true
-            let orgTypeMatch = true
-            if(stateFilterRequired) {
-              let match = this.selectedStates.find(ss => ss.stateId === mo.stateId)
-              stateMatch = match !== null && match !== undefined
-            }
-            if(orgTypeFilterRequired) {
-              let match = this.selectedOrgTypes.find(sot => sot.id === mo.orgTypeId)
-              orgTypeMatch = match !== null && match !== undefined
-            }
-            return stateMatch && orgTypeMatch
-          })
-          let selectedPositionIds = this.selectedPositions.map(p => p.id)
-          let selectedStateIds = this.selectedStates.map(s => s.stateId)
-          this.users = this.masterUsers.filter(mo => {
-            let stateMatch = true
-            let positionMatch = true
-            if(stateFilterRequired) {
-              stateMatch = mo.userPositions.some(up => {
-                return selectedStateIds.includes(up.stateId)
-              })
-            }
-            if(positionFilterRequired) {
-              positionMatch = mo?.userPositions.some(up => {
-                return selectedPositionIds.includes(up.positionId)
-              })
-            }
-            return stateMatch && positionMatch
-          })
+
+
+
+      getFormattedDate(date) {
+        //used for formatting the start/end for the hoverTitle
+        return this.$filters.formatDate(date, 'timestamp', 'h:mm a')
+      },
+      setCalendarStartAndEndTimes () {
+        this.calendarStart = this.calendarApi.getDate()
+        this.calendarView = this.calendarApi.view?.type
+        if(this.calendarView === 'resourceTimelineDay') {
+          this.calendarStartTime = moment(this.calendarStart).startOf('d').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).add(1, 'd').startOf('d').subtract(1, 's').utc().format('YYYY-MM-DD HH:mm:ss')
+          // this.calendarStartTime = moment(this.calendarStart).tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+          // this.calendarEndTime = moment(this.calendarStart).add(1, 'd').tz(this.$store.state.user.details.timezone.value).format('YYYY-MM-DD')
+        } else {
+          //moment starts on sunday, isoWeek starts on monday
+          this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
+          this.calendarEndTime = moment(this.calendarStart).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
         }
-      }
+        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+      },
+
+      //todo: determine if these are used now
+      handleEventRender (info) {
+        console.log('handleEventRender')
+        //3 types of display. null = regular scheduled events,
+        // background = blocked out from start to end, (resource_appointments)
+        // inverse-background = blocked before start and after end (resource_schedule_availability)
+        if(info.event.display === 'background') {
+          info.el.textContent = info.event.title
+          return ['background-event']
+        } else if(info.event.display !== 'inverse-background') {
+          info.el.querySelector('.fc-title').innerHTML = info.event.title
+          info.el.style.cssText += `border-left-color: ${info.event.extendedProps.colorForBorder}; border-left-width: 20px; height: 20px; overflow: hidden;`
+          // return ['event-tile', getColorClass()]
+
+
+          //this gives normal events a hover
+          info.el.title = info.event.extendedProps.hoverTitle
+        }
+      },
+      handleResourceRender (renderInfo) {
+        console.log('handleResourceRender')
+        let checkbox = document.createElement('INPUT');
+        checkbox.setAttribute('type', 'checkbox')
+        checkbox.setAttribute('class', 'mr-2')
+
+        checkbox.onchange = (event) => {
+          this.handlePopulatingMapPins(event.target.checked, renderInfo.resource, true, true)
+        }
+
+        //if this is an org (first char === 1) then make it a hyperlink to the org screen
+        // console.log('resource: ', renderInfo)
+        let isOrg = false
+        let anchorHref = ''
+        if(renderInfo?.resource?.id?.charAt(0) === '1') {
+          isOrg = true
+          let orgId = renderInfo?.resource?.id?.substring(1)
+          anchorHref = getHostUrl() + '/org/' + orgId
+        }
+        renderInfo.el.querySelector('.fc-cell-text').innerHTML = isOrg ?
+          "<a target='_blank' href=" + anchorHref + ">" + renderInfo.resource.title + "</a>" :
+          "<span>" + renderInfo.resource.title + "</span>"
+        renderInfo.el.querySelector('.fc-cell-text').prepend(checkbox)
+
+      },
+
+
+
+      /*Functions that will probably go away*/
+      async switchToDayView(dayOption){
+        let calendarApi = this.$refs.eventCalendar.getApi()
+        this.calendar.options.slotDuration = '00:30:00'
+        this.calendar.options.minTime = '02:00:00'
+        this.calendar.options.maxTime = '23:00:00'
+        this.calendar.options.slotLabelInterval = '01:00:00'
+        this.calendar.options.slotWidth = 45
+        this.calendar.options.titleFormat = { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long'}
+        let day = dayOption ? moment.utc(dayOption.rawDate).format('YYYY-MM-DD') : null
+        calendarApi.changeView('resourceTimelineDay', day)
+        // await this.getEvents(false, true)
+        this.dateCallback(this.calendarStartTime, this.calendarEndTime)
+        this.handlePinsOnDayChange()
+      },
+      async getEvents(isOrgs, reload) {
+        //if `isOrgs` is not passed in, it is because we don't know it (came from v-switch change)
+        if(null == isOrgs) {
+          isOrgs = this.selectedOrgs?.length > 0
+          this.orgValuesChanged = true
+          this.userValuesChanged = true
+        }
+
+        //dont reload events if they deselected all of one type and only load if the selected values changed
+        if(reload || (isOrgs && this.selectedOrgs?.length > 0 && (this.orgValuesChanged || this.calendarInitialRender))
+            || (!isOrgs && this.selectedUsers?.length > 0 && (this.userValuesChanged || this.calendarInitialRender))) {
+          if (reload || !this.calendarInitialRender) {
+            this.setCalendarStartAndEndTimes()
+          }
+          this.calendarInitialRender = false
+          if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
+            //i do this here instead of on its own because all of the code above here has to happen for get availability as well
+            this.calendarLoading = true
+            await this.getAvailability()
+
+            try {
+              let params = {
+                orgIds: this.selectedOrgs?.length > 0 ? this.selectedOrgs.map(o => o.masterId) : [],
+                // this was the old way. leaving here in case
+                // userPositionIds: this.getUserPositionIds(),
+                userIds: this.selectedUsers?.length > 0 ? this.selectedUsers.map(u => u.masterId) : [],
+                startTime: this.calendarStartTime,
+                endTime: this.calendarEndTime,
+                includeCancelled: this.includeCancelled
+              }
+              const {data} = await postRequest(`/schedule`, params)
+              data.forEach(d => {
+                // if resource is a user show on calender using userId so that if they have multiple positions we can load all of them into the same user row on the calendar
+                d.resourceId = d.userId ? `${d.systemListTypeId}${d.userId}` : `${d.systemListTypeId}${d.resourceId}`
+                d.title = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName}`
+                d.hoverTitle = `${d.contactFirstName ?? ''} ${d.contactLastName ?? ''} \n ${d.eventName} \n ${this.getFormattedDate(d.start)} - ${this.getFormattedDate(d.end)}`
+                let matchingResource = this.calendarOptions.resources.find(r => r.id === d.resourceId)
+                if(d.eventStatusTypeId === 3) {
+                  d.colorForBorder = '#919191'
+                  d.textColor = '#919191'
+                } else {
+                  d.colorForBorder = matchingResource?.color
+                  d.textColor = 'var(--v-primary-base)'
+                  d.classNames=['event-tile', matchingResource?.eventColorClass]
+                }
+              })
+              // console.log('the events: ',data)
+              let events = cloneDeep(data)
+              // this.calendarApi.addEventSource(events)
+
+              this.calendarLoading = false
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error Retrieving Events')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.calendarLoading = false
+            } finally {
+              this.orgValuesChanged = false
+              this.userValuesChanged = false
+            }
+          }
+        }
+      },
+      // getUserPositionIds () {
+      //   let userPositionIds = []
+      //   this.selectedUsers?.forEach(su => {
+      //     su.userPositions.forEach(up => {
+      //       //up.id = userPositionId
+      //       userPositionIds.push(up.id)
+      //     })
+      //   })
+      //   return userPositionIds
+      // },
+
 
     }
   }
 </script>
 
 <style lang="scss">
+
+.event-tile{
+  border-left-width: 20px;
+  height: 20px;
+  overflow: hidden;
+}
+.event-tile-red {
+  border-left-color: #e7211b !important;
+}
+.event-tile-light-green {
+  border-left-color: #39b942;
+}
+.event-tile-teal {
+  border-left-color: #181e1e;
+}
+.event-tile-yellow {
+  border-left-color: #eceb50;
+}
+.event-tile-sky-blue {
+  border-left-color: #3ca5d6;
+}
+.event-tile-purple {
+  border-left-color: #9e4ed6;
+}
+.event-tile-grey {
+  border-left-color: #919393;
+}
+.event-tile-orange {
+  border-left-color: #e68f35;
+}
+.event-tile-dark-red {
+  border-left-color: #770909;
+}
+.event-tile-blue {
+  border-left-color: #1013c1;
+}
+.event-tile-green {
+  border-left-color: #074f0a;
+}
+.event-tile-dark-purple {
+  border-left-color: #42063e;
+}
+.event-tile-brown {
+  border-left-color: #402e11;
+}
+.event-tile-seafoam {
+  border-left-color: #98ffd5;
+}
+.event-tile-pink {
+  border-left-color: #ff7f9e;
+}
+.event-tile-light-teal {
+  border-left-color: #00fffc;
+}
+.event-tile-dark-grey {
+  border-left-color: #3f3f3f;
+}
+.event-tile-maroon {
+  border-left-color: #840046;
+}
+.event-tile-navy {
+  border-left-color: #3a0080;
+}
+.event-tile-olive {
+  border-left-color: #575f00;
+}
+.background-event {
+  font-size: 11px;
+  padding-left: 5px;
+  cursor: default;
+  margin-left: 1px;
+  margin-right: 1px;
+  opacity: 1;
+  color: black;
+  overflow: hidden;
+  border: solid 1px black;
+}
   #calendar-container .fc-timeline-event {
     /*height: inherit;*/
     border-radius: 5px;

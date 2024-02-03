@@ -129,9 +129,9 @@
 </template>
 
 <script>
-  import '@fullcalendar/core/main.css'
-  import '@fullcalendar/timeline/main.css'
-  import '@fullcalendar/resource-timeline/main.css'
+  import '@fullcalendar/core'
+  import '@fullcalendar/timeline'
+  import '@fullcalendar/resource-timeline'
 
   import FullCalendar from '@fullcalendar/vue'
   import resourceTimelinePlugin from '@fullcalendar/resource-timeline'
