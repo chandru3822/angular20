@@ -295,9 +295,9 @@ export default {
       }
     },
     async lockProposal() {
-      console.log("required", this.requiredFields)
-      return false
-        if (this.proposal.locked || this.requiredFields.length > 0) {
+      // console.log("required", this.requiredFields)
+      // return false
+      if (this.proposal.locked || this.requiredFields.length > 0) {
         return
       }
 
