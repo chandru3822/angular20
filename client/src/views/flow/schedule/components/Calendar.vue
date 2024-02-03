@@ -1010,7 +1010,6 @@ import interaction from "@fullcalendar/interaction";
         }
       },
       async goGetEventsNow(info, successCallback, failureCallback){
-        debugger
         if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
           //i do this here instead of on its own because all of the code above here has to happen for get availability as well
           this.calendarLoading = true
@@ -1047,7 +1046,6 @@ import interaction from "@fullcalendar/interaction";
             // console.log('the events: ',data)
             let events = cloneDeep(data)
             events = events.concat(availabilityData)
-            debugger
             successCallback(events)
             this.calendarLoading = false
           } catch (e) {
