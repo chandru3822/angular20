@@ -989,8 +989,8 @@ import interaction from "@fullcalendar/interaction";
           // dont already have one then this will block/grey out the day so it doesn't look like they are available
           this.calendarOptions.resources.forEach(r => {
             data.push({
-              start: moment.utc(this.calendarStartTime).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
-              end: moment.utc(this.calendarStartTime).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              start: moment.utc(info.start).startOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
+              end: moment.utc(info.end).endOf('d').format('YYYY-MM-DDTHH:mm:ssZ'),
               title: '',
               display: 'background',
               allDay: false,
@@ -1000,8 +1000,7 @@ import interaction from "@fullcalendar/interaction";
               backgroundColor: 'var(--v-grey-darken1)'
             })
           })
-          let eventSource = cloneDeep(data)
-          this.calendarApi.addEventSource(eventSource)
+          return data;
 
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -1011,10 +1010,11 @@ import interaction from "@fullcalendar/interaction";
         }
       },
       async goGetEventsNow(info, successCallback, failureCallback){
+        debugger
         if (this.selectedOrgs.length > 0 || this.selectedUsers.length > 0) {
           //i do this here instead of on its own because all of the code above here has to happen for get availability as well
           this.calendarLoading = true
-          await this.getAvailability(info)
+         const availabilityData = await this.getAvailability(info);
 
           try {
             let params = {
@@ -1046,6 +1046,8 @@ import interaction from "@fullcalendar/interaction";
             })
             // console.log('the events: ',data)
             let events = cloneDeep(data)
+            events = events.concat(availabilityData)
+            debugger
             successCallback(events)
             this.calendarLoading = false
           } catch (e) {
@@ -1261,61 +1263,62 @@ import interaction from "@fullcalendar/interaction";
   border-left-color: #e7211b !important;
 }
 .event-tile-light-green {
-  border-left-color: #39b942;
+  border-left-color: #39b942 !important;
 }
 .event-tile-teal {
-  border-left-color: #181e1e;
+  border-left-color: #076270 !important; //I like this color better b/c the other looks black
+  //border-left-color: #181e1e !important;
 }
 .event-tile-yellow {
-  border-left-color: #eceb50;
+  border-left-color: #eceb50 !important;
 }
 .event-tile-sky-blue {
-  border-left-color: #3ca5d6;
+  border-left-color: #3ca5d6 !important;
 }
 .event-tile-purple {
-  border-left-color: #9e4ed6;
+  border-left-color: #9e4ed6 !important;
 }
 .event-tile-grey {
-  border-left-color: #919393;
+  border-left-color: #919393 !important;
 }
 .event-tile-orange {
-  border-left-color: #e68f35;
+  border-left-color: #e68f35 !important;
 }
 .event-tile-dark-red {
-  border-left-color: #770909;
+  border-left-color: #770909 !important;
 }
 .event-tile-blue {
-  border-left-color: #1013c1;
+  border-left-color: #1013c1 !important;
 }
 .event-tile-green {
-  border-left-color: #074f0a;
+  border-left-color: #074f0a !important;
 }
 .event-tile-dark-purple {
-  border-left-color: #42063e;
+  border-left-color: #42063e !important;
 }
 .event-tile-brown {
-  border-left-color: #402e11;
+  border-left-color: #402e11 !important;
 }
 .event-tile-seafoam {
-  border-left-color: #98ffd5;
+  border-left-color: #98ffd5 !important;
 }
 .event-tile-pink {
-  border-left-color: #ff7f9e;
+  border-left-color: #ff7f9e !important;
 }
 .event-tile-light-teal {
-  border-left-color: #00fffc;
+  border-left-color: #00fffc !important;
 }
 .event-tile-dark-grey {
-  border-left-color: #3f3f3f;
+  border-left-color: #3f3f3f !important;
 }
 .event-tile-maroon {
-  border-left-color: #840046;
+  border-left-color: #840046 !important;
 }
 .event-tile-navy {
-  border-left-color: #3a0080;
+  border-left-color: #3a0080 !important;
 }
 .event-tile-olive {
-  border-left-color: #575f00;
+  border-left-color: #575f00 !important;
 }
 .background-event {
   font-size: 11px;
