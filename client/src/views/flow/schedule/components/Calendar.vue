@@ -1052,8 +1052,7 @@ import interaction from "@fullcalendar/interaction";
         successCallback([])
       },
       handleEventClick (info) {
-        //todo: make this work again
-        if(info.event.title && !info.event.display && !info.event.display) {
+        if(info.event.title && info.event.display === 'auto') {
           let props = info.event.extendedProps
           //open event clicks in new window every time so they dont have to keep reloading the calendar
           let routerData = this.$router.resolve({path: `/project/${props.projectId}/processStep/${props.projectProcessStepId}/event/${props.projectProcessStepEventId}`})
