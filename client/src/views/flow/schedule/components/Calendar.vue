@@ -236,11 +236,11 @@
       <FullCalendar ref="eventCalendar" id="event-calendar" :options="calendarOptions">
         <template v-slot:resourceLabelContent="{resource, index}">
           <div class="d-flex justify-space-between align-baseline">
-            <a class="body-medium">{{ resource.title }}</a>
+            <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
             <div>
               <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-map-marker</v-icon></v-btn>
               <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-calendar-plus</v-icon></v-btn>
-              <v-btn icon x-small color="grey darken-1" class="mx-1"><v-icon>close</v-icon></v-btn>
+              <v-btn icon x-small color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></v-btn>
             </div>
           </div>
         </template>
@@ -383,7 +383,7 @@ import interaction from "@fullcalendar/interaction";
         //temp for dev:
         if(this.calendarOptions.resources.length === 0){
           this.calendarOptions.resources =  [
-            {id: 123, title: "Default User1",}, {id: 456, title: "Default User2"}
+            {id: 123, title: "Default User1 with a really long name to test clip",}, {id: 456, title: "Default User2"}
           ]
         }
         //end temp
@@ -876,6 +876,16 @@ import interaction from "@fullcalendar/interaction";
         }
       },
 
+      closeResource(resource){
+        //todo: are there any cases where a user resource and an org resource could end up with the same id??
+        let index = this.selectedUsers.findIndex(r => r.id === resource.id)
+        if(index >= 0){
+          this.selectedUsers.splice(index, 1)
+        } else {
+          index = this.selectedOrgs.findIndex(r => r.id === resource.id)
+          this.selectedOrgs.splice(index,1)
+        }
+      },
 
       //map functions
       handlePinsOnDayChange() {
@@ -1367,6 +1377,11 @@ import interaction from "@fullcalendar/interaction";
 </style>
 
 <style lang="scss" scoped>
+.resource-title {
+  text-overflow: ellipsis;
+  max-width: 60%;
+}
+
 #calendar-container {
   height: 100%;
   display: flex;
