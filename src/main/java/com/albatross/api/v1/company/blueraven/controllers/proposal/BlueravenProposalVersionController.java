@@ -22,16 +22,18 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/api/v1/company/blueraven/proposal/versions")
 @RequiredArgsConstructor
-@PreAuthorize("hasCompanyAccess(3) && hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+@PreAuthorize("hasCompanyAccess(3)")
 public class BlueravenProposalVersionController {
   private final ProposalVersionService proposalVersionService;
 
   @PostMapping
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE')")
   public ResponseEntity<ProposalVersion> createProposalVersion() {
     return ResponseEntity.of(proposalVersionService.createProposalVersion());
   }
 
   @GetMapping
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public Page<ProposalVersion> getProposalVersions(
     @RequestParam(name = "published", defaultValue = "false") Boolean publishedOnly,
     Pageable pageable) {
@@ -39,16 +41,19 @@ public class BlueravenProposalVersionController {
   }
 
   @GetMapping(value = "/{id}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public Optional<ProposalVersion> getProposalVersion(@PathVariable Long id) {
     return proposalVersionService.getProposalVersion(id);
   }
 
   @PostMapping(value = "/{id}/publish")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public Optional<ProposalVersion> publishProposalVersion(@PathVariable Long id, @Valid @RequestBody ProposalPublishRequest request) {
     return proposalVersionService.publishProposalVersion(id, request.message());
   }
 
   @GetMapping(value="/{id}/history")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public ProposalVersionHistoryChangeSet getProposalVersionHistory(@PathVariable Long id){
     return proposalVersionService.getChangeHistory(id);
   }
@@ -57,12 +62,14 @@ public class BlueravenProposalVersionController {
   }
 
   @GetMapping(value = "/{id}/values/{objectCode}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalCustomValuesRow> getProposalCustomFieldsByObjectCode(
     @PathVariable Long id, @PathVariable String objectCode) {
     return proposalVersionService.getProposalCustomFieldValues(id, objectCode);
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public Optional<ProposalCustomValuesRow> updateProposalCustomFieldsByObjectCode(
     @PathVariable Long id,
     @PathVariable String objectCode,
@@ -71,29 +78,34 @@ public class BlueravenProposalVersionController {
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}/reset")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalCustomValuesRow> undoChangesToProposalObject(
     @PathVariable Long id, @PathVariable String objectCode) {
     return proposalVersionService.resetProposalVersionByCustomFieldByObjectCode(id, objectCode);
   }
 
   @DeleteMapping(value = "/{id}/values/{objectCode}/{groupUUID}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public Optional<ProposalCustomValuesRow> deleteCustomFieldGroup(
     @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
     return proposalVersionService.deleteCustomFieldGroup(id, objectCode, groupUUID);
   }
 
   @PostMapping(value = "/{id}/values/{objectCode}/{groupUUID}/archive")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public Optional<ProposalCustomValuesRow> archiveCustomFieldGroup(
     @PathVariable Long id, @PathVariable String objectCode, @PathVariable UUID groupUUID) {
     return proposalVersionService.archiveCustomFieldGroup(id, objectCode, groupUUID);
   }
 
   @GetMapping(value = "/types")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalObjectType> getProposalObjectTypes() {
     return proposalVersionService.getProposalTypes();
   }
 
   @GetMapping(value = "/fields/{objectCode}")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public List<ProposalFieldObjectType> getProposalCustomFieldsByObjectCode(
     @PathVariable String objectCode) {
     return proposalVersionService.getProposalFieldsByObjectCode(objectCode);

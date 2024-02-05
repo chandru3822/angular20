@@ -114,7 +114,7 @@ public class BlueravenProposalController {
   }
 
   @PutMapping(value = "/{proposalId}/version/{versionId}")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE')")
   public void updateProposalVersion(@PathVariable Long proposalId,
                                     @PathVariable Long versionId,
                                     @AuthenticationPrincipal UserAccountDetails details) {
