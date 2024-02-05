@@ -88,7 +88,7 @@
               >
               </v-badge>
             </v-tab>
-            <div class="mt-1" v-if="companyTools.length > 0">
+            <div class="company-tools-container" v-if="companyTools.length > 0">
               <CompanyTools :company-tools="companyTools" />
             </div>
           </v-tabs>
@@ -371,6 +371,10 @@ export default {
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   border: none !important;
+}
+
+.company-tools-container {
+  margin-top: 5px;
 }
 
 #context-label {
