@@ -19,6 +19,9 @@
         </v-toolbar>
         <v-form ref="announcementForm">
           <h3>Overview</h3>
+          <div class="error--text" v-if="timeError">
+            {{timeErrorMsg}}
+          </div>
           <v-text-field v-model="announcement.title"
                         density="compact"
                         :disabled="!userCanEdit"
@@ -181,14 +184,15 @@ import isEqual from 'lodash.isequal'
     components: {ConfirmationDialog, DatetimePickerInput, quillEditor},
     computed: {
       userCanEdit() {
+        //we use the end time copy here so that if they are adding an end time in the past it will still let them save
         return this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT') &&
             (!this.announcement.id ||
-            (this.announcement.id && (this.announcement.endTime == null
-                                      || moment().isBefore(moment(this.announcement.endTime)))))
+            (this.announcement.id && (this.announcementCopy.endTime == null
+                                      || moment().isBefore(moment(this.announcementCopy.endTime)))))
       }
     },
     beforeRouteUpdate(to, from, next){
-      if(!isEqual(this.announcement,this.announcementCopy)) {
+      if(!this.override && !isEqual(this.announcement,this.announcementCopy)) {
         this.toPath = to.path
         this.query = to.query
         this.unsavedModal = true
@@ -197,7 +201,7 @@ import isEqual from 'lodash.isequal'
       }
     },
     beforeRouteLeave(to, from, next){
-      if(!isEqual(this.announcement,this.announcementCopy)) {
+      if(!this.override && !isEqual(this.announcement,this.announcementCopy)) {
         this.toPath = to.path
         this.query = to.query
         this.unsavedModal = true
@@ -209,8 +213,11 @@ import isEqual from 'lodash.isequal'
       return {
         constants,
         saving: false,
+        override: false,
         unsavedModal: false,
         toPath: null,
+        timeError: false,
+        timeErrorMsg: '',
         query: {},
         announcement: {},
         announcementCopy: {}, //used for seeing if changes were made
@@ -261,7 +268,7 @@ import isEqual from 'lodash.isequal'
     },
     methods: {
       goToPath(path, query) {
-        this.unsavedModal = false
+        this.override = true
         this.$router.push({path, query})
       },
       urlRule(url) {
@@ -275,7 +282,11 @@ import isEqual from 'lodash.isequal'
         this.$router.push(`/settings/announcements`)
       },
       async validate() {
-        if (this.$refs.announcementForm.validate()) {
+        this.timeError = false
+        if(this.announcement.endTime != null && this.announcement.startTime > this.announcement.endTime) {
+          this.timeError = true
+          this.timeErrorMsg = 'End Time cannot be before Start Time'
+        } else if (this.$refs.announcementForm.validate()) {
           this.saving = true
           try {
             const formData = new FormData()
@@ -294,6 +305,7 @@ import isEqual from 'lodash.isequal'
             this.announcement = data
             this.snackbar = getSnackbar('SUCCESS', 'Announcement Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            this.override = true
             this.$router.push(`/settings/announcements`)
           } catch (e) {
             console.error('*** ERROR ***', e)

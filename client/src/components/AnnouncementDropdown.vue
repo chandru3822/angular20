@@ -6,11 +6,12 @@
                          :close-callback="closeModal">
       </AnnouncementModal>
     </v-dialog>
-  <v-menu data-app left
+  <v-menu data-app
+          left
           offset-y
           :max-height="`calc(100vh - 20px)`"
-          :max-width="400"
-          :min-width="300"
+          :max-width="menuWidth"
+          :min-width="menuWidth"
           v-model="menuOpen"
           class="account-menu"
           :close-on-content-click="false">
@@ -130,15 +131,12 @@
       }
     },
     computed: {
+      menuWidth() {
+        return this.constants.IS_MOBILE ? 320 : 400
+      },
       hasUnalertedAnnouncements () {
         return this.$store.state.app.announcements?.filter(a => !a.alerted)?.length > 0 || false
       },
-      hasUnseenAnnouncements () {
-        return this.$store.state.app.announcements?.filter(a => !a.seen)?.length > 0 || false
-      },
-      hasUnreadAnnouncements () {
-        return this.$store.state.app.announcements?.filter(a => !a.read)?.length > 0 || false
-      }
     },
     created () {
     },
@@ -148,7 +146,7 @@
         try {
           this.loadingAgain = true
           let params = {
-            doUpdate: this.hasUnalertedAnnouncements || this.hasUnseenAnnouncements || this.hasUnreadAnnouncements
+            doUpdate: true //we do this every time in case something changed behind the scenes
           }
           const {data, status} = await getRequestWithParams(`/announcements/active`, {params})
           this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, data)

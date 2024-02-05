@@ -25,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -59,7 +60,8 @@ public class AnnouncementService {
     List<Announcement> results = sqlCache.queryBySql(AnnouncementQuery.getActive, params, Announcement.class);
 
     if(doUpdate != null && doUpdate) {
-      for(Announcement a : results) {
+      //only update any that are not already read, seen and alerted
+      for(Announcement a : results.stream().filter(r -> !r.getRead() || !r.getSeen() || !r.getAlerted()).toList()) {
         params.put("announcementId", a.getId());
         sqlCache.updateBySql(AnnouncementQuery.markUnseenAndAlertedAndRead, params);
         a.setAlerted(true);
