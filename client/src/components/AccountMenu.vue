@@ -209,6 +209,7 @@
     -webkit-box-shadow: none !important;
     border: none !important;
     padding-left: 0 !important;
+    padding-right: 10px !important;
   }
   .account-menu-icon{
     justify-content: center;

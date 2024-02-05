@@ -77,7 +77,7 @@ public class AnnouncementQuery {
     end
     and a.start_time <= now()
     and (a.end_time is null or a.end_time >= now())
-    order by a.start_time desc, a.end_time desc
+    order by a.start_time desc, a.end_time desc, a.alert_text
     """;
 
   //language=PostgreSQL
