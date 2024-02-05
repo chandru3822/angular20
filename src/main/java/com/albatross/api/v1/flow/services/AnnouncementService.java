@@ -48,7 +48,7 @@ public class AnnouncementService {
       results, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  public List<Announcement> getActiveAnnouncements(Boolean mobile) {
+  public List<Announcement> getActiveAnnouncements(Boolean mobile, Boolean doUpdate) {
     User user = securityService.getCurrentUser();
 
     Map<String, Object> params = new HashMap<>();
@@ -58,19 +58,24 @@ public class AnnouncementService {
 
     List<Announcement> results = sqlCache.queryBySql(AnnouncementQuery.getActive, params, Announcement.class);
 
-//    taking this out for now to see if loading the image when needed is fast enough
-//    for(Announcement a : results) {
-//      Attachment attachment = attachmentService.getOneBySourceIdAndType(a.getId(), 990L);
-//      if(null != attachment) {
-//        attachmentService.setAttachmentPresignedUrl(attachment);
-//        a.setPresignedUrl(attachment.getPresignedUrl());
-//        a.setAttachmentId(attachment.getId());
-//      }
-//    }
+    if(doUpdate != null && doUpdate) {
+      for(Announcement a : results) {
+        params.put("announcementId", a.getId());
+        sqlCache.updateBySql(AnnouncementQuery.markUnseenAndAlertedAndRead, params);
+        a.setAlerted(true);
+        a.setSeen(true);
+        /* this behavior is a little funky. we dont set the `Read` value on the returned data
+           because BR wants the user to still see the red dots on the first load here.
+           but not the next time. this code should set it for the next time, but return the previous value on load
+           ....like i said...its weird
+        */
+      }
+    }
+
     return results;
   }
 
-  public void markAnnouncementTime(Long id, Boolean read, Boolean seen) {
+  public void markAnnouncementTime(Long id, Boolean read, Boolean seen, Boolean alerted) {
     User user = securityService.getCurrentUser();
 
     HashMap<String, Object> params = new HashMap<>();
@@ -78,12 +83,17 @@ public class AnnouncementService {
     //dont use true user id here.
     params.put("userId", user.getId());
 
-    if(read) {
+    //this needs to be re-done. -randa. we kept adding stuff after the fact and i didn't want to fix it
+    if(read != null && read) {
       sqlCache.updateBySql(AnnouncementQuery.markAsRead, params);
     }
 
-    if(seen) {
+    if(seen != null && seen) {
       sqlCache.updateBySql(AnnouncementQuery.markAsSeen, params);
+    }
+
+    if(alerted != null && alerted) {
+      sqlCache.updateBySql(AnnouncementQuery.markAsAlerted, params);
     }
   }
 

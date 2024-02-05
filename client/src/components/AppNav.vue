@@ -88,15 +88,13 @@
               >
               </v-badge>
             </v-tab>
+            <div class="mt-1">
+              <CompanyTools :company-tools="companyTools" />
+            </div>
           </v-tabs>
           <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
-          <v-toolbar-items v-if="companyTools.length > 0">
-            <CompanyTools :company-tools="companyTools" />
-            <v-spacer></v-spacer>
-            <AnnouncementDropdown v-if="$store.state.app.announcements?.length > 0"></AnnouncementDropdown>
-          </v-toolbar-items>
-          <v-spacer v-if="!isMobile" class="ml-5"></v-spacer>
           <v-toolbar-items>
+            <AnnouncementDropdown></AnnouncementDropdown>
             <AccountMenu :showImage="true"></AccountMenu>
           </v-toolbar-items>
         </v-app-bar>
@@ -142,7 +140,6 @@ export default {
       this.announcementEvents.forEach(ae => {
         let match = this.$store.state.app.announcements.find(a => a.id === ae.announcement?.id)
         if(!match && ae.announcement) {
-          console.log('aaaa',ae.announcement)
           this.$store.state.app.announcements.push(ae.announcement)
         }
       })
