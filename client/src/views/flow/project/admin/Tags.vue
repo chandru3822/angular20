@@ -1,6 +1,5 @@
 <template>
   <div id="project-tag-admin">
-
     <v-row v-if="userIsAdmin">
 
         <v-col cols="12" class="pt-0">
@@ -56,6 +55,13 @@
           </v-row>
         </v-col>
     </v-row>
+    <v-divider/>
+    <div>
+      <v-data-table class="pa-5 ma-3"
+                    :items="tag_entries"
+                    :headers="headers">
+      </v-data-table>
+    </div>
 
   </div>
 </template>
@@ -72,7 +78,7 @@ import {
   logError
 } from '@/helpers/helpers'
 import {getCompanyAssignedToProcessStep, getCancelledCompanyStatusTypes} from '@/services/processStepStatusTypeService'
-import orderBy from "lodash.orderby";
+import {DateTime} from "luxon";
 
 export default {
   name: 'ProjectTags.vue',
@@ -86,7 +92,16 @@ export default {
       displayDropdown: false,
       tagsLoading: false,
       allTags: [],
-      selectedTag: {}
+      selectedTag: {},
+      headers: [
+        { text: 'Tag Name', value: 'tag'},
+        { text: 'Date Created', value: 'date_added'},
+        { text: 'Created By', value: 'usr_created'},
+        { text: 'Date Removed', value: 'date_removed'},
+        { text: 'Removed By', value: 'usr_removed'},
+      ],
+      tag_entries: [
+      ],
     }
   },
   components: {
@@ -106,10 +121,11 @@ export default {
   },
   async created() {
     await this.getProjectTags()
+    await this.getProjectTagHistory()
   },
   methods: {
     async getAllTags() {
-      if(this.allTags?.length === 0) {
+      if (this.allTags?.length === 0) {
         this.tagsLoading = true
         try {
           //for now this is just hardcoded to show project tags
@@ -129,7 +145,7 @@ export default {
       this.$store.commit(AppMutations.SET_LOADING, true)
       try {
         const {data, status} = await getRequestWithParams(`/tag/project/${this.projectId}`,
-            {skipCancel: true}, null, [])
+          {skipCancel: true}, null, [])
         this.projectTags = data
         handleHidingGlobalLoader(this, status)
       } catch (e) {
@@ -147,6 +163,7 @@ export default {
         this.projectTags.push(data)
         this.selectedTag = {}
         handleHidingGlobalLoader(this, status)
+        await this.getProjectTagHistory()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Saving Tag to Project')
@@ -160,9 +177,35 @@ export default {
         const {data, status} = await deleteRequest(`/tag/project/${this.projectId}/${item.id}`)
         item.archived = true
         handleHidingGlobalLoader(this, status)
+        await this.getProjectTagHistory()
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Removing Tag From Project')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getProjectTagHistory() {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        this.tag_entries = []
+        const {data, status} = await getRequest(`/tag/project/${this.projectId}/tags`)
+        for (const tg of data) {
+
+          this.tag_entries.push(
+            {
+              tag: tg?.tagName,
+              date_added: DateTime.fromISO(tg?.dateCreated).toFormat('MM-dd-yy H:mm a'),
+              usr_created: tg?.fullNameCreatedBy,
+              date_removed: tg?.dateCreated < tg?.dateModified ? DateTime.fromISO(tg?.dateModified).toFormat('MM-dd-yy H:mm a') : '',
+              usr_removed: tg?.dateCreated < tg?.dateModified ? tg?.fullNameModifiedBy : '',
+            }
+          )
+        }
+        handleHidingGlobalLoader(this, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Tag History From Project')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
@@ -175,5 +218,9 @@ export default {
 #project-tag-admin {
   background: #ffffff;
   height: calc(100vh - 250px)
+}
+
+.myData {
+  color: var(--v-primary-base);
 }
 </style>

@@ -2,10 +2,13 @@ package com.albatross.api.v1.flow.controllers;
 
 import com.albatross.api.v1.flow.model.ProjectTag;
 import com.albatross.api.v1.flow.model.Tag;
+import com.albatross.api.v1.flow.model.smartlist.Smartlist;
 import com.albatross.api.v1.flow.services.TagService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,6 +46,11 @@ public class TagController {
   @GetMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public List<ProjectTag> getProjectTags(@PathVariable Long projectId) {
     return tagService.getProjectTags(projectId);
+  }
+
+  @GetMapping(value = "/project/{projectId}/tags", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<List<ProjectTag>> getProjectTagHistory(@PathVariable Long projectId) {
+    return new ResponseEntity<>(tagService.getProjectTagHistory(projectId), HttpStatus.OK);
   }
 
   @PostMapping(value = "/project/{projectId}", produces = MediaType.APPLICATION_JSON_VALUE)
