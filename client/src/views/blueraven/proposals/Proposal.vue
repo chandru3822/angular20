@@ -59,7 +59,7 @@
                   label="Select a version..."
                   v-model="proposal.proposalVersionId"
                 />
-                <v-btn color="primary" class="mt-3" :disabled="!userIsAdmin || !proposal.proposalVersionId"
+                <v-btn color="primary" class="mt-3" :disabled="(!userIsAdmin && !userCanManage) || !proposal.proposalVersionId"
                        @click="updateProposalVersion()">
                   Save
                 </v-btn>
