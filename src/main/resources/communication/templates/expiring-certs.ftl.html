@@ -1,0 +1,31 @@
+<!doctype html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Expiring Certs</title>
+</head>
+
+<body style="width: 100% !important; min-width: 100%; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; margin: 0; Margin: 0; padding: 0; -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; ">
+
+<div style="padding: 5px 15px;">
+    <h3>Certs Expiring Within 7 Days</h3>
+    <div style="padding-left: 15px;">
+        <#list expiring7dayCerts as cert> <b>${cert.certName}: ${cert.expirationDate}</b> <br /> </#list>
+    </div>
+    <br><br>
+    <h3>Certs Expiring Within 30 Days</h3>
+    <div style="padding-left: 15px;">
+      <#list expiring30dayCerts as cert> <b>${cert.certName}: ${cert.expirationDate}</b> <br /> </#list>
+    </div>
+    <br><br>
+    <p>
+        You can find additional info and update the expiration dates <a href="${adminPageLink}">here</a>.
+        <br>
+        Note: You must be in the Albatross account.
+    </p>
+
+</div>
+
+</body>
+</html>
