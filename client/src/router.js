@@ -1671,6 +1671,9 @@ const router = new Router({
               path: 'features',
               component: () => import ( './views/flow/admin/Features.vue'),
             }, {
+              path: 'certs',
+              component: () => import ( './views/flow/admin/Certs.vue'),
+            }, {
               path: 'statusTypes',
               component: () => import ( './views/flow/admin/CompanyUserStatus.vue'),
             }, {
