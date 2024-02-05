@@ -88,7 +88,7 @@
               >
               </v-badge>
             </v-tab>
-            <div class="mt-1">
+            <div class="mt-1" v-if="companyTools.length > 0">
               <CompanyTools :company-tools="companyTools" />
             </div>
           </v-tabs>
