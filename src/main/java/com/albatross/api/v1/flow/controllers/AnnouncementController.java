@@ -30,8 +30,9 @@ public class AnnouncementController {
   }
 
   @GetMapping(value = "/active", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<Announcement> getActiveAnnouncements(@RequestParam(required = false) Boolean mobile) {
-    return announcementService.getActiveAnnouncements(mobile);
+  public List<Announcement> getActiveAnnouncements(@RequestParam(required = false) Boolean mobile,
+                                                   @RequestParam(required = false) Boolean doUpdate) {
+    return announcementService.getActiveAnnouncements(mobile, doUpdate);
   }
 
   @GetMapping(value = "/past", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -46,10 +47,11 @@ public class AnnouncementController {
   }
 
   @PostMapping(value = "/{id}/mark", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void markAnnouncementAsRead(@PathVariable Long id,
-                                     @RequestParam Boolean read,
-                                     @RequestParam Boolean seen) {
-    announcementService.markAnnouncementTime(id, read, seen);
+  public void markAnnouncementTime(@PathVariable Long id,
+                                   @RequestParam(required = false) Boolean read,
+                                   @RequestParam(required = false) Boolean seen,
+                                   @RequestParam(required = false) Boolean alerted) {
+    announcementService.markAnnouncementTime(id, read, seen, alerted);
   }
 
   @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)

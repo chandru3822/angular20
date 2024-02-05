@@ -6,12 +6,12 @@
           class="account-menu"
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
-      <v-btn class="account-menu-button label-medium px-1"
+      <v-btn class="account-menu-button label-medium fake-inactive"
              :color="headerColor"
              dark
              v-on="on"
       >
-        Tools
+        TOOLS
         <v-icon>mdi-chevron-down</v-icon>
       </v-btn>
     </template>
@@ -190,5 +190,8 @@
     box-shadow: none !important;
     -webkit-box-shadow: none !important;
     border: none !important;
+  }
+  .fake-inactive {
+    opacity: .6;
   }
 </style>

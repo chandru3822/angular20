@@ -67,7 +67,8 @@ public class AnnouncementQuery {
            a.modified_by_id,
            a.archived,
            case when ua.message_read_tsz is null then false else true end as read,
-           case when ua.message_seen_tsz is null then false else true end as seen
+           case when ua.message_seen_tsz is null then false else true end as seen,
+           case when ua.message_alerted_tsz is null then false else true end as alerted
     from flow.announcement a
     left join flow.user_announcement ua on a.id = ua.announcement_id and ua.user_id = :userId
     where a.archived is false
@@ -118,7 +119,8 @@ public class AnnouncementQuery {
            a.modified_by_id,
            a.archived,
            case when ua.message_read_tsz is null then false else true end as read,
-           case when ua.message_seen_tsz is null then false else true end as seen
+           case when ua.message_seen_tsz is null then false else true end as seen,
+           case when ua.message_alerted_tsz is null then false else true end as alerted
     from flow.announcement a
     left join flow.user_announcement ua on a.id = ua.announcement_id and ua.user_id = :userId
     where a.archived is false
@@ -170,6 +172,24 @@ public class AnnouncementQuery {
     values (:userId, :announcementId, now())
     on conflict (user_id, announcement_id) do update
       set message_seen_tsz = now()
+    """;
+
+  //language=PostgreSQL
+  public final static String markAsAlerted = """
+    insert into flow.user_announcement(user_id, announcement_id, message_alerted_tsz)
+    values (:userId, :announcementId, now())
+    on conflict (user_id, announcement_id) do update
+      set message_alerted_tsz = now()
+    """;
+
+  //language=PostgreSQL
+  public final static String markUnseenAndAlertedAndRead = """
+    insert into flow.user_announcement(user_id, announcement_id, message_seen_tsz, message_alerted_tsz, message_read_tsz)
+    values (:userId, :announcementId, now(), now(), now())
+    on conflict (user_id, announcement_id) do update
+      set message_alerted_tsz = now(),
+          message_seen_tsz = now(),
+          message_read_tsz = now()
     """;
 
   //language=PostgreSQL

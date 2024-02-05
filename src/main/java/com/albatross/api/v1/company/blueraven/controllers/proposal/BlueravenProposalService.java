@@ -199,6 +199,7 @@ public class BlueravenProposalService {
 
     Optional<Long> userOrgId = findUserOrgId(userId);
 
+//    TODO: filter out cfgs that are hidden based on the user on the server
     Optional<Proposal> result =
       sqlCache.getBySql(
         ProposalQuery.get,

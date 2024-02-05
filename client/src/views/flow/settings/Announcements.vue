@@ -42,7 +42,6 @@
               </td>
               <td>
                 <v-btn small text color="primary"
-                       v-if="current"
                        @click="goToPath(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>

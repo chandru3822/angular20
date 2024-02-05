@@ -467,7 +467,7 @@ public class PandaDocService {
    */
   private String getNotification(JSONObject tokens, String leadSource) throws Exception {
     String template;
-    if (leadSource.equals("Breeze")) {
+    if (null != leadSource && leadSource.equals("Breeze")) {
       template = loadBreezeEmailTemplate();
     }
     else {
