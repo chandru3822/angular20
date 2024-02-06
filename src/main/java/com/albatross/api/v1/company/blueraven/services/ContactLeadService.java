@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.services.queries.ContactLeadQuery;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.albatross.api.v1.flow.services.UserPositionService;
@@ -34,8 +35,9 @@ public class ContactLeadService {
   private final SecurityService securityService;
   private final SystemListService systemListService;
   private final UserPositionService userPositionService;
+  private final ContactService contactService;
 
-  public void saveContactLead(ContactLead cl) {
+  public Contact saveContactLead(ContactLead cl) {
     HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
 
@@ -385,6 +387,7 @@ public class ContactLeadService {
         log.error(msg, e.getMessage());
       }
     }
+    return contactService.getContact(contactId);
   }
 
   private void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, Long leadOwnerUserId) {
