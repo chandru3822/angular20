@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-row  class="pt-0">
+    <v-row  class="pt-0" v-if="!dataLoading">
       <v-col cols="12"  class="pt-0">
         <v-btn icon color="primary" @click="cancel()" class="back-button">
           <v-icon x-large>mdi-chevron-left</v-icon>
@@ -220,6 +220,7 @@ import isEqual from 'lodash.isequal'
         saving: false,
         override: false,
         unsavedModal: false,
+        dataLoading: true,
         toPath: null,
         timeError: false,
         timeErrorMsg: '',
@@ -245,7 +246,7 @@ import isEqual from 'lodash.isequal'
         onePlatformRequired: [
           v => (!!v || v === 0) || 'At lease one platform is required'
         ],
-        announcementId: this.$route.params?.id,
+        announcementId: parseInt(this.$route.params?.id),
         showDeleteDialog: false,
         announcementFile: null,
         announcementLogo: {
@@ -258,7 +259,7 @@ import isEqual from 'lodash.isequal'
     },
     async created() {
       if(this.announcementId) {
-        await this.getAnnouncement(parseInt(this.announcementId))
+        await this.getAnnouncement()
       }
       // for testing
       // this.announcement = {
@@ -321,10 +322,10 @@ import isEqual from 'lodash.isequal'
           }
         }
       },
-      async getAnnouncement(id) {
+      async getAnnouncement() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest(`/announcements/${id}`)
+          const {data, status} = await getRequest(`/announcements/${this.announcementId}`)
           this.announcement = data
           this.announcementCopy = cloneDeep(data)
           handleHidingGlobalLoader(this, status)
@@ -334,7 +335,7 @@ import isEqual from 'lodash.isequal'
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
-          this.saving = false
+          this.dataLoading = false
         }
       },
       async deleteAttachment() {
