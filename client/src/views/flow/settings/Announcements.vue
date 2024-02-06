@@ -13,7 +13,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" id="default-settings-tabs">
-          <v-tab v-for="(tab, index) in displayedTabs" :key="index" @click="current = tab.current"
+          <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path" @click="current = tab.current"
                  class="text-capitalize ma-0 label-medium"
                  :style="{'margin-left': (index === 0 && $vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
             {{ tab.label }}
@@ -112,11 +112,13 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
           {
             label: 'Current',
             current: true,
+            path: '/settings/announcements/current',
             display: this.$store.getters.userHasFeature('SETTINGS')
           },
           {
             label: 'Past',
             current: false,
+            path: '/settings/announcements/past',
             display: this.$store.getters.userHasFeature('SETTINGS')
           },
         ]

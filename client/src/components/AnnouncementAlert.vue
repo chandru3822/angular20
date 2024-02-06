@@ -1,6 +1,6 @@
 <template>
   <div class="announcement-container">
-    <v-dialog persistent v-model="showModal" :max-width="765"
+    <v-dialog v-model="showModal" :max-width="765"
               content-class="modal-content">
       <AnnouncementModal :announcement="selectedAnnouncement"
                          :close-callback="closeModal">
@@ -19,12 +19,12 @@
 
       <div class="d-inline-block text-right pr-4"
         :style="{'min-width': a.expandable ? '150px' : '50px'}">
-        <v-btn text color="primary" class="text-transform-unset"
+        <v-btn text color="primary" class="learn-more-btn text-transform-unset"
                v-if="a.expandable" @click="[ markAnnouncement(a, true, true, true), openModal(a)]">Learn More</v-btn>
-        <a class="pa-1"
+        <v-btn text x-small class="pa-1"
                @click="[ markAnnouncement(a, false, true, false) ]">
           <v-icon color="primary">clear</v-icon>
-        </a>
+        </v-btn>
       </div>
     </v-alert>
   </div>
@@ -160,5 +160,10 @@ import {Actions} from "@/store.js";
   font-weight: 400;
   font-family: lato;
   line-height: 1.6;
+}
+
+.learn-more-btn {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
 }
 </style>

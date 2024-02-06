@@ -54,7 +54,7 @@
             <v-icon small v-if="item.expandable"
                     tool
                     color="error lighten-1">mdi-circle</v-icon>
-            <v-tooltip v-else bottom class="randa-test">
+            <v-tooltip v-else bottom class="mark-as-read-tooltip">
               <template v-slot:activator="{on, attrs}">
                 <v-icon small v-bind="attrs" v-on="on"
                         @click="item.read = true"
@@ -64,13 +64,13 @@
             </v-tooltip>
 
           </v-list-item-icon>
-          <v-list-item-content class="">
+          <v-list-item-content :class="{'pr-2': !item.expandable}">
               {{item.alertText}}
           </v-list-item-content>
           <v-list-item-action v-if="item.expandable"
                               class="announcement-action pr-4">
             <v-list-item-action-text>
-              <v-btn text color="primary" class="text-transform-unset" @click="[ item.read = true, openModal(item)]">Learn More</v-btn>
+              <v-btn text color="primary" class="learn-more-btn text-transform-unset" @click="[ item.read = true, openModal(item)]">Learn More</v-btn>
             </v-list-item-action-text>
           </v-list-item-action>
           </v-list-item>
@@ -213,9 +213,14 @@
   margin-bottom: 4px;
 }
 
-.randa-test {
+.mark-as-read-tooltip {
   position: absolute;
   z-index: 1000000;
-
 }
+
+.learn-more-btn {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
 </style>
