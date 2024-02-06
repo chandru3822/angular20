@@ -169,7 +169,7 @@ export default {
         title: 'Message Templates',
         show: this.hasSettingsAccess
       }, {
-        path: '/settings/announcements',
+        path: '/settings/announcements/current',
         title: 'Announcements',
         show: this.hasSettingsAccess
       }, {

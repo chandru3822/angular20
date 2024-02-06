@@ -903,7 +903,8 @@ const router = new Router({
                 }
               },
             },  {
-              path: 'announcements',
+              path: 'announcements/current',
+              alias: 'announcements/past',
               meta: {title: 'Albatross - Settings'},
               component: () => {
                 if (store.getters.userHasFeature('SETTINGS')) {

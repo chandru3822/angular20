@@ -183,12 +183,17 @@ import isEqual from 'lodash.isequal'
     name: 'Announcement',
     components: {ConfirmationDialog, DatetimePickerInput, quillEditor},
     computed: {
+      isCurrent() {
+        return this.announcement.id && (this.announcementCopy.endTime == null || moment().isBefore(moment(this.announcementCopy.endTime)))
+      },
+      pathUrl() {
+        return this.isCurrent ? `/settings/announcements/current` : `/settings/announcements/past`
+      },
       userCanEdit() {
         //we use the end time copy here so that if they are adding an end time in the past it will still let them save
         return this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT') &&
             (!this.announcement.id ||
-            (this.announcement.id && (this.announcementCopy.endTime == null
-                                      || moment().isBefore(moment(this.announcementCopy.endTime)))))
+            this.isCurrent)
       }
     },
     beforeRouteUpdate(to, from, next){
@@ -279,7 +284,7 @@ import isEqual from 'lodash.isequal'
         }
       },
       cancel() {
-        this.$router.push(`/settings/announcements`)
+        this.$router.push(this.pathUrl)
       },
       async validate() {
         this.timeError = false
@@ -306,7 +311,7 @@ import isEqual from 'lodash.isequal'
             this.snackbar = getSnackbar('SUCCESS', 'Announcement Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
             this.override = true
-            this.$router.push(`/settings/announcements`)
+            this.$router.push(this.pathUrl)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Announcement')
