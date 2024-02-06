@@ -10,7 +10,7 @@
              elevation="1"
              :max-width="320"
              :min-width="320"
-        class="announcement-alert pr-0"
+        class="announcement-alert pr-0 py-3"
         color="white"
     >
       <div class="d-inline-block">
@@ -21,7 +21,7 @@
         :style="{'min-width': a.expandable ? '150px' : '50px'}">
         <v-btn text color="primary" class="learn-more-btn text-transform-unset"
                v-if="a.expandable" @click="[ markAnnouncement(a, true, true, true), openModal(a)]">Learn More</v-btn>
-        <v-btn text x-small class="pa-1"
+        <v-btn text x-small class="px-1 close-x"
                @click="[ markAnnouncement(a, false, true, false) ]">
           <v-icon color="primary">clear</v-icon>
         </v-btn>
@@ -165,5 +165,9 @@ import {Actions} from "@/store.js";
 .learn-more-btn {
   padding-left: 4px !important;
   padding-right: 4px !important;
+}
+
+.close-x {
+  height: 36px !important;
 }
 </style>

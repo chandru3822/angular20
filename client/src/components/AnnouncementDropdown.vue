@@ -9,7 +9,7 @@
   <v-menu data-app
           left
           offset-y
-          :max-height="`calc(100vh - 20px)`"
+          :max-height="`calc(100vh - 75px)`"
           :max-width="menuWidth"
           :min-width="menuWidth"
           v-model="menuOpen"
@@ -51,18 +51,8 @@
         <v-list-item class="pr-1"
                      :key="item.id">
           <v-list-item-icon v-if="!item.read" class="mr-2">
-            <v-icon small v-if="item.expandable"
-                    tool
+            <v-icon small tool
                     color="error lighten-1">mdi-circle</v-icon>
-            <v-tooltip v-else bottom class="mark-as-read-tooltip">
-              <template v-slot:activator="{on, attrs}">
-                <v-icon small v-bind="attrs" v-on="on"
-                        @click="item.read = true"
-                        color="error lighten-1">mdi-circle</v-icon>
-              </template>
-              <span>Mark as Read</span>
-            </v-tooltip>
-
           </v-list-item-icon>
           <v-list-item-content :class="{'pr-2': !item.expandable}">
               {{item.alertText}}
@@ -199,6 +189,7 @@
 .announcement-action {
   width: 100px;
   justify-content: center;
+  margin: 0 !important;
 }
 
 .account-menu-button{
@@ -211,11 +202,6 @@
 .alert-badge {
   margin-left: -8px;
   margin-bottom: 4px;
-}
-
-.mark-as-read-tooltip {
-  position: absolute;
-  z-index: 1000000;
 }
 
 .learn-more-btn {
