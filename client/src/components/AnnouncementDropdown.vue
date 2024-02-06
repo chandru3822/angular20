@@ -54,7 +54,7 @@
             <v-icon small tool
                     color="error lighten-1">mdi-circle</v-icon>
           </v-list-item-icon>
-          <v-list-item-content :class="{'pr-2': !item.expandable}">
+          <v-list-item-content class="pr-2">
               {{item.alertText}}
           </v-list-item-content>
           <v-list-item-action v-if="item.expandable"
