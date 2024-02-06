@@ -23,9 +23,9 @@ create table if not exists flow.process_step_event_action_message_template
   archived                     boolean   default false not null
 );
 
-create index pseamt_message_template_id_idx
+create index if not exists pseamt_message_template_id_idx
   on flow.process_step_event_action_message_template (message_template_id);
 
-create index pseamt_process_step_event_action_id_idx
+create index if not exists pseamt_process_step_event_action_id_idx
   on flow.process_step_event_action_message_template (process_step_event_action_id);
 

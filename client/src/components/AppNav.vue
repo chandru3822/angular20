@@ -118,6 +118,7 @@ import CompanyTools from '@/components/CompanyTools.vue'
 import axios from 'axios'
 import { NotificationActions } from '@/plugins/notifications/NotificationStore'
 import AnnouncementDropdown from "@/components/AnnouncementDropdown.vue";
+import moment from 'moment'
 
 const { VITE_ENV } =  import.meta.env
 //@TODO: Maybe eventually combine this into App.vue and breakout nav into its own component
@@ -138,9 +139,13 @@ export default {
     },
     announcementEvents: async function () {
       this.announcementEvents.forEach(ae => {
-        let match = this.$store.state.app.announcements.find(a => a.id === ae.announcement?.id)
-        if(!match && ae.announcement) {
-          this.$store.state.app.announcements.push(ae.announcement)
+        //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
+        //this time check will hopefully fix that.
+        if(ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {
+          let match = this.$store.state.app.announcements.find(a => a.id === ae.announcement?.id)
+          if(!match && ae.announcement) {
+            this.$store.state.app.announcements.push(ae.announcement)
+          }
         }
       })
     }
