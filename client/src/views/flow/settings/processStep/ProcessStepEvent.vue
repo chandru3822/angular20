@@ -305,7 +305,6 @@
                     </v-btn>
                   </v-card>
                 </div>
-
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="action.actionTypeId === 1 && action.childLinks && action.childLinks.length > 0">
                   <v-col cols="12">
@@ -450,6 +449,13 @@
                       </v-btn>
                     </div>
                   </v-card>
+                  <v-divider/>
+                  <EventActionChildSms :selected-action-index="selectedActionIndex"
+                                  :action="action"
+                                  :process-step-id="processStepId"
+                                  :add-sms-callback="addSms"
+                                  :delete-sms-callback="deleteSms"
+                  ></EventActionChildSms>
                 </div>
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="action.childFunctions && action.childFunctions.length > 0">
@@ -853,11 +859,13 @@ import Sortable from "sortablejs"
 import cloneDeep from 'lodash.clonedeep'
 import ProcessStepWorkQueueTypes from './ProcessStepWorkQueueTypes'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import EventActionChildSms from "@/views/flow/settings/processStep/EventActionChildSms.vue";
 
 export default {
   name: 'ProcessStepEvent',
   mixins: [Vue2Filters.mixin],
   components: {
+    EventActionChildSms,
     draggable,
     ConfirmationDialog,
     ProcessStepRequirements,
@@ -942,7 +950,7 @@ export default {
         {text: 'Change Process Step Status To', value: 'companyProcessStepStatusType', show: true},
         {text: null, value: 'icons', show: true}
       ],
-      processStepId: this.$route.params.id,
+      processStepId: parseInt(this.$route.params.id),
       eventId: parseInt(this.$route.params.eventId),
       userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
       userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
@@ -1529,6 +1537,15 @@ export default {
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.$store.commit(AppMutations.SET_LOADING, false)
       }
+    },
+    addSms(actionId, smsItem) {
+      debugger
+      this.selectedEvent.processStepEventActions.find(a => a.id === actionId).processStepEventActionChildSmsTemplates.push(smsItem)
+    },
+    deleteSms(actionId, id) {
+      this.selectedEvent.processStepEventActions.find(a => a.id === actionId).processStepEventActionChildSmsTemplates = this.selectedEvent.processStepEventActions.find(a => a.id === actionId).processStepEventActionChildSmsTemplates.filter(st => {
+        return st.id !== id
+      })
     },
     // child links
     async loadLinks(actionId) {

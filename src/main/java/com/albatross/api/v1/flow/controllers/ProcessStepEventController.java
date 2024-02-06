@@ -144,6 +144,19 @@ public class ProcessStepEventController {
     processStepEventService.updateActionChildFunction(actionId, child);
   }
 
+  // event action child sms templates
+  // child sms templates
+  @PostMapping(value = "/{psEventActionId}/addSmsToAction", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ProcessStepEventActionChildSmsTemplate addSmsToAction(@PathVariable Long psEventActionId,
+                                                          @RequestBody ProcessStepEventActionChildSmsTemplate child) {
+    return processStepEventService.addSmsToAction(psEventActionId, child);
+  }
+
+  @DeleteMapping(value = "/{psEventActionId}/deleteSms/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public void deleteSmsFromAction(@PathVariable Long id) {
+    processStepEventService.deleteSmsFromAction(id);
+  }
+
   //fields
   @PutMapping(value = "/{eventId}/action/{actionId}", produces = MediaType.APPLICATION_JSON_VALUE)
   public Long updateRequiredFieldStatus(@PathVariable Long actionId,
