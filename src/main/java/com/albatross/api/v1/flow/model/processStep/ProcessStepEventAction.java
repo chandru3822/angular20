@@ -21,5 +21,6 @@ public class ProcessStepEventAction {
   private List<ProcessStepEventLogic> processStepEventLogicList;
   private List<ProcessStepEventActionChildFunction> childFunctions;
   private List<ProcessStepEventActionLink> childLinks;
+  private List<ProcessStepEventActionChildSmsTemplate> processStepEventActionChildSmsTemplates;
 }
 

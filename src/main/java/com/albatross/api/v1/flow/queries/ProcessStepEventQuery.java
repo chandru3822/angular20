@@ -347,6 +347,35 @@ public class ProcessStepEventQuery {
                                                       order by psacf.display_order, cf.company_function_name
                                                     ) childFn), '[]') AS "childFunctions",
                                           coalesce((
+                                              SELECT array_to_json(array_agg(row_to_json(childSms)))
+                                              FROM (
+                                                     select pseamt.id,
+                                                            pseamt.process_step_event_action_id,
+                                                            pseamt.message_template_id,
+                                                            pseamt.archived,
+                                                            pseamt.date_created,
+                                                            pseamt.date_modified,
+                                                            pseamt.created_by_id,
+                                                            pseamt.modified_by_id,
+                                                            to_jsonb(pseamt.sms_team_ids) as teamIds,
+                                                            coalesce((
+                                                                       SELECT array_to_json(array_agg(row_to_json(team)))
+                                                                       FROM (
+                                                                              select st.id,
+                                                                                     st.team_name as "teamName"
+                                                                              from flow.sms_team st
+                                                                              where st.id = any(mt.team_ids)
+                                                                                and st.archived is false
+                                                                                and st.id = any(pseamt.sms_team_ids)
+                                                                            ) team), '[]') AS "teams",
+                                                            mt.title
+                                                     from flow.process_step_event_action_message_template pseamt
+                                                            inner join flow.message_template mt on mt.id = pseamt.message_template_id
+                                                     where pseamt.archived is not true
+                                                       and pseamt.process_step_event_action_id = psea.id
+                                                     order by mt.title
+                                                   ) childSms), '[]') AS "processStepEventActionChildSmsTemplates",
+                                          coalesce((
                                                SELECT array_to_json(array_agg(row_to_json(links)))
                                                FROM (
                                                       SELECT psal.id,
@@ -1113,5 +1142,71 @@ where psea.id = :id
         )
         select array_to_string(array(select value from logic), ' ')
         """;
+  public final static String addSmsToEventAction = """
+    insert into flow.process_step_event_action_message_template (process_step_event_action_id, message_template_id, sms_team_ids, created_by_id, date_created, modified_by_id, date_modified)
+        values (:processStepEventActionId, :messageTemplateId, array[ :teamIds ]::bigint[], :createdById, now(), :createdById, now())
+        """;
 
+  //language=PostgreSQL
+  public final static String getEventActionChildSms = """
+    select pseamt.id,
+              pseamt.process_step_event_action_id,
+              pseamt.message_template_id,
+              pseamt.archived,
+              pseamt.date_created,
+              pseamt.date_modified,
+              pseamt.created_by_id,
+              pseamt.modified_by_id,
+              to_jsonb(pseamt.sms_team_ids) as teamIds,
+              coalesce((
+                           SELECT array_to_json(array_agg(row_to_json(team)))
+                           FROM (
+                             select st.id,
+                                    st.team_name as "teamName"
+                             from flow.sms_team st
+                             where st.id = any(pseamt.sms_team_ids)
+                             and st.archived is false
+                                  ) team), '[]') AS "teams",
+              mt.title
+       from flow.process_step_event_action_message_template pseamt
+              inner join flow.message_template mt on mt.id = pseamt.message_template_id
+       where pseamt.id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String deleteSmsFromEventAction = """
+    update flow.process_step_event_action_message_template
+         set archived = true,
+             modified_by_id = :modifiedById,
+             date_modified = now()
+       where id = :id
+       """;
+
+  //language=PostgreSQL
+  public final static String getChildSmsTemplatesByEventActionId = """
+    select
+            pseamt.id,
+            pseamt.archived,
+            pseamt.process_step_event_action_id as "processStepEventActionId",
+            pseamt.message_template_id as "messageTemplateId",
+            pseamt.created_by_id as "createdById",
+            pseamt.modified_by_id as "modifiedById",
+            mt.title,
+            mt.message,
+            coalesce((
+                       SELECT array_to_json(array_agg(row_to_json(team)))
+                       FROM (
+                              select st.id,
+                                     st.team_name as "teamName"
+                              from flow.sms_team st
+                              where st.id = any(pseamt.sms_team_ids)
+                                and st.archived is false
+                            ) team), '[]') AS "teams",
+            to_jsonb(pseamt.sms_team_ids) as teamIds
+          from flow.process_step_event_action_message_template pseamt
+                 inner join flow.message_template mt on mt.id = pseamt.message_template_id
+          where
+            pseamt.process_step_event_action_id = :processStepEventActionId and
+            pseamt.archived is not true
+        """;
 }
