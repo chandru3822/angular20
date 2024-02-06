@@ -869,8 +869,7 @@ public class AvailabilityService {
                   marketoService.pushData(List.of(marketoLead));
                 }
               } catch (Exception e) {
-                // This is a bandaid fix to let actions run while adobe/marketo get their act together
-//                log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
+                log.error(String.format("MARKETO: Unable to update Marketo during round robin for project ID %s, %s", p.getId(), e.getMessage()));
               }
             });
           }
