@@ -46,36 +46,43 @@
           </v-btn>
           <v-btn v-if="showMobileBanner && $route.path !== '/apps'" @click="goToApps" icon class="text-capitalize bold px-0"><v-icon>mdi-download-circle</v-icon></v-btn>
           <v-spacer v-if="isMobile"></v-spacer>
-          <v-menu v-if="isMobile" data-app left
-                  offset-y
-                  :max-height="`calc(100vh - 20px)`"
-                  v-model="tabMenuOpen"
-                  class="account-menu"
-                  :close-on-content-click="false">
-            <template v-slot:activator="{ on }">
-              <v-btn class="account-menu-button label-medium px-3"
-                     :color="headerColor"
-                     dark
-                     v-on="on">
-                Pages
-                <v-icon>mdi-chevron-down</v-icon>
-              </v-btn>
-            </template>
-            <v-list v-if="displayedTabs.length > 1">
-              <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
-                           @click="[tabMenuOpen = false, goToPath(tab.path)]">
-                <v-list-item-title>{{ tab.label }}
-                  <v-badge
-                    class="notif-badge"
-                    color="#D03331"
-                    :content="smsNotification.length"
-                    v-if="tab.label == 'Inbox' && smsNotification.length > 0"
-                  >
-                  </v-badge>
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+          <div v-if="isMobile" class="flex-display flex-align-items-center">
+            <v-menu data-app left
+                    offset-y
+                    :max-height="`calc(100vh - 20px)`"
+                    v-model="tabMenuOpen"
+                    class="account-menu"
+                    :close-on-content-click="false">
+              <template v-slot:activator="{ on }">
+                <v-btn class="account-menu-button label-medium px-3
+                              pages-button"
+                       :color="headerColor"
+                       dark
+                       x-small
+                       v-on="on">
+                  PAGES
+                  <v-icon>mdi-chevron-down</v-icon>
+                </v-btn>
+              </template>
+              <v-list v-if="displayedTabs.length > 1">
+                <v-list-item v-for="(tab, index) in displayedTabs" :key="index"
+                             @click="[tabMenuOpen = false, goToPath(tab.path)]">
+                  <v-list-item-title>{{ tab.label }}
+                    <v-badge
+                      class="notif-badge"
+                      color="#D03331"
+                      :content="smsNotification.length"
+                      v-if="tab.label == 'Inbox' && smsNotification.length > 0"
+                    >
+                    </v-badge>
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+<!--            <div class="company-tools-container" v-if="companyTools.length > 0">-->
+              <CompanyTools v-if="companyTools.length > 0" :is-mobile="isMobile" :company-tools="companyTools" />
+<!--            </div>-->
+          </div>
           <v-tabs v-else :optional="true" color="secondary" :background-color="headerColor" v-model="model" dark
                   slider-color="secondary">
             <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path" class="label-medium">
@@ -376,6 +383,11 @@ export default {
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   border: none !important;
+}
+
+.pages-button {
+  padding-left: 8px !important;
+  padding-right: 4px !important;
 }
 
 .company-tools-container {
