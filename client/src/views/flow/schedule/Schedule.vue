@@ -265,6 +265,7 @@
       },
       resourceMapCallback (newValue) {
         this.mapResources = newValue
+        this.showMap = true
       },
       dateCallback (startTime, endTime) {
         this.startTime = startTime

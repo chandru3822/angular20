@@ -89,7 +89,7 @@
           </div>
         </v-card>
       </v-menu>
-      <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
+      <v-btn fab tile outlined small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
     </div>
     <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"

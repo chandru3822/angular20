@@ -238,7 +238,10 @@
           <div class="d-flex justify-space-between align-baseline">
             <a class="body-medium overflow-hidden resource-title">{{ resource.title }}</a>
             <div>
-              <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-map-marker</v-icon></v-btn>
+              <v-btn icon x-small @click="toggleMapPinForResource(resource)" class="mx-1">
+                <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
+                <v-icon v-else>mdi-map-marker-off</v-icon>
+              </v-btn>
               <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-calendar-plus</v-icon></v-btn>
               <v-btn icon x-small color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></v-btn>
             </div>
@@ -352,7 +355,6 @@ import interaction from "@fullcalendar/interaction";
       },
       //users
       sortedUsers(){
-
         const selectedUsers = this.users.filter(user => this.selectedUsers.includes(user));
         const unselectedUsers = this.users.filter(user => !this.selectedUsers.includes(user));
         return selectedUsers.concat(unselectedUsers)
@@ -572,6 +574,9 @@ import interaction from "@fullcalendar/interaction";
       reloadCalendar(){
         let calendarApi = this.$refs.eventCalendar.getApi()
         calendarApi.refetchEvents()
+      },
+      isResourceOnMap(resource){
+        return this.mapResources.findIndex(mr => resource.id === mr.id) >=0
       },
       testEvents(){
         this.calendarApi.addEventSource( [
@@ -888,41 +893,40 @@ import interaction from "@fullcalendar/interaction";
       },
 
       //map functions
+      toggleMapPinForResource(resource){
+        this.handlePopulatingMapPins(!this.isResourceOnMap(resource), resource, true)
+      },
+
       handlePinsOnDayChange() {
         this.mapResourceEvents = []
         this.checkedResources.forEach((r, idx) => {
           this.handlePopulatingMapPins(true, r, false, idx === this.checkedResources.length - 1)
         })
       },
-      handlePopulatingMapPins(isChecked, resource, boxValueIsChanging, doCallback) {
+      handlePopulatingMapPins(isChecked, resource, doCallback) {
         if(isChecked) {
-          if(boxValueIsChanging) {
-            this.checkedResources.push(resource)
-          }
-          let resourceEvents = this.eventSources[0].events.filter(e => {
-            return e.resourceId === resource.id
+          let calendarApi = this.$refs.eventCalendar.getApi()
+
+          let resourceEvents = calendarApi.getEvents().filter(e => {
+            return e.display !== 'inverse-background' && e.display !== 'background' && e._def.resourceIds.indexOf(resource.id) >= 0
+
           })
           resourceEvents.forEach(re => {
             let eventObj = {
               id: resource.id,
-              projectName: re.projectName,
-              processStepName: re.processStepName,
-              city: re.city,
-              projectProcessStepEventId: re.projectProcessStepEventId,
-              stateAbbreviation: re.stateAbbreviation,
-              postalCode: re.postalCode,
-              street1: re.street1,
+              projectName: re.extendedProps.projectName,
+              processStepName: re.extendedProps.processStepName,
+              city: re.extendedProps.city,
+              projectProcessStepEventId: re.extendedProps.projectProcessStepEventId,
+              stateAbbreviation: re.extendedProps.stateAbbreviation,
+              postalCode: re.extendedProps.postalCode,
+              street1: re.extendedProps.street1,
               color: resource.extendedProps.color,
-              coordinates: [ re.longitude, re.latitude]
+              coordinates: [ re.extendedProps.longitude, re.extendedProps.latitude]
             }
             this.mapResourceEvents.push(eventObj)
           })
         } else {
-          if(boxValueIsChanging) {
-            this.checkedResources = this.checkedResources.filter(r => {
-              return r.id !== resource?.id
-            })
-          }
           this.mapResourceEvents = this.mapResourceEvents.filter(r => {
             return r.id !== resource?.id
           })
@@ -930,6 +934,7 @@ import interaction from "@fullcalendar/interaction";
         if(doCallback) {
           this.callback(this.mapResourceEvents)
         }
+        let calendarApi = this.$refs.eventCalendar.getApi()
       },
 
 
