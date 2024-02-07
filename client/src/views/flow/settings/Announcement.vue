@@ -260,6 +260,8 @@ import isEqual from 'lodash.isequal'
     async created() {
       if(this.announcementId) {
         await this.getAnnouncement()
+      } else {
+        this.dataLoading = false
       }
       // for testing
       // this.announcement = {
