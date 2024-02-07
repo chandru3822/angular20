@@ -256,12 +256,6 @@
 
       <!-- FUNNEL -->
       <div class="funnel-relative funnel-container">
-        <div v-show="funnelStats.length > 0" id="funnel-background"
-             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"
-             :style="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
-                                    showPipelineCustomDates && windowInnerWidth >= 1135 ? '84px' :
-                                    windowInnerWidth < 1135 ? '63px' : '69px'}"
-        ></div>
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
@@ -438,7 +432,8 @@
             :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
+                  :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <td style="text-align: center">
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
@@ -452,11 +447,13 @@
                 </td>
                 <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.owner_name || '' }}</td>
-                <td>{{ item.verified_setter_lead || '' }}</td>
-                <td :class="item.appointment_outcome_class">
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)">{{ item.verified_setter_lead || '' }}</td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)" :class="item.appointment_outcome_class">
                   {{ item.appointment_outcome || '' }}
                 </td>
-                <td>{{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}</td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)">{{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}</td>
+                <td v-if="funnelId === 31">{{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}</td>
+                <td v-if="funnelId === 32">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td>{{ item.office || '' }}</td>
@@ -576,20 +573,8 @@
       pipeline_menu2: false,
       funnelStats: [],
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [
-        { text: '', value: '', show: true, sortable: false, width: 25 },
-        { text: 'Setter', value: 'setter_name', show: true, width: 90 },
-        { text: 'Name', value: 'customer_name', show: true, width: 90 },
-        { text: 'Project ID', value: 'project_id', show: true, width: 95 },
-        { text: 'Appointment Date', value: 'appointment_date', show: true, width: 150 },
-        { text: 'Closer', value: 'owner_name', show: true, width: 90 },
-        { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
-        { text: 'Checked In Time', value: 'checked_in_time', show: true, width: 175 },
-        { text: 'Date Created', value: 'date_created', show: true, width: 115 },
-        { text: 'State', value: 'state', show: true, width: 80 },
-        { text: 'Office', value: 'office', show: true, width: 90 }
-      ],
+      funnelId: null,
+      nonNormalFunnelIds: [31,32],
       funnelDrilldownData: [],
       funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
@@ -604,6 +589,44 @@
       }
     }),
     computed: {
+      funnelDrilldownHeaders() {
+        return [
+          {text: '', value: '', show: true, sortable: false, width: 25},
+          {text: 'Setter', value: 'setter_name', show: true, width: 90},
+          {text: 'Name', value: 'customer_name', show: true, width: 90},
+          {text: 'Project ID', value: 'project_id', show: true, width: 95},
+          {text: 'Appointment Date', value: 'appointment_date', show: true, width: 150},
+          {text: 'Closer', value: 'owner_name', show: true, width: 90},
+          {
+            text: 'Verified Setter Lead',
+            value: 'verified_setter_lead',
+            show: !this.nonNormalFunnelIds.includes(this.funnelId),
+            width: 170
+          },
+          {
+            text: 'Appointment Outcome',
+            value: 'appointment_outcome',
+            show: !this.nonNormalFunnelIds.includes(this.funnelId),
+            width: 175
+          },
+          {
+            text: 'Checked In Time',
+            value: 'checked_in_time',
+            show: !this.nonNormalFunnelIds.includes(this.funnelId),
+            width: 175
+          },
+          {text: 'Booking Date', value: 'installation_agreement_signed_date', show: this.funnelId === 31, width: 175},
+          {
+            text: 'Final Design Complete Date',
+            value: 'final_design_complete_date',
+            show: this.funnelId === 32,
+            width: 175
+          },
+          {text: 'Date Created', value: 'date_created', show: true, width: 115},
+          {text: 'State', value: 'state', show: true, width: 80},
+          {text: 'Office', value: 'office', show: true, width: 90}
+        ]
+      },
       windowInnerWidth () { return window.innerWidth},
       selectAllAreas() {
         return this.areaModel.length === this.areaData.length
@@ -1303,6 +1326,7 @@
       },
 
       async funnelDrilldown (funnelId, dateRange, funnelName) {
+        this.funnelId = funnelId
         let reps = []
         let orgs = []
         let start, end
@@ -2219,10 +2243,6 @@
     background-color: #e9e9e9;
   }
 
-  #funnel-background {
-    display: none;
-  }
-
   #pipeline-container {
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
@@ -2900,28 +2920,6 @@
       height: 30px;
     }
 
-    #funnel-background {
-      display: block;
-      position: absolute;
-      z-index: 6;
-      border-top-style: solid;
-      border-top-color: rgba(0, 110, 200, 0.05);
-      border-right: 20px solid transparent;
-      border-left: 20px solid transparent;
-      margin-top: 63px;
-      margin-left: 110px;
-      width: 170px;
-      height: 0;
-    }
-
-    #funnel-background.standard-view {
-      border-top-width: 120px;
-    }
-
-    #funnel-background.cohort-view {
-      border-top-width: 160px;
-    }
-
     #pipeline-container {
       margin: 0 auto;
       max-width: calc(100% - 50px);
@@ -3285,22 +3283,6 @@
       font-size: 12px;
     }
 
-    #funnel-background {
-      border-right: 80px solid transparent;
-      border-left: 80px solid transparent;
-      margin-top: 63px;
-      margin-left: 140px;
-      width: 320px;
-    }
-
-    #funnel-background.standard-view {
-      border-top-width: 180px;
-    }
-
-    #funnel-background.cohort-view {
-      border-top-width: 240px;
-    }
-
     #pipeline-container {
       .pipeline-header-container {
         #pipeline-header-top {
@@ -3518,10 +3500,6 @@
 
     #setter-ranking-tables-section {
       max-width: 1130px;
-    }
-
-    #funnel-background {
-      width: 370px;
     }
 
     #pipeline-container {
