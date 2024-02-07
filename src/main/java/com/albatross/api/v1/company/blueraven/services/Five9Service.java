@@ -95,7 +95,7 @@ public class Five9Service {
         }
       }
 
-      if (leadLevel == 40L) {
+      if (leadLevel == 1L || leadLevel == 2L || leadLevel == 40L) {
         if (isRetarget) {
           contactListName = "digital_retarget";
         }
