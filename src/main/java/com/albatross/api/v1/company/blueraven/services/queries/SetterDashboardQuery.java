@@ -111,4 +111,85 @@ public class SetterDashboardQuery {
                     end
              ) as "q4"
     """;
+
+  //language=PostgreSQL
+  public final static String loadFunnel = """
+    select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], :isCohort::boolean)
+  """;
+
+  //language=PostgreSQL
+  public final static String loadFunnelDrilldown = """
+    select brs.rpt_setter_funnel_standard_and_cohort_drilldown(
+    :startDate::date,
+    :endDate::date,
+    :funnelId,
+    array[ :userIds ]::bigint[],
+    array[ :orgIds ]::bigint[],
+    :isCohort::boolean )
+  """;
+
+  //language=PostgreSQL
+  public final static String pitchesDrilldown = """
+    SELECT * FROM brs.get_pitches_drilldown(:userId::bigint, :quarter::bigint, :isSetterMgr::BOOLEAN, :setterMgrOfficeId::bigint)
+  """;
+
+  //language=PostgreSQL
+  public final static String getPerformanceReport = """
+    SELECT * FROM brs.get_setter_performance_report(:currentUserId::bigint, :startDate::date, :endDate::date)
+  """;
+
+  //language=PostgreSQL
+  public final static String getMgrPerformanceReport = """
+    SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)
+  """;
+
+  //language=PostgreSQL
+  public final static String repToBeat = """
+    SELECT * FROM brs.get_setter_to_beat(:userId::bigint, :startDate::date, :endDate::date)
+  """;
+
+  //language=PostgreSQL
+  public final static String officeToBeat = """
+    SELECT * FROM brs.get_setter_office_to_beat(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)
+  """;
+
+  //language=PostgreSQL
+  public final static String topReps = """
+    SELECT * FROM brs.get_top_setter_reps(:limit, :interval, :days, :currentUserId)
+  """;
+
+  //language=PostgreSQL
+  public final static String topOffices = """
+    SELECT * FROM brs.get_top_setter_offices(:limit, :interval, :days, :currentUserId)
+  """;
+
+  //language=PostgreSQL
+  public final static String officeRanking = """
+    SELECT * FROM brs.get_setter_office_ranking(:limit, :interval, :days, :currentUserId)
+  """;
+
+  //language=PostgreSQL
+  public final static String getAreas = """
+    SELECT * FROM brs.util_setter_area_selection(:userId::bigint)
+  """;
+
+  //language=PostgreSQL
+  public final static String getRegions = """
+    SELECT * FROM brs.util_setter_region_selection(:userId::bigint, :areas::JSON)
+  """;
+
+  //language=PostgreSQL
+  public final static String getDistricts = """
+    SELECT * FROM brs.util_setter_district_selection(:userId::bigint, :areas::JSON, :regions::JSON)
+  """;
+
+  //language=PostgreSQL
+  public final static String getOffices = """
+    SELECT * FROM brs.util_setter_office_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON)
+  """;
+
+  //language=PostgreSQL
+  public final static String getReps = """
+    SELECT * FROM brs.util_setter_rep_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)
+  """;
 }
