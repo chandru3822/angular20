@@ -27,13 +27,13 @@ public class BlueravenProposalVersionController {
   private final ProposalVersionService proposalVersionService;
 
   @PostMapping
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
   public ResponseEntity<ProposalVersion> createProposalVersion() {
     return ResponseEntity.of(proposalVersionService.createProposalVersion());
   }
 
   @GetMapping
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE')")
   public Page<ProposalVersion> getProposalVersions(
     @RequestParam(name = "published", defaultValue = "false") Boolean publishedOnly,
     Pageable pageable) {
