@@ -127,7 +127,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
     created() {
       this.getAnnouncements()
     },
-    watch: {},
+    watch: {
+      current() {
+        this.announcements = []
+        this.getAnnouncements()
+      }
+    },
     methods: {
       goToPath(id) {
         let path = id ? `/settings/announcement/${id}` : `/settings/announcement`
