@@ -258,14 +258,13 @@
       <div class="funnel-relative funnel-container">
         <div v-show="funnelStats.length > 0" id="funnel-background"
              :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"
-             :stype="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
+             :style="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
                                     showPipelineCustomDates && windowInnerWidth >= 1135 ? '84px' :
                                     windowInnerWidth < 1135 ? '63px' : '69px'}"
         ></div>
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
-            <th class="funnel-th">EXPECTATION</th>
             <th class="funnel-th"></th>
             <th class="funnel-th">TODAY</th>
             <th class="funnel-th">LAST 7 DAYS</th>
@@ -315,19 +314,6 @@
           <!-- FUNNEL ROWS -->
           <tr class="funnel-tr" :class="{'blue-sub-row': index % 2 === 0}"
               v-for="(line, index) in funnelStats" :key="line.id">
-            <td v-if="showExpectationInput(index)" id="expectation-input"
-                class="funnel-td funnel-expectation">
-              <v-text-field @change="expectationChanged"
-                            v-model="expectedInstalls"
-                            solo
-                            dense>
-              </v-text-field>
-            </td>
-
-            <!-- FUNNEL EXPECTATION -->
-            <td v-if="!showExpectationInput(index)" class="funnel-td funnel-expectation">
-              {{line.expectation}}
-            </td>
 
             <!-- FUNNEL NAME -->
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
@@ -588,8 +574,6 @@
       pipeline_dt2: moment().format('YYYY-MM-DD'),
       pipeline_dt2_formatted: moment().format('M/D/YY'),
       pipeline_menu2: false,
-      expectedInstalls: 1,
-      expectationTimeout: 0,
       funnelStats: [],
       funnelDrilldownTitle: '',
       funnelDrilldownHeaders: [
@@ -713,15 +697,10 @@
     },
     methods: {
       doRepWatcher() {
-        // console.log('CCCC')
         if(this.repValuesChanged) {
-          if (this.isSetter) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
-          } else if (this.selectAllReps) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
-          } else {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
-          }
+          let useRepDataInstead = this.isSetter ? false : this.selectAllReps
+          this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2,  useRepDataInstead)
+
           this.repValuesChanged = false
         }
       },
@@ -945,7 +924,7 @@
           this.funnelStats = []
 
           if (!this.initialPageLoad || loadFilterOnFirstLoad) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+            this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
           }
         })
 
@@ -969,10 +948,6 @@
         let a = moment(start)
         let b = moment(end)
         return b.diff(a, 'days')
-      },
-
-      getCountHover (count, expectation) {
-        return count < expectation ? 'Worse than expectation' : 'Better than expectation'
       },
 
       getPercentColor (percent) {
@@ -1011,10 +986,10 @@
           {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+        this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
-      async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
+      async pipelineLoad (start, end, useRepDataInstead) {
         this.setterPipelineLoading = true
         let reps = []
         let orgs = []
@@ -1060,42 +1035,35 @@
         // this.funnelStatsLoading = true
         try {
           const requestBody = {
-            targetInstallations: targetInstallations,
             users: reps,
             orgs: orgs,
             start: moment(start).format('YYYY-MM-DD'),
-            end: moment(end).format('YYYY-MM-DD')
+            end: moment(end).format('YYYY-MM-DD'),
+            isCohort: this.viewSelect === 'cohort'
           }
-          await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
+          await postRequest('/setterDashboard/funnel', requestBody, 'blueraven').then(({data}) => {
             data.forEach(row => {
-              // EXPECTATION column
-              row.expectation = this.roundTenth(row.expectation)
-
               // TODAY column
-              row.countTodayState = row.today_day_count < row.expectation ? 'red' : 'green'
-              row.todayHover = this.getCountHover(row.today_day_count, row.expectation)
+              row.countTodayState = row.today_day_count < 0 ? 'red' : 'green'
               row.percentToday = row.today_percent ? row.today_percent + '%' : '0%'
               row.percentTodayState = this.getPercentColor(row.today_percent)
               row.percentTodayHover = this.getPercentHover(row.today_percent, 1)
 
               // LAST 7 DAYS column
-              row.count7state = row.seven_day_count < row.expectation ? 'red' : 'green'
-              row.sevenDayHover = this.getCountHover(row.seven_day_count, row.expectation)
+              row.count7state = row.seven_day_count < 0 ? 'red' : 'green'
               row.percent7 = row.seven_percent ? row.seven_percent + '%' : '0%'
               row.percent7state = this.getPercentColor(row.seven_percent)
               row.percent7hover = this.getPercentHover(row.seven_percent, 7)
 
               // LAST 30 DAYS column
-              row.count30state = row.thirty_day_count < row.expectation ? 'red' : 'green'
-              row.thirtyDayHover = this.getCountHover(row.thirty_day_count, row.expectation)
+              row.count30state = row.thirty_day_count < 0 ? 'red' : 'green'
               row.percent30 = row.thirty_day_percent ? row.thirty_day_percent + '%' : '0%'
               row.percent30state = this.getPercentColor(row.thirty_day_percent)
               row.percent30hover = this.getPercentHover(row.thirty_day_percent, 30)
 
               // CUSTOM DATE RANGE column
               row.custom_date_range_count = Math.round(row.custom_date_range_count)
-              row.customCountState = row.custom_date_range_count < row.expectation ? 'red' : 'green'
-              row.customDayHover = this.getCountHover(row.custom_date_range_count, row.expectation)
+              row.customCountState = row.custom_date_range_count < 0 ? 'red' : 'green'
             })
 
             this.funnelStats = data
@@ -1109,16 +1077,6 @@
           this.funnelDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-
-      showExpectationInput (index) {
-        if (this.viewSelect === 'standard' && this.funnelStats.length - 1 === index) {
-          return true
-        }
-        if (this.viewSelect === 'cohort' && this.funnelStats.length - 2 === index) {
-          return true
-        }
-        return false
       },
 
       choosePipelineDateRange (dateRange) {
@@ -1153,7 +1111,6 @@
             break
           case 'Custom':
             this.showPipelineCustomDates = true
-            this.fixFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1162,15 +1119,10 @@
         }
       },
 
-      updateInstalls (installs) {
-        this.expectedInstalls = installs
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
       updatePipelineCalendar () {
         this.pipeline_menu1 = false
         this.pipeline_menu2 = false
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+        this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       yesterday () {
@@ -1221,21 +1173,12 @@
         this.pipeline_dt2 = moment().subtract(1, 'days').format('YYYY-MM-DD')
         this.updatePipelineCalendar()
       },
-
-      expectationChanged () {
-        clearTimeout(this.expectationTimeout)
-        let expectedInstalls = this.expectedInstalls
-        if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
-        this.expectedInstalls = expectedInstalls
-        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
       viewSelected (view) {
         if (this.viewSelect !== view) {
           this.viewSelect = view
 
           if ((this.repModel.length > 0) || this.repModel[0]?.user_position_id === -1) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+            this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
           }
         }
       },
@@ -1254,19 +1197,15 @@
 
       async loadFunnel () {
         if (this.funnelStats?.length === 0) {
-          if (this.isSetter) {
-            await this.areaLoad(true)
-            await this.regionLoad(true)
-            await this.districtLoad(true)
-            await this.officeLoad(true)
-            this.repLoad(true, true)
-          } else {
-            await this.areaLoad(false)
-            await this.regionLoad(false)
-            await this.districtLoad(false)
-            await this.officeLoad(false)
-            this.repLoad(false, false)
-          }
+          let preselectLists = this.isSetter
+          let requests = [
+            this.areaLoad(preselectLists),
+            this.regionLoad(preselectLists),
+            this.districtLoad(preselectLists),
+            this.officeLoad(preselectLists),
+            this.repLoad(preselectLists, preselectLists)
+          ]
+          await Promise.all(requests)
         }
       },
 
@@ -1400,12 +1339,13 @@
           end: end,
           funnelId: funnelId,
           users: reps,
-          orgs: orgs
+          orgs: orgs,
+          isCohort: this.viewSelect === 'cohort'
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/setterDashboard/funnelDrilldown/${this.viewSelect}`, requestBody, 'blueraven').then(({data}) => {
+          await postRequest(`/setterDashboard/funnelDrilldown`, requestBody, 'blueraven').then(({data}) => {
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
@@ -2492,10 +2432,6 @@
           }
         }
 
-        .funnel-expectation {
-          text-align: center;
-          width: 75px;
-        }
 
         .funnel-line-name {
           cursor: default !important;
@@ -2503,31 +2439,6 @@
           z-index: 7;
           text-align: center;
           height: 38px;
-        }
-
-        #expectation-input {
-          .v-input {
-            transform: scale(0.75);
-            transform-origin: center;
-            font-size: 10px;
-            margin: 0 auto;
-            max-width: 50px;
-
-            ::v-deep {
-              .v-input__slot {
-                margin-bottom: 0;
-              }
-
-              input {
-                text-align: center;
-              }
-
-              .v-text-field__details,
-              .v-messages {
-                display: none;
-              }
-            }
-          }
         }
 
         .funnel-td {
@@ -3133,21 +3044,10 @@
             }
           }
 
-          .funnel-expectation {
-            width: 120px;
-          }
 
           .funnel-line-name {
             width: 150px;
             height: 40px;
-          }
-
-          #expectation-input {
-            .v-input {
-              transform: scale(0.8);
-              font-size: 15px;
-              max-width: 70px;
-            }
           }
 
           .funnel-td {
@@ -3499,20 +3399,9 @@
             }
           }
 
-          .funnel-expectation {
-            width: 150px;
-          }
 
           .funnel-line-name {
             width: 300px;
-          }
-
-          #expectation-input {
-            .v-input {
-              transform: none;
-              font-size: 14px;
-              max-width: 80px;
-            }
           }
 
           .funnel-td {
@@ -3671,9 +3560,6 @@
             }
           }
 
-          .funnel-expectation {
-            width: 150px;
-          }
 
           .funnel-line-name {
             width: 350px;
