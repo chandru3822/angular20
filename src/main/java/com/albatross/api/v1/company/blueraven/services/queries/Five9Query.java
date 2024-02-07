@@ -36,7 +36,7 @@ public class Five9Query {
             from flow.contact_custom_field_value ccfv
             where ccfv.custom_field_group_assignment_id = 20977
               and ccfv.contact_id = pd.contact_id) in
-           (40, 201, 202, 203, 204, 205, 206, 207, 208, 209)) -- contacts with certain lead level
+           (1, 2, 40, 201, 202, 203, 204, 205, 206, 207, 208, 209)) -- contacts with certain lead level
     AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 45
       and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - ( case when pd.closer_appointment_outcome_name is null then 7 else 2 end)
     order by pd.contact_id
@@ -57,7 +57,7 @@ public class Five9Query {
                from flow.contact_custom_field_value ccfv
                where ccfv.custom_field_group_assignment_id = 20977
                  and ccfv.contact_id = pd.contact_id) in
-              (40, 201, 202, 203, 204, 205, 206, 207, 208, 209)) -- Contact lead level is 40 or between 201-209
+              (1, 2, 40, 201, 202, 203, 204, 205, 206, 207, 208, 209)) -- Contact lead level is 40 or between 201-209
          AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 2
          AND pd.contact_id = 3076572
     )
