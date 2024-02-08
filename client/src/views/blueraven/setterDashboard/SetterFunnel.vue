@@ -823,10 +823,6 @@
             this.funnelDataLoaded = true
           }
 
-          if (this.districtModel.length > 0) {
-            this.officeLoad(preSelectLists)
-          }
-
           // reset these values when the districts change
           this.officeModel = []
           this.repModel = []
@@ -1220,15 +1216,26 @@
 
       async loadFunnel () {
         if (this.funnelStats?.length === 0) {
-          let preselectLists = this.isSetter
-          let requests = [
-            this.areaLoad(preselectLists),
-            this.regionLoad(preselectLists),
-            this.districtLoad(preselectLists),
-            this.officeLoad(preselectLists),
-            this.repLoad(preselectLists, preselectLists)
-          ]
-          await Promise.all(requests)
+          //if they are a setter we have to wait for each request first so each list gets filtered
+          if(this.isSetter) {
+            await this.areaLoad(true)
+            await this.regionLoad(true)
+            await this.districtLoad(true)
+            await this.officeLoad(true)
+            this.repLoad(true, true)
+          } else {
+            let requests = [
+              this.areaLoad(false),
+              this.regionLoad(false),
+              this.districtLoad(false),
+              this.officeLoad(false),
+              this.repLoad(false, false)
+            ]
+            await Promise.all(requests).then(() => {
+              this.dropdownValuesLoading = false
+              this.initialPageLoad = false
+            })
+          }
         }
       },
 
