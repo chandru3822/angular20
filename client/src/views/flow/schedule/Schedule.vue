@@ -19,7 +19,8 @@
     <template v-slot:right-column>
       <v-row class="map-row">
         <v-col cols="12" class="pa-0 ml-3">
-          <Map v-if="showMap" :latitude="state.mapLatitude"
+          <Map v-if="showMap"
+               :latitude="state.mapLatitude"
                :markers="selectedRows"
                :longitude="state.mapLongitude"
                :zoom="state.mapZoom"
@@ -160,6 +161,7 @@
       }
     },
     created() {
+      localStorage.setItem('scheduleState', null)
       this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
       this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
       this.selectedProcessStepStatusType = JSON.parse(localStorage.getItem('scheduleProcessStepStatusType')) || {}
@@ -263,7 +265,7 @@
           this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
         }
       },
-      resourceMapCallback (newValue) {
+      resourceMapCallback (newValue, showMap) {
         this.mapResources = newValue
         this.showMap = true
       },

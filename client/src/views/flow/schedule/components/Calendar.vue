@@ -932,7 +932,7 @@ import interaction from "@fullcalendar/interaction";
           })
         }
         if(doCallback) {
-          this.callback(this.mapResourceEvents)
+          this.callback(this.mapResourceEvents, isChecked)
         }
         let calendarApi = this.$refs.eventCalendar.getApi()
       },

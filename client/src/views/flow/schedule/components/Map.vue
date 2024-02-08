@@ -16,11 +16,12 @@
         <template v-slot:activator="{ on }">
           <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
         </template>
-        <v-card color="white" class="square-card px-4 pb-4 pt-2">
+        <v-card color="white" class="square-card pa-4">
+          <v-card-title class="label-large px-0 pt-0">Find Drive Time</v-card-title>
           <div class="address-container">
-            <div class="one-hunned">
-              <v-text-field text label="Address 1" autocomplete="new-password"
-                            @click="selectAddress1 = false"
+            <div class="one-hunned py-3">
+              <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
+                            @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = true, selectAddress2 = false]"
                             hide-details
                             v-model="address1"
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
@@ -37,17 +38,17 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary"
-                   @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = !selectAddress1, selectAddress2 = false]"
-                   :disabled="mapResources.length === 0 && markers.length === 0"
-                   :loading="selectAddress1">Select Pin
-            </v-btn>
+<!--            <v-btn class="mt-2" small color="primary"-->
+<!--                   @click="[address1 = '', drivingDistance = 0, drivingDuration = 0, selectAddress1 = !selectAddress1, selectAddress2 = false]"-->
+<!--                   :disabled="mapResources.length === 0 && markers.length === 0"-->
+<!--                   :loading="selectAddress1">Select Pin-->
+<!--            </v-btn>-->
           </div>
 
           <div class="address-container">
             <div class="one-hunned">
-              <v-text-field text label="Address 2" autocomplete="new-password"
-                            @click="selectAddress2 = false"
+              <v-text-field text outlined label="Destination" placeholder="Select pin or enter address" autocomplete="new-password"
+                            @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = true, selectAddress1 = false]"
                             hide-details
                             v-model="address2"
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
@@ -65,14 +66,14 @@
                 </v-list-item>
               </v-list>
             </div>
-            <v-btn class="mt-2" small color="primary"
-                   @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = !selectAddress2, selectAddress1 = false]"
-                   :disabled="mapResources.length === 0 && markers.length === 0"
-                   :loading="selectAddress2">Select Pin
-            </v-btn>
+<!--            <v-btn class="mt-2" small color="primary"-->
+<!--                   @click="[address2 = '', drivingDistance = 0, drivingDuration = 0, selectAddress2 = !selectAddress2, selectAddress1 = false]"-->
+<!--                   :disabled="mapResources.length === 0 && markers.length === 0"-->
+<!--                   :loading="selectAddress2">Select Pin-->
+<!--            </v-btn>-->
           </div>
 
-          <v-divider class="mt-2"></v-divider>
+<!--          <v-divider class="mt-2"></v-divider>-->
 
           <div class="mt-2 drive-time-buttons">
             <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
@@ -249,9 +250,11 @@ export default {
       }
     },
     debounceSearchAddress: debounce(function (address, isFirst) {
+      this.clearMarkerSelectionForOne(isFirst)
       this.searchAddress(address, isFirst)
     }, 500),
     async searchAddress(address, isFirst) {
+      debugger
       this.suggestions = []
       if (isFirst) {
         if (this.address1.length >= 2) {
@@ -270,8 +273,9 @@ export default {
       }
     },
     async geoCode(address) {
-      if (this.address1.length >= 2 || this.address2.length >= 2) {
-
+      debugger
+      if ((this.address1.length >= 2 || this.address2.length >= 2) && constants.ENV_COLOR !== constants.LOCAL_COLOR) {
+//todo: remove color check on above line when finished working with drive time
         try {
           let params = {
             address
@@ -310,6 +314,43 @@ export default {
 
       }
     },
+    clearMarkerSelectionForOne(isFirst){
+      debugger
+      if(isFirst) {
+        this.markers.forEach(m => {
+          if (m.oldColor !== undefined && m.selectedFirst) {
+            m.color = m.oldColor
+            m.selectedFirst = false
+          }
+        })
+        this.mapResources.forEach(m => {
+          if (m.oldColor !== undefined && m.selectedFirst) {
+            m.color = m.oldColor
+            m.selectedFirst = false
+          }
+        })
+      } else {
+        this.markers.forEach(m => {
+          if(m.oldColor !== undefined && m.selectedSecond) {
+            m.color = m.oldColor
+            m.selectedSecond = false
+          }
+        })
+        this.mapResources.forEach(m => {
+          if (m.oldColor !== undefined && m.selectedSecond) {
+            m.color = m.oldColor
+            m.selectedSecond = false
+          }
+        })
+      }
+      this.resetDriveTime()
+    },
+    resetDriveTime() {
+      this.drivingDistance = 0
+      this.drivingDuration = 0
+      this.markerCount++
+      this.suggestions = []
+    },
     clearColors() {
       this.markers.forEach(m => {
         if (m.oldColor !== undefined) {
@@ -325,16 +366,14 @@ export default {
           m.selectedSecond = false
         }
       })
-      this.drivingDistance = 0
-      this.drivingDuration = 0
-      this.markerCount++
-      this.suggestions = []
+      this.resetDriveTime();
       this.showAddress1List = false
       this.showAddress2List = false
       this.selectAddress1 = false
       this.selectAddress2 = false
     },
     selectAddressForDriveTime(marker) {
+      debugger
       if (this.selectAddress1) {
         this.address1 = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
         this.selectAddress1 = false
@@ -396,6 +435,7 @@ export default {
       await this.getDirections(first, second)
     },
     async getDirections(firstPair, secondPair) {
+      debugger
       this.drivingDistance = 0
       this.drivingDuration = 0
 
