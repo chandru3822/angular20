@@ -1,7 +1,7 @@
 <template>
   <v-main>
-    <v-alert color="green lighten-1" v-model="betaUpdatedAlertSuccess" dismissible transition="scale-transition">Beta Updated Successfully!</v-alert>
-    <v-alert color="red lighten-1" v-model="betaUpdatedAlertFailed" dismissible transition="scale-transition">Beta Update Failed</v-alert>
+    <v-alert color="success lighten-1" v-model="betaUpdatedAlertSuccess" dismissible transition="scale-transition">Beta Updated Successfully!</v-alert>
+    <v-alert color="error lighten-1" v-model="betaUpdatedAlertFailed" dismissible transition="scale-transition">Beta Update Failed</v-alert>
     <v-toolbar flat class="app-toolbar">
       <v-toolbar-title class="app-title">
         {{isIos ? 'iOS' : 'Android'}}
