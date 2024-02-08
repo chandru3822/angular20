@@ -77,13 +77,6 @@
     <v-form ref="proposalForm">
       <v-row>
         <v-col cols="12" sm="4">
-          <v-dialog v-model="showCommissionModal" class="square-card"
-            max-width="500">
-            <CommissionDetailsModal :proposal-id="this.proposalId"
-                                    :current-commission-value="currentCommissionValue"
-                                    :select-callback="saveDesiredCommissionAmountValue"
-                                    @commissionDetailModalClosed="showCommissionModal = false"></CommissionDetailsModal>
-          </v-dialog>
           <v-card class="proposal-container">
             <div>
               <div class="proposal-container-header">
@@ -94,7 +87,7 @@
                 :key="index"
               >
                 <div class="configuration-group-title">{{ cfg.groupName }}</div>
-                <div
+                <div class="cf-container"
                   v-for="(field, idx) in filterBy(cfg.customFieldValues, f => userHasWhiteListedPosition(f, 'hidden'))"
                   :key="idx">
                   <CustomValueInput
@@ -102,12 +95,11 @@
                     :callback="populateDirtyCfvs"
                     :readonly="!canEdit || proposal.locked || !isConditionalFieldPopulated(field) || (field.conditionalOnId && loading) || !userHasWhiteListedPosition(field, 'readonly') || field.ancillaryCustomFieldGroupAssignmentId !== null"
                     :field="field"
-                    :append-icon="getAppendIcon(field)"
-                    :append-callback="(value) => changeShowCommissionModal(value)"
                     :show-field-name="false"
                     :list-of-value-filter="filters[field.customFieldId]"
                     :hint="getHint(field)"
                   />
+                  <CommissionDetailsMenu v-if="userIsAdmin && field.customFieldGroupAssignmentId === 454" :proposal-id="proposalId"/>
                 </div>
               </div>
             </div>
@@ -135,7 +127,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="8">
-          <v-card class="proposal-container">
+          <v-card class="proposal-container" v-if="false">
             <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
                  v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
               <v-alert
@@ -235,7 +227,7 @@ import NextStepMenu from '@/views/blueraven/proposals/NextStepMenu'
 import EditableInput from '@/views/blueraven/proposals/EditableInput'
 import {mapState} from 'vuex'
 import Vue2Filters from 'vue2-filters'
-import CommissionDetailsModal from "@/views/blueraven/proposals/CommissionDetailsModal.vue";
+import CommissionDetailsMenu from "@/views/blueraven/proposals/CommissionDetailsMenu.vue";
 import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
 
 const autoSelectFieldIds = [407, 102, 81]
@@ -250,7 +242,7 @@ export default {
   mixins: [Vue2Filters.mixin],
   components: {
     ResidualDetailModal,
-    CommissionDetailsModal,
+    CommissionDetailsMenu,
     CustomValueInput,
     ProposalTemplate,
     ConfirmDialog,
@@ -260,8 +252,6 @@ export default {
   data() {
     return {
       proposalExists: false,
-      showCommissionModal: false,
-      currentCommissionValue: null,
       isIntersecting: false,
       loading: false,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN'),
@@ -322,21 +312,6 @@ export default {
     })
   },
   methods: {
-    getAppendIcon(field) {
-      return this.userIsAdmin && field.customFieldGroupAssignmentId === 454 ? 'mdi-information' : null
-    },
-    changeShowCommissionModal(fieldValue) {
-      this.currentCommissionValue = fieldValue
-      this.showCommissionModal = !this.showCommissionModal
-    },
-    saveDesiredCommissionAmountValue(value) {
-      const field = this.sortedCustomFieldGroups.find(cfg => cfg.id === 39)?.customFieldValues?.find(f => f.customFieldGroupAssignmentId === 454)
-      if (field) {
-        field.numericValue = value
-        this.populateDirtyCfvs(field)
-      }
-      this.showCommissionModal = false
-    },
     getHint(field) {
       if (!field) {
         return undefined
@@ -717,6 +692,15 @@ export default {
 .proposal-container {
   padding: 24px;
   border-radius: 0;
+}
+
+//this is to make the button on the desired commission field align properly without screwing everything else up
+.cf-container {
+  display: flex;
+  align-items: center;
+}
+.cf-container div {
+  width: 100%;
 }
 
 .proposal-title {
