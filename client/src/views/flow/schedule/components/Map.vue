@@ -16,7 +16,7 @@
         <template v-slot:activator="{ on }">
           <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
         </template>
-        <v-card color="white" class="square-card pa-4">
+        <v-card id="drive-time-card" color="white" class="square-card pa-4">
           <div class="d-flex justify-space-between">
           <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
             <v-btn icon small @click="menuOpen = false"><v-icon>close</v-icon></v-btn>
@@ -30,13 +30,12 @@
                             @input="[showAddress2List = false, debounceSearchAddress(address1, true)]"></v-text-field>
               <v-list ref="dropdownMenu1" v-if="showAddress1List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}">
-                    <a class="dropdown-item text-decoration-none" href="#" @click="selectAddress(suggestion, true)">
-                      {{ formatLabel(suggestion.label, 'start') }}<span
-                      class="text-primary">{{
+                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, true)">
+                    <span class="dropdown-item text-decoration-none" >
+                      {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
                       }}</span>{{ formatLabel(suggestion.label, 'end') }}
-                    </a>
+                    </span>
                   </v-card>
                 </v-list-item>
               </v-list>
@@ -57,14 +56,12 @@
                             @input="[showAddress1List = false, debounceSearchAddress(address2, false)]"></v-text-field>
               <v-list ref="dropdownMenu2" v-if="showAddress2List">
                 <v-list-item v-for="(suggestion, idx) in suggestions">
-                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}">
-                    <a class="dropdown-item text-decoration-none" href="#"
-                       @click="selectAddress(suggestion, false)">
-                      {{ formatLabel(suggestion.label, 'start') }}<span
-                      class="text-primary">{{
+                  <v-card class="pa-2" outlined :class="{'mt-2': idx !== 0}" @click="selectAddress(suggestion, false)">
+                    <span class="dropdown-item text-decoration-none">
+                      {{ formatLabel(suggestion.label, 'start') }}<span>{{
                         formatLabel(suggestion.label, 'middle')
                       }}</span>{{ formatLabel(suggestion.label, 'end') }}
-                    </a>
+                    </span>
                   </v-card>
                 </v-list-item>
               </v-list>
@@ -280,12 +277,12 @@ export default {
       }
     },
     async geoCode(address) {
-      if ((this.address1.length >= 2 || this.address2.length >= 2)) {
+      if (this.address1.length >= 2 || this.address2.length >= 2) {
         try {
           let params = {
             address
           }
-          const {data} = await getRequestWithParams(`/mapbox/getSuggestions`, {params})
+            const {data} = await getRequestWithParams(`/mapbox/getSuggestions`, {params})
           if (data.features) {
             let addresses = data.features.map(address => {
               let label = address.place_name
@@ -316,6 +313,9 @@ export default {
         // let request = new Request(`${api + endpoint}/${searchtext}.json?${queryString}`)
         // let response = await fetch(request)
         // let data = await response.json()
+
+      }
+      else {
 
       }
     },
@@ -496,6 +496,16 @@ export default {
 <style lang="scss">
 .drive-time-menu {
   border-radius: 0 !important;
+}
+
+#drive-time-card > div > div > div.v-list.v-sheet {
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+
+  .v-list-item {
+    //padding: 0;
+    //looked at removing the padding on the child as shown in figma, but it looks odd with the scrollbar
+  }
 }
 
 </style>
