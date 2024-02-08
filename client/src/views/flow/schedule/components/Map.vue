@@ -220,7 +220,6 @@ export default {
       this.mapbox = Mapbox
     },
     selectAddress(suggestion, isFirst) {
-      debugger
       if (isFirst) {
         this.address1 = suggestion.label
         this.showAddress1List = false
@@ -378,7 +377,6 @@ export default {
       this.selectAddress2 = false
     },
     selectAddressForDriveTime(marker) {
-      debugger
       if (this.selectAddress1) {
         this.address1 = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
         this.selectAddress1 = false
