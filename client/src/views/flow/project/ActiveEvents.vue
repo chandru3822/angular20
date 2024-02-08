@@ -6,8 +6,8 @@
                            @click="toggleCollapseExpand">
     <template v-slot:tool-btn>
       <v-btn v-if="$store.getters.userHasFeatureAccessLevel('PROCESS_STEPS', 'VIEW')"
-             text color="primary" @click.stop :to="`/project/${projectId}/events`" class="pa-2 mx-2" max-width="48px">
-        <v-icon small>mdi-format-list-bulleted</v-icon>
+             text small color="primary" @click.stop :to="`/project/${projectId}/events`" class="pa-2 mx-2" max-width="48px">
+        <v-icon :size="20">mdi-format-list-bulleted</v-icon>
       </v-btn>
     </template>
     <template v-slot:expanded-content>
