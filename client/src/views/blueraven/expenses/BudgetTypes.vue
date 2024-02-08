@@ -31,6 +31,7 @@
           :headers="headers"
           :items="filterBudgetTypes()"
           :items-per-page="-1"
+          :loading="dataLoading"
           :mobile-breakpoint="0"
           hide-default-footer
           class="elevation-1 fix-column-width-bug square-card"
@@ -103,6 +104,7 @@ export default {
     return {
       snackbar: {},
       createNew: false,
+      dataLoading: true,
       newBudgetType: {},
       editIndex: null,
       budgetTypes: [],
@@ -122,16 +124,15 @@ export default {
       return this.budgetTypes.filter(bt => !bt.archived)
     },
     async getBudgetTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+      this.dataLoading = true
       try {
         const {data, status} = await getRequest(`/expenseBudgets/budgetTypes`, 'blueraven')
         this.budgetTypes = data
-        handleHidingGlobalLoader(this, status)
+        this.dataLoading = false
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async deleteBudgetType(item) {

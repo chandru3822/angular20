@@ -98,7 +98,7 @@ export default {
   //border-top: solid 1px #ccc !important;
   border:none;
   border-radius: 0.25em;
-  background-color: #fff;
+  background-color: #fff !important;
   padding: 0;
 }
 

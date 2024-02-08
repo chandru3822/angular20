@@ -9,6 +9,7 @@ import com.albatross.api.v1.company.blueraven.services.queries.ContactLeadQuery;
 import com.albatross.api.v1.flow.enums.ContactType;
 import com.albatross.api.v1.flow.enums.State;
 import com.albatross.api.v1.flow.model.*;
+import com.albatross.api.v1.flow.services.ContactService;
 import com.albatross.api.v1.flow.services.SMSService;
 import com.albatross.api.v1.flow.services.SystemListService;
 import com.albatross.api.v1.flow.services.UserPositionService;
@@ -34,8 +35,11 @@ public class ContactLeadService {
   private final SecurityService securityService;
   private final SystemListService systemListService;
   private final UserPositionService userPositionService;
+  private final ContactService contactService;
 
-  public void saveContactLead(ContactLead cl) {
+  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 40L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
+
+  public Contact saveContactLead(ContactLead cl) {
     HubspotLead hubspotLead = new HubspotLead();
     User currentUser = securityService.getCurrentUser();
 
@@ -365,7 +369,7 @@ public class ContactLeadService {
       .findFirst()
       .orElse(null);
 
-    if (leadLevel != null && (leadLevel == 40L || (leadLevel >= 201L && leadLevel <= 209L))) {
+    if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
       try {
         five9Service.handleContact(contactId, cfvList, false, false, leadLevel);
       } catch (Exception e) {
@@ -385,6 +389,7 @@ public class ContactLeadService {
         log.error(msg, e.getMessage());
       }
     }
+    return contactService.getContact(contactId);
   }
 
   private void saveCustomFieldValue(CustomFieldValue cfv, Long contactId, Long leadOwnerUserId) {

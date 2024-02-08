@@ -1,19 +1,19 @@
 <template>
-  <v-container class="pa-0">
-    <v-toolbar flat elevation="0" id="commission-detail-modal-header">
-      <v-toolbar-title>
-        *Customer's Current Monthly Payment {{ proposalCommission.monthlyCostTodayWithoutSolar }}
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <div class="pt-3">
-          <v-btn text color="primary" @click="$emit('commissionDetailModalClosed')">
-            <v-icon>close</v-icon>
-          </v-btn>
-        </div>
-      </v-toolbar-items>
-    </v-toolbar>
+  <v-menu
+      v-model="displayDropdown"
+      bottom
+      offset-y
+      min-width="350"
+      :close-on-content-click="false"
+      style="z-index: 10"
+  >
+    <template #activator="{on}">
+      <v-btn text color="primary" x-small v-on="on" class="commission-detail-button">
+        <v-icon>mdi-information</v-icon>
+      </v-btn>
+    </template>
     <v-card class="square-card" flat>
+      <v-card-title>*Customer's Current Monthly Payment {{ proposalCommission.monthlyCostTodayWithoutSolar }}</v-card-title>
       <v-card-text class="pt-0">
         <v-data-table
             :headers="headers"
@@ -34,7 +34,7 @@
                 {{item.monthly_payment | currency('', 2)}}
               </td>
               <td>
-                <v-chip v-if="item.recommended" color="green lighten-1" class="white--text">
+                <v-chip v-if="item.recommended" color="success lighten-1" class="white--text">
                   {{ item.commission_kw }}
                 </v-chip>
 
@@ -48,7 +48,7 @@
         </v-data-table>
       </v-card-text>
     </v-card>
-  </v-container>
+  </v-menu>
 </template>
 
 <script>
@@ -70,6 +70,7 @@
     data() {
       return {
         snackbar: {},
+        displayDropdown: false,
         detailsLoading: true,
         proposalCommission: {},
         headers: [
@@ -104,9 +105,6 @@
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         }
       },
-      async selectCommission (item) {
-        this.selectCallback(item.commission_kw)
-      },
     }
   }
 </script>
@@ -118,5 +116,11 @@
 </style>
 
 <style lang="scss" scoped>
+.commission-detail-button {
+  padding: 4px !important;
+  height: 28px !important;
+  margin-left: 5px;
+  margin-right: -5px;
+}
 </style>
 

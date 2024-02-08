@@ -10,9 +10,9 @@ import lombok.Setter;
 @Setter
 public class BudgetTemplate {
 
-  private Long id;
-  private String userFullName, budgetType;
-  private Long userId, budgetTypeId;
+  private Long id, currentMonthBudgetId;
+  private String userFullName;
+  private Long userId;
   private Double amount;
   private Boolean archived;
 

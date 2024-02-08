@@ -10,9 +10,8 @@ import java.util.List;
  */
 @Data
 public class FunnelRequest {
-    private BigDecimal targetInstallations;
     private String start, end;
     private List<Long> brsProvidedSources, selfGenSources, sources, users, areas, orgs;
     private int funnelId;
-    private Boolean isCheckedInColumn;
+    private Boolean isCheckedInColumn, isCohort;
 }

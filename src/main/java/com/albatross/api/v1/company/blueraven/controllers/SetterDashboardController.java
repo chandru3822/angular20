@@ -98,23 +98,13 @@ public class SetterDashboardController {
     return setterDashboardService.getReps(request);
   }
 
-  @PostMapping(value = "/funnel/standard")
-  public String funnelStandard(@RequestBody FunnelRequest funnelRequest) {
-    return setterDashboardService.funnelStandard(funnelRequest);
+  @PostMapping(value = "/funnel")
+  public String loadFunnel(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.loadFunnel(funnelRequest);
   }
 
-  @PostMapping(value = "/funnelDrilldown/standard")
-  public String funnelDrilldownStandard(@RequestBody FunnelRequest funnelRequest) {
-    return setterDashboardService.funnelDrilldownStandard(funnelRequest);
-  }
-
-  @PostMapping(value = "/funnel/cohort")
-  public String funnelCohort(@RequestBody FunnelRequest funnelRequest) {
-    return setterDashboardService.funnelCohort(funnelRequest);
-  }
-
-  @PostMapping(value = "/funnelDrilldown/cohort")
-  public String funnelDrilldownCohort(@RequestBody FunnelRequest funnelRequest) {
-    return setterDashboardService.funnelDrilldownCohort(funnelRequest);
+  @PostMapping(value = "/funnelDrilldown")
+  public String funnelDrilldown(@RequestBody FunnelRequest funnelRequest) {
+    return setterDashboardService.funnelDrilldown(funnelRequest);
   }
 }

@@ -1,27 +1,29 @@
 <template>
   <div class="flex-align-items-center"  id="announcement-dropdown">
-    <v-dialog persistent v-model="showModal" :max-width="765"
+    <v-dialog v-model="showModal" :max-width="765"
               content-class="modal-content">
       <AnnouncementModal :announcement="selectedAnnouncement"
                          :close-callback="closeModal">
       </AnnouncementModal>
     </v-dialog>
-  <v-menu data-app left
+  <v-menu data-app
+          left
           offset-y
-          :max-height="`calc(100vh - 20px)`"
-          :max-width="400"
-          :min-width="300"
+          :max-height="`calc(100vh - 75px)`"
+          :max-width="menuWidth"
+          :min-width="menuWidth"
           v-model="menuOpen"
           class="account-menu"
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
       <v-btn class="account-menu-button label-medium"
              dark
+             :class="{'announcement-adjust-for-badge': hasUnalertedAnnouncements}"
              :color="constants.ENV_COLOR"
              v-on="on"
       >
         <v-icon>mdi-bell</v-icon>
-        <v-badge dot class="alert-badge" v-if="hasUnreadAnnouncements"
+        <v-badge dot class="alert-badge" v-if="hasUnalertedAnnouncements"
             color="error lighten-1"
         ></v-badge>
       </v-btn>
@@ -37,31 +39,28 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <v-list v-else-if="$store.state.app.announcements?.length === 0">
+          <v-list-item class="pr-1">
+            <v-list-item-content class="">
+              You don't have any notifications
+            </v-list-item-content>
+          </v-list-item>
+      </v-list>
       <v-list v-else-if="$store.state.app.announcements?.length > 0">
         <template  v-for="(item, index) in $store.state.app.announcements">
         <v-list-item class="pr-1"
                      :key="item.id">
           <v-list-item-icon v-if="!item.read" class="mr-2">
-            <v-icon small v-if="item.expandable"
-                    tool
+            <v-icon small tool
                     color="error lighten-1">mdi-circle</v-icon>
-            <v-tooltip v-else bottom class="randa-test">
-              <template v-slot:activator="{on, attrs}">
-                <v-icon small v-bind="attrs" v-on="on"
-                        @click="markAsRead(item)"
-                        color="error lighten-1">mdi-circle</v-icon>
-              </template>
-              <span>Mark as Read</span>
-            </v-tooltip>
-
           </v-list-item-icon>
-          <v-list-item-content class="">
-              {{item.title}}
+          <v-list-item-content class="pr-2">
+              {{item.alertText}}
           </v-list-item-content>
           <v-list-item-action v-if="item.expandable"
-                              class="announcement-action">
+                              class="announcement-action pr-4">
             <v-list-item-action-text>
-              <a @click="[ markAsRead(item), openModal(item)]">Learn More</a>
+              <v-btn text color="primary" class="learn-more-btn text-transform-unset" @click="[ item.read = true, openModal(item)]">Learn More</v-btn>
             </v-list-item-action-text>
           </v-list-item-action>
           </v-list-item>
@@ -80,12 +79,12 @@
   import constants from '@/helpers/constants'
   import Vue2Filters from "vue2-filters"
   import SpinnerInline from '@/components/SpinnerInline'
-  import {getRequest, postRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
+  import {getRequestWithParams, postRequestWithRequestParams, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
   const { VITE_ENV } =  import.meta.env
   import { AppMutations } from '@/stores/AppStore'
   import AnnouncementModal from "@/components/AnnouncementModal.vue";
   import {Actions} from "@/store.js";
-  import {UserMutations} from "@/stores/UserStore.js";
+  import {UserActions, UserMutations} from "@/stores/UserStore.js";
 
   export default {
     name: 'AnnouncementDropdown',
@@ -98,10 +97,14 @@
     },
     watch: {
       menuOpen(newValue, oldValue) {
-        console.log('old',oldValue)
-        console.log('new',newValue)
         if(newValue) {
           this.getActiveAnnouncementsAgain()
+
+          // if(this.hasUnseenAnnouncements) {
+          //   //if there are unseen announcements handle those here
+          //   console.log('there are popups')
+          //   this.$store.dispatch(AppActions.MARK_SEEN_AND_ALERTED_ANNOUNCEMENTS)
+          // }
         }
       }
     },
@@ -118,9 +121,12 @@
       }
     },
     computed: {
-      hasUnreadAnnouncements () {
-        return this.$store.state.app.announcements?.filter(a => !a.read)?.length > 0 || false
-      }
+      menuWidth() {
+        return this.constants.IS_MOBILE ? 320 : 400
+      },
+      hasUnalertedAnnouncements () {
+        return this.$store.state.app.announcements?.filter(a => !a.alerted)?.length > 0 || false
+      },
     },
     created () {
     },
@@ -129,7 +135,10 @@
       async getActiveAnnouncementsAgain() {
         try {
           this.loadingAgain = true
-          const {data, status} = await getRequest(`/announcements/active`)
+          let params = {
+            doUpdate: true //we do this every time in case something changed behind the scenes
+          }
+          const {data, status} = await getRequestWithParams(`/announcements/active`, {params})
           this.$store.commit(AppMutations.SET_ANNOUNCEMENTS, data)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -166,34 +175,21 @@
         this.showModal = false
         this.selectedAnnouncement = {}
       },
-      async markAsRead(item) {
-        if( !item.read) {
-          try {
-            item.read = true
-            let params = {
-              read: true,
-              seen: true
-            }
-            await postRequestWithRequestParams(`/announcements/${item.id}/mark`, {}, params)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Marking Announcement As Read')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        }
-      },
     }
   }
 </script>
 
 <style lang="scss">
-
+.announcement-adjust-for-badge .v-btn__content {
+  padding-right: 8px;
+}
 </style>
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
 .announcement-action {
   width: 100px;
   justify-content: center;
+  margin: 0 !important;
 }
 
 .account-menu-button{
@@ -208,9 +204,9 @@
   margin-bottom: 4px;
 }
 
-.randa-test {
-  position: absolute;
-  z-index: 1000000;
-
+.learn-more-btn {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
 }
+
 </style>

@@ -6,7 +6,7 @@
           text small color="primary" class="px-0"
           @click.stop="$emit('clickEdit')"
           v-if="showEditBtn">
-        <v-icon>edit</v-icon>
+        <v-icon :size="20">edit</v-icon>
       </v-btn>
     </template>
     <template v-slot:expanded-content>

@@ -345,6 +345,8 @@ public class GenesysService {
       if (!isCronContact) {
         return;
       }
+    } else if (leadLevel.equals("1") || leadLevel.equals("2")) {
+      return;
     } else if (leadLevel.equals("20")) {
       contactMap.put("state", contact.getState());
       verseWebhookService.postContact(contactMap, false);
@@ -610,7 +612,7 @@ public class GenesysService {
     String leadLevel = (String) contactMap.remove("lead_level");
 
     // Genesys contacts will have a lead level
-    if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0")) {
+    if (leadLevel == null || leadLevel.isEmpty() || leadLevel.equals("0") || leadLevel.equals("1") || leadLevel.equals("2")) {
       return;
     }
 

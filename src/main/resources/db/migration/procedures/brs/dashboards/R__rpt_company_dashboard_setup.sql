@@ -49,7 +49,7 @@ BEGIN
 --   end if;
 
   for x in select generate_series(p_start_time,
-                                  now(), interval '1 day')::date as metric_date
+                                  now() + interval  '30 days', interval '1 day')::date as metric_date
     loop
 
       insert into brs.company_dashboard_daily_metric(metric_date,
@@ -76,62 +76,62 @@ BEGIN
                                                      inspection_results_submitted,
                                                      final_completions)
       values (x.metric_date,
-              (select count(*) as count
+              (select count(distinct project_id) as count
                from brs.project_details as pd
                where ((pd.first_time_appointment_created at time zone 'UTC') at time zone 'US/Mountain') ::date =
                      x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details as pd
                where ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') ::date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where ((pd.first_appointment_pitched at time zone 'UTC') at time zone
                       'US/Mountain') :: date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.installation_agreement_signed_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.site_survey_verified_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where ((pd.final_design_created_timestamp at time zone 'UTC') at time zone
                       'US/Mountain') :: date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone
                       'US/Mountain') :: date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.final_design_signed_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.final_design_complete_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.plan_set_created_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.permit_pack_complete = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where permit_pack_submission_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.permit_approved_date = x.metric_date
-                 and pd.archived is false),
+                 and pd.archived is false and pd.company_id = 3),
               (with results as (SELECT pps.project_id,
                                        min((wqc.date_entered_queue AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::date as date_entered_queue
                                 FROM flow.work_queue_cycle wqc
@@ -152,117 +152,112 @@ BEGIN
                                   and pps.archived is false
                                   AND work_queue_type_id = 93
                                 group by pps.project_id)
-               select count(*) as count
+               select count(distinct project_id) as count
                from results
                where date_entered_queue = x.metric_date),
-              (select count(*) as count
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.installation_scheduled = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
-               where (
-                 ((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date = x.metric_date or
-                 ((pd.installation_closeout_start_time at time zone 'UTC') at time zone
-                  'US/Mountain') :: date = x.metric_date)
-                 and pd.archived is false),
-              (select count(*) as count
+               where
+                 greatest(((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                          ((pd.installation_closeout_start_time at time zone 'UTC') at time zone
+                           'US/Mountain') :: date ) = x.metric_date
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.substantial_completion_date = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where (
-                 pd.ahj_inspection_scheduled_date = x.metric_date or
-                 pd.ahj_reinspection_scheduled_date = x.metric_date)
-                 and pd.archived is false),
-              (select count(*) as count
+                 pd.ahj_inspection_scheduled_date = x.metric_date)
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
-               where (((pd.ahj_inspection_start_time at time zone 'UTC') at time zone
-                       'US/Mountain') :: date = x.metric_date or
-                      ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone
-                       'US/Mountain') :: date = x.metric_date)
-                 and pd.archived is false),
-              (select count(*) as count
+               where ((pd.ahj_inspection_start_time at time zone 'UTC') at time zone
+                       'US/Mountain') :: date = x.metric_date
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.ahj_final_inspection_verified = x.metric_date
-                 and pd.archived is false),
-              (select count(*) as count
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
-               where (
-                 pd.verified_inspection_approval_received_by_utility_date = x.metric_date
-                   or
-                 pd.ahj_inspection_approval_submitted_date = x.metric_date)
-                 and pd.archived is false),
-              (select count(*) as count
+               where
+                 least(pd.verified_inspection_approval_received_by_utility_date,pd.ahj_inspection_approval_submitted_date) = x.metric_date
+                 and pd.archived is false and pd.company_id = 3),
+              (select count(distinct project_id) as count
                from brs.project_details pd
                where pd.final_completion_submitted_date = x.metric_date
-                 and pd.archived is false))
+                 and pd.archived is false and pd.company_id = 3))
       ON CONFLICT (metric_date) DO UPDATE
-        SET first_time_appointment_created       = (select count(*) as count
+        SET first_time_appointment_created       = (select count(distinct project_id) as count
                                                     from brs.project_details as pd
                                                     where
                                                       ((pd.first_time_appointment_created at time zone 'UTC') at time zone
                                                        'US/Mountain') ::date =
                                                       x.metric_date
-                                                      and pd.archived is false),
-            planned_appointments                 = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            planned_appointments                 = (select count(distinct project_id) as count
                                                     from brs.project_details as pd
                                                     where
                                                       ((pd.first_appointment at time zone 'UTC') at time zone 'US/Mountain') ::date =
                                                       x.metric_date
-                                                      and pd.archived is false),
-            pitches                              = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            pitches                              = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where
                                                       ((pd.first_appointment_pitched at time zone 'UTC') at time zone
                                                        'US/Mountain') :: date = x.metric_date
-                                                      and pd.archived is false),
-            bookings                             = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            bookings                             = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.installation_agreement_signed_date = x.metric_date
-                                                      and pd.archived is false),
-            site_surveys_verified                = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            site_surveys_verified                = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.site_survey_verified_date = x.metric_date
-                                                      and pd.archived is false),
-            final_designs_created                = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            final_designs_created                = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where
                                                       ((pd.final_design_created_timestamp at time zone 'UTC') at time zone
                                                        'US/Mountain') :: date = x.metric_date
-                                                      and pd.archived is false),
-            final_designs_sent                   = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            final_designs_sent                   = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where
                                                       ((pd.final_design_sent_to_homeowner_date at time zone 'UTC') at time zone
                                                        'US/Mountain') :: date = x.metric_date
-                                                      and pd.archived is false),
-            final_designs_approved               = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            final_designs_approved               = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.final_design_signed_date = x.metric_date
-                                                      and pd.archived is false),
-            final_designs_completed              = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            final_designs_completed              = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.final_design_complete_date = x.metric_date
-                                                      and pd.archived is false),
-            plan_sets_created                    = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            plan_sets_created                    = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.plan_set_created_date = x.metric_date
-                                                      and pd.archived is false),
-            permit_packs_created                 = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            permit_packs_created                 = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.permit_pack_complete = x.metric_date
-                                                      and pd.archived is false),
-            permits_submitted                    = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            permits_submitted                    = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where permit_pack_submission_date =
                                                           x.metric_date
-                                                      and pd.archived is false),
-            permits_approved                     = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            permits_approved                     = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.permit_approved_date = x.metric_date
-                                                      and pd.archived is false),
+                                                      and pd.archived is false and pd.company_id = 3),
             installations_made_ready_to_schedule = (with results as (SELECT pps.project_id,
                                                                             min((wqc.date_entered_queue AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::date as date_entered_queue
                                                                      FROM flow.work_queue_cycle wqc
@@ -283,56 +278,49 @@ BEGIN
                                                                        and pps.archived is false
                                                                        AND work_queue_type_id = 93
                                                                      group by pps.project_id)
-                                                    select count(*) as count
+                                                    select count(distinct project_id) as count
                                                     from results
                                                     where date_entered_queue = x.metric_date),
-            installations_scheduled              = (select count(*) as count
+            installations_scheduled              = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.installation_scheduled = x.metric_date
-                                                      and pd.archived is false),
-            planned_installations                = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            planned_installations                = (select count(distinct project_id) as count
                                                     from brs.project_details pd
-                                                    where (
-                                                      ((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date =
-                                                      x.metric_date or
-                                                      ((pd.installation_closeout_start_time at time zone 'UTC') at time zone
-                                                       'US/Mountain') :: date = x.metric_date)
-                                                      and pd.archived is false),
-            substantial_completions              = (select count(*) as count
+                                                    where
+                                                      greatest(((pd.installation_start_time at time zone 'UTC') at time zone 'US/Mountain') :: date,
+                                                               ((pd.installation_closeout_start_time at time zone 'UTC') at time zone
+                                                                'US/Mountain') :: date)  =
+                                                      x.metric_date
+                                                      and pd.archived is false and pd.company_id = 3),
+            substantial_completions              = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.substantial_completion_date = x.metric_date
-                                                      and pd.archived is false),
-            inspections_scheduled                = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            inspections_scheduled                = (select count(distinct project_id) as count
                                                     from brs.project_details pd
-                                                    where (
-                                                      pd.ahj_inspection_scheduled_date = x.metric_date or
-                                                      pd.ahj_reinspection_scheduled_date = x.metric_date)
-                                                      and pd.archived is false),
-            planned_inspections                  = (select count(*) as count
+                                                    where
+                                                      pd.ahj_inspection_scheduled_date = x.metric_date
+                                                      and pd.archived is false and pd.company_id = 3),
+            planned_inspections                  = (select count(distinct project_id) as count
                                                     from brs.project_details pd
-                                                    where (
+                                                    where
                                                       ((pd.ahj_inspection_start_time at time zone 'UTC') at time zone
-                                                       'US/Mountain') :: date = x.metric_date or
-                                                      ((pd.ahj_reinspection_start_time at time zone 'UTC') at time zone
-                                                       'US/Mountain') :: date = x.metric_date)
-                                                      and pd.archived is false),
-            inspections_passed                   = (select count(*) as count
+                                                       'US/Mountain') :: date = x.metric_date
+                                                      and pd.archived is false and pd.company_id = 3),
+            inspections_passed                   = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.ahj_final_inspection_verified = x.metric_date
-                                                      and pd.archived is false),
-            inspection_results_submitted         = (select count(*) as count
+                                                      and pd.archived is false and pd.company_id = 3),
+            inspection_results_submitted         = (select count(distinct project_id) as count
                                                     from brs.project_details pd
-                                                    where (
-                                                      pd.verified_inspection_approval_received_by_utility_date =
-                                                      x.metric_date
-                                                        or
-                                                      pd.ahj_inspection_approval_submitted_date =
-                                                      x.metric_date)
-                                                      and pd.archived is false),
-            final_completions                    = (select count(*) as count
+                                                    where
+                                                      least(pd.verified_inspection_approval_received_by_utility_date,pd.ahj_inspection_approval_submitted_date) = x.metric_date
+                                                      and pd.archived is false and pd.company_id = 3),
+            final_completions                    = (select count(distinct project_id) as count
                                                     from brs.project_details pd
                                                     where pd.final_completion_submitted_date = x.metric_date
-                                                      and pd.archived is false);
+                                                      and pd.archived is false and pd.company_id = 3);
       commit;
     end loop;
   commit;

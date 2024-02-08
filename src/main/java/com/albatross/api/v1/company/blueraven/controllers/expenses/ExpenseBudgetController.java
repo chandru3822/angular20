@@ -5,6 +5,7 @@ import com.albatross.api.v1.company.blueraven.models.expenses.BudgetType;
 import com.albatross.api.v1.company.blueraven.models.expenses.ExpenseBudget;
 import com.albatross.api.v1.company.blueraven.services.expenses.ExpenseBudgetService;
 import com.albatross.api.v1.flow.model.User;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -62,14 +63,8 @@ public class ExpenseBudgetController {
   //end budget templates here
 
   @GetMapping(value = "/list", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ExpenseBudget> getBudgets() {
-    return expenseBudgetService.getBudgets();
-  }
-
-  @GetMapping(value = "/availableForUser", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getAvailableBudgetsForUser(@RequestParam Long userId,
-                                           @RequestParam String expenseDate) {
-    return expenseBudgetService.getAvailableBudgetsForUser(userId, expenseDate);
+  public List<ExpenseBudget> getBudgets(@RequestParam String startDate) {
+    return expenseBudgetService.getBudgets(startDate);
   }
 
   @PostMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -77,35 +72,29 @@ public class ExpenseBudgetController {
     return expenseBudgetService.updateBudget(expenseBudget);
   }
 
+  //this is users who can be assigned a budget
   @GetMapping(value = "/availableUsers", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<User> getAvailableUsers() {
+  public List<BudgetUser> getAvailableUsers() {
     return expenseBudgetService.getAvailableUsers();
   }
 
+  //this is users who have a budget
   @GetMapping(value = "/usersWithBudget", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<User> getUsersWithBudget() {
+  public List<BudgetUser> getUsersWithBudget() {
     return expenseBudgetService.getUsersWithBudget();
   }
 
-  @GetMapping(value = "/userBudgetDetails/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-  public List<ExpenseBudget> getBudgetExpensesVsRemaining(@PathVariable("id") Long userId,
-                                                          @RequestParam String startDate,
-                                                          @RequestParam String endDate) {
-    return expenseBudgetService.getBudgetExpensesVsRemaining(userId, startDate, endDate);
+  //this is budgets for a specific user
+  @GetMapping(value = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+  public List<ExpenseBudget> getBudgetsForUser(@PathVariable Long id) {
+    return expenseBudgetService.getBudgetsForUser(id);
   }
 
   @GetMapping(value = "/getMonthlyBudgetReport", produces = MediaType.APPLICATION_JSON_VALUE)
   public String getMonthlyBudgetReport(@RequestParam String startDate,
-                                       @RequestParam String endDate) {
-    return expenseBudgetService.getMonthlyBudgetReport(startDate, endDate);
-  }
-
-  @GetMapping(value = "/getExpenseDrilldown", produces = MediaType.APPLICATION_JSON_VALUE)
-  public String getExpenseDrilldown(@RequestParam String startDate,
-                                    @RequestParam String endDate,
-                                    @RequestParam String status,
-                                    @RequestParam(required = false) Long budgetId) {
-    return expenseBudgetService.getExpenseDrilldown(startDate, endDate, status, budgetId);
+                                       @RequestParam String endDate,
+                                       @RequestParam Long userId) {
+    return expenseBudgetService.getMonthlyBudgetReport(userId, startDate, endDate);
   }
 
   @GetMapping(value = "/budgetRemaining/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -113,4 +102,9 @@ public class ExpenseBudgetController {
     return expenseBudgetService.getBudgetRemainingById(budgetId);
   }
 
+  @Data
+  public static class BudgetUser {
+    Long id;
+    String fullName;
+  }
 }

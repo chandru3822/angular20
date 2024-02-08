@@ -5,11 +5,15 @@ export async function getBudgetTypes() {
 }
 
 export async function getGlCodes() {
-  return await getRequest(`/expenses/glCodes`, 'blueraven')
+  return await getRequest(`/glCodes/all`, 'blueraven')
 }
 
 export async function getUsersWithBudget() {
   return await getRequest(`/expenseBudgets/usersWithBudget`, 'blueraven')
+}
+
+export async function getBudgetsForUser(userId) {
+  return await getRequest(`/expenseBudgets/user/${userId}`, 'blueraven')
 }
 
 export async function getReimbursementRequestImage(requestId) {

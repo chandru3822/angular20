@@ -2,8 +2,10 @@ package com.albatross.api.v1.company.blueraven.controllers;
 
 import com.albatross.api.v1.company.blueraven.models.ContactLead;
 import com.albatross.api.v1.company.blueraven.services.ContactLeadService;
+import com.albatross.api.v1.flow.model.Contact;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -291,8 +293,8 @@ public class ContactLeadController {
   }
 
   @PostMapping(value = "/blueraven", produces = MediaType.APPLICATION_JSON_VALUE)
-  public void updateContactBlueraven(@RequestBody ContactLead contactLead) {
-    contactLeadService.saveContactLead(contactLead);
+  public ResponseEntity<Contact> updateContactBlueraven(@RequestBody ContactLead contactLead) {
+    return new ResponseEntity<>(contactLeadService.saveContactLead(contactLead), HttpStatus.OK);
   }
 
   @PostMapping(value = "/pointer", produces = MediaType.APPLICATION_JSON_VALUE)

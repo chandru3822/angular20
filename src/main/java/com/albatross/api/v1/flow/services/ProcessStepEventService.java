@@ -418,6 +418,54 @@ public class ProcessStepEventService {
     return result.orElse(null);
   }
 
+  //child sms action stuff
+  public ProcessStepEventActionChildSmsTemplate addSmsToAction(Long psEventActionId, ProcessStepEventActionChildSmsTemplate child) {
+    User currentUser = securityService.getCurrentUser();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("messageTemplateId", child.getMessageTemplateId());
+    params.put("teamIds", child.getTeamIds());
+    params.put("processStepEventActionId", psEventActionId);
+    params.put("createdById", currentUser.trueUserId());
+
+    Long id =
+      sqlCache
+        .updateBySqlReturningId(ProcessStepEventQuery.addSmsToEventAction, params, "id")
+        .longValue();
+
+
+    return getEventActionChildSms(id);
+  }
+
+  public ProcessStepEventActionChildSmsTemplate getEventActionChildSms(Long id) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("id", id);
+
+    return sqlCache
+      .getBySql(
+        ProcessStepEventQuery.getEventActionChildSms,
+        params,
+        new ProcessStepEventService.ProcessStepEventActionChildSmsTemplateMapper<>(ProcessStepEventActionChildSmsTemplate.class, om))
+      .orElse(null);
+  }
+
+  public void deleteSmsFromAction(Long childSmsId) {
+    User currentUser = securityService.getCurrentUser();
+
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("modifiedById", currentUser.trueUserId());
+    params.put("id", childSmsId);
+    sqlCache.updateBySql(ProcessStepEventQuery.deleteSmsFromEventAction, params);
+  }
+
+  public List<ProcessStepEventActionChildSmsTemplate> getChildSmsTemplates(Long actionId) {
+    Map<String, Object> params =
+      Map.of("processStepEventActionId", actionId);
+    return sqlCache.queryBySql(
+      ProcessStepEventQuery.getChildSmsTemplatesByEventActionId,
+      params,
+      new ProcessStepEventService.ProcessStepEventActionChildSmsTemplateMapper<>(ProcessStepEventActionChildSmsTemplate.class, om));
+  }
+
 
   public Long updateRequiredFieldStatus(Long actionId, ProcessStepEventActionField processStepEventActionField) {
     User currentUser = securityService.getCurrentUser();
@@ -521,6 +569,28 @@ public class ProcessStepEventService {
       TypeReference<List<CompanyFunctionParam>> companyFunctionParamsRef = new TypeReference<>() {
       };
       bw.registerCustomEditor(List.class, "companyFunctionParams", new JsonCollectionDeserializer<>(companyFunctionParamsRef, objectMapper));
+    }
+  }
+
+  public static class ProcessStepEventActionChildSmsTemplateMapper<T> extends BeanPropertyRowMapper<T> {
+    private final ObjectMapper objectMapper;
+
+    public ProcessStepEventActionChildSmsTemplateMapper(Class<T> mappedClass, ObjectMapper objectMapper) {
+      super(mappedClass);
+      this.objectMapper = objectMapper;
+    }
+
+    @Override
+    protected void initBeanWrapper(BeanWrapper bw) {
+      TypeReference<List<Long>> teamIdsTypeRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "teamIds",
+        new JsonCollectionDeserializer(teamIdsTypeRef, objectMapper));
+
+      TypeReference<List<MessageTeam>> teamsTypeRef = new TypeReference<>() {
+      };
+      bw.registerCustomEditor(List.class, "teams",
+        new JsonCollectionDeserializer(teamsTypeRef, objectMapper));
     }
   }
 }

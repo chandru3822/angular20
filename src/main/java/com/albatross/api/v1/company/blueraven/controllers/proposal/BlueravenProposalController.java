@@ -114,7 +114,7 @@ public class BlueravenProposalController {
   }
 
   @PutMapping(value = "/{proposalId}/version/{versionId}")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_ADMIN', 'PROPOSALS_MANAGE')")
   public void updateProposalVersion(@PathVariable Long proposalId,
                                     @PathVariable Long versionId,
                                     @AuthenticationPrincipal UserAccountDetails details) {
@@ -293,7 +293,7 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/{proposalId}/filter")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_MANAGE', 'PROPOSALS_ADMIN')")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
     final Long proposalVersionId = proposalService.getProposalVersionByProposalId(proposalId).orElseThrow(NotFoundException::new);

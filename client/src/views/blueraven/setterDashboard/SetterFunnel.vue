@@ -256,16 +256,9 @@
 
       <!-- FUNNEL -->
       <div class="funnel-relative funnel-container">
-        <div v-show="funnelStats.length > 0" id="funnel-background"
-             :class="{'standard-view': viewSelect === 'standard', 'cohort-view': viewSelect === 'cohort'}"
-             :stype="{'margin-top': showPipelineCustomDates && windowInnerWidth < 1135 ? '81px' :
-                                    showPipelineCustomDates && windowInnerWidth >= 1135 ? '84px' :
-                                    windowInnerWidth < 1135 ? '63px' : '69px'}"
-        ></div>
         <table class="funnel-table">
           <!-- FUNNEL COLUMN HEADERS -->
           <tr class="funnel-tr">
-            <th class="funnel-th">EXPECTATION</th>
             <th class="funnel-th"></th>
             <th class="funnel-th">TODAY</th>
             <th class="funnel-th">LAST 7 DAYS</th>
@@ -315,19 +308,6 @@
           <!-- FUNNEL ROWS -->
           <tr class="funnel-tr" :class="{'blue-sub-row': index % 2 === 0}"
               v-for="(line, index) in funnelStats" :key="line.id">
-            <td v-if="showExpectationInput(index)" id="expectation-input"
-                class="funnel-td funnel-expectation">
-              <v-text-field @change="expectationChanged"
-                            v-model="expectedInstalls"
-                            solo
-                            dense>
-              </v-text-field>
-            </td>
-
-            <!-- FUNNEL EXPECTATION -->
-            <td v-if="!showExpectationInput(index)" class="funnel-td funnel-expectation">
-              {{line.expectation}}
-            </td>
 
             <!-- FUNNEL NAME -->
             <td class="funnel-td funnel-line-name">{{line.name}}</td>
@@ -452,7 +432,8 @@
             :footer-props="footerProps"
           >
             <template v-if="funnelDrilldownData.length > 0" #item="{ item, index }">
-              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]">
+              <tr :class="['text-sm-left', 'row-hover', {'shaded-row': !(index % 2)}]"
+                  :style="{'text-decoration': item.cancelled_date ? 'line-through' : ''}">
                 <td style="text-align: center">
                   {{ funnelDrilldownSearch ? index + 1 : item.rowNum }}
                 </td>
@@ -466,11 +447,13 @@
                 </td>
                 <td>{{ item.appointment_date | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.owner_name || '' }}</td>
-                <td>{{ item.verified_setter_lead || '' }}</td>
-                <td :class="item.appointment_outcome_class">
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)">{{ item.verified_setter_lead || '' }}</td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)" :class="item.appointment_outcome_class">
                   {{ item.appointment_outcome || '' }}
                 </td>
-                <td>{{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}</td>
+                <td v-if="!nonNormalFunnelIds.includes(funnelId)">{{ item.checked_in_time | formatDate('timestamp', 'MM/DD/YYYY h:mm a') }}</td>
+                <td v-if="funnelId === 31">{{ item.installation_agreement_signed_date | formatDate('date', 'MM/DD/YYYY') }}</td>
+                <td v-if="funnelId === 32">{{ item.final_design_complete_date | formatDate('date', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.date_created | formatDate('timestamp', 'MM/DD/YYYY') }}</td>
                 <td>{{ item.state || '' }}</td>
                 <td>{{ item.office || '' }}</td>
@@ -588,24 +571,10 @@
       pipeline_dt2: moment().format('YYYY-MM-DD'),
       pipeline_dt2_formatted: moment().format('M/D/YY'),
       pipeline_menu2: false,
-      expectedInstalls: 1,
-      expectationTimeout: 0,
       funnelStats: [],
       funnelDrilldownTitle: '',
-      funnelDrilldownHeaders: [
-        { text: '', value: '', show: true, sortable: false, width: 25 },
-        { text: 'Setter', value: 'setter_name', show: true, width: 90 },
-        { text: 'Name', value: 'customer_name', show: true, width: 90 },
-        { text: 'Project ID', value: 'project_id', show: true, width: 95 },
-        { text: 'Appointment Date', value: 'appointment_date', show: true, width: 150 },
-        { text: 'Closer', value: 'owner_name', show: true, width: 90 },
-        { text: 'Verified Setter Lead', value: 'verified_setter_lead', show: true, width: 170 },
-        { text: 'Appointment Outcome', value: 'appointment_outcome', show: true, width: 175 },
-        { text: 'Checked In Time', value: 'checked_in_time', show: true, width: 175 },
-        { text: 'Date Created', value: 'date_created', show: true, width: 115 },
-        { text: 'State', value: 'state', show: true, width: 80 },
-        { text: 'Office', value: 'office', show: true, width: 90 }
-      ],
+      funnelId: null,
+      nonNormalFunnelIds: [31,32],
       funnelDrilldownData: [],
       funnelDrilldownLoading: false,
       funnelDrilldownSearch: '',
@@ -620,6 +589,44 @@
       }
     }),
     computed: {
+      funnelDrilldownHeaders() {
+        return [
+          {text: '', value: '', show: true, sortable: false, width: 25},
+          {text: 'Setter', value: 'setter_name', show: true, width: 90},
+          {text: 'Name', value: 'customer_name', show: true, width: 90},
+          {text: 'Project ID', value: 'project_id', show: true, width: 95},
+          {text: 'Appointment Date', value: 'appointment_date', show: true, width: 150},
+          {text: 'Closer', value: 'owner_name', show: true, width: 90},
+          {
+            text: 'Verified Setter Lead',
+            value: 'verified_setter_lead',
+            show: !this.nonNormalFunnelIds.includes(this.funnelId),
+            width: 170
+          },
+          {
+            text: 'Appointment Outcome',
+            value: 'appointment_outcome',
+            show: !this.nonNormalFunnelIds.includes(this.funnelId),
+            width: 175
+          },
+          {
+            text: 'Checked In Time',
+            value: 'checked_in_time',
+            show: !this.nonNormalFunnelIds.includes(this.funnelId),
+            width: 175
+          },
+          {text: 'Booking Date', value: 'installation_agreement_signed_date', show: this.funnelId === 31, width: 175},
+          {
+            text: 'Final Design Complete Date',
+            value: 'final_design_complete_date',
+            show: this.funnelId === 32,
+            width: 175
+          },
+          {text: 'Date Created', value: 'date_created', show: true, width: 115},
+          {text: 'State', value: 'state', show: true, width: 80},
+          {text: 'Office', value: 'office', show: true, width: 90}
+        ]
+      },
       windowInnerWidth () { return window.innerWidth},
       selectAllAreas() {
         return this.areaModel.length === this.areaData.length
@@ -713,15 +720,10 @@
     },
     methods: {
       doRepWatcher() {
-        // console.log('CCCC')
         if(this.repValuesChanged) {
-          if (this.isSetter) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
-          } else if (this.selectAllReps) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  true)
-          } else {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2,  false)
-          }
+          let useRepDataInstead = this.isSetter ? false : this.selectAllReps
+          this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2,  useRepDataInstead)
+
           this.repValuesChanged = false
         }
       },
@@ -819,10 +821,6 @@
             this.districtModel = cloneDeep(this.districtData)
           } else {
             this.funnelDataLoaded = true
-          }
-
-          if (this.districtModel.length > 0) {
-            this.officeLoad(preSelectLists)
           }
 
           // reset these values when the districts change
@@ -945,7 +943,7 @@
           this.funnelStats = []
 
           if (!this.initialPageLoad || loadFilterOnFirstLoad) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+            this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
           }
         })
 
@@ -969,10 +967,6 @@
         let a = moment(start)
         let b = moment(end)
         return b.diff(a, 'days')
-      },
-
-      getCountHover (count, expectation) {
-        return count < expectation ? 'Worse than expectation' : 'Better than expectation'
       },
 
       getPercentColor (percent) {
@@ -1011,10 +1005,10 @@
           {user_id: -1, user_position_id: -1, name: 'All Reps', active: true}
         ]
 
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+        this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
-      async pipelineLoad (targetInstallations, start, end, useRepDataInstead) {
+      async pipelineLoad (start, end, useRepDataInstead) {
         this.setterPipelineLoading = true
         let reps = []
         let orgs = []
@@ -1060,42 +1054,35 @@
         // this.funnelStatsLoading = true
         try {
           const requestBody = {
-            targetInstallations: targetInstallations,
             users: reps,
             orgs: orgs,
             start: moment(start).format('YYYY-MM-DD'),
-            end: moment(end).format('YYYY-MM-DD')
+            end: moment(end).format('YYYY-MM-DD'),
+            isCohort: this.viewSelect === 'cohort'
           }
-          await postRequest('/setterDashboard/funnel/' + this.viewSelect, requestBody, 'blueraven').then(({data}) => {
+          await postRequest('/setterDashboard/funnel', requestBody, 'blueraven').then(({data}) => {
             data.forEach(row => {
-              // EXPECTATION column
-              row.expectation = this.roundTenth(row.expectation)
-
               // TODAY column
-              row.countTodayState = row.today_day_count < row.expectation ? 'red' : 'green'
-              row.todayHover = this.getCountHover(row.today_day_count, row.expectation)
+              row.countTodayState = row.today_day_count < 0 ? 'red' : 'green'
               row.percentToday = row.today_percent ? row.today_percent + '%' : '0%'
               row.percentTodayState = this.getPercentColor(row.today_percent)
               row.percentTodayHover = this.getPercentHover(row.today_percent, 1)
 
               // LAST 7 DAYS column
-              row.count7state = row.seven_day_count < row.expectation ? 'red' : 'green'
-              row.sevenDayHover = this.getCountHover(row.seven_day_count, row.expectation)
+              row.count7state = row.seven_day_count < 0 ? 'red' : 'green'
               row.percent7 = row.seven_percent ? row.seven_percent + '%' : '0%'
               row.percent7state = this.getPercentColor(row.seven_percent)
               row.percent7hover = this.getPercentHover(row.seven_percent, 7)
 
               // LAST 30 DAYS column
-              row.count30state = row.thirty_day_count < row.expectation ? 'red' : 'green'
-              row.thirtyDayHover = this.getCountHover(row.thirty_day_count, row.expectation)
+              row.count30state = row.thirty_day_count < 0 ? 'red' : 'green'
               row.percent30 = row.thirty_day_percent ? row.thirty_day_percent + '%' : '0%'
               row.percent30state = this.getPercentColor(row.thirty_day_percent)
               row.percent30hover = this.getPercentHover(row.thirty_day_percent, 30)
 
               // CUSTOM DATE RANGE column
               row.custom_date_range_count = Math.round(row.custom_date_range_count)
-              row.customCountState = row.custom_date_range_count < row.expectation ? 'red' : 'green'
-              row.customDayHover = this.getCountHover(row.custom_date_range_count, row.expectation)
+              row.customCountState = row.custom_date_range_count < 0 ? 'red' : 'green'
             })
 
             this.funnelStats = data
@@ -1109,16 +1096,6 @@
           this.funnelDataLoaded = true
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-
-      showExpectationInput (index) {
-        if (this.viewSelect === 'standard' && this.funnelStats.length - 1 === index) {
-          return true
-        }
-        if (this.viewSelect === 'cohort' && this.funnelStats.length - 2 === index) {
-          return true
-        }
-        return false
       },
 
       choosePipelineDateRange (dateRange) {
@@ -1153,7 +1130,6 @@
             break
           case 'Custom':
             this.showPipelineCustomDates = true
-            this.fixFunnelTopMargin()
             this.$store.commit(AppMutations.SET_LOADING, false)
             break
           default:
@@ -1162,15 +1138,10 @@
         }
       },
 
-      updateInstalls (installs) {
-        this.expectedInstalls = installs
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
       updatePipelineCalendar () {
         this.pipeline_menu1 = false
         this.pipeline_menu2 = false
-        this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+        this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
       },
 
       yesterday () {
@@ -1221,21 +1192,12 @@
         this.pipeline_dt2 = moment().subtract(1, 'days').format('YYYY-MM-DD')
         this.updatePipelineCalendar()
       },
-
-      expectationChanged () {
-        clearTimeout(this.expectationTimeout)
-        let expectedInstalls = this.expectedInstalls
-        if (!/^(\d+|\d*(\.\d+){1})$/.test(expectedInstalls)) return
-        this.expectedInstalls = expectedInstalls
-        this.pipelineLoad(expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
-      },
-
       viewSelected (view) {
         if (this.viewSelect !== view) {
           this.viewSelect = view
 
           if ((this.repModel.length > 0) || this.repModel[0]?.user_position_id === -1) {
-            this.pipelineLoad(this.expectedInstalls, this.pipeline_dt1, this.pipeline_dt2, false)
+            this.pipelineLoad(this.pipeline_dt1, this.pipeline_dt2, false)
           }
         }
       },
@@ -1254,18 +1216,25 @@
 
       async loadFunnel () {
         if (this.funnelStats?.length === 0) {
-          if (this.isSetter) {
+          //if they are a setter we have to wait for each request first so each list gets filtered
+          if(this.isSetter) {
             await this.areaLoad(true)
             await this.regionLoad(true)
             await this.districtLoad(true)
             await this.officeLoad(true)
             this.repLoad(true, true)
           } else {
-            await this.areaLoad(false)
-            await this.regionLoad(false)
-            await this.districtLoad(false)
-            await this.officeLoad(false)
-            this.repLoad(false, false)
+            let requests = [
+              this.areaLoad(false),
+              this.regionLoad(false),
+              this.districtLoad(false),
+              this.officeLoad(false),
+              this.repLoad(false, false)
+            ]
+            await Promise.all(requests).then(() => {
+              this.dropdownValuesLoading = false
+              this.initialPageLoad = false
+            })
           }
         }
       },
@@ -1364,6 +1333,7 @@
       },
 
       async funnelDrilldown (funnelId, dateRange, funnelName) {
+        this.funnelId = funnelId
         let reps = []
         let orgs = []
         let start, end
@@ -1400,12 +1370,13 @@
           end: end,
           funnelId: funnelId,
           users: reps,
-          orgs: orgs
+          orgs: orgs,
+          isCohort: this.viewSelect === 'cohort'
         }
 
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          await postRequest(`/setterDashboard/funnelDrilldown/${this.viewSelect}`, requestBody, 'blueraven').then(({data}) => {
+          await postRequest(`/setterDashboard/funnelDrilldown`, requestBody, 'blueraven').then(({data}) => {
             this.funnelDrilldownData = data?.length > 0 ? data : []
 
             if (this.funnelDrilldownData?.length > 0) {
@@ -2279,10 +2250,6 @@
     background-color: #e9e9e9;
   }
 
-  #funnel-background {
-    display: none;
-  }
-
   #pipeline-container {
     background-color: #fff;
     box-shadow: 2px 2px 6px 0 rgba(0, 0, 0, 0.3);
@@ -2492,10 +2459,6 @@
           }
         }
 
-        .funnel-expectation {
-          text-align: center;
-          width: 75px;
-        }
 
         .funnel-line-name {
           cursor: default !important;
@@ -2503,31 +2466,6 @@
           z-index: 7;
           text-align: center;
           height: 38px;
-        }
-
-        #expectation-input {
-          .v-input {
-            transform: scale(0.75);
-            transform-origin: center;
-            font-size: 10px;
-            margin: 0 auto;
-            max-width: 50px;
-
-            ::v-deep {
-              .v-input__slot {
-                margin-bottom: 0;
-              }
-
-              input {
-                text-align: center;
-              }
-
-              .v-text-field__details,
-              .v-messages {
-                display: none;
-              }
-            }
-          }
         }
 
         .funnel-td {
@@ -2989,28 +2927,6 @@
       height: 30px;
     }
 
-    #funnel-background {
-      display: block;
-      position: absolute;
-      z-index: 6;
-      border-top-style: solid;
-      border-top-color: rgba(0, 110, 200, 0.05);
-      border-right: 20px solid transparent;
-      border-left: 20px solid transparent;
-      margin-top: 63px;
-      margin-left: 110px;
-      width: 170px;
-      height: 0;
-    }
-
-    #funnel-background.standard-view {
-      border-top-width: 120px;
-    }
-
-    #funnel-background.cohort-view {
-      border-top-width: 160px;
-    }
-
     #pipeline-container {
       margin: 0 auto;
       max-width: calc(100% - 50px);
@@ -3133,21 +3049,10 @@
             }
           }
 
-          .funnel-expectation {
-            width: 120px;
-          }
 
           .funnel-line-name {
             width: 150px;
             height: 40px;
-          }
-
-          #expectation-input {
-            .v-input {
-              transform: scale(0.8);
-              font-size: 15px;
-              max-width: 70px;
-            }
           }
 
           .funnel-td {
@@ -3385,22 +3290,6 @@
       font-size: 12px;
     }
 
-    #funnel-background {
-      border-right: 80px solid transparent;
-      border-left: 80px solid transparent;
-      margin-top: 63px;
-      margin-left: 140px;
-      width: 320px;
-    }
-
-    #funnel-background.standard-view {
-      border-top-width: 180px;
-    }
-
-    #funnel-background.cohort-view {
-      border-top-width: 240px;
-    }
-
     #pipeline-container {
       .pipeline-header-container {
         #pipeline-header-top {
@@ -3499,20 +3388,9 @@
             }
           }
 
-          .funnel-expectation {
-            width: 150px;
-          }
 
           .funnel-line-name {
             width: 300px;
-          }
-
-          #expectation-input {
-            .v-input {
-              transform: none;
-              font-size: 14px;
-              max-width: 80px;
-            }
           }
 
           .funnel-td {
@@ -3631,10 +3509,6 @@
       max-width: 1130px;
     }
 
-    #funnel-background {
-      width: 370px;
-    }
-
     #pipeline-container {
       .funnel-container {
         .funnel-table {
@@ -3671,9 +3545,6 @@
             }
           }
 
-          .funnel-expectation {
-            width: 150px;
-          }
 
           .funnel-line-name {
             width: 350px;

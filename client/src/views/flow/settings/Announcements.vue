@@ -13,7 +13,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar" id="default-settings-tabs">
-          <v-tab v-for="(tab, index) in displayedTabs" :key="index" @click="current = tab.current"
+          <v-tab v-for="(tab, index) in displayedTabs" :key="index" :to="tab.path"
                  class="text-capitalize ma-0 label-medium"
                  :style="{'margin-left': (index === 0 && $vuetify.breakpoint.smAndDown) ? '12px !important' : '0'}">
             {{ tab.label }}
@@ -42,7 +42,6 @@
               </td>
               <td>
                 <v-btn small text color="primary"
-                       v-if="current"
                        @click="goToPath(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
@@ -83,6 +82,9 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
       filteredAnnouncements () {
         return this.announcements?.filter(a => { return !a.archived}) || []
       },
+      current() {
+        return this.$route.path.includes('current')
+      }
     },
     data() {
       return {
@@ -99,7 +101,6 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
         announcements: [],
-        current: true,
         userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         headers: [
@@ -112,12 +113,12 @@ import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
         tabs: [
           {
             label: 'Current',
-            current: true,
+            path: '/settings/announcements/current',
             display: this.$store.getters.userHasFeature('SETTINGS')
           },
           {
             label: 'Past',
-            current: false,
+            path: '/settings/announcements/past',
             display: this.$store.getters.userHasFeature('SETTINGS')
           },
         ]

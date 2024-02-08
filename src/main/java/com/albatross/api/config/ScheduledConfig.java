@@ -42,6 +42,7 @@ public class ScheduledConfig implements SchedulingConfigurer {
   private final OrgService orgService;
   private final SecurityService securityService;
   private final AnnouncementService announcementService;
+  private final CertService certService;
 
   @Value(value = "${app.cron.sendSms.enabled:false}")
   private Boolean sendSmsNotifications;
@@ -155,6 +156,15 @@ public class ScheduledConfig implements SchedulingConfigurer {
       messagingService.closeStaleUserConversations(SystemSettings.CRON_USER.getId());
       log.info("*** CRON: end close SMS user conversations ***");
     }
+  }
+
+  //    every  day at 1 am
+  @Scheduled(cron = "0 0 1 * * *", zone = "America/Denver")
+  public void sendCertExpirationEmails() {
+      setCronUser();
+      log.info("*** CRON: start send Cert Expiration Emails ***");
+      certService.sendEmails();
+      log.info("*** CRON: end send Cert Expiration Emails ***");
   }
 
   //    every  minute

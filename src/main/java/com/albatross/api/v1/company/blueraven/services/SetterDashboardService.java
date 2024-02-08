@@ -6,30 +6,25 @@ import com.albatross.api.v1.company.blueraven.models.DashboardUserRequest;
 import com.albatross.api.v1.company.blueraven.models.FunnelRequest;
 import com.albatross.api.v1.company.blueraven.models.IncentiveCounts;
 import com.albatross.api.v1.company.blueraven.services.queries.SetterDashboardQuery;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Joseph Canto on 2020-07-06.
  */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 @PreAuthorize("(hasCompanyAccess(3) || hasCompanyAccess(18)) && hasFeatureAccess('SETTER_DASHBOARD')")
 public class SetterDashboardService {
-  @Autowired
-  private SecurityService securityService;
 
-  @Autowired
-  private SqlCache sqlCache;
-
-  @Autowired
-  private NamedParameterJdbcTemplate jdbc;
+  private final SecurityService securityService;
+  private final SqlCache sqlCache;
 
   public IncentiveCounts getIncentivePitchCounts(Boolean isSetterMgr, Integer setterMgrOfficeId) {
     HashMap<String, Object> params = new HashMap<>();
@@ -42,211 +37,161 @@ public class SetterDashboardService {
   }
 
   public String pitchesDrilldown(int quarter, Boolean isSetterMgr, Integer setterMgrOfficeId) {
-    String sqlQuery = "SELECT * FROM brs.get_pitches_drilldown(:userId::bigint, :quarter::bigint, :isSetterMgr::BOOLEAN, :setterMgrOfficeId::bigint)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", securityService.getCurrentUser().getId());
+    params.put("quarter", quarter);
+    params.put("isSetterMgr", isSetterMgr);
+    params.put("setterMgrOfficeId", setterMgrOfficeId);
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", securityService.getCurrentUser().getId());
-    parameters.addValue("quarter", quarter);
-    parameters.addValue("isSetterMgr", isSetterMgr);
-    parameters.addValue("setterMgrOfficeId", setterMgrOfficeId);
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.pitchesDrilldown, params, String.class);
     return result;
   }
 
   public String getPerformanceReport(String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_performance_report(:currentUserId::bigint, :startDate::date, :endDate::date)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("currentUserId", securityService.getCurrentUser().getId());
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("currentUserId", securityService.getCurrentUser().getId());
-    parameters.addValue("startDate", startDate);
-    parameters.addValue("endDate", endDate);
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.getPerformanceReport, params, String.class);
     return result;
   }
 
   public String getMgrPerformanceReport(Integer officeId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_mgr_performance_report(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("officeId", officeId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("officeId", officeId);
-    parameters.addValue("startDate", startDate);
-    parameters.addValue("endDate", endDate);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.getMgrPerformanceReport, params, String.class);
     return result;
   }
 
   public String repToBeat(int userId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_to_beat(:userId::bigint, :startDate::date, :endDate::date)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", userId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", userId);
-    parameters.addValue("startDate", startDate);
-    parameters.addValue("endDate", endDate);
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.repToBeat, params, String.class);
     return result;
   }
 
   public String officeToBeat(int officeId, String startDate, String endDate) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_office_to_beat(:officeId::bigint, :startDate::date, :endDate::date, :currentUserId::bigint)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("officeId", officeId);
+    params.put("startDate", startDate);
+    params.put("endDate", endDate);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("officeId", officeId);
-    parameters.addValue("startDate", startDate);
-    parameters.addValue("endDate", endDate);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.officeToBeat, params, String.class);
     return result;
   }
 
   public String topReps(int limit, int days, String interval) {
-    String sqlQuery = "SELECT * FROM brs.get_top_setter_reps(:limit, :interval, :days, :currentUserId)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("limit", limit);
+    params.put("days", days);
+    params.put("interval", interval);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("limit", limit);
-    parameters.addValue("days", days);
-    parameters.addValue("interval", interval);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.topReps, params, String.class);
     return result;
   }
 
   public String topOffices(int limit, int days, String interval) {
-    String sqlQuery = "SELECT * FROM brs.get_top_setter_offices(:limit, :interval, :days, :currentUserId)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("limit", limit);
+    params.put("days", days);
+    params.put("interval", interval);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("limit", limit);
-    parameters.addValue("days", days);
-    parameters.addValue("interval", interval);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.topOffices, params, String.class);
     return result;
   }
 
   public String officeRanking(int limit, int days, String interval) {
-    String sqlQuery = "SELECT * FROM brs.get_setter_office_ranking(:limit, :interval, :days, :currentUserId)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("limit", limit);
+    params.put("days", days);
+    params.put("interval", interval);
+    params.put("currentUserId", securityService.getCurrentUser().trueUserId());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("limit", limit);
-    parameters.addValue("days", days);
-    parameters.addValue("interval", interval);
-    parameters.addValue("currentUserId", securityService.getCurrentUser().trueUserId());
-
-    String result = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String result = sqlCache.queryForObjectBySql(SetterDashboardQuery.officeRanking, params, String.class);
     return result;
   }
 
   public String getAreas(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_area_selection(:userId::bigint)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", req.getUserId());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
-
-    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = sqlCache.queryForObjectBySql(SetterDashboardQuery.getAreas, params, String.class);
     return null == results ? "[]" : results;
   }
 
   public String getRegions(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_region_selection(:userId::bigint, :areas::JSON)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", req.getUserId());
+    params.put("areas", req.getAreas());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
-    parameters.addValue("areas", req.getAreas());
-
-    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = sqlCache.queryForObjectBySql(SetterDashboardQuery.getRegions, params, String.class);
     return null == results ? "[]" : results;
   }
 
   public String getDistricts(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_district_selection(:userId::bigint, :areas::JSON, :regions::JSON)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", req.getUserId());
+    params.put("areas", req.getAreas());
+    params.put("regions", req.getRegions());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
-    parameters.addValue("areas", req.getAreas());
-    parameters.addValue("regions", req.getRegions());
-
-    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = sqlCache.queryForObjectBySql(SetterDashboardQuery.getDistricts, params, String.class);
     return null == results ? "[]" : results;
   }
 
   public String getOffices(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_office_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", req.getUserId());
+    params.put("areas", req.getAreas());
+    params.put("regions", req.getRegions());
+    params.put("districts", req.getDistricts());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
-    parameters.addValue("areas", req.getAreas());
-    parameters.addValue("regions", req.getRegions());
-    parameters.addValue("districts", req.getDistricts());
-
-    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = sqlCache.queryForObjectBySql(SetterDashboardQuery.getOffices, params, String.class);
     return null == results ? "[]" : results;
   }
 
   public String getReps(DashboardUserRequest req) {
-    String sqlQuery = "SELECT * FROM brs.util_setter_rep_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
+    Map<String, Object> params = new HashMap<>();
+    params.put("userId", req.getUserId());
+    params.put("areas", req.getAreas());
+    params.put("regions", req.getRegions());
+    params.put("districts", req.getDistricts());
+    params.put("offices", req.getOffices());
 
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
-    parameters.addValue("areas", req.getAreas());
-    parameters.addValue("regions", req.getRegions());
-    parameters.addValue("districts", req.getDistricts());
-    parameters.addValue("offices", req.getOffices());
-
-    String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
+    String results = sqlCache.queryForObjectBySql(SetterDashboardQuery.getReps, params, String.class);
     return null == results ? "[]" : results;
   }
 
-  public String funnelStandard(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], false)";
+  public String loadFunnel(FunnelRequest funnelRequest) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("startDate", funnelRequest.getStart());
+    params.put("endDate", funnelRequest.getEnd());
+    params.put("userIds", funnelRequest.getUsers());
+    params.put("orgIds", funnelRequest.getOrgs());
+    params.put("isCohort", null != funnelRequest.getIsCohort() ? funnelRequest.getIsCohort() : false);
 
-    return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
+    return sqlCache.queryForObjectBySql(SetterDashboardQuery.loadFunnel, params, String.class);
   }
 
-  public String funnelCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard(:startDate::date, :endDate::date, :target::numeric, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[], true)";
+  public String funnelDrilldown(FunnelRequest funnelRequest) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("startDate", funnelRequest.getStart());
+    params.put("endDate", funnelRequest.getEnd());
+    params.put("funnelId", funnelRequest.getFunnelId());
+    params.put("userIds", funnelRequest.getUsers());
+    params.put("orgIds", funnelRequest.getOrgs());
+    params.put("isCohort", null != funnelRequest.getIsCohort() ? funnelRequest.getIsCohort() : false);
 
-    return runFunnelQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getTargetInstallations(), funnelRequest.getUsers(), funnelRequest.getOrgs());
-  }
-
-  private String runFunnelQuery(String sqlQuery, String start, String end, BigDecimal target, List<Long> userIds, List<Long> orgIds) {
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("startDate", start);
-    parameters.addValue("endDate", end);
-    parameters.addValue("target", target);
-    parameters.addValue("userIds", userIds);
-    parameters.addValue("orgIds", orgIds);
-
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
-  }
-
-  public String funnelDrilldownStandard(FunnelRequest funnelRequest) {
-//    String sqlQuery = "select brs.rpt_setter_funnel_standard_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
-    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
-
-    return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
-  }
-
-  public String funnelDrilldownCohort(FunnelRequest funnelRequest) {
-    String sqlQuery = "select brs.rpt_setter_funnel_standard_and_cohort_drilldown(:startDate::date, :endDate::date, :funnelId, array[ :userIds ]::bigint[], array[ :orgIds ]::bigint[])";
-
-    return runFunnelDrilldownQuery(sqlQuery, funnelRequest.getStart(), funnelRequest.getEnd(), funnelRequest.getFunnelId(), funnelRequest.getUsers(), funnelRequest.getOrgs());
-  }
-
-  private String runFunnelDrilldownQuery(String sqlQuery, String start, String end, int funnelId, List<Long> userIds, List<Long> orgIds) {
-    MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("startDate", start);
-    parameters.addValue("endDate", end);
-    parameters.addValue("funnelId", funnelId);
-    parameters.addValue("userIds", userIds);
-    parameters.addValue("orgIds", orgIds);
-
-    return jdbc.queryForObject(sqlQuery, parameters, String.class);
+    return sqlCache.queryForObjectBySql(SetterDashboardQuery.loadFunnelDrilldown, params, String.class);
   }
 }

@@ -101,6 +101,10 @@ export default {
         title: 'Functions',
         show: this.$store.getters.isCompanyRoot(this.companyId)
       }, {
+        path: '/admin/certs',
+        title: 'Certs',
+        show: this.$store.getters.isCompanyRoot(this.companyId)
+      }, {
         path: '/admin/orgFilters',
         title: 'Org Filters',
         show: !this.$store.getters.isCompanyRoot(this.companyId)

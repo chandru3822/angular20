@@ -467,10 +467,14 @@ public class BrsProcessStepActionFunctionService {
         try {
           marketoService.pushData(List.of(lead));
         } catch (Exception e) {
-          throw new RuntimeException(e.getMessage());
+            // This is a bandaid fix to let actions run while adobe/marketo get their act together
+//          throw new RuntimeException(e.getMessage());
+          log.error(String.format("MARKETO: Unable to update Marketo during action: %s", e.getMessage()));
         }
       } catch (Exception e) {
-        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+          // This is a bandaid fix to let actions run while adobe/marketo get their act together
+//        throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
+        log.error(String.format("MARKETO: Unable to update Marketo during action: %s", e.getMessage()));
       }
     }
   }

@@ -209,6 +209,9 @@ export default {
           return cfg.customFieldValues
         })
         ?.filter(field => {
+          return this.userHasWhiteListedPosition(field, 'hidden')
+        })
+        ?.filter(field => {
           return field.required
         })
         ?.filter(field => {
@@ -239,6 +242,19 @@ export default {
     }
   },
   methods: {
+    userHasWhiteListedPosition(cf, arg = 'readonly') {
+      const wlAttr = arg === 'readonly' ? 'whiteListedPositions' : 'hiddenWhiteListedPositions'
+      const prAttr = arg === 'readonly' ? 'customFieldGroupAssignmentReadOnly' : 'customFieldGroupAssignmentHidden'
+
+      //field doesn't require a white listed position
+      if (!cf[prAttr]) {
+        return true
+      }
+
+      //positions required for user
+      const positions = cf[wlAttr]?.map(wlp => wlp.positionId) ?? []
+      return this.$store.getters.userHasAnyPosition(positions)
+    },
     async submitCreditCheck() {
       //we are going to allow them to click this multiple times to open the credit check and update the credit checked timestamp
       // if (this.proposal.creditCheckSubmitted) {
@@ -279,6 +295,8 @@ export default {
       }
     },
     async lockProposal() {
+      // console.log("required", this.requiredFields)
+      // return false
       if (this.proposal.locked || this.requiredFields.length > 0) {
         return
       }

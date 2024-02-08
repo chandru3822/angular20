@@ -72,6 +72,8 @@ public class ProjectProcessStepEventService {
   private final ListOfValueService listOfValueService;
   private final BirdEyeService birdeyeService;
   private final StripeService stripeService;
+  private final CommunicationService communicationService;
+  private final MessagingService messagingService;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -517,6 +519,7 @@ public class ProjectProcessStepEventService {
           }
 
           PpseActionResult ppseActionResult = performChildFunctions(processStepEventAction.getId(), ppsEventId, pps.getProjectProcessStepId(), pps.getProcessStepId(), pps.getProjectId());
+          performSmsTemplates(processStepEventAction.getId(), pps.getProjectProcessStepId(), pps.getProjectId(), pps.getContactId());
 //          var childFunctionsRan = Boolean.parseBoolean(childFunctionResults.get("didFunctionsRun").toString());
           List<Long> newChildPpsIds = ppseActionResult.getNewChildPpsIds();
 
@@ -587,7 +590,36 @@ public class ProjectProcessStepEventService {
         HttpStatus.NOT_FOUND, "This action could not be found.", new Exception());
     }
   }
+  public void performSmsTemplates(Long actionId, Long ppsId, Long projectId, Long contactId) {
+    List<ProcessStepEventActionChildSmsTemplate> childSmsTemplates = processStepEventService.getChildSmsTemplates(actionId);
+    if (!childSmsTemplates.isEmpty()) {
+      User user = securityService.getCurrentUser();
 
+      childSmsTemplates.forEach(smsTemplate -> {
+        try {
+          Contact contact = projectProcessStepService.getContact(contactId, user);
+          log.debug("TWILIO: attempting text for contact ID: {}", contactId);
+          if (null != contact) {
+            Long smsTeamId = null;
+            if(null != smsTemplate.getTeamIds() && smsTemplate.getTeamIds().size() == 1) {
+              smsTeamId = smsTemplate.getTeamIds().get(0);
+            }
+            communicationService.sendTextsForProject(projectId, contact, user, smsTemplate.getMessage(), null, smsTeamId);
+            smsTemplate.getTeamIds().forEach(teamId -> {
+              messagingService.addTeamForProject(projectId, teamId, Collections.emptyList(), false, user.trueUserId());
+            });
+          } else {
+            throw new ResponseStatusException(
+              HttpStatus.BAD_REQUEST,
+              "Could not find contact for contact id: " + contactId,
+              new Exception());
+          }
+        } catch (Exception e) {
+          throw new RuntimeException(String.format("PPS: Unable to send sms template. CFA ID: %s, action ID: %s, PPS ID: %s *** %s", smsTemplate.getId(), actionId, ppsId, e.getMessage()));
+        }
+      });
+    }
+  }
 
   @Data
   public static class PpseActionResult {
