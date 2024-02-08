@@ -163,7 +163,7 @@
           </template>
           <template #item-@="{ item }">
             <div class="user">
-                  {{ item.value }}
+                  ({{ item.value }})
             </div>
           </template>
         </Mentionable>
@@ -493,7 +493,7 @@ export default {
       //todo: debounce and limit this shiz
       try {
         const {data} = await getRequest('/user/mentionableUsers', null, [])
-        this.users = data.map(u => ({...u, value: `${u.fullName}(${u.email})`}))
+        this.users = data.map(u => ({...u, value: `${u.fullName} (${u.email})`}))
       } catch (e) {
         console.error('*** ERROR ***', e)
         this.snackbar = getSnackbar('ERROR', 'Error Retrieving Users')
