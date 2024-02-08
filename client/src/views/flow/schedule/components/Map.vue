@@ -17,7 +17,10 @@
           <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
         </template>
         <v-card color="white" class="square-card pa-4">
-          <v-card-title class="label-large px-0 pt-0">Find Drive Time</v-card-title>
+          <div class="d-flex justify-space-between">
+          <v-card-title class="label-large pa-0">Find Drive Time</v-card-title>
+            <v-btn icon small @click="menuOpen = false"><v-icon>close</v-icon></v-btn>
+          </div>
           <div class="address-container">
             <div class="one-hunned py-3">
               <v-text-field text outlined label="Starting Point" placeholder="Select pin or enter address" autocomplete="new-password"
@@ -75,18 +78,17 @@
 
 <!--          <v-divider class="mt-2"></v-divider>-->
 
-          <div class="mt-2 drive-time-buttons">
-            <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>
-            <v-btn color="primary" small :disabled="!address1 || !address2"
-                   :loading="loadingDriveTime"
-                   @click="loadDriveTime">Calculate
-            </v-btn>
-          </div>
+<!--          <div class="mt-2 drive-time-buttons">-->
+<!--            <v-btn text small class="mr-3" @click="[address1 = '', address2 = '', clearColors()]">Clear</v-btn>-->
+<!--            <v-btn color="primary" small :disabled="!address1 || !address2"-->
+<!--                   :loading="loadingDriveTime"-->
+<!--                   @click="loadDriveTime">Calculate-->
+<!--            </v-btn>-->
+<!--          </div>-->
 
-          <div class="mt-2" v-if="drivingDistance || drivingDuration">
-            <v-divider class="mb-2"></v-divider>
-            <strong>Drive Time:</strong> {{ drivingDuration }} <br>
-            <strong>Drive Distance:</strong> {{ drivingDistance }} miles
+          <div class="mt-2 body-large">
+            <div>Drive Time:</div> <span v-if="drivingDuration">{{ drivingDuration }}</span>
+            <div>Drive Distance:</div><span v-if="drivingDistance">{{ drivingDistance }} miles</span>
           </div>
         </v-card>
       </v-menu>
@@ -218,12 +220,19 @@ export default {
       this.mapbox = Mapbox
     },
     selectAddress(suggestion, isFirst) {
+      debugger
       if (isFirst) {
         this.address1 = suggestion.label
         this.showAddress1List = false
+        if(!!this.address2){
+          this.loadDriveTime()
+        }
       } else {
         this.address2 = suggestion.label
         this.showAddress2List = false
+        if(!!this.address1){
+          this.loadDriveTime()
+        }
       }
     },
     formatLabel(label, part) {
@@ -254,7 +263,6 @@ export default {
       this.searchAddress(address, isFirst)
     }, 500),
     async searchAddress(address, isFirst) {
-      debugger
       this.suggestions = []
       if (isFirst) {
         if (this.address1.length >= 2) {
@@ -273,9 +281,7 @@ export default {
       }
     },
     async geoCode(address) {
-      debugger
-      if ((this.address1.length >= 2 || this.address2.length >= 2) && constants.ENV_COLOR !== constants.LOCAL_COLOR) {
-//todo: remove color check on above line when finished working with drive time
+      if ((this.address1.length >= 2 || this.address2.length >= 2)) {
         try {
           let params = {
             address
@@ -315,7 +321,6 @@ export default {
       }
     },
     clearMarkerSelectionForOne(isFirst){
-      debugger
       if(isFirst) {
         this.markers.forEach(m => {
           if (m.oldColor !== undefined && m.selectedFirst) {
@@ -393,6 +398,9 @@ export default {
         })
         marker.selectedFirst = true
         this.markerCount++
+        if(!!this.address2){
+          this.loadDriveTime()
+        }
       } else if (this.selectAddress2) {
         this.address2 = marker.street1 + ', ' + marker.city + ', ' + marker.stateAbbreviation + ' ' + marker.postalCode
         this.selectAddress2 = false
@@ -411,6 +419,9 @@ export default {
         })
         marker.selectedSecond = true
         this.markerCount++
+        if(!!this.address1){
+          this.loadDriveTime()
+        }
       }
     },
     async getLatLong(address) {
@@ -435,7 +446,6 @@ export default {
       await this.getDirections(first, second)
     },
     async getDirections(firstPair, secondPair) {
-      debugger
       this.drivingDistance = 0
       this.drivingDuration = 0
 
