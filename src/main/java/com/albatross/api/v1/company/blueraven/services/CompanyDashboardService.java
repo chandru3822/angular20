@@ -7,19 +7,14 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.models.CompanyPeriod;
 import com.albatross.api.v1.company.blueraven.models.Triumvirate;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
-import com.albatross.api.v1.flow.model.User;
-import com.albatross.api.v1.flow.queries.ProjectQuery;
 import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-import org.springframework.cglib.core.Local;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -109,7 +104,7 @@ public class CompanyDashboardService {
     params.put("trendStart", trendStart);
     params.put("trendEnd", trendEnd);
 
-      return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
+    return sqlCache.queryForObjectBySql(CompanyDashboardQuery.getCompanyDashboard, params, String.class);
   }
 
   public String getDrilldownValues(String startDate, String endDate, Long milestoneTypeId) {
@@ -124,7 +119,7 @@ public class CompanyDashboardService {
     return results;
   }
 
-  public List<String> getDrilldownHeaders(Long milestoneTypeId){
+  public List<String> getDrilldownHeaders(Long milestoneTypeId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("milestoneTypeId", milestoneTypeId);
 
@@ -144,8 +139,8 @@ public class CompanyDashboardService {
     CompanyPeriod doublePreviousPeriod = null;
     Integer currentIndex = null;
 
-    for(CompanyPeriod period : companyPeriods) {
-      if( today.isBefore(period.getEndDate())){
+    for (CompanyPeriod period : companyPeriods) {
+      if (today.isBefore(period.getEndDate())) {
         currentPeriod = period;
         currentIndex = companyPeriods.indexOf(period);
         previousPeriod = companyPeriods.get(currentIndex - 1);
@@ -155,7 +150,7 @@ public class CompanyDashboardService {
 
     YearMonth month = YearMonth.from(today);
     LocalDate currentMonthStart = month.atDay(1);
-    LocalDate currentMonthEnd   = month.atEndOfMonth();
+    LocalDate currentMonthEnd = month.atEndOfMonth();
     LocalDate previousMonthStart = today.minusMonths(1).withDayOfMonth(1);
     LocalDate previousMonthEnd = currentMonthStart.minusDays(1);
     LocalDate currentYearStart = today.with(firstDayOfYear());
@@ -256,10 +251,11 @@ public class CompanyDashboardService {
     return ranges;
   }
 
-  public void callCompanyDashboardSetup(@Nullable LocalDate date){
-    HashMap<String, Object> params = new HashMap<>();
-    params.put("date", date);
-
-    sqlCache.updateBySql(CompanyDashboardQuery.callCompanyDashboardSetup, params);
+  public void callCompanyDashboardSetup(@Nullable LocalDate date) {
+    if (date != null) {
+      sqlCache.updateBySql(CompanyDashboardQuery.callDailyCompanyDashboardSetup, Map.of("date", date));
+    } else {
+      sqlCache.updateBySql(CompanyDashboardQuery.callCompanyDashboardSetup, Map.of());
+    }
   }
 }
