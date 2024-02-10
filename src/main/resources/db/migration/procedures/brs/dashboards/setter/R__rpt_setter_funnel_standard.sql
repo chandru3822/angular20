@@ -34,7 +34,9 @@ BEGIN
                                                       prioritized_closer_appointment_outcome,
                                                       installation_agreement_signed_date,
                                                       first_appointment_pitched,
-                                                      first_appointment_missed
+                                                      first_appointment_missed,
+                                                      first_appointment_id,
+                                                      first_appointment
                                                from brs.project_details pd
                                                       inner join flow.user_position up
                                                                  on up.id = pd.setter_user_position_id
@@ -72,6 +74,9 @@ BEGIN
                                                    or (pd.installation_agreement_signed_date::date
                                                    between (now() at time zone 'US/Mountain')::date - v_date_diff and (now() at time zone 'US/Mountain')::date)
                                                    or (pd.final_design_complete_date::date
+                                                   between (now() at time zone 'US/Mountain')::date - v_date_diff and (now() at time zone 'US/Mountain')::date)
+                                                   or
+                                                 ((pd.first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
                                                    between (now() at time zone 'US/Mountain')::date - v_date_diff and (now() at time zone 'US/Mountain')::date))),
                           funnel_data as (select f.id,
                                                  count(1) filter (where
@@ -89,6 +94,16 @@ BEGIN
                                                            prioritized_closer_appointment_outcome = 3 and
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
+                                                             = (now() at time zone 'US/Mountain') :: DATE end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             = (now() at time zone 'US/Mountain') :: DATE
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
                                                              = (now() at time zone 'US/Mountain') :: DATE end
                                                      when f.id = 29 then
                                                        case
@@ -138,6 +153,16 @@ BEGIN
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
                                                              = (now() at time zone 'US/Mountain') :: DATE - 1 end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             = (now() at time zone 'US/Mountain') :: DATE -1
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             = (now() at time zone 'US/Mountain') :: DATE -1 end
                                                      when f.id = 29 then
                                                        case
                                                          when p_is_cohort is true then
@@ -188,6 +213,16 @@ BEGIN
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
                                                              between (now() at time zone 'US/Mountain')::date - 7 and (now() at time zone 'US/Mountain')::date end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 7 and (now() at time zone 'US/Mountain')::date
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 7 and (now() at time zone 'US/Mountain')::date end
                                                      when f.id = 29 then
                                                        case
                                                          when p_is_cohort is true then
@@ -236,6 +271,16 @@ BEGIN
                                                            prioritized_closer_appointment_outcome = 3 and
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 14 and (now() at time zone 'US/Mountain')::date - 7 end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 14 and (now() at time zone 'US/Mountain')::date - 7
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
                                                              between (now() at time zone 'US/Mountain')::date - 14 and (now() at time zone 'US/Mountain')::date - 7 end
                                                      when f.id = 29 then
                                                        case
@@ -286,6 +331,16 @@ BEGIN
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
                                                              between (now() at time zone 'US/Mountain')::date - 30 and (now() at time zone 'US/Mountain')::date end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 30 and (now() at time zone 'US/Mountain')::date
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 30 and (now() at time zone 'US/Mountain')::date end
                                                      when f.id = 29 then
                                                        case
                                                          when p_is_cohort is true then
@@ -335,6 +390,16 @@ BEGIN
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
                                                              between (now() at time zone 'US/Mountain')::date - 60 and (now() at time zone 'US/Mountain')::date - 30 end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 60 and (now() at time zone 'US/Mountain')::date - 30
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between (now() at time zone 'US/Mountain')::date - 60 and (now() at time zone 'US/Mountain')::date - 30 end
                                                      when f.id = 29 then
                                                        case
                                                          when p_is_cohort is true then
@@ -383,6 +448,16 @@ BEGIN
                                                            prioritized_closer_appointment_outcome = 3 and
                                                            (prioritized_closer_appointment_outcome_date at time zone
                                                             'UTC' at time zone 'US/Mountain')::date
+                                                             between p_custom_start_date and p_custom_end_date end
+                                                     when f.id = 33 then
+                                                       case
+                                                         when p_is_cohort is true then
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                                             between p_custom_start_date and p_custom_end_date
+                                                         else
+                                                           (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                                           (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
                                                              between p_custom_start_date and p_custom_end_date end
                                                      when f.id = 29 then
                                                        case
