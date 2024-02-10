@@ -20,6 +20,7 @@
       <v-row class="map-row">
         <v-col cols="12" class="pa-0 ml-3">
           <Map v-if="showMap"
+               :states="states"
                :latitude="state.mapLatitude"
                :markers="selectedRows"
                :longitude="state.mapLongitude"
@@ -124,7 +125,7 @@
           'items-per-page-options': [25, 50, 100],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
-        showMap: false
+        showMap: true
         // masterProjects: []
       }
     },

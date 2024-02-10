@@ -14,7 +14,7 @@
               :close-on-click="false"
               :close-on-content-click="false">
         <template v-slot:activator="{ on }">
-          <v-btn fab tile outlined v-on="on" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
+          <v-btn fab tile outlined v-on="on" @click="searchMenuOpen = false" small color="primary" class="rounded-tile-btn white-background mr-3"><v-icon>mdi-car</v-icon></v-btn>
         </template>
         <v-card id="drive-time-card" color="white" class="square-card pa-4">
           <div class="d-flex justify-space-between">
@@ -89,7 +89,85 @@
           </div>
         </v-card>
       </v-menu>
-      <v-btn fab tile outlined small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
+      <v-menu
+          data-app bottom offset-y
+          v-model="searchMenuOpen"
+          :min-width="260" :max-width="260"
+          :close-on-click="false" :close-on-content-click="false">
+        <template v-slot:activator="{on}">
+      <v-btn fab tile outlined v-on="on" @click="menuOpen = false" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
+        </template>
+        <v-card id="project-search-card" color="white" class="square-card pa-4">
+          <div class="d-flex justify-space-between">
+            <v-card-title class="label-large pa-0">Search Projects</v-card-title>
+            <v-btn icon small @click="searchMenuOpen = false"><v-icon>close</v-icon></v-btn>
+          </div>
+          <div class="project-search-field-container">
+            <div class="one-hunned py-3">
+              <v-autocomplete attach v-model="state"
+                              :items="states"
+                              label="State"
+                              clearable
+                              return-object
+                              hide-details
+                              item-text="state"
+                              item-value="id"
+              ></v-autocomplete>
+              <v-autocomplete v-model="searchProject"
+                              :items="searchProjects"
+                              :search-input.sync="search"
+                              item-text="projectName"
+                              clearable
+                              :key="0"
+                              :disabled="!!state?.id"
+                              text
+                              hide-details
+                              label="Project"
+                              autocomplete="off"
+                              :loading="searchProjectsLoading"
+                              item-value="projectId"
+                              return-object
+                              attach
+              >
+                <template slot="item" slot-scope="data">
+                  <!-- HTML that describe how select should render items when the select is open -->
+                  {{ data.item.projectName }} - {{ data.item.projectId }}
+                </template>
+              </v-autocomplete>
+              <v-select attach v-model="searchEventType"
+                        :items="eventTypes"
+                        label="Event"
+                        hide-details
+                        item-text="eventName"
+                        item-value="id"
+                        return-object
+                        clearable
+              >
+              </v-select>
+              <v-autocomplete v-model="searchEventStatusType"
+                              :items="eventStatusTypes"
+                              label="Event Status"
+                              :disabled="!searchEventType?.id"
+                              clearable
+                              hide-details
+                              item-text="eventStatusType"
+                              item-value="id"
+                              return-object
+              />
+            </div>
+            </div>
+          <v-card-actions class="px-0 pb-0">
+            <v-btn text small class="text-capitalize flex-grow-0 body-medium">Clear</v-btn>
+            <v-btn
+                outlined
+                small
+                color="primary"
+                class="text-capitalize flex-grow-1 body-medium"
+                :disabled="!((state?.id || searchProject?.id) && searchEventType?.id && searchEventStatusType?.id)"
+            >Go</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-menu>
     </div>
     <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
@@ -138,10 +216,13 @@ import '@7oaksgroup/v-mapbox/dist/v-mapbox.css'
 import Mapbox from 'mapbox-gl'
 import {MglMap, MglMarker, MglNavigationControl, MglPopup} from '@7oaksgroup/v-mapbox'
 import constants from '@/helpers/constants'
-import {getRequestWithParams, getSnackbar} from "@/helpers/helpers";
+import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import moment from 'moment'
 import debounce from "lodash.debounce";
+import {getEventTypes} from "@/services/scheduleService.js";
+import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
+import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 
 export default {
   name: 'ScheduleMap',
@@ -157,17 +238,28 @@ export default {
     zoom: {type: Number},
     markers: {type: Array},
     mapResources: {type: Array},
+    states:Array
   },
   watch: {
     'latitude': function () {
       // reset the selected group when the object type changes
       this.changeMapLocation()
-    }
+    },
+    search(val) {
+      if(!val) {
+        this.searchProject = {}
+        return
+      }
+      if(val && (!this.searchProject || this.searchProject.projectName !== val)) {
+        this.getProjectsSearchedFor(val);
+      }
+    },
   },
   data() {
     return {
       snackbar: {},
       menuOpen: false,
+      searchMenuOpen: false,
       loadingDriveTime: false,
       constants,
       markerCount: 0, //this is used to reset the key when the color of a marker changes so it gets redrawn
@@ -194,7 +286,25 @@ export default {
       },
       // mapboxOptions: {},
       drivingDuration: 0,
-      drivingDistance: 0
+      drivingDistance: 0,
+
+      //used for search,
+      state: {},
+      eventStatusTypes: [],
+      selectedEventStatusType: {},
+      processStepStatusTypes: [],
+      selectedProcessStepStatusType: {},
+      eventTypes: [],
+      projects:[],
+      totalProjects: 0,
+      searchEventType: {},
+      searchProcessStepStatusType: {},
+      searchEventStatusType: {},
+      searchProject: {},
+      searchProjects: [],
+      eventTypesChanged: false,
+      searchProjectsLoading: false,
+      search: null,
     }
   },
   created() {
@@ -487,6 +597,123 @@ export default {
         zoom: zoom,
         speed: 2
       })
+    },
+
+
+    /**Project Search Methods**/
+    async searchForProjects(search) {
+      try {
+        let params = {
+          search
+        }
+        const {data} = await postRequest(`/schedule/projects/search`, params)
+        this.searchProjects = data
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Searching Projects')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+      }
+    },
+    async getProjectsSearchedFor(search) {
+      // cancel pending call
+      clearTimeout(this._timerId);
+
+      this.searchProjectsLoading = true
+
+      // delay new call 500ms
+      this._timerId = setTimeout(async () => {
+        //todo:_this
+        await this.searchForProjects(search)
+        this.searchProjectsLoading = false
+      }, 500)
+    },
+    async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
+      this.listLoading = true
+      try {
+        let params = {
+          projectId,
+          eventId,
+          processStepStatusTypeId,
+          projectProcessStepEventId,
+          eventStatusTypeId
+        }
+
+        //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
+        const {data} = await postRequest(`/schedule/getProject`, params, null, [])
+        this.projects = data
+        this.projects.forEach(d => {
+          d.coordinates = [ d.longitude, d.latitude ]
+        })
+
+        this.totalProjects = this.projects.length
+
+        if(this.projects.length === 1) {
+          this.selectedProject = this.projects[0]
+          this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
+          this.selectedRows.push(this.projects[0])
+          this.zoomToMap({
+            item:{
+              longitude: this.selectedProject.longitude,
+              latitude: this.selectedProject.latitude
+            },
+            value: true
+          })
+        }
+        this.listLoading = false
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.listLoading = false
+      }
+    },
+    async getEventTypes() {
+      try {
+        // 'event types' is just schedulable process steps
+        const {data} = await getEventTypes()
+        this.eventTypes = data
+        if(this.eventTypes?.length > 0) {
+          this.selectedEventTypes = this.selectedEventTypes.filter(set => {
+            return this.eventTypes.some(et => et.id === set.id)
+          })
+        }
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getEventStatusTypes () {
+      this.$store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getEventStatusTypes()
+        this.eventStatusTypes = data
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
+    },
+    async getStatusTypes() {
+      try {
+        //the old way
+        // const {data} = await getCompanyStatusTypes()
+        // //only show active and complete
+        // this.processStepStatusTypes = data.filter(d => d.processStepStatusTypeId !== 3)
+
+        //the new way - use root statuses
+        const {data} = await getStatusTypes()
+        //only show active and complete
+        this.processStepStatusTypes = data?.filter(d => d.id !== 3)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Status Types')
+        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        this.$store.commit(AppMutations.SET_LOADING, false)
+      }
     },
   }
 
