@@ -49,7 +49,7 @@ BEGIN
 --   end if;
 
   for x in select generate_series(p_start_time,
-                                  now() + interval  '30 days', interval '1 day')::date as metric_date
+                                  now() + interval  '7 days', interval '1 day')::date as metric_date
     loop
 
       insert into brs.company_dashboard_daily_metric(metric_date,
