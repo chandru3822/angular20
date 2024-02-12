@@ -528,14 +528,14 @@ BEGIN
                                                           (select today_day_count::numeric from funnel_stats f1 where f1.id = 27)::numeric *
                                                           100) end,
                                                       null,
-                                                      case when (select today_day_count::numeric from funnel_stats f1 where f1.id = 27)::numeric < 1 then
+                                                      case when (select seven_day_count::numeric from funnel_stats f1 where f1.id = 27)::numeric < 1 then
                                                              0 else
                                                       round(
                                                           (select seven_day_count::numeric from funnel_stats f1 where f1.id = 29)::numeric /
                                                           (select seven_day_count::numeric from funnel_stats f1 where f1.id = 27)::numeric *
                                                           100) end,
                                                       null,
-                                                      case when (select today_day_count::numeric from funnel_stats f1 where f1.id = 27)::numeric < 1 then
+                                                      case when (select thirty_day_count::numeric from funnel_stats f1 where f1.id = 27)::numeric < 1 then
                                                              0 else
                                                       round((select thirty_day_count::numeric
                                                              from funnel_stats f1
@@ -544,7 +544,14 @@ BEGIN
                                                              from funnel_stats f1
                                                              where f1.id = 27)::numeric * 100) end,
                                                       null,
-                                                      null,
+                                                      case when (select custom_date_range_count::numeric from funnel_stats f1 where f1.id = 27)::numeric < 1 then
+                                                             0 else
+                                                             round((select custom_date_range_count::numeric
+                                                                    from funnel_stats f1
+                                                                    where f1.id = 29)::numeric /
+                                                                   (select custom_date_range_count::numeric
+                                                                    from funnel_stats f1
+                                                                    where f1.id = 27)::numeric * 100) end,
                                                       null,
                                                       null,
                                                       null
