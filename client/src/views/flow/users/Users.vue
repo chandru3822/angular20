@@ -1,5 +1,9 @@
 <template>
   <v-container id="users-container" v-if="!showImages">
+    <UsersFilter :items="statuses.map((s) => ({id: s.id, name: s.userStatusType}))"
+                 @list-updated="updateStatuses ( selected )"
+    ></UsersFilter>
+
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
@@ -549,12 +553,13 @@
   import { saveAs } from 'file-saver'
   import axios from 'axios'
   import UserImages from "./UserImages";
+  import UsersFilter from "@/views/flow/users/UsersFilter.vue";
 
   const defaultEmailMessage = '${user.firstName},\n'
 
   export default {
     name: 'Users',
-    components: {UserImages, QuillEditor: quillEditor},
+    components: {UsersFilter, UserImages, QuillEditor: quillEditor},
     watch: {
       options: {
         handler() {
@@ -723,6 +728,11 @@
       this.fetchTeamsForUser()
     },
     methods: {
+      updateStatuses(selectedStatuses) {
+        console.log("Receiving Emit")
+        this.filters.statuses = selectedStatuses
+        this.getUsers(true)
+      },
       handleTemplateSelection() {
         this.textMessage += this.selectedTemplate.message
         this.menuOpen = false
@@ -845,6 +855,7 @@
         }
       },
       async getUsers (resetPage) {
+        console.log("Getting Users")
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
 
         if(resetPage) {
