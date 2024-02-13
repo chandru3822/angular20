@@ -89,85 +89,10 @@
           </div>
         </v-card>
       </v-menu>
-      <v-menu
-          data-app bottom offset-y
-          v-model="searchMenuOpen"
-          :min-width="260" :max-width="260"
-          :close-on-click="false" :close-on-content-click="false">
-        <template v-slot:activator="{on}">
-      <v-btn fab tile outlined v-on="on" @click="menuOpen = false" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
-        </template>
-        <v-card id="project-search-card" color="white" class="square-card pa-4">
-          <div class="d-flex justify-space-between">
-            <v-card-title class="label-large pa-0">Search Projects</v-card-title>
-            <v-btn icon small @click="searchMenuOpen = false"><v-icon>close</v-icon></v-btn>
-          </div>
-          <div class="project-search-field-container">
-            <div class="one-hunned py-3">
-              <v-autocomplete attach v-model="state"
-                              :items="states"
-                              label="State"
-                              clearable
-                              return-object
-                              hide-details
-                              item-text="state"
-                              item-value="id"
-              ></v-autocomplete>
-              <v-autocomplete v-model="searchProject"
-                              :items="searchProjects"
-                              :search-input.sync="search"
-                              item-text="projectName"
-                              clearable
-                              :key="0"
-                              :disabled="!!state?.id"
-                              text
-                              hide-details
-                              label="Project"
-                              autocomplete="off"
-                              :loading="searchProjectsLoading"
-                              item-value="projectId"
-                              return-object
-                              attach
-              >
-                <template slot="item" slot-scope="data">
-                  <!-- HTML that describe how select should render items when the select is open -->
-                  {{ data.item.projectName }} - {{ data.item.projectId }}
-                </template>
-              </v-autocomplete>
-              <v-select attach v-model="searchEventType"
-                        :items="eventTypes"
-                        label="Event"
-                        hide-details
-                        item-text="eventName"
-                        item-value="id"
-                        return-object
-                        clearable
-              >
-              </v-select>
-              <v-autocomplete v-model="searchEventStatusType"
-                              :items="eventStatusTypes"
-                              label="Event Status"
-                              :disabled="!searchEventType?.id"
-                              clearable
-                              hide-details
-                              item-text="eventStatusType"
-                              item-value="id"
-                              return-object
-              />
-            </div>
-            </div>
-          <v-card-actions class="px-0 pb-0">
-            <v-btn text small class="text-capitalize flex-grow-0 body-medium">Clear</v-btn>
-            <v-btn
-                outlined
-                small
-                color="primary"
-                class="text-capitalize flex-grow-1 body-medium"
-                :disabled="!((state?.id || searchProject?.id) && searchEventType?.id && searchEventStatusType?.id)"
-            >Go</v-btn>
-          </v-card-actions>
-        </v-card>
-      </v-menu>
+      <v-btn fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
+      <ProjectSearchDialog v-show="searchMenuOpen"
+                           :states="states" :start-time="startTime" :end-time="endTime"
+                           @close-dialog="searchMenuOpen = false"/>
     </div>
     <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
@@ -220,13 +145,13 @@ import {getRequestWithParams, getSnackbar, postRequest} from "@/helpers/helpers"
 import {AppMutations} from "@/stores/AppStore";
 import moment from 'moment'
 import debounce from "lodash.debounce";
-import {getEventTypes} from "@/services/scheduleService.js";
-import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
-import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
+import axios from "axios";
+import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
 
 export default {
   name: 'ScheduleMap',
   components: {
+    ProjectSearchDialog,
     MglMap,
     MglPopup,
     MglMarker,
@@ -238,7 +163,9 @@ export default {
     zoom: {type: Number},
     markers: {type: Array},
     mapResources: {type: Array},
-    states:Array
+    states:Array,
+    startTime:String,
+    endTime: String,
   },
   watch: {
     'latitude': function () {
@@ -289,26 +216,13 @@ export default {
       drivingDistance: 0,
 
       //used for search,
-      state: {},
-      eventStatusTypes: [],
-      selectedEventStatusType: {},
-      processStepStatusTypes: [],
-      selectedProcessStepStatusType: {},
-      eventTypes: [],
-      projects:[],
-      totalProjects: 0,
-      searchEventType: {},
-      searchProcessStepStatusType: {},
-      searchEventStatusType: {},
-      searchProject: {},
-      searchProjects: [],
-      eventTypesChanged: false,
-      searchProjectsLoading: false,
-      search: null,
+
     }
   },
   created() {
     this.createMap()
+    // this.getEventStatusTypes()
+    // this.getStatusTypes()
   },
   methods: {
     createMap() {
@@ -601,6 +515,69 @@ export default {
 
 
     /**Project Search Methods**/
+    goGoGadgetMapSearch(){
+      if(this.state?.id){
+        this.getProjects(true)
+      }
+      else if(this.searchProject?.projectId){
+        this.getSingleProject(this.searchProject.projectId, this.searchEventType.id, this.searchEventStatusType.id, this.searchProcessStepStatusType.id)
+      }
+    },
+    async getProjects(resetQuery) {
+      if(resetQuery) {
+        // todo: should we remove this.$route.query params if the button is clicked?
+        // this.$route.query = {}
+      }
+
+      const {page, itemsPerPage} = this.options
+debugger
+      localStorage.setItem('scheduleState', JSON.stringify(this.state))
+      localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
+      localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
+      localStorage.setItem('scheduleEventStatusType', JSON.stringify(this.searchEventStatusType))
+
+      if(this.selectedEventTypes?.length > 0) {
+        this.listLoading = true
+        try {
+          if(this.source){
+            this.source.cancel();
+          }
+          const CancelToken = axios.CancelToken;
+          this.source = CancelToken.source();
+
+          const {data} = await postRequest(`/schedule/projects`, {
+            search: this.projectFilter,
+            source: this.source,
+            cancelToken: this.source.token,
+            eventIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
+            //old way
+            // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
+            // new way:
+            processStepStatusTypeId: this.selectedProcessStepStatusType.id,
+            eventStatusTypeId: this.searchEventStatusType.id,
+            companyStateId: this.state.id,
+            startTime: this.startTime,
+            endTime: this.endTime,
+            page: page - 1,
+            size: itemsPerPage
+          })
+          this.projects = data.content || []
+          this.projects.forEach(d => {
+            d.coordinates = [ d.longitude, d.latitude ]
+          })
+          this.totalProjects = data.totalElements
+          this.listLoading = false
+          this.initialLoad = false
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
+          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+          this.listLoading = false
+        }
+      } else {
+        this.projects = []
+      }
+    },
     async searchForProjects(search) {
       try {
         let params = {
@@ -665,23 +642,6 @@ export default {
         this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         this.listLoading = false
-      }
-    },
-    async getEventTypes() {
-      try {
-        // 'event types' is just schedulable process steps
-        const {data} = await getEventTypes()
-        this.eventTypes = data
-        if(this.eventTypes?.length > 0) {
-          this.selectedEventTypes = this.selectedEventTypes.filter(set => {
-            return this.eventTypes.some(et => et.id === set.id)
-          })
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Event Types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
       }
     },
     async getEventStatusTypes () {
@@ -756,5 +716,11 @@ export default {
 .drive-time-buttons {
   display: flex;
   justify-content: space-between;
+}
+
+.project-search-card{
+  position: relative;
+  top:40px;
+  right:38px;
 }
 </style>

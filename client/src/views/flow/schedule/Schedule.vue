@@ -26,6 +26,8 @@
                :longitude="state.mapLongitude"
                :zoom="state.mapZoom"
                :map-resources="mapResources"
+               :start-time="startTime"
+               :end-time="endTime"
                @close-map="showMap = false"
           />
         </v-col>
