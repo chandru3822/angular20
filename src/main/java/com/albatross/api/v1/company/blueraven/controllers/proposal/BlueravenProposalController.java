@@ -279,7 +279,7 @@ public class BlueravenProposalController {
 
   private String getContentDisposition(Proposal proposal, boolean inline) {
     String cleanedFilename = getCleanFilename(proposal);
-    return 
+    return
       "%s; filename=\"%s%sproposal.pdf\"".formatted(
       inline ? "inline" : "attachment",
       cleanedFilename,
@@ -293,7 +293,7 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/{proposalId}/filter")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_MANAGE', 'PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_EDIT', 'PROPOSALS_MANAGE', 'PROPOSALS_ADMIN')")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
     final Long proposalVersionId = proposalService.getProposalVersionByProposalId(proposalId).orElseThrow(NotFoundException::new);
