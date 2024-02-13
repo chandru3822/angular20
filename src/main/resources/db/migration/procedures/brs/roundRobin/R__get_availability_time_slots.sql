@@ -15,10 +15,12 @@ AS
 $BODY$
 declare
   v_timezone text;
+v_uses_total_lead_allocation boolean;
+  v_round_robin_id bigint;
 BEGIN
 
-  select coalesce(t.timezone, p.time_zone)
-  into v_timezone
+  select coalesce(t.timezone, p.time_zone),pcz.uses_total_lead_allocation,pcz.id
+  into v_timezone,v_uses_total_lead_allocation,v_round_robin_id
   from flow.project p
          inner join flow.postal_code pc on pc.postal_code = substr(
     trim(both ',' from trim(both ' ' from trim(both '	' from p.postal_code))), 1, 5) and pc.archived is false
@@ -177,7 +179,7 @@ BEGIN
   if p_remote is false and v_timezone is not null then
     EXECUTE 'SET TIME ZONE ''' || v_timezone || ''';';
 
-    return query
+    create temp table available_time_slots as (
       select true, array_agg(distinct foo2.user_id)::bigint array as users, foo2.scheduled_start_time
       from (select user_id,
                    foo1.scheduled_start_time,
@@ -238,11 +240,11 @@ BEGIN
       where foo2.available is true
         and foo2.scheduled_start_time at time zone 'UTC' at time zone v_timezone > now() + interval '30 minutes'
       group by foo2.scheduled_start_time
-      order by foo2.scheduled_start_time;
+      order by foo2.scheduled_start_time);
   elsif p_remote is false and v_timezone is null then
-    return query select false::boolean, array []::bigint[], null::timestamp;
+    select false::boolean, array []::bigint[], null::timestamp,null::bigint;
   else
-    return query
+    create temp table available_time_slots as (
       select true, array_agg(distinct foo2.user_id)::bigint array as users, foo2.scheduled_start_time
       from (select user_id,
                    foo1.scheduled_start_time,
@@ -304,11 +306,39 @@ BEGIN
         and foo2.scheduled_start_time at time zone 'UTC' at time zone pczu_timezone >
             now() at time zone pczu_timezone + interval '30 minutes'
       group by foo2.scheduled_start_time
-      order by foo2.scheduled_start_time;
-
+      order by foo2.scheduled_start_time);
   end if;
+
+  create temp table round_robin_scores as (
+    select
+      t.user_id,
+      t.distance_from_actual_to_target,
+      t.total_lead_allocation
+    from brs.get_total_lead_allocation(v_round_robin_id, true,false) as t
+  );
+
+  return query
+    with my_data as (
+      select unnest(ats.users) as user_id,ats.scheduled_start_time
+      from available_time_slots ats)
+    select true,t2.users,foo.scheduled_start_time
+    from (
+           select md.user_id,md.scheduled_start_time,
+                  ROW_NUMBER() OVER (PARTITION BY md.scheduled_start_time  order by
+                    total_lead_allocation  desc nulls last)
+                     AS rnk
+           from round_robin_scores rrs
+                  inner join my_data md on md.user_id = rrs.user_id
+           order by
+             total_lead_allocation  desc nulls last,
+                    md.scheduled_start_time ) as foo
+           inner join available_time_slots t2 on t2.scheduled_start_time = foo.scheduled_start_time
+    where foo.rnk = 1;
   set TimeZone = 'UTC';
   drop table if exists excluded_appointments;
+ drop table if exists round_robin_scores;
+ drop table if exists available_time_slots;
+
 
 END
 $BODY$

@@ -252,7 +252,7 @@
             <v-spacer></v-spacer>
             <v-btn color="primary" text @click="selectedExpense = {}">Cancel</v-btn>
             <v-btn color="primary" class="white--text" raised
-                   :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
+                   :disabled="!selectedExpense.expenseDate || !selectedExpense.glCodeId
                             || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.amount"
                    @click="saveSubmittedExpense(selectedExpense)">Save Changes
             </v-btn>
@@ -278,7 +278,7 @@ import {
   getRequestWithParams,
   postRequest,
   putRequest,
-  getSnackbar, getMonthDateRange, getRequest
+  getSnackbar, getMonthDateRange, getRequest, getYears
 } from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {
@@ -353,9 +353,7 @@ export default {
       canPay: false,
       approveConfirm: false,
       months: constants.MONTHS,
-      yearStart: 2017,
-      yearEnd: parseInt(moment().format('YYYY')),
-      years: [],
+      years: getYears(2017, true),
       startMonth: parseInt(moment().format('M')),
       startYear: parseInt(moment().format('YYYY')),
       endMonth: parseInt(moment().format('M')),
@@ -363,9 +361,6 @@ export default {
     }
   },
   created() {
-    for (let i = this.yearStart; i <= this.yearEnd; i++) {
-      this.years.push(i)
-    }
     this.getGlCodes()
     this.getUsersWithBudget()
     this.getBudgetTypes()

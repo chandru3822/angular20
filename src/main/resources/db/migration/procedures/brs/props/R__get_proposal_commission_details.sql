@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS brs.get_proposal_commission_details(p_financial_product_id bigint,
+DROP FUNCTION IF EXISTS brs.get_proposal_commission_details(p_product_id bigint,
                                                             p_source_id bigint,
                                                             p_system_size numeric,
                                                             p_unapproved_zip_code_adder numeric,
@@ -12,7 +12,7 @@ DROP FUNCTION IF EXISTS brs.get_proposal_commission_details(p_financial_product_
                                                             p_dealer_fee numeric,
                                                             p_initial_payment_factor numeric,
                                                             p_above_line_rebate numeric);
-CREATE OR REPLACE FUNCTION brs.get_proposal_commission_details(p_financial_product_id bigint,
+CREATE OR REPLACE FUNCTION brs.get_proposal_commission_details(p_product_id bigint,
                                                                p_source_id bigint,
                                                                p_system_size numeric,
                                                                p_unapproved_zip_code_adder numeric,
@@ -109,7 +109,7 @@ BEGIN
                                                                   coalesce(p_misc_adders, 0) +
                                                                   coalesce(p_small_system_size_adder_amount, 0)) /
                                                                  (p_system_size * 1000)) + (v_commission_watt / .68);
-      if p_financial_product_id = 293 then
+      if p_product_id = 293 then
         v_promotion_cost =
             (v_total_price_per_watt_before_promotion * p_system_size * 1000 * p_initial_payment_factor * 18) /
             (1 - p_dealer_fee - (p_initial_payment_factor * 18));
