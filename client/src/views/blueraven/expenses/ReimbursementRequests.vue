@@ -460,9 +460,9 @@ export default {
         await putRequest(`/reimbursement/request`, this.selectedRequest, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Request Approved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.selectedRequest = {}
-        this.rejectDropdown = false
         this.reimbursementRequests = this.reimbursementRequests?.filter(rr => rr.id !== this.selectedRequest.id)
+        this.rejectDropdown = false
+        this.selectedRequest = {}
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

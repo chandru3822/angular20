@@ -18,6 +18,16 @@ export function getMonthDateRange(month, year) {
   return {startDate, endDate}
 }
 
+export function getYears(startingYear, sortDescending) {
+  let yearEnd = parseInt(moment().format('YYYY'))
+  let years = []
+  for (let i = startingYear; i <= yearEnd; i++) {
+    years.push(i)
+  }
+  //sort them descending
+  return sortDescending ? years.reverse() : years
+}
+
 export function isLightColor(color) {
   const hex = color.replace('#', '')
   const c_r = parseInt(hex.substr(0, 2), 16)

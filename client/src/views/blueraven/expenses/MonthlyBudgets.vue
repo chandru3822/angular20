@@ -188,6 +188,7 @@ import {
   postRequest,
   getSnackbar,
   deleteRequest,
+  getYears,
   getMonthDateRange
 } from '@/helpers/helpers'
 import moment from 'moment'
@@ -211,14 +212,12 @@ export default {
       snackbar: {},
       constants,
       dataLoading: true,
-      years: [],
       selectedMonth: parseInt(moment().format('M')),
       selectedYear: parseInt(moment().format('YYYY')),
       startMonth: parseInt(moment().format('M')),
       startYear: parseInt(moment().format('YYYY')),
-      yearStart: 2017,
-      yearEnd: parseInt(moment().format('YYYY')),
       months: constants.MONTHS,
+      years: getYears(2017, true),
       createNew: false,
       newBudget: {},
       footerProps: {
@@ -246,10 +245,6 @@ export default {
     }
   },
   created() {
-    for (let i = this.yearStart; i <= this.yearEnd; i++) {
-      this.years.push(i)
-    }
-
     this.getBudgets()
   },
   methods: {
