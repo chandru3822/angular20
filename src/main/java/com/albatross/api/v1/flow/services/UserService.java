@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -49,17 +48,28 @@ import java.util.*;
 @Service
 public class UserService {
 
-  @Autowired private AttachmentService attachmentService;
-  @Autowired private SqlCache sqlCache;
-  @Autowired private SecurityService securityService;
-  @Autowired private MessagingService messagingService;
-  @Autowired private SmsTeamService smsTeamService;
-  @Autowired private UserPositionService userPositionService;
-  @Autowired private ObjectMapper om;
-  @Autowired private AmazonS3 s3;
-  @Autowired private JwtUtils jwtUtils;
-  @Autowired private PubSubService pubSubService;
-  @Autowired private JwtAuthenticationProvider jwtAuthProvider;
+  @Autowired
+  private AttachmentService attachmentService;
+  @Autowired
+  private SqlCache sqlCache;
+  @Autowired
+  private SecurityService securityService;
+  @Autowired
+  private MessagingService messagingService;
+  @Autowired
+  private SmsTeamService smsTeamService;
+  @Autowired
+  private UserPositionService userPositionService;
+  @Autowired
+  private ObjectMapper om;
+  @Autowired
+  private AmazonS3 s3;
+  @Autowired
+  private JwtUtils jwtUtils;
+  @Autowired
+  private PubSubService pubSubService;
+  @Autowired
+  private JwtAuthenticationProvider jwtAuthProvider;
 
   @Value("${aws.storageBucket}")
   private String storageBucket;
@@ -527,7 +537,7 @@ public class UserService {
     params.put("companyId", currentUser.getCompanyId());
     params.put("parentCompanyId", currentUser.getHighestParentCompanyId());
 
-      //todo: come back to this but i dont think we need it
+    //todo: come back to this but i dont think we need it
 //    List<Long> userIds = results.stream().map(User::getId).collect(Collectors.toList());
 //    Map<Long, String> userImageUrls =
 //        attachmentService.getAttachmentPresignedUrlsForUserList(userIds, 9L);
@@ -547,16 +557,19 @@ public class UserService {
     try {
       sqlCache.updateBySql(
         UserQuery.addNotificationToken,
-        Map.of(
-          "userId",
-          userId,
-          "token",
-          token,
-          "createdById",
-          securityService.getCurrentUser().trueUserId()));
-    } catch (DuplicateKeyException e) {
-      throw new ResponseStatusException(
-        HttpStatus.CONFLICT, "Token already exists on given user", e);
+        Map.of("userId", userId, "token", token, "createdById", userId));
+    } catch (Exception e) {
+      log.warn("Unable to add token={} for userId={}", token, userId);
+    }
+  }
+
+  public void removeNotificationToken(Long userId, String token) {
+    try {
+      sqlCache.updateBySql(
+        UserQuery.removeNotificationToken,
+        Map.of("userId", userId, "token", token));
+    } catch (Exception e) {
+      log.warn("Unable to remove token={} from userId={}", token, userId);
     }
   }
 

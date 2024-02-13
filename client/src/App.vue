@@ -1,42 +1,23 @@
 <template>
   <v-app id="app">
-    <!--  don't show the new version notification on the login screen. it looks weird  -->
-    <v-toolbar v-if="$store.state.app.availableUpdate && $route.name !== 'login'">
-      <v-toolbar-title>A newer version of the app is available.</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items>
-        <v-btn text @click="refreshPage">Click here to Refresh</v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
-    <!--    <v-toolbar v-if="showMobileBanner && $route.name !== 'login'">-->
-<!--    <v-toolbar-->
-<!--      v-if="!dismissMobileToolbar && showMobileBanner && !noNavRoutes.includes($route.name) && $route.path !== '/apps'"-->
-<!--      class="clickable app-link-header"-->
-<!--      dense>-->
-<!--      <v-toolbar-title @click="goToApps" class="body-small primary&#45;&#45;text">-->
-<!--        Go to App Download Page-->
-<!--        <v-icon small color="primary" class="ml-3">-->
-<!--          mdi-arrow-right-->
-<!--        </v-icon>-->
-<!--      </v-toolbar-title>-->
-<!--      <v-spacer></v-spacer>-->
-<!--      <v-toolbar-items>-->
-<!--        <v-btn x-small text color="primary" @click="dismissMobileToolbar = !dismissMobileToolbar">-->
-<!--          <v-icon small>close</v-icon>-->
-<!--        </v-btn>-->
-<!--      </v-toolbar-items>-->
-<!--    </v-toolbar>-->
+    <ReloadPrompt v-if="$route.name !== 'login'" />
     <AppNav v-if="!noNavRoutes.includes($route.name) && !hideHeader" />
     <v-main>
-      <v-container class="router-container" :class="{'extra-banner': userIsMasquerading}">
-        <Spinner v-if="$store.state.app.loading" :spinnerColor="'primary'" :size="100"></Spinner>
+      <v-container
+        class="router-container"
+        :class="{ 'extra-banner': userIsMasquerading }"
+      >
+        <Spinner
+          v-if="$store.state.app.loading"
+          spinnerColor="primary"
+          :size="100"
+        />
         <router-view class="router-view" />
       </v-container>
     </v-main>
-    <Snackbar></Snackbar>
-    <AnnouncementAlert></AnnouncementAlert>
+    <Snackbar />
+    <AnnouncementAlert />
   </v-app>
-
 </template>
 
 <script>
@@ -45,8 +26,9 @@ import AppNav from '@/components/AppNav'
 import Snackbar from '@/components/Snackbar'
 import Spinner from '@/components/Spinner'
 import AnnouncementAlert from '@/components/AnnouncementAlert.vue'
-import {NotificationActions} from "@/plugins/notifications/NotificationStore";
-import {UserActions} from "@/stores/UserStore";
+import ReloadPrompt from '@/components/ReloadPrompt.vue'
+import { NotificationActions } from '@/plugins/notifications/NotificationStore'
+import { UserActions } from '@/stores/UserStore'
 
 export default {
   name: 'App',
@@ -54,17 +36,23 @@ export default {
     AppNav,
     Snackbar,
     AnnouncementAlert,
-    Spinner
+    Spinner,
+    ReloadPrompt
   },
   data() {
     return {
       hideHeader: this.$store.state.user.hideHeader || false,
-      hideMobileBanner: this.$store.state.user.hideMobileBanner || false,
-      userIsMasquerading: this.$store.state.user?.details?.masqueradingUserId != null,
+      userIsMasquerading:
+        this.$store.state.user?.details?.masqueradingUserId != null,
       userId: this.$store.state.user?.details?.id,
-      noNavRoutes: ['login', 'forgotPassword', 'forgotPasswordReset', 'resetPassword', 'siteUnderMaintenance', 'stripeSuccess'],
-      showMobileBanner: false,
-      dismissMobileToolbar: false
+      noNavRoutes: [
+        'login',
+        'forgotPassword',
+        'forgotPasswordReset',
+        'resetPassword',
+        'siteUnderMaintenance',
+        'stripeSuccess'
+      ]
     }
   },
   watch: {
@@ -74,62 +62,30 @@ export default {
         await this.$store.dispatch(UserActions.LOGOUT)
         //i tried dispatch after 'await' but it didn't work. dont know why
         this.$router.push('/login').then(() => {
-          this.$store.dispatch(NotificationActions.PROCESS_REVOKE_ACCESS, this.userId)
+          this.$store.dispatch(
+            NotificationActions.PROCESS_REVOKE_ACCESS,
+            this.userId
+          )
         })
       }
-    },
-    // themeUpdateEvents: async function () {
-    //   console.log('THIS IS HAPPENING', this.themeUpdateEvents)
-    // }
+    }
   },
   computed: {
     revokeAccessEvents() {
-      return this.$store.getters.getEventsByTopic('revoke_access')?.filter(e => e.userId === this.userId)
-    },
-    // themeUpdateEvents() {
-    //   return this.$store.getters.getEventsByTopic('theme_update')
-    // },
+      return this.$store.getters
+        .getEventsByTopic('revoke_access')
+        ?.filter((e) => e.userId === this.userId)
+    }
   },
   created() {
-    document.addEventListener(
-      'swUpdated', this.showRefreshUI, { once: true }
-    )
-
     //set the theme which will use the default until one load from company
     this.$store.commit(AppMutations.SET_INITIAL_THEME)
-
     this.$vuetify.theme.themes.light = this.$store.state.app.theme
-
-    let userAgent = window.navigator.userAgent
-    if (!this.hideMobileBanner && userAgent && ['Android', 'iPhone', 'iPad'].some(v => userAgent.includes(v))) {
-      //the hideMobileBanner prop is used so that the mobile app can disable the mobile banner when displaying web views inside the app
-      this.showMobileBanner = true
-    }
-  },
-  methods: {
-    async showRefreshUI() {
-      this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, true)
-    },
-    async goToApps() {
-      this.$router.push('/apps')
-    },
-    async refreshPage() {
-      this.$store.commit(AppMutations.SET_AVAILABLE_UPDATE, false)
-      // true = hard refresh?
-      window.location.reload(true)
-      //not sure if this works
-      // todo: this stuff below doesn't seem to work and if we are reloading the page anyway why do the whole skip waiting thing?
-      // if (!this.registration || !this.registration.waiting) {
-      //   return
-      // }
-      // this.registration.waiting.postMessage('skipWaiting')
-    }
   }
 }
 </script>
 
 <style scoped lang="scss">
-
 @media (min-width: 769px) {
   #app {
     .app-title {
