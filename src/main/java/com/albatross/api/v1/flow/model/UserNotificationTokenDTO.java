@@ -6,8 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UserNotificationTokenDTO {
-
-  private Long id, userId;
-
   private String token;
 }

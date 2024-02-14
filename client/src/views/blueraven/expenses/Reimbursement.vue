@@ -64,7 +64,7 @@
           </div>
           <v-btn color="primary" class="white--text"
                  :disabled="!newReimbursement.expenseDate || !selectedBudgetId || !newReimbursement.amount || !newReimbursement.budgetTypeId
-                             || !newReimbursement.details"
+                            || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
                  @click="submitReimbursementRequest()">
             Submit
           </v-btn>
