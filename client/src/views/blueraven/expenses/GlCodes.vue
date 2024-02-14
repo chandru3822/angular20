@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container id="gl-code-container">
     <v-row>
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar">
@@ -8,7 +8,10 @@
           <v-toolbar-items>
             <v-btn text color="primary" @click="[createNew = !createNew, newGlCode = {}]">
               <v-icon v-if="!createNew">add</v-icon>
-              {{createNew ? 'cancel' : 'Add GL Code'}}
+              <v-icon v-else>close</v-icon>
+              <span v-if="!isMobile">
+                {{createNew ? 'cancel' : 'Add GL Code'}}
+              </span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -35,10 +38,11 @@
         <v-data-table
           :headers="headers"
           :items="filterGlCodes()"
-          :items-per-page="-1"
+          :items-per-page="100"
+          fixed-header
           :loading="dataLoading"
           :mobile-breakpoint="0"
-          hide-default-footer
+          :footer-props="footerProps"
           class="elevation-1 fix-column-width-bug square-card"
         >
           <template #no-data>
@@ -109,6 +113,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import {getGlCodes} from './expenseService'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import constants from "@/helpers/constants.js";
 
 export default {
   name: 'GlCodes',
@@ -116,6 +121,9 @@ export default {
   computed: {
     codeToDelete(){
       return this.itemToDelete ? this.itemToDelete.code : ''
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   data() {
@@ -131,6 +139,10 @@ export default {
         {text: 'Description', value: 'description', show: true},
         {text: null, value: 'icons', show: true}
       ],
+      footerProps: {
+        'items-per-page-options': [25, 50, 100, 500],
+        'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+      },
       deleteConfirm: false,
       itemToDelete: {}
     }
@@ -195,3 +207,19 @@ export default {
   }
 }
 </script>
+
+<style lang="scss">
+#gl-code-container .v-data-table__wrapper {
+  height: calc(100vh - 290px);
+  min-height: 300px;
+}
+</style>
+
+<style lang="scss" scoped>
+#gl-code-container {
+  margin-top: -15px;
+  padding-left: 0;
+  padding-right: 0;
+  padding-top: 0;
+}
+</style>
