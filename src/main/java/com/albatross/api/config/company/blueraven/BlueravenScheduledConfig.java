@@ -151,7 +151,7 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
   }
 
-  @Bean(destroyMethod = "shutdown")
+  @Bean
   public Executor blueravenTaskExecutor() {
     return Executors.newScheduledThreadPool(10);
   }
