@@ -1,9 +1,5 @@
 <template>
   <v-container id="users-container" v-if="!showImages">
-    <UsersFilter :items="statuses.map((s) => ({id: s.id, name: s.userStatusType}))"
-                 @list-updated="updateStatuses ( selected )"
-    ></UsersFilter>
-
     <v-row>
       <v-col cols="12">
         <v-toolbar color="white" class="elevation-1">
@@ -87,109 +83,21 @@
                   :style="{width: header.width ? header.width : 'auto',
                           'padding-bottom': !header.orgFilter && !header.statusFilter ? '13px !important' : ''}">
                 {{ header.text }}
-                <v-autocomplete v-model="filters.orgs[header.level]"
-                          :items="header.orgs"
-                          v-if="header.orgFilter"
-                          item-text="orgName"
-                          item-value="id"
-                          return-object
-                          multiple
-                          placeholder="Select..."
-                          height="35px"
-                          outlined
-                          class="user-filter-select"
-                          @change="handleOrgFilterChange(false, header.level)"
-                >
-                  <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                  >
-                    <v-chip small v-if="index === 0 && filters.orgs[header.level] && filters.orgs[header.level].length < 2">
-                      <span>{{ item.orgName }}</span>
-                    </v-chip>
-                    <span
-                        v-if="index === 1 && filters.orgs[header.level] && filters.orgs[header.level].length >= 2"
-                        class="primary--text text-caption"
-                    >{{ filters.orgs[header.level].length }} selected</span>
-                  </template>
-                  <template #item="{ item }">
-                    <div class="v-list-item__action">
-                      <div class="v-simple-checkbox">
-                        <div class="v-input--selection-controls__ripple primary--text">
+                <UsersFilter v-if="header.orgFilter"
+                             :items="header.orgs.map((o) => ({id: o.id, name: o.orgName}))"
+                             @list-updated="handleUpdateOrgListEmit($event, header.level)"
+                ></UsersFilter>
 
-                        </div>
-                        <i v-if="itemChecked(header.level, item)" aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box</i>
-                        <i v-else aria-hidden="true" class="v-icon notranslate material-icons theme--light">check_box_outline_blank</i>
-                      </div>
-                    </div>
-                    <div v-if="header.showType">{{item.orgName}} ({{item.orgType}})</div>
-                    <div v-else>{{item.orgName}}</div>
-                  </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="filters.statuses"
-                          :items="statuses"
-                          v-else-if="header.statusFilter"
-                          multiple
-                          item-text="userStatusType"
-                          item-value="id"
-                          outlined
-                          placeholder="Select..."
-                          height="35px"
-                          class="user-filter-select"
-                          @input="getUsers(true)"
-                >
-                  <v-list-item
-                      slot="prepend-item"
-                      ripple
-                      @click="toggleSelectAllStatuses()"
-                  >
-                    <v-list-item-action>
-                      <v-icon>{{ icon }}</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-title>Select All</v-list-item-title>
-                  </v-list-item>
-                  <v-divider
-                      slot="prepend-item"
-                      class="mt-2"
-                  ></v-divider>
-                  <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                  >
-                    <v-chip small v-if="index === 0 && filters.statuses.length < 2">
-                      <span>{{ item.userStatusType }}</span>
-                    </v-chip>
-                    <span
-                        v-if="index === 1 && filters.statuses.length >= 2"
-                        class="primary--text text-caption"
-                    >{{ filters.statuses.length }} selected</span>
-                  </template>
-                </v-autocomplete>
-                <v-autocomplete v-model="filters.positions"
-                          :items="positions"
-                          v-else-if="header.positionFilter"
-                          item-text="position"
-                          item-value="id"
-                          multiple
-                          placeholder="Select..."
-                          height="35px"
-                          outlined
-                          class="user-filter-select"
-                          @input="getUsers(true)"
-                >
-                  <template
-                      slot="selection"
-                      slot-scope="{ item, index }"
-                  >
-                    <v-chip small v-if="index === 0 && filters.positions && filters.positions.length < 2">
-                      <span>{{ item.position }}</span>
-                    </v-chip>
-                    <span
-                        v-if="index === 1 && filters.positions && filters.positions.length >= 2"
-                        class="primary--text text-caption"
-                    >{{ filters.positions.length }} selected</span>
-                  </template>
-                </v-autocomplete>
+                <UsersFilter v-else-if="header.statusFilter"
+                             :items="statuses.map((s) => ({id: s.id, name: s.userStatusType}))"
+                             :default-checked-items="filters.statuses"
+                             :has-default="true"
+                             @list-updated="handleUpdateStatusesListEmit"
+                ></UsersFilter>
+                <UsersFilter v-else-if="header.positionFilter"
+                             :items="positions.map((p) => ({id: p.id, name: p.position}))"
+                             @list-updated="handleUpdatePositionsListEmit"
+                ></UsersFilter>
                 <v-checkbox v-else-if="header.selectFilter"
                             :disabled="allUsersLoading"
                             v-model="selectAllUsers" @change="toggleSelectAllUsers()"></v-checkbox>
@@ -728,9 +636,25 @@
       this.fetchTeamsForUser()
     },
     methods: {
-      updateStatuses(selectedStatuses) {
-        console.log("Receiving Emit")
-        this.filters.statuses = selectedStatuses
+      handleUpdateStatusesListEmit(newList) {
+        this.filters.statuses = newList
+        this.getUsers(true)
+      },
+      handleUpdatePositionsListEmit(newList) {
+        this.filters.positions = newList
+        this.getUsers(true)
+      },
+      handleUpdateOrgListEmit(newList, headerLevel) {
+        let orgFilterList = []
+        this.orgFilters.filter((ofil) => ofil.orgLevelId === headerLevel).forEach((o) => newList.forEach((i) => {
+          o.orgs.forEach((j) => {
+            if (j.id === i) {
+              orgFilterList.push(j)
+            }
+          })
+        }))
+        this.filters.orgs[headerLevel] = orgFilterList
+        this.handleOrgFilterChange(false, headerLevel)
         this.getUsers(true)
       },
       handleTemplateSelection() {
@@ -855,7 +779,6 @@
         }
       },
       async getUsers (resetPage) {
-        console.log("Getting Users")
         localStorage.setItem('userFilters', JSON.stringify(this.filters))
 
         if(resetPage) {
