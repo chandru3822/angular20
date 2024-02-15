@@ -646,7 +646,8 @@
       },
       handleUpdateOrgListEmit(newList, headerLevel) {
         let orgFilterList = []
-        this.orgFilters.filter((ofil) => ofil.orgLevelId === headerLevel).forEach((o) => newList.forEach((i) => {
+        let tempFilters = this.orgFilters
+        tempFilters.filter((oFilter) => oFilter.orgLevelId === headerLevel).forEach((o) => newList.forEach((i) => {
           o.orgs.forEach((j) => {
             if (j.id === i) {
               orgFilterList.push(j)
@@ -655,7 +656,6 @@
         }))
         this.filters.orgs[headerLevel] = orgFilterList
         this.handleOrgFilterChange(false, headerLevel)
-        this.getUsers(true)
       },
       handleTemplateSelection() {
         this.textMessage += this.selectedTemplate.message
@@ -1141,15 +1141,6 @@
 
         this.selectAllUsers = false
         //reload the users
-      },
-
-      itemChecked(level, item) {
-        if (this.filters.orgs[level] && this.filters.orgs[level].length > 0) {
-          let match = this.filters.orgs[level].find(of => of.id === item.id)
-          return match != null
-        } else {
-          return false;
-        }
       },
       async fetchTeamsForUser() {
         try {

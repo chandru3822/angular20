@@ -1,3 +1,5 @@
+<!--This is a wrapper around the dropdown filters on the Users page-->
+<!--It adds a 'Select All' option to each of the dropdowns-->
 <template>
   <v-autocomplete v-model="selectedItems"
                   :items="items"
@@ -66,9 +68,6 @@ import {computed, onUpdated, ref} from 'vue'
   const checkboxStatus = ref(false)
   const updateOnce = ref(false)
   const updateList = function () {
-
-    console.log("Emitting New List:")
-    console.log(selectedItems.value)
     emit('list-updated', selectedItems.value)
   }
   const toggleAll = function() {
