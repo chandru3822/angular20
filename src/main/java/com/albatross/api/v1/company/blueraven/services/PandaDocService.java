@@ -244,12 +244,13 @@ public class PandaDocService {
    * @throws Exception
    */
   public void validate(Long projectId, String financier, JSONObject tokens) throws Exception {
+    final Set<String> ALLOWED_FINANCIERS = new HashSet<>(Arrays.asList("cash", "loanpal", "goodleap", "sunlight", "sunpower",
+                                                                                "skeps", "dividend", "credit", "credit human"));
     if (installAgreementRepository.isCashProject(financier)) {
       validateCashProject(projectId, tokens);
-    } else if (installAgreementRepository.isLoanPalProject(financier)) {
-      validateLoanPalProject(projectId, tokens);
-    } else if (!installAgreementRepository.isSunlightProject(financier)
-        && !installAgreementRepository.isSunpowerProject(financier)) {
+    } else if (installAgreementRepository.isGoodLeapProject(financier)) {
+      validateGoodLeapProject(projectId, tokens);
+    } else if (!ALLOWED_FINANCIERS.contains(financier.toLowerCase())) {
       throw new Exception(
         "unexpected financier for project %d: %s".formatted(projectId, financier));
     }
@@ -272,14 +273,14 @@ public class PandaDocService {
   }
 
   /**
-   * Validate a LoanPal project.
+   * Validate a GoodLeap project.
    *
    * @param projectId
    * @param tokens
    * @throws Exception
    */
-  public void validateLoanPalProject(Long projectId, JSONObject tokens) throws Exception {
-    log.debug("PANDADOC: validating loanpal project {}", projectId);
+  public void validateGoodLeapProject(Long projectId, JSONObject tokens) throws Exception {
+    log.debug("PANDADOC: validating goodleap project {}", projectId);
     validateFields(tokens, "Deal.Total System Price");
   }
 

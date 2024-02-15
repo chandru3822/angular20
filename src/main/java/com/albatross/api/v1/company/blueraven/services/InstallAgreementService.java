@@ -131,14 +131,14 @@ public class InstallAgreementService {
         log.error("IARQ: Error sending finance docs via Sunpower, error={}", ex.getMessage());
         resultMsg = "Error sending finance docs through Sunpower: " + ex.getMessage();
       }
-    } else if (sendLoanDocs && isLoanPalProject(financier)) {
+    } else if (sendLoanDocs && isGoodLeapProject(financier)) {
       Optional<InstallAgreementService.PropLogDetail> propLogDetail = getProjectDetailsFromLog(projectId, request.getProposalNbr());
 
       JSONObject loanApplication =
         goodleapService.getApplicationByProjectId(request.getProjectId());
       if (loanApplication != null) {
         try {
-          String loanPalId = loanApplication.getString("id");
+          String goodLeapId = loanApplication.getString("id");
 
           if (propLogDetail.isPresent()) {
             final BigDecimal propLogAmount =
@@ -150,14 +150,14 @@ public class InstallAgreementService {
                 .setScale(0, RoundingMode.DOWN);
 
             if (!propLogAmount.equals(currentAmount)) {
-              goodleapService.updateLoanAmount(loanPalId, propLogDetail.get().getLoanAmount());
+              goodleapService.updateLoanAmount(goodLeapId, propLogDetail.get().getLoanAmount());
             }
           }
 
           if (loanApplication.getString("status").equals("Approved")) {
-            log.debug("IARQ: sending LoanPal Docs");
+            log.debug("IARQ: sending GoodLeap Docs");
             try {
-              goodleapService.sendDocs(loanPalId);
+              goodleapService.sendDocs(goodLeapId);
             } catch (Exception e) {
               // @TODO: Handle failed send
             }
@@ -170,8 +170,8 @@ public class InstallAgreementService {
 
     Boolean createPandaDoc = true;
     try {
-      if (isLoanPalProject(financier)) {
-        log.debug("IARQ: processing loanpal project {}", request);
+      if (isGoodLeapProject(financier)) {
+        log.debug("IARQ: processing goodleap project {}", request);
         createPandaDoc = goodleapService.shouldCreatePandaDocs(projectId);
       }
 
@@ -184,7 +184,6 @@ public class InstallAgreementService {
     } catch (Exception e) {
       if (e.getMessage().contains("locate")) {
         log.warn(
-          
             "IARQ: Unable to locate goodleap application for project ID: %s".formatted(projectId));
         throw new RuntimeException(e);
       } else {
@@ -202,8 +201,8 @@ public class InstallAgreementService {
     return financier != null && financier.equalsIgnoreCase("cash");
   }
 
-  public Boolean isLoanPalProject(String financier) {
-    return financier != null && financier.equalsIgnoreCase("loanpal");
+  public Boolean isGoodLeapProject(String financier) {
+    return financier != null && (financier.equalsIgnoreCase("loanpal") || financier.equalsIgnoreCase("goodleap"));
   }
 
   public Boolean isSunlightProject(String financier) {
@@ -322,14 +321,14 @@ public class InstallAgreementService {
         } catch (Exception e) {
           throw new Exception(e.getMessage(), e);
         }
-      } else if (loanType.toLowerCase().contains("loanpal")) {
+      } else if (loanType.toLowerCase().contains("loanpal") || loanType.toLowerCase().contains("goodleap")) {
         // Check if this project has already had a credit check via Sunlight, if so throw error
         Optional<Object> creditLastCheckedBy = sunlightService.getCreditLastCheckedBy(projectId);
         if (creditLastCheckedBy.isPresent()) {
           String creditor = (String) creditLastCheckedBy.get();
           if (creditor.equals("Sunlight")) {
             throw new Exception(
-              "Unable to generate LoanPal application due to existing Sunlight application.");
+              "Unable to generate GoodLeap application due to existing Sunlight application.");
           }
         }
         String bothStreets = "";
@@ -370,7 +369,7 @@ public class InstallAgreementService {
           log.error("IARQ: uri error={}", e.getMessage());
         }
       }
-      sunlightService.setCreditLastCheckedBy(projectId, "LoanPal");
+      sunlightService.setCreditLastCheckedBy(projectId, "GoodLeap");
       return goodleapNewLoanUrl;
     } else {
       throw new ApiException("Proposal Log not found");
@@ -422,10 +421,10 @@ public class InstallAgreementService {
     if (loanType.isPresent()) {
       try {
         String loan = loanType.get();
-        if (loan.contains("LoanPal")) {
+        if (loan.toLowerCase().contains("loanpal") || loan.toLowerCase().contains("goodleap")) {
           JSONObject loanApp = goodleapService.getApplicationByProjectId(projectId);
           return loanApp.toString();
-        } else if (loan.contains("Sunlight")) {
+        } else if (loan.toLowerCase().contains("sunlight")) {
           JSONObject sunlightApp =
             sunlightService.getApplicationByProjectId(projectId);
           return sunlightApp.toString();
