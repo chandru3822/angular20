@@ -115,12 +115,16 @@ public class MessagingService {
   public Page<ConversationMessageProperties> getConversations(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds,
                                                               List<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
 
+    String cleanedQuery = query.replaceAll("[*,.&]", "")
+      .toLowerCase()
+      .trim();
+
     List<ConversationMessageProperties> conversations = new ArrayList<>();
     int count = 0;
     if (getProjects) {
       List<ConversationMessageProperties> projects =
         getProjects(
-          query,
+          cleanedQuery,
           ownerUserIds,
           smsTeamIds,
           notifProjectIds,
@@ -136,7 +140,7 @@ public class MessagingService {
     if (getUsers) {
       List<ConversationMessageProperties> users =
         getUsers(
-          query,
+          cleanedQuery,
           ownerUserIds,
           smsTeamIds,
           notifUserIds,
