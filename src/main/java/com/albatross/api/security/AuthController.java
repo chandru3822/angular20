@@ -92,9 +92,15 @@ public class AuthController {
     // cannot turn this on in prod until mobile is ready
     // todo: remove this check after we turn it on and mobile is working
     if (doCompanyDefaultValidation) {
-      if (null != creds.newPassword) {
+      if (creds.newPassword != null && !creds.newPassword.isEmpty()) {
         // called after user was already told they needed to reset their password
-        securityService.updateUserPassword(user.getId(), creds.newPassword);
+        if(creds.newPassword.length() < 8) {
+          // NOT_ACCEPTABLE = 406
+          return ResponseEntity.status(NOT_ACCEPTABLE)
+            .body("New Password is too short. Please try a new password.");
+        } else {
+          securityService.updateUserPassword(user.getId(), creds.newPassword);
+        }
       } else {
         // validate that the user's password is not the same as the company default for any company
         // they have access to
