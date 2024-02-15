@@ -109,8 +109,10 @@ public class BlueravenProposalController {
 
   @GetMapping(value = "/{proposalId}/commissionDetails")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public Optional<ProposalCommission> getProposalCommissionDetails(@PathVariable Long proposalId) {
-    return proposalService.getProposalCommissionDetails(proposalId);
+  public List<ProposalCommissionDetail> getProposalCommissionDetails(@PathVariable Long proposalId,
+                                                                   @RequestParam Long financialProductId,
+                                                                   @RequestParam Long brsProductId) {
+    return proposalService.getProposalCommissionDetails(proposalId, financialProductId, brsProductId);
   }
 
   @PutMapping(value = "/{proposalId}/version/{versionId}")
