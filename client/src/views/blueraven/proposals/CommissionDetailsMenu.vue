@@ -4,7 +4,7 @@
       bottom
       attach
       offset-y
-      min-width="350"
+      min-width="450"
       :close-on-content-click="false"
       style="z-index: 10"
   >
