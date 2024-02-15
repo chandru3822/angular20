@@ -99,7 +99,9 @@
                     :list-of-value-filter="filters[field.customFieldId]"
                     :hint="getHint(field)"
                   />
-                  <CommissionDetailsMenu v-if="userIsAdmin && field.customFieldGroupAssignmentId === 454" :proposal-id="proposalId"/>
+                  <CommissionDetailsMenu v-if="userIsAdmin && field.customFieldGroupAssignmentId === 454"
+                                         :custom-field-groups="sortedCustomFieldGroups"
+                                         :proposal-id="proposalId"/>
                 </div>
               </div>
             </div>
@@ -127,7 +129,7 @@
           </v-card>
         </v-col>
         <v-col cols="12" sm="8">
-          <v-card class="proposal-container">
+          <v-card class="proposal-container" v-if="!hideProposalSection">
             <div class="proposal-container-header sticky-header" :class="isIntersecting ? 'is-pinned' : ''"
                  v-intersect="{handler: onStickyHeader, options: { threshold: [1]}}">
               <v-alert
@@ -230,6 +232,8 @@ import Vue2Filters from 'vue2-filters'
 import CommissionDetailsMenu from "@/views/blueraven/proposals/CommissionDetailsMenu.vue";
 import ResidualDetailModal from "@/views/blueraven/commissionManagement/ResidualDetailModal.vue";
 
+const { VITE_HIDE_PROPOSAL } = import.meta.env
+
 const autoSelectFieldIds = [407, 102, 81]
 
 const USD = new Intl.NumberFormat('en-US', {
@@ -254,6 +258,7 @@ export default {
       proposalExists: false,
       isIntersecting: false,
       loading: false,
+      hideProposalSection: VITE_HIDE_PROPOSAL || false,
       userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'ADMIN'),
       userCanManage: this.$store.getters.userHasFeatureAccessLevel('PROPOSALS', 'MANAGE'),
       proposalId: parseInt(this.$route.params.proposalId),
