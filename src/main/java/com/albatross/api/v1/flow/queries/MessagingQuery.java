@@ -126,6 +126,35 @@ public class MessagingQuery {
        """;
 
   //language=PostgreSQL
+  public final static String getProjectCountCombined = """
+with owner_filter AS (SELECT project_id, id
+                      FROM flow.project_message_owner pmo
+                      where case
+                                when array_length(array [ :ownerIds ]::bigint[], 1) > 0 then
+                                    (pmo.user_id = any (array [ :ownerIds ]::bigint[])) and
+                                    pmo.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
+                                        and pmo.archived is false
+                                end)
+select distinct on (p.id) p.id                                as project_id,
+                          coalesce(sc.outbound_message, true) as outbound_message
+from flow.project p
+         inner join flow.project_message_properties pmp on pmp.project_id = p.id
+         left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
+         left join flow.project_message_owner pmo2
+                   on pmo2.sms_team_id = pmt.sms_team_id
+                       and pmo2.project_id = p.id
+                       and pmo2.archived is false
+         left join flow.sms_cache sc on p.id = sc.project_id
+         left join owner_filter of on of.project_id = p.id
+where case
+          when array_length(array [ :notifProjectIds ]::bigint[], 1) > 0 then
+              (p.id = any (array [ :notifProjectIds ]::bigint[]))
+          else 1 = 1 end
+  and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
+       (of.id is not null or pmo2.id is null))
+    """;
+
+  //language=PostgreSQL
   public final static String getProject = """
     select p.id                                                     as projectId,
               p.project_name,

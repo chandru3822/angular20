@@ -26,6 +26,7 @@ import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.albatross.api.v1.flow.queries.SmsTeamQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -115,9 +116,13 @@ public class MessagingService {
   public Page<ConversationMessageProperties> getConversations(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds,
                                                               List<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
 
-    String cleanedQuery = query.replaceAll("[*,.&]", "")
-      .toLowerCase()
-      .trim();
+
+    String cleanedQuery = query;
+    if (cleanedQuery != null) {
+      cleanedQuery = cleanedQuery.replaceAll("[*,.&]", "")
+        .toLowerCase()
+        .trim();
+    }
 
     List<ConversationMessageProperties> conversations = new ArrayList<>();
     int count = 0;
@@ -187,18 +192,24 @@ public class MessagingService {
     if (!projects.isEmpty()) {
       List<Long> projectIds = getProjectsCount(params);
       projects.get(0).setProjectIdsForFilter(projectIds);
-      params.put("query", null);
+
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
       List<Long> userSmsTeamIds =
         userSmsTeams.stream().map(SmsTeam::getId).toList();
-      params.put("smsTeamIds", userSmsTeamIds);
-      params.put("ownerIds", Collections.singletonList(user.getId()));
-      params.put("unassigned", true);
-      params.put("showInbox", true);
-      List<Long> projectIdsInbox = getProjectsCount(params);
-      params.put("showInbox", false);
-      List<Long> projectIdsSent = getProjectsCount(params);
+
+      Map<String, Object> combinedProps = new HashMap<>();
+      combinedProps.put("smsTeamIds", userSmsTeamIds);
+      combinedProps.put("ownerIds", List.of(user.getId()));
+      combinedProps.put("notifProjectIds", notifProjectIds);
+
+      Map<Boolean, List<ProjectCounter>> counters = getProjectsCombinedCount(combinedProps).stream()
+        .collect(Collectors.partitioningBy(ProjectCounter::getOutboundMessage));
+
+//      params.put("showInbox", true);
+      List<Long> projectIdsInbox = counters.get(false).stream().map(ProjectCounter::getProjectId).toList();
+//      params.put("showInbox", false);
+      List<Long> projectIdsSent = counters.get(true).stream().map(ProjectCounter::getProjectId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
       projects.get(0).setProjectIdsInbox(projectIdsInbox);
@@ -208,15 +219,24 @@ public class MessagingService {
     return projects;
   }
 
-  private List<Long> getProjectsCount(Map<String, Object> params){
-    long startTime = System.nanoTime();
-    List<Long> results = sqlCache.queryBySql(
+  @Data
+  static class ProjectCounter {
+    private Long projectId;
+    private Boolean outboundMessage;
+  }
+
+  private List<ProjectCounter> getProjectsCombinedCount(Map<String, Object> params) {
+    return sqlCache.queryBySql(
+      MessagingQuery.getProjectCountCombined,
+      params,
+      new BeanPropertyRowMapper<>(ProjectCounter.class));
+  }
+
+  private List<Long> getProjectsCount(Map<String, Object> params) {
+    return sqlCache.queryBySql(
       MessagingQuery.getProjectsCount,
       params,
       new SingleColumnRowMapper<>(Long.class));
-    long endTime = System.nanoTime();
-    log.info("MessagingService: getProjectsCount, params: {}, duration: {} ", params, (endTime - startTime) / 1_000_000_000.0);
-    return results;
   }
 
   public List<ConversationMessageProperties> getUsers(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
@@ -267,7 +287,7 @@ public class MessagingService {
     return users;
   }
 
-  private List<Long> getUsersCount(Map<String, Object> params){
+  private List<Long> getUsersCount(Map<String, Object> params) {
     long startTime = System.nanoTime();
     List<Long> results = sqlCache.queryBySql(
       MessagingQuery.getUsersCount,
@@ -437,8 +457,8 @@ public class MessagingService {
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-        && conversationMessageProps.isPresent()
-        && conversationMessageProps.get().isClosed()) {
+      && conversationMessageProps.isPresent()
+      && conversationMessageProps.get().isClosed()) {
       updateProjectStatus(projectId, false, modifiedByUserId);
     }
   }
@@ -583,8 +603,8 @@ public class MessagingService {
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-        && userMessageProps.isPresent()
-        && userMessageProps.get().isClosed()) {
+      && userMessageProps.isPresent()
+      && userMessageProps.get().isClosed()) {
       updateUserStatus(userId, false, modifiedByUserId);
     }
   }
