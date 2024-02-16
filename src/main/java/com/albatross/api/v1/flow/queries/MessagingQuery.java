@@ -4,48 +4,65 @@ public class MessagingQuery {
 
   //language=PostgreSQL
   public final static String getProjects = """
-    with projects as (select distinct on (p.id) p.id                                   as project_id,
+    with owner_filter AS (SELECT project_id, id
+                          FROM flow.project_message_owner pmo
+                          where case
+                                    when array_length(array [ :ownerIds ]::bigint[], 1) > 0 then
+                                        pmo.user_id = any (array [ :ownerIds ]::bigint[])
+                                            and pmo.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
+                                            and pmo.archived is false
+                                    end),
+         projects as (select distinct on (p.id) p.id                                   as project_id,
                                                 p.contact_id,
                                                 p.project_name,
                                                 c.search_phones                        as mobile,
                                                 s.abbreviation                         as state,
-                                                concat(u.first_name, ' ', u.last_name) as "name"
+                                                concat(u.first_name, ' ', u.last_name) as name,
+                                                case
+                                                    when sc.id is null then '[]'
+                                                    else
+                                                        json_build_array(
+                                                                json_build_object(
+                                                                        'message', sc.message_text,
+                                                                        'lastMessageSent', sc.message_date,
+                                                                        'outboundMessage', sc.outbound_message,
+                                                                        'recipientTypeId', 2))
+                                                    end                                as message_history
                       from flow.project p
                                inner join flow.contact c ON c.id = p.contact_id
-                               left outer join flow.company_state cs on p.company_state_id = cs.id
-                               left outer join flow.state s ON s.id = cs.state_id
+                               left join flow.company_state cs on p.company_state_id = cs.id
+                               left join flow.state s ON s.id = cs.state_id
                                inner join flow.project_message_properties pmp on pmp.project_id = p.id
                                left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
                                left join flow.project_message_owner pmo2
-                                         on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id and pmo2.archived is false
+                                         on pmo2.sms_team_id = pmt.sms_team_id
+                                          and pmo2.project_id = p.id
+                                          and pmo2.archived is false
                                left join flow.user u on pmo2.user_id = u.id
+                               left join flow.sms_cache sc on p.id = sc.project_id
+                               left join owner_filter of on of.project_id = p.id
                       where case
-                                when array_length( array [ :notifProjectIds  ]::bigint[], 1) > 0 then
-                                    (p.id = any ( array [ :notifProjectIds ]::bigint[] ))
-                                else 1=1 end
-                            and case
+                                when array_length(array [ :notifProjectIds ]::bigint[], 1) > 0 then
+                                    (p.id = any (array [ :notifProjectIds ]::bigint[]))
+                                else 1 = 1 end
+                        and case
                                 when :query::varchar is not null then
-                                            (p.project_name_search like '%' || :query || '%' ) or
-                                            (p.id::varchar like '%' || :query || '%')  or
-                                            (u.user_full_name_search like '%' || :query || '%')
+                                    (p.project_name_search like '%' || :query || '%') or
+                                    (p.id::varchar like '%' || :query || '%') or
+                                    (u.user_full_name_search like '%' || :query || '%')
                                 else 1 = 1 end
                         and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
-                             (exists(select id
-                                     from flow.project_message_owner pmo3
-                                     where case
-                                               when array_length( array [ :ownerIds ]::bigint[], 1) > 0 then
-                                                       (pmo3.user_id = any ( array [ :ownerIds ]::bigint[] )) and
-                                                       pmo3.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
-                                                       and pmo3.project_id = p.id and pmo3.archived is false
-                                               end) or
-                              case
-                                  when :unassigned is true then
-                                      pmo2.id is null end)
-                          )
-                        )
+                             (of.id is not null or case when :unassigned is true then pmo2.id is null end))
+                        and (case
+                                 when :showInbox then
+                                     sc.outbound_message is false
+                                 else sc.outbound_message is null or sc.outbound_message is true
+                          end)
+                      limit :limit offset :offset)
     select p.project_id,
            p.project_name,
            p.state,
+           p.message_history,
            (coalesce((SELECT array_to_json(array_agg(row_to_json(st)))
                       FROM (select st.id,
                                    st.team_name                                              as "teamName",
@@ -63,66 +80,50 @@ public class MessagingQuery {
                             from flow.project_message_team pmt
                                      inner join flow.sms_team st on pmt.sms_team_id = st.id
                             where pmt.project_id = p.project_id
-                              and pmt.archived is false) st), '[]'))                       as "smsTeamOwners",
-           (coalesce((select array_to_json(array_agg(row_to_json(mh)))
-                      from (
-                              select  c.message_text as message,
-                                  c.message_date as "lastMessageSent",
-                                  c.outbound_message as "outboundMessage",
-                                  2 as "recipientTypeId"
-                              from flow.sms_cache c
-                              where c.project_id = p.project_id
-                        ) mh), '[]')) as message_history
-    from projects p where
-        (case when :showInbox then
-            (select lm.outbound_message from flow.sms_cache lm where lm.project_id = p.project_id) is false
-        else
-            ((select lm.outbound_message from flow.sms_cache lm where lm.project_id = p.project_id) is null
-                or
-            (select lm.outbound_message from flow.sms_cache lm where lm.project_id = p.project_id) is true)
-        end)
-    limit :limit offset :offset
+                              and pmt.archived is false) st), '[]')) as "smsTeamOwners"
+    from projects p
         """;
 
   //language=PostgreSQL
   public final static String getProjectsCount = """
-    with projects as (select distinct on (p.id) p.id                                   as project_id
-                     from flow.project p
-                              inner join flow.project_message_properties pmp on pmp.project_id = p.id
-                              left join flow.project_message_team pmt on pmt.project_id = p.id and pmt.archived is false
-                              left join flow.project_message_owner pmo2
-                                        on pmo2.sms_team_id = pmt.sms_team_id and pmo2.project_id = p.id and pmo2.archived is false
-                              left join flow.user u on pmo2.user_id = u.id
-                              left join flow.sms_cache sc on p.id = sc.project_id
-                     where case
-                               when array_length( array [ :notifProjectIds  ]::bigint[], 1) > 0 then
-                                   (p.id = any ( array [ :notifProjectIds ]::bigint[] ))
-                               else 1=1 end
-                       and case
-                               when :query::varchar is not null then
-                                   (p.project_name_search like '%' || :query || '%' ) or
-                                   (p.id::varchar like '%' || :query || '%')  or
-                                   (u.user_full_name_search like '%' || :query || '%')
-                               else 1 = 1 end
-                       and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
-                            (exists(select id
-                                    from flow.project_message_owner pmo3
-                                    where case
-                                              when array_length( array [ :ownerIds ]::bigint[], 1) > 0 then
-                                                  (pmo3.user_id = any ( array [ :ownerIds ]::bigint[] )) and
-                                                  pmo3.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
-                                                      and pmo3.project_id = p.id and pmo3.archived is false
-                                              end) or
-                             case
-                                 when :unassigned is true then
-                                     pmo2.id is null end)
-                         )
-                       and case when :showInbox
+    with owner_filter AS (SELECT project_id, id
+                          FROM flow.project_message_owner pmo
+                          where case
+                                    when array_length(array [ :ownerIds ]::bigint[], 1) > 0 then
+                                        pmo.user_id = any (array [ :ownerIds ]::bigint[])
+                                            and pmo.sms_team_id = any (array [ :smsTeamIds ]::bigint[])
+                                            and pmo.archived is false
+                                    end),
+         projects as (select distinct on (p.id) p.id as project_id
+                      from flow.project p
+                               inner join flow.project_message_properties pmp on pmp.project_id = p.id
+                               left join flow.project_message_team pmt on pmt.project_id = p.id
+                          and pmt.archived is false
+                               left join flow.project_message_owner pmo2
+                                         on pmo2.sms_team_id = pmt.sms_team_id
+                                             and pmo2.project_id = p.id
+                                             and pmo2.archived is false
+                               left join flow.user u on pmo2.user_id = u.id
+                               left join flow.sms_cache sc on p.id = sc.project_id
+                               left join owner_filter of on of.project_id = p.id
+                      where case
+                                when array_length(array [ :notifProjectIds ]::bigint[], 1) > 0 then
+                                    (p.id = any (array [ :notifProjectIds ]::bigint[]))
+                                else 1 = 1 end
+                        and case
+                                when :query::varchar is not null then
+                                    (p.project_name_search like '%' || :query || '%') or
+                                    (p.id::varchar like '%' || :query || '%') or
+                                    (u.user_full_name_search like '%' || :query || '%')
+                                else 1 = 1 end
+                        and (pmt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
+                             (of.id is not null or case when :unassigned is true then pmo2.id is null end))
+                        and case
+                                when :showInbox
                                     then sc.outbound_message is false
                                 else sc.outbound_message is null or sc.outbound_message is true
-                         end
-   )
-   select p.project_id from projects p
+                          end)
+    select p.project_id from projects p
        """;
 
   //language=PostgreSQL
