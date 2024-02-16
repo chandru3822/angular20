@@ -255,6 +255,7 @@ const clear = () => {
   searchEventType.value = {}
   searchEventStatusType.value = {}
   selectedProcessStepStatusType.value = {}
+  projects.value = {}
 }
 
 onMounted(() => {

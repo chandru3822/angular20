@@ -29,7 +29,14 @@
                :start-time="startTime"
                :end-time="endTime"
                @close-map="showMap = false"
-          />
+          >
+            <template v-slot:searchMenu>
+              <v-btn id="search-menu-btn" fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
+              <ProjectSearchDialog v-show="searchMenuOpen"
+                                   :states="states" :start-time="startTime" :end-time="endTime"
+                                   @close-dialog="searchMenuOpen = false"/>
+            </template>
+          </Map>
         </v-col>
       </v-row>
     </template>
@@ -54,10 +61,12 @@
   import debounce from 'lodash.debounce'
   import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
   import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
+  import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
 
   export default {
     name: 'Schedule',
     components: {
+      ProjectSearchDialog,
       ThreeColumnLayout,
       ThreeColumnLayoutMobile,
       Map,
@@ -100,6 +109,7 @@
         selectedProject: {},
         cancelledCompanyEventStatuses: [],
         //used for search
+        searchMenuOpen: false,
         searchEventType: {},
         searchProcessStepStatusType: {},
         searchEventStatusType: {},
@@ -527,6 +537,20 @@
 
   .map-field-input {
     border-bottom: solid 1px rgba(0, 0, 0, 0.42);
+  }
+
+  #find-drive-time > button.rounded-tile-btn.v-btn.v-btn--fab.v-btn--round.v-btn--tile  {
+    border-radius: 4px;
+
+    &.white-background {
+      background-color: white;
+    }
+  }
+
+  .project-search-card{
+    position: relative;
+    top:40px;
+    right:38px;
   }
 </style>
 

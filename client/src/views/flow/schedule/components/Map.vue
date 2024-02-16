@@ -89,10 +89,7 @@
           </div>
         </v-card>
       </v-menu>
-      <v-btn fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
-      <ProjectSearchDialog v-show="searchMenuOpen"
-                           :states="states" :start-time="startTime" :end-time="endTime"
-                           @close-dialog="searchMenuOpen = false"/>
+      <slot name="searchMenu"/>
     </div>
     <!-- these markers come from the lower data table  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
@@ -186,7 +183,6 @@ export default {
     return {
       snackbar: {},
       menuOpen: false,
-      searchMenuOpen: false,
       loadingDriveTime: false,
       constants,
       markerCount: 0, //this is used to reset the key when the color of a marker changes so it gets redrawn
