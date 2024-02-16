@@ -293,7 +293,7 @@ public class MessagingService {
 
   @Data
   static class UserCounter {
-    private Long projectId;
+    private Long userId;
     private Boolean outboundMessage;
   }
 

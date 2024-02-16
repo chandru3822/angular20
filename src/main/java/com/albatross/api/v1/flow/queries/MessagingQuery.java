@@ -270,7 +270,6 @@ public class MessagingQuery {
                                             and umo.archived is false
                                     end),
          users as (select distinct on (u.id) u.id                                   as user_id,
-                                             u.search_phone                         as mobile,
                                              concat(u.first_name, ' ', u.last_name) as name
                    from flow.user u
                             inner join flow.user_message_properties ump on ump.user_id = u.id
@@ -306,8 +305,6 @@ with owner_filter AS (SELECT owner_user_id, id
                                         and umo.archived is false
                                 end),
      users as (select distinct on (u.id) u.id                                   as user_id,
-                                         u.search_phone                         as mobile,
-                                         concat(u.first_name, ' ', u.last_name) as name,
                                          coalesce(outbound_message, true)       as outbound_message
                from flow.user u
                         inner join flow.user_message_properties ump on ump.user_id = u.id
