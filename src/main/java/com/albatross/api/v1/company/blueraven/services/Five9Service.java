@@ -48,7 +48,7 @@ public class Five9Service {
 
   private Boolean referralValueSet = false;
 
-  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, boolean isRetarget, Long leadLevel) {
+  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, String five9ContactListName, Long leadLevel) {
     if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
       return;
     }
@@ -95,19 +95,17 @@ public class Five9Service {
         }
       }
 
-      if (leadLevel == 1L || leadLevel == 2L || leadLevel == 40L) {
-        if (isRetarget) {
-          contactListName = "digital_retarget";
-        }
-        else {
+      if (five9ContactListName != null) {
+        contactListName = five9ContactListName;
+      }
+      else {
+        if (leadLevel == 1L || leadLevel == 2L || leadLevel == 40L) {
           contactListName = "digitalleads";
         }
-      }
-      else if (leadLevel >= 201L && leadLevel <= 209L) {
-        if (isRetarget) {
-          contactListName = "virtual_retarget";
+        else if (leadLevel == 50L) {
+          contactListName = "digital_breeze";
         }
-        else {
+        else if (leadLevel >= 201L && leadLevel <= 209L) {
           contactListName = "virtualleads";
         }
       }
@@ -128,7 +126,7 @@ public class Five9Service {
     params.put("contactId", contactId);
     Optional<String> appointmentDate =
       sqlCache.getBySql(
-        GenesysQuery.getContactAppointmentDate,
+        Five9Query.getContactAppointmentDate,
         params,
         new SingleColumnRowMapper<>(String.class));
 
@@ -241,14 +239,21 @@ public class Five9Service {
 
   public void processFive9Contacts() {
     // Get list of Contact IDs that need to be put into each Genesys Contact List
-    List<Contact> contacts = sqlCache.queryBySql(Five9Query.getContactIdsSalDevRetargets, null, Contact.class);
+    populateCronContactLists(Five9Query.getContactIdsDigitalSalDevRetargets, "digital_retarget");
+    populateCronContactLists(Five9Query.getContactIdsVirtualSalDevRetargets, "virtual_retarget");
+    populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBooked, "digitalleads_pnb");
+  }
+
+  private void populateCronContactLists(String contactListQuery, String five9ContactListName) {
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts = sqlCache.queryBySql(contactListQuery, null, Contact.class);
     for (Contact contact : contacts) {
       List<CustomFieldGroup> customFieldGroups =
         customFieldValueService.getCustomFieldGroupsAndValues(
           ObjectType.CONTACT, contact.getId());
       List<CustomFieldValue> values = customFieldGroups.stream()
-          .flatMap(group -> group.getCustomFieldValues().stream())
-          .collect(Collectors.toList());
+        .flatMap(group -> group.getCustomFieldValues().stream())
+        .collect(Collectors.toList());
 
       try {
         final Long leadLevel = values.stream()
@@ -258,7 +263,7 @@ public class Five9Service {
           .findFirst()
           .orElse(null);
 
-        handleContact(contact.getId(), values, false, true, leadLevel);
+        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel);
       } catch (Exception e) {
         log.error("FIVE9: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }

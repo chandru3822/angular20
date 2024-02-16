@@ -30,7 +30,7 @@ public class BlueravenCustomBehaviorService {
   private final GenesysService genesysService;
   private final Five9Service five9Service;
 
-  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 40L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
+  private final Set<Long> FIVE9_LEAD_LEVELS = new HashSet<>(Arrays.asList(1L, 2L, 40L, 50L, 201L, 202L, 203L, 204L, 205L, 206L, 207L, 208L, 209L));
 
   public void handleCustomContactCreation(Long contactId, Boolean isNew, List<CustomFieldValue> cfvs, List<CustomFieldGroup> cfgs) {
     Long leadLevel = getContactLeadLevel(cfgs);
@@ -56,7 +56,7 @@ public class BlueravenCustomBehaviorService {
       }
 
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
-        five9Service.handleContact(contactId, cfvs, false, false, leadLevel);
+        five9Service.handleContact(contactId, cfvs, false, null, leadLevel);
       }
       else {
         genesysService.handleAddContact(contactId, cfvs);
@@ -64,7 +64,7 @@ public class BlueravenCustomBehaviorService {
     }
     else {
       if (leadLevel != null && FIVE9_LEAD_LEVELS.contains(leadLevel)) {
-        five9Service.handleContact(contactId, cfvs, true, false, leadLevel);
+        five9Service.handleContact(contactId, cfvs, true, null, leadLevel);
       }
       else {
         try {

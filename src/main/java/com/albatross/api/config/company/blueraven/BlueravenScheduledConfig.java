@@ -101,8 +101,8 @@ public class BlueravenScheduledConfig implements SchedulingConfigurer {
     log.info("*** CRON: end generating monthly budgets ***");
   }
 
-  //    every  day at 1 am - mtn
-  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
+  //    every  day at 3 am - mtn
+  @Scheduled(cron = "0 0 9 * * *", zone = "UTC")
   public void updateFive9Contacts() {
     if (updateFive9Contacts) {
       log.info("*** CRON: start processing Five 9 contacts ***");
