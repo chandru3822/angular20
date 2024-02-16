@@ -278,10 +278,10 @@ public class MessagingService {
         .collect(Collectors.partitioningBy(UserCounter::getOutboundMessage));
 
 //      params.put("showInbox", true);
-      List<Long> userIdsInbox = counters.get(false).stream().map(UserCounter::getProjectId).toList();
+      List<Long> userIdsInbox = counters.get(false).stream().map(UserCounter::getUserId).toList();
 
 //      params.put("showInbox", false);
-      List<Long> userIdsSent = counters.get(true).stream().map(UserCounter::getProjectId).toList();
+      List<Long> userIdsSent = counters.get(true).stream().map(UserCounter::getUserId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
       users.get(0).setUserIdsInbox(userIdsInbox);
