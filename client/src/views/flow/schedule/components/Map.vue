@@ -530,7 +530,6 @@ export default {
       }
 
       const {page, itemsPerPage} = this.options
-debugger
       localStorage.setItem('scheduleState', JSON.stringify(this.state))
       localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
       localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))

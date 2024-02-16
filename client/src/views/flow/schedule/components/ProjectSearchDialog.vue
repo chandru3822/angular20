@@ -17,6 +17,7 @@ import axios from "axios";
 import {getEventTypes} from "@/services/scheduleService.js";
 import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
 import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
+import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
 
 const props = defineProps({
   states: {
@@ -38,6 +39,7 @@ const state =ref({}),
     eventTypes= ref([]),
     projects= ref([]),
     totalProjects= ref(0),
+    selectedProject=ref(),
     selectedEventTypes= ref([]),
     searchEventType= ref({}),
     searchEventStatusType= ref({}),
@@ -160,7 +162,6 @@ const getProjects = async(resetQuery) => {
         source.value.cancel();
       }
       source.value = CancelToken.source();
-      debugger
       const {data} = await postRequest(`/schedule/projects`, {
         source: source.value,
         cancelToken: source.value.token,
@@ -229,17 +230,16 @@ const getProjectsSearchedFor = async(search) => {
     if(projects.value.length === 1) {
       selectedProject.value = projects.value[0]
       selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
-      selectedRows.value.push(projects.value[0])
-      zoomToMap({
-        item:{
-          longitude: selectedProject.value.longitude,
-          latitude: selectedProject.latitude
-        },
-        value: true
-      })
+      // selectedRows.value.push(projects.value[0])
+      // zoomToMap({
+      //   item:{
+      //     longitude: selectedProject.value.longitude,
+      //     latitude: selectedProject.latitude
+      //   },
+      //   value: true
+      // })
     }
     listLoading.value = false
-    debugger
   } catch (e) {
     console.error('*** ERROR ***', e)
     snackbar.value = getSnackbar('ERROR', 'Error Loading Project Details')
@@ -265,23 +265,24 @@ onMounted(() => {
 </script>
 
 <template>
-  <v-card id="project-search-card" color="white" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
+  <v-card id="project-search-card" color="white" style="max-width: 280px; min-width: 280px" class="square-card pa-4 project-search-card" elevation="8"> <!--did this manually instead of using v-menu b/c the dropdowns were getting cut off-->
     <div class="d-flex justify-space-between">
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
       <v-btn icon small @click="emit('close-dialog')"><v-icon>close</v-icon></v-btn>
     </div>
     <div class="project-search-field-container">
-      <div class="one-hunned py-3">
-        <v-autocomplete attach v-model="state"
+      <div class="one-hunned pb-3">
+        <v-autocomplete attach v-model="state" class="pb-2"
                         :items="states"
                         label="State"
                         clearable
                         return-object
                         hide-details
+                        dense
                         item-text="state"
                         item-value="id"
                         @click:clear="selectedEventTypes = []"
-                        :disabled="!!searchProject.projectId"
+                        :disabled="!!searchProject?.projectId"
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
                         :items="searchProjects"
@@ -292,6 +293,7 @@ onMounted(() => {
                         :disabled="!!state?.id"
                         text
                         hide-details
+                        class="pb-2"
                         label="Project"
                         autocomplete="off"
                         :loading="searchProjectsLoading"
@@ -315,6 +317,7 @@ onMounted(() => {
                     item-value="id"
                     return-object
                     clearable
+                    class="pb-2"
                     v-if="searchProject?.projectId"
           />
           <v-autocomplete attach v-model="selectedEventTypes"
@@ -324,6 +327,7 @@ onMounted(() => {
                           item-value="id"
                           return-object
                           hide-details
+                          class="pb-2"
                           clearable
                           :disabled="!state || !state.id"
                           multiple
@@ -351,6 +355,7 @@ onMounted(() => {
                           :disabled="!searchEventType?.id && selectedEventTypes.length === 0"
                           clearable
                           hide-details
+                          class="pb-2"
                           item-text="eventStatusType"
                           item-value="id"
                           return-object
@@ -378,10 +383,31 @@ onMounted(() => {
           :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id)"
       >Go</v-btn>
     </v-card-actions>
+    <div class="d-flex justify-space-between align-baseline py-3">
+      <span class="label-medium">Search Results</span>
+      <v-btn text small color="primary" class="text-capitalize">Show all pins</v-btn>
+    </div>
+    <div class="search-results">
+
+    <div v-for="p in projects">
+      <ProjectSearchResultCard
+          :project-name="p.projectName"
+          :event="p.eventName"
+          :process-step="p.processStepName"
+          :status="p.eventStatusType"
+          :start-date="p.start"
+          :end-date="p.end"
+          :event-resource="p.resourceName"
+      />
+    </div>
+    </div>
   </v-card>
 
 </template>
 
 <style scoped lang="scss">
-
+.search-results {
+  max-height: calc(100vh - 550px);
+  overflow-y: scroll;
+}
 </style>

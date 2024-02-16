@@ -328,6 +328,7 @@ public class ScheduleQuery {
            e.event_name,
            ppse.company_event_status_type_id,
            cest.event_status_type_id,
+           cest.event_status_type,
            sl.id as system_list_id,
            array_to_json(cf.system_list_option_ids) as system_list_option_ids,
            pps.id as project_process_step_id,
