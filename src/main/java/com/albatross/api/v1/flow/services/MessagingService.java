@@ -269,15 +269,19 @@ public class MessagingService {
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
       List<Long> userSmsTeamIds =
         userSmsTeams.stream().map(SmsTeam::getId).toList();
-      params.put("smsTeamIds", userSmsTeamIds);
-      params.put("ownerIds", Collections.singletonList(user.getId()));
-      params.put("query", null);
-      params.put("unassigned", true);
-      params.put("showInbox", true);
-      List<Long> userIdsInbox = getUsersCount(params);
 
-      params.put("showInbox", false);
-      List<Long> userIdsSent = getUsersCount(params);
+      Map<String, Object> combinedProps = new HashMap<>();
+      combinedProps.put("smsTeamIds", userSmsTeamIds);
+      combinedProps.put("ownerIds", List.of(user.getId()));
+
+      Map<Boolean, List<UserCounter>> counters = getUsersCountCombined(combinedProps).stream()
+        .collect(Collectors.partitioningBy(UserCounter::getOutboundMessage));
+
+//      params.put("showInbox", true);
+      List<Long> userIdsInbox = counters.get(false).stream().map(UserCounter::getProjectId).toList();
+
+//      params.put("showInbox", false);
+      List<Long> userIdsSent = counters.get(true).stream().map(UserCounter::getProjectId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
       users.get(0).setUserIdsInbox(userIdsInbox);
@@ -287,15 +291,24 @@ public class MessagingService {
     return users;
   }
 
+  @Data
+  static class UserCounter {
+    private Long projectId;
+    private Boolean outboundMessage;
+  }
+
+  private List<UserCounter> getUsersCountCombined(Map<String, Object> params) {
+    return sqlCache.queryBySql(
+      MessagingQuery.getUsersCountCombined,
+      params,
+      new BeanPropertyRowMapper<>(UserCounter.class));
+  }
+
   private List<Long> getUsersCount(Map<String, Object> params) {
-    long startTime = System.nanoTime();
-    List<Long> results = sqlCache.queryBySql(
+      return sqlCache.queryBySql(
       MessagingQuery.getUsersCount,
       params,
       new SingleColumnRowMapper<>(Long.class));
-    long endTime = System.nanoTime();
-    log.info("MessagingService: getUsersCount, params: {}, duration: {} ", params, (endTime - startTime) / 1_000_000_000.0);
-    return results;
   }
 
   private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {
