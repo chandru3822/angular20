@@ -243,32 +243,22 @@ public class MessagingService {
       new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
 
     if (!users.isEmpty()) {
-      List<Long> userIds =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> userIds = getProjectCount(params);
       users.get(0).setUserIdsForFilter(userIds);
-      params.put("query", null);
+
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
       List<Long> userSmsTeamIds =
         userSmsTeams.stream().map(SmsTeam::getId).toList();
       params.put("smsTeamIds", userSmsTeamIds);
       params.put("ownerIds", Collections.singletonList(user.getId()));
+      params.put("query", null);
       params.put("unassigned", true);
       params.put("showInbox", true);
-      List<Long> userIdsInbox =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> userIdsInbox = getProjectCount(params);
+
       params.put("showInbox", false);
-      List<Long> userIdsSent =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> userIdsSent = getProjectCount(params);
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
       users.get(0).setUserIdsInbox(userIdsInbox);
@@ -276,6 +266,17 @@ public class MessagingService {
     }
 
     return users;
+  }
+
+  private List<Long> getProjectCount(Map<String, Object> params){
+    long startTime = System.nanoTime();
+    List<Long> results = sqlCache.queryBySql(
+      MessagingQuery.getUsersCount,
+      params,
+      new SingleColumnRowMapper<>(Long.class));
+    long endTime = System.nanoTime();
+    log.info("MessagingService: getProjectCount, params: {}, duration: {} ", params, (endTime - startTime) / 1_000_000_000.0);
+    return results;
   }
 
   private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {
