@@ -6,7 +6,8 @@ public class Five9Query {
     select pd.first_appointment_pitched
         from flow.contact c
         inner join brs.project_details pd on c.id = pd.contact_id
-        where c.id = :contactId
+        where c.id = :contactId and pd.archived is false
+        order by pd.first_appointment_pitched desc limit 1
     """;
 
   //language=PostgreSQL
@@ -14,11 +15,12 @@ public class Five9Query {
     select pd.complete_date_booking
         from flow.contact c
         inner join brs.project_details pd on c.id = pd.contact_id
-        where c.id = :contactId
+        where c.id = 2762384 and pd.archived is false
+        order by pd.complete_date_booking desc limit 1
     """;
 
   //language=PostgreSQL
-  public final static String getContactIdsSalDevRetargets = """
+  public final static String getContactIdsDigitalSalDevRetargets = """
     select pd.contact_id as id
     from brs.project_details pd
     where pd.first_appointment_pitched IS NULL
@@ -35,11 +37,83 @@ public class Five9Query {
       AND ((select ccfv.int_value
             from flow.contact_custom_field_value ccfv
             where ccfv.custom_field_group_assignment_id = 20977
-              and ccfv.contact_id = pd.contact_id) in
-           (1, 2, 40, 201, 202, 203, 204, 205, 206, 207, 208, 209)) -- contacts with certain lead level
-    AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 45
-      and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - ( case when pd.closer_appointment_outcome_name is null then 7 else 2 end)
+              and ccfv.contact_id = pd.contact_id) in (1, 2, 40)) -- contacts with certain lead level
+    AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 30 -- Closer appointment within past 30 days
+      and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 2 -- Closer appointment at least 2 days old
+      and (select ppscfv.int_value
+            from flow.project_process_step_custom_field_value ppscfv
+            where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
+              and ppscfv.project_process_step_id =
+                  (select id from flow.project_process_step pps where pps.project_id = pd.project_id
+                                                                  and pps.process_step_id = 1
+                                                                  and pps.archived is false
+                                                                  and pps.main is true)
+          ) is null -- Appointment Type is null
     order by pd.contact_id
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsVirtualSalDevRetargets = """
+    select pd.contact_id as id
+    from brs.project_details pd
+    where pd.first_appointment_pitched IS NULL
+      AND pd.cancelled_date IS NULL
+      AND (pd.closer_appointment_outcome_name not in
+              ('Pitched - Proposal Shown', 'Pitched - Proposal Not Shown') or
+              pd.closer_appointment_outcome_name IS NULL)
+      AND ((select ccfv.int_value
+            from flow.contact_custom_field_value ccfv
+            where ccfv.custom_field_group_assignment_id = 399
+              and ccfv.contact_id = pd.contact_id) in
+           (700, 19205, 697)) -- contacts that are new, scheduled, or attempted contact
+    AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 7 -- Closer appointment within past 7 days
+      and ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE < current_date - 1 -- Closer appointment at least 1 day old
+      and (select ppscfv.int_value
+            from flow.project_process_step_custom_field_value ppscfv
+            where ppscfv.custom_field_group_assignment_id = 26698 -- Appointment Type
+              and ppscfv.project_process_step_id =
+                  (select id from flow.project_process_step pps where pps.project_id = pd.project_id
+                                                                  and pps.process_step_id = 1
+                                                                  and pps.archived is false
+                                                                  and pps.main is true)
+              ) is not null -- Appointment Type is not null
+    order by pd.contact_id
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactIdsInsideSalesPitchedNotBooked = """
+    with results as (select pd.contact_id             as id,
+                            pd.closer_appointment_start,
+                            (SELECT max(start_time) next_event
+                             FROM flow.project_process_step_event ppse
+                                      inner join flow.project_process_step pps
+                                                 on ppse.project_process_step_id = pps.id and pps.project_id = pd.project_id
+                             where ppse.process_step_event_id = 14 -- Closer Appointment
+                               and ppse.company_event_status_type_id NOT IN (3,4,24) -- Cancelled, Complete, Rescheduled
+                               and ppse.archived is false
+                             group by pps.project_id) as next_event,
+                            (select ccfv.int_value
+                             from flow.contact_custom_field_value ccfv
+                             where ccfv.custom_field_group_assignment_id = 399 -- lead status
+                               and ccfv.contact_id = pd.contact_id) as lead_status_id
+                     from brs.project_details pd
+                     where pd.first_appointment_pitched is not null
+                       and (((pd.closer_appointment_start at time zone 'UTC') at time zone
+                             'US/Mountain') :: date between current_date - 180 and current_date - 30)
+                       and pd.source_name in ('Paid Lead Gen', 'Paid Advertising', 'Organic', 'Organic with Referral')
+                       AND ((select ccfv.int_value
+                            from flow.contact_custom_field_value ccfv
+                            where ccfv.custom_field_group_assignment_id = 20977
+                              and ccfv.contact_id = pd.contact_id) in
+                           (1, 2, 40)) -- contacts with certain lead level
+                       AND pd.complete_date_booking is null
+                       AND pd.closer_user_id not in (select unnest(string_to_array(value, ',')::bigint[])
+                                                         from flow.company_configuration_value
+                                                      where code = 'PNB_EXCLUDED_USER_IDS')
+                       )
+    select id
+    from results
+    where (next_event is null or next_event < current_date - 10)  -- Make sure latest Closer Appointment is at least 10 days old
     """;
 
   //language=PostgreSQL
@@ -61,5 +135,17 @@ public class Five9Query {
          AND ((pd.closer_appointment_start AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 2
          AND pd.contact_id = 3076572
     )
+    """;
+
+  //language=PostgreSQL
+  public final static String getContactAppointmentDate = """
+    select appointment_date as "Appointment Date"
+    from (SELECT distinct on (p.contact_id) p.contact_id, ((ppse.start_time AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE AS appointment_date
+    FROM flow.project p
+             INNER JOIN flow.project_process_step pps ON pps.project_id = p.id
+             INNER join flow.project_process_step_event ppse ON ppse.project_process_step_id = pps.id
+        AND ppse.process_step_event_id = 14
+    WHERE p.contact_id = :contactId and ((ppse.start_time AT TIME ZONE 'UTC') AT TIME ZONE 'US/Mountain')::DATE >= current_date - 45
+    order by 1,2 desc) as foo
     """;
 }
