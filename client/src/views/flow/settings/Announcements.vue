@@ -45,7 +45,7 @@
                        @click="goToPath(item.id)">
                   <v-icon>edit</v-icon>
                 </v-btn>
-                <v-btn small text color="primary" v-if="current && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
+                <v-btn small text color="primary" v-if="current && store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
                   <v-icon >delete</v-icon>
                 </v-btn>
               </td>
@@ -78,14 +78,8 @@ const store = vueInstance.$store
 const snackbar = vueInstance.$snackbar
 const router = vueInstance.$router
 
-const displayedTabs = computed(() => {
-  return this.tabs.filter(tab => tab.display)
-})
-const filteredAnnouncements = computed(() => {
-  return this.announcements?.filter(a => { return !a.archived}) || []
-})
 const current = computed(() => {
-  return this.$route.path.includes('current')
+  return vueInstance.$route.path.includes('current')
 })
 
 const options = ref({
@@ -100,6 +94,7 @@ const footerProps = ref({
     'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
 })
 const announcements = ref([])
+const fieldsInUse = ref([])
 const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
 const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
 const headers = ref([
@@ -121,6 +116,13 @@ const tabs = ref([
     display: store.getters.userHasFeature('SETTINGS')
   },
 ])
+
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
+const filteredAnnouncements = computed(() => {
+  return announcements.value?.filter(a => { return !a.archived}) || []
+})
 
 onMounted(() => {
   getAnnouncements()
@@ -157,7 +159,7 @@ const getAnnouncements = async () => {
 }
 const closeDeleteDialog = () => {
   showDeleteDialog.value = false
-  this.itemToDelete.value = null
+  itemToDelete.value = null
 }
 const deleteAnnouncement = async () => {
   const item = itemToDelete.value
