@@ -260,6 +260,79 @@ const props = defineProps({
 </tr>
 </table>
 
+
+### Basic Method
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+async doStuff(myProps) {}
+```
+</td>
+<td>
+
+```
+const doStuff = async (myProps) => {})
+```
+</td>
+</tr>
+</table>
+
+
+### Snackbar
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+snackbar: {}, <-- in the data
+this.snackbar = getSnackbar('ERROR', 'Error Loading Announcements')
+this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+```
+</td>
+<td>
+
+```
+const snackbar = vueInstance.$snackbar
+snackbar('SUCCESS', 'Announcement Saved')
+```
+</td>
+</tr>
+</table>
+
+
+### Global Loader
+Note: Global Loader handling is to prevent a loader from screenA still being present on screenB if the user navigates before screenA is done loading. Not to be confused with SET_LOADING = false
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+handleHidingGlobalLoader(this, status)
+```
+</td>
+<td>
+
+```
+handleHidingGlobalLoader(vueInstance, status)
+```
+</td>
+</tr>
+</table>
+
 ### Emits
 <table>
 <tr>
@@ -313,6 +386,7 @@ watch(options, () => {
 </table>
 
 ### Before Route Leave
+Note: Same behavior for Before Route Update
 <table>
 <tr>
 <th>Vue2</th>
