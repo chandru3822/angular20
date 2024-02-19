@@ -1,11 +1,11 @@
 <template>
   <v-container class="pa-0" id="three-column-container">
     <v-row>
-      <v-toolbar v-if="!headerHidden" flat :height="headerLarge ? '94px' : '64px'" class="three-column-header px-5">
-      <slot name="header">
+      <v-toolbar v-if="!props.headerHidden" flat :height="props.headerLarge ? '94px' : '64px'" class="three-column-header px-5">
+        <slot name="header">
           <v-toolbar-title class="headline-medium d-flex align-center mr-6">
             <slot name="back-btn"></slot>
-            {{ headerText }}
+            {{ props.headerText }}
           </v-toolbar-title>
           <slot name="search"></slot>
           <v-spacer></v-spacer>
@@ -13,41 +13,46 @@
             <slot name="header-btn">
             </slot>
           </v-toolbar-items>
-      </slot>
+        </slot>
       </v-toolbar>
     </v-row>
-    <v-row class="split-container" :class="{'full-height':headerHidden, 'tall-header': headerLarge}">
-      <v-col id="left-column" @click="$emit('end-notes-timer')" class=" project-section text-left px-0 left-column" :class="{ 'hidden': this.leftHidden,
-                                                                                            'collapsed': this.$store.state.project.leftSideSplit,
-                                                                                            'narrow': this.leftSmall,
-                                                                                            'mobile-overflow': true,
-                                                                                            'auto-overflow': this.autoOverflowLeft,
-                                                                                            'white-bg': this.leftSideWhiteBg,
-                                                                                            'hide-column-xs': $store.state.project.leftSideSplit}">
-        <div class="mobile-padding-menu-button" :class="{'title-collapsed': $store.state.project.leftSideSplit,
-                      'ml-2': !$store.state.project.leftSideSplit}">
+    <v-row class="split-container" :class="{'full-height': props.headerHidden, 'tall-header': props.headerLarge}">
+      <v-col id="left-column" @click="emit('end-notes-timer')" class=" project-section text-left px-0 left-column"
+             :class="{'hidden': props.leftHidden,
+                      'collapsed': store.state.project.leftSideSplit,
+                      'narrow': props.leftSmall,
+                      'mobile-overflow': true,
+                      'auto-overflow': props.autoOverflowLeft,
+                      'white-bg': props.leftSideWhiteBg,
+                      'hide-column-xs': store.state.project.leftSideSplit}">
+        <div class="mobile-padding-menu-button" :class="{'title-collapsed': store.state.project.leftSideSplit,
+                      'ml-2': !store.state.project.leftSideSplit}">
           <v-btn small text color="primary" @click="collapseSide('left')">
             <v-icon>mdi-menu</v-icon>
           </v-btn>
         </div>
-        <div v-if="!$store.state.project.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
-        <slot name="left-column"></slot>
+        <div v-if="!store.state.project.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
+          <slot name="left-column"></slot>
         </div>
       </v-col>
-      <v-col class="project-section center-panel py-0 px-0" @click="$emit('end-notes-timer')" :class="{'white-bg': this.centerWhiteBg, 'hide-column-xs': !$store.state.project.leftSideSplit, 'halvsies': this.leftHidden,}">
+      <v-col class="project-section center-panel py-0 px-0" @click="emit('end-notes-timer')"
+             :class="{'white-bg': props.centerWhiteBg, 'hide-column-xs': !store.state.project.leftSideSplit, 'halvsies': props.leftHidden}">
         <slot name="main-column"></slot>
       </v-col>
-      <v-col id="right-column" class="project-section right-column pa-0" :class="{'hidden': this.rightHidden,
-                                                                                                  'halvsies': this.leftHidden,
-                                                                                                  'collapsed': this.$store.state.project.rightSideSplit && showRightCollapseBtn,
-                                                                                                  'white-bg': this.rightSideWhiteBg,
+      <v-col id="right-column" class="project-section right-column pa-0" :class="{'hidden': props.rightHidden,
+                                                                                                  'halvsies': props.leftHidden,
+                                                                                                  'collapsed': store.state.project.rightSideSplit && props.showRightCollapseBtn,
+                                                                                                  'white-bg': props.rightSideWhiteBg,
                                                                                                   'hide-column-xs': true  }">
         <slot name="right-column">
-          <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true" :allow-sidebar-collapse="showRightCollapseBtn"
+          <ProjectActivity v-if="!projectLoading && (projectId !== 0 || userId !== 0)" :show-sms-tab="true"
+                           :allow-sidebar-collapse="props.showRightCollapseBtn"
                            @closeRight="closeRight()"
                            @click="collapseSide('right')"
-                           @openRight="$store.state.project.rightSideSplit = false">
-            <template v-slot:collapse-button><slot name="collapse-button"></slot></template>
+                           @openRight="store.state.project.rightSideSplit = false">
+            <template v-slot:collapse-button>
+              <slot name="collapse-button"></slot>
+            </template>
           </ProjectActivity>
         </slot>
       </v-col>
@@ -55,116 +60,116 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, handleHidingGlobalLoader, logError} from "@/helpers/helpers";
 import {ProjectMutations} from "@/stores/ProjectStore";
 import ProjectActivity from '@/views/flow/project/ProjectActivity'
 
-export default {
-  name: "ThreeColumnLayout",
-  components: {
-    ProjectActivity,
-  },
-  props: {
-    headerText: String,
-    headerBtnText: String,
-    headerHidden: Boolean,
-    headerLarge: Boolean,
-    leftCollapsed: Boolean,
-    leftSmall: Boolean,
-    leftHidden: Boolean,
-    rightCollapsed: Boolean,
-    rightHidden: Boolean,
-    rightSideWhiteBg: {
-      type: Boolean,
-      default: true
-    },
-    leftSideWhiteBg: {
-      type: Boolean,
-      default: true
-    },
-    autoOverflowLeft: Boolean,
-    centerWhiteBg: Boolean,
-    showRightCollapseBtn: {
-      type: Boolean,
-      default: true
-    },
-  },
-  computed: {
-    leftWidth() {
-      if (!this.leftHidden) {
-        return {
-          'hidden': this.leftHidden,
-          'collapsed': this.$store.state.project.leftSideSplit,
-          'narrow': this.leftSmall
-        }
-      }
-    },
-    rightWidth() {
-      if (!this.rightHidden) {
-        return {
-          'hidden': this.rightHidden,
-          'collapsed': this.$store.state.project.rightSideSplit && this.showRightCollapseBtn,
-        }
-      }
-    },
-  },
-  watch: {
-    // whenever userImage changes, this function will run
-    '$route.params.projectId': function () {
-      this.projectId = parseInt(this.$route.params.projectId) | null
-      this.getProject()
-    },
-    '$route.params.userId': function () {
-      this.userId = parseInt(this.$route.params.userId) | null
-    }
-  },
-  data() {
-    return {
-      constants,
-      projectLoading: false,
-      projectId: parseInt(this.$route.params.projectId) | null,
-      userId: parseInt(this.$route.params.userId) | null,
-      rightHiddenMobile: this.rightCollapsed
-  }
-  },
-  created() {
-    //have to reset this on creation in case there is already a state then they go to the project url directly
-    this.$store.commit(ProjectMutations.RESET_PROJECT_STATE)
-    this.getProject()
-  },
-  methods: {
-    getProject: async function () {
-      try {
-        if (this.projectId == 0) {
-          return;
-        }
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        const {data, status} = await getRequest(`/project/${this.projectId}`)
-        this.project = data
-        window.document.title = `${this.project.projectName} - Project Details`
-        this.projectLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
+import {defineProps, computed, getCurrentInstance, onMounted, ref, watch} from 'vue'
 
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        this.projectLoading = false
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        logError(e)
-      }
-    },
-    closeRight() {
-      this.$emit('closeRight')
-    },
-    collapseSide(side) {
-      if (side === 'left') {
-        this.$store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
-      } else {
-        this.$store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
-      }
-    },
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
+
+const props = defineProps({
+  headerText: String,
+  headerBtnText: String,
+  headerHidden: Boolean,
+  headerLarge: Boolean,
+  leftCollapsed: Boolean,
+  leftSmall: Boolean,
+  leftHidden: Boolean,
+  rightCollapsed: Boolean,
+  rightHidden: Boolean,
+  rightSideWhiteBg: {
+    type: Boolean,
+    default: true
+  },
+  leftSideWhiteBg: {
+    type: Boolean,
+    default: true
+  },
+  autoOverflowLeft: Boolean,
+  centerWhiteBg: Boolean,
+  showRightCollapseBtn: {
+    type: Boolean,
+    default: true
+  }
+})
+
+const projectLoading = ref(false)
+const project = ref({})
+const projectId = ref(parseInt(vueInstance.$route.params.projectId) | null)
+const userId = ref(parseInt(vueInstance.$route.params.userId) | null)
+const rightHiddenMobile = ref(props.rightCollapsed)
+const emit = defineEmits(['closeRight', 'end-notes-timer'])
+
+// todo: note, i checked the code and these two values aren't being used...unless i am blind!
+// const leftWidth = computed(() => {
+//   if (!props.leftHidden) {
+//     return {
+//       'hidden': props.leftHidden,
+//       'collapsed': store.state.project.leftSideSplit,
+//       'narrow': props.leftSmall
+//     }
+//   }
+// })
+//
+// const rightWidth = computed(() => {
+//   if (!props.rightHidden) {
+//     return {
+//       'hidden': props.rightHidden,
+//       'collapsed': store.state.project.rightSideSplit && props.showRightCollapseBtn,
+//     }
+//   }
+// })
+
+// todo: i am almost certain that this code is never getting hit, taking out for now
+// watch(() => vueInstance.$route.params.projectId, () => {
+//   // whenever userImage changes, this function will run
+//   projectId.value = parseInt(vueInstance.$route.params.projectId) | null
+//   console.log('this happened', projectId.value)
+//   getProject()
+// })
+// watch(() => vueInstance.$route.params.userId, () => {
+//   userId.value = parseInt(vueInstance.$route.params.userId) | null
+// })
+
+onMounted(() => {
+  //have to reset this on creation in case there is already a state then they go to the project url directly
+  store.commit(ProjectMutations.RESET_PROJECT_STATE)
+  getProject()
+})
+const getProject = async () => {
+  try {
+    if (projectId.value === 0) {
+      return;
+    }
+    store.commit(AppMutations.SET_LOADING, true)
+    const {data, status} = await getRequest(`/project/${projectId.value}`)
+    project.value = data
+    window.document.title = `${project.value.projectName} - Project Details`
+    projectLoading.value = false
+    store.commit(AppMutations.SET_LOADING, false)
+
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    projectLoading.value = false
+    store.commit(AppMutations.SET_LOADING, false)
+    logError(e)
+  }
+}
+const closeRight = () => {
+  emit('closeRight')
+}
+const collapseSide = (side) => {
+  if (side === 'left') {
+    store.commit(ProjectMutations.LEFT_SIDE_COLLAPSE)
+  } else {
+    store.commit(ProjectMutations.RIGHT_SIDE_COLLAPSE)
   }
 }
 </script>
@@ -194,6 +199,7 @@ export default {
   &.full-height {
     height: 100%
   }
+
   &.tall-header {
     height: calc(100% - 94px);
   }
@@ -232,28 +238,30 @@ export default {
     max-width: calc((3 / 12) * 100%); //col-3
   }
 
-  #right-column{
+  #right-column {
     width: calc((4 / 12) * 100%); //col-4
     max-width: calc((4 / 12) * 100%); //col-4
   }
 }
-@media (min-width: 1200px){
+
+@media (min-width: 1200px) {
   .left-column {
     width: calc((2 / 12) * 100%); //col-2
     max-width: calc((2 / 12) * 100%); //col-2
   }
 
-  #right-column{
+  #right-column {
     width: calc((5 / 12) * 100%); //col-5
     max-width: calc((5 / 12) * 100%); //col-5
   }
 }
+
 @media (max-width: 960px) {
   .mobile-overflow {
     overflow: auto;
   }
 
-  .mobile-padding-menu-button{
+  .mobile-padding-menu-button {
     padding-top: 16px;
 
     padding-bottom: 16px;
@@ -289,8 +297,8 @@ export default {
   }
 
   &.halvsies {
-    width: calc((6/12) * 100%); //col-6
-    max-width: calc((6/12) * 100%); //col-6
+    width: calc((6 / 12) * 100%); //col-6
+    max-width: calc((6 / 12) * 100%); //col-6
   }
 
   &.collapsed {
@@ -299,7 +307,8 @@ export default {
     min-width: 72px;
   }
 }
+
 .center-panel.halvsies {
-  width: calc((6/12) * 100%);
+  width: calc((6 / 12) * 100%);
 }
 </style>

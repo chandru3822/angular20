@@ -20,8 +20,6 @@
   </v-main>
 </template>
 
-<script>
-export default {
-  name: 'DataNotFound'
-}
+<script setup>
+
 </script>

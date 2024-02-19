@@ -60,88 +60,87 @@
   </v-main>
 </template>
 
-<script>
+<script setup>
   import constants from '@/helpers/constants'
   import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 
   import {AppMutations} from '@/stores/AppStore'
+  import {getCurrentInstance, onMounted, ref} from 'vue'
 
-  export default {
-    name: 'ForgotPasswordReset',
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const router = vueInstance.$router
+  const snackbar = vueInstance.$snackbar
 
-    data () {
-      return {
-        snackbar: {},
-        validForm: false,
-        passwordsMatch: true,
-        savingPassword: false,
-        requestValid: false,
-        requestValidating: true,
-        newPassword: null,
-        newPasswordAgain: null,
-        requiredRules: constants.BASIC_REQUIRED_RULE,
-        uuid: this.$route.params.uuid
-      }
-    },
-    created () {
-      this.validateResetRequest()
-    },
-    methods: {
-      passwordRule (value) {
+  const validForm = ref(false)
+  const passwordsMatch = ref(true)
+  const savingPassword = ref(false)
+  const requestValid = ref(false)
+  const user = ref({})
+  const requestValidating = ref(true)
+  const newPassword = ref(null)
+  const newPasswordAgain = ref(null)
+  const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+  const uuid = ref(vueInstance.$route.params.uuid)
+  const resetNewForm = ref(null)
+
+
+  onMounted(() => {
+      validateResetRequest()
+    })
+    
+      const passwordRule = (value) => {
         if (value && value.length < 8) {
           return 'Password must be at least 8 characters'
         } else if (!value) {
           return 'Field is Required'
-        } else if (value && this.newPasswordAgain && this.newPassword !== this.newPasswordAgain) {
+        } else if (value && newPasswordAgain.value && newPassword.value !== newPasswordAgain.value) {
           return 'Both fields must match'
         }  else {
           return true
         }
-      },
-      async validateResetRequest () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const validateResetRequest = async () => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await getRequest(`/user/forgotPassword/reset/${this.uuid}`)
-          this.user = data
-          this.requestValidating = false
-          this.requestValid = this.user?.id
-          handleHidingGlobalLoader(this, status)
+          const {data, status} = await getRequest(`/user/forgotPassword/reset/${uuid.value}`)
+          user.value = data
+          requestValidating.value = false
+          requestValid.value = user.value?.id
+          handleHidingGlobalLoader( vueInstance, status)
         } catch (e) {
-          this.requestValidating = false
-          this.requestValid = false
+          requestValidating.value = false
+          requestValid.value = false
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Validating This Request')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Validating This Request')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async onSubmit () {
-        this.savingPassword = true
-        if (this.$refs.resetNewForm.validate()) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const onSubmit = async () => {
+        savingPassword.value = true
+        if (resetNewForm.value.validate()) {
+          store.commit(AppMutations.SET_LOADING, true)
           try {
             let params = {
-              newPassword: this.newPassword,
-              newPasswordAgain: this.newPasswordAgain,
-              userId: this.user.id
+              newPassword: newPassword.value,
+              newPasswordAgain: newPasswordAgain.value,
+              userId: user.value.id
             }
             const {status} = await postRequest(`/user/forgotPassword/change/password`, params)
-            handleHidingGlobalLoader(this, status)
-            this.snackbar = getSnackbar('SUCCESS', 'Your password has been changed.')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$router.push('/login')
+            handleHidingGlobalLoader(vueInstance, status)
+            snackbar('SUCCESS', 'Your password has been changed.')
+            router.push('/login')
           } catch (e) {
             console.error('*** ERROR ***', e)
             let msg = e?.data?.message ?? 'Error Retrieving Account Details'
-            this.snackbar = getSnackbar('ERROR', msg)
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', msg)
+            store.commit(AppMutations.SET_LOADING, false)
           }
         } else {
-          this.savingPassword = false
+          savingPassword.value = false
         }
-      },
+      }
 
-    }
-  }
+    
+  
 </script>

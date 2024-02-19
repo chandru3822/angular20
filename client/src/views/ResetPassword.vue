@@ -41,81 +41,77 @@
   </v-main>
 </template>
 
-<script>
+<script setup>
   import {UserActions, UserMutations} from '@/stores/UserStore'
   import constants from '@/helpers/constants'
   import axios from 'axios'
+  import {getCurrentInstance, onMounted, ref} from 'vue'
 
-    //todo: make this screen work for various password reset scenarios
-  export default {
-    name: 'ResetPassword',
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const snackbar = vueInstance.$snackbar
 
-    data () {
-      return {
-        snackbar: {},
-        validForm: false,
-        errorMsg: 'You must reset your password. Cannot use company default.',
-        form: {
-          email: null,
-          password: null,
-          newPassword: null,
-          newPasswordConfirm: null
-        },
-        loginLoading: false,
-        requiredRules: constants.BASIC_REQUIRED_RULE,
-      }
-    },
-    methods: {
-      passwordRule (value) {
+  const validForm = ref(false);
+  const errorMsg = 'You must reset your password. Cannot use company default.';
+  const form = ref({
+    email: null,
+    password: null,
+    newPassword: null,
+    newPasswordConfirm: null
+  });
+  const loginLoading = ref(false);
+  const requiredRules = constants.BASIC_REQUIRED_RULE;
+  const resetPassword = ref(null)
+
+
+      const passwordRule = (value) => {
         if (value && value.length < 8) {
           return 'Password must be at least 8 characters'
-        } else if (value && this.form.newPasswordConfirm && this.form.newPassword !== this.form.newPasswordConfirm) {
+        } else if (value && form.value.newPasswordConfirm && form.value.newPassword !== form.value.newPasswordConfirm) {
           return 'New and Confirm Password Fields Must Match'
-        } else if (value && this.form.newPassword && this.form.newPassword === this.form.password) {
+        } else if (value && form.value.newPassword && form.value.newPassword === form.value.password) {
           return 'New Password cannot be the same as Current Password'
         } else if (!value) {
           return 'Field is Required'
         } else {
           return true
         }
-      },
-      async onSubmit() {
-        this.loginLoading = true
-        if (this.$refs.resetPassword.validate()) {
+      }
+      const onSubmit = async() => {
+        loginLoading.value = true
+        if (resetPassword.value.validate()) {
           try {
             const params = {
-              username: this.form.email,
-              password: this.form.password,
-              newPassword: this.form.newPassword
+              username: form.value.email,
+              password: form.value.password,
+              newPassword: form.value.newPassword
             }
             const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
             const {token, details} = data
             if (token) {
-              this.$store.commit(UserMutations.SET_JWT, token)
-              this.loginSuccess(details)
+              store.commit(UserMutations.SET_JWT, token)
+              await loginSuccess(details)
             } else {
-              this.loginLoading = false
-              this.$store.commit(
+              loginLoading.value = false
+              store.commit(
                 UserMutations.LOGIN_ERROR,
                 'Invalid Username or Password.'
               )
             }
           } catch (e) {
-            this.loginLoading = false
-            this.$store.commit(
+            loginLoading.value = false
+            store.commit(
               UserMutations.LOGIN_ERROR,
               e
             )
           }
         } else {
-          this.loginLoading = false
+          loginLoading.value = false
         }
-      },
-      async loginSuccess(details) {
-        await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
-        this.$router.push({name: 'home'})
+      }
+      const loginSuccess = async(details) => {
+        await store.dispatch(UserActions.LOGIN_SUCCESS, details)
+        await router.push({name: 'home'})
       }
 
-    }
-  }
 </script>

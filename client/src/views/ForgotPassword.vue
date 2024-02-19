@@ -9,7 +9,8 @@
             </v-toolbar>
             <v-card-text class="login-card-text">
               <h3 class="mb-3">Enter the email address or username associated with your account.</h3>
-              <h3 class="mb-3">A link will be sent to your email. Please click on the link in the email to change your password.</h3>
+              <h3 class="mb-3">A link will be sent to your email. Please click on the link in the email to change your
+                password.</h3>
               <h3 class="mb-5">The link to reset your password will expire in 24 hours!</h3>
               <v-form ref="resetForm">
                 <v-text-field color="primary"
@@ -35,43 +36,39 @@
   </v-main>
 </template>
 
-<script>
-  import constants from '@/helpers/constants'
-  import {handleHidingGlobalLoader, postRequest, getSnackbar} from '@/helpers/helpers'
-  import {AppMutations} from '@/stores/AppStore'
+<script setup>
+import constants from '@/helpers/constants'
+import {handleHidingGlobalLoader, postRequest, getSnackbar} from '@/helpers/helpers'
+import {AppMutations} from '@/stores/AppStore'
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-  export default {
-    name: 'ForgotPassword',
-    data () {
-      return {
-        snackbar: {},
-        email: null,
-        requiredRules: constants.BASIC_REQUIRED_RULE,
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
+
+const email = ref(null)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const resetForm = ref(null)
+
+const validate = async () => {
+  if (resetForm.value.validate()) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      let params = {
+        usernameOrEmail: email.value
       }
-    },
-    methods: {
-      async validate () {
-        if (this.$refs.resetForm.validate()) {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            try {
-              let params = {
-                usernameOrEmail: this.email
-              }
-              const {status} = await postRequest(`/user/forgotPassword`, params)
-              this.email = null
-              handleHidingGlobalLoader(this, status)
-              this.snackbar = getSnackbar('SUCCESS', 'An email has been sent.')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$router.push('/login')
-            } catch (e) {
-              console.error('*** ERROR ***', e)
-              let msg = e?.data?.message ?? 'Error Retrieving Account Details'
-              this.snackbar = getSnackbar('ERROR', msg)
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-        }
-      },
+      const {status} = await postRequest(`/user/forgotPassword`, params)
+      email.value = null
+      handleHidingGlobalLoader(vueInstance, status)
+      snackbar('SUCCESS', 'An email has been sent.')
+      router.push('/login')
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let msg = e?.data?.message ?? 'Error Retrieving Account Details'
+      snackbar('ERROR', msg)
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+}
 </script>

@@ -1,6 +1,6 @@
 <template>
   <v-container v-if="logoLoaded" class="home-page home-background"
-    :style="{'background-image': null != homePageLogo.presignedUrl
+               :style="{'background-image': null != homePageLogo.presignedUrl
                   ? `url(${homePageLogo.presignedUrl})` : ''}">
     <v-card color="white" class="home-card">
       <v-card-title>Welcome to Albatross!</v-card-title>
@@ -28,89 +28,77 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 
 import {AppMutations} from "@/stores/AppStore";
 import {handleHidingGlobalLoader, getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
 import {Actions} from "@/store";
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-export default {
-  name: 'home',
-  components: {},
-  data () {
-    return {
-      snackbar: {},
-      logoLoaded: false,
-      homePages: [],
-      homePageLogo: {},
-      //todo: 333 = home page logo - do this on backend?
-      homePageAttachmentTypeId: 333,
-      companyId: this.$store.state.user.details.companyId,
-      userIsAlbatross: this.$store.state.user.details.highestCompanyId === 1,
-      user: this.$store.state.user.details,
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
 
+const logoLoaded = ref(false)
+const homePages = ref([])
+const homePageLogo = ref({})
+const homePageAttachmentTypeId = 333
+const companyId = ref(store.state.user.details.companyId)
+const userIsAlbatross = ref(store.state.user.details.highestCompanyId === 1)
+const user = ref(store.state.user.details)
+
+onMounted(() => {
+  loadHomePageLogo()
+  getHomePages()
+})
+
+const saveUserHomePage = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    let tempUsr = {
+      homePageCompanyFeatureId: user.value.homePageCompanyFeatureId
     }
-  },
-  created () {
-    //on context switching had to turn off the spinner
-    this.loadHomePageLogo()
-    this.getHomePages()
-    // this.$store.commit(AppMutations.SET_LOADING, false)
-	},
-  computed: {},
-  methods: {
-    async saveUserHomePage () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        let tempUsr = {
-          homePageCompanyFeatureId: this.user.homePageCompanyFeatureId
-        }
-        const {status} = await putRequest(`/user/homePage`, tempUsr)
-        this.snackbar = getSnackbar('SUCCESS', 'Default Home Page Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Default Home Page')
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getHomePages () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/feature/homePages`)
-        if (status) {
-          this.homePages = data.filter(d => {
-            return this.$store.getters.userHasFeature(d.featureCode)
-          })
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Home Pages')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async loadHomePageLogo () {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await this.$store.dispatch(Actions.FILE_GET_ONE, {
-          attachmentTypeId: this.homePageAttachmentTypeId,
-          sourceId: this.companyId,
-          callback: async (img) => {
-            this.homePageLogo = img
-            this.logoLoaded = true
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        })
-      } catch(e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Background Image')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
+    const {status} = await putRequest(`/user/homePage`, tempUsr)
+    snackbar('SUCCESS', 'Default Home Page Saved')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Default Home Page')
+  }
+}
+const getHomePages = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/feature/homePages`)
+    if (status) {
+      homePages.value = data.filter(d => {
+        return store.getters.userHasFeature(d.featureCode)
+      })
     }
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Home Pages')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const loadHomePageLogo = async () => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await store.dispatch(Actions.FILE_GET_ONE, {
+      attachmentTypeId: homePageAttachmentTypeId,
+      sourceId: companyId.value,
+      callback: async (img) => {
+        homePageLogo.value = img
+        logoLoaded.value = true
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Background Image')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 </script>

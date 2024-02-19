@@ -21,8 +21,6 @@
   </v-main>
 </template>
 
-<script>
-export default {
-  name: 'ServerError'
-}
+<script setup>
+
 </script>

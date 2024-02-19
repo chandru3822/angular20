@@ -65,6 +65,39 @@ const userCanAdd = store.getters.userHasFeatureAccessLevel('SMARTLIST', 'ADD')
 </tr>
 </table>
 
+### Filters
+<table>
+<tr>
+<th>Vue2</th>
+</tr>
+<tr>
+<td>
+
+```
+{{ myDateValue | formatDate('date', 'MM/DD/YYYY')}}
+
+OR
+
+this.$filters(myDateValue, 'date', 'MM/DD/YYYY')
+```
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+const filters = vueInstance.$filters
+filters.formatDate(myDateValue, 'date', 'MM/DD/YYYY')
+```
+</td>
+</tr>
+</table>
+
 ### Dynamic values (values that can change after screen load)
 Note: ALL values inside of vue2 `export data()` will need to become `const` values, adding `ref` just makes them dynamic <br><br>
 Definition <br>
@@ -252,6 +285,7 @@ props: {
 <td>
 
 ```
+import {defineProps} from 'vue'
 const props = defineProps({
   pageName: String
 })
@@ -309,7 +343,6 @@ snackbar('SUCCESS', 'Announcement Saved')
 </tr>
 </table>
 
-
 ### Global Loader
 Note: Global Loader handling is to prevent a loader from screenA still being present on screenB if the user navigates before screenA is done loading. Not to be confused with SET_LOADING = false
 <table>
@@ -328,6 +361,31 @@ handleHidingGlobalLoader(this, status)
 
 ```
 handleHidingGlobalLoader(vueInstance, status)
+```
+</td>
+</tr>
+</table>
+
+### Form Validation
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+<v-form ref="resetPassword" ...
+this.$refs.resetPassword.validate()
+```
+</td>
+<td>
+
+```
+<v-form ref="resetPassword" ...
+const resetPassword = ref(null)
+resetPassword.value.validate()
 ```
 </td>
 </tr>
@@ -370,6 +428,13 @@ watch: {
   options () {
     //do stuff
   }
+  
+  OR, when the watched prop is like:
+  
+watch: {
+  '$route.params.id': function () {
+    //do stuff
+  }  
 }
 ```
 </td>
@@ -380,6 +445,12 @@ import { watch } from 'vue'
 watch(options, () => {
   //do stuff
 })
+
+OR, when the watched prop is like:
+  
+watch(() => vueInstance.$route.params.id, () => {
+  //do stuff
+}  
 ```
 </td>
 </tr>
@@ -437,6 +508,32 @@ onBeforeRouteLeave(async (to, from, next) => {
 ```
 WIP:
 need to solve when we come to it
+```
+</td>
+</tr>
+</table>
+
+### Before Destroy
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+beforeDestroy() {
+  //do stuff
+}
+```
+</td>
+<td>
+
+```
+onBeforeUnmount(() => {
+  //doStuff
+})
 ```
 </td>
 </tr>

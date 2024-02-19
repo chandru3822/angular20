@@ -8,7 +8,7 @@
               <v-toolbar-title>Albatross</v-toolbar-title>
             </v-toolbar>
             <v-card-text class="login-card-text">
-              <h2 class="error--text" v-if="$store.state.user.loginError">{{ $store.state.user.loginError }}</h2>
+              <h2 class="error--text" v-if="store.state.user.loginError">{{ store.state.user.loginError }}</h2>
               <v-form ref="login" v-model="validForm" @submit.prevent="onSubmit()">
                 <v-text-field required color="primary"
                               :rules="requiredRules"
@@ -36,81 +36,82 @@
   </v-main>
 </template>
 
-<script>
+<script setup>
 import {UserActions, UserMutations} from '@/stores/UserStore'
 import constants from '@/helpers/constants'
 import axios from 'axios'
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-export default {
-  name: 'Login',
-  data() {
-    return {
-      validForm: false,
-      form: {
-        email: null,
-        password: null
-      },
-      loginLoading: false,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-    }
-  },
-  created() {
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
+
+const validForm = ref(false)
+const form = ref({
+  email: null,
+  password: null
+})
+const loginLoading = ref(false)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const login = ref(null)
+
+
+onMounted(() => {
     //clear any previous login errors on page refresh
-    this.$store.commit(
+    store.commit(
       UserMutations.LOGIN_ERROR,
       null
     )
-  },
-  methods: {
-    async onSubmit() {
-      this.loginLoading = true
-      if (this.$refs.login.validate()) {
+})
+
+  const onSubmit = async() => {
+      loginLoading.value = true
+      if (login.value.validate()) {
         try {
           const params = {
-            username: this.form.email,
-            password: this.form.password
+            username: form.value.email,
+            password: form.value.password
           }
           const {data} = await axios.post(`${constants.VUE_APP_BASE_API}/auth/login`, params)
           const {token, details} = data
           if (token) {
-            this.$store.commit(UserMutations.SET_JWT, token)
-            this.loginSuccess(details)
+            store.commit(UserMutations.SET_JWT, token)
+            loginSuccess(details)
           } else {
-            this.loginLoading = false
-            this.$store.commit(
+            loginLoading.value = false
+            store.commit(
               UserMutations.LOGIN_ERROR,
               'Invalid Username or Password.'
             )
           }
         } catch (e) {
-          this.loginLoading = false
-          this.$store.commit(
+          loginLoading.value = false
+          store.commit(
             UserMutations.LOGIN_ERROR,
             e.data
           )
 
           if(e?.status === 406) {
             //this means the user tried to login with the company default password. redirect to the reset password screen
-              this.$router.push({path: `/resetPassword`})
+              router.push({path: `/resetPassword`})
           }
 
         }
       } else {
-        this.loginLoading = false
+        loginLoading.value = false
       }
-    },
-    async loginSuccess(details) {
-      await this.$store.dispatch(UserActions.LOGIN_SUCCESS, details)
+    }
+    const loginSuccess = async(details) => {
+      await store.dispatch(UserActions.LOGIN_SUCCESS, details)
 
       //this code handles redirecting them back to the page they were trying to get to after they login
       let rt = { name: 'home'}
-      if(this.$route.query?.redirect) {
-        rt = { path: this.$route.query?.redirect}
+      if(vueInstance.$route.query?.redirect) {
+        rt = { path: vueInstance.$route.query?.redirect}
       }
-      this.$router.push(rt)
+      router.push(rt)
     }
-  }
-}
 </script>
 
 <style scoped lang="scss">
