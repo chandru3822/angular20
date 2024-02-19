@@ -147,7 +147,7 @@ public class CompanyDashboardService {
     Integer currentIndex = null;
 
     for (CompanyPeriod period : companyPeriods) {
-      if (today.isBefore(period.getEndDate())) {
+      if (today.isBefore(period.getEndDate()) || today.isEqual(period.getEndDate())) {
         currentPeriod = period;
         currentIndex = companyPeriods.indexOf(period);
         previousPeriod = companyPeriods.get(currentIndex - 1);
