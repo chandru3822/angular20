@@ -65,134 +65,128 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
-import {deleteRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader} from "@/helpers/helpers";
+import {deleteRequest, getRequestWithParams, handleHidingGlobalLoader} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {getCurrentInstance, ref, computed, onMounted, watch} from "vue";
 
-  export default {
-    name: 'Announcements',
-    components: {ConfirmationDialog},
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-      filteredAnnouncements () {
-        return this.announcements?.filter(a => { return !a.archived}) || []
-      },
-      current() {
-        return this.$route.path.includes('current')
-      }
-    },
-    data() {
-      return {
-        constants,
-        addNew: false,
-        options: {
-          itemsPerPage: 100
-        },
-        showDeleteDialog: false,
-        itemToDelete: null,
-        announcementsLoading: true,
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        announcements: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        headers: [
-          { text: 'Title', value: 'title', show: true },
-          { text: 'Start Time', value: 'startTime', show: true },
-          { text: 'End Time', value: 'endTime', show: true },
-          { text: 'Platform', value: 'platform', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        tabs: [
-          {
-            label: 'Current',
-            path: '/settings/announcements/current',
-            display: this.$store.getters.userHasFeature('SETTINGS')
-          },
-          {
-            label: 'Past',
-            path: '/settings/announcements/past',
-            display: this.$store.getters.userHasFeature('SETTINGS')
-          },
-        ]
-      }
-    },
-    created() {
-      this.getAnnouncements()
-    },
-    watch: {
-      current() {
-        this.announcements = []
-        this.getAnnouncements()
-      }
-    },
-    methods: {
-      goToPath(id) {
-        let path = id ? `/settings/announcement/${id}` : `/settings/announcement`
-        this.$router.push(path)
-      },
-      async getAnnouncements() {
-        this.announcementsLoading = true
-        try {
-          const { page, itemsPerPage } = this.options
-          let url = this.current ? `/announcements/current` : `/announcements/past`
-          const {data, status} = await getRequestWithParams(url, { params: {
-              page: page - 1 || 0,
-              size: itemsPerPage
-            }})
-          this.announcements = data.content
-          handleHidingGlobalLoader(this, status)
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+const router = vueInstance.$router
 
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Announcements')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.announcementsLoading = false
-        }
-      },
-      closeDeleteDialog() {
-        this.showDeleteDialog = false
-        this.itemToDelete = null
-      },
-      async deleteAnnouncement () {
-        const item = this.itemToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/announcements/${item.id}`)
-          item.archived = true
-          this.announcements = this.announcements.filter(a => a.id !== item.id)
-          this.snackbar = getSnackbar('SUCCESS', 'Announcement Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          if (e.status === 400) {
-            this.deleteError = true;
-            this.fieldsInUse = e.data;
-            this.snackbar = getSnackbar("ERROR", "Error Deleting Announcement");
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-          else {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-        this.closeDeleteDialog()
-      },
+const displayedTabs = computed(() => {
+  return this.tabs.filter(tab => tab.display)
+})
+const filteredAnnouncements = computed(() => {
+  return this.announcements?.filter(a => { return !a.archived}) || []
+})
+const current = computed(() => {
+  return this.$route.path.includes('current')
+})
+
+const options = ref({
+  itemsPerPage: 100
+})
+
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const announcementsLoading =ref(true)
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 1000],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+})
+const announcements = ref([])
+const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const headers = ref([
+  { text: 'Title', value: 'title', show: true },
+  { text: 'Start Time', value: 'startTime', show: true },
+  { text: 'End Time', value: 'endTime', show: true },
+  { text: 'Platform', value: 'platform', show: true },
+  { text: null, value: 'icons', show: true, sortable: false }
+])
+const tabs = ref([
+  {
+    label: 'Current',
+    path: '/settings/announcements/current',
+    display: store.getters.userHasFeature('SETTINGS')
+  },
+  {
+    label: 'Past',
+    path: '/settings/announcements/past',
+    display: store.getters.userHasFeature('SETTINGS')
+  },
+])
+
+onMounted(() => {
+  getAnnouncements()
+})
+
+watch(current, () => {
+  announcements.value = []
+  getAnnouncements()
+})
+const goToPath = (id) => {
+  let path = id ? `/settings/announcement/${id}` : `/settings/announcement`
+  router.push(path)
+}
+const getAnnouncements = async () => {
+  announcementsLoading.value = true
+  try {
+    const { page, itemsPerPage } = options.value
+    let url = current.value ? `/announcements/current` : `/announcements/past`
+    const {data, status} = await getRequestWithParams(url, { params: {
+        page: page - 1 || 0,
+        size: itemsPerPage
+      }})
+    announcements.value = data.content
+    handleHidingGlobalLoader(vueInstance, status)
+
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    store.commit(AppMutations.SET_LOADING, false)
+    snackbar('ERROR', 'Error Loading Announcements')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  } finally {
+    announcementsLoading.value = false
+  }
+}
+const closeDeleteDialog = () => {
+  showDeleteDialog.value = false
+  this.itemToDelete.value = null
+}
+const deleteAnnouncement = async () => {
+  const item = itemToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await deleteRequest(`/announcements/${item.id}`)
+    item.archived = true
+    announcements.value = announcements.value.filter(a => a.id !== item.id)
+    snackbar('SUCCESS', 'Announcement Deleted')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    if (e.status === 400) {
+      deleteError.value = true;
+      fieldsInUse.value = e.data;
+      snackbar("ERROR", "Error Deleting Announcement");
+      store.commit(AppMutations.SHOW_SNACK, snackbar)
+      store.commit(AppMutations.SET_LOADING, false)
+    } else {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Status')
+      store.commit(AppMutations.SHOW_SNACK, snackbar)
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+  closeDeleteDialog()
+}
 </script>
+
 <style lang="scss">
 @media (max-width: 959px) {
   #default-settings-tabs > div > div.v-slide-group__wrapper > div {
