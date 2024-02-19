@@ -185,11 +185,7 @@ public class MessagingService {
       new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
 
     if (!projects.isEmpty()) {
-      List<Long> projectIds =
-        sqlCache.queryBySql(
-          MessagingQuery.getProjectsCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> projectIds = getProjectsCount(params);
       projects.get(0).setProjectIdsForFilter(projectIds);
       params.put("query", null);
       User user = securityService.getCurrentUser();
@@ -200,17 +196,9 @@ public class MessagingService {
       params.put("ownerIds", Collections.singletonList(user.getId()));
       params.put("unassigned", true);
       params.put("showInbox", true);
-      List<Long> projectIdsInbox =
-        sqlCache.queryBySql(
-          MessagingQuery.getProjectsCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> projectIdsInbox = getProjectsCount(params);
       params.put("showInbox", false);
-      List<Long> projectIdsSent =
-        sqlCache.queryBySql(
-          MessagingQuery.getProjectsCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> projectIdsSent = getProjectsCount(params);
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
       projects.get(0).setProjectIdsInbox(projectIdsInbox);
@@ -218,6 +206,17 @@ public class MessagingService {
     }
 
     return projects;
+  }
+
+  private List<Long> getProjectsCount(Map<String, Object> params){
+    long startTime = System.nanoTime();
+    List<Long> results = sqlCache.queryBySql(
+      MessagingQuery.getProjectsCount,
+      params,
+      new SingleColumnRowMapper<>(Long.class));
+    long endTime = System.nanoTime();
+    log.info("MessagingService: getProjectsCount, params: {}, duration: {} ", params, (endTime - startTime) / 1_000_000_000.0);
+    return results;
   }
 
   public List<ConversationMessageProperties> getUsers(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
@@ -243,32 +242,22 @@ public class MessagingService {
       new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
 
     if (!users.isEmpty()) {
-      List<Long> userIds =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> userIds = getUsersCount(params);
       users.get(0).setUserIdsForFilter(userIds);
-      params.put("query", null);
+
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
       List<Long> userSmsTeamIds =
         userSmsTeams.stream().map(SmsTeam::getId).toList();
       params.put("smsTeamIds", userSmsTeamIds);
       params.put("ownerIds", Collections.singletonList(user.getId()));
+      params.put("query", null);
       params.put("unassigned", true);
       params.put("showInbox", true);
-      List<Long> userIdsInbox =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> userIdsInbox = getUsersCount(params);
+
       params.put("showInbox", false);
-      List<Long> userIdsSent =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+      List<Long> userIdsSent = getUsersCount(params);
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
       users.get(0).setUserIdsInbox(userIdsInbox);
@@ -276,6 +265,17 @@ public class MessagingService {
     }
 
     return users;
+  }
+
+  private List<Long> getUsersCount(Map<String, Object> params){
+    long startTime = System.nanoTime();
+    List<Long> results = sqlCache.queryBySql(
+      MessagingQuery.getUsersCount,
+      params,
+      new SingleColumnRowMapper<>(Long.class));
+    long endTime = System.nanoTime();
+    log.info("MessagingService: getUsersCount, params: {}, duration: {} ", params, (endTime - startTime) / 1_000_000_000.0);
+    return results;
   }
 
   private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {
