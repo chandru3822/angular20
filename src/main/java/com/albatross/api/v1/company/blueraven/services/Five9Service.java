@@ -78,8 +78,9 @@ public class Five9Service {
       b.addParameter("zip", contact.getPostalCode() != null ? contact.getPostalCode() : "");
       b.addParameter("email", contact.getEmail() != null ? contact.getEmail() : "");
 
+      boolean isRetarget = five9ContactListName != null ? five9ContactListName.contains("retarget") : false;
       getCfvValues(b, values);
-      getAppointmentValues(contactId, b);
+      getAppointmentValues(contactId, b, isRetarget);
 
       // Only set the date/time created fields when Contact is created
       if (!isUpdate) {
@@ -121,7 +122,7 @@ public class Five9Service {
     }
   }
 
-  private void getAppointmentValues(Long contactId, URIBuilder b) {
+  private void getAppointmentValues(Long contactId, URIBuilder b, boolean isRetarget) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     Optional<String> appointmentDate =
@@ -169,14 +170,19 @@ public class Five9Service {
       b.addParameter("booking_date", bookingDate.get());
     }
 
-    Optional<Boolean> retargetValue =
-      sqlCache.getBySql(
-        Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
-    if (retargetValue.isPresent()) {
-      b.addParameter("retargeted", retargetValue.get().toString());
+    if (isRetarget) {
+      b.addParameter("retargeted", "true");
     }
     else {
-      b.addParameter("retargeted", "false");
+      Optional<Boolean> retargetValue =
+        sqlCache.getBySql(
+          Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
+      if (retargetValue.isPresent()) {
+        b.addParameter("retargeted", retargetValue.get().toString());
+      }
+      else {
+        b.addParameter("retargeted", "false");
+      }
     }
   }
 
