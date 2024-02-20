@@ -142,9 +142,9 @@
   const showDeleteDialog =  ref(false)
   const itemToDelete =  ref(null)
 
-  const itemToDeleteAttachmentType = () => {
+  const itemToDeleteAttachmentType = computed(() => {
     return itemToDelete.value ? itemToDelete.value.attachmentType : ''
-  }
+  })
 
   onMounted(() => {
     getAttachmentTypes()
