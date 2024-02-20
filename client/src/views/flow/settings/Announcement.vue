@@ -126,7 +126,7 @@
               <!--                      @change="uploadFile(, null)"-->
               <!--                      name="avatar"-->
               <!--                  >-->
-              <v-btn :large="$vuetify.breakpoint.smAndDown" color="primary"
+              <v-btn :large="vueInstance.$vuetify.breakpoint.smAndDown" color="primary"
                      v-else class="mb-3"
                      :disabled="!userCanEdit"
                      @click="showDeleteDialog = true">
