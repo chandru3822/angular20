@@ -378,8 +378,16 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    <div v-else class="body-small">
+      <v-chip x-small color="primary lighten-3" v-if="state.state" class="mr-1 px-2">{{state.state}} </v-chip>
+      <v-chip x-small color="primary lighten-3" v-if="searchProject?.projectName" class="mr-1 px-2">{{searchProject.projectName}} </v-chip>
+      <v-chip x-small color="primary lighten-3" v-if="searchEventType?.eventName" class="mr-1 px-2">{{searchEventType.eventName}} </v-chip>
+      <v-chip x-small v-for="e in selectedEventTypes" color="primary lighten-3" class="mr-1 px-2">{{e.eventName}} </v-chip>
+      <v-chip x-small color="primary lighten-3" class="mr-1 px-2">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
+      <v-chip x-small color="primary lighten-3" class="mr-1 px-2">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
+    </div>
     <v-card-actions class="px-0 pb-0">
-      <v-btn @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Clear</v-btn>
+      <v-btn @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Reset</v-btn>
       <v-btn v-if="!showSearchResults"
           outlined
           small
@@ -423,7 +431,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .search-results {
-  max-height: calc(100vh - 300px);
+  max-height: calc(100vh - 350px);
   overflow-y: scroll;
 }
 </style>
