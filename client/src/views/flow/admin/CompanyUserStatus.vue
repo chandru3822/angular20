@@ -39,7 +39,7 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
+            <tr class="text-left" :class="{'shaded-row': statusTypes.indexOf(item) % 2}">
               <td class="text-left">{{ item.userStatusType }}</td>
               <td>
                 <input type="checkbox" v-model="item.hasAccess" disabled readonly>
@@ -60,62 +60,53 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import {getUserStatusTypes} from '@/services/userService'
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
+import {getUserStatusTypes} from '@/services/userService'
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-  export default {
-    name: 'CompanyUserStatus',
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
 
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        statusTypes: [],
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'User Status Type', value: 'userStatusType', show: true },
-          { text: 'Has Access', value: 'hasAccess', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: []
-      }
-    },
-    async created () {
-      this.getCompanyUserStatusTypes()
-    },
-    methods: {
-      async getCompanyUserStatusTypes() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getUserStatusTypes()
-          this.statusTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Company User Status Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveCompanyUserStatusType(type) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/user/statusType`, type)
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'User Status Type Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating User Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    }
+const statusTypes = ref([])
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const expanded = ref([])
+const headers = ref([
+  {text: 'User Status Type', value: 'userStatusType', show: true},
+  {text: 'Has Access', value: 'hasAccess', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+
+onMounted(() => {
+  getCompanyUserStatusTypes()
+})
+
+const getCompanyUserStatusTypes = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getUserStatusTypes()
+    statusTypes.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Company User Status Types')
+    store.commit(AppMutations.SET_LOADING, false)
   }
+}
+const saveCompanyUserStatusType = async (type) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/user/statusType`, type)
+    expanded.value = []
+    snackbar('SUCCESS', 'User Status Type Updated')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating User Status')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 </script>

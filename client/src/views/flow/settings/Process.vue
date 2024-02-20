@@ -282,7 +282,6 @@ export default {
   methods: {
     filterProcesses () {
       return this.process.processStepProcesses.filter(psp => { return !psp.archived})
-      // return orderBy(this.process.processStepProcesses.filter(psp => { return !psp.archived}), psp => psp.displayOrder)
     },
     async getProcessDetails () {
       this.$store.commit(AppMutations.SET_LOADING, true)

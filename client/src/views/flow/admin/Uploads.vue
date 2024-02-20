@@ -22,14 +22,14 @@
             <div class="mb-2">Note: This will upload as soon as you select your file(s)</div>
             <div @drop.prevent='addDragDocument' @dragover.prevent>
               <v-file-input
-                dense
-                multiple
-                ref='fileInput'
-                hide-details
-                :show-size='error.error'
-                outlined
-                label='Upload Files'
-                @change='uploadAttachment'
+                  dense
+                  multiple
+                  ref='fileInput'
+                  hide-details
+                  :show-size='error.error'
+                  outlined
+                  label='Upload Files'
+                  @change='uploadAttachment'
               />
               <span class='error-text' v-if='error.message'>{{ error.message }}</span>
             </div>
@@ -44,85 +44,78 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import {Actions} from "@/store";
+import {getCurrentInstance, onMounted, ref} from 'vue'
 
-export default {
-  name: 'Uploads',
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
 
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      error: {},
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      attachmentTypes: [],
-      selectedAttachmentTypeId: null,
-      addToJoin: true
-    }
-  },
-  async created() {
-    await this.getAttachmentTypes()
-  },
-  methods: {
-    async getAttachmentTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/attachmentType/system`)
-        this.attachmentTypes = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    addDragDocument: async function (e) {
-      let files = e.dataTransfer.files
-      await this.uploadDocument(files, this.attachmentTypeId)
-    },
-    async uploadAttachment(files) {
-      if (files?.length > 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+const error = ref({})
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const attachmentTypes = ref([])
+const selectedAttachmentTypeId = ref(null)
+const addToJoin = ref(true)
 
-        try {
-          this.error = {}
-          let numFiles = files?.length
-          let count = 0
-          for (const f of files) {
-            if (f.size > 0) {
-              await this.$store.dispatch(Actions.FILE_UPLOAD, {
-                file: f,
-                attachmentTypeId: this.selectedAttachmentTypeId,
-                sourceId: null,
-                displayName: f.name.substr(0, f.name.lastIndexOf('.')),
-                deleteFirst: false,
-                callback: async (document) => {
-                  this.snackbar = getSnackbar('SUCCESS', 'Successfully uploaded document')
-                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                  count++
-                  if (count === numFiles) {
-                    this.selectedAttachmentTypeId = null
-                    files = []
-                    this.$store.commit(AppMutations.SET_LOADING, false)
-                  }
-                }
-              })
+onMounted(async () => {
+  await getAttachmentTypes()
+})
+
+const getAttachmentTypes = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/attachmentType/system`)
+    attachmentTypes.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const addDragDocument = async (e) => {
+  let files = e.dataTransfer.files
+  await uploadAttachment(files)
+}
+const uploadAttachment = async (files) => {
+  if (files?.length > 0) {
+    store.commit(AppMutations.SET_LOADING, true)
+
+    try {
+      error.value = {}
+      let numFiles = files?.length
+      let count = 0
+      for (const f of files) {
+        if (f.size > 0) {
+          await store.dispatch(Actions.FILE_UPLOAD, {
+            file: f,
+            attachmentTypeId: selectedAttachmentTypeId.value,
+            sourceId: null,
+            displayName: f.name.substr(0, f.name.lastIndexOf('.')),
+            deleteFirst: false,
+            callback: async (document) => {
+              snackbar('SUCCESS', 'Successfully uploaded document')
+              count++
+              if (count === numFiles) {
+                selectedAttachmentTypeId.value = null
+                files = []
+                store.commit(AppMutations.SET_LOADING, false)
+              }
             }
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error uploading document')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          })
         }
       }
-    },
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error uploading document')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
   }
 }
 </script>

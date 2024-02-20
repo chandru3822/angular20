@@ -13,11 +13,11 @@
             </div>
             <v-btn text color="primary" @click="[addNew = !addNew, selectedCert = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
+              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
+        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add</h3>
           <div class="mb-3">
             <v-text-field text label="Enter name"
@@ -45,7 +45,7 @@
         </v-card>
         <v-data-table
             :headers="headers"
-            :items="filterCerts()"
+            :items="filteredCerts"
             :fixed-header="true"
             :items-per-page="-1"
             single-expand
@@ -91,21 +91,23 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': certs.indexOf(item) % 2}">
+            <tr class="text-left" :class="{'shaded-row': certs.indexOf(item) % 2}">
               <td class="text-left">
                 <v-badge dot class="status-badge" v-if="item.daysToExpiration <= 30"
                          :color="item.daysToExpiration > 0 && item.daysToExpiration <= 7 ? 'error lighten-1' : 'orange'"
                 ></v-badge>
                 {{ item.certName }}
               </td>
-              <td class="text-left">{{ item.expirationDate | formatDate('date', 'MM/DD/YYYY')}}</td>
-              <td class="text-left">{{ item.daysToExpiration}}</td>
+              <td class="text-left">{{ item.expirationDate | formatDate('date', 'MM/DD/YYYY') }}</td>
+              <td class="text-left">{{ item.daysToExpiration }}</td>
               <td class="text-right">
                 <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="certToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <v-btn small text color="primary" @click="certToDelete=item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
@@ -119,121 +121,121 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {handleHidingGlobalLoader, getRequest, postRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
-  import moment from 'moment'
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import {
+  handleHidingGlobalLoader,
+  getRequest,
+  postRequest,
+  deleteRequest,
+  putRequest,
+  getSnackbar
+} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
+import moment from 'moment'
 
-  export default {
-    name: 'Certs',
-    components: {DatetimePickerInput, ConfirmationDialog},
-    data() {
-      return {
-        constants,
-        snackbar: {},
-        addNew: false,
-        timezone: this.$store.state.user.details.timezone.value,
-        certs: [],
-        selectedCert: {},
-        selectedCertId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'Cert Name', value: 'certName', show: true },
-          { text: 'Expiration Date', value: 'expirationDate', show: true },
-          { text: 'Days to Expiration', value: 'daysToExpiration', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        certToDelete: null
-      }
-    },
-    computed: {
-      certToDeleteName(){
-        return this.certToDelete ? this.certToDelete.certName : ''
-      }
-    },
-    async created () {
-      this.getCerts()
-    },
-    methods: {
-      async saveCert(isNew, cert) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await putRequest(`/cert`, cert)
-          if(isNew){
-            this.certs.push(data)
-            this.addNew = false
-            this.selectedCert = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Cert Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Cert Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Cert' : 'Error Updating Cert')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async sendEmails() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/cert/sendEmails`, {})
-          this.snackbar = getSnackbar('SUCCESS', 'Emails Sent')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Sending Emails')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCerts() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/cert`)
-          this.certs = data
-          this.certs.forEach(c => {
-            c.daysToExpiration = moment(c.expirationDate).diff(moment(), 'days')
-          })
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Certs')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteCert() {
-        const cert = this.certToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/cert/${cert.id}`)
-          cert.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Cert Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Cert')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterCerts () {
-        return this.certs.filter(cf => { return !cf.archived})
-      },
+import {getCurrentInstance, computed, onMounted, ref} from 'vue'
+
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const snackbar = vueInstance.$snackbar
+
+const addNew = ref(false)
+const timezone = ref(store.state.user.details.timezone.value)
+const certs = ref([])
+const selectedCert = ref({})
+const selectedCertId = ref(null)
+const expanded = ref([])
+const certToDelete = ref(null)
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const headers = ref([
+  {text: 'Cert Name', value: 'certName', show: true},
+  {text: 'Expiration Date', value: 'expirationDate', show: true},
+  {text: 'Days to Expiration', value: 'daysToExpiration', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+
+const certToDeleteName = computed(() => {
+  return certToDelete.value ? certToDelete.value.certName : ''
+})
+
+const filteredCerts = computed(() => {
+  return certs.value.filter(cf => {
+    return !cf.archived
+  })
+})
+
+onMounted(() => {
+  getCerts()
+})
+
+const saveCert = async (isNew, cert) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await putRequest(`/cert`, cert)
+    if (isNew) {
+      certs.value.push(data)
+      addNew.value = false
+      selectedCert.value = {}
+      snackbar('SUCCESS', 'Cert Added')
+    } else {
+      expanded.value = []
+      snackbar('SUCCESS', 'Cert Updated')
     }
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', isNew ? 'Error Adding Cert' : 'Error Updating Cert')
+    store.commit(AppMutations.SET_LOADING, false)
   }
+}
+const sendEmails = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await postRequest(`/cert/sendEmails`, {})
+    snackbar('SUCCESS', 'Emails Sent')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Sending Emails')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getCerts = async () => {
+
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/cert`)
+    certs.value = data
+    certs.value.forEach(c => {
+      c.daysToExpiration = moment(c.expirationDate).diff(moment(), 'days')
+    })
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Certs')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteCert = async () => {
+
+  const cert = certToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await deleteRequest(`/cert/${cert.id}`)
+    cert.archived = true
+    snackbar('SUCCESS', 'Cert Deleted')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Cert')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
 </script>
 
 <style scoped lang="scss">

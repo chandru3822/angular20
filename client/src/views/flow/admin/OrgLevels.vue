@@ -89,99 +89,86 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import {getOrgLevels} from '@/services/orgService'
   import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 
-  export default {
-    name: 'OrgLevels',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        levels: [],
-        orgLevels: [],
-        newOrgLevel: {},
-        selectedOrgLevelId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'Org Level', value: 'levelName', show: true },
-          { text: 'Level', value: 'level', width: 80, show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        levelToDelete: null
-      }
-    },
-    computed:{
-      levelToDeleteName(){
-        return this.levelToDelete ? this.levelToDelete.levelName : ''
-      }
-    },
-    async created () {
-      this.getOrgLevels()
-    },
-    methods: {
-      async saveOrgLevel(ol, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+  const vueInstance = getCurrentInstance().proxy
+  const store = vueInstance.$store
+  const router = vueInstance.$router
+  const snackbar = vueInstance.$snackbar
+
+const addNew = ref(false)
+const levels = ref([])
+const orgLevels = ref([])
+const newOrgLevel = ref({})
+const selectedOrgLevelId = ref(null)
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const expanded = ref([])
+const levelToDelete = ref(null)
+const headers = ref([
+{ text: 'Org Level', value: 'levelName', show: true },
+{ text: 'Level', value: 'level', width: 80, show: true },
+{ text: null, value: 'icons', show: true, sortable: false }
+])
+  const levelToDeleteName = computed(() => {
+    return levelToDelete.value ? levelToDelete.value.levelName : ''
+  })
+  onMounted(() => {
+    getOrganizationLevels()
+  })
+
+      const saveOrgLevel = async(ol, isNew) => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await putRequest(`/orgType/level`, ol)
           if(isNew){
-            this.orgLevels.push(data)
-            this.addNew = false
-            this.newOrgLevel = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Org Level Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            orgLevels.value.push(data)
+            addNew.value = false
+            newOrgLevel.value = {}
+            snackbar('SUCCESS', 'Org Level Added')
           } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Org Level Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+            expanded.value = []
+            snackbar('SUCCESS', 'Org Level Updated')
           }
-          handleHidingGlobalLoader(this, status)
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', isNew ? 'Error Adding Org Level' : 'Error Updating Org Level')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async getOrgLevels() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const getOrganizationLevels = async() => {
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {data, status} = await getOrgLevels()
-          this.orgLevels = data
-          handleHidingGlobalLoader(this, status)
+          orgLevels.value = data
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Loading Org Levels')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-      async deleteOrgLevel() {
-        const level = this.levelToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
+      }
+      const deleteOrgLevel = async() => {
+        const level = levelToDelete.value
+        store.commit(AppMutations.SET_LOADING, true)
         try {
           const {status} = await deleteRequest(`/orgType/level/${level.id}`)
-          this.orgLevels = this.orgLevels.filter(ol => {
+          orgLevels.value = orgLevels.value.filter(ol => {
             return ol.id !== level.id
           })
-          this.snackbar = getSnackbar('SUCCESS', 'Org Level Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
+          snackbar('SUCCESS', 'Org Level Deleted')
+          handleHidingGlobalLoader(vueInstance, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Level')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+          snackbar('ERROR', 'Error Deleting Org Level')
+          store.commit(AppMutations.SET_LOADING, false)
         }
-      },
-    }
-  }
+      }
 </script>

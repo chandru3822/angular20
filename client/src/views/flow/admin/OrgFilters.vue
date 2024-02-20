@@ -8,11 +8,11 @@
           <v-toolbar-items>
             <v-btn text color="primary" @click="[addNew = !addNew, newOrgFilter = {}]">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
+              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
+        <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add Org Filter</h3>
           <div class="mb-3">
             <v-select attach v-model="newOrgFilter.orgLevelId"
@@ -28,7 +28,7 @@
               </template>
             </v-select>
             <v-text-field text v-model="newOrgFilter.rank" type="number"
-                          label="Rank" />
+                          label="Rank"/>
             <label>Show Type:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
@@ -75,7 +75,7 @@
                   </template>
                 </v-select>
                 <v-text-field text v-model="item.rank" type="number"
-                              label="Rank" />
+                              label="Rank"/>
                 <input type="checkbox" v-model="item.showType">
               </div>
               <v-btn :disabled="!item.orgLevelId || !item.rank"
@@ -87,7 +87,7 @@
           </template>
 
           <template #item="{ item }">
-            <tr  class="text-left" :class="{'shaded-row': orgFilters.indexOf(item) % 2}">
+            <tr class="text-left" :class="{'shaded-row': orgFilters.indexOf(item) % 2}">
               <td class="text-left">{{ item.levelName }}</td>
               <td class="text-left">{{ item.rank }}</td>
               <td class="text-left">
@@ -98,7 +98,9 @@
                   <v-icon>edit</v-icon>
                 </v-btn>
                 <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="filterToDelete = item"><v-icon>delete</v-icon></v-btn>
+                <v-btn small text color="primary" @click="filterToDelete = item">
+                  <v-icon>delete</v-icon>
+                </v-btn>
               </td>
             </tr>
           </template>
@@ -106,7 +108,8 @@
         </v-data-table>
       </v-col>
     </v-row>
-    <ConfirmationDialog :open-dialog="!!filterToDelete" @confirm="deleteOrgFilter" @close-dialog="filterToDelete = null">
+    <ConfirmationDialog :open-dialog="!!filterToDelete" @confirm="deleteOrgFilter"
+                        @close-dialog="filterToDelete = null">
       <div>
         <span class="error-text">WARNING:</span> This action can cause issues with many other screens.
       </div>
@@ -115,114 +118,101 @@
   </v-container>
 </template>
 
-<script>
-  import {AppMutations} from '@/stores/AppStore'
-  import {getOrgFilters, getOrgLevels} from '@/services/orgService'
-  import { handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
-  import constants from '@/helpers/constants'
-  import ConfirmationDialog from "@/components/ConfirmationDialog";
+<script setup>
+import {AppMutations} from '@/stores/AppStore'
+import {getOrgFilters, getOrgLevels} from '@/services/orgService'
+import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import constants from '@/helpers/constants'
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import {getCurrentInstance, onMounted, computed, ref} from 'vue'
 
-  export default {
-    name: 'OrgFilters',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        levels: [],
-        orgFilters: [],
-        newOrgFilter: {},
-        selectedOrgFilterId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'Org Level', value: 'levelName', show: true },
-          { text: 'Rank', value: 'rank', width: 80, show: true },
-          { text: 'Show Type', value: 'showType', width: 80, show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        filterToDelete: null
-      }
-    },
-    computed:{
-      filterToDeleteName(){
-        return this.filterToDelete ? this.filterToDelete.levelName : ''
-      }
-    },
-    async created () {
-      this.getOrgFilters()
-      this.getOrgLevels()
-    },
-    methods: {
-      async getOrgFilters () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgFilters()
-          this.orgFilters = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Filters')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveOrgFilter(of, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await putRequest(`/org/filters`, of)
-          if(isNew){
-            this.orgFilters.push(data)
-            this.addNew = false
-            this.newOrgFilter = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Org Filter Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Org Filter Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getOrgLevels() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgLevels()
-          this.levels = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteOrgFilter() {
-        const filter = this.filterToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/org/filters/${filter.id}`)
-          this.orgFilters = this.orgFilters.filter(ol => {
-            return ol.id !== filter.id
-          })
-          this.snackbar = getSnackbar('SUCCESS', 'Org Filter Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Org Filter')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-    }
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const router = vueInstance.$router
+const snackbar = vueInstance.$snackbar
+
+const addNew = ref(false)
+const levels = ref([])
+const orgFilters = ref([])
+const newOrgFilter = ref({})
+const expanded = ref([])
+const filterToDelete = ref(null)
+const selectedOrgFilterId = ref(null)
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const headers = ref([
+  {text: 'Org Level', value: 'levelName', show: true},
+  {text: 'Rank', value: 'rank', width: 80, show: true},
+  {text: 'Show Type', value: 'showType', width: 80, show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+
+const filterToDeleteName = computed(() => {
+  return filterToDelete.value ? filterToDelete.value.levelName : ''
+})
+onMounted(() => {
+  getOrganizationFilters()
+  getOrganizationLevels()
+})
+
+const getOrganizationFilters = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getOrgFilters()
+    orgFilters.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Org Filters')
+    store.commit(AppMutations.SET_LOADING, false)
   }
+}
+const saveOrgFilter = async (of, isNew) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await putRequest(`/org/filters`, of)
+    if (isNew) {
+      orgFilters.value.push(data)
+      addNew.value = false
+      newOrgFilter.value = {}
+      snackbar('SUCCESS', 'Org Filter Added')
+    } else {
+      expanded.value = []
+      snackbar('SUCCESS', 'Org Filter Updated')
+    }
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', isNew ? 'Error Adding Org Filter' : 'Error Updating Org Filter')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getOrganizationLevels = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getOrgLevels()
+    levels.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Org Levels')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteOrgFilter = async () => {
+  const filter = filterToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await deleteRequest(`/org/filters/${filter.id}`)
+    orgFilters.value = orgFilters.value.filter(ol => {
+      return ol.id !== filter.id
+    })
+    snackbar('SUCCESS', 'Org Filter Deleted')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Org Filter')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 </script>
