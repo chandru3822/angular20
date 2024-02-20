@@ -312,7 +312,7 @@ with owner_filter AS (SELECT owner_user_id, id
                         left join owner_filter of on of.owner_user_id = u.id
                where (umt.sms_team_id = any (array [ :smsTeamIds ]::bigint[]) and
                       (of.id is not null or umo2.id is null)))
-select u.user_id from users u
+select u.user_id, outbound_message from users u
     """;
 
   public final static String getUser = """

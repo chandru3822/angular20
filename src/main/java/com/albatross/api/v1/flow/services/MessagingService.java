@@ -204,7 +204,7 @@ public class MessagingService {
       combinedProps.put("notifProjectIds", notifProjectIds);
 
       Map<Boolean, List<ProjectCounter>> counters = getProjectsCombinedCount(combinedProps).stream()
-        .collect(Collectors.partitioningBy(ProjectCounter::getOutboundMessage));
+        .collect(Collectors.partitioningBy(ProjectCounter::isOutboundMessage));
 
 //      params.put("showInbox", true);
       List<Long> projectIdsInbox = counters.get(false).stream().map(ProjectCounter::getProjectId).toList();
@@ -223,7 +223,7 @@ public class MessagingService {
   @Data
   static class ProjectCounter {
     private Long projectId;
-    private Boolean outboundMessage;
+    private boolean outboundMessage;
   }
 
   private List<ProjectCounter> getProjectsCombinedCount(Map<String, Object> params) {
@@ -276,7 +276,7 @@ public class MessagingService {
       combinedProps.put("ownerIds", List.of(user.getId()));
 
       Map<Boolean, List<UserCounter>> counters = getUsersCountCombined(combinedProps).stream()
-        .collect(Collectors.partitioningBy(UserCounter::getOutboundMessage));
+        .collect(Collectors.partitioningBy(UserCounter::isOutboundMessage));
 
 //      params.put("showInbox", true);
       List<Long> userIdsInbox = counters.get(false).stream().map(UserCounter::getUserId).toList();
@@ -296,7 +296,7 @@ public class MessagingService {
   @Data
   static class UserCounter {
     private Long userId;
-    private Boolean outboundMessage;
+    private boolean outboundMessage;
   }
 
   private List<UserCounter> getUsersCountCombined(Map<String, Object> params) {
