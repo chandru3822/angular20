@@ -107,10 +107,6 @@ public class MessagingQuery {
                                left join flow.sms_cache sc on p.id = sc.project_id
                                left join owner_filter of on of.project_id = p.id
                       where case
-                                when array_length(array [ :notifProjectIds ]::bigint[], 1) > 0 then
-                                    (p.id = any (array [ :notifProjectIds ]::bigint[]))
-                                else 1 = 1 end
-                        and case
                                 when :query::varchar is not null then
                                     (p.project_name_search like '%' || :query || '%') or
                                     (p.id::varchar like '%' || :query || '%') or

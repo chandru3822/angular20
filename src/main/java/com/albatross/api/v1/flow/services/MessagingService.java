@@ -113,8 +113,8 @@ public class MessagingService {
     return userMessageProps.orElseThrow(() -> new NotFoundException("User conversation not found"));
   }
 
-  public Page<ConversationMessageProperties> getConversations(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds,
-                                                              List<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
+  public Page<ConversationMessageProperties> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifProjectIds,
+                                                              Set<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
 
 
     String cleanedQuery = query;
@@ -167,7 +167,7 @@ public class MessagingService {
       conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  public List<ConversationMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Boolean showInbox, Pageable pageable) {
+  public List<ConversationMessageProperties> getProjects(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifProjectIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -191,7 +191,7 @@ public class MessagingService {
 
     if (!projects.isEmpty()) {
       List<Long> projectIds = getProjectsCount(params);
-      projects.get(0).setProjectIdsForFilter(projectIds);
+      ConversationMessageProperties first = projects.getFirst();
 
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
@@ -212,8 +212,9 @@ public class MessagingService {
       List<Long> projectIdsSent = counters.get(true).stream().map(ProjectCounter::getProjectId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
-      projects.get(0).setProjectIdsInbox(projectIdsInbox);
-      projects.get(0).setProjectIdsSent(projectIdsSent);
+      first.setProjectIdsForFilter(projectIds);
+      first.setProjectIdsInbox(projectIdsInbox);
+      first.setProjectIdsSent(projectIdsSent);
     }
 
     return projects;
@@ -239,7 +240,7 @@ public class MessagingService {
       new SingleColumnRowMapper<>(Long.class));
   }
 
-  public List<ConversationMessageProperties> getUsers(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
+  public List<ConversationMessageProperties> getUsers(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -263,7 +264,7 @@ public class MessagingService {
 
     if (!users.isEmpty()) {
       List<Long> userIds = getUsersCount(params);
-      users.get(0).setUserIdsForFilter(userIds);
+      ConversationMessageProperties first = users.getFirst();
 
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
@@ -284,8 +285,9 @@ public class MessagingService {
       List<Long> userIdsSent = counters.get(true).stream().map(UserCounter::getUserId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
-      users.get(0).setUserIdsInbox(userIdsInbox);
-      users.get(0).setUserIdsSent(userIdsSent);
+      first.setUserIdsForFilter(userIds);
+      first.setUserIdsInbox(userIdsInbox);
+      first.setUserIdsSent(userIdsSent);
     }
 
     return users;
