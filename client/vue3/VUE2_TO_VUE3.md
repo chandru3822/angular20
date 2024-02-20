@@ -98,6 +98,41 @@ filters.formatDate(myDateValue, 'date', 'MM/DD/YYYY')
 </tr>
 </table>
 
+
+### Mixins
+Note: Composition API doesn't have mixins
+<table>
+<tr>
+<th>Vue2</th>
+</tr>
+<tr>
+<td>
+
+```
+<template v-for="(item, index) in filterBy(items, true, 'show')">
+mixins: [Vue2Filters.mixin],
+```
+</td>
+</tr>
+</table>
+<table>
+<tr>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+<template v-for="(item, index) in filteredItems">
+import { computed } from 'vue'
+const filteredItems = computed(() => {
+  return items.value.filter(i => i.show)
+})
+```
+</td>
+</tr>
+</table>
+
 ### Dynamic values (values that can change after screen load)
 Note: ALL values inside of vue2 `export data()` will need to become `const` values, adding `ref` just makes them dynamic <br><br>
 Definition <br>
