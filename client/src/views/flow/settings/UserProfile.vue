@@ -35,6 +35,16 @@
         </v-toolbar>
       </v-col>
     </v-row>
+    <v-row>
+      <v-col>
+        <v-btn v-if="!notificationsEnabled" @click="getNotificationToken">
+          Get Notified
+        </v-btn>
+        <v-btn v-else @click="removeNotificationToken">
+          Remove Notifications
+        </v-btn>
+      </v-col>
+    </v-row>
     <v-form ref="userForm">
       <v-row>
         <v-col cols="12" md="6">
@@ -214,6 +224,7 @@ import {getUserProfileDefaultFields} from '@/services/userService'
 import CustomValueInput from '@/views/flow/components/CustomValueInput.vue'
 import {handleHidingGlobalLoader, getRequest, putRequest, getSnackbar, postRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
+import { useFirebase } from '@/firebase/firebase.js'
 
 export default {
   name: 'UserProfile',
@@ -221,6 +232,10 @@ export default {
     SpinnerInline,
     CustomValueInput,
     ConfirmationDialog
+  },
+  setup() {
+    const { registered, getNotificationToken, removeNotificationToken } = useFirebase()
+    return { registered, getNotificationToken, removeNotificationToken }
   },
   data () {
     return {
@@ -271,6 +286,9 @@ export default {
     }
   },
   computed: {
+    notificationsEnabled() {
+      return this.registered
+    },
     teamNameToRemoveNotif() {
       return this.notificationToRemove ? this.notificationToRemove.teamName : ''
     },

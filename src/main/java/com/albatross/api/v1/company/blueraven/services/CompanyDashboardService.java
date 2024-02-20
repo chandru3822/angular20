@@ -7,6 +7,7 @@ import com.albatross.api.v1.company.blueraven.models.CompanyDashboardTargets;
 import com.albatross.api.v1.company.blueraven.models.CompanyPeriod;
 import com.albatross.api.v1.company.blueraven.models.Triumvirate;
 import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.google.common.collect.Maps;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -127,9 +128,15 @@ public class CompanyDashboardService {
 
   }
 
-  public ArrayList<CompanyDashboardDateRange> randaTesting(LocalDate today) {
-    //today: if "today" is not in utc just override it here
-
+  public ArrayList<CompanyDashboardDateRange> getDropdownValues(LocalDate today) {
+    Boolean isAdmin = securityService.getCurrentUser().isSystemAdmin();
+    if(!isAdmin) {
+      for (FeatureAccessControl feature : securityService.getCurrentUser().getFeatureAccess()) {
+        if (feature.getFeatureCode().equalsIgnoreCase("COMPANY_DASHBOARD") && feature.getAccessCode().equalsIgnoreCase("ADMIN")) {
+          isAdmin = true;
+        }
+      }
+    }
     ArrayList<CompanyDashboardDateRange> ranges = new ArrayList<>();
     HashMap<String, Object> params = new HashMap<>();
     params.put("today", today.toString());
@@ -140,7 +147,7 @@ public class CompanyDashboardService {
     Integer currentIndex = null;
 
     for (CompanyPeriod period : companyPeriods) {
-      if (today.isBefore(period.getEndDate())) {
+      if (today.isBefore(period.getEndDate()) || today.isEqual(period.getEndDate())) {
         currentPeriod = period;
         currentIndex = companyPeriods.indexOf(period);
         previousPeriod = companyPeriods.get(currentIndex - 1);
@@ -189,11 +196,13 @@ public class CompanyDashboardService {
       lastWeekEnd,
       "last week"));
 
-    ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD",
-      currentPeriod.getStartDate(),
-      currentPeriod.getEndDate(),
-      previousPeriod.getStartDate(),
-      previousPeriod.getStartDate(), "last period"));
+    if(isAdmin) {
+      ranges.add(new CompanyDashboardDateRange(5, "Current Period", "CURRENT_PERIOD",
+        currentPeriod.getStartDate(),
+        currentPeriod.getEndDate(),
+        previousPeriod.getStartDate(),
+        previousPeriod.getStartDate(), "last period"));
+    }
 
     ranges.add(new CompanyDashboardDateRange(6, "Last Week", "LAST WEEK",
       lastWeekStart,
@@ -207,19 +216,24 @@ public class CompanyDashboardService {
       today.minus(59, ChronoUnit.DAYS),
       today.minus(30, ChronoUnit.DAYS), "30 days before last 30 days"));
 
-    ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD",
-      previousPeriod.getStartDate(),
-      previousPeriod.getEndDate(),
-      doublePreviousPeriod.getStartDate(),
-      doublePreviousPeriod.getEndDate(), "the period before the last period"));
+    if(isAdmin) {
+      ranges.add(new CompanyDashboardDateRange(8, "Last Period", "LAST_PERIOD",
+        previousPeriod.getStartDate(),
+        previousPeriod.getEndDate(),
+        doublePreviousPeriod.getStartDate(),
+        doublePreviousPeriod.getEndDate(), "the period before the last period"));
+    }
 
-    CompanyDashboardDateRange periodRange = new CompanyDashboardDateRange();
-    periodRange.setId(9);
-    periodRange.setPeriodList(companyPeriods.reversed());
-    periodRange.setTrendText("the period before the selected period");
-    periodRange.setFriendlyName("Period");
-    periodRange.setName("PERIOD");
-    ranges.add(periodRange);
+    if(isAdmin) {
+      CompanyDashboardDateRange periodRange = new CompanyDashboardDateRange();
+      periodRange.setId(9);
+      Collections.reverse(companyPeriods);
+      periodRange.setPeriodList(companyPeriods);
+      periodRange.setTrendText("the period before the selected period");
+      periodRange.setFriendlyName("Period");
+      periodRange.setName("PERIOD");
+      ranges.add(periodRange);
+    }
 
     ranges.add(new CompanyDashboardDateRange(10, "Custom", "CUSTOM", null, null, null, null, null));
 

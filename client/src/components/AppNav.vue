@@ -145,7 +145,7 @@ export default {
       await this.getCompanies()
     },
     announcementEvents: async function () {
-      this.announcementEvents.forEach(ae => {
+      this.$store.getters.getEventsByTopic('announcement').forEach(ae => {
         //there seems to be an issue when stale announcements are in the eventstream and they are populating when they shouldn't
         //this time check will hopefully fix that.
         if(ae.endTime == null || moment().isBetween(moment(ae.startTime), moment(ae.endTime))) {
@@ -248,10 +248,10 @@ export default {
       return this.$vuetify.breakpoint.smAndDown
     },
     themeUpdateEvents() {
-      return this.$store.getters.getEventsByTopic('theme_update')
+      return this.$store.getters.getEventsByTopic('theme_update').length
     },
     announcementEvents() {
-      return this.$store.getters.getEventsByTopic('announcement')
+      return this.$store.getters.getEventsByTopic('announcement').length
     },
   },
   methods: {

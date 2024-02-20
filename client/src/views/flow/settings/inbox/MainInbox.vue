@@ -538,8 +538,8 @@ export default {
           smsTeamIds: this.selectedTeamFilters,
           notifProjectIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.projectId) : [-1]) : [],
           notifUserIds: this.showUnreadOnly ? (this.smsNotification?.length > 0 ? this.smsNotification?.map(n => n.metadata?.userId) : [-1]) : [],
-          showProjects: (this.messageTypeFilter === 'Customer' || this.messageTypeFilter === 'All') ? true : false,
-          showUsers: (this.messageTypeFilter === 'Internal' || this.messageTypeFilter === 'All') ? true : false,
+          showProjects: (this.messageTypeFilter === 'Customer' || this.messageTypeFilter === 'All'),
+          showUsers: (this.messageTypeFilter === 'Internal' || this.messageTypeFilter === 'All'),
           showInbox: this.showInbox
         }
 
@@ -553,12 +553,12 @@ export default {
             this.projectIdsForCurrentFilter = this.conversations[0].projectIdsForFilter
             this.userIdsForCurrentFilter = this.conversations[0].userIdsForFilter
             // If New/Sent notification badges weren't loaded yet (No conversations under New), get values now
-            if ((!this.projectIdsInbox || this.projectIdsInbox.length == 0) && (!this.projectIdsSent || this.projectIdsSent.length == 0)) {
+            if ((!this.projectIdsInbox || this.projectIdsInbox.length === 0) && (!this.projectIdsSent || this.projectIdsSent.length === 0)) {
               this.projectIdsInbox = this.conversations[0].projectIdsInbox
               this.projectIdsSent = this.conversations[0].projectIdsSent
             }
 
-            if ((!this.userIdsInbox || this.userIdsInbox.length == 0) && (!this.userIdsSent || this.userIdsSent.length == 0)) {
+            if ((!this.userIdsInbox || this.userIdsInbox.length === 0) && (!this.userIdsSent || this.userIdsSent.length === 0)) {
               this.userIdsInbox = this.conversations[0].userIdsInbox
               this.userIdsSent = this.conversations[0].userIdsSent
             }
@@ -852,7 +852,7 @@ export default {
       } finally {
         this.isSmsOwnershipEventsRunning = false;
       }
-    }, 800),
+    }, 1000),
     options: {
       handler() {
         if (!this.initialLoad) {

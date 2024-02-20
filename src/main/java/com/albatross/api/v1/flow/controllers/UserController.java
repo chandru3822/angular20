@@ -18,6 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -61,39 +62,39 @@ public class UserController {
 
   @PutMapping(value = "")
   public ResponseEntity saveUser(
-      @RequestParam(required = false) Boolean userIsAlbatross, @RequestBody User user) {
+    @RequestParam(required = false) Boolean userIsAlbatross, @RequestBody User user) {
     if (userService.emailExists(user.getEmail(), user.getId())) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Email already in use", new Exception());
+        HttpStatus.CONFLICT, "Email already in use", new Exception());
     }
     if (userService.usernameExists(user.getUsername(), user.getId())) {
       throw new ResponseStatusException(
-          HttpStatus.CONFLICT, "Username already in use", new Exception());
+        HttpStatus.CONFLICT, "Username already in use", new Exception());
     }
     if (null != user.getNewPassword()
         && !user.getNewPassword().isEmpty()
         && user.getNewPassword().length() < 8) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
+        HttpStatus.BAD_REQUEST, "Invalid Password", new Exception());
     }
     if (user.getUsername() != null && user.getUsername().length() < 3) {
       throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
+        HttpStatus.BAD_REQUEST, "Invalid Username", new Exception());
     }
 
     Optional<User> result =
-        userService.saveUser(user, null != userIsAlbatross ? userIsAlbatross : false);
+      userService.saveUser(user, null != userIsAlbatross ? userIsAlbatross : false);
     return result.isEmpty()
-        ? ResponseEntity.badRequest().body("Cannot Access User")
-        : ResponseEntity.ok(result);
+      ? ResponseEntity.badRequest().body("Cannot Access User")
+      : ResponseEntity.ok(result);
   }
 
   @GetMapping(value = "/{id}")
   public ResponseEntity getUser(
-      @PathVariable Long id, @RequestParam(required = false) Boolean userIsAlbatross) {
+    @PathVariable Long id, @RequestParam(required = false) Boolean userIsAlbatross) {
     Optional<User> result =
-        userService.getUser(id, null != userIsAlbatross ? userIsAlbatross : false);
-    if(result.isEmpty()) {
+      userService.getUser(id, null != userIsAlbatross ? userIsAlbatross : false);
+    if (result.isEmpty()) {
       throw new NotFoundException("FAIL_TO_NOT_FOUND_SCREEN");
     } else {
       return ResponseEntity.ok(result);
@@ -107,13 +108,13 @@ public class UserController {
 
   @GetMapping(value = "/getSchedulingUsers")
   public List<User> getSchedulingUsers(
-      @RequestParam(required = false) Long companyStateId, @RequestParam Boolean isSchedulingTool) {
+    @RequestParam(required = false) Long companyStateId, @RequestParam Boolean isSchedulingTool) {
     return userService.getSchedulingUsers(companyStateId, isSchedulingTool);
   }
 
   @GetMapping(value = "/statuses")
   public List<UserStatusType> getCompanyUserStatuses(
-      @RequestParam(required = false) Long companyId) {
+    @RequestParam(required = false) Long companyId) {
     // pass in company when the statuses you want back are not from the logged in user
     return userService.getCompanyUserStatuses(companyId);
   }
@@ -158,16 +159,16 @@ public class UserController {
   public ResponseEntity validatePassword(@RequestBody Map<String, String> requestData) {
     Boolean response = securityService.validatePassword(requestData.get("password"));
     return response
-        ? new ResponseEntity(HttpStatus.OK)
-        : new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
+      ? new ResponseEntity(HttpStatus.OK)
+      : new ResponseEntity(HttpStatus.NOT_ACCEPTABLE);
   }
 
   @PostMapping(value = "/forgotPassword")
   public ResponseEntity forgotPassword(@RequestBody PasswordResetRequest passwordResetRequest)
-      throws Exception {
+    throws Exception {
     if (!StringUtils.isEmpty(passwordResetRequest.getUsernameOrEmail())) {
       User user =
-          securityService.getUserByUsernameOrEmail(passwordResetRequest.getUsernameOrEmail());
+        securityService.getUserByUsernameOrEmail(passwordResetRequest.getUsernameOrEmail());
       if (user != null) {
         Calendar calendar = Calendar.getInstance();
         java.util.Date now = calendar.getTime();
@@ -179,8 +180,8 @@ public class UserController {
         userService.saveForgotPasswordFields(user, false);
 
         InputStream inputStream =
-            ScheduledConfig.class.getResourceAsStream(
-                "/communication/templates/password-reset.ftl.html");
+          ScheduledConfig.class.getResourceAsStream(
+            "/communication/templates/password-reset.ftl.html");
         String template = IOUtils.toString(inputStream);
 
         Map<String, Object> context = new HashMap<>();
@@ -189,23 +190,23 @@ public class UserController {
         context.put("mailTo", "saleshr@blueravensolar.com");
 
         communicationService.sendEmail(
-            "Click on link to reset your password",
-            StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()),
-            template,
-            context,
-            "SalesOps@blueravensolar.com",
-            "Blue Raven Sales Operation",
-            user.trueUserId(),
-            null);
+          "Click on link to reset your password",
+          StringUtils.trimWhitespace(passwordResetRequest.getUsernameOrEmail()),
+          template,
+          context,
+          "SalesOps@blueravensolar.com",
+          "Blue Raven Sales Operation",
+          user.trueUserId(),
+          null);
         log.debug(
-            "AUTH: Password reset email has been sent to {}",
-            passwordResetRequest.getUsernameOrEmail());
+          "AUTH: Password reset email has been sent to {}",
+          passwordResetRequest.getUsernameOrEmail());
       } else {
         log.debug(
-            "AUTH: Password reset attempted for unknown user email {}.",
-            passwordResetRequest.getUsernameOrEmail());
+          "AUTH: Password reset attempted for unknown user email {}.",
+          passwordResetRequest.getUsernameOrEmail());
         return ResponseEntity.badRequest()
-            .body(Map.of("message", "No user found for that email or username"));
+          .body(Map.of("message", "No user found for that email or username"));
       }
     }
     return ResponseEntity.ok().build();
@@ -213,19 +214,19 @@ public class UserController {
 
   @PostMapping(value = "/forgotPassword/change/password")
   public String forgotPasswordChangePassword(
-      @RequestBody PasswordResetRequest passwordResetRequest) {
+    @RequestBody PasswordResetRequest passwordResetRequest) {
     String result = null;
 
     if (null != passwordResetRequest.getUserId() && null != passwordResetRequest.getNewPassword()) {
       // todo: remove this check after we turn it on and mobile is working
       if (doCompanyDefaultValidation) {
         Boolean passwordIsCompanyDefault =
-            securityService.passwordIsCompanyDefault(
-                passwordResetRequest.getUserId(), passwordResetRequest.getNewPassword());
+          securityService.passwordIsCompanyDefault(
+            passwordResetRequest.getUserId(), passwordResetRequest.getNewPassword());
         if (passwordIsCompanyDefault) {
           // NOT_ACCEPTABLE = 406
           throw new ResponseStatusException(
-              HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
+            HttpStatus.NOT_ACCEPTABLE, "Cannot use company default password.", new Exception());
         } else {
           result = userService.updatePassword(passwordResetRequest);
           userService.updateLoginAttempts(0, passwordResetRequest.getUserId());
@@ -254,10 +255,10 @@ public class UserController {
       if (time1 > 24) {
         log.warn("AUTH: Password reset for user {} attempted with expired link.", userUuid);
         ResponseEntity.badRequest()
-            .body(
-                Map.of(
-                    "message",
-                    "This link has expired.  Please retry for a new link by clicking on the login link above."));
+          .body(
+            Map.of(
+              "message",
+              "This link has expired.  Please retry for a new link by clicking on the login link above."));
       }
 
     } else {
@@ -273,11 +274,18 @@ public class UserController {
     return userService.getMentionableUsers();
   }
 
-  @PostMapping(value = "/{userId}/token")
-  public ResponseEntity<Void> addTokenToUser(
-      @PathVariable Long userId, @RequestBody UserNotificationTokenDTO token) {
-    userService.addNotificationToken(userId, token.getToken());
-    return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+  @PostMapping(value = "/token")
+  public ResponseEntity<Void> addTokenToUser(@RequestBody UserNotificationTokenDTO token,
+                                             @AuthenticationPrincipal UserAccountDetails details) {
+    userService.addNotificationToken(details.getTrueUserId(), token.getToken());
+    return ResponseEntity.accepted().build();
+  }
+
+  @DeleteMapping(value = "/token")
+  public ResponseEntity<Void> removeTokenFromUser(@RequestParam(name="id") String tokenId,
+                                             @AuthenticationPrincipal UserAccountDetails details) {
+    userService.removeNotificationToken(details.getTrueUserId(), tokenId);
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping(value = "/{userId}/attachments")
@@ -289,13 +297,13 @@ public class UserController {
 
   @PostMapping(value = "/{userId}/attachment")
   public ResponseEntity<Attachment> uploadUserAttachment(
-      @PathVariable Long userId,
-      @RequestParam Long attachmentTypeId,
-      @RequestParam String displayName,
-      @RequestParam MultipartFile file)
-      throws IOException {
+    @PathVariable Long userId,
+    @RequestParam Long attachmentTypeId,
+    @RequestParam String displayName,
+    @RequestParam MultipartFile file)
+    throws IOException {
     return new ResponseEntity<>(
-        userService.addAttachment(file, userId, attachmentTypeId, displayName), HttpStatus.OK);
+      userService.addAttachment(file, userId, attachmentTypeId, displayName), HttpStatus.OK);
   }
 
   @PostMapping(value = "/{userId}/linkAttachment/{attachmentId}")

@@ -134,7 +134,6 @@ public class ExpenseBudgetQuery {
                             u.first_name || ' ' || u.last_name as user_full_name,
                             eb.date_created,
                             eb.date_modified,
-                            eb.original_expense_budget_id,
                             (select * from brs.get_monthly_expense_budget_report(eb.user_id, eb.start_date, eb.end_date)) as budget_report
                      FROM brs.expense_budget eb
                               INNER JOIN flow."user" u on u.id = eb.user_id
@@ -150,7 +149,6 @@ public class ExpenseBudgetQuery {
            user_full_name,
            date_created,
            date_modified,
-           original_expense_budget_id,
            budget_report -> 0 -> 'pending_review' as pending_approval,
            budget_report -> 0 -> 'pending_payment' as pending_payment,
            budget_report -> 0 -> 'paid' as paid,

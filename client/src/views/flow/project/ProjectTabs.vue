@@ -2,7 +2,7 @@
   <SidePanelExpansionPanel header="Details" :section-expanded="sectionExpanded" @click="toggleCollapseExpand">
     <template v-if="!hideAdminBtn" v-slot:tool-btn>
       <v-btn
-          text small color="primary" class="pa-0 mx-2"
+          text small color="primary" class="pa-0 mx-2" style="max-width: 34px"
           v-if="$store.getters.userHasFeatureAccessLevel('PROJECTS', 'ADMIN') || $store.getters.userHasFeatureAccessLevel('PROJECTS', 'DELETE')"
           :to="`/projectAdmin/${projectId}/processSteps`"
           @click.stop

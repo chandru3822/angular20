@@ -109,8 +109,10 @@ public class BlueravenProposalController {
 
   @GetMapping(value = "/{proposalId}/commissionDetails")
   @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_ADMIN')")
-  public Optional<ProposalCommission> getProposalCommissionDetails(@PathVariable Long proposalId) {
-    return proposalService.getProposalCommissionDetails(proposalId);
+  public List<ProposalCommissionDetail> getProposalCommissionDetails(@PathVariable Long proposalId,
+                                                                   @RequestParam Long financialProductId,
+                                                                   @RequestParam Long brsProductId) {
+    return proposalService.getProposalCommissionDetails(proposalId, financialProductId, brsProductId);
   }
 
   @PutMapping(value = "/{proposalId}/version/{versionId}")
@@ -279,7 +281,7 @@ public class BlueravenProposalController {
 
   private String getContentDisposition(Proposal proposal, boolean inline) {
     String cleanedFilename = getCleanFilename(proposal);
-    return 
+    return
       "%s; filename=\"%s%sproposal.pdf\"".formatted(
       inline ? "inline" : "attachment",
       cleanedFilename,
@@ -293,7 +295,7 @@ public class BlueravenProposalController {
   }
 
   @GetMapping(value = "/{proposalId}/filter")
-  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_EDIT', 'PROPOSALS_MANAGE', 'PROPOSALS_ADMIN')")
+  @PreAuthorize("hasFeatureAccessLevel('PROPOSALS_VIEW', 'PROPOSALS_VIEW_ALL', 'PROPOSALS_EDIT', 'PROPOSALS_MANAGE', 'PROPOSALS_ADMIN')")
   public ProposalFilterResponse getFilterableOptions(@PathVariable Long proposalId,
                                                      ProposalValueFilter filter) {
     final Long proposalVersionId = proposalService.getProposalVersionByProposalId(proposalId).orElseThrow(NotFoundException::new);

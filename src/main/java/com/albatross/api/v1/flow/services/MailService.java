@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
@@ -41,7 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class MailService {
 
   private final PropertiesConfiguration propConfig;
-  private final SimpleAsyncTaskExecutor taskExecutor;
+  private final ThreadPoolTaskExecutor taskExecutor;
   private final SqlCache sqlCache;
   private final SecurityService securityService;
   private final AttachmentService attachmentService;

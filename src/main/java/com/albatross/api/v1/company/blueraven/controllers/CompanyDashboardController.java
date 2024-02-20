@@ -43,7 +43,7 @@ public class CompanyDashboardController {
 
   @GetMapping(value = "/dropdownValues")
   public List<CompanyDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
-    return companyDashboardService.randaTesting(today);
+    return companyDashboardService.getDropdownValues(today);
   }
 
   @GetMapping(value = "/drilldownHeaders")
