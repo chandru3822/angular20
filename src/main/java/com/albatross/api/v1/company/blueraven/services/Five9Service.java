@@ -114,7 +114,7 @@ public class Five9Service {
 
       url = b.build().toString().replaceAll("\\+", "%20");
       HttpResponse resp = POST(url, null);
-      log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
+      //log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
       return;
     } catch (Exception e) {
       String msg = "FIVE9: Error in posting contactId="+ contactId + ", msg=" +e.getMessage() + ", url="+url;
