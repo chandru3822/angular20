@@ -7,6 +7,7 @@ import {AppStore} from '@/stores/AppStore'
 import constants from '@/helpers/constants'
 import ProposalStore, { ProposalMutations } from '@/views/blueraven/settings/proposalDesigner/store'
 import { deleteRequest, getRequestWithParams, postRequest } from './helpers/helpers'
+import {ScheduleStore} from "@/stores/ScheduleStore.js";
 
 Vue.use(Vuex)
 
@@ -64,7 +65,8 @@ const store = new Vuex.Store({
     brs: BrsStore,
     app: AppStore,
     project: ProjectStore,
-    proposal: ProposalStore
+    proposal: ProposalStore,
+      schedule: ScheduleStore
   },
   mutations: {
     ADD_CANCEL_TOKEN(state, token) {

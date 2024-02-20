@@ -283,6 +283,7 @@
         this.showMap = true
       },
       dateCallback (startTime, endTime) {
+        debugger
         this.startTime = startTime
         this.endTime = endTime
       },

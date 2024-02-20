@@ -268,6 +268,7 @@ import {UserActions} from "@/stores/UserStore";
 import FullCalendar from "@fullcalendar/vue";
 import resourceTimelinePlugin from "@fullcalendar/resource-timeline";
 import interaction from "@fullcalendar/interaction";
+import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 
 
   export default {
@@ -1111,6 +1112,8 @@ import interaction from "@fullcalendar/interaction";
           this.calendarStartTime = moment(this.calendarStart).startOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
           this.calendarEndTime = moment(this.calendarStart).endOf('isoWeek').utc().format('YYYY-MM-DD HH:mm:ss')
         }
+        this.$store.commit(ScheduleMutations.SET_START_TIME, this.calendarStartTime)
+        this.$store.commit(ScheduleMutations.SET_END_TIME, this.calendarEndTime)
         this.dateCallback(this.calendarStartTime, this.calendarEndTime)
       },
 

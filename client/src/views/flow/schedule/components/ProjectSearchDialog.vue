@@ -18,6 +18,7 @@ import {getEventTypes} from "@/services/scheduleService.js";
 import {getEventStatusTypes} from "@/services/eventStatusTypeService.js";
 import {getStatusTypes} from "@/services/processStepStatusTypeService.js";
 import ProjectSearchResultCard from "@/views/flow/schedule/components/ProjectSearchResultCard.vue";
+import SpinnerInline from "@/components/SpinnerInline.vue";
 
 const props = defineProps({
   states: {
@@ -58,7 +59,8 @@ const state =ref({}),
     snackbar=ref({}),
     listLoading = ref(false),
     // initialLoad = ref(true)
-    _timerId = ref()
+    _timerId = ref(),
+    showSearchResults = ref(false)
 ;
 
 const CancelToken = axios.CancelToken;
@@ -136,6 +138,8 @@ const searchForProjects = async(search) => {
   }
 }
 const goGoGadgetMapSearch = () =>{
+  projects.value = []
+  showSearchResults.value = true
   if(state.value?.id){
     getProjects(true)
   }
@@ -154,7 +158,6 @@ const getProjects = async(resetQuery) => {
   localStorage.setItem('scheduleEventTypes', JSON.stringify(selectedEventTypes.value))
   localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(selectedProcessStepStatusType.value))
   localStorage.setItem('scheduleEventStatusType', JSON.stringify(searchEventStatusType.value))
-
   if(selectedEventTypes.value?.length > 0) {
     listLoading.value = true
     try {
@@ -172,9 +175,10 @@ const getProjects = async(resetQuery) => {
         processStepStatusTypeId: selectedProcessStepStatusType.value.id,
         eventStatusTypeId: searchEventStatusType.value.id,
         companyStateId: state.value.id,
-        startTime: props.startTime,
-        endTime: props.endTime,
-        page: page ? page - 1 : 1,
+        startTime: store.state.schedule.startTime,
+        endTime: store.state.schedule.endTime,
+        page: 0,
+        search:"",
         size: itemsPerPage
       })
       projects.value = data.content || []
@@ -255,7 +259,8 @@ const clear = () => {
   searchEventType.value = {}
   searchEventStatusType.value = {}
   selectedProcessStepStatusType.value = {}
-  projects.value = {}
+  projects.value = []
+  showSearchResults.value = false
 }
 
 onMounted(() => {
@@ -271,7 +276,7 @@ onMounted(() => {
       <v-card-title class="label-large pa-0">Search Projects</v-card-title>
       <v-btn icon small @click="emit('close-dialog')"><v-icon>close</v-icon></v-btn>
     </div>
-    <div class="project-search-field-container">
+    <div v-if="!showSearchResults" class="project-search-field-container pt-1">
       <div class="one-hunned pb-3">
         <v-autocomplete attach v-model="state" class="pb-2"
                         :items="states"
@@ -282,7 +287,7 @@ onMounted(() => {
                         dense
                         item-text="state"
                         item-value="id"
-                        @click:clear="selectedEventTypes = []"
+                        @click:clear="clear"
                         :disabled="!!searchProject?.projectId"
         ></v-autocomplete>
         <v-autocomplete v-model="searchProject"
@@ -375,7 +380,7 @@ onMounted(() => {
     </div>
     <v-card-actions class="px-0 pb-0">
       <v-btn @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Clear</v-btn>
-      <v-btn
+      <v-btn v-if="!showSearchResults"
           outlined
           small
           @click="goGoGadgetMapSearch"
@@ -383,13 +388,22 @@ onMounted(() => {
           class="text-capitalize flex-grow-1 body-medium"
           :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id)"
       >Go</v-btn>
+      <v-btn v-else
+          outlined
+          small
+          @click="showSearchResults = false"
+          color="primary"
+          class="text-capitalize flex-grow-1 body-medium"
+      >Edit search</v-btn>
     </v-card-actions>
+    <div v-if="showSearchResults">
     <div class="d-flex justify-space-between align-baseline py-3">
       <span class="label-medium">Search Results</span>
-      <v-btn text small color="primary" class="text-capitalize">Show all pins</v-btn>
+      <v-btn text small color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0">Show all pins</v-btn>
     </div>
+    <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     <div class="search-results">
-
+      <span v-if="(!projects || projects.length === 0) && !listLoading" class="body-medium">No projects found</span>
     <div v-for="p in projects">
       <ProjectSearchResultCard
           :project-name="p.projectName"
@@ -402,13 +416,14 @@ onMounted(() => {
       />
     </div>
     </div>
+    </div>
   </v-card>
 
 </template>
 
 <style scoped lang="scss">
 .search-results {
-  max-height: calc(100vh - 550px);
+  max-height: calc(100vh - 300px);
   overflow-y: scroll;
 }
 </style>
