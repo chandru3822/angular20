@@ -257,7 +257,7 @@ const router = new Router({
               name: 'glCodes',
               meta: {title: 'Albatross - GL Codes'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/GlCodes.vue')
                 } else {
                   return accessDenied()
@@ -269,7 +269,7 @@ const router = new Router({
               name: 'monthlyBudgets',
               meta: {title: 'Albatross - Expense Budgets'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/MonthlyBudgets.vue')
                 } else {
                   return accessDenied()
@@ -281,7 +281,7 @@ const router = new Router({
               name: 'budgetTemplates',
               meta: {title: 'Albatross - Expense Budgets'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/BudgetTemplates.vue')
                 } else {
                   return accessDenied()
@@ -293,7 +293,7 @@ const router = new Router({
               name: 'expenseBudgetTypes',
               meta: {title: 'Albatross - Budget Types'},
               component: () => {
-                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN')) {
+                if (store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN') || store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE')) {
                   return import ( './views/blueraven/expenses/BudgetTypes.vue')
                 } else {
                   return accessDenied()

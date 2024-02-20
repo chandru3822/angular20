@@ -119,6 +119,19 @@ BEGIN
                                    (final_design_complete_date at time zone 'UTC' at time zone 'US/Mountain')::date
                                      between p_start_date and p_end_date
                                  end
+                             when p_funnel_id = 33 then
+                               case
+                                 when p_is_cohort is true then
+                                   first_appointment is not null and
+                                   (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4))
+                                  and
+                                   (first_time_appointment_created at time zone 'UTC' at time zone 'US/Mountain')::date
+                                     between p_start_date and p_end_date
+                                 else
+                                   (first_appointment_id is null or (first_appointment_id is not null and first_appointment_id != 4)) and
+                                   (first_appointment at time zone 'UTC' at time zone 'US/Mountain')::date
+                                     between p_start_date and p_end_date
+                                 end
                        end
                      order by setter_name, contact_name
 --                       order by setter_name, coalesce(pd.prioritized_closer_appointment_outcome_date,pd.closer_appointment_start)

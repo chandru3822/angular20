@@ -48,7 +48,7 @@ public class Five9Service {
 
   private Boolean referralValueSet = false;
 
-  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, boolean isRetarget, Long leadLevel) {
+  public void handleContact(Long contactId, List<CustomFieldValue> values, boolean isUpdate, String five9ContactListName, Long leadLevel) {
     if (ObjectUtils.isEmpty(basicToken) || ObjectUtils.isEmpty(basicToken == null)) {
       return;
     }
@@ -78,8 +78,9 @@ public class Five9Service {
       b.addParameter("zip", contact.getPostalCode() != null ? contact.getPostalCode() : "");
       b.addParameter("email", contact.getEmail() != null ? contact.getEmail() : "");
 
+      boolean isRetarget = five9ContactListName != null ? five9ContactListName.contains("retarget") : false;
       getCfvValues(b, values);
-      getAppointmentValues(contactId, b);
+      getAppointmentValues(contactId, b, isRetarget);
 
       // Only set the date/time created fields when Contact is created
       if (!isUpdate) {
@@ -95,19 +96,17 @@ public class Five9Service {
         }
       }
 
-      if (leadLevel == 1L || leadLevel == 2L || leadLevel == 40L) {
-        if (isRetarget) {
-          contactListName = "digital_retarget";
-        }
-        else {
+      if (five9ContactListName != null) {
+        contactListName = five9ContactListName;
+      }
+      else {
+        if (leadLevel == 1L || leadLevel == 2L || leadLevel == 40L) {
           contactListName = "digitalleads";
         }
-      }
-      else if (leadLevel >= 201L && leadLevel <= 209L) {
-        if (isRetarget) {
-          contactListName = "virtual_retarget";
+        else if (leadLevel == 50L) {
+          contactListName = "digital_breeze";
         }
-        else {
+        else if (leadLevel >= 201L && leadLevel <= 209L) {
           contactListName = "virtualleads";
         }
       }
@@ -115,7 +114,7 @@ public class Five9Service {
 
       url = b.build().toString().replaceAll("\\+", "%20");
       HttpResponse resp = POST(url, null);
-      log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
+      //log.info("FIVE9: Successfully posted contactId="+ contactId + ", url="+url);
       return;
     } catch (Exception e) {
       String msg = "FIVE9: Error in posting contactId="+ contactId + ", msg=" +e.getMessage() + ", url="+url;
@@ -123,12 +122,12 @@ public class Five9Service {
     }
   }
 
-  private void getAppointmentValues(Long contactId, URIBuilder b) {
+  private void getAppointmentValues(Long contactId, URIBuilder b, boolean isRetarget) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("contactId", contactId);
     Optional<String> appointmentDate =
       sqlCache.getBySql(
-        GenesysQuery.getContactAppointmentDate,
+        Five9Query.getContactAppointmentDate,
         params,
         new SingleColumnRowMapper<>(String.class));
 
@@ -171,14 +170,19 @@ public class Five9Service {
       b.addParameter("booking_date", bookingDate.get());
     }
 
-    Optional<Boolean> retargetValue =
-      sqlCache.getBySql(
-        Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
-    if (retargetValue.isPresent()) {
-      b.addParameter("retargeted", retargetValue.get().toString());
+    if (isRetarget) {
+      b.addParameter("retargeted", "true");
     }
     else {
-      b.addParameter("retargeted", "false");
+      Optional<Boolean> retargetValue =
+        sqlCache.getBySql(
+          Five9Query.getRetargetValue, params, new SingleColumnRowMapper<>(Boolean.class));
+      if (retargetValue.isPresent()) {
+        b.addParameter("retargeted", retargetValue.get().toString());
+      }
+      else {
+        b.addParameter("retargeted", "false");
+      }
     }
   }
 
@@ -241,14 +245,21 @@ public class Five9Service {
 
   public void processFive9Contacts() {
     // Get list of Contact IDs that need to be put into each Genesys Contact List
-    List<Contact> contacts = sqlCache.queryBySql(Five9Query.getContactIdsSalDevRetargets, null, Contact.class);
+    populateCronContactLists(Five9Query.getContactIdsDigitalSalDevRetargets, "digital_retarget");
+    populateCronContactLists(Five9Query.getContactIdsVirtualSalDevRetargets, "virtual_retarget");
+    populateCronContactLists(Five9Query.getContactIdsInsideSalesPitchedNotBooked, "digitalleads_pnb");
+  }
+
+  private void populateCronContactLists(String contactListQuery, String five9ContactListName) {
+    // Get list of Contact IDs that need to be put into each Genesys Contact List
+    List<Contact> contacts = sqlCache.queryBySql(contactListQuery, null, Contact.class);
     for (Contact contact : contacts) {
       List<CustomFieldGroup> customFieldGroups =
         customFieldValueService.getCustomFieldGroupsAndValues(
           ObjectType.CONTACT, contact.getId());
       List<CustomFieldValue> values = customFieldGroups.stream()
-          .flatMap(group -> group.getCustomFieldValues().stream())
-          .collect(Collectors.toList());
+        .flatMap(group -> group.getCustomFieldValues().stream())
+        .collect(Collectors.toList());
 
       try {
         final Long leadLevel = values.stream()
@@ -258,7 +269,7 @@ public class Five9Service {
           .findFirst()
           .orElse(null);
 
-        handleContact(contact.getId(), values, false, true, leadLevel);
+        handleContact(contact.getId(), values, false, five9ContactListName, leadLevel);
       } catch (Exception e) {
         log.error("FIVE9: Error during cron - adding contactId={}, msg={}", contact.getId(), e.getMessage());
       }

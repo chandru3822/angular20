@@ -3,7 +3,7 @@
   <SidePanelExpansionPanel header="Overview" :is-disabled="!isExpandable" :section-expanded="opened">
     <template v-slot:tool-btn>
       <v-btn
-          text small color="primary" class="px-0"
+          text small color="primary" class="px-0 mx-2" style="max-width: 34px"
           @click.stop="$emit('clickEdit')"
           v-if="showEditBtn">
         <v-icon :size="20">edit</v-icon>

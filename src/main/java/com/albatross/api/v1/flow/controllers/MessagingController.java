@@ -177,10 +177,10 @@ public class MessagingController {
 
   @Data
   public static class FilterData {
-    private List<Long> ownerUserIds;
-    private List<Long> smsTeamIds;
-    private List<Long> notifProjectIds;
-    private List<Long> notifUserIds;
+    private Set<Long> ownerUserIds;
+    private Set<Long> smsTeamIds;
+    private Set<Long> notifProjectIds;
+    private Set<Long> notifUserIds;
     private Boolean showProjects;
     private Boolean showUsers;
     private Boolean showInbox;

@@ -169,7 +169,8 @@ create type brs.calculated_proposal_value as
   storage_capacity numeric,
   nominal_power numeric,
   battery_manufacturers_warranty bigint,
-  battery_workmanship_warranty bigint
+  battery_workmanship_warranty bigint,
+  virtual_sales_price_adjustment numeric
 );
 
 drop type brs.excluded_proposal_value;
@@ -491,6 +492,7 @@ declare
   v_company_process_id integer;
 v_virtual_sales_price_adjustment numeric;
 v_virtual_sales_base_price numeric;
+v_total_ancillary_costs numeric;
 BEGIN
   select proposal_id,
          version_id,
@@ -1001,6 +1003,15 @@ BEGIN
   --raise notice 'v_equipment_panel_adder = %',v_equipment_panel_adder;
   --raise notice 'v_equipment_inverter_adder = %',v_equipment_inverter_adder;
 
+  v_total_ancillary_costs = coalesce(v_main_panel_upgrade_cost, 0)::numeric +
+                            coalesce(v_structural_upgrade_cost, 0)::numeric +
+                            coalesce(v_reroof_cost, 0)::numeric +
+                            coalesce(v_tree_trimming_cost, 0)::numeric +
+                            coalesce(v_trenching_cost, 0)::numeric +
+                            coalesce(v_ac_unit_relocation_cost, 0)::numeric;
+
+  --raise notice 'v_total_ancillary_costs = %',v_total_ancillary_costs;
+
   v_promotion_cost = 0.00;
   if v_product_id = 293 then
     v_promotion_cost =
@@ -1015,10 +1026,7 @@ BEGIN
                                                      coalesce(v_smart_thermostat_adder, 0) +
                                                      coalesce(v_led_light_bulbs_adder, 0)
                                                  else 0::numeric end +
-          coalesce(v_main_panel_upgrade_cost, 0)::numeric + coalesce(v_equipment_storage_adder, 0) +
-          coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
-          coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
-          coalesce(v_ac_unit_relocation_cost, 0)::numeric) * v_initial_payment_factor * 18)
+          v_total_ancillary_costs::numeric + coalesce(v_equipment_storage_adder, 0)) * v_initial_payment_factor * 18)
         /
         (1 - v_dealer_fee - (v_initial_payment_factor * 18));
     --   elsif v_product_id = 19424 then
@@ -1064,12 +1072,7 @@ BEGIN
   --dealer fee escalator for ancillary costs above threshold
   v_ancillary_cost_portion_of_loan_before_rebates = 0.00;
   v_ancillary_cost_portion_of_loan_before_rebates = ( --ancillary costs in this block
-                                                        coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-                                                        coalesce(v_structural_upgrade_cost, 0)::numeric +
-                                                        coalesce(v_reroof_cost, 0)::numeric +
-                                                        coalesce(v_tree_trimming_cost, 0)::numeric +
-                                                        coalesce(v_trenching_cost, 0)::numeric +
-                                                        coalesce(v_ac_unit_relocation_cost, 0)::numeric
+                                                      v_total_ancillary_costs::numeric
                                                       ) /
                                                     ( --initial system cost + all adders + ancillary costs + promotion amount
                                                         coalesce(v_initial_system_cost, 0) +
@@ -1083,13 +1086,8 @@ BEGIN
                                                               coalesce(v_promotion_cost, 0) +
                                                               coalesce(v_small_system_size_adder_amount, 0)
                                                           else 0::numeric end +
-                                                        coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-                                                        coalesce(v_equipment_storage_adder, 0) +
-                                                        coalesce(v_structural_upgrade_cost, 0)::numeric +
-                                                        coalesce(v_reroof_cost, 0)::numeric +
-                                                        coalesce(v_tree_trimming_cost, 0)::numeric +
-                                                        coalesce(v_trenching_cost, 0)::numeric +
-                                                        coalesce(v_ac_unit_relocation_cost, 0)::numeric
+                                                        v_total_ancillary_costs::numeric +
+                                                        coalesce(v_equipment_storage_adder, 0)
                                                       ); -- this gives the percentage of the total cost (excluding rebates) that is made up by ancillary
   if v_ancillary_cost_portion_of_loan_before_rebates > v_non_solar_threshold_for_additional_fee then
     v_dealer_fee = v_dealer_fee + v_additional_fee_for_exceeding_non_solar_threshold;
@@ -1113,13 +1111,8 @@ BEGIN
                                              coalesce(v_promotion_cost, 0) +
                                              coalesce(v_zone_adder, 0)
                                          else 0::numeric end +
-                                       coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-                                       coalesce(v_equipment_storage_adder, 0) +
-                                       coalesce(v_structural_upgrade_cost, 0)::numeric +
-                                       coalesce(v_reroof_cost, 0)::numeric +
-                                       coalesce(v_tree_trimming_cost, 0)::numeric +
-                                       coalesce(v_trenching_cost, 0)::numeric +
-                                       coalesce(v_ac_unit_relocation_cost, 0)::numeric);
+                                       v_total_ancillary_costs::numeric +
+                                       coalesce(v_equipment_storage_adder, 0));
   --raise notice 'v_total_loan_amount_before_rebate = %',v_total_loan_amount_before_rebate;
 
   v_no_ancillary_total_loan_amount = ((coalesce(v_initial_system_cost, 0) - coalesce(v_down_payment_amount, 0)) +
@@ -1366,6 +1359,7 @@ BEGIN
            else 0::numeric end
        else 0::numeric end);
   --raise notice 'v_total_system_cost = %',v_total_system_cost;
+  --raise notice 'v_required_down_payment = %',v_required_down_payment;
 
   if v_financier_id = 116 then --check solar only $/Watt price cap for goodleap
     v_required_down_payment =
@@ -1405,12 +1399,7 @@ BEGIN
                               (
                                   (
                                       ( --this block is ancillary cost
-                                          coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-                                          coalesce(v_structural_upgrade_cost, 0)::numeric +
-                                          coalesce(v_reroof_cost, 0)::numeric +
-                                          coalesce(v_tree_trimming_cost, 0)::numeric +
-                                          coalesce(v_trenching_cost, 0)::numeric +
-                                          coalesce(v_ac_unit_relocation_cost, 0)::numeric
+                                        v_total_ancillary_costs::numeric
                                         ) -
                                       (
                                           ( --this block is total system cost pre dealer fee plus ancillary cost pre dealer fee
@@ -1421,12 +1410,7 @@ BEGIN
                                 )
                               , 0,
                               ((( --this block is ancillary cost
-                                    coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-                                    coalesce(v_structural_upgrade_cost, 0)::numeric +
-                                    coalesce(v_reroof_cost, 0)::numeric +
-                                    coalesce(v_tree_trimming_cost, 0)::numeric +
-                                    coalesce(v_trenching_cost, 0)::numeric +
-                                    coalesce(v_ac_unit_relocation_cost, 0)::numeric
+                                  v_total_ancillary_costs::numeric
                                   ) / (1 - v_dealer_fee)) -
                                (v_system_size * 1000 * v_maximum_dollar_per_watt_for_solar)) * (1 - v_dealer_fee));
 
@@ -1857,11 +1841,8 @@ BEGIN
                   coalesce(v_misc_adders, 0) + coalesce(v_small_system_size_adder_amount, 0) +
                   coalesce(v_smart_thermostat_adder, 0) + coalesce(v_led_light_bulbs_adder, 0)
               else 0::numeric end +
-            coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-            coalesce(v_equipment_storage_adder, 0) +
-            coalesce(v_structural_upgrade_cost, 0)::numeric + coalesce(v_reroof_cost, 0)::numeric +
-            coalesce(v_tree_trimming_cost, 0)::numeric + coalesce(v_trenching_cost, 0)::numeric +
-            coalesce(v_ac_unit_relocation_cost, 0)::numeric,
+            v_total_ancillary_costs::numeric +
+            coalesce(v_equipment_storage_adder, 0),
             v_adjusted_price_per_watt,
             round(v_total_loan_amount, 0),
             round(v_total_system_cost, 0),
@@ -1915,18 +1896,9 @@ BEGIN
             case when v_product_id = 293 then 18 else 0 end,
             v_product_name,
             coalesce(round(v_total_loan_amount, 0), 0),
-            (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-             coalesce(v_structural_upgrade_cost, 0)::numeric +
-             coalesce(v_reroof_cost, 0)::numeric +
-             coalesce(v_tree_trimming_cost, 0)::numeric +
-             coalesce(v_trenching_cost, 0)::numeric +
-             coalesce(v_ac_unit_relocation_cost, 0)::numeric - coalesce(v_required_down_payment,0)) / (1 - v_dealer_fee),
-            (coalesce(v_main_panel_upgrade_cost, 0)::numeric +
-             coalesce(v_structural_upgrade_cost, 0)::numeric +
-             coalesce(v_reroof_cost, 0)::numeric +
-             coalesce(v_tree_trimming_cost, 0)::numeric +
-             coalesce(v_trenching_cost, 0)::numeric +
-             coalesce(v_ac_unit_relocation_cost, 0)::numeric),
+            case when v_total_ancillary_costs::numeric > 0::numeric then
+            (v_total_ancillary_costs::numeric) / (1 - v_dealer_fee) else 0::numeric end,
+            v_total_ancillary_costs::numeric,
             coalesce(v_promotion_cost, 0),
             round(v_loan_price_storage, 0),
             v_commission_strategy_id,
@@ -2099,7 +2071,7 @@ BEGIN
                   (SELECT array_to_json(array_agg(row_to_json(proposal_commission_details)))
                    FROM (
                           select *
-                          from brs.get_proposal_commission_details(v_financial_product_id,
+                          from brs.get_proposal_commission_details(v_product_id::bigint,
                                                                    v_source_id ,
                                                                    v_system_size ,
                                                                    v_unapproved_zip_code_adder ,
@@ -2127,7 +2099,8 @@ BEGIN
            v_storage_capacity,
            v_nominal_power,
            v_battery_manufacturers_warranty,
-           v_battery_workmanship_warranty;
+           v_battery_workmanship_warranty,
+           v_virtual_sales_price_adjustment;
 
 
 END

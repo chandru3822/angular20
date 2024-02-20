@@ -1,105 +1,109 @@
 <template>
   <v-container id="submitted-expense-container">
-    <v-row v-if="!selectedExpense || !selectedExpense.id">
-      <v-col cols="12">
-        <v-card flat color="white" class="pa-5">
-          <div class="flex-display">
-            <div class="left-header-bar">
-              <v-toolbar-title class="app-title">
-                Submitted Expenses
-              </v-toolbar-title>
-              <v-text-field
+    <v-card flat color="white" class="px-5 mt-4 square-card" v-if="!selectedExpense || !selectedExpense.id">
+      <v-row>
+        <v-col cols="12" sm="4">
+          <div class="left-header-bar">
+            <v-toolbar-title class="app-title">
+              Submitted Expenses
+            </v-toolbar-title>
+            <v-text-field
                 v-model="userSearchText"
                 prepend-inner-icon="search"
                 label="Search"
                 single-line
                 class="mt-5"
                 hide-details
-              ></v-text-field>
-            </div>
-            <v-spacer v-if="showMiddleHeader"></v-spacer>
-            <div class="middle-header-bar" v-if="showMiddleHeader">
-              <v-btn @click="paymentDropdown = true" color="primary" class="ml-3">Mark as Paid</v-btn>
-              <ConfirmationDialog :open-dialog="paymentDropdown" @confirm="confirmPayment" @close-dialog="paymentDropdown=false">
-                <template v-slot:title>Confirm</template>
-                Are you sure you want to pay all selected expenses?
-                <template v-slot:yes>Pay</template>
-              </ConfirmationDialog>
-            </div>
-            <v-spacer></v-spacer>
-            <div class="right-header-bar elevation-1">
-              <div>From:</div>
-              <div class="flex-display">
-                  <v-select v-model="startMonth"
-                            :items="months"
-                            hide-details
-                            class="mr-2 range-selector"
-                            single-line
-                            outlined
-                            dense
-                            label="Month"
-                            item-text="name"
-                            item-value="id"
-                  ></v-select>
-                  <v-select v-model="startYear"
-                            :items="years"
-                            hide-details
-                            class="range-selector"
-                            single-line
-                            outlined
-                            dense
-                            label="Year"
-                            item-text="name"
-                            item-value="id"
-                  ></v-select>
-              </div>
-              <div>Thru:</div>
-              <div class="flex-display">
-                  <v-select v-model="endMonth"
-                            :items="months"
-                            hide-details
-                            class="mr-2 range-selector"
-                            single-line
-                            outlined
-                            dense
-                            label="Month"
-                            item-text="name"
-                            item-value="id"
-                  ></v-select>
-                  <v-select v-model="endYear"
-                            :items="years"
-                            hide-details
-                            class="range-selector"
-                            single-line
-                            outlined
-                            dense
-                            label="Year"
-                            item-text="name"
-                            item-value="id"
-                  ></v-select>
-              </div>
-              <v-btn color="primary" class="white--text mt-2" small
-                     @click="getSubmittedExpenses">
-                Show All in Range
-              </v-btn>
-              <v-btn color="primary" class="white--text mt-2" small
-                     @click="exportExpenses(false)">
-                Export All in Range
-              </v-btn>
-              <v-btn color="primary" class="white--text mt-2" small
-                     @click="getAllUnpaid">
-                Show All Unpaid
-              </v-btn>
-              <v-btn color="primary" class="white--text mt-2" small
-                     @click="exportExpenses(true)">
-                Export All Unpaid
-              </v-btn>
-            </div>
+            ></v-text-field>
           </div>
-        </v-card>
-        <v-divider></v-divider>
-        <div class="submitted-expense-table-container">
-          <v-data-table
+        </v-col>
+        <v-col cols="12" sm="4" class="middle-header-bar">
+          <div  v-if="showMiddleHeader">
+            <v-btn @click="paymentDropdown = true" color="primary" class="ml-3">Mark as Paid</v-btn>
+            <ConfirmationDialog :open-dialog="paymentDropdown" @confirm="confirmPayment"
+                                @close-dialog="paymentDropdown=false">
+              <template v-slot:title>Confirm</template>
+              Are you sure you want to pay all selected expenses?
+              <template v-slot:yes>Pay</template>
+            </ConfirmationDialog>
+          </div>
+        </v-col>
+        <v-col cols="12" sm="4">
+          <div class="right-header-bar elevation-1">
+            <div>From:</div>
+            <div class="flex-display">
+              <v-select v-model="startMonth"
+                        :items="months"
+                        hide-details
+                        class="mr-2 range-selector"
+                        single-line
+                        outlined
+                        dense
+                        label="Month"
+                        item-text="name"
+                        item-value="id"
+              ></v-select>
+              <v-select v-model="startYear"
+                        :items="years"
+                        hide-details
+                        class="range-selector"
+                        single-line
+                        outlined
+                        dense
+                        label="Year"
+                        item-text="name"
+                        item-value="id"
+              ></v-select>
+            </div>
+            <div>Thru:</div>
+            <div class="flex-display">
+              <v-select v-model="endMonth"
+                        :items="months"
+                        hide-details
+                        class="mr-2 range-selector"
+                        single-line
+                        outlined
+                        dense
+                        label="Month"
+                        item-text="name"
+                        item-value="id"
+              ></v-select>
+              <v-select v-model="endYear"
+                        :items="years"
+                        hide-details
+                        class="range-selector"
+                        single-line
+                        outlined
+                        dense
+                        label="Year"
+                        item-text="name"
+                        item-value="id"
+              ></v-select>
+            </div>
+            <v-btn color="primary" class="white--text mt-2" small
+                   @click="getSubmittedExpenses">
+              Show All in Range
+            </v-btn>
+            <v-btn color="primary" class="white--text mt-2" small
+                   @click="exportExpenses(false)">
+              Export All in Range
+            </v-btn>
+            <v-btn color="primary" class="white--text mt-2" small
+                   @click="getAllUnpaid">
+              Show All Unpaid
+            </v-btn>
+            <v-btn color="primary" class="white--text mt-2" small
+                   @click="exportExpenses(true)">
+              Export All Unpaid
+            </v-btn>
+          </div>
+        </v-col>
+      </v-row>
+    </v-card>
+
+      <v-divider></v-divider>
+      <div v-if="!selectedExpense || !selectedExpense.id" class="submitted-expense-table-container">
+        <v-data-table
             :headers="headers"
             :items="filterSubmittedExpenses()"
             :search="userSearchText"
@@ -109,54 +113,53 @@
             :footer-props="footerProps"
             fixed-header
             class="elevation-1 fix-column-width-bug square-card submitted-expense-table"
-          >
-            <template #no-data>
-              <span class="default-text-color">No Matching Expenses Found</span>
-            </template>
+        >
+          <template #no-data>
+            <span class="default-text-color">No Matching Expenses Found</span>
+          </template>
 
-            <template #no-results>
-              <span class="default-text-color">No Matching Expenses Found</span>
-            </template>
+          <template #no-results>
+            <span class="default-text-color">No Matching Expenses Found</span>
+          </template>
 
-            <template #header.selectBox="{}">
-              <v-checkbox v-model="selectAllExpenses"
-                          v-if="userCanAdmin || userCanManage"
-                          @change="toggleSelectAllExpenses()"></v-checkbox>
-            </template>
+          <template #header.selectBox="{}">
+            <v-checkbox v-model="selectAllExpenses"
+                        v-if="userCanAdmin || userCanManage"
+                        @change="toggleSelectAllExpenses()"></v-checkbox>
+          </template>
 
-            <template #item="{ item, index }">
-              <tr :class="{'shaded-row': index % 2}">
-                <td>
-                  <v-checkbox v-model="item.selected"
-                              v-if="userCanAdmin || (userCanManage && !item.paidDate)"
-                              @change="toggleSingleSelect(item)"></v-checkbox>
-                </td>
-                <td class="text-left">{{ item.expenseBudgetUser }}</td>
-                <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
-                <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
-                <td class="text-left">{{ item.budgetType }}</td>
-                <td class="text-left">{{ item.glCode }}</td>
-                <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
-                <td class="text-left">{{ item.approvedBy }}</td>
-                <td class="text-left">{{ item.paidDate | formatDate('date') }}</td>
-                <td class="text-left">{{ item.paidBy }}</td>
-                <td>
-                  <div style="display: flex; justify-content: flex-end" v-if="userCanAdmin || (userCanManage && !item.paidDate)">
-                    <v-btn small text color="primary"
-                           @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getBudgetsForUser(selectedExpense.expenseBudgetUserId)]">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
-                  </div>
-                </td>
-              </tr>
-            </template>
-          </v-data-table>
-        </div>
-      </v-col>
-    </v-row>
+          <template #item="{ item, index }">
+            <tr :class="{'shaded-row': index % 2}">
+              <td>
+                <v-checkbox v-model="item.selected"
+                            v-if="userCanAdmin || (userCanManage && !item.paidDate)"
+                            @change="toggleSingleSelect(item)"></v-checkbox>
+              </td>
+              <td class="text-left">{{ item.expenseBudgetUser }}</td>
+              <td class="text-left">{{ item.amount | currency('$', 2) }}</td>
+              <td class="text-left">{{ item.expenseDate | formatDate('date') }}</td>
+              <td class="text-left">{{ item.budgetType }}</td>
+              <td class="text-left">{{ item.glCode }}</td>
+              <td class="text-left">{{ item.approvalDate | formatDate('date') }}</td>
+              <td class="text-left">{{ item.approvedBy }}</td>
+              <td class="text-left">{{ item.paidDate | formatDate('date') }}</td>
+              <td class="text-left">{{ item.paidBy }}</td>
+              <td>
+                <div style="display: flex; justify-content: flex-end"
+                     v-if="userCanAdmin || (userCanManage && !item.paidDate)">
+                  <v-btn small text color="primary"
+                         @click="[selectedExpense = item, getRequestAttachmentPresignedUrl(item), getBudgetsForUser(selectedExpense.expenseBudgetUserId)]">
+                    <v-icon>edit</v-icon>
+                  </v-btn>
+                  <v-btn small text color="primary" @click="[deleteConfirm = true, itemToDelete = item]">
+                    <v-icon>delete</v-icon>
+                  </v-btn>
+                </div>
+              </td>
+            </tr>
+          </template>
+        </v-data-table>
+      </div>
     <v-row v-else>
       <v-col cols="12">
         <v-toolbar flat class="cfg-header-bar" dense>
@@ -183,11 +186,11 @@
                             item-value="id"
             ></v-autocomplete>
             <DatetimePickerInput
-              v-model="selectedExpense.expenseDate"
-              :timezone="timezone"
-              :type="'date'"
-              :format="'MM/DD/YYYY'"
-              label="Expense Date"
+                v-model="selectedExpense.expenseDate"
+                :timezone="timezone"
+                :type="'date'"
+                :format="'MM/DD/YYYY'"
+                label="Expense Date"
             />
             <v-autocomplete v-model="selectedExpense.glCodeId"
                             :items="glCodes"
@@ -252,7 +255,7 @@
             <v-spacer></v-spacer>
             <v-btn color="primary" text @click="selectedExpense = {}">Cancel</v-btn>
             <v-btn color="primary" class="white--text" raised
-                   :disabled="selectedExpense.approvalDate !== null || !selectedExpense.expenseDate || !selectedExpense.glCodeId
+                   :disabled="!selectedExpense.expenseDate || !selectedExpense.glCodeId
                             || !selectedExpense.expenseBudgetUserId || !selectedExpense.expenseBudgetId || !selectedExpense.amount"
                    @click="saveSubmittedExpense(selectedExpense)">Save Changes
             </v-btn>
@@ -261,7 +264,7 @@
       </v-col>
     </v-row>
     <ConfirmationDialog
-        :open-dialog = deleteConfirm
+        :open-dialog=deleteConfirm
         @confirm=deleteSubmittedExpense(itemToDelete)
         @close-dialog="closeDeleteDialog">
       Are you sure you want to delete this Submitted Expense for <strong>{{ itemToDeleteUser }}:
@@ -278,7 +281,7 @@ import {
   getRequestWithParams,
   postRequest,
   putRequest,
-  getSnackbar, getMonthDateRange, getRequest
+  getSnackbar, getMonthDateRange, getRequest, getYears
 } from '@/helpers/helpers'
 import constants from "@/helpers/constants";
 import {
@@ -333,16 +336,16 @@ export default {
       budgetTypes: [],
       headers: [
         {text: '', value: 'selectBox', selectFilter: true, show: true, width: '50px', sortable: false},
-        {text: 'Purchaser', value: 'expenseBudgetUser', show: true},
-        {text: 'Amount', value: 'amount', show: true},
-        {text: 'Expense Date', value: 'expenseDate', show: true},
-        {text: 'Budget Type', value: 'budgetType', show: true},
-        {text: 'GL Code', value: 'glCode', show: true},
-        {text: 'Approved Date', value: 'dateApproved', show: true},
-        {text: 'Approved By', value: 'approvedBy', show: true},
-        {text: 'Paid Date', value: 'datePaid', show: true},
-        {text: 'Paid By', value: 'paidBy', show: true},
-        {text: null, value: 'icons', show: true}
+        {text: 'Purchaser', value: 'expenseBudgetUser', show: true, width: '125px'},
+        {text: 'Amount', value: 'amount', show: true, width: '75px'},
+        {text: 'Expense Date', value: 'expenseDate', show: true, width: '125px'},
+        {text: 'Budget Type', value: 'budgetType', show: true, width: '125px'},
+        {text: 'GL Code', value: 'glCode', show: true, width: '125px'},
+        {text: 'Approved Date', value: 'dateApproved', show: true, width: '125px'},
+        {text: 'Approved By', value: 'approvedBy', show: true, width: '125px'},
+        {text: 'Paid Date', value: 'datePaid', show: true, width: '125px'},
+        {text: 'Paid By', value: 'paidBy', show: true, width: '125px'},
+        {text: null, value: 'icons', show: true, width: '80px'}
       ],
       showAll: false,
       rangeChanged: false,
@@ -353,9 +356,7 @@ export default {
       canPay: false,
       approveConfirm: false,
       months: constants.MONTHS,
-      yearStart: 2017,
-      yearEnd: parseInt(moment().format('YYYY')),
-      years: [],
+      years: getYears(2017, true),
       startMonth: parseInt(moment().format('M')),
       startYear: parseInt(moment().format('YYYY')),
       endMonth: parseInt(moment().format('M')),
@@ -363,9 +364,6 @@ export default {
     }
   },
   created() {
-    for (let i = this.yearStart; i <= this.yearEnd; i++) {
-      this.years.push(i)
-    }
     this.getGlCodes()
     this.getUsersWithBudget()
     this.getBudgetTypes()
@@ -375,10 +373,10 @@ export default {
     showMiddleHeader() {
       return this.selectedExpenses.length > 0 && this.canPay
     },
-    itemToDeleteUser(){
+    itemToDeleteUser() {
       return this.itemToDelete ? this.itemToDelete.expenseBudgetUser : ''
     },
-    itemToDeleteAmount(){
+    itemToDeleteAmount() {
       return this.itemToDelete ? this.itemToDelete.amount : ''
     }
   },
@@ -486,16 +484,16 @@ export default {
 
         results.forEach(r => {
           csvData +=
-            '"' + r.expenseBudgetUser + '",' +
-            r.amount + ',' +
-            moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
-            r.budgetType + ',' +
-            r.glCode + ',' +
-            `${r.approvalDate ? moment(r.approvalDate).format('MM/DD/YYYY') : null}` + ',' +
-            '"' + r.approvedBy + '",' +
-            `${r.paidDate ? moment(r.paidDate).format('MM/DD/YYYY') : null}` + ',' +
-            '"' + r.paidBy + '",' +
-            '"' + r.details + '"'
+              '"' + r.expenseBudgetUser + '",' +
+              r.amount + ',' +
+              moment.utc(r.expenseDate).format('MM/DD/YYYY') + ',' +
+              r.budgetType + ',' +
+              r.glCode + ',' +
+              `${r.approvalDate ? moment(r.approvalDate).format('MM/DD/YYYY') : null}` + ',' +
+              '"' + r.approvedBy + '",' +
+              `${r.paidDate ? moment(r.paidDate).format('MM/DD/YYYY') : null}` + ',' +
+              '"' + r.paidBy + '",' +
+              '"' + r.details + '"'
 
           csvData += '\n'
 
@@ -718,6 +716,7 @@ export default {
 .middle-header-bar {
   display: flex;
   align-items: end;
+  justify-content: center;
 }
 
 .range-selector {

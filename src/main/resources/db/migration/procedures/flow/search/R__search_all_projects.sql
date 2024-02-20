@@ -37,6 +37,7 @@ DECLARE
   v_clean_phone_search_term   VARCHAR;
   v_clean_email_search_term   VARCHAR;
   v_clean_address_search_term VARCHAR;
+  v_clean_permit_term varchar;
   v_company_ids               bigint[];
 BEGIN
   v_clean_name_search_term = lower(trim(translate(p_searchterm, '*,.& ', '')));
@@ -44,6 +45,7 @@ BEGIN
   v_clean_email_search_term = lower(trim(p_searchterm));
   v_clean_id_search_term = trim(p_searchterm);
   v_clean_address_search_term = trim(lower(translate(p_searchterm, '.,', '')));
+  v_clean_permit_term = (trim(lower(translate(p_searchterm, E'/()_.,-:\n\r\t ', ''))));
   if p_is_parent then
     select array(select f.id from flow.company_hierarchy_filter_down(p_company_id) f)
     into v_company_ids;
@@ -88,6 +90,7 @@ BEGIN
                                        c.phone,
                                        c.mobile) contact1)::jsonb as contact
                   from flow.project p
+                         inner join brs.project_details pd on pd.project_id = p.id
                          inner join flow.company_project_status_type cpst
                                     on cpst.id = p.company_project_status_type_id
                          inner join flow.contact c on c.id = p.contact_id
@@ -98,7 +101,8 @@ BEGIN
                     and
                               ((p.id::text like '%' || v_clean_name_search_term || '%') or
                               (p.project_name_search like '%' || v_clean_name_search_term || '%') or
-                              (p.project_street_search like '%' || v_clean_address_search_term || '%'))
+                              (p.project_street_search like '%' || v_clean_address_search_term || '%')
+                              )
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
@@ -137,7 +141,46 @@ BEGIN
                     and case
                           when p_company_project_status_type_id is not null then
                             cpst.id = p_company_project_status_type_id
-                          else 1 = 1 end) as foo
+                          else 1 = 1 end
+                  union
+                  select p.id::bigint,
+                         p.project_name,
+                         p.contact_id::bigint,
+                         p.date_created,
+                         p.street1,
+                         p.street2,
+                         p.city,
+                         s.state,
+                         s.abbreviation                           as state_abbreviation,
+                         p.postal_code                            as "postalCode",
+                         p.latitude,
+                         p.longitude,
+                         p.company_project_status_type_id::bigint,
+                         cpst.project_status_type,
+                         (select row_to_json(contact1)
+                          from (select c.id,
+                                       c.phone,
+                                       c.mobile) contact1)::jsonb as contact
+                  from flow.project p
+                         inner join brs.project_details pd on pd.project_id = p.id
+                         inner join flow.company_project_status_type cpst
+                                    on cpst.id = p.company_project_status_type_id
+                         inner join flow.contact c on c.id = p.contact_id
+                         left join flow.company_state cs on cs.id = p.company_state_id
+                         left join flow.state s on s.id = cs.state_id
+                  where c.company_id = any (v_company_ids)
+                    and p.archived is not true
+                    and
+                    (
+                     ((trim(lower(translate(building_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%') or
+                     ((trim(lower(translate(electrical_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%') or
+                     ((trim(lower(translate(mpu_permit_number, E'/()_.,-:\n\r\t ', '')))) like '%' || v_clean_permit_term || '%')
+                      )
+                    and case
+                          when p_company_project_status_type_id is not null then
+                            cpst.id = p_company_project_status_type_id
+                          else 1 = 1 end
+                    ) as foo
             ORDER BY (case when p_sort_column is null OR p_sort_direction is null then foo.date_created end) desc,
                      (case
                         when lower(p_sort_column) = 'project_name' and lower(p_sort_direction) = 'asc'

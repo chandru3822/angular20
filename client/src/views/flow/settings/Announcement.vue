@@ -184,7 +184,7 @@ import isEqual from 'lodash.isequal'
     components: {ConfirmationDialog, DatetimePickerInput, quillEditor},
     computed: {
       isCurrent() {
-        return this.announcement.id && (this.announcementCopy.endTime == null || moment().isBefore(moment(this.announcementCopy.endTime)))
+        return !this.announcement.id || (this.announcement.id && (this.announcementCopy.endTime == null || moment().isBefore(moment(this.announcementCopy.endTime))))
       },
       pathUrl() {
         return this.isCurrent ? `/settings/announcements/current` : `/settings/announcements/past`

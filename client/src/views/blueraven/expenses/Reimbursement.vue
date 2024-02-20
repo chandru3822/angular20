@@ -64,7 +64,7 @@
           </div>
           <v-btn color="primary" class="white--text"
                  :disabled="!newReimbursement.expenseDate || !selectedBudgetId || !newReimbursement.amount || !newReimbursement.budgetTypeId
-                             || !newReimbursement.details"
+                            || !receiptLogo || !receiptLogo.id || !newReimbursement.details"
                  @click="submitReimbursementRequest()">
             Submit
           </v-btn>
@@ -147,7 +147,7 @@ import {
   postRequest,
   getSnackbar,
   getRequestWithParams,
-  getMonthDateRange
+  getMonthDateRange, getYears
 } from '@/helpers/helpers'
 import DatetimePickerInput from "@/components/DatetimePickerInput"
 import constants from "@/helpers/constants"
@@ -191,17 +191,12 @@ export default {
       rejectedRequests: [],
       budgetReport: [],
       months: constants.MONTHS,
-      yearStart: 2017,
-      yearEnd: parseInt(moment().format('YYYY')),
-      years: [],
+      years: getYears(2017, true),
       selectedMonth: parseInt(moment().format('M')),
       selectedYear: parseInt(moment().format('YYYY'))
     }
   },
   created() {
-    for (let i = this.yearStart; i <= this.yearEnd; i++) {
-      this.years.push(i)
-    }
     //init
     this.setDataForMonth()
     this.getBudgetTypes()

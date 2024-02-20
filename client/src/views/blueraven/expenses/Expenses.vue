@@ -2,10 +2,10 @@
   <v-container>
     <v-row>
       <v-col cols="12">
-        <v-app-bar dense tabs color="white" class="elevation-1 mb-1">
+        <v-app-bar dense tabs color="white" class="elevation-1 mb-1" id="expense-management-header">
           <v-toolbar-title>
-            <v-btn fab text v-if="userIsAdmin"
-                   small color="primary" class="mr-2 hide-xs" @click="goToPath('')">
+            <v-btn fab text v-if="userIsAdmin || userCanManage"
+                   small color="primary" class="mr-2" @click="goToPath('')">
               <v-icon v-if="manage">mdi-view-list</v-icon>
               <v-icon v-else>settings</v-icon>
             </v-btn>
@@ -43,6 +43,7 @@
       return {
         snackbar: {},
         model: '',
+        userCanManage: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'MANAGE'),
         userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('EXPENSES', 'ADMIN'),
         tabs: [
           {
@@ -93,3 +94,9 @@
     }
   }
 </script>
+
+<style lang="scss">
+#expense-management-header .v-slide-group__prev {
+  display: none !important;
+}
+</style>
