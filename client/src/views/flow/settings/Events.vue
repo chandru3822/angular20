@@ -20,14 +20,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <AlbatrossButton
             color="primary"
             dark
             class="white--text"
             @click="deleteError = false"
           >
             OK
-          </v-btn>
+          </AlbatrossButton>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -37,9 +37,9 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}, getResourceFields()]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <AlbatrossButton text color="primary" @click="[addNew = !addNew, newStep = {}, getResourceFields()]" v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               {{ addNew ? 'Cancel' : 'Add New'}}
-            </v-btn>
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-container class="pa-0">
@@ -58,10 +58,10 @@
               item-value="id"
             ></v-autocomplete>
 
-            <v-btn color="primary" :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
+            <AlbatrossButton color="primary" :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
                    @click="addEvent">
               Save
-            </v-btn>
+            </AlbatrossButton>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -87,14 +87,14 @@
             >
               <template #item.eventName="{ item }" class="clickable" @click="goToEvent(item.id)">{{item.eventName}}</template>
               <template #item.icons="{item}" class="text-end">
-                    <v-btn small text color="primary" @click="goToEvent(item.id)">
+                    <AlbatrossButton small text color="primary" @click="goToEvent(item.id)">
                       <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn small text color="primary"
-                           v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    </AlbatrossButton>
+                    <AlbatrossButton small text color="primary"
+                           v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                            @click="eventToDelete=item">
                       <v-icon>delete</v-icon>
-                    </v-btn>
+                    </AlbatrossButton>
                   </template>
 
             </v-data-table>
@@ -109,137 +109,130 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 
 import {getRequest, putRequest, postRequest, getSnackbar, handleHidingGlobalLoader} from '@/helpers/helpers'
 import debounce from "lodash.debounce";
 import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-export default {
-  name: 'Events',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
+import {computed, getCurrentInstance, ref, watch} from "vue";
 
-  data () {
-    return {
-      snackbar: {},
-      addNew: false,
-      deleteError: false,
-      cannotDeleteReasons: {},
-      search: '',
-      newEvent: {},
-      selectedEventId: null,
-      companyId: this.$store.state.user.details.companyId,
-      userId: this.$store.state.user.details.id,
-      events: [],
-      eventResourceFields: [],
-      headers: [
-        {text: 'Event Name', value: 'eventName', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
-      footerProps: {
-        'items-per-page-options': [25, 50, 100, 1000],
-        'items-per-page-text': 'Rows per page:'
-      },
-      eventToDelete: null
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const router = vueInstance.$route
+
+
+const addNew = ref(false)
+const deleteError = ref(false)
+const cannotDeleteReasons = ref({})
+const search = ref('')
+const newEvent = ref({})
+const selectedEventId = ref(null)
+const companyId = ref(store.state.user.details.companyId)
+const userId = ref(store.state.user.details.id)
+const events = ref([])
+const eventResourceFields = ref([])
+const headers = ref([
+  {text: 'Event Name', value: 'eventName', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const footerProps = ref({
+  'items-per-page-options': [25, 50, 100, 1000],
+  'items-per-page-text': 'Rows per page:'
+})
+const eventToDelete = ref(null)
+
+
+watch(options, () => {
+  const handler = () => {
+    getEvents()
+  }
+})
+
+const eventToDeleteName = computed(() => {
+  return eventToDelete.value ? eventToDelete.value.eventName : ''
+})
+
+const filterEvents = computed(() => {
+  return events.value.filter(e => {
+    return !e.archived
+  })
+})
+
+const debounceGetSteps = () => {
+  debounce(function () {
+    getEvents()
+  }, 500)
+}
+
+const getResourceFields = async () => {
+  if(addNew.value) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data} = await getEventResourceFields()
+      eventResourceFields.value = data
+      store.commit(AppMutations.SET_LOADING, false)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
     }
-  },
-  watch: {
-    options: {
-      handler () {
-        this.getEvents()
-      },
-      deep: true,
-    },
-  },
-  computed: {
-    eventToDeleteName(){
-      return this.eventToDelete ? this.eventToDelete.eventName : ''
-    }
-  },
-  methods: {
-    debounceGetSteps: debounce( function () {
-      this.getEvents()
-    }, 500),
-    goToEvent(eventId) {
-      this.$router.push({path: `/settings/event/${eventId}/components`})
-    },
-    async getResourceFields() {
-      if(this.addNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data} = await getEventResourceFields()
-          this.eventResourceFields = data
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async getEvents () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getRequest(`/event`)
-        this.events = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteEvent () {
-      const event = this.eventToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/event/delete/${event.id}`)
-        event.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Event Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        if (e.status === 400) {
-          event.deleteConfirm = false
-          this.deleteError = true
-          this.cannotDeleteReasons = e.data
-        }
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-      this.eventToDelete = null
-    },
-    async addEvent () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await postRequest(`/event`, this.newEvent)
-        this.$router.push({path: `/settings/event/${data.id}/customFieldGroups`})
-        this.snackbar = getSnackbar('SUCCESS', 'Event Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Event')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    filterEvents () {
-      return this.events.filter(e => { return !e.archived})
-    },
-  },
-  async created () {
-    await this.getEvents()
   }
 }
+
+const getEvents = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await getRequest(`/event`)
+    events.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const deleteEvent =  async () => {
+  const event = eventToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/event/delete/${event.id}`)
+    event.archived = true
+    snackbar('SUCCESS', 'Event Deleted')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    if (e.status === 400) {
+      event.deleteConfirm = false
+      deleteError.value = true
+      cannotDeleteReasons.value = e.data
+    }
+    snackbar('ERROR', 'Error Deleting Event')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+  eventToDelete.value = null
+}
+
+const addEvent = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await postRequest(`/event`, newEvent.value)
+    router.push({path: `/settings/event/${data.id}/customFieldGroups`})
+    snackbar('SUCCESS', 'Event Added')
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Event')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+
 </script>
 
 <style lang="scss">

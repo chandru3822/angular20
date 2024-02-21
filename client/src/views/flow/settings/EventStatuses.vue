@@ -6,11 +6,11 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newType = {}]"
-                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
+            <AlbatrossButton text color="primary" @click="[addNew = !addNew, newType = {}]"
+                   v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
               <v-icon v-if="constants.IS_MOBILE">add</v-icon>
               <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
@@ -23,9 +23,9 @@
                           item-value="id"
                           label="Select a Category"
                           item-text="eventStatusType"></v-autocomplete>
-          <v-btn color="primary" :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">
+          <AlbatrossButton color="primary" :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">
             Save
-          </v-btn>
+          </AlbatrossButton>
         </v-card>
         <v-card class="square-card">
           <v-card-title class="pt-0">
@@ -67,19 +67,19 @@
                   :disabled="!userCanEdit"
                   label="Select a Category"
                   item-text="eventStatusType"></v-autocomplete>
-                <v-btn color="primary" dark class="white--text"
+                <AlbatrossButton color="primary" dark class="white--text"
                        v-if="userCanEdit"
                        :disabled="!item.eventStatusType || !item.eventStatusTypeId"
                        @click="saveType(item, false)">Save
-                </v-btn>
+                </AlbatrossButton>
               </td>
             </template>
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
                 <td style="width: 50px">
-                  <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
+                  <AlbatrossButton text color="primary" icon small class="handle" v-if="userCanEdit">
                     <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  </AlbatrossButton>
                 </td>
                 <td class="text-left">
                   {{ item.eventStatusType }}
@@ -88,24 +88,24 @@
                   {{ item.rootEventStatusType }}
                 </td>
                 <td class="text-right">
-                  <v-btn small text color="primary" @click="getUsesForStatus(item.id, item.eventStatusType)"><v-icon>mdi-clipboard-list-outline</v-icon></v-btn>
+                  <AlbatrossButton small text color="primary" @click="getUsesForStatus(item.id, item.eventStatusType)"><v-icon>mdi-clipboard-list-outline</v-icon></AlbatrossButton>
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
-                      <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                             v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                      <AlbatrossButton icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                             v-on="on"><v-icon>mdi-information</v-icon></AlbatrossButton>
                     </template>
                     <span>Event Status Id: {{item.id}}</span>
                     <div class="text-center">(click to copy)</div>
                   </v-tooltip>
-                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                  <AlbatrossButton small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
                     <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                  <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                  </AlbatrossButton>
+                  <AlbatrossButton small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</AlbatrossButton>
+                  <AlbatrossButton small text color="primary" v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
                          @click="[itemToDelete=item, showDeleteDialog=true]"
                   >
                     <v-icon>delete</v-icon>
-                  </v-btn>
+                  </AlbatrossButton>
                 </td>
 
               </tr>
@@ -183,7 +183,6 @@
 <script>
 import {Actions} from '@/store'
 import {AppMutations} from '@/stores/AppStore'
-import Vue2Filters from 'vue2-filters'
 import draggable from 'vuedraggable'
 import cloneDeep from 'lodash.clonedeep'
 import Sortable from 'sortablejs'
@@ -194,255 +193,239 @@ import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/help
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default {
-  name: 'EventStatuses',
-  mixins: [Vue2Filters.mixin],
-  components: {
-    ConfirmationDialog,
-    draggable,
-  },
-  data() {
-    return {
-      snackbar: {},
-      constants,
-      search: '',
-      statusTypes: [],
-      expanded: [],
-      rootStatusTypes: [],
-      acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-      savingTypeLogo: false,
-      headers: [
-        {text: null, value: 'draggable', width: '50px', show: true},
-        {text: 'Event Status', value: 'eventStatusType', show: true},
-        {text: 'Status', value: 'rootEventStatusType', show: true},
-        {text: '', value: 'icons', show: true},
-      ],
-      addNew: false,
-      newType: {},
-      selectedStatusTypeId: null,
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-      fieldsInUse: [],
-      showDeleteDialog: false,
-      itemToDelete: null,
-      showInfoDialog: false,
-      objectsUsingStatus: [],
-      deleteError: false
-    }
-  },
-  mounted() {
-    let table = document.querySelector('tbody')
-    const _self = this
-    Sortable.create(table, {
-      handle: '.handle',
-      onEnd({newIndex, oldIndex}) {
-        const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
-        _self.statusTypes.splice(newIndex, 0, rowSelected)
-        let statusTypesClone = cloneDeep(_self.statusTypes)
-        statusTypesClone.forEach((g, idx) => {
-          g.displayOrder = idx
-        })
-        _self.saveOrderChanges(statusTypesClone)
-      }
-    })
-  },
-  computed: {
-    itemToDeleteEventStatusType() {
-      return this.itemToDelete ? this.itemToDelete.eventStatusType : ''
-    }
-  },
-  methods: {
-    async saveOrderChanges(types) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await putRequest(`/event/companyStatuses`, types)
-        this.snackbar = getSnackbar('SUCCESS', 'Status Types Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Status Type Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async uploadFile(item, files, attachmentTypeId, sourceId, sizeLimit) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        let file = files[0]
-        await this.$store.dispatch(Actions.FILE_UPLOAD, {
-          file: file,
-          sizeLimit,
-          attachmentTypeId,
-          sourceId,
-          displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-          callback: async (img, error) => {
-            if (error?.error) {
-              this.snackbar = getSnackbar('ERROR', error.errorMsg)
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            } else {
-              item.icon = img
+import {computed, getCurrentInstance, ref, watch} from "vue";
 
-              this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              this.$store.commit(AppMutations.SET_LOADING, false)
-            }
-          }
-        })
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteAttachment(item) {
-      try {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        await this.$store.dispatch(Actions.FILE_DELETE, {
-          id: item.icon.id,
-          callback: async (status) => {
-            item.icon = {}
-            // this.$store.commit(UserMutations.SET_USER_IMAGE, {})
-            this.snackbar = getSnackbar('SUCCESS', 'Image Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        })
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting File')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCompanyStatusTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getCompanyEventStatusTypes()
-        this.statusTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getEventStatusTypes() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await getEventStatusTypes()
-        this.rootStatusTypes = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getUsesForStatus(eventStatusId, eventStatusName) {
-      this.deleteError = false
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`, this.apiPath, null, []);
-        this.objectsUsingStatus = data
-        this.objectsUsingStatus.fieldName = eventStatusName
-        this.showInfoDialog = true
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteType() {
-      this.deleteError = false
-      const item = this.itemToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        await deleteRequest(`/event/companyStatus/${item.id}`)
-        this.fieldsInUse = [];
-        this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-        item.archived = true
-        //it makes no sense why this didn't work and why the code isn't yelling that i am editing a const variable... ? oh well
-        // this.itemToDelete.archived = true
-      } catch (e) {
-        if (e.status === 400) {
-          this.showInfoDialog = true
-          this.deleteError = true
-          this.objectsUsingStatus = e.data;
-          this.objectsUsingStatus.fieldName = item.eventStatusType
-          this.snackbar = getSnackbar("ERROR", "Error Deleting Status");
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        else {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      } finally {
-        this.closeDeleteDialog()
-      }
-    },
-    async saveType(type, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data} = await putRequest(`/event/companyStatus`, type)
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const router = vueInstance.$route
 
-        if (isNew) {
-          // add it to the records already on the screen
-          this.statusTypes.push(data)
-          this.statusTypes = orderBy(this.statusTypes, [s => s.eventStatusType.toLowerCase()])
 
-          // reset the new process fields
-          this.addNew = false
-          this.newType = {}
-        } else {
-          type.eventStatusTypeId = data.eventStatusTypeId
-          type.eventStatusType = data.eventStatusType
-          type.rootEventStatusType = data.rootEventStatusType
-        }
-        this.expanded = []
-        this.selectedStatusTypeId = null
-        this.snackbar = getSnackbar('SUCCESS', 'Event Status Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Event Status')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    filterEventStatuses() {
-      return this.statusTypes.filter(s => {
-        return !s.archived
+const search = ref('')
+const statusTypes = ref([])
+const expanded = ref([])
+const rootStatusTypes = ref([])
+const acceptedFileTypes = ref(constants.STANDARD_IMAGES_ONLY)
+const savingTypeLogo = ref(false)
+const headers = ref([
+  {text: null, value: 'draggable', width: '50px', show: true},
+  {text: 'Event Status', value: 'eventStatusType', show: true},
+  {text: 'Status', value: 'rootEventStatusType', show: true},
+  {text: '', value: 'icons', show: true},
+])
+const addNew = ref(false)
+const newType = ref({})
+const selectedStatusTypeId = ref(null)
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+const fieldsInUse = ref([])
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const showInfoDialog = ref(false)
+const objectsUsingStatus = ref([])
+const deleteError = ref(false)
+
+onMounted(() => {
+  let table = document.querySelector('tbody')
+  const _self = vueInstance
+  Sortable.create(table, {
+    handle: '.handle',
+    onEnd({newIndex, oldIndex}) {
+      const rowSelected = _self.statusTypes.splice(oldIndex, 1)[0]
+      _self.statusTypes.splice(newIndex, 0, rowSelected)
+      let statusTypesClone = cloneDeep(_self.statusTypes)
+      statusTypesClone.forEach((g, idx) => {
+        g.displayOrder = idx
       })
-    },
-    copyToClipBoard(textValue){
-      navigator.clipboard.writeText(textValue);
-      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    },
-    closeDeleteDialog() {
-      this.showDeleteDialog = false
-      this.itemToDelete = null
+      _self.saveOrderChanges(statusTypesClone)
     }
-  },
-  async created() {
-    this.getCompanyStatusTypes()
-    this.getEventStatusTypes()
+  })
+  getCompanyStatusTypes.value()
+  getEventStatusTypes.value()
+})
+
+const itemToDeleteEventStatusType = computed(() =>{
+  return itemToDelete.value ? itemToDelete.value.eventStatusType : ''
+})
+
+const saveOrderChanges = async (types) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    await putRequest(`/event/companyStatuses`, types)
+    snackbar('SUCCESS', 'Status Types Updated')
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Status Type Changes')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
+const uploadFile = async (item, files, attachmentTypeId, sourceId, sizeLimit) => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    let file = files[0]
+    await store.dispatch(Actions.FILE_UPLOAD, {
+      file: file,
+      sizeLimit,
+      attachmentTypeId,
+      sourceId,
+      displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+      callback: async (img, error) => {
+        if (error?.error) {
+          snackbar('ERROR', error.errorMsg)
+          store.commit(AppMutations.SET_LOADING, false)
+        } else {
+          item.icon = img
+          snackbar('SUCCESS', 'Image Uploaded')
+          store.commit(AppMutations.SET_LOADING, false)
+        }
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Uploading File')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const deleteAttachment = async (item) => {
+  try {
+    store.commit(AppMutations.SET_LOADING, true)
+    await store.dispatch(Actions.FILE_DELETE, {
+      id: item.icon.id,
+      callback: async (status) => {
+        item.icon = {}
+        // store.commit(UserMutations.SET_USER_IMAGE, {})
+        snackbar('SUCCESS', 'Image Deleted')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    })
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting File')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const getCompanyStatusTypes = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await getCompanyEventStatusTypes()
+    statusTypes.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const getEventStatusTypes = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await getEventStatusTypes()
+    rootStatusTypes.value = data
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getUsesForStatus = async (eventStatusId, eventStatusName) => {
+  deleteError.value = false
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/event/companyStatusUses/${eventStatusId}`, this.apiPath, null, []);
+    objectsUsingStatus.value = data
+    objectsUsingStatus.value.fieldName = eventStatusName
+    showInfoDialog.value = true
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const deleteType = async () => {
+  deleteError.value = false
+  const item = itemToDelete.value
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    await deleteRequest(`/event/companyStatus/${item.id}`)
+    fieldsInUse.value = [];
+    snackbar('SUCCESS', 'Status Deleted')
+
+    store.commit(AppMutations.SET_LOADING, false)
+    item.archived = true
+    //it makes no sense why this didn't work and why the code isn't yelling that i am editing a const variable... ? oh well
+    // this.itemToDelete.archived = true
+  } catch (e) {
+    if (e.status === 400) {
+      showInfoDialog.value = true
+      deleteError.value = true
+      objectsUsingStatus.value = e.data;
+      objectsUsingStatus.value.fieldName = item.eventStatusType
+      snackbar("ERROR", "Error Deleting Status");
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    else {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Status')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  } finally {
+    closeDeleteDialog()
+  }
+}
+
+const saveType = async (type, isNew) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data} = await putRequest(`/event/companyStatus`, type)
+
+    if (isNew) {
+      // add it to the records already on the screen
+      statusTypes.value.push(data)
+      statusTypes.value = orderBy(statusTypes.value, [s => s.eventStatusType.toLowerCase()])
+
+      // reset the new process fields
+      addNew.value = false
+      newType.value = {}
+    } else {
+      type.eventStatusTypeId = data.eventStatusTypeId
+      type.eventStatusType = data.eventStatusType
+      type.rootEventStatusType = data.rootEventStatusType
+    }
+    expanded.value = []
+    selectedStatusTypeId.value = null
+    snackbar('SUCCESS', 'Event Status Saved')
+    store.commit(AppMutations.SET_LOADING, false)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Event Status')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const filterEventStatuses = () => {
+  return statusTypes.value.filter(s => {
+    return !s.archived
+  })
+}
+
+const copyToClipBoard = (textValue) =>{
+  navigator.clipboard.writeText(textValue);
+  snackbar('SUCCESS', 'Copied text to clipboard')
+
+}
+const closeDeleteDialog = () =>{
+  showDeleteDialog.value = false
+  itemToDelete.value = null
+}
+
 </script>
 
 <style lang="scss">

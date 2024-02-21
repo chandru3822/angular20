@@ -13,9 +13,9 @@
                 {{f.companyFunctionName}}
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <v-btn :to="{ path: `/settings/function/${f.id}`}" text color="primary">
+                <AlbatrossButton :to="{ path: `/settings/function/${f.id}`}" text color="primary">
                   <v-icon>edit</v-icon>
-                </v-btn>
+                </AlbatrossButton>
               </v-list-item-action>
             </v-list-item>
           </v-list>
@@ -26,47 +26,39 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import Vue2Filters from 'vue2-filters'
   import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-  export default {
-    name: 'ProcessSteps',
-    mixins: [Vue2Filters.mixin],
+  import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 
-    data () {
-      return {
-        snackbar: {},
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        functions: []
-      }
-    },
-    computed: {
-    },
-    methods: {
-      async getFunctions () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/function`)
-          this.functions = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteFunction () {
-        // await deleteRequest(`/processStep/${processStepId}`)
-      }
-    },
-    async created () {
-      this.getFunctions()
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const router = vueInstance.$route
+
+  const companyId = ref(store.state.user.details.companyId)
+  const userId = ref(store.state.user.details.id)
+  const functions = ref([])
+  const getFunctions = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/function`)
+      functions.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+
+  onMounted(() => {
+    getFunctions()
+  })
+
 </script>
 
 <style scoped lang="scss">

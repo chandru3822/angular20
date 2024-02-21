@@ -2,10 +2,10 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <v-btn text class="pl-1 pr-2 anchor" :to="'/settings/dataViews'">
+        <AlbatrossButton text class="pl-1 pr-2 anchor" :to="'/settings/dataViews'">
           <v-icon>arrow_left</v-icon>
           <span>Back</span>
-        </v-btn>
+        </AlbatrossButton>
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
             <span class="page-title" v-if="!edit">{{ dataView.displayName }}</span>
@@ -37,19 +37,19 @@
             </div>
           </div>
           <div class="text-right">
-            <v-btn text color="primary" v-if="!edit" class=""
+            <AlbatrossButton text color="primary" v-if="!edit" class=""
                    @click="[oldName = dataView.displayName, edit = !edit, getCompanyProcesses()]">
               <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" class="" v-else :disabled="dataView.companyProcesses.length === 0"
+            </AlbatrossButton>
+            <AlbatrossButton text color="primary" class="" v-else :disabled="dataView.companyProcesses.length === 0"
                    @click="[edit = false, saveDataView()]">
               <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn text color="primary"
+            </AlbatrossButton>
+            <AlbatrossButton text color="primary"
                    v-if="edit"
                    @click="[dataView.displayName = oldName, edit = !edit, fixData()]">
               cancel
-            </v-btn>
+            </AlbatrossButton>
           </div>
         </div>
         <v-divider class="mt-3 mb-1"></v-divider>
@@ -63,11 +63,11 @@
             single-line
             hide-details
           ></v-text-field>
-          <v-btn text color="primary" class="d-inline-block" v-if="!addNew"
+          <AlbatrossButton text color="primary" class="d-inline-block" v-if="!addNew"
                  @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects(), fixData()]">
             <v-icon v-if="constants.IS_MOBILE">add</v-icon>
             <span v-else>{{ addNew ? 'Cancel' : 'Add New Field' }}</span>
-          </v-btn>
+          </AlbatrossButton>
         </div>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add Field Config</h3>
@@ -185,18 +185,18 @@
                 </div>
               </div>
             </v-form>
-            <v-btn :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
+            <AlbatrossButton :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
                    color="primary" class="white--text mr-2"
                    @click="validateFields(newField, true)">
               Save
-            </v-btn>
-            <v-btn
+            </AlbatrossButton>
+            <AlbatrossButton
               @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}, fixData()]"
               text color="primary"
             >
               Cancel
-            </v-btn>
+            </AlbatrossButton>
           </div>
 
         </v-card>
@@ -227,11 +227,11 @@
               <div class="flex-display">
                 <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
                               label="Display Name"/>
-                <v-btn text :disabled="!item.displayName"
+                <AlbatrossButton text :disabled="!item.displayName"
                        color="primary" class="white--text mr-2 d-inline-block"
                        @click="saveFieldConfig(item, false)">
                   <v-icon>save</v-icon>
-                </v-btn>
+                </AlbatrossButton>
               </div>
               <v-text-field text v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
@@ -306,9 +306,9 @@
                   <v-toolbar-title>Child Fields</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
-                    <v-btn text color="primary" @click="[addChild = !addChild, childField = {}]">
+                    <AlbatrossButton text color="primary" @click="[addChild = !addChild, childField = {}]">
                       <v-icon>add</v-icon>
-                    </v-btn>
+                    </AlbatrossButton>
                   </v-toolbar-items>
                 </v-toolbar>
 
@@ -334,12 +334,12 @@
                     <div class="mb-3 error--text" v-if="childSaveError">
                       {{ childSaveErrorMsg }}
                     </div>
-                    <v-btn
+                    <AlbatrossButton
                       :disabled="!childField.displayName || !childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
                       color="primary" class="white--text mr-2"
                       @click="validateChildField(item, childField, true)">
                       Add Child Field
-                    </v-btn>
+                    </AlbatrossButton>
                   </v-form>
                 </div>
                 <v-data-table
@@ -365,11 +365,11 @@
                               <v-text-field text v-model="childField.displayName"
                                             :rules="requiredRules"
                                             label="Display Name"/>
-                              <v-btn text :disabled="!childField.displayName"
+                              <AlbatrossButton text :disabled="!childField.displayName"
                                      color="primary" class="white--text mr-2 d-inline-block"
                                      @click="saveChildFieldConfig(item, childField, false)">
                                 <v-icon>save</v-icon>
-                              </v-btn>
+                              </AlbatrossButton>
                             </div>
                           </v-card-text>
                         </v-card>
@@ -389,21 +389,21 @@
                       <td style="width: 130px;">
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                                   v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                            <AlbatrossButton small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                                   v-on="on"><v-icon>mdi-information</v-icon></AlbatrossButton>
                           </template>
                           <span>ID: {{childField.id}}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
-                        <v-btn small text color="primary" v-if="!childFieldExpanded.includes(childField)"
+                        <AlbatrossButton small text color="primary" v-if="!childFieldExpanded.includes(childField)"
                                @click="[addChild = false, childFieldExpanded = [childField] ]">
                           <v-icon>edit</v-icon>
-                        </v-btn>
-                        <v-btn small text color="primary"
+                        </AlbatrossButton>
+                        <AlbatrossButton small text color="primary"
                                v-if="childFieldExpanded.includes(childField)"
                                @click="childFieldExpanded = []">
                           cancel
-                        </v-btn>
+                        </AlbatrossButton>
 
                       </td>
                     </tr>
@@ -420,21 +420,21 @@
               <td>
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <v-btn small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                           v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                    <AlbatrossButton small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
+                           v-on="on"><v-icon>mdi-information</v-icon></AlbatrossButton>
                   </template>
                   <span>ID: {{item.id}}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)"
+                <AlbatrossButton small text color="primary" v-if="!expanded.includes(item)"
                        @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary"
+                </AlbatrossButton>
+                <AlbatrossButton small text color="primary"
                        v-if="expanded.includes(item)"
                        @click="expanded = []">
                   cancel
-                </v-btn>
+                </AlbatrossButton>
 
               </td>
             </tr>
@@ -447,389 +447,374 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-export default {
-  name: 'DataView',
+import { getCurrentInstance, ref } from "vue";
 
-  data() {
-    return {
-      snackbar: {},
-      childField: {},
-      viewLoaded: false,
-      selectedObjectTypeId: null,
-      addChild: false,
-      childFieldHeaders: [
-        {text: 'Field Name', value: 'displayName', show: true},
-        {text: 'Field To Update', value: 'fieldToUpdate', show: true},
-        {text: 'Data Type', value: 'dataType', show: true},
-        {text: 'Unique Behavior Type', value: 'uniqueBehaviorType', show: true},
-        {text: null, value: 'icons', show: true, sortable: false}
-      ],
-      fieldType: 1,
-      requiredRules: constants.BASIC_REQUIRED_RULE,
-      fieldToUpdateRule: [
-        // () => (this.newField.fieldToUpdate != null && this.newField.fieldToUpdate !== '') || "Field to Update is required",
-        v => !!v || "Field is required",
-        v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
-        v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
-        v => (!v || (/^[a-z]+(?:_+[a-z0-9]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start with a letter",
-        v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
-        v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
-      ],
-      selectedDefaultField: {},
-      uniqueBehaviorTypes: [],
-      dataTypes: [],
-      expanded: [],
-      childFieldExpanded: [],
-      edit: false,
-      oldName: null,
-      defaultFields: [],
-      processStepEvents: [],
-      processSteps: [],
-      cfgaParentObject: {},
-      parentObjects: [],
-      parentProcessStepEvent: {},
-      parentProcessStepEvents: [],
-      customFields: [],
-      companyProcesses: [],
-      oldCompanyProcessIds: [],
-      oldCompanyProcesses: [],
-      constants,
-      search: '',
-      addNew: false,
-      childSaveError: false,
-      childSaveErrorMsg: '',
-      newField: {},
-      viewId: parseInt(this.$route.params.id),
-      dataView: {},
-      userId: this.$store.state.user.details.id,
-      companyId: this.$store.state.user.details.companyId,
-      headers: [
-        {text: 'Field Name', value: 'displayName', show: true},
-        {text: 'Field to Update', value: 'fieldToUpdate', show: true},
-        {text: null, value: 'icons', show: true, sortable: false}
-      ]
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
+const route = vueInstance.$route
+
+const childField = ref({})
+const viewLoaded = ref(false)
+const selectedObjectTypeId = ref(null)
+const addChild = ref(false)
+const childFieldHeaders = ref([
+  {text: 'Field Name', value: 'displayName', show: true},
+  {text: 'Field To Update', value: 'fieldToUpdate', show: true},
+  {text: 'Data Type', value: 'dataType', show: true},
+  {text: 'Unique Behavior Type', value: 'uniqueBehaviorType', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+const fieldType = ref(1)
+const requiredRules = ref(constants.BASIC_REQUIRED_RULE)
+const fieldToUpdateRule = ref([
+  // () => (this.newField.fieldToUpdate != null && this.newField.fieldToUpdate !== '') || "Field to Update is required",
+  v => !!v || "Field is required",
+  v => (!v || (v && (v.indexOf(' ') <= 0))) || 'Cannot contain whitespace',
+  v => (!v || (v && (v.indexOf('__') <= 0))) || "All word dividers must be a single '_'",
+  v => (!v || (/^[a-z]+(?:_+[a-z0-9]+)*$/.test(v))) || "Field to Update must be all lowercase, no symbols except '_' and must start with a letter",
+  v => (!v || (v && (v.length >= 5))) || 'Must be 5 characters or more',
+  v => (!v || (v && (v.length <= 60))) || 'Must be 60 characters or less',
+])
+const selectedDefaultField = ref({})
+const uniqueBehaviorTypes = ref([])
+const dataTypes = ref([])
+const expanded = ref([])
+const childFieldExpanded = ref([])
+const edit = ref(false)
+const oldName = ref(null)
+const defaultFields = ref([])
+const processStepEvents = ref([])
+const processSteps = ref([])
+const cfgaParentObject = ref({})
+const parentObjects = ref([])
+const parentProcessStepEvent = ref({})
+const parentProcessStepEvents = ref([])
+const customFields = ref([])
+const companyProcesses = ref([])
+const oldCompanyProcessIds = ref([])
+const oldCompanyProcesses = ref([])
+const search = ref('')
+const addNew = ref(false)
+const childSaveError = ref(false)
+const childSaveErrorMsg = ref('')
+const newField = ref({})
+const viewId = ref(parseInt(route.params.id))
+const dataView = ref({})
+const userId = ref(store.state.user.details.id)
+const companyId = ref(store.state.user.details.companyId)
+const headers = ref([
+  {text: 'Field Name', value: 'displayName', show: true},
+  {text: 'Field to Update', value: 'fieldToUpdate', show: true},
+  {text: null, value: 'icons', show: true, sortable: false}
+])
+
+const created = async () => {
+  getDataView()
+  getParentObjects()
+}
+const copyToClipBoard = (textValue) => {
+  navigator.clipboard.writeText(textValue)
+  snackbar('SUCCESS', 'Copied text to clipboard')
+}
+
+const getCompanyProcesses = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/processes`)
+    companyProcesses.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error loading processes')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const setObjectTypeId = (field) => {
+  selectedObjectTypeId.value = field.objectTypeId
+}
+
+const saveDataView = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    dataView.value.companyProcessIds = dataView.value.companyProcesses.map(cp => cp.id)
+    const {data, status} = await postRequest(`/dataView`, dataView.value)
+    oldCompanyProcessIds.value = cloneDeep(dataView.value.companyProcessIds)
+    oldCompanyProcesses.value = cloneDeep(dataView.value.companyProcesses)
+    snackbar('SUCCESS', 'Data View Updated')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Updating Data View')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const resetAllFields = () => {
+  //gets called when the field type changes so that all data is clean again
+  selectedDefaultField.value = {}
+  selectedObjectTypeId.value = null
+  newField.value.customFieldGroupAssignmentId = null
+  vueInstance.$set(newField.value, 'updateFirstValueOnly', false)
+  vueInstance.$set(newField.value, 'resetOnNew', false)
+  vueInstance.$set(newField.value, 'resetValuesOnMain', false)
+  vueInstance.$set(newField,value, 'ignoreIfNull', false)
+  cfgaParentObject.value = {}
+  newField.value.processStepEventId = null
+  newField.value.processStepId = null
+}
+const validateFields = (field, isNew) => {
+  let valid = vueInstance.$refs.fieldConfigForm?.validate()
+
+  //if they had set one of these as true but then changed the field type to a different type then reset the values here
+  if (![4, 6].includes(selectedObjectTypeId.value)) {
+    newField.value.updateFirstValueOnly = false
+    newField.value.resetOnNew = false
+    newField.value.resetValuesOnMain = false
+  }
+
+  if (valid) {
+    saveFieldConfig(field, isNew)
+  }
+}
+const validateChildField = (item, newChildField, isNew) => {
+  childSaveError.value = false
+  let match = item?.childFieldConfigs.find(cfc => cfc.fieldToUpdate === newChildField.fieldToUpdate)
+
+  if (match) {
+    childSaveError.value = true
+    childSaveErrorMsg.value = 'Field to Update already in use'
+  } else if (newChildField.fieldToUpdate === item.fieldToUpdate) {
+    childSaveError.value = true
+    childSaveErrorMsg.value = 'Field to Update already in use by parent'
+  } else if (vueInstance.$refs.childFieldForm?.validate()) {
+    saveChildFieldConfig(item, newChildField, isNew)
+  }
+}
+const validateForm = async () => {
+  if (vueInstance.$refs.projectEditForm.validate()) {
+    //these could be combined - just dont have time atm
+    saveProjectAddressFields()
+    updateOwner()
+    //have to wait for this one to complete or it doesn't have the right values to display fresh ones
+    await updateStatus()
+    //set project values if they hit save
+    project.value = cloneDeep(tempProject.value)
+    showEditProjectModal.value = false
+  }
+}
+const getUniqueBehaviorTypes = async () => {
+  if (uniqueBehaviorTypes.value.length === 0) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/dataView/getUniqueBehaviorTypes`)
+      uniqueBehaviorTypes.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Unique Behavior Types')
+      store.commit(AppMutations.SET_LOADING, false)
     }
-  },
-  async created() {
-    this.getDataView()
-    this.getParentObjects()
-  },
-  methods: {
-    copyToClipBoard(textValue){
-      navigator.clipboard.writeText(textValue);
-      this.snackbar = getSnackbar('SUCCESS', 'Copied text to clipboard')
-      this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-    },
-    async getCompanyProcesses() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/processes`)
-        this.companyProcesses = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error loading processes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    setObjectTypeId(field) {
-      this.selectedObjectTypeId = field.objectTypeId
-    },
-    async saveDataView() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.dataView.companyProcessIds = this.dataView.companyProcesses.map(cp => cp.id)
-        const {data, status} = await postRequest(`/dataView`, this.dataView)
-        this.oldCompanyProcessIds = cloneDeep(this.dataView.companyProcessIds)
-        this.oldCompanyProcesses = cloneDeep(this.dataView.companyProcesses)
-        this.snackbar = getSnackbar('SUCCESS', 'Data View Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Updating Data View')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    resetAllFields() {
-      // console.log('this ahppend')
-      //gets called when the field type changes so that all data is clean again
-      this.selectedDefaultField = {}
-      this.selectedObjectTypeId = null
-      this.newField.customFieldGroupAssignmentId = null
-      this.$set(this.newField, 'updateFirstValueOnly', false)
-      this.$set(this.newField, 'resetOnNew', false)
-      this.$set(this.newField, 'resetValuesOnMain', false)
-      this.$set(this.newField, 'ignoreIfNull', false)
-      this.cfgaParentObject = {}
-      this.newField.processStepEventId = null
-      this.newField.processStepId = null
-    },
-    validateFields(field, isNew) {
-      let valid = this.$refs.fieldConfigForm?.validate()
+  }
+}
+const loadProcessStepEvents = async () => {
+  //only load this data if the parent was a process step
+  if (cfgaParentObject.value?.isProcessStep) {
+    parentProcessStepEvent.value = {}
+    parentProcessStepEvents.value = []
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/processStep/${cfgaParentObject.value?.id}/event`)
+      parentProcessStepEvents.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
+const loadFieldsByParent = async (isEvent) => {
+  newField.value.customFieldGroupAssignmentId = null
+  customFields.value = []
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    if (isEvent) {
+      const {
+        data,
+        status
+      } = await getRequest(`/customField/getByProcessStepEvent/${parentProcessStepEvent.value?.id}`)
+      customFields.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } else if (cfgaParentObject.value?.isProcessStep) {
+      const {data, status} = await getRequest(`/customField/getByParentProcessStep/${cfgaParentObject.value?.id}`)
+      customFields.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } else {
+      const {data, status} = await getRequest(`/customField/getByParentType/${cfgaParentObject.value?.id}`)
+      customFields.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getParentObjects = async () => {
+  newField.value.customFieldGroupAssignmentId = null
+  cfgaParentObject.value = {}
+  customFields.value = []
+  parentObjects.value = []
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`)
+    parentObjects.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Details')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getProcessStepEventData = async () => {
+  newField.value.processStepEventId = null
+  newField.value.processStepId = null
+  processStepEvents.value = []
+  if (selectedDefaultField.value?.objectTypeId === 6) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {
+        data,
+        status
+      } = await getRequest(`/dataView/${viewId.value}/defaultFieldPsEvents/${selectedDefaultField.value.id}`)
+      processStepEvents.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Details')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
 
-      //if they had set one of these as true but then changed the field type to a different type then reset the values here
-      if (![4, 6].includes(this.selectedObjectTypeId)) {
-        this.newField.updateFirstValueOnly = false
-        this.newField.resetOnNew = false
-        this.newField.resetValuesOnMain = false
-      }
+const getProcessStepData = async () => {
+  newField.value.processStepId = null
+  processSteps.value = []
+  if (selectedDefaultField.value?.objectTypeId === 4) {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {
+        data,
+        status
+      } = await getRequest(`/dataView/${viewId.value}/defaultFieldPs/${selectedDefaultField.value.id}`)
+      processSteps.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Details')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+}
+const getAvailableDefaultFields = async () =>{
+  selectedDefaultField.value = {}
+  defaultFields.value = []
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/dataView/${viewId.value}/getAvailableDefaultFields`)
+    defaultFields.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Details')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const fixData = () => {
+  dataView.value.companyProcesses = cloneDeep(oldCompanyProcesses.value)
+  dataView.value.companyProcessIds = cloneDeep(oldCompanyProcessIds.value)
+  resetAllFields()
+}
 
-      if (valid) {
-        this.saveFieldConfig(field, isNew)
-      }
-    },
-    validateChildField(item, newChildField, isNew) {
-      this.childSaveError = false
-      let match = item?.childFieldConfigs.find(cfc => cfc.fieldToUpdate === newChildField.fieldToUpdate)
+const getDataView = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/dataView/${viewId.value}`)
+    dataView.value = data
+    oldCompanyProcessIds.value = cloneDeep(data?.companyProcessIds)
+    oldCompanyProcesses.value = cloneDeep(data?.companyProcesses)
+    viewLoaded.value = true
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Loading Details')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const saveFieldConfig = async (field, isNew) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    //we have to use the whole object for selectedDefaultField because we need to use the data type in some other checks
+    field.defaultFieldId = selectedDefaultField.value.id
 
+    //if it was a cfga id for a pse we need to add this here
+    if (parentProcessStepEvent.value && parentProcessStepEvent.value.id) {
+      field.processStepEventId = parentProcessStepEvent.value.id
+    }
+    //if it was a cfga for a ps add it here
+    if(cfgaParentObject.value?.id) {
+      field.processStepId = cfgaParentObject.value?.id
+    }
 
-      if (match) {
-        this.childSaveError = true
-        this.childSaveErrorMsg = 'Field to Update already in use'
-      } else if (newChildField.fieldToUpdate === item.fieldToUpdate) {
-        this.childSaveError = true
-        this.childSaveErrorMsg = 'Field to Update already in use by parent'
-      } else if (this.$refs.childFieldForm?.validate()) {
-        this.saveChildFieldConfig(item, newChildField, isNew)
-      }
-    },
-    async validateForm() {
-      if (this.$refs.projectEditForm.validate()) {
-        //these could be combined - just dont have time atm
-        this.saveProjectAddressFields()
-        this.updateOwner()
-        //have to wait for this one to complete or it doesn't have the right values to display fresh ones
-        await this.updateStatus()
-        //set project values if they hit save
-        this.project = cloneDeep(this.tempProject)
-        this.showEditProjectModal = false
-      }
-    },
-    async getUniqueBehaviorTypes() {
-      if (this.uniqueBehaviorTypes.length === 0) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/dataView/getUniqueBehaviorTypes`)
-          this.uniqueBehaviorTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Unique Behavior Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async loadProcessStepEvents() {
-      //only load this data if the parent was a process step
-      if (this.cfgaParentObject?.isProcessStep) {
-        this.parentProcessStepEvent = {}
-        this.parentProcessStepEvents = []
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processStep/${this.cfgaParentObject?.id}/event`)
-          this.parentProcessStepEvents = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async loadFieldsByParent(isEvent) {
-      this.newField.customFieldGroupAssignmentId = null
-      this.customFields = []
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        if (isEvent) {
-          const {
-            data,
-            status
-          } = await getRequest(`/customField/getByProcessStepEvent/${this.parentProcessStepEvent?.id}`)
-          this.customFields = data
-          handleHidingGlobalLoader(this, status)
-        } else if (this.cfgaParentObject?.isProcessStep) {
-          const {data, status} = await getRequest(`/customField/getByParentProcessStep/${this.cfgaParentObject?.id}`)
-          this.customFields = data
-          handleHidingGlobalLoader(this, status)
-        } else {
-          const {data, status} = await getRequest(`/customField/getByParentType/${this.cfgaParentObject?.id}`)
-          this.customFields = data
-          handleHidingGlobalLoader(this, status)
-        }
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getParentObjects() {
-      this.newField.customFieldGroupAssignmentId = null
-      this.cfgaParentObject = {}
-      this.customFields = []
-      this.parentObjects = []
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequestWithParams(`/processStep/getParentObjectsWithTypes`)
-        this.parentObjects = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getProcessStepEventData() {
-      this.newField.processStepEventId = null
-      this.newField.processStepId = null
-      this.processStepEvents = []
-      if (this.selectedDefaultField?.objectTypeId === 6) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {
-            data,
-            status
-          } = await getRequest(`/dataView/${this.viewId}/defaultFieldPsEvents/${this.selectedDefaultField.id}`)
-          this.processStepEvents = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async getProcessStepData() {
-      this.newField.processStepId = null
-      this.processSteps = []
-      if (this.selectedDefaultField?.objectTypeId === 4) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {
-            data,
-            status
-          } = await getRequest(`/dataView/${this.viewId}/defaultFieldPs/${this.selectedDefaultField.id}`)
-          this.processSteps = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      }
-    },
-    async getAvailableDefaultFields() {
-      this.selectedDefaultField = {}
-      this.defaultFields = []
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/dataView/${this.viewId}/getAvailableDefaultFields`)
-        this.defaultFields = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    fixData() {
-      this.dataView.companyProcesses = cloneDeep(this.oldCompanyProcesses)
-      this.dataView.companyProcessIds = cloneDeep(this.oldCompanyProcessIds)
-      this.resetAllFields()
-    },
-    async getDataView() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/dataView/${this.viewId}`)
-        this.dataView = data
-        this.oldCompanyProcessIds = cloneDeep(data?.companyProcessIds)
-        this.oldCompanyProcesses = cloneDeep(data?.companyProcesses)
-        this.viewLoaded = true
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Loading Details')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveFieldConfig(field, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        //we have to use the whole object for selectedDefaultField because we need to use the data type in some other checks
-        field.defaultFieldId = this.selectedDefaultField.id
+    const {data, status} = await postRequest(`/dataView/${viewId.value}/field`, field)
+    if (isNew) {
+      dataView.value.dataViewFieldConfigs.push(data)
+      addNew.value = false
+      selectedDefaultField.value = {}
+      newField.value = {processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}
+      defaultFields.value = []
+      snackbar('SUCCESS', 'New Field Config Added')
+    } else {
+      snackbar('SUCCESS', 'Data View Updated')
+    }
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = null != e.data?.message ? e.data?.message : isNew ? 'Error Adding Field' : 'Error Updating Field'
+    snackbar('ERROR', msg)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
 
-        //if it was a cfga id for a pse we need to add this here
-        if (this.parentProcessStepEvent && this.parentProcessStepEvent.id) {
-          field.processStepEventId = this.parentProcessStepEvent.id
-        }
-        //if it was a cfga for a ps add it here
-        if(this.cfgaParentObject?.id) {
-          field.processStepId = this.cfgaParentObject?.id
-        }
-
-        const {data, status} = await postRequest(`/dataView/${this.viewId}/field`, field)
-        if (isNew) {
-          this.dataView.dataViewFieldConfigs.push(data)
-          this.addNew = false
-          this.selectedDefaultField = {}
-          this.newField = {processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}
-          this.defaultFields = []
-          this.snackbar = getSnackbar('SUCCESS', 'New Field Config Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.snackbar = getSnackbar('SUCCESS', 'Data View Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let msg = null != e.data?.message ? e.data?.message : isNew ? 'Error Adding Field' : 'Error Updating Field'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveChildFieldConfig(primaryField, childField, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {
-          data,
-          status
-        } = await postRequest(`/dataView/${this.viewId}/field/${primaryField.id}/childField`, childField)
-        if(isNew) {
-          primaryField.childFieldConfigs.push(data)
-        }
-        this.addChild = false
-        this.childField = {}
-        this.childFieldExpanded = []
-        this.snackbar = getSnackbar('SUCCESS', 'Child Field Config Saved')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        let msg = null != e.data?.message ? e.data?.message : 'Error Saving Field'
-        this.snackbar = getSnackbar('ERROR', msg)
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+const saveChildFieldConfig = async (primaryField, childField, isNew) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {
+      data,
+      status
+    } = await postRequest(`/dataView/${viewId.value}/field/${primaryFid.value}/childField`, childField)
+    if(isNew) {
+      primaryField.childFieldConfigs.push(data)
+    }
+    addChild.value = false
+    childField.value = {}
+    childFieldExpanded.value = []
+    snackbar('SUCCESS', 'Child Field Config Saved')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let msg = null != e.data?.message ? e.data?.message : 'Error Saving Field'
+    snackbar('ERROR', msg)
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 </script>
