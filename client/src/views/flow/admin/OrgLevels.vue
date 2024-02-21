@@ -7,6 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+                             variant="text"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, newOrgLevel = {}]">
             </AlbatrossButton>
@@ -20,7 +21,7 @@
             <v-text-field text v-model="newOrgLevel.level" type="number"
                           label="Level" />
           </div>
-          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newOrgLevel = {}]"></AlbatrossButton>
+          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, newOrgLevel = {}]"></AlbatrossButton>
           <AlbatrossButton :disabled="!newOrgLevel.levelName || !newOrgLevel.level"
                  text="Save" class="mr-2"
                  @click="saveOrgLevel(newOrgLevel, true)">
@@ -65,11 +66,11 @@
             <tr  class="text-left" :class="{'shaded-row': orgLevels.indexOf(item) % 2}">
               <td class="text-left">{{ item.levelName }}</td>
               <td class="text-left">{{ item.level }}</td>
-              <td>
-                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+              <td class="text-right">
+                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
                 </AlbatrossButton>
                 <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton size="small" prepend-icon="delete" @click="levelToDelete=item" />
+                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="levelToDelete=item" />
               </td>
             </tr>
           </template>

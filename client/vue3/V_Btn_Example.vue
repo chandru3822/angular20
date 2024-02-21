@@ -10,6 +10,7 @@
         icon="false"
         color="pink"
         :loading="false"
+        html-style="height: 50px"
         :disabled="false"
         :prepend-icon="addNew ? 'remove' : 'add'"
         size="small"

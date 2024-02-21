@@ -6,7 +6,7 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <AlbatrossButton variant="text"
                 :text="addNew ? 'Cancel' : 'Add New'"
                    @click="[addNew = !addNew, newFunction = {}, getDataTypes(), getFunctionTypes()]">
             </AlbatrossButton>
@@ -57,12 +57,12 @@
                 label="Run in backend"
             />
           </div>
+          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, newFunction = {}]" />
           <AlbatrossButton
               :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
               text="Save" class="mr-2"
               @click="addFunction()">
           </AlbatrossButton>
-          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newFunction = {}]" />
         </v-card>
         <v-text-field
             v-model="search"
@@ -97,10 +97,10 @@
               <td class="text-left">{{ item.functionName }}</td>
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.functionType }}</td>
-              <td>
-                <AlbatrossButton size="small" prepend-icon="edit" @click="goToFunction(item.id)">
+              <td class="text-right">
+                <AlbatrossButton variant="text" size="small" prepend-icon="edit" @click="goToFunction(item.id)">
                 </AlbatrossButton>
-                <AlbatrossButton size="small" prepend-icon="delete" @click="functionToDelete=item">
+                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="functionToDelete=item">
                 </AlbatrossButton>
               </td>
             </tr>
@@ -142,7 +142,7 @@ const headers = ref([
   {text: 'Function', value: 'functionName', show: true},
   {text: 'Display Name', value: 'displayName', show: true},
   {text: 'Type', value: 'functionType', show: true},
-  {text: null, value: 'icons', show: true, sortable: false}
+  {text: null, value: 'icons', show: true, width: 150, sortable: false}
 ])
 const functionToDeleteName = computed(() => {
   return functionToDelete.value ? functionToDelete.value.functionName : ''

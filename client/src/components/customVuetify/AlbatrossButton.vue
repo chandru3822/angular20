@@ -12,8 +12,7 @@
          :href="props.href"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
-         :class="[{'white--text': !props.variant,
-                   'text-capitalize': props.capitalize,
+         :class="[{'text-capitalize': props.capitalize,
                    'text-lowercase': props.lowerCase},
                   props.customClasses]"
          :to="props.to"

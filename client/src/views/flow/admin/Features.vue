@@ -7,6 +7,7 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+                             variant="text"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, selectedFeature = {}]">
             </AlbatrossButton>
@@ -33,12 +34,12 @@
                 return-object
             ></v-select>
           </div>
-          <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">Cancel</v-btn>
-          <v-btn :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
-                 color="primary" class="mr-2"
+          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, selectedFeature = {}]"></AlbatrossButton>
+          <AlbatrossButton :disabled="!selectedFeature || !selectedFeature.featureName || !selectedFeature.featureCode"
+                 class="mr-2"
                  @click="saveFeature(true)">
             Save
-          </v-btn>
+          </AlbatrossButton>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -72,11 +73,11 @@
                   <input class="ml-3" type="checkbox" v-model="item.isSystem">
                 </div>
               </div>
-              <v-btn :disabled="!item.featureName"
-                     color="primary" class="white--text mr-2"
+              <AlbatrossButton :disabled="!item.featureName"
+                     class="mr-2"
                      @click="saveFeature(false, item)">
                 Save
-              </v-btn>
+              </AlbatrossButton>
             </td>
           </template>
 
@@ -84,11 +85,11 @@
             <tr class="text-left" :class="{'shaded-row': companyFeatures.indexOf(item) % 2}">
               <td class="text-left">{{ item.featureName }}</td>
               <td class="text-left">{{ item.featureCode }}</td>
-              <td>
-                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+              <td class="text-right">
+                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
                 </AlbatrossButton>
                 <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton size="small" prepend-icon="delete" @click="featureToDelete=item" />
+                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="featureToDelete=item" />
               </td>
             </tr>
           </template>

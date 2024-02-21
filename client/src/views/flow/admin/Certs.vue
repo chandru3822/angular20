@@ -11,6 +11,7 @@
               </AlbatrossButton>
             </div>
             <AlbatrossButton :hide-text-on-mobile="true"
+                             variant="text"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              prepend-icon="add"
                              @click="[addNew = !addNew, selectedCert = {}]">
@@ -36,9 +37,9 @@
                         outlined v-model="selectedCert.notes">
             </v-textarea>
           </div>
-          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, selectedCert = {}]"></AlbatrossButton>
+          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, selectedCert = {}]"></AlbatrossButton>
           <AlbatrossButton :disabled="!selectedCert || !selectedCert.certName || !selectedCert.expirationDate"
-                 text="Save" class="mr-2"
+                 text="Save" class="ml-2"
                  @click="saveCert(true, selectedCert)">
           </AlbatrossButton>
         </v-card>
@@ -99,10 +100,10 @@
               <td class="text-left">{{ item.expirationDate | formatDate('date', 'MM/DD/YYYY') }}</td>
               <td class="text-left">{{ item.daysToExpiration }}</td>
               <td class="text-right">
-                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
                 </AlbatrossButton>
                 <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton size="small" prepend-icon="delete" @click="certToDelete=item">
+                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="certToDelete=item">
                 </AlbatrossButton>
               </td>
             </tr>
@@ -152,7 +153,7 @@ const headers = ref([
   {text: 'Cert Name', value: 'certName', show: true},
   {text: 'Expiration Date', value: 'expirationDate', show: true},
   {text: 'Days to Expiration', value: 'daysToExpiration', show: true},
-  {text: null, value: 'icons', show: true, sortable: false}
+  {text: null, value: 'icons', show: true, width: 200, sortable: false}
 ])
 
 const certToDeleteName = computed(() => {

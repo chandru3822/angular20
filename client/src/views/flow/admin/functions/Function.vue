@@ -11,7 +11,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton
+            <AlbatrossButton variant="text"
                 :text="addNew ? 'Cancel' : 'Add New Param'"
                    @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes(), getSystemValues()]">
             </AlbatrossButton>
@@ -92,7 +92,7 @@
                  text="Save"
                  @click="addParam()">
           </AlbatrossButton>
-          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newParam = {}]" />
+          <AlbatrossButton text="Cancel" variant="text" @click="[addNew = !addNew, newParam = {}]" />
         </v-card>
         <v-divider></v-divider>
         <v-card flat class="px-3">
@@ -167,7 +167,7 @@
                 </td>
                 <td>
                   <AlbatrossButton size="small" v-if="!expanded.includes(item)"
-                                   prepend-icon="edit"
+                                   prepend-icon="edit" variant="text"
                                    @click="expanded = [item]">
                   </AlbatrossButton>
                   <AlbatrossButton size="small" v-if="expanded.includes(item)"

@@ -43,8 +43,8 @@
               <td>
                 <input type="checkbox" v-model="item.hasAccess" disabled readonly>
               </td>
-              <td>
-                <AlbatrossButton size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
+              <td class="text-right">
+                <AlbatrossButton variant="text" size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
                 </AlbatrossButton>
                 <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>

@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Filters</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+            <AlbatrossButton variant="text" :hide-text-on-mobile="true" prepend-icon="add"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, newOrgFilter = {}]">
             </AlbatrossButton>
@@ -32,7 +32,7 @@
             <label>Show Type:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
-          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newOrgFilter = {}]"></AlbatrossButton>
+          <AlbatrossButton variant="text" text="Cancel" @click="[addNew = !addNew, newOrgFilter = {}]"></AlbatrossButton>
           <AlbatrossButton :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
                  text="Save" class="mr-2"
                  @click="saveOrgFilter(newOrgFilter, true)">
@@ -92,11 +92,11 @@
               <td class="text-left">
                 <input type="checkbox" v-model="item.showType" disabled readonly>
               </td>
-              <td>
-                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+              <td class="text-right">
+                <AlbatrossButton variant="text" size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
                 </AlbatrossButton>
                 <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
-                <AlbatrossButton size="small" prepend-icon="delete" @click="filterToDelete=item" />
+                <AlbatrossButton variant="text" size="small" prepend-icon="delete" @click="filterToDelete=item" />
               </td>
             </tr>
           </template>

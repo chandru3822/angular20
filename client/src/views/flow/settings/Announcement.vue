@@ -2,7 +2,8 @@
   <v-container>
     <v-row class="pt-0" v-if="!dataLoading">
       <v-col cols="12" class="pt-0">
-        <AlbatrossButton icon @click="cancel()" custom-classes="back-button">
+        <AlbatrossButton variant="text" round @click="cancel()"
+                         custom-classes="back-button">
           <template v-slot:default>
             <v-icon x-large>mdi-chevron-left</v-icon>
           </template>
@@ -13,7 +14,7 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton @click="validate()" prepend-icon="save"
+            <AlbatrossButton variant="text" @click="validate()" prepend-icon="save"
                    v-if="userCanEdit" :loading="saving">
             </AlbatrossButton>
           </v-toolbar-items>
