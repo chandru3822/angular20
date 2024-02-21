@@ -421,7 +421,7 @@
                               color="primary"
                               @click="copyToClipBoard(item.id)"
                               v-bind="attrs"
-                              v-on="on"
+                              :activation-handler="on"
                               round
                               prepend-icon="mdi-information"/>
 
@@ -437,12 +437,14 @@
                           @click="[addChild = false, childFieldExpanded = [childField] ]"
                           prepend-icon="edit"
                         />
-                        <v-btn small text color="primary"
-                               v-if="childFieldExpanded.includes(childField)"
-                               @click="childFieldExpanded = []">
-                          cancel
-                        </v-btn>
-
+                        <AlbatrossButton
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          v-if="childFieldExpanded.includes(childField)"
+                          @click="childFieldExpanded = []"
+                          text="cancel"
+                        />
                       </td>
                     </tr>
                   </template>
@@ -471,16 +473,22 @@
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
 
-                <v-btn small text color="primary" v-if="!expanded.includes(item)"
-                       @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary"
-                       v-if="expanded.includes(item)"
-                       @click="expanded = []">
-                  cancel
-                </v-btn>
-
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="!expanded.includes(item)"
+                  @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]"
+                  prepend-icon="edit"
+                />
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="expanded.includes(item)"
+                  @click="expanded = []"
+                  text="cancel"
+                />
               </td>
             </tr>
           </template>
