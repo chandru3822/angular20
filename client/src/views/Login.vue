@@ -23,9 +23,9 @@
                     Forgot Password
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn :loading="loginLoading" type="submit"
-                         color="primary" class="white--text">Login
-                  </v-btn>
+                  <AlbatrossButton :loading="loginLoading" type="submit"
+                         color="primary">Login
+                  </AlbatrossButton>
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -41,6 +41,7 @@ import {UserActions, UserMutations} from '@/stores/UserStore'
 import constants from '@/helpers/constants'
 import axios from 'axios'
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

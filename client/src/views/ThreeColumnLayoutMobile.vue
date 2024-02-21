@@ -24,6 +24,7 @@
 
 */
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton";
 
 const props = defineProps({
   menuItems: Array, //@required
@@ -76,9 +77,8 @@ const chooseSelectedView = (view, id) => {
     </v-navigation-drawer>
   <v-row>
     <v-toolbar id="three-column-header" flat :height="headerHeight" :color="headerColor ? headerColor : 'grey lighten-2'">
-    <v-btn small text color="primary" @click="toggleMenu(false)" >
-      <v-icon>mdi-menu</v-icon>
-    </v-btn>
+    <AlbatrossButton size="small" icon="mdi-menu" @click="toggleMenu(false)">
+    </AlbatrossButton>
     <slot name="header-contents">
     </slot>
     </v-toolbar>
