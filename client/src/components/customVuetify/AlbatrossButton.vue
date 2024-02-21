@@ -5,6 +5,9 @@
          :loading="props.loading"
          :disabled="props.disabled"
          :color="props.color"
+         :elevation="props.elevation"
+         :icon="props.round"
+         :href="props.href"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
          :class="[{'white--text': !props.variant,
@@ -17,8 +20,8 @@
     <slot name="default">
       <template>
         <div>
-          <v-icon v-if="props.icon && !props.showAlternate" class="mr-1">{{ props.icon }}</v-icon>
-          <v-icon v-else-if="props.alternateIcon && props.showAlternate" class="mr-1">{{ props.alternateIcon }}</v-icon>
+          <v-icon v-if="props.prependIcon && !props.showAlternate" class="mr-1">{{ props.prependIcon }}</v-icon>
+          <v-icon v-else-if="props.alternatePrependIcon && props.showAlternate" class="mr-1">{{ props.alternatePrependIcon }}</v-icon>
           <span v-if="!props.hideTextOnMobile">{{ props.showAlternate ? props.alternateText : props.text }}</span>
         </div>
       </template>
@@ -38,6 +41,8 @@ const props = defineProps({
   id: String, //fields without a defined default will default to null
   to: String,
   variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to `text` which is why the text color is set to white if there is no variant
+  elevation: Number,
+  href: String,
   text: {
     type: String,
     default: ''
@@ -54,7 +59,11 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  icon: {
+  round: {
+    type: Boolean,
+    default: false
+  },
+  prependIcon: {  //using `prependIcon` to prep for vue3
     type: String,
     default: ''
   },
@@ -62,7 +71,7 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
-  alternateIcon: {
+  alternatePrependIcon: {
     type: String,
     default: ''
   },

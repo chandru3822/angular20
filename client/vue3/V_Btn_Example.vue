@@ -5,12 +5,15 @@
         to="/settings/functions"
         variant="text"
         text="Add New"
+        :elevation="0"
+        href="https://www.google.com"
+        icon="false"
         color="pink"
         :loading="false"
         :disabled="false"
-        icon="add"
+        prepend-icon="add"
         :show-alternate="addNew"
-        alternate-icon="cancel"
+        alternate-prepend-icon="cancel"
         alternate-text="cancel"
         size="small"
         :hide-text-on-mobile="true"
@@ -55,7 +58,7 @@ import {ref} from 'vue'
 const showMenu = ref(false)
 const addNew = ref(false)
 
-// Note: cannot actually use `to` and `@click` in the same button
+// Note: cannot actually use `to` `href` `@click` all in the same button
 
 const myFunction = () => {
   addNew.value = !addNew.value
