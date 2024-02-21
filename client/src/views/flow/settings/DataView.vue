@@ -455,21 +455,22 @@
             <tr class="text-left" :class="{'shaded-row': dataView.dataViewFieldConfigs.indexOf(item) % 2}">
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.fieldToUpdate }}</td>
-              <td>
+              <td class="text-right">
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <AlbatrossButton
-                      size="small"
-                      color="primary"
-                      @click="copyToClipBoard(item.id)" v-bind="attrs"
-                      v-on="on"
-                      round
-                      prepend-icon="mdi-information"
-                    />
+                      <AlbatrossButton
+                        size="small"
+                        color="primary"
+                        :activation-handler="on"
+                        @click="copyToClipBoard(item.id)" v-bind="attrs"
+                        round
+                        prepend-icon="mdi-information"
+                        ></AlbatrossButton>
                   </template>
                   <span>ID: {{item.id}}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
+
                 <v-btn small text color="primary" v-if="!expanded.includes(item)"
                        @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
@@ -506,6 +507,7 @@ const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
 const route = vueInstance.$route
 
+const showMenu = ref(false)
 const childField = ref({})
 const viewLoaded = ref(false)
 const selectedObjectTypeId = ref(null)
@@ -557,7 +559,7 @@ const companyId = ref(store.state.user.details.companyId)
 const headers = ref([
   {text: 'Field Name', value: 'displayName', show: true},
   {text: 'Field to Update', value: 'fieldToUpdate', show: true},
-  {text: null, value: 'icons', show: true, sortable: false}
+  {text: null, value: 'icons', show: true, sortable: false, width: 150}
 ])
 
 onMounted(async () => {

@@ -31,11 +31,10 @@
     </AlbatrossButton>
 
 <!--    a menu opening example-->
-<!--    NOTE: .native is required when using the button as an activator -->
     <v-menu v-model="showMenu" transition="scale-transition" offset-y
             min-width="290px" :close-on-content-click="false">
-      <template v-slot:activator="{ on: { click } }">
-        <AlbatrossButton @click.native="click" text="Open Menu">
+      <template v-slot:activator="{ on }">
+        <AlbatrossButton :activation-handler="on" text="Open Menu">
 
         </AlbatrossButton>
       </template>

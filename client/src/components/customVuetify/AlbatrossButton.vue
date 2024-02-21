@@ -7,6 +7,7 @@
          :color="props.color"
          :elevation="props.elevation"
          :icon="props.round"
+         v-on="activationHandler"
          :style="props.htmlStyle"
          :target="props.target"
          :href="props.href"
@@ -31,7 +32,7 @@
 </template>
 
 <script setup>
-import {getCurrentInstance, computed, defineProps, ref} from 'vue'
+import {getCurrentInstance, onMounted, defineProps, ref} from 'vue'
 import constants from '@/helpers/constants'
 
 const vueInstance = getCurrentInstance().proxy
@@ -49,6 +50,7 @@ const props = defineProps({
   href: String,
   target: String, //pretty sure this prop is gone in v3
   htmlStyle: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
+  activationHandler: Object,
   text: {
     type: String,
     default: ''
@@ -101,6 +103,10 @@ const props = defineProps({
     type: String,
     default: 'button'
   }
+})
+
+onMounted(() => {
+  console.log('randalogger', props.nonClickActivationHandler)
 })
 
 </script>
