@@ -87,8 +87,8 @@ BEGIN
       first_appointment_not_pitched_or_missed_id      = v_not_either_id,
       first_appointment_not_pitched_or_missed         = v_not_either,
       first_appointment_not_pitched_or_missed_ppse_id = v_not_pitched_missed_ppse_id,
-      first_appointment_id                            = v_first_appointment_id,
-      first_appointment_id_ppse_id                    = v_first_appointment_id_ppse_id,
+      first_appointment_id                            = v_first_appointment_id,  --this is the first outcome id
+      first_appointment_id_ppse_id                    = v_first_appointment_id_ppse_id,  --this is the first ppse id for the outcome
       first_appointment                               = v_first_appointment_start_time,
       first_appointment_ppse_id                       = v_first_appointment_ppse_id,
       prioritized_closer_appointment_outcome          = v_prioritized_closer_appointment_outcome,

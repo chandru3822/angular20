@@ -1,42 +1,55 @@
 <template>
   <v-container>
-    <v-row  class="pt-0">
+    <v-row  class="pt-0" v-if="!dataLoading">
       <v-col cols="12"  class="pt-0">
-        <v-btn text color="primary" @click="cancel()">
+        <v-btn icon color="primary" @click="cancel()" class="back-button">
           <v-icon x-large>mdi-chevron-left</v-icon>
         </v-btn>
-        <v-toolbar flat>
+        <v-toolbar flat id="announcement-admin-header">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
             {{ announcementId ? 'Edit Announcement' : 'Add Announcement'}}
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn color="primary" text @click="validate()" :loading="saving">
+            <v-btn color="primary" text @click="validate()"
+                   v-if="userCanEdit" :loading="saving">
               <v-icon>save</v-icon>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <v-form ref="announcementForm">
           <h3>Overview</h3>
+          <div class="error--text" v-if="timeError">
+            {{timeErrorMsg}}
+          </div>
           <v-text-field v-model="announcement.title"
                         density="compact"
+                        :disabled="!userCanEdit"
+                        :readonly="!userCanEdit"
                         :rules="requiredRules"
                         label="Title"/>
           <v-text-field v-model="announcement.alertText"
                         density="compact"
+                        :disabled="!userCanEdit"
+                        :readonly="!userCanEdit"
                         :rules="requiredRules"
                         label="Alert Text"/>
 
           <h3>Platform</h3>
             <v-checkbox v-model="announcement.showOnWeb" dense
+                        :disabled="!userCanEdit"
+                        :readonly="!userCanEdit"
                         :rules="!announcement.showOnWeb && !announcement.showOnMobile ? onePlatformRequired : []"
                         label="Web"></v-checkbox>
             <v-checkbox v-model="announcement.showOnMobile" dense
+                        :disabled="!userCanEdit"
+                        :readonly="!userCanEdit"
                         :rules="!announcement.showOnWeb && !announcement.showOnMobile ? onePlatformRequired : []"
                         label="Mobile"></v-checkbox>
           <DatetimePickerInput
               v-model="announcement.startTime"
               :timezone="timezone"
+              :readonly="!userCanEdit"
               :type="'timestamp'"
               :required="true"
               :format="'MMMM DD, YYYY, h:mm A'"
@@ -46,6 +59,7 @@
           <DatetimePickerInput
               v-model="announcement.endTime"
               :timezone="timezone"
+              :readonly="!userCanEdit"
               :type="'timestamp'"
               :format="'MMMM DD, YYYY, h:mm A'"
               label="End Time"
@@ -53,7 +67,9 @@
 
 
           <div class="d-flex flex-row flex-align-items-center">
-            <v-checkbox v-model="announcement.expandable"></v-checkbox>
+            <v-checkbox v-model="announcement.expandable"
+                        :disabled="!userCanEdit"
+                        :readonly="!userCanEdit"></v-checkbox>
             <label>Expandable Announcement</label>
           </div>
 
@@ -62,6 +78,8 @@
 
             <v-text-field v-model="announcement.subtitle"
                           density="compact"
+                          :disabled="!userCanEdit"
+                          :readonly="!userCanEdit"
                           :rules="requiredRules"
                           label="Subtitle"/>
 
@@ -70,40 +88,58 @@
             </div>
               <quill-editor
                   :options="toolbarOptions"
+                  :disabled="!userCanEdit"
                   class="rich-text-editor albatross-body-2"
                   v-model="announcement.description"
               />
 
             <v-text-field v-model="announcement.hyperlink"
                           class="mt-3"
+                          :disabled="!userCanEdit"
+                          :readonly="!userCanEdit"
                           density="compact"
                           :rules="[urlRule]"
                           label="Hyperlink"/>
 
-            <div v-if="userCanEdit">
-              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                     v-if="!announcementLogo.saving && !announcement.presignedUrl && !announcementLogo.image?.presignedUrl" @click="announcementLogo.add = !announcementLogo.add">
-                <v-icon v-if="announcementLogo.add">remove</v-icon>
-                <v-icon v-else>add</v-icon>
-              </v-btn>
-              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-else
-                     @click="showDeleteDialog = true">
-                <v-icon>delete</v-icon>
-              </v-btn>
-              <div class="mt-4" v-if="announcementLogo.add">
-                <form enctype="multipart/form-data" novalidate>
-                  <input
-                      type="file"
-                      :accept="acceptedFileTypes"
-                      class="file-input clickable body-medium mx-6"
-                      :disabled="announcementLogo.saving"
-                      @change="uploadFile($event.target.files, null)"
-                      name="avatar"
-                  >
-                  <br/><span>* Due to render times associated with this file it cannot exceed 1MB</span>
-                </form>
+<!--              <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary"-->
+<!--                      @click="announcementLogo.add = !announcementLogo.add">-->
+<!--                <v-icon v-if="announcementLogo.add">remove</v-icon>-->
+<!--                <v-icon v-else>add</v-icon>-->
+<!--              </v-btn>-->
+              <div class="mt-3">
+                <div v-if="!announcementLogo.saving && !announcement.presignedUrl && !announcementLogo.image?.presignedUrl">
+                  <v-file-input
+                      dense
+                      :disabled="!userCanEdit"
+                      outlined
+                      hide-details
+                      v-model="announcementFile"
+                      label="Attach image"
+                      @change="uploadFile(announcementFile, null)"
+                      @click:clear="announcementFile=null"
+                      style="width: 255px"
+                  />
+                  <span>* Due to render times associated with this file it cannot exceed 1MB</span>
+                </div>
+<!--                  <input-->
+<!--                      type="file"-->
+<!--                      -->
+<!--                      :accept="acceptedFileTypes"-->
+<!--                      class="file-input clickable body-medium mx-6"-->
+<!--                      :disabled="announcementLogo.saving"-->
+<!--                      @change="uploadFile(, null)"-->
+<!--                      name="avatar"-->
+<!--                  >-->
+                <v-btn :large="$vuetify.breakpoint.smAndDown" color="primary"
+                       v-else class="mb-3"
+                       :disabled="!userCanEdit"
+                       @click="showDeleteDialog = true">
+                  Delete Attachment
+                  <v-icon class="ml-3">delete</v-icon>
+                </v-btn>
               </div>
-              <div class="company-logo-background" v-else-if="announcement.presignedUrl">
+
+              <div class="company-logo-background" v-if="announcement.presignedUrl">
                 <img class="announcement-image" :src="announcement.presignedUrl">
               </div>
               <ConfirmationDialog :open-dialog="showDeleteDialog" @confirm="deleteAttachment()"
@@ -112,11 +148,14 @@
               </ConfirmationDialog>
             </div>
 
-          </div>
         </v-form>
       </v-col>
     </v-row>
-
+    <ConfirmationDialog :open-dialog="unsavedModal" @confirm="[goToPath(toPath, query)]" @close-dialog="unsavedModal = false">
+      <template v-slot:title>Unsaved Changes</template>
+      You have unsaved fields. Are you sure you want to continue without saving?
+      <template v-slot:yes>Don't Save</template>
+    </ConfirmationDialog>
   </v-container>
 </template>
 
@@ -125,7 +164,6 @@ import constants from '@/helpers/constants'
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import 'quill/dist/quill.snow.css'
 import { quillEditor } from 'vue-quill-editor'
-
 import {
   getSnackbar,
   getRequest,
@@ -136,17 +174,59 @@ import {
 import {AppMutations} from "@/stores/AppStore";
 import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 import {Actions} from "@/store";
+import moment from 'moment'
+import cloneDeep from 'lodash.clonedeep'
+import isEqual from 'lodash.isequal'
+
 
   export default {
     name: 'Announcement',
     components: {ConfirmationDialog, DatetimePickerInput, quillEditor},
     computed: {
+      isCurrent() {
+        return !this.announcement.id || (this.announcement.id && (this.announcementCopy.endTime == null || moment().isBefore(moment(this.announcementCopy.endTime))))
+      },
+      pathUrl() {
+        return this.isCurrent ? `/settings/announcements/current` : `/settings/announcements/past`
+      },
+      userCanEdit() {
+        //we use the end time copy here so that if they are adding an end time in the past it will still let them save
+        return this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT') &&
+            (!this.announcement.id ||
+            this.isCurrent)
+      }
+    },
+    beforeRouteUpdate(to, from, next){
+      if(!this.override && !isEqual(this.announcement,this.announcementCopy)) {
+        this.toPath = to.path
+        this.query = to.query
+        this.unsavedModal = true
+      } else {
+        next()
+      }
+    },
+    beforeRouteLeave(to, from, next){
+      if(!this.override && !isEqual(this.announcement,this.announcementCopy)) {
+        this.toPath = to.path
+        this.query = to.query
+        this.unsavedModal = true
+      } else {
+        next()
+      }
     },
     data() {
       return {
         constants,
         saving: false,
+        override: false,
+        unsavedModal: false,
+        dataLoading: true,
+        toPath: null,
+        timeError: false,
+        timeErrorMsg: '',
+        query: {},
         announcement: {},
+        announcementCopy: {}, //used for seeing if changes were made
         toolbarOptions: {
           modules: {
             toolbar: [
@@ -161,14 +241,14 @@ import {Actions} from "@/store";
           }
         },
         acceptedFileTypes: constants.STANDARD_IMAGES_ONLY,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
         timezone: this.$store.state.user.details.timezone?.value,
         requiredRules: constants.BASIC_REQUIRED_RULE,
         onePlatformRequired: [
           v => (!!v || v === 0) || 'At lease one platform is required'
         ],
-        announcementId: this.$route.params?.id,
+        announcementId: parseInt(this.$route.params?.id),
         showDeleteDialog: false,
+        announcementFile: null,
         announcementLogo: {
           add: false,
           saving: false,
@@ -177,22 +257,28 @@ import {Actions} from "@/store";
 
       }
     },
-    created() {
+    async created() {
       if(this.announcementId) {
-        this.getAnnouncement(parseInt(this.announcementId))
+        await this.getAnnouncement()
+      } else {
+        this.dataLoading = false
       }
-      //for testing
+      // for testing
       // this.announcement = {
       //   title: 'asdf',
       //   alertText: 'asdf',
       //   showOnWeb: true,
-      //   startTime: '2024-01-15T19:55:00.000Z',
-      //   endTime: '2024-01-25T19:55:00.000Z',
+      //   startTime: '2024-02-04T19:55:00.000Z',
+      //   endTime: '2024-02-25T19:55:00.000Z',
       //   expandable: true,
       //   subtitle: 'blah'
       // }
     },
     methods: {
+      goToPath(path, query) {
+        this.override = true
+        this.$router.push({path, query})
+      },
       urlRule(url) {
         if (url && !(/^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(this.announcement.hyperlink))) {
           return 'Valid URL is required'
@@ -201,10 +287,14 @@ import {Actions} from "@/store";
         }
       },
       cancel() {
-        this.$router.push(`/settings/announcements`)
+        this.$router.push(this.pathUrl)
       },
       async validate() {
-        if (this.$refs.announcementForm.validate()) {
+        this.timeError = false
+        if(this.announcement.endTime != null && this.announcement.startTime > this.announcement.endTime) {
+          this.timeError = true
+          this.timeErrorMsg = 'End Time cannot be before Start Time'
+        } else if (this.$refs.announcementForm.validate()) {
           this.saving = true
           try {
             const formData = new FormData()
@@ -218,13 +308,13 @@ import {Actions} from "@/store";
             if(this.announcementLogo.image !== {}) {
               formData.append('uploadFile', this.announcementLogo.image)
             }
-            console.log('randalogger',formData)
 
             const {data, status} = await postRequest(`/announcements`, formData)
             this.announcement = data
             this.snackbar = getSnackbar('SUCCESS', 'Announcement Saved')
             this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$router.push(`/settings/announcements`)
+            this.override = true
+            this.$router.push(this.pathUrl)
           } catch (e) {
             console.error('*** ERROR ***', e)
             this.snackbar = getSnackbar('ERROR', 'Error Saving Announcement')
@@ -234,11 +324,12 @@ import {Actions} from "@/store";
           }
         }
       },
-      async getAnnouncement(id) {
+      async getAnnouncement() {
         try {
           this.$store.commit(AppMutations.SET_LOADING, true)
-          const {data, status} = await getRequest(`/announcements/${id}`)
+          const {data, status} = await getRequest(`/announcements/${this.announcementId}`)
           this.announcement = data
+          this.announcementCopy = cloneDeep(data)
           handleHidingGlobalLoader(this, status)
         } catch (e) {
           console.error('*** ERROR ***', e)
@@ -246,7 +337,7 @@ import {Actions} from "@/store";
           this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
         } finally {
           this.$store.commit(AppMutations.SET_LOADING, false)
-          this.saving = false
+          this.dataLoading = false
         }
       },
       async deleteAttachment() {
@@ -275,42 +366,42 @@ import {Actions} from "@/store";
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      async uploadFile(files, existingFile) {
-        let file = existingFile ? existingFile : files[0]
-        if(!this.announcement.id) {
-          this.announcementLogo.image = file
-        } else if(file && file.name) {
-          try {
-            this.$store.commit(AppMutations.SET_LOADING, true)
-            await this.$store.dispatch(Actions.FILE_UPLOAD, {
-              file: file,
-              sizeLimit: 1048576,
-              attachmentTypeId: 990,
-              sourceId: this.announcement.id,
-              displayName: file.name.substr(0, file.name.lastIndexOf('.')),
-              callback: async (img, error) => {
-                if (error?.error) {
-                  this.snackbar = getSnackbar('ERROR', error.errorMsg)
-                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                  this.$store.commit(AppMutations.SET_LOADING, false)
-                } else {
-                  this.announcement.presignedUrl = img.presignedUrl
-                  this.announcementLogo.image = img
-                  this.announcementLogo.add = false
-                  this.announcementLogo.saving = false
-                  this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
-                  this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-                  this.$store.commit(AppMutations.SET_LOADING, false)
+      async uploadFile(uploadedFile, existingFile) {
+          let file = existingFile ? existingFile : uploadedFile
+          if(!this.announcement.id) {
+            this.announcementLogo.image = file
+          } else if(file && file.name) {
+            try {
+              this.$store.commit(AppMutations.SET_LOADING, true)
+              await this.$store.dispatch(Actions.FILE_UPLOAD, {
+                file: file,
+                sizeLimit: 1048576,
+                attachmentTypeId: 990,
+                sourceId: this.announcement.id,
+                displayName: file.name.substr(0, file.name.lastIndexOf('.')),
+                callback: async (img, error) => {
+                  if (error?.error) {
+                    this.snackbar = getSnackbar('ERROR', error.errorMsg)
+                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                    this.$store.commit(AppMutations.SET_LOADING, false)
+                  } else {
+                    this.announcement.presignedUrl = img.presignedUrl
+                    this.announcementLogo.image = img
+                    this.announcementLogo.add = false
+                    this.announcementLogo.saving = false
+                    this.snackbar = getSnackbar('SUCCESS', 'Image Uploaded')
+                    this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+                    this.$store.commit(AppMutations.SET_LOADING, false)
+                  }
                 }
-              }
-            })
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
+              })
+            } catch (e) {
+              console.error('*** ERROR ***', e)
+              this.snackbar = getSnackbar('ERROR', 'Error Uploading File')
+              this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+              this.$store.commit(AppMutations.SET_LOADING, false)
+            }
           }
-        }
       },
     }
   }
@@ -318,6 +409,11 @@ import {Actions} from "@/store";
 <style lang="scss">
 .ql-editor ul {
   padding-left: 0 !important;
+}
+
+#announcement-admin-header .v-toolbar__content {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
 }
 </style>
 
@@ -331,6 +427,10 @@ import {Actions} from "@/store";
 .announcement-image {
   max-width: 100%;
   height: auto;
+}
+
+.back-button {
+  margin-left: -10px;
 }
 
 </style>

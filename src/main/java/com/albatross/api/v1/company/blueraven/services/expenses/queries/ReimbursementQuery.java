@@ -93,6 +93,8 @@ public class ReimbursementQuery {
     UPDATE brs.reimbursement_request
     SET reimbursement_request_status_id = :reimbursementRequestStatusId,
         date_modified = now(),
+        rejected_date = case when :reimbursementRequestStatusId = 2 then now() else rejected_date end,
+        rejected_by_id = case when :reimbursementRequestStatusId = 2 then :userId else rejected_by_id end,
         modified_by_id = :userId
     WHERE id = :id
     """;

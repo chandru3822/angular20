@@ -11,7 +11,6 @@
              dark
              v-on="on"
       >
-        <span v-if="!constants.IS_MOBILE" class="label-medium">{{userFirstName}} Account</span>
         <v-avatar :tile="false"
                   :size="35"
                   color="grey lighten-4"
@@ -94,7 +93,6 @@
         userImage: this.$store.state.user.userImage,
         attachmentTypeId: 9,
         userId: this.$store.state.user.details.id,
-        userFirstName: this.getFirstName(),
         headerColor: constants.ENV_COLOR,
         menuOpen: false,
         timezone: this.$store.state.user.details.timezone || {},
@@ -179,18 +177,6 @@
           }
         }
       },
-      getFirstName () {
-        if (this.$store.state.user.details) {
-          const firstName = this.$store.state.user.details.firstName
-          if(firstName) {
-            return firstName.substring(firstName.length - 1).toLowerCase() === 's' ? firstName + '\'' : firstName + '\'s'
-          } else {
-            return ''
-          }
-        } else {
-          return 'Unknown'
-        }
-      },
       logout () {
         this.menuOpen = false
         this.$store.dispatch(UserActions.LOGOUT)
@@ -222,6 +208,8 @@
     box-shadow: none !important;
     -webkit-box-shadow: none !important;
     border: none !important;
+    padding-left: 0 !important;
+    padding-right: 10px !important;
   }
   .account-menu-icon{
     justify-content: center;

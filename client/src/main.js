@@ -15,9 +15,6 @@ import { createPinia, PiniaVuePlugin } from 'pinia'
 import '@/styles/main.scss'
 import { requestInterceptor, responseInterceptor  } from '@/helpers/interceptors'
 
-// @todo: make PWA awesomeness
-// import './registerServiceWorker.js'
-
 const { VITE_GA_ID } = import.meta.env
 Vue.config.productionTip = false
 
@@ -91,3 +88,11 @@ new Vue({
   pinia,
   render: (h) => h(App)
 }).$mount('#app')
+
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register(
+    import.meta.env.MODE === 'production' ? '/firebase-messaging-sw.js' : '/dev-sw.js?dev-sw',
+    { type: import.meta.env.MODE === 'production' ? 'classic' : 'module' }
+  )
+}

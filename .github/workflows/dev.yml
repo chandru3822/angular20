@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - "dev"
-      - "boot3.2"
 
 jobs:
   build:

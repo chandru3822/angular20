@@ -1,17 +1,20 @@
 <template id="account-menu">
   <v-menu data-app left
           offset-y
-          :max-height="`calc(100vh - 20px)`"
+          :max-height="`calc(100vh - 50px)`"
           v-model="menuOpen"
           class="account-menu"
           :close-on-content-click="false">
     <template v-slot:activator="{ on }">
-      <v-btn class="account-menu-button label-medium px-1"
+      <v-btn class="account-menu-button label-medium"
              :color="headerColor"
              dark
+             :class="{'mobile-tools-button': isMobile,
+                      'fake-inactive': !isMobile}"
+             :x-small="isMobile"
              v-on="on"
       >
-        Tools
+        TOOLS
         <v-icon>mdi-chevron-down</v-icon>
       </v-btn>
     </template>
@@ -101,7 +104,8 @@
     },
     mixins: [Vue2Filters.mixin],
     props: {
-        companyTools: Array
+        companyTools: Array,
+        isMobile: Boolean
     },
     watch: {},
     data () {
@@ -190,5 +194,12 @@
     box-shadow: none !important;
     -webkit-box-shadow: none !important;
     border: none !important;
+  }
+  .fake-inactive {
+    opacity: .6;
+  }
+  .mobile-tools-button {
+    padding-left: 8px !important;
+    padding-right: 4px !important;
   }
 </style>

@@ -740,7 +740,20 @@ public class UserQuery {
   public final static String addNotificationToken = """
     insert into flow.user_notification_token (user_id, token, created_by_id, date_created, modified_by_id, date_modified)
     values (:userId, :token, :createdById, now(), :createdById, now())
+    on conflict (user_id, token)
+        do update set modified_by_id = excluded.modified_by_id,
+                      date_modified  = now()
       """;
+
+  //language=PostgreSQL
+  public final static String removeNotificationToken = """
+    update flow.user_notification_token
+    set modified_by_id = :userId,
+        date_modified  = now(),
+        archived       = true
+    where user_id = :userId
+      and token = :token
+    """;
 
   //language=PostgreSQL
   public final static String getUserAttachments = """

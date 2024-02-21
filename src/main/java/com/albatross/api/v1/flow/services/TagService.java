@@ -76,6 +76,12 @@ public class TagService {
     return sqlCache.queryBySql(TagQuery.projectTags, params, ProjectTag.class);
   }
 
+  public List<ProjectTag> getProjectTagHistory(Long projectId) {
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    return sqlCache.queryBySql(TagQuery.allProjectTags, params, ProjectTag.class);
+  }
+
   public Optional<ProjectTag> getOneProjectTag(Long projectTagId) {
     HashMap<String, Object> params = new HashMap<>();
     params.put("projectTagId", projectTagId);

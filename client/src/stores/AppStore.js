@@ -1,11 +1,11 @@
 import theme from "@/helpers/defaultTheme";
 import { shadeColorByPercent } from "@/helpers/helpers"
+import {UserMutations} from "@/stores/UserStore.js";
 // import colors from 'vuetify/lib/util/colors'
 
 export const AppMutations = {
   INIT: 'storeInt',
   SET_LOADING: 'SET_LOADING',
-  SET_AVAILABLE_UPDATE: 'SET_AVAILABLE_UPDATE',
   SET_SELECTED_PROCESS_STEP_NAME: 'SET_SELECTED_PROCESS_STEP_NAME',
   SHOW_SNACK: 'SHOW_SNACK',
   SET_ANNOUNCEMENTS: 'SET_ANNOUNCEMENTS',
@@ -27,7 +27,6 @@ export const AppStore = {
     theme: theme.LIGHT
   },
   mutations: {
-    [AppMutations.SET_AVAILABLE_UPDATE]: (state, availableUpdate) => (state.availableUpdate = availableUpdate),
     [AppMutations.SET_LOADING]: (state, loading) => (state.loading = loading),
     [AppMutations.SET_SELECTED_PROCESS_STEP_NAME]: (state, selectedProcessStepName) => (state.selectedProcessStepName = selectedProcessStepName),
     [AppMutations.SHOW_SNACK]: (state, snack) => (state.snack = snack),

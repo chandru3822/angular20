@@ -821,7 +821,7 @@ export default {
 }
 
 .cfg-detail-header {
-  z-index: 10;
+  z-index: 8;
 }
 
 .cfg-detail-header .v-toolbar__content {

@@ -36,7 +36,10 @@
           <v-toolbar-items>
             <v-btn text color="primary" @click="[createNew = !createNew, newBudget = {}, expanded = [], getAvailableUsers()]">
               <v-icon v-if="!createNew">add</v-icon>
-              {{createNew ? 'cancel' : 'Add Budget'}}
+              <v-icon v-else>close</v-icon>
+              <span v-if="!isMobile">
+                {{createNew ? 'cancel' : 'Add Budget'}}
+              </span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -188,6 +191,7 @@ import {
   postRequest,
   getSnackbar,
   deleteRequest,
+  getYears,
   getMonthDateRange
 } from '@/helpers/helpers'
 import moment from 'moment'
@@ -204,6 +208,9 @@ export default {
   computed: {
     itemToDeleteId(){
       return this.itemToDelete ? this.itemToDelete.id : ''
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   data() {
@@ -211,14 +218,12 @@ export default {
       snackbar: {},
       constants,
       dataLoading: true,
-      years: [],
       selectedMonth: parseInt(moment().format('M')),
       selectedYear: parseInt(moment().format('YYYY')),
       startMonth: parseInt(moment().format('M')),
       startYear: parseInt(moment().format('YYYY')),
-      yearStart: 2017,
-      yearEnd: parseInt(moment().format('YYYY')),
       months: constants.MONTHS,
+      years: getYears(2017, true),
       createNew: false,
       newBudget: {},
       footerProps: {
@@ -231,14 +236,14 @@ export default {
       budgets: [],
       expanded: [],
       headers: [
-        {text: 'User', value: 'userFullName', show: true},
-        {text: 'Budget Month', value: 'startDate', show: true},
-        {text: 'Amount', value: 'amount', show: true},
-        {text: 'Pending Approval', value: 'pendingApproval', show: true},
-        {text: 'Pending Payment', value: 'pendingPayment', show: true},
-        {text: 'Paid', value: 'paid', show: true},
-        {text: 'Remaining Budget', value: 'balance', show: true},
-        {text: null, value: 'icons', show: true, sortable: false}
+        {text: 'User', value: 'userFullName', show: true, width: '125px'},
+        {text: 'Budget Month', value: 'startDate', show: true, width: '125px'},
+        {text: 'Amount', value: 'amount', show: true, width: '75px'},
+        {text: 'Pending Approval', value: 'pendingApproval', show: true, width: '75px'},
+        {text: 'Pending Payment', value: 'pendingPayment', show: true, width: '75px'},
+        {text: 'Paid', value: 'paid', show: true, width: '75px'},
+        {text: 'Remaining Budget', value: 'balance', show: true, width: '75px'},
+        {text: null, value: 'icons', show: true, sortable: false, width: '125px'}
       ],
       deleteConfirm: false,
       itemToDelete: null
@@ -246,10 +251,6 @@ export default {
     }
   },
   created() {
-    for (let i = this.yearStart; i <= this.yearEnd; i++) {
-      this.years.push(i)
-    }
-
     this.getBudgets()
   },
   methods: {

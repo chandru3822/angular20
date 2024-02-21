@@ -164,8 +164,13 @@ public class BlueravenProposalService {
     return sqlCache.queryForObjectOptionalBySql(ProposalQuery.getProposalVersionId, Map.of("proposalId", proposalId), Long.class);
   }
 
-  public Optional<ProposalCommission> getProposalCommissionDetails(@NonNull Long proposalId) {
-    return sqlCache.getBySql(ProposalQuery.getCommissionDetails, Map.of("proposalId", proposalId), new ProposalCommissionMapper<>(ProposalCommission.class, om));
+  public List<ProposalCommissionDetail> getProposalCommissionDetails(@NonNull Long proposalId, Long financialProductId, Long brsProductId) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("proposalId", proposalId);
+    params.put("financialProductId", financialProductId);
+    params.put("brsProductId", brsProductId);
+
+    return sqlCache.queryBySql(ProposalQuery.getCommissionDetails, params, ProposalCommissionDetail.class);
   }
 
   public void updateProposalVersion(@NonNull Long proposalId, @NonNull Long versionId, @NonNull UserAccountDetails details) {
@@ -199,6 +204,7 @@ public class BlueravenProposalService {
 
     Optional<Long> userOrgId = findUserOrgId(userId);
 
+//    TODO: filter out cfgs that are hidden based on the user on the server
     Optional<Proposal> result =
       sqlCache.getBySql(
         ProposalQuery.get,

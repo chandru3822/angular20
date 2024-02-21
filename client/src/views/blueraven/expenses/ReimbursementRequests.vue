@@ -10,7 +10,10 @@
                    @click="[createNew = !createNew, selectedBudgetReport = {},
                             newReimbursementRequest = {expenseBudgetId: null}]">
               <v-icon v-if="!createNew">add</v-icon>
-              {{ createNew ? 'cancel' : 'Add Reimbursement Request' }}
+              <v-icon v-else>close</v-icon>
+              <span v-if="!isMobile">
+                {{ createNew ? 'cancel' : 'Add Reimbursement Request' }}
+              </span>
             </v-btn>
           </v-toolbar-items>
         </v-toolbar>
@@ -315,6 +318,9 @@ export default {
     },
     itemToDeleteAmount() {
       return this.itemToDelete ? this.itemToDelete.amount : 0
+    },
+    isMobile(){
+      return this.$vuetify.breakpoint.smAndDown
     }
   },
   data() {
@@ -345,12 +351,12 @@ export default {
       budgetTypes: [],
       glCodes: [],
       headers: [
-        {text: 'Purchaser', value: 'expenseBudgetUser', show: true},
-        {text: 'Created Date', value: 'dateCreated', show: true},
-        {text: 'Amount', value: 'amount', show: true},
-        {text: 'Budget Type', value: 'budgetType', show: true},
-        {text: 'Expense Date', value: 'expenseDate', show: true},
-        {text: null, value: 'icons', show: true}
+        {text: 'Purchaser', value: 'expenseBudgetUser', show: true, width: '125px'},
+        {text: 'Created Date', value: 'dateCreated', show: true, width: '125px'},
+        {text: 'Amount', value: 'amount', show: true, width: '75px'},
+        {text: 'Budget Type', value: 'budgetType', show: true, width: '125px'},
+        {text: 'Expense Date', value: 'expenseDate', show: true, width: '125px'},
+        {text: null, value: 'icons', show: true, width: '80px'}
       ],
       tempIdCount: 0,
       expenseHeaders: [
@@ -460,9 +466,9 @@ export default {
         await putRequest(`/reimbursement/request`, this.selectedRequest, 'blueraven')
         this.snackbar = getSnackbar('SUCCESS', 'Request Approved')
         this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.selectedRequest = {}
-        this.rejectDropdown = false
         this.reimbursementRequests = this.reimbursementRequests?.filter(rr => rr.id !== this.selectedRequest.id)
+        this.rejectDropdown = false
+        this.selectedRequest = {}
         this.$store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error('*** ERROR ***', e)

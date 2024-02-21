@@ -638,7 +638,7 @@
                     </span>
         <span v-else-if="itemToDelete.listOfValueId || itemToDelete.customFieldSql || itemToDelete.companySystemListId">
 <!--                      {{item.listOfValue ? item.listOfValue.name : 'unknown'}}-->
-                      {{ getListValueName(item) }}
+                      {{ getListValueName(itemToDelete) }}
                     </span>
         <span v-else-if="itemToDelete.listOfValues">
                       <!-- todo: show the selected values here -->

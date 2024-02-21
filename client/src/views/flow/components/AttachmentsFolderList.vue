@@ -55,13 +55,15 @@
             </v-btn>
           </div>
           <div class="text-no-wrap display-empty-folder-toggle">
-            <label class="mr-3">
-              {{ this.hideEmptyFolderDisplayName }}
+            <label class="mr-3 body-medium"
+                   :class="{'hide-empty-folder-label' : disableHideEmptyFolderSwitch}">
+              Hide Empty Folders
             </label>
             <v-switch
               @change="$emit('toggleEmptyFolders')"
               :disabled="disableHideEmptyFolderSwitch"
               v-model="hideEmptyFolderStatus"
+              dense
             ></v-switch>
           </div>
         </div>
@@ -136,7 +138,7 @@
                 </v-row>
               </template>
             </v-expansion-panel-header>
-            <v-expansion-panel-content>
+            <v-expansion-panel-content v-if="getTypeCount(type.attachmentTypeId) > 0 || hideEmptyFolderStatus === false">
               <AttachmentsTable
                 :search="search"
                 :display-type="type"
@@ -307,9 +309,6 @@ export default {
     },
     isMobile(){
       return this.$vuetify.breakpoint.smAndDown
-    },
-    hideEmptyFolderDisplayName() {
-      return this.hideEmptyFolderStatus === false ? 'Hide Empty Folders' : 'Show Empty Folders'
     },
     disableHideEmptyFolderSwitch() {
       return this.search != null && this.search !== ''
@@ -634,6 +633,10 @@ export default {
 .display-empty-folder-toggle {
   display: inline-flex;
   align-items: center;
+}
+
+.hide-empty-folder-label {
+  color: var(--v-grey-darken1);
 }
 
 </style>

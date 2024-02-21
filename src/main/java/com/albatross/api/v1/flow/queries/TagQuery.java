@@ -73,6 +73,25 @@ public class TagQuery {
     """;
 
   //language=PostgreSQL
+  public final static String allProjectTags = """
+    select proj.project_name,
+           t.tag_name,
+           pt.date_created,
+           pt.date_modified,
+           uc.first_name || ' ' || uc.last_name as "fullNameCreatedBy",
+           um.first_name || ' ' || um.last_name as "fullNameModifiedBy",
+           pt.created_by_id,
+           pt.modified_by_id
+    from flow.project_tag pt
+        inner join flow.tag t on t.id = pt.tag_id
+        inner join flow."user" uc on uc.id = pt.created_by_id
+        inner join flow."user" um on um.id = pt.modified_by_id
+        inner join flow.project proj on pt.project_id = proj.id
+    where pt.project_id = :projectId
+    order by date_modified desc
+    """;
+
+  //language=PostgreSQL
   public final static String projectTag = """
     select pt.id,
            pt.project_id,

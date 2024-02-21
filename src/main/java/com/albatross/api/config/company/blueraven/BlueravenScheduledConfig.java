@@ -12,13 +12,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.SchedulingConfigurer;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 
@@ -27,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 // only enable scheduled tasks if `app.scheduled.enabled` property or `CRON_ENABLED` env var are true
 @ConditionalOnProperty(prefix = "app.scheduled.blueraven", value = "enabled")
-public class BlueravenScheduledConfig {
+public class BlueravenScheduledConfig implements SchedulingConfigurer {
   @Value(value = "${app.cron.blueraven.processFive9Contacts.enabled:false}")
   private Boolean updateFive9Contacts;
 
@@ -68,6 +73,11 @@ public class BlueravenScheduledConfig {
   //
   */
 
+  @Override
+  public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
+    taskRegistrar.setScheduler(blueravenTaskExecutor());
+  }
+
   @PostConstruct
   public void init() {
     log.info("*** BRS_CRON: cron service enabled ***");
@@ -91,8 +101,8 @@ public class BlueravenScheduledConfig {
     log.info("*** CRON: end generating monthly budgets ***");
   }
 
-  //    every  day at 1 am - mtn
-  @Scheduled(cron = "0 0 7 * * *", zone = "UTC")
+  //    every  day at 3 am - mtn
+  @Scheduled(cron = "0 0 9 * * *", zone = "UTC")
   public void updateFive9Contacts() {
     if (updateFive9Contacts) {
       log.info("*** CRON: start processing Five 9 contacts ***");
@@ -141,6 +151,11 @@ public class BlueravenScheduledConfig {
     log.debug("*** CRON: end sync surveys from BirdEye in {} ***", duration);
   }
 
+  @Bean
+  public Executor blueravenTaskExecutor() {
+    return Executors.newScheduledThreadPool(10);
+  }
+
   @Scheduled(cron = "0 0 3 * * *", zone = "America/Denver")
   public void dailyCompanyDashboardSetup() {
     companyDashboardService.callCompanyDashboardSetup(null);
@@ -167,5 +182,6 @@ public class BlueravenScheduledConfig {
 
     securityService.setCurrentUserDetails(uad);
   }
+
 
 }

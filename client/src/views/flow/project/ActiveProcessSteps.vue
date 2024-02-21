@@ -6,7 +6,7 @@
                            @click="toggleCollapseExpand"
   >
     <template v-slot:tool-btn>
-      <v-btn text color="primary" class="pa-2 mx-2" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon small>mdi-format-list-bulleted</v-icon></v-btn>
+      <v-btn text small color="primary" class="pa-2 mx-2" @click.stop :to="`/project/${projectId}/processSteps`"><v-icon :size="20">mdi-format-list-bulleted</v-icon></v-btn>
     </template>
     <template v-slot:expanded-content>
       <ActiveProjectProcessStepSnippet class="px-3"

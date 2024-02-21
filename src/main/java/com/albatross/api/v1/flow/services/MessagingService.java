@@ -26,6 +26,7 @@ import com.albatross.api.v1.flow.queries.SmsServiceQuery;
 import com.albatross.api.v1.flow.queries.SmsTeamQuery;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -112,15 +113,23 @@ public class MessagingService {
     return userMessageProps.orElseThrow(() -> new NotFoundException("User conversation not found"));
   }
 
-  public Page<ConversationMessageProperties> getConversations(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds,
-                                                              List<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
+  public Page<ConversationMessageProperties> getConversations(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifProjectIds,
+                                                              Set<Long> notifUserIds, Boolean getProjects, Boolean getUsers, Boolean showInbox, Pageable pageable) {
+
+
+    String cleanedQuery = query;
+    if (cleanedQuery != null) {
+      cleanedQuery = cleanedQuery.replaceAll("[*,.&]", "")
+        .toLowerCase()
+        .trim();
+    }
 
     List<ConversationMessageProperties> conversations = new ArrayList<>();
     int count = 0;
     if (getProjects) {
       List<ConversationMessageProperties> projects =
         getProjects(
-          query,
+          cleanedQuery,
           ownerUserIds,
           smsTeamIds,
           notifProjectIds,
@@ -136,7 +145,7 @@ public class MessagingService {
     if (getUsers) {
       List<ConversationMessageProperties> users =
         getUsers(
-          query,
+          cleanedQuery,
           ownerUserIds,
           smsTeamIds,
           notifUserIds,
@@ -158,7 +167,7 @@ public class MessagingService {
       conversations, PageRequest.of(pageable.getPageNumber(), pageable.getPageSize()), count);
   }
 
-  public List<ConversationMessageProperties> getProjects(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifProjectIds, Boolean showInbox, Pageable pageable) {
+  public List<ConversationMessageProperties> getProjects(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifProjectIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -181,42 +190,57 @@ public class MessagingService {
       new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
 
     if (!projects.isEmpty()) {
-      List<Long> projectIds =
-        sqlCache.queryBySql(
-          MessagingQuery.getProjectsCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
-      projects.get(0).setProjectIdsForFilter(projectIds);
-      params.put("query", null);
+      List<Long> projectIds = getProjectsCount(params);
+      ConversationMessageProperties first = projects.getFirst();
+
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
       List<Long> userSmsTeamIds =
         userSmsTeams.stream().map(SmsTeam::getId).toList();
-      params.put("smsTeamIds", userSmsTeamIds);
-      params.put("ownerIds", Collections.singletonList(user.getId()));
-      params.put("unassigned", true);
-      params.put("showInbox", true);
-      List<Long> projectIdsInbox =
-        sqlCache.queryBySql(
-          MessagingQuery.getProjectsCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
-      params.put("showInbox", false);
-      List<Long> projectIdsSent =
-        sqlCache.queryBySql(
-          MessagingQuery.getProjectsCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+
+      Map<String, Object> combinedProps = new HashMap<>();
+      combinedProps.put("smsTeamIds", userSmsTeamIds);
+      combinedProps.put("ownerIds", List.of(user.getId()));
+      combinedProps.put("notifProjectIds", notifProjectIds);
+
+      Map<Boolean, List<ProjectCounter>> counters = getProjectsCombinedCount(combinedProps).stream()
+        .collect(Collectors.partitioningBy(ProjectCounter::isOutboundMessage));
+
+//      params.put("showInbox", true);
+      List<Long> projectIdsInbox = counters.get(false).stream().map(ProjectCounter::getProjectId).toList();
+//      params.put("showInbox", false);
+      List<Long> projectIdsSent = counters.get(true).stream().map(ProjectCounter::getProjectId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
-      projects.get(0).setProjectIdsInbox(projectIdsInbox);
-      projects.get(0).setProjectIdsSent(projectIdsSent);
+      first.setProjectIdsForFilter(projectIds);
+      first.setProjectIdsInbox(projectIdsInbox);
+      first.setProjectIdsSent(projectIdsSent);
     }
 
     return projects;
   }
 
-  public List<ConversationMessageProperties> getUsers(String query, List<Long> ownerUserIds, List<Long> smsTeamIds, List<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
+  @Data
+  static class ProjectCounter {
+    private Long projectId;
+    private boolean outboundMessage;
+  }
+
+  private List<ProjectCounter> getProjectsCombinedCount(Map<String, Object> params) {
+    return sqlCache.queryBySql(
+      MessagingQuery.getProjectCountCombined,
+      params,
+      new BeanPropertyRowMapper<>(ProjectCounter.class));
+  }
+
+  private List<Long> getProjectsCount(Map<String, Object> params) {
+    return sqlCache.queryBySql(
+      MessagingQuery.getProjectsCount,
+      params,
+      new SingleColumnRowMapper<>(Long.class));
+  }
+
+  public List<ConversationMessageProperties> getUsers(String query, Set<Long> ownerUserIds, Set<Long> smsTeamIds, Set<Long> notifUserIds, Boolean showInbox, Pageable pageable) {
     boolean containsUnassigned = false;
     if (ownerUserIds.contains(-1L)) {
       containsUnassigned = true;
@@ -239,39 +263,54 @@ public class MessagingService {
       new MessagePropertiesMapper<>(ConversationMessageProperties.class, om));
 
     if (!users.isEmpty()) {
-      List<Long> userIds =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
-      users.get(0).setUserIdsForFilter(userIds);
-      params.put("query", null);
+      List<Long> userIds = getUsersCount(params);
+      ConversationMessageProperties first = users.getFirst();
+
       User user = securityService.getCurrentUser();
       List<SmsTeam> userSmsTeams = getTeamsForUser(user);
       List<Long> userSmsTeamIds =
         userSmsTeams.stream().map(SmsTeam::getId).toList();
-      params.put("smsTeamIds", userSmsTeamIds);
-      params.put("ownerIds", Collections.singletonList(user.getId()));
-      params.put("unassigned", true);
-      params.put("showInbox", true);
-      List<Long> userIdsInbox =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
-      params.put("showInbox", false);
-      List<Long> userIdsSent =
-        sqlCache.queryBySql(
-          MessagingQuery.getUsersCount,
-          params,
-          new SingleColumnRowMapper<>(Long.class));
+
+      Map<String, Object> combinedProps = new HashMap<>();
+      combinedProps.put("smsTeamIds", userSmsTeamIds);
+      combinedProps.put("ownerIds", List.of(user.getId()));
+
+      Map<Boolean, List<UserCounter>> counters = getUsersCountCombined(combinedProps).stream()
+        .collect(Collectors.partitioningBy(UserCounter::isOutboundMessage));
+
+//      params.put("showInbox", true);
+      List<Long> userIdsInbox = counters.get(false).stream().map(UserCounter::getUserId).toList();
+
+//      params.put("showInbox", false);
+      List<Long> userIdsSent = counters.get(true).stream().map(UserCounter::getUserId).toList();
 
       // Used for displaying the New and Sent notification badges on the SMS Inbox
-      users.get(0).setUserIdsInbox(userIdsInbox);
-      users.get(0).setUserIdsSent(userIdsSent);
+      first.setUserIdsForFilter(userIds);
+      first.setUserIdsInbox(userIdsInbox);
+      first.setUserIdsSent(userIdsSent);
     }
 
     return users;
+  }
+
+  @Data
+  static class UserCounter {
+    private Long userId;
+    private boolean outboundMessage;
+  }
+
+  private List<UserCounter> getUsersCountCombined(Map<String, Object> params) {
+    return sqlCache.queryBySql(
+      MessagingQuery.getUsersCountCombined,
+      params,
+      new BeanPropertyRowMapper<>(UserCounter.class));
+  }
+
+  private List<Long> getUsersCount(Map<String, Object> params) {
+      return sqlCache.queryBySql(
+      MessagingQuery.getUsersCount,
+      params,
+      new SingleColumnRowMapper<>(Long.class));
   }
 
   private void updateProjectStatus(Long projectId, Boolean closed, @NonNull Long modifiedByUserId) {
@@ -433,8 +472,8 @@ public class MessagingService {
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-        && conversationMessageProps.isPresent()
-        && conversationMessageProps.get().isClosed()) {
+      && conversationMessageProps.isPresent()
+      && conversationMessageProps.get().isClosed()) {
       updateProjectStatus(projectId, false, modifiedByUserId);
     }
   }
@@ -579,8 +618,8 @@ public class MessagingService {
     // Check if Project is closed, if so open it - unless the default team is being added
     // automatically
     if (!defaultTeamAdded
-        && userMessageProps.isPresent()
-        && userMessageProps.get().isClosed()) {
+      && userMessageProps.isPresent()
+      && userMessageProps.get().isClosed()) {
       updateUserStatus(userId, false, modifiedByUserId);
     }
   }

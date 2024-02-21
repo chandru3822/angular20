@@ -16,6 +16,14 @@ public class AppProperties {
 
   @Valid ImageProxyProperties imageProxy;
 
+  @Valid FirebaseProperties firebase;
+
+  @Data
+  public static class FirebaseProperties {
+    private boolean dryRun;
+    private String credentials;
+  }
+
   @Data
   public static class ImageProxyProperties {
     @NotNull Boolean enabled;

@@ -16,14 +16,12 @@ BEGIN
                                                    eb.start_date,
                                                    eb.end_date,
                                                    eb.amount                                                            monthly_budget,
-                                                   coalesce(sum(rr.amount)
-                                                   filter (where rr.approval_date is null and rr.rejected_date is null),0) pending_review,
                                                             coalesce(sum(rr.amount)
-                                                   filter (where rr.paid_date is null and rr.approval_date is not null and
-                                                                 rr.rejected_date is null),0)                              pending_approval,
+                                                   filter (where rr.paid_date is null and rr.approval_date is null and
+                                                                 rr.reimbursement_request_status_id != 2),0)                              pending_review,
                                                                      coalesce(sum(rr.amount)
                                                    filter (where rr.approval_date is not null and
-                                                                 rr.rejected_date is null AND
+                                                                 rr.reimbursement_request_status_id != 2 AND
                                                                  rr.paid_date is null),0)                                  pending_payment,
                                                                               coalesce(sum(rr.amount) filter (where rr.paid_date is not null),0)      paid
                                             --                              sum(coalesce(o.amount,0)) other,
@@ -38,7 +36,7 @@ BEGIN
 
 
                        select *,
-                              (monthly_budget - pending_review - pending_approval - pending_payment - paid) as remaining_budget
+                              (monthly_budget - pending_review - pending_payment - paid) as remaining_budget
                        from budget_info
                        ) results;
 
