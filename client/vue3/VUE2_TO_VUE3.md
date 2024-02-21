@@ -257,6 +257,33 @@ const canAdd = computed(() => {
 </tr>
 </table>
 
+### Sortable
+<table>
+<tr>
+<th>Vue2</th>
+<th>Vue3</th>
+</tr>
+<tr>
+<td>
+
+```
+let _self = this
+...use _self in the function like:
+_self.workQueueTypes.splice(newIndex, 0, rowSelected)
+_self.saveRowChanges(rowsToSave)
+```
+</td>
+<td>
+
+```
+...no need for scope/_self
+workQueueTypes.value.splice(newIndex, 0, rowSelected)
+saveRowChanges(rowsToSave)
+```
+</td>
+</tr>
+</table>
+
 ### Using Vue Router
 <table>
 <tr>

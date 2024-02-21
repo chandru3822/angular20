@@ -181,18 +181,17 @@ const filteredWorkQueueTypes = computed(() => {
   })
 })
 
-onMounted(() => {
-  getAllWorkQueueTypes()
+onMounted(async () => {
   getAllWorkQueueCategories()
+  await getAllWorkQueueTypes()
 
   let table = document.querySelector('tbody')
-  const _self = vueInstance
   Sortable.create(table, {
     handle: '.handle',
     onEnd({newIndex, oldIndex}) {
-      const rowSelected = _self.workQueueTypes.splice(oldIndex, 1)[0]
-      _self.workQueueTypes.splice(newIndex, 0, rowSelected)
-      let rowsClone = cloneDeep(_self.workQueueTypes)
+      const rowSelected = workQueueTypes.value.splice(oldIndex, 1)[0]
+      workQueueTypes.value.splice(newIndex, 0, rowSelected)
+      let rowsClone = cloneDeep(workQueueTypes.value)
 
       let rowsToSave = []
       rowsClone.forEach((r, idx) => {
@@ -203,11 +202,11 @@ onMounted(() => {
         r.displayOrder = idx
         //save only rows that changed
         if (save) {
-          _self.workQueueTypes[idx].newDisplayOrder = idx
+          workQueueTypes.value[idx].newDisplayOrder = idx
           rowsToSave.push(r)
         }
       })
-      _self.saveRowChanges(rowsToSave)
+      saveRowChanges(rowsToSave)
     }
   })
 })
