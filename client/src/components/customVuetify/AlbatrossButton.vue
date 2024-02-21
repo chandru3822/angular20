@@ -3,6 +3,7 @@
          :text="props.variant === 'text'"
          :outlined="props.variant === 'outlined'"
          :loading="props.loading"
+         :disabled="props.disabled"
          :color="props.color"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
@@ -46,6 +47,10 @@ const props = defineProps({
     default: 'primary'
   },
   loading: {
+    type: Boolean,
+    default: false
+  },
+  disabled: {
     type: Boolean,
     default: false
   },

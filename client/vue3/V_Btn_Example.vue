@@ -7,6 +7,7 @@
         text="Add New"
         color="pink"
         :loading="false"
+        :disabled="false"
         icon="add"
         :show-alternate="addNew"
         alternate-icon="cancel"
