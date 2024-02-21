@@ -105,10 +105,6 @@ const props = defineProps({
   }
 })
 
-onMounted(() => {
-  console.log('randalogger', props.nonClickActivationHandler)
-})
-
 </script>
 
 <style lang="scss" scoped>
