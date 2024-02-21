@@ -83,6 +83,30 @@ public class AuroraProxy {
     }
   }
 
+  public String getDesignRoofSummary(@NotBlank String designId) throws IOException {
+    try {
+      ResponseEntity<String> res = client
+        .get()
+        .uri("/v2/tenants/%s/designs/%s/roof_summary".formatted(tenantId, designId))
+        .header("Authorization", "Bearer " + token)
+        .retrieve()
+        .toEntity(String.class)
+        .timeout(Duration.ofSeconds(30))
+        .onErrorMap(Exception.class, e -> e)
+        .block();
+
+      if (res != null && res.getStatusCode() != HttpStatus.OK) {
+        throw new RuntimeException("Received unexpected response code " + res.getStatusCodeValue());
+      }
+
+      return res.getBody();
+    } catch (Exception e) {
+      String msg = "AURORA: Failed to get roof summary for design " + designId;
+      log.debug(msg, e);
+      throw new IOException(msg, e);
+    }
+  }
+
   public String getDesignId(Long ppsId, Long cfgaId) {
     return sqlCache.queryForObjectOptionalBySql(AuroraQuery.getIdByProjectProcessStepId, Map.of("ppsId", ppsId, "cfgaId", cfgaId), String.class)
                    .orElse(null);
