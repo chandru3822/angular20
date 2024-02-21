@@ -36,7 +36,7 @@ const snackbar = vueInstance.$snackbar
 const props = defineProps({
   id: String, //fields without a defined default will default to null
   to: String,
-  variant: String, //using `variant` to prep for vue3, //i THINK that if there is NOT a variant we need to set it to have white text...but i could be wrong
+  variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to `text` which is why the text color is set to white if there is no variant
   text: {
     type: String,
     default: ''

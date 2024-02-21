@@ -19,6 +19,12 @@
         btn-type="button"
         @click="myFunction()"
     >
+      <template v-slot:default>
+        <div>
+          <v-icon>add</v-icon>
+          This will override the default slot
+        </div>
+      </template>
 
     </AlbatrossButton>
 
