@@ -18,11 +18,11 @@
                         type="search"
                         attach
         ></v-autocomplete>
-        <v-btn @click="saveUserHomePage"
+        <AlbatrossButton @click="saveUserHomePage"
                v-if="!userIsAlbatross"
-               color="primary" class="mt-4 white--text">
-          Save
-        </v-btn>
+               text="Save"
+               class="mt-4">
+        </AlbatrossButton>
       </v-card-text>
     </v-card>
   </v-container>
@@ -34,6 +34,7 @@ import {AppMutations} from "@/stores/AppStore";
 import {handleHidingGlobalLoader, getRequest, getSnackbar, putRequest} from "@/helpers/helpers";
 import {Actions} from "@/store";
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

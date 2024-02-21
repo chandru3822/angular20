@@ -28,9 +28,7 @@
                               label="Confirm New Password" id="newPasswordConfirm" type="password"></v-text-field>
                 <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn :loading="loginLoading" type="submit"
-                       color="primary" class="white--text">Save
-                </v-btn>
+                <AlbatrossButton :loading="loginLoading" type="submit" text="Save" />
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -46,6 +44,7 @@
   import constants from '@/helpers/constants'
   import axios from 'axios'
   import {getCurrentInstance, onMounted, ref} from 'vue'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store

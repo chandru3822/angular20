@@ -6,10 +6,10 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Filters</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newOrgFilter = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+                             :text="addNew ? 'Cancel' : 'Add New'"
+                             @click="[addNew = !addNew, newOrgFilter = {}]">
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -32,12 +32,12 @@
             <label>Show Type:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgFilter.showType">
           </div>
-          <v-btn text color="primary" @click="[addNew = !addNew, newOrgFilter = {}]">Cancel</v-btn>
-          <v-btn :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
-                 color="primary" class="mr-2"
+          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newOrgFilter = {}]"></AlbatrossButton>
+          <AlbatrossButton :disabled="!newOrgFilter.orgLevelId || !newOrgFilter.rank"
+                 text="Save" class="mr-2"
                  @click="saveOrgFilter(newOrgFilter, true)">
             Save
-          </v-btn>
+          </AlbatrossButton>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -78,11 +78,10 @@
                               label="Rank"/>
                 <input type="checkbox" v-model="item.showType">
               </div>
-              <v-btn :disabled="!item.orgLevelId || !item.rank"
-                     color="primary" class="white--text mr-2"
+              <AlbatrossButton :disabled="!item.orgLevelId || !item.rank"
+                     text="Save" class="mr-2"
                      @click="saveOrgFilter(item, false)">
-                Save
-              </v-btn>
+              </AlbatrossButton>
             </td>
           </template>
 
@@ -94,13 +93,10 @@
                 <input type="checkbox" v-model="item.showType" disabled readonly>
               </td>
               <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="filterToDelete = item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </AlbatrossButton>
+                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
+                <AlbatrossButton size="small" prepend-icon="delete" @click="filterToDelete=item" />
               </td>
             </tr>
           </template>
@@ -125,6 +121,7 @@ import {handleHidingGlobalLoader, deleteRequest, putRequest, getSnackbar} from '
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

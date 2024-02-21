@@ -31,9 +31,7 @@
               <td class="text-left">{{ item.errorMessage }}</td>
               <td class="text-left">{{ item.errorLogStatus }}</td>
               <td>
-                <v-btn small text color="primary" @click="logToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton size="small" prepend-icon="delete" @click="logToDelete=item" />
               </td>
             </tr>
           </template>
@@ -52,6 +50,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

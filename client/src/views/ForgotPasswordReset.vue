@@ -48,7 +48,7 @@
                     Cancel
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn color="primary" :loading="savingPassword" type="submit" dark>Submit</v-btn>
+                  <AlbatrossButton :loading="savingPassword" type="submit" text="Submit"></AlbatrossButton>
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -66,6 +66,7 @@
 
   import {AppMutations} from '@/stores/AppStore'
   import {getCurrentInstance, onMounted, ref} from 'vue'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
   const vueInstance = getCurrentInstance().proxy
   const store = vueInstance.$store

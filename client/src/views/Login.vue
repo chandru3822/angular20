@@ -23,9 +23,7 @@
                     Forgot Password
                   </router-link>
                   <v-spacer></v-spacer>
-                  <AlbatrossButton :loading="loginLoading" type="submit"
-                         color="primary">Login
-                  </AlbatrossButton>
+                  <AlbatrossButton :loading="loginLoading" type="submit" text="Login" />
                 </v-card-actions>
               </v-form>
             </v-card-text>

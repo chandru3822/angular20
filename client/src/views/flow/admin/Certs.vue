@@ -7,14 +7,14 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <div class="mt-4">
-              <v-btn color="primary" @click="sendEmails()" v-if="constants.VUE_APP_ENV === 'local'">
-                Send Email Notices
-              </v-btn>
+              <AlbatrossButton text="Send Email Notices" @click="sendEmails()" v-if="constants.VUE_APP_ENV === 'local'">
+              </AlbatrossButton>
             </div>
-            <v-btn text color="primary" @click="[addNew = !addNew, selectedCert = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <AlbatrossButton :hide-text-on-mobile="true"
+                             :text="addNew ? 'Cancel' : 'Add New'"
+                             prepend-icon="add"
+                             @click="[addNew = !addNew, selectedCert = {}]">
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -36,12 +36,11 @@
                         outlined v-model="selectedCert.notes">
             </v-textarea>
           </div>
-          <v-btn text color="primary" @click="[addNew = !addNew, selectedCert = {}]">Cancel</v-btn>
-          <v-btn :disabled="!selectedCert || !selectedCert.certName || !selectedCert.expirationDate"
-                 color="primary" class="mr-2"
+          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, selectedCert = {}]"></AlbatrossButton>
+          <AlbatrossButton :disabled="!selectedCert || !selectedCert.certName || !selectedCert.expirationDate"
+                 text="Save" class="mr-2"
                  @click="saveCert(true, selectedCert)">
-            Save
-          </v-btn>
+          </AlbatrossButton>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -82,11 +81,10 @@
                             outlined v-model="item.notes">
                 </v-textarea>
               </div>
-              <v-btn :disabled="!item.certName || !item.expirationDate"
-                     color="primary" class="white--text mr-2"
+              <AlbatrossButton :disabled="!item.certName || !item.expirationDate"
+                     text="Save" class="mr-2"
                      @click="saveCert(false, item)">
-                Save
-              </v-btn>
+              </AlbatrossButton>
             </td>
           </template>
 
@@ -101,13 +99,11 @@
               <td class="text-left">{{ item.expirationDate | formatDate('date', 'MM/DD/YYYY') }}</td>
               <td class="text-left">{{ item.daysToExpiration }}</td>
               <td class="text-right">
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="certToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </AlbatrossButton>
+                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
+                <AlbatrossButton size="small" prepend-icon="delete" @click="certToDelete=item">
+                </AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -135,6 +131,7 @@ import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
 import moment from 'moment'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 

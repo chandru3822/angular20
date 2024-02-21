@@ -12,7 +12,7 @@
               If the problem persists after a few minutes please contact an Administrator.
             </v-card-text>
             <v-card-actions class="justify-center">
-              <v-btn color="primary" to="/">Click Here to Try Again</v-btn>
+              <AlbatrossButton to="/" text="Click Here to Try Again" />
             </v-card-actions>
           </v-card>
         </v-col>
@@ -22,5 +22,5 @@
 </template>
 
 <script setup>
-
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 </script>

@@ -31,10 +31,9 @@
                 <label>Has Access:</label>
                 <input class="ml-3" type="checkbox" v-model="item.hasAccess">
               </div>
-              <v-btn color="primary" class="white--text mr-2"
+              <AlbatrossButton class="mr-2" text="Save"
                      @click="saveCompanyUserStatusType(item)">
-                Save
-              </v-btn>
+              </AlbatrossButton>
             </td>
           </template>
 
@@ -45,10 +44,10 @@
                 <input type="checkbox" v-model="item.hasAccess" disabled readonly>
               </td>
               <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                <AlbatrossButton size="small" v-if="!expanded.includes(item)" @click="expanded = [item]">
                   <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                </AlbatrossButton>
+                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -65,6 +64,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, putRequest} from '@/helpers/helpers'
 import {getUserStatusTypes} from '@/services/userService'
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

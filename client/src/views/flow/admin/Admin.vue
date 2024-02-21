@@ -16,9 +16,8 @@
             >
               {{ title }}
               <v-spacer></v-spacer>
-              <v-btn text>
-                <v-icon>expand_more</v-icon>
-              </v-btn>
+              <AlbatrossButton prepend-icon="expand_more">
+              </AlbatrossButton>
             </v-toolbar>
           </template>
           <v-list dense class="pa-3">
@@ -72,6 +71,7 @@
 <script setup>
 import constants from '@/helpers/constants'
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

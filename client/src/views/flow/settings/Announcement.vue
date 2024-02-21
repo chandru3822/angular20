@@ -2,19 +2,20 @@
   <v-container>
     <v-row class="pt-0" v-if="!dataLoading">
       <v-col cols="12" class="pt-0">
-        <v-btn icon color="primary" @click="cancel()" class="back-button">
-          <v-icon x-large>mdi-chevron-left</v-icon>
-        </v-btn>
+        <AlbatrossButton icon @click="cancel()" custom-classes="back-button">
+          <template v-slot:default>
+            <v-icon x-large>mdi-chevron-left</v-icon>
+          </template>
+        </AlbatrossButton>
         <v-toolbar flat id="announcement-admin-header">
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">
             {{ announcementId ? 'Edit Announcement' : 'Add Announcement' }}
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn color="primary" text @click="validate()"
+            <AlbatrossButton @click="validate()" prepend-icon="save"
                    v-if="userCanEdit" :loading="saving">
-              <v-icon>save</v-icon>
-            </v-btn>
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-form ref="announcementForm">
@@ -126,13 +127,13 @@
               <!--                      @change="uploadFile(, null)"-->
               <!--                      name="avatar"-->
               <!--                  >-->
-              <v-btn :large="vueInstance.$vuetify.breakpoint.smAndDown" color="primary"
+              <AlbatrossButton :size="vueInstance.$vuetify.breakpoint.smAndDown ? 'large' : 'default'"
                      v-else class="mb-3"
                      :disabled="!userCanEdit"
+                     text="Delete Attachment"
+                     append-icon="delete"
                      @click="showDeleteDialog = true">
-                Delete Attachment
-                <v-icon class="ml-3">delete</v-icon>
-              </v-btn>
+              </AlbatrossButton>
             </div>
 
             <div class="company-logo-background" v-if="announcement.presignedUrl">
@@ -176,6 +177,8 @@ import {Actions} from "@/store";
 import moment from 'moment'
 import cloneDeep from 'lodash.clonedeep'
 import isEqual from 'lodash.isequal'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
+
 
 const vueInstance = getCurrentInstance().proxy
 const router = vueInstance.$router

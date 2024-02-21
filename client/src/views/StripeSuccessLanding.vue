@@ -11,10 +11,9 @@
               <div class="py-4 font-size-16 text-center">
                 Deposit Received. <br/>
 
-                <v-btn v-if="isMobile"
-                       class="mt-5"
-                       color="primary" @click="doAppLaunch()">Return to Albatross
-                </v-btn>
+                <AlbatrossButton v-if="isMobile"
+                       class="mt-5" text="Return to Albatross"
+                       @click="doAppLaunch()" />
               </div>
 
             </v-card-text>
@@ -31,6 +30,7 @@ import constants from '@/helpers/constants'
 import {getRequest, getSnackbar, handleHidingGlobalLoader, postRequestWithRequestParams} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getCurrentInstance, onMounted, ref} from "vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const router = vueInstance.$router

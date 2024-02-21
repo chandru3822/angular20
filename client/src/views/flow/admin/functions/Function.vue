@@ -11,10 +11,10 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary"
+            <AlbatrossButton
+                :text="addNew ? 'Cancel' : 'Add New Param'"
                    @click="[addNew = !addNew, newParam = {}, getDataTypes(), getParameterTypes(), getSystemValues()]">
-              {{ addNew ? 'Cancel' : 'Add New Param' }}
-            </v-btn>
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-list>
@@ -86,14 +86,13 @@
                           outlined v-model="newParam.description"/>
             </div>
           </div>
-          <v-btn :disabled="!newParam || !newParam.parameterName || ( newParam.parameterTypeId !== 1 && !newParam.dataTypeId)
+          <AlbatrossButton :disabled="!newParam || !newParam.parameterName || ( newParam.parameterTypeId !== 1 && !newParam.dataTypeId)
                     || !newParam.parameterTypeId || (newParam.parameterTypeId === 1 && !newParam.systemValueId)"
-                 color="primary" class="mr-2"
-                 @click="[addParam()]">
-            <!--                 @click="[addNew = false, addParam()]">-->
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addNew = !addNew, newParam = {}]">Cancel</v-btn>
+                 class="mr-2"
+                 text="Save"
+                 @click="addParam()">
+          </AlbatrossButton>
+          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newParam = {}]" />
         </v-card>
         <v-divider></v-divider>
         <v-card flat class="px-3">
@@ -135,10 +134,9 @@
                                 outlined v-model="item.description"/>
                   </div>
                 </div>
-                <v-btn color="primary" class="white--text mr-2"
+                <AlbatrossButton class="mr-2" text="Save"
                        @click="saveParam(item)">
-                  Save
-                </v-btn>
+                </AlbatrossButton>
               </td>
             </template>
 
@@ -168,10 +166,13 @@
                   </pre>
                 </td>
                 <td>
-                  <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
-                  <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                  <AlbatrossButton size="small" v-if="!expanded.includes(item)"
+                                   prepend-icon="edit"
+                                   @click="expanded = [item]">
+                  </AlbatrossButton>
+                  <AlbatrossButton size="small" v-if="expanded.includes(item)"
+                                   text="cancel"
+                                   @click="expanded = []"></AlbatrossButton>
                 </td>
               </tr>
             </template>
@@ -216,11 +217,11 @@
               >{{ selectedCompanies.length }} selected</span>
             </template>
           </v-select>
-          <v-btn :disabled="selectedCompanies.length === 0"
-                 color="primary" class="white--text mr-2"
+          <AlbatrossButton :disabled="selectedCompanies.length === 0"
+                 class="mr-2"
+                 text="Push to Companies"
                  @click="pushToCompanies()">
-            Push to Companies
-          </v-btn>
+          </AlbatrossButton>
         </v-card>
       </v-col>
     </v-row>
@@ -232,6 +233,7 @@
 import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, postRequest, putRequest} from '@/helpers/helpers'
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

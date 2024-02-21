@@ -24,7 +24,7 @@
                     Cancel
                   </router-link>
                   <v-spacer></v-spacer>
-                  <v-btn color="primary" @click="validate" dark>Submit</v-btn>
+                  <AlbatrossButton @click="validate" text="Submit"></AlbatrossButton>
                 </v-card-actions>
               </v-form>
             </v-card-text>
@@ -41,6 +41,7 @@ import constants from '@/helpers/constants'
 import {handleHidingGlobalLoader, postRequest, getSnackbar} from '@/helpers/helpers'
 import {AppMutations} from '@/stores/AppStore'
 import {getCurrentInstance, onMounted, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

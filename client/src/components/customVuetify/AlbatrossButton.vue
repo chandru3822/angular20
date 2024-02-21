@@ -7,6 +7,8 @@
          :color="props.color"
          :elevation="props.elevation"
          :icon="props.round"
+         :style="props.style"
+         :target="props.target"
          :href="props.href"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
@@ -20,9 +22,9 @@
     <slot name="default">
       <template>
         <div>
-          <v-icon v-if="props.prependIcon && !props.showAlternate" class="mr-1">{{ props.prependIcon }}</v-icon>
-          <v-icon v-else-if="props.alternatePrependIcon && props.showAlternate" class="mr-1">{{ props.alternatePrependIcon }}</v-icon>
-          <span v-if="!props.hideTextOnMobile">{{ props.showAlternate ? props.alternateText : props.text }}</span>
+          <v-icon v-if="props.prependIcon" class="mr-1">{{ props.prependIcon }}</v-icon>
+          <span v-if="!props.hideTextOnMobile || (props.hideTextOnMobile && constants.IS_MOBILE)">{{ props.text }}</span>
+          <v-icon v-if="props.appendIcon" class="ml-3">{{ props.appendIcon }}</v-icon>
         </div>
       </template>
     </slot>
@@ -31,11 +33,14 @@
 
 <script setup>
 import {getCurrentInstance, computed, defineProps, ref} from 'vue'
+import constants from '@/helpers/constants'
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
+
+//note in vue3 using the prepend icon you can't change its size. so for now if the size of the icon is custom, then a default template must be sent in to override
 
 const props = defineProps({
   id: String, //fields without a defined default will default to null
@@ -43,6 +48,8 @@ const props = defineProps({
   variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to `text` which is why the text color is set to white if there is no variant
   elevation: Number,
   href: String,
+  target: String, //pretty sure this prop is gone in v3
+  style: String, //only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   text: {
     type: String,
     default: ''
@@ -67,15 +74,7 @@ const props = defineProps({
     type: String,
     default: ''
   },
-  showAlternate: {
-    type: Boolean,
-    default: false
-  },
-  alternatePrependIcon: {
-    type: String,
-    default: ''
-  },
-  alternateText: {
+  appendIcon: { //using `appendIcon` to prep for vue3
     type: String,
     default: ''
   },

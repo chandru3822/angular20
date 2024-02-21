@@ -6,10 +6,10 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Features</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, selectedFeature = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+                             :text="addNew ? 'Cancel' : 'Add New'"
+                             @click="[addNew = !addNew, selectedFeature = {}]">
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -85,13 +85,10 @@
               <td class="text-left">{{ item.featureName }}</td>
               <td class="text-left">{{ item.featureCode }}</td>
               <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                <v-btn small text color="primary" @click="featureToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton size="small" prepend-icon="edit" v-if="!expanded.includes(item)" @click="expanded = [item]">
+                </AlbatrossButton>
+                <AlbatrossButton size="small" text="cancel" v-if="expanded.includes(item)" @click="expanded = []"></AlbatrossButton>
+                <AlbatrossButton size="small" prepend-icon="delete" @click="featureToDelete=item" />
               </td>
             </tr>
           </template>
@@ -120,6 +117,7 @@ import constants from '@/helpers/constants'
 import orderBy from "lodash.orderby";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import {getCurrentInstance, onMounted, computed, ref} from 'vue'
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store

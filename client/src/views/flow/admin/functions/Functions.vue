@@ -6,10 +6,10 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary"
+            <AlbatrossButton
+                :text="addNew ? 'Cancel' : 'Add New'"
                    @click="[addNew = !addNew, newFunction = {}, getDataTypes(), getFunctionTypes()]">
-              {{ addNew ? 'Cancel' : 'Add New' }}
-            </v-btn>
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
@@ -57,13 +57,12 @@
                 label="Run in backend"
             />
           </div>
-          <v-btn
+          <AlbatrossButton
               :disabled="!newFunction || !newFunction.functionName || !newFunction.displayName || !newFunction.dbFunctionTypeId || (newFunction.dbFunctionTypeId === 1 && !newFunction.returnDataTypeId)"
-              color="primary" class="mr-2"
+              text="Save" class="mr-2"
               @click="addFunction()">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addNew = !addNew, newFunction = {}]">Cancel</v-btn>
+          </AlbatrossButton>
+          <AlbatrossButton text="Cancel" @click="[addNew = !addNew, newFunction = {}]" />
         </v-card>
         <v-text-field
             v-model="search"
@@ -99,12 +98,10 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.functionType }}</td>
               <td>
-                <v-btn small text color="primary" @click="goToFunction(item.id)">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="functionToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton size="small" prepend-icon="edit" @click="goToFunction(item.id)">
+                </AlbatrossButton>
+                <AlbatrossButton size="small" prepend-icon="delete" @click="functionToDelete=item">
+                </AlbatrossButton>
               </td>
             </tr>
           </template>
@@ -124,6 +121,7 @@ import {AppMutations} from '@/stores/AppStore'
 import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 import {getCurrentInstance, computed, onMounted, ref} from 'vue'
 
 const vueInstance = getCurrentInstance().proxy
