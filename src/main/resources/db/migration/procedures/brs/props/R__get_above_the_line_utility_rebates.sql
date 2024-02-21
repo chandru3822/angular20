@@ -76,7 +76,7 @@ BEGIN
       end if;
       if x.odoe_battery_rebate_amount is not null and x.odoe_battery_rebate_amount > 0 then
         v_utility_rebate_amount = v_utility_rebate_amount +
-                                  least((p_storage_capacity * x.odoe_battery_rebate_amount * 1000)::numeric,
+                                  least((coalesce(p_storage_capacity,0) * x.odoe_battery_rebate_amount * 1000)::numeric,
                                         x.odoe_battery_rebate_cap_amount);
       end if;
       --raise notice 'above the line v_utility_rebate_amount = %',v_utility_rebate_amount;
