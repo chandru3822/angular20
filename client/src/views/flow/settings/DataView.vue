@@ -2,10 +2,12 @@
   <v-container id="data-view-container" v-if="viewLoaded">
     <v-row>
       <v-col class="shrink" cols="12">
-        <AlbatrossButton text class="pl-1 pr-2 anchor" :to="'/settings/dataViews'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </AlbatrossButton>
+        <AlbatrossButton variant="text"
+                         class="pl-1 pr-2 anchor"
+                         :to="'/settings/dataViews'"
+                         prepend-icon="arrow-left"
+                         text="Back"
+        />
         <div class="flex-display pt-3 px-3 mb-4 one-hunned">
           <div class="one-hunned pl-3">
             <span class="page-title" v-if="!edit">{{ dataView.displayName }}</span>
@@ -37,19 +39,29 @@
             </div>
           </div>
           <div class="text-right">
-            <AlbatrossButton text color="primary" v-if="!edit" class=""
-                   @click="[oldName = dataView.displayName, edit = !edit, getCompanyProcesses()]">
-              <v-icon>edit</v-icon>
-            </AlbatrossButton>
-            <AlbatrossButton text color="primary" class="" v-else :disabled="dataView.companyProcesses.length === 0"
-                   @click="[edit = false, saveDataView()]">
-              <v-icon>save</v-icon>
-            </AlbatrossButton>
-            <AlbatrossButton text color="primary"
-                   v-if="edit"
-                   @click="[dataView.displayName = oldName, edit = !edit, fixData()]">
-              cancel
-            </AlbatrossButton>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              v-if="!edit"
+              class=""
+              @click="[oldName = dataView.displayName, edit = !edit, getCompanyProcesses()]"
+              prepend-icon="edit"/>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              class=""
+              v-else
+              :disabled="dataView.companyProcesses.length === 0"
+              @click="[edit = false, saveDataView()]"
+              prepend-icon="save"
+            />
+
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              v-if="edit"
+              @click="[dataView.displayName = oldName, edit = !edit, fixData()]"
+              text="cancel"/>
           </div>
         </div>
         <v-divider class="mt-3 mb-1"></v-divider>
@@ -63,11 +75,16 @@
             single-line
             hide-details
           ></v-text-field>
-          <AlbatrossButton text color="primary" class="d-inline-block" v-if="!addNew"
-                 @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects(), fixData()]">
-            <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-            <span v-else>{{ addNew ? 'Cancel' : 'Add New Field' }}</span>
-          </AlbatrossButton>
+          <AlbatrossButton
+            variant="text"
+            color="primary"
+            class="d-inline-block"
+            v-if="!addNew"
+            @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null }, getAvailableDefaultFields(), getParentObjects(), fixData()]"
+            :hide-text-on-mobile="constants.IS_MOBILE"
+            :text="!addNew ? 'Add New Field' : 'Cancel'"
+            :prepend-icon="addNew ? 'close' : 'add'"
+          />
         </div>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat>
           <h3>Add Field Config</h3>
@@ -185,18 +202,21 @@
                 </div>
               </div>
             </v-form>
-            <AlbatrossButton :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
+            <AlbatrossButton
+              :disabled="!newField.displayName || !newField.fieldToUpdate || (!selectedDefaultField.id && !newField.customFieldGroupAssignmentId)
                               || (selectedDefaultField.objectTypeId === 6 && !newField.processStepEventId) || (selectedDefaultField.objectTypeId === 4 && !newField.processStepId)"
-                   color="primary" class="white--text mr-2"
-                   @click="validateFields(newField, true)">
-              Save
-            </AlbatrossButton>
+              color="primary" class="white--text mr-2"
+              @click="validateFields(newField, true)"
+              text="save"
+            />
+
+
             <AlbatrossButton
               @click="[addNew = !addNew, newField = { processStepEventId: null, processStepId: null, customFieldGroupAssignmentId: null}, selectedDefaultField = {}, fixData()]"
-              text color="primary"
-            >
-              Cancel
-            </AlbatrossButton>
+              variant="text"
+              color="primary"
+              text="Cancel"
+            />
           </div>
 
         </v-card>
@@ -227,11 +247,13 @@
               <div class="flex-display">
                 <v-text-field text v-model="item.displayName" class="d-inline-block display-name-field"
                               label="Display Name"/>
-                <AlbatrossButton text :disabled="!item.displayName"
-                       color="primary" class="white--text mr-2 d-inline-block"
-                       @click="saveFieldConfig(item, false)">
-                  <v-icon>save</v-icon>
-                </AlbatrossButton>
+                <AlbatrossButton
+                  variant="text"
+                  :disabled="!item.displayName"
+                  color="primary" class="white--text mr-2 d-inline-block"
+                  @click="saveFieldConfig(item, false)"
+                  prepend-icon="save"
+                />
               </div>
               <v-text-field text v-model="item.fieldToUpdate" disabled readonly
                             label="Field to Update"/>
@@ -306,9 +328,12 @@
                   <v-toolbar-title>Child Fields</v-toolbar-title>
                   <v-spacer></v-spacer>
                   <v-toolbar-items>
-                    <AlbatrossButton text color="primary" @click="[addChild = !addChild, childField = {}]">
-                      <v-icon>add</v-icon>
-                    </AlbatrossButton>
+                    <AlbatrossButton
+                      variant="text"
+                      color="primary"
+                      @click="[addChild = !addChild, childField = {}]"
+                      prepend-icon="add"
+                    />
                   </v-toolbar-items>
                 </v-toolbar>
 
@@ -337,9 +362,9 @@
                     <AlbatrossButton
                       :disabled="!childField.displayName || !childField.fieldToUpdate || !childField.uniqueBehaviorTypeId"
                       color="primary" class="white--text mr-2"
-                      @click="validateChildField(item, childField, true)">
-                      Add Child Field
-                    </AlbatrossButton>
+                      @click="validateChildField(item, childField, true)"
+                      text="Add Child Field"
+                    />
                   </v-form>
                 </div>
                 <v-data-table
@@ -365,11 +390,13 @@
                               <v-text-field text v-model="childField.displayName"
                                             :rules="requiredRules"
                                             label="Display Name"/>
-                              <AlbatrossButton text :disabled="!childField.displayName"
-                                     color="primary" class="white--text mr-2 d-inline-block"
-                                     @click="saveChildFieldConfig(item, childField, false)">
-                                <v-icon>save</v-icon>
-                              </AlbatrossButton>
+                              <AlbatrossButton
+                                variant="text"
+                                :disabled="!childField.displayName"
+                                color="primary" class="white--text mr-2 d-inline-block"
+                                @click="saveChildFieldConfig(item, childField, false)"
+                                prepend-icon="save"
+                              />
                             </div>
                           </v-card-text>
                         </v-card>
@@ -389,21 +416,32 @@
                       <td style="width: 130px;">
                         <v-tooltip left>
                           <template v-slot:activator="{ on, attrs }">
-                            <AlbatrossButton small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                                   v-on="on"><v-icon>mdi-information</v-icon></AlbatrossButton>
+                            <AlbatrossButton
+                              size="small"
+                              color="primary"
+                              @click="copyToClipBoard(item.id)"
+                              v-bind="attrs"
+                              v-on="on"
+                              round
+                              prepend-icon="mdi-information"/>
+
                           </template>
                           <span>ID: {{childField.id}}</span>
                           <div class="text-center">(click to copy)</div>
                         </v-tooltip>
-                        <AlbatrossButton small text color="primary" v-if="!childFieldExpanded.includes(childField)"
-                               @click="[addChild = false, childFieldExpanded = [childField] ]">
-                          <v-icon>edit</v-icon>
-                        </AlbatrossButton>
-                        <AlbatrossButton small text color="primary"
+                        <AlbatrossButton
+                          size="small"
+                          variant="text"
+                          color="primary"
+                          v-if="!childFieldExpanded.includes(childField)"
+                          @click="[addChild = false, childFieldExpanded = [childField] ]"
+                          prepend-icon="edit"
+                        />
+                        <v-btn small text color="primary"
                                v-if="childFieldExpanded.includes(childField)"
                                @click="childFieldExpanded = []">
                           cancel
-                        </AlbatrossButton>
+                        </v-btn>
 
                       </td>
                     </tr>
@@ -420,21 +458,27 @@
               <td>
                 <v-tooltip left>
                   <template v-slot:activator="{ on, attrs }">
-                    <AlbatrossButton small icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                           v-on="on"><v-icon>mdi-information</v-icon></AlbatrossButton>
+                    <AlbatrossButton
+                      size="small"
+                      color="primary"
+                      @click="copyToClipBoard(item.id)" v-bind="attrs"
+                      v-on="on"
+                      round
+                      prepend-icon="mdi-information"
+                    />
                   </template>
                   <span>ID: {{item.id}}</span>
                   <div class="text-center">(click to copy)</div>
                 </v-tooltip>
-                <AlbatrossButton small text color="primary" v-if="!expanded.includes(item)"
+                <v-btn small text color="primary" v-if="!expanded.includes(item)"
                        @click="[addNew = false, expanded = [item], getAvailableDefaultFields(), getParentObjects(), getUniqueBehaviorTypes(), addChild = false, childField = {}]">
                   <v-icon>edit</v-icon>
-                </AlbatrossButton>
-                <AlbatrossButton small text color="primary"
+                </v-btn>
+                <v-btn small text color="primary"
                        v-if="expanded.includes(item)"
                        @click="expanded = []">
                   cancel
-                </AlbatrossButton>
+                </v-btn>
 
               </td>
             </tr>
@@ -449,12 +493,12 @@
 
 <script setup>
 import {AppMutations} from '@/stores/AppStore'
-import {handleHidingGlobalLoader, getRequest, postRequest, getSnackbar, getRequestWithParams} from '@/helpers/helpers'
+import {handleHidingGlobalLoader, getRequest, postRequest, getRequestWithParams} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import cloneDeep from 'lodash.clonedeep'
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-import { getCurrentInstance, ref } from "vue";
+import {getCurrentInstance, onMounted, ref} from "vue";
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
@@ -486,7 +530,6 @@ const fieldToUpdateRule = ref([
 ])
 const selectedDefaultField = ref({})
 const uniqueBehaviorTypes = ref([])
-const dataTypes = ref([])
 const expanded = ref([])
 const childFieldExpanded = ref([])
 const edit = ref(false)
@@ -517,10 +560,10 @@ const headers = ref([
   {text: null, value: 'icons', show: true, sortable: false}
 ])
 
-const created = async () => {
+onMounted(async () => {
   getDataView()
   getParentObjects()
-}
+})
 const copyToClipBoard = (textValue) => {
   navigator.clipboard.writeText(textValue)
   snackbar('SUCCESS', 'Copied text to clipboard')
@@ -597,18 +640,6 @@ const validateChildField = (item, newChildField, isNew) => {
     childSaveErrorMsg.value = 'Field to Update already in use by parent'
   } else if (vueInstance.$refs.childFieldForm?.validate()) {
     saveChildFieldConfig(item, newChildField, isNew)
-  }
-}
-const validateForm = async () => {
-  if (vueInstance.$refs.projectEditForm.validate()) {
-    //these could be combined - just dont have time atm
-    saveProjectAddressFields()
-    updateOwner()
-    //have to wait for this one to complete or it doesn't have the right values to display fresh ones
-    await updateStatus()
-    //set project values if they hit save
-    project.value = cloneDeep(tempProject.value)
-    showEditProjectModal.value = false
   }
 }
 const getUniqueBehaviorTypes = async () => {
@@ -801,7 +832,7 @@ const saveChildFieldConfig = async (primaryField, childField, isNew) => {
     const {
       data,
       status
-    } = await postRequest(`/dataView/${viewId.value}/field/${primaryFid.value}/childField`, childField)
+    } = await postRequest(`/dataView/${viewId.value}/field/${primaryField.id}/childField`, childField)
     if(isNew) {
       primaryField.childFieldConfigs.push(data)
     }

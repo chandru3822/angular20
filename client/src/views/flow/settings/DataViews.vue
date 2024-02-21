@@ -6,10 +6,14 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Data Views</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton text color="primary" v-if="is7oaksAdmin"
-                   @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
+            <AlbatrossButton v-if="is7oaksAdmin"
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newDataView = {}, getCompanyProcesses()]"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :text="!addNew ? 'Add New' : 'Cancel'"
+              :prepend-icon="addNew ? 'close' : 'add'"
+              >
             </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
@@ -36,12 +40,19 @@
           <div class="mb-3 error--text" v-if="saveError">
             {{saveErrorMsg}}
           </div>
-          <AlbatrossButton :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
-                 color="primary" class="white--text mr-2"
-                 @click="validateForm(newDataView, true)">
-            Save
+          <AlbatrossButton
+            :disabled="!newDataView.displayName || !newDataView.viewName || selectedCompanyProcesses.length === 0"
+            color="primary"
+            class="white--text mr-2"
+            @click="validateForm(newDataView, true)"
+            text="Save">
           </AlbatrossButton>
-          <AlbatrossButton text color="primary" @click="[addNew = !addNew, newDataView = {}]">Cancel</AlbatrossButton>
+          <AlbatrossButton
+            variant="text"
+            color="primary"
+            @click="[addNew = !addNew, newDataView = {}]"
+            text="Cancel">
+          </AlbatrossButton>
         </v-card>
         <v-data-table
             :headers="headers"
@@ -65,8 +76,10 @@
               <td class="text-left">{{ item.displayName }}</td>
               <td class="text-left">{{ item.viewName }}</td>
               <td class="text-right">
-                <AlbatrossButton small text color="primary">
-                  <v-icon>edit</v-icon>
+                <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  prepend-icon="edit">
                 </AlbatrossButton>
 
               </td>
@@ -89,7 +102,7 @@
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
-  const route = vueInstance.$route
+  const router = vueInstance.$router
 
   const addNew = ref(false)
   const saveError = ref(false)

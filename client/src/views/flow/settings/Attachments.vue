@@ -22,14 +22,12 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <AlbatrossButton
             color="primary"
             dark
-            class="white--text"
             @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+            text="OK"
+          ></AlbatrossButton>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -39,11 +37,15 @@
           <v-toolbar-title class="title-large">Attachment Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text @click="[addNew = !addNew, newType = {}]" color="primary"
-                   v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="vuetify.breakpoint.xsOnly">{{ addNew ? 'close' : 'add' }}</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <AlbatrossButton v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              variant="text"
+              @click="[addNew = !addNew, newType = {}]"
+              color="primary"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :text="!addNew ? 'Add New' : 'Cancel'"
+              :prepend-icon="addNew ? 'close' : 'add'"
+            >
+            </AlbatrossButton>
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -53,7 +55,11 @@
                           placeholder="Enter a type"
                           label="Attachment Type">
             </v-text-field>
-            <v-btn v-if="addNew" color="primary" :disabled="!newType.attachmentType" @click="addNewType">Save</v-btn>
+            <AlbatrossButton v-if="addNew"
+                             color="primary"
+                             :disabled="!newType.attachmentType"
+                             @click="addNewType"
+                             text="Save"/>
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -68,7 +74,7 @@
             </v-card-title>
             <v-data-table
               :headers="headers"
-              :items="filterTypes()"
+              :items="filterTypes"
               :fixed-header="true"
               :items-per-page="100"
               :search="search"
@@ -80,9 +86,13 @@
                 <tr :class="{'shaded-row': index % 2}">
                   <td class="text-left clickable" @click="goToType(item.id)">{{ item.attachmentType }}</td>
                   <td class="text-right" :class="{'d-flex flex-column align-end': vuetify.breakpoint.xsOnly}">
-                    <v-btn small text color="primary" @click="goToType(item.id)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="goToType(item.id)"
+                      prepend-icon="edit"
+                    />
                   </td>
                 </tr>
               </template>
@@ -104,15 +114,13 @@
 <script setup>
   import { getCurrentInstance, ref, computed, onMounted} from "vue";
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
-
+  import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
   import {
     handleHidingGlobalLoader,
     getRequest,
     deleteRequest,
     postRequest,
-    getSnackbar
   } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -120,6 +128,7 @@
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
+  const router = vueInstance.$router
   const vuetify = vueInstance.$vuetify
 
   const attachmentTypes =  ref([])
@@ -144,6 +153,12 @@
 
   const itemToDeleteAttachmentType = computed(() => {
     return itemToDelete.value ? itemToDelete.value.attachmentType : ''
+  })
+
+  const filterTypes = computed(() => {
+    return attachmentTypes.value.filter(e => {
+      return !e.archived
+    })
   })
 
   onMounted(() => {
@@ -190,7 +205,7 @@
     store.commit(AppMutations.SET_LOADING, true)
     try {
       newType.value.companyId = companyId.value
-      const {data, status} = await postRequest(`/attachmentType/type`, this.newType, null, [])
+      const {data, status} = await postRequest(`/attachmentType/type`, newType.value, null, [])
 
       snackbar('SUCCESS', 'Action Type Added')
 
@@ -212,11 +227,6 @@
   const closeDeleteDialog = () => {
     showDeleteDialog.value = false
     itemToDelete.value = null
-  }
-  const filterTypes = () => {
-    return attachmentTypes.value.filter(e => {
-      return !e.archived
-    })
   }
 
 </script>
