@@ -7,7 +7,7 @@
          :color="props.color"
          :elevation="props.elevation"
          :icon="props.round"
-         :style="props.style"
+         :style="props.htmlStyle"
          :target="props.target"
          :href="props.href"
          :large="props.size === 'large'"
@@ -45,11 +45,11 @@ const snackbar = vueInstance.$snackbar
 const props = defineProps({
   id: String, //fields without a defined default will default to null
   to: String,
-  variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to `text` which is why the text color is set to white if there is no variant
+  variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to null which is why the text color is set to white if there is no variant
   elevation: Number,
   href: String,
   target: String, //pretty sure this prop is gone in v3
-  style: String, //only seen this used to set a max width so far. in v3 there is an option for that so style should go away
+  htmlStyle: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   text: {
     type: String,
     default: ''

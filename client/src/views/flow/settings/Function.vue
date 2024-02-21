@@ -55,9 +55,7 @@
                           item-value="customFieldGroupAssignmentId"
                 ></v-select>
               </div>
-              <AlbatrossButton @click="saveParam(item)">
-                <v-icon>save</v-icon>
-                Save
+              <AlbatrossButton @click="saveParam(item)" prepend-icon="save" text="Save">
               </AlbatrossButton>
             </td>
           </template>
@@ -145,7 +143,7 @@
   ])
   const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
   const companyId = ref(store.state.user.details.companyId)
-  const functionId = ref(route.params.id)
+  const functionId = ref(vueInstance.$route.params.id)
   const userId = ref(store.state.user.details.id)
   const systemValues = ref([])
   const details = ref({})

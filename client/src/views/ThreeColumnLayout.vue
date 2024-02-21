@@ -27,7 +27,7 @@
                       'hide-column-xs': store.state.project.leftSideSplit}">
         <div class="mobile-padding-menu-button" :class="{'title-collapsed': store.state.project.leftSideSplit,
                       'ml-2': !store.state.project.leftSideSplit}">
-          <AlbatrossButton size="small" prepend-icon="mdi-menu" @click="collapseSide('left')" />
+          <AlbatrossButton size="small" variant="text" prepend-icon="mdi-menu" @click="collapseSide('left')" />
         </div>
         <div v-if="!store.state.project.leftSideSplit" class="left-panel-scrollable-area auto-overflow">
           <slot name="left-column"></slot>

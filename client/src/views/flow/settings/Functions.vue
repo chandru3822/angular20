@@ -6,15 +6,14 @@
           <v-toolbar-title class="app-title">Functions</v-toolbar-title>
         </v-toolbar>
         <v-container>
-          <v-list v-for="(f, index) in filterBy(functions, false, 'archived')"
+          <v-list v-for="(f, index) in filteredFunctions"
                   :key="index"  class="pa-0">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content>
                 {{f.companyFunctionName}}
               </v-list-item-content>
               <v-list-item-action class="clickable">
-                <AlbatrossButton :to="{ path: `/settings/function/${f.id}`}" text color="primary">
-                  <v-icon>edit</v-icon>
+                <AlbatrossButton :to="`/settings/function/${f.id}`" variant="text" prepend-icon="edit">
                 </AlbatrossButton>
               </v-list-item-action>
             </v-list-item>
@@ -42,6 +41,11 @@
   const companyId = ref(store.state.user.details.companyId)
   const userId = ref(store.state.user.details.id)
   const functions = ref([])
+
+  const filteredFunctions = computed(() => {
+    return functions.value.filter(f => !f.archives)
+  })
+
   const getFunctions = async () => {
     store.commit(AppMutations.SET_LOADING, true)
     try {

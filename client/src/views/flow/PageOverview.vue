@@ -5,8 +5,9 @@
         <AlbatrossButton
             size="small"
             class="mx-2"
+            variant="text"
             custom-classes="px-0"
-            style="max-width: 34px"
+            html-style="max-width: 34px"
             @click.stop="$emit('clickEdit')"
             v-if="props.showEditBtn">
           <template v-slot:default>
