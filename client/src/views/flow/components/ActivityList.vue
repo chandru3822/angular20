@@ -66,6 +66,7 @@
           <span v-if="a.createdByPosition" class="clickable" @click="searchCallback(a.createdByPosition, null, SearchTypeEnum.POSITION)" :inner-html.prop="', ' + a.createdByPosition | searchHighlight(query)"/>
           <span v-if="a.createdByPositionOrg" class = "clickable" @click="searchCallback(a.createdByPositionOrg, a.createdByPositionOrgId, SearchTypeEnum.TEAM)" :inner-html.prop="`(${a.createdByPositionOrg})` | searchHighlight(query)"/> | {{ a.dateCreated | formatDate('timestamp', 'M/D/YY h:mm a') }}
           <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="`| Edited by ${ a.modifiedBy }` | searchHighlight(query)"/>
+          <span v-if="a.dateCreated !== a.dateModified" :inner-html.prop="a.dateModified | formatDate('timestamp', ' [on] M/D/YY [at] h:mm a')"/>
           <span v-if="a.pinned" :inner-html.prop="` | Pinned by ${ a.pinnedBy }` | searchHighlight(query)"/>
         </v-card-actions>
       </v-card>
