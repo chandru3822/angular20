@@ -13,8 +13,8 @@
          :href="props.href"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
-         :class="[{'text-capitalize': props.capitalize,
-                   'text-lowercase': props.lowerCase},
+         :class="[{'text-capitalize': props.casing === 'capitalize',
+                   'text-lowercase': props.casing === 'lower'},
                   props.customClasses]"
          :to="props.to"
          :type="props.btnType"
@@ -51,6 +51,7 @@ const props = defineProps({
   target: String, //pretty sure this prop is gone in v3
   htmlStyle: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   activationHandler: Object,
+  casing: String,  //capitalize = "Hello", lower="hello" by default a btn's text will be all caps "HELLO"
   text: {
     type: String,
     default: ''
@@ -84,14 +85,6 @@ const props = defineProps({
     default: 'default'
   },
   hideTextOnMobile: {
-    type: Boolean,
-    default: false
-  },
-  capitalize: {
-    type: Boolean, //capitalize = "Hello", by default a btn's text will be all caps "HELLO"
-    default: false
-  },
-  lowerCase: {
     type: Boolean,
     default: false
   },
