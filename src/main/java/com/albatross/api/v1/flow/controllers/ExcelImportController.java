@@ -317,6 +317,16 @@ public class ExcelImportController {
       return ResponseEntity.status(500).body(msg);
     }
   }
+  @GetMapping(value = "/designs/{id}/roofSummary", produces = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity getDesignRoofSummary(@NonNull @PathVariable("id") String designId) {
+    try {
+      return ResponseEntity.ok(aurora.getDesignRoofSummary(designId));
+    } catch (Exception e) {
+      String msg = "EXCEL_IMPORT: Failed to get design roof summary for design " + designId;
+      log.error(msg, e);
+      return ResponseEntity.status(500).body(msg);
+    }
+  }
 
   private PGobject getPGobject(Object original) {
 
