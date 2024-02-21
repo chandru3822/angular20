@@ -88,7 +88,7 @@ const props = defineProps({
     default: false
   },
   capitalize: {
-    type: Boolean, //by default a btn's text will be all caps
+    type: Boolean, //capitalize = "Hello", by default a btn's text will be all caps "HELLO"
     default: false
   },
   lowerCase: {
