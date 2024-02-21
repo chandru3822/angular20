@@ -733,6 +733,16 @@ public class UserQuery {
       where (uc.company_id = :companyId or (c.parent_company_id = :parentCompanyId and :parentCompanyId != 1))
         and u.archived = false
         and ust.has_access is true
+      union all
+      select o.id,
+             o.org_name as first_name,
+             '' as last_name,
+             o.org_name as full_name,
+             o.org_name as value,
+             ocfv.text_value
+      from flow.org o
+               inner join flow.organization_custom_field_value ocfv on o.id = ocfv.org_id
+      where o.org_type_id = 10 and o.active_flag = true and o.archived = false and ocfv.custom_field_group_assignment_id = 484 and ocfv.text_value is not null
       order by last_name, first_name desc
     """;
 
