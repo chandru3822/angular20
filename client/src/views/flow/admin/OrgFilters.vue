@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Filters</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton variant="text" :hide-text-on-mobile="true" prepend-icon="add"
+            <AlbatrossButton variant="text" :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, newOrgFilter = {}]">
             </AlbatrossButton>

@@ -6,7 +6,7 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Org Levels</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
+            <AlbatrossButton :hide-text-on-mobile="true" :prepend-icon="addNew ? 'close' : 'add'"
                              variant="text"
                              :text="addNew ? 'Cancel' : 'Add New'"
                              @click="[addNew = !addNew, newOrgLevel = {}]">

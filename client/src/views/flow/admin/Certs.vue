@@ -13,7 +13,7 @@
             <AlbatrossButton :hide-text-on-mobile="true"
                              variant="text"
                              :text="addNew ? 'Cancel' : 'Add New'"
-                             prepend-icon="add"
+                             :prepend-icon="addNew ? 'close' : 'add'"
                              @click="[addNew = !addNew, selectedCert = {}]">
             </AlbatrossButton>
           </v-toolbar-items>

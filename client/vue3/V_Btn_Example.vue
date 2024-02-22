@@ -12,7 +12,7 @@
         :loading="false"
         html-style="height: 50px"
         :disabled="false"
-        :prepend-icon="addNew ? 'remove' : 'add'"
+        :prepend-icon="addNew ? 'close' : 'add'"
         size="small"
         :hide-text-on-mobile="true"
         custom-classes="class-a class-b"

@@ -7,7 +7,6 @@
           <v-spacer></v-spacer>
           <v-toolbar-items>
             <AlbatrossButton :hide-text-on-mobile="true" prepend-icon="add"
-                             id="randa"
                              variant="text"
                              text="Blah"
                              @click="[addNew = !addNew, selectedFeature = {}]">
