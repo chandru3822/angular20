@@ -15,7 +15,6 @@
         :prepend-icon="addNew ? 'remove' : 'add'"
         size="small"
         :hide-text-on-mobile="true"
-        casing="capitalize"
         custom-classes="class-a class-b"
         btn-type="button"
         @click="myFunction()"

@@ -1,6 +1,5 @@
 <template>
-  <v-btn :id="props.id"
-         :text="props.variant === 'text'"
+  <v-btn :text="props.variant === 'text'"
          :outlined="props.variant === 'outlined'"
          :loading="props.loading"
          :disabled="props.disabled"
@@ -13,8 +12,7 @@
          :href="props.href"
          :large="props.size === 'large'"
          :small="props.size === 'small'"
-         :class="[{'text-capitalize': props.casing === 'capitalize',
-                   'text-lowercase': props.casing === 'lower'},
+         :class="['text-none',
                   props.customClasses]"
          :to="props.to"
          :type="props.btnType"
@@ -41,17 +39,15 @@ const router = vueInstance.$router
 const snackbar = vueInstance.$snackbar
 
 //note in vue3 using the prepend icon you can't change its size. so for now if the size of the icon is custom, then a default template must be sent in to override
-
+//note the text-none class means that you dont have to specify casing, just pass the text in the way you want it to appear
 const props = defineProps({
-  id: String, //fields without a defined default will default to null
-  to: String,
+  to: String, //fields without a defined default will default to null
   variant: String, //using `variant` to prep for vue3, if there is not a variant set it will default to null which is why the text color is set to white if there is no variant
   elevation: Number,
   href: String,
   target: String, //pretty sure this prop is gone in v3
   htmlStyle: String, //style was a reserved word...only seen this used to set a max width so far. in v3 there is an option for that so style should go away
   activationHandler: Object,
-  casing: String,  //capitalize = "Hello", lower="hello" by default a btn's text will be all caps "HELLO"
   text: {
     type: String,
     default: ''
