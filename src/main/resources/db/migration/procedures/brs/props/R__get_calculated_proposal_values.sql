@@ -38,6 +38,7 @@ create type brs.calculated_proposal_value as
   monthly_payment_all_credits_to_loan_after_term     varchar,
   monthly_payment_no_credits_to_loan_after_term      varchar,
   system_size                                        numeric,
+  system_size_ac                                     numeric,
   first_year_production_estimate                     bigint,
   total_system_cost                                  varchar,
   referral_promotion                                 varchar,
@@ -265,6 +266,7 @@ declare
   v_first_year_production_estimate                      bigint;
   v_friends_and_family                                  boolean;
   v_system_size                                         numeric;
+  v_system_size_ac                                      numeric;
   v_production_factor                                   numeric;
   v_funding_range                                       numeric;
   v_production_factor_range                             numeric;
@@ -560,7 +562,8 @@ BEGIN
          qualifies_for_incentive,
          adder_amount,
          company_process_id,
-         virtual_sales_price_adjustment
+         virtual_sales_price_adjustment,
+         system_size_ac
   into v_proposal_id,
     v_version_id,
     v_project_process_step_id,
@@ -624,7 +627,8 @@ BEGIN
     v_qualifies_for_incentive,
     v_adder_amount,
     v_company_process_id,
-    v_virtual_sales_price_adjustment
+    v_virtual_sales_price_adjustment,
+    v_system_size_ac
   from brs.get_proposal_details(p_proposal_id);
 
   select string_agg(lov.name, ',')
@@ -1809,7 +1813,8 @@ BEGIN
                                          net_system_cost,
                                          eto_rebate_amount,
                                          virtual_sales_price_adjustment,
-                                         virtual_sales_base_price)
+                                         virtual_sales_base_price,
+                                         system_size_ac)
     values (v_project_id,
             v_project_name,
             v_project_street1,
@@ -1914,7 +1919,8 @@ BEGIN
             v_net_system_cost,
             v_eto_rebate_amount,
             v_virtual_sales_price_adjustment,
-            v_virtual_sales_base_price);
+            v_virtual_sales_base_price,
+            v_system_size_ac);
   end if;
 
   return query
@@ -1952,6 +1958,7 @@ BEGIN
            to_char(v_monthly_payment_all_credits_to_loan_after_term, '$FM9,999,999')::varchar,
            to_char(v_monthly_payment_no_credits_to_loan_after_term, '$FM9,999,999')::varchar,
            v_system_size,
+           v_system_size_ac,
            v_first_year_production_estimate,
            to_char(v_total_system_cost, '$FM9,999,999')::varchar,
            to_char(v_referral_promotion, '$FM9,999,999')::varchar,
