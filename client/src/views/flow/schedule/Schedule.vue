@@ -22,7 +22,7 @@
           <Map v-if="showMap"
                :states="states"
                :latitude="state.mapLatitude"
-               :markers="selectedRows"
+               :markers="projectMapMarkers"
                :longitude="state.mapLongitude"
                :zoom="state.mapZoom"
                :map-resources="mapResources"
@@ -32,7 +32,7 @@
           >
             <template v-slot:searchMenu>
               <v-btn id="search-menu-btn" fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
-              <ProjectSearchDialog v-show="searchMenuOpen"
+              <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false"/>
             </template>
@@ -62,6 +62,7 @@
   import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
   import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
   import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
+  import cloneDeep from "lodash.clonedeep";
 
   export default {
     name: 'Schedule',
@@ -92,7 +93,7 @@
         startTime: null,
         endTime: null,
         mapResources: [],
-        selectedRows: [],
+        projectMapMarkers: [],
         selectedResources: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
         state: {},
@@ -282,8 +283,11 @@
         this.mapResources = newValue
         this.showMap = true
       },
+      projectMapMarkersCallback(newValue){
+        this.projectMapMarkers = newValue
+        this.showMap = true
+      },
       dateCallback (startTime, endTime) {
-        debugger
         this.startTime = startTime
         this.endTime = endTime
       },
@@ -483,7 +487,7 @@
           if(this.projects.length === 1) {
             this.selectedProject = this.projects[0]
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
-            this.selectedRows.push(this.projects[0])
+            this.projectMapMarkers.push(this.projects[0])
             this.zoomToMap({
               item:{
                 longitude: this.selectedProject.longitude,

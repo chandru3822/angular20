@@ -9,7 +9,7 @@
 */
 
 import constants from "@/helpers/constants.js";
-import {getCurrentInstance, onMounted, ref, watch} from "vue";
+import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
 import {getSnackbar, postRequest} from "@/helpers/helpers.js";
 import {AppMutations} from "@/stores/AppStore.js";
 import axios from "axios";
@@ -25,10 +25,12 @@ const props = defineProps({
     type: Array
   },
   startTime:String,
-  endTime: String
+  endTime: String,
+  pinToMapCallback: Function,
+  pinnedProjects:Array,
 })
 
-const emit = defineEmits(['close-dialog'])
+const emit = defineEmits(['close-dialog', 'pinToMap'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -263,10 +265,43 @@ const clear = () => {
   showSearchResults.value = false
 }
 
+const toggleAllPinsOnMap = () => {
+  if(allPinsPinned.value){
+    props.pinToMapCallback([])
+  } else {
+    props.pinToMapCallback(projects.value)
+  }
+}
+
+const allPinsPinned = computed(() => {
+  let allPinned = true
+  if(projects.value.length > 0 && props.pinnedProjects.length > 0) {
+    projects?.value?.forEach((p) => {
+      allPinned = isOnePinned(p)
+      if (allPinned === false){
+        return false
+      }
+    })
+    return allPinned
+  }
+})
+
+const isOnePinned = (project) => {
+  if(props.pinnedProjects.length > 0){
+    let answer = props.pinnedProjects.findIndex(pinned => {
+      return project.projectId === pinned.projectId
+    })
+    console.log(answer)
+    return answer >= 0
+  }
+}
+
 onMounted(() => {
   fetchEventTypes()
   fetchEventStatusTypes()
   fetchStatusTypes()
+
+
 })
 </script>
 
@@ -379,12 +414,12 @@ onMounted(() => {
       </div>
     </div>
     <div v-else class="body-small">
-      <v-chip x-small color="primary lighten-3" v-if="state.state" class="mr-1 px-2">{{state.state}} </v-chip>
-      <v-chip x-small color="primary lighten-3" v-if="searchProject?.projectName" class="mr-1 px-2">{{searchProject.projectName}} </v-chip>
-      <v-chip x-small color="primary lighten-3" v-if="searchEventType?.eventName" class="mr-1 px-2">{{searchEventType.eventName}} </v-chip>
-      <v-chip x-small v-for="e in selectedEventTypes" color="primary lighten-3" class="mr-1 px-2">{{e.eventName}} </v-chip>
-      <v-chip x-small color="primary lighten-3" class="mr-1 px-2">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
-      <v-chip x-small color="primary lighten-3" class="mr-1 px-2">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
+      <v-chip x-small color="primary lighten-9" v-if="state.state" class="mr-1 px-2 grey--text text--darken-3">{{state.state}} </v-chip>
+      <v-chip x-small color="primary lighten-9" v-if="searchProject?.projectName" class="mr-1 px-2 grey--text text--darken-3">{{searchProject.projectName}} </v-chip>
+      <v-chip x-small color="primary lighten-9" v-if="searchEventType?.eventName" class="mr-1 px-2 grey--text text--darken-3">{{searchEventType.eventName}} </v-chip>
+      <v-chip x-small v-for="e in selectedEventTypes" color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">{{e.eventName}} </v-chip>
+      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Event: {{searchEventStatusType.eventStatusType}}</v-chip>
+      <v-chip x-small color="primary lighten-9" class="mr-1 px-2 grey--text text--darken-3">Process Step: {{selectedProcessStepStatusType.processStepStatusType}}</v-chip>
     </div>
     <v-card-actions class="px-0 pb-0">
       <v-btn @click="clear" text small class="text-capitalize flex-grow-0 body-medium">Reset</v-btn>
@@ -394,7 +429,7 @@ onMounted(() => {
           @click="goGoGadgetMapSearch"
           color="primary"
           class="text-capitalize flex-grow-1 body-medium"
-          :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id)"
+          :disabled="!((state?.id || searchProject?.projectId) && (selectedEventTypes?.length > 0 ||searchEventType?.id) && searchEventStatusType?.id && selectedProcessStepStatusType?.id)"
       >Go</v-btn>
       <v-btn v-else
           outlined
@@ -407,7 +442,8 @@ onMounted(() => {
     <div v-if="showSearchResults">
     <div class="d-flex justify-space-between align-baseline py-3">
       <span class="label-medium">Search Results</span>
-      <v-btn text small color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0">Show all pins</v-btn>
+      <v-btn text small color="primary" class="text-capitalize" :disabled="!projects || projects.length === 0" @click="toggleAllPinsOnMap">
+        {{allPinsPinned ? 'Hide all pins' : 'Show all pins' }}</v-btn>
     </div>
     <SpinnerInline :size="20" spinner-color="primary" :centered="true" v-if="listLoading"/>
     <div class="search-results">
@@ -421,6 +457,7 @@ onMounted(() => {
           :start-date="p.start"
           :end-date="p.end"
           :event-resource="p.resourceName"
+          :pinned="isOnePinned(p)"
       />
     </div>
     </div>

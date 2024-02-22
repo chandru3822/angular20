@@ -213,7 +213,7 @@
               @change="reloadCalendar"
             />
         </v-col>
-        <v-col><v-btn @click="testEvents">test</v-btn></v-col>
+<!--        <v-col><v-btn @click="testEvents">test</v-btn></v-col>-->
       </v-row>
     </div>
     <div class="calendar-resize-container background-white pa-6">
@@ -383,13 +383,13 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       // whenever selectedUsers or selectedOrgs changes, concat them both into resources
       'selectedUsers': function () {
         this.calendarOptions.resources = this.selectedOrgs.concat(this.selectedUsers)
-        //temp for dev:
-        if(this.calendarOptions.resources.length === 0){
-          this.calendarOptions.resources =  [
-            {id: 123, title: "Default User1 with a really long name to test clip",}, {id: 456, title: "Default User2"}
-          ]
-        }
-        //end temp
+        // //temp for dev:
+        // if(this.calendarOptions.resources.length === 0){
+        //   this.calendarOptions.resources =  [
+        //     {id: 123, title: "Default User1 with a really long name to test clip",}, {id: 456, title: "Default User2"}
+        //   ]
+        // }
+        // //end temp
         this.handleResourceColors()
       },
       'selectedOrgs': function () {
@@ -579,100 +579,100 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       isResourceOnMap(resource){
         return this.mapResources.findIndex(mr => resource.id === mr.id) >=0
       },
-      testEvents(){
-        this.calendarApi.addEventSource( [
-          {
-            resourceId: 123,
-            companyId: null,
-            systemListId: null,
-            processStepId: 1,
-            systemListTypeId: 2,
-            projectId: 928254,
-            projectProcessStepId: 7756519,
-            stateId: null,
-            processStepStatusTypeId: 1,
-            companyProcessStepStatusTypeId: 76,
-            startCustomFieldValueId: null,
-            startCustomFieldGroupAssignmentId: null,
-            endCustomFieldValueId: null,
-            endCustomFieldGroupAssignmentId: null,
-            resourceCustomFieldValueId: null,
-            resourceCustomFieldGroupAssignmentId: null,
-            contactId: 3137606,
-            eventId: 14,
-            projectProcessStepEventId: 1946171,
-            processStepEventId: 14,
-            companyEventStatusTypeId: null,
-            eventStatusTypeId: 1,
-            saveVersion: 1,
-            customFieldDisplayValueGroupAssignmentId: null,
-            userId: 2453218,
-            resourceName: "Aaron Jacobson",
-            groupName: null,
-            contactFirstName: "Ibrahim",
-            contactLastName: "Hassen",
-            contactFullName: null,
-            projectName: "Ibrahim Hassen",
-            processStepName: "Closer Appointment",
-            state: "Minnesota",
-            processStepStatusType: "Pending Event",
-            startFieldName: null,
-            endFieldName: null,
-            resourceFieldName: null,
-            street1: "412 egret Blvd nw coonrapids",
-            city: "MINNEAPOLIS",
-            stateAbbreviation: "MN",
-            postalCode: "55448",
-            phone: "+16129900659",
-            mobile: null,
-            eventName: "Closer Appointment",
-            eventStatusType: null,
-            companyEventStatusType: null,
-            archived: null,
-            startFieldReadOnly: null,
-            endFieldReadOnly: null,
-            resourceFieldReadOnly: null,
-            forceSave: null,
-            latitude: 45.1636,
-            longitude: -93.27732,
-            start: "2024-02-01T20:00:00.000+00:00",
-            end: "2024-02-01T21:30:00.000+00:00",
-            resources: null,
-            systemListOptionIds: null,
-            customFieldDisplayValue: null,
-            title: `<b>Ibrahim Hassen</b> <br/> Closer Appointment`,
-            hoverTitle: "Ibrahim Hassen \n Closer Appointment \n 2:00 pm - 3:30 pm",
-            colorForBorder: "#e7211b",
-            textColor: "var(--v-primary-base)",
-            classNames:['event-tile', 'event-tile-red']
-                    },
-          {
-            allDay: false,
-            dayOfWeekId: 5,
-            daylightSavings: null,
-            end: "2024-01-29T21:30:00+00:00",
-            isSlotTime:true,
-            display: "inverse-background",
-            backgroundColor: 'lightpink',
-            resourceId: 123,
-            groupId: 123,
-            start: "2024-01-29T20:00:00+00:00",
-            systemListTypeId: 2,
-          }, {
-            allDay: false,
-            dayOfWeekId: 5,
-            daylightSavings: null,
-            end: "2024-01-29T21:30:00+00:00",
-            isSlotTime:true,
-            display: "background",
-            backgroundColor: 'purple',
-            resourceId: 123,
-            groupId: 123,
-            start: "2024-01-29T20:00:00+00:00",
-            systemListTypeId: 2,
-          }
-        ])
-      },
+      // testEvents(){
+      //   this.calendarApi.addEventSource( [
+      //     {
+      //       resourceId: 123,
+      //       companyId: null,
+      //       systemListId: null,
+      //       processStepId: 1,
+      //       systemListTypeId: 2,
+      //       projectId: 928254,
+      //       projectProcessStepId: 7756519,
+      //       stateId: null,
+      //       processStepStatusTypeId: 1,
+      //       companyProcessStepStatusTypeId: 76,
+      //       startCustomFieldValueId: null,
+      //       startCustomFieldGroupAssignmentId: null,
+      //       endCustomFieldValueId: null,
+      //       endCustomFieldGroupAssignmentId: null,
+      //       resourceCustomFieldValueId: null,
+      //       resourceCustomFieldGroupAssignmentId: null,
+      //       contactId: 3137606,
+      //       eventId: 14,
+      //       projectProcessStepEventId: 1946171,
+      //       processStepEventId: 14,
+      //       companyEventStatusTypeId: null,
+      //       eventStatusTypeId: 1,
+      //       saveVersion: 1,
+      //       customFieldDisplayValueGroupAssignmentId: null,
+      //       userId: 2453218,
+      //       resourceName: "Aaron Jacobson",
+      //       groupName: null,
+      //       contactFirstName: "Ibrahim",
+      //       contactLastName: "Hassen",
+      //       contactFullName: null,
+      //       projectName: "Ibrahim Hassen",
+      //       processStepName: "Closer Appointment",
+      //       state: "Minnesota",
+      //       processStepStatusType: "Pending Event",
+      //       startFieldName: null,
+      //       endFieldName: null,
+      //       resourceFieldName: null,
+      //       street1: "412 egret Blvd nw coonrapids",
+      //       city: "MINNEAPOLIS",
+      //       stateAbbreviation: "MN",
+      //       postalCode: "55448",
+      //       phone: "+16129900659",
+      //       mobile: null,
+      //       eventName: "Closer Appointment",
+      //       eventStatusType: null,
+      //       companyEventStatusType: null,
+      //       archived: null,
+      //       startFieldReadOnly: null,
+      //       endFieldReadOnly: null,
+      //       resourceFieldReadOnly: null,
+      //       forceSave: null,
+      //       latitude: 45.1636,
+      //       longitude: -93.27732,
+      //       start: "2024-02-01T20:00:00.000+00:00",
+      //       end: "2024-02-01T21:30:00.000+00:00",
+      //       resources: null,
+      //       systemListOptionIds: null,
+      //       customFieldDisplayValue: null,
+      //       title: `<b>Ibrahim Hassen</b> <br/> Closer Appointment`,
+      //       hoverTitle: "Ibrahim Hassen \n Closer Appointment \n 2:00 pm - 3:30 pm",
+      //       colorForBorder: "#e7211b",
+      //       textColor: "var(--v-primary-base)",
+      //       classNames:['event-tile', 'event-tile-red']
+      //               },
+      //     {
+      //       allDay: false,
+      //       dayOfWeekId: 5,
+      //       daylightSavings: null,
+      //       end: "2024-01-29T21:30:00+00:00",
+      //       isSlotTime:true,
+      //       display: "inverse-background",
+      //       backgroundColor: 'lightpink',
+      //       resourceId: 123,
+      //       groupId: 123,
+      //       start: "2024-01-29T20:00:00+00:00",
+      //       systemListTypeId: 2,
+      //     }, {
+      //       allDay: false,
+      //       dayOfWeekId: 5,
+      //       daylightSavings: null,
+      //       end: "2024-01-29T21:30:00+00:00",
+      //       isSlotTime:true,
+      //       display: "background",
+      //       backgroundColor: 'purple',
+      //       resourceId: 123,
+      //       groupId: 123,
+      //       start: "2024-01-29T20:00:00+00:00",
+      //       systemListTypeId: 2,
+      //     }
+      //   ])
+      // },
       handleResourceColors() {
         this.calendarOptions.resources.forEach((r, index) => {
           r.eventBackgroundColor = '#FFFFFF'

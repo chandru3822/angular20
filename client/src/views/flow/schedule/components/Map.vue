@@ -91,7 +91,7 @@
       </v-menu>
       <slot name="searchMenu"/>
     </div>
-    <!-- these markers come from the lower data table  -->
+    <!-- these markers come from the project search  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
                :key="m.projectProcessStepEventId + `${markerCount}`"
                :coordinates="m.coordinates"
