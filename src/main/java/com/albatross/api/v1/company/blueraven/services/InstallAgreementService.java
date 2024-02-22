@@ -4,12 +4,11 @@ import com.albatross.api.exception.ApiException;
 import com.albatross.api.exception.NotFoundException;
 import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
-import com.albatross.api.v1.company.blueraven.models.InstallAgreementProject;
-import com.albatross.api.v1.company.blueraven.models.InstallAgreementRequest;
-import com.albatross.api.v1.company.blueraven.models.PandaDocProjectDetails;
+import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.InstallAgreementQuery;
 import com.albatross.api.v1.company.blueraven.services.queries.PandaDocQuery;
 import com.albatross.api.v1.flow.model.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,14 +21,21 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URISyntaxException;
+import java.net.http.HttpTimeoutException;
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 @Service
@@ -53,6 +59,12 @@ public class InstallAgreementService {
 
   @Value(value = "${app.goodleap.newLoanUrl}")
   private String goodleapNewLoanUrl;
+
+  @Value("${app.srec.host}")
+  private String srecHost;
+
+  @Value("${app.srec.token}")
+  private String srecToken;
 
   public Page<InstallAgreementProject> getProjects(String query, Pageable pageable, Boolean showCancelled) {
     User user = securityService.getCurrentUser();
@@ -87,8 +99,15 @@ public class InstallAgreementService {
   }
 
   public String saveRequest(InstallAgreementRequest request) throws Exception {
+    // first create disclosure doc through SREC
+    var srecSuccessful = sendDisclosureDoc(request.getProjectId(), request.getProposalNbr());
+
+    if (!srecSuccessful) {
+      throw new RuntimeException("Unable to create disclosure document");
+    }
+
     final String result = createRequest(request);
-    if (result == null || result.trim().equals("")) {
+    if (result == null || result.trim().isEmpty()) {
       request.setRequest_successful(true);
     } else {
       request.setRequest_successful(false);
@@ -98,6 +117,100 @@ public class InstallAgreementService {
     setRequestStatus(request, user.getId());
 
     return result;
+  }
+
+  private boolean sendDisclosureDoc(Long projectId, Long proposalNumber) {
+    Map<String, Object> params = new HashMap<>();
+    params.put("projectId", projectId);
+    params.put("proposalNumber", proposalNumber);
+
+    Srec srec = sqlCache.getBySql(InstallAgreementQuery.getSrec, params, Srec.class)
+                        .orElse(null);
+
+    // create disclosure doc only if all the following are met:
+    // - there is a proposal
+    // - a disclosure form wasn't already created
+    // - proposal is IL SREC
+    // - project is in Illinois
+    if (
+      srec == null ||
+      srec.getIlSrecDisclosureFormId() != null ||
+      srec.getSrecValue() == null ||
+      !Objects.equals(srec.getProjectStateAbbreviation(), "IL"))
+    {
+      return true;
+    }
+
+    boolean successfullySent = false;
+    boolean isFinanced = !srec.getLoanType().toLowerCase().contains("cash");
+
+    var body = new SrecDTO();
+    body.setFormName(srec.getProposalNumber() + " " + srec.getContactName() + " " + srec.getProjectId());
+    body.setCustomerName(srec.getProjectName());
+    body.setCustomerAddressEmail(srec.getContactEmail());
+    body.setCustomerAddressPhone(srec.getContactPhone());
+    body.setCustomerAddress1(srec.getProjectStreet1());
+    body.setCustomerAddressZip(srec.getProjectPostalCode());
+    body.setCustomerAddressCity(srec.getProjectCity());
+    body.setCustomerAddressState(srec.getProjectStateAbbreviation());
+
+    body.setElectricUtility(srec.getUtilityCompanyName());
+
+    //Naperville users qualify as municipal utility, which is what the external API accepts
+    if (body.getElectricUtility().equalsIgnoreCase("Naperville Electric Utility")) {
+      body.setElectricUtility("Municipal Utility");
+    }
+
+    body.setDepositOwed(srec.getTotalCost());
+    body.setReferenceNumber(srec.getProjectId().toString());
+    body.setProjectSizeKwDc(srec.getSystemSize());
+    body.setProjectSizeKwAc(srec.getSystemSizeAc());
+    body.setGrossElectricProduction(srec.getYearOneKwhOutput());
+    body.setExpectedRecValue(srec.getSrecValue().toString());
+    body.setRecCustomerPayment(srec.getSrecValue().toString());
+
+    if (isFinanced) {
+      body.setFinalAmountOwed("0");
+      body.setFinalPaymentDue("N/A");
+      body.setInstallationOwed("0");
+      body.setInitialDepositOwed(srec.getTotalCost());
+    } else {
+      Long halfTotalCost = Long.parseLong(srec.getTotalCost()) / 2;
+
+      body.setFinalAmountOwed(halfTotalCost.toString());
+      body.setFinalPaymentDue("Upon Substantial Completion");
+      body.setInstallationOwed(halfTotalCost.toString());
+      body.setInitialDepositOwed("0");
+    }
+
+    try {
+      WebClient client = WebClient.create(srecHost);
+      ResponseEntity<String> res = client
+        .post()
+        .uri("/create_disclosure_dg/")
+        .header("Authorization", "Token " + srecToken)
+        .body(Mono.just(body), SrecDTO.class)
+        .retrieve()
+        .toEntity(String.class)
+        .timeout(Duration.ofSeconds(30))
+        .onErrorMap(TimeoutException.class, e -> new HttpTimeoutException("HIC (SREC): Timeout issue: " + e.getMessage()))
+        .block();
+
+      JSONObject resultBody = new JSONObject(res.getBody());
+      String formId = resultBody.getString("FormID");
+      params.put("formId", formId);
+      sqlCache.updateBySql(InstallAgreementQuery.setDisclosureId, params);
+
+      successfullySent = true;
+    }
+    catch (WebClientResponseException e) {
+      log.error("HIC (SREC): Error generating disclosure doc: " + e.getMessage() + ": " + e.getResponseBodyAsString());
+    }
+    catch (Exception e) {
+      log.error("HIC (SREC): " + e.getMessage());
+    }
+
+    return successfullySent;
   }
 
   private String createRequest(InstallAgreementRequest request) throws Exception {
