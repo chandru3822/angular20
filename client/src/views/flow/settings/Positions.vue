@@ -6,10 +6,14 @@
           <v-toolbar-title class="app-title">Positions</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text to="/settings/position" color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon>add</v-icon>
-              Add Position
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              to="/settings/position"
+              color="primary"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              prepend-icon="add"
+              text="ADD POSITION"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <div class="pa-4">
@@ -23,7 +27,7 @@
         </div>
         <v-data-table
             :headers="headers"
-            :items="filterPositions()"
+            :items="filterPositions"
             :fixed-header="true"
             :search="search"
             disable-sort
@@ -49,10 +53,23 @@
                 {{item.orgType}}
               </td>
               <td class="px-0">
-                <v-btn small fab text color="primary" class="d-inline-block" @click="clickRow(item.id)">
-                  <v-icon>mdi-pencil</v-icon>
-                </v-btn>
-                <v-btn :disabled="!userCanDelete" small text color="primary" @click="positionToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  @click="clickRow(item.id)"
+                  prepend-icon="edit"
+                  custom-classes="pa-0"
+                />
+                <AlbatrossButton
+                  size="small"
+                  :disabled="!userCanDelete"
+                  variant="text"
+                  color="primary"
+                  @click="positionToDelete=item"
+                  prepend-icon="delete"
+                  custom-classes="pa-0"
+                />
               </td>
             </tr>
           </template>
@@ -65,80 +82,80 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'Positions',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        delay: 500,
-        addNew: false,
-        snackbar: {},
-        positions: [],
-        descending: true,
-        dataLoading: true,
-        search: '',
-        headers: [
-          {text: 'Position Name', value: 'position', show: true},
-          {text: 'Org Type', value: 'orgType', show: true},
-          {text: '', value: 'icons', show: false, width: '100px'},
-        ],
-        positionToDelete: null,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')
-      }
-    },
-    computed:{
-      positionToDeleteName(){
-        return this.positionToDelete ? this.positionToDelete.position : ''
-      }
-    },
-    created () {
-      this.getPositions()
-    },
-    methods: {
-      clickRow(id) {
-        this.$router.push({name: 'position', params: {id: id}})
-      },
-      async getPositions() {
-        try {
-          const {data, status} = await getRequest(`/position`)
-          this.positions = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deletePosition() {
-        const p = this.positionToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/position/${p.id}`)
-          p.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Position Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterPositions () {
-        return this.positions.filter(p => { return !p.archived})
-      },
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+
+  import {getCurrentInstance, onMounted, ref, computed} from "vue";
+
+
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const vuetify = vueInstance.$vuetify
+  const router = vueInstance.$router
+
+  const delay = ref(500)
+  const addNew = ref(false)
+  const positions = ref([])
+  const descending = ref(true)
+  const dataLoading = ref(true)
+  const search = ref('')
+  const positionToDelete = ref(null)
+  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const headers = ref([
+    {text: 'Position Name', value: 'position', show: true},
+    {text: 'Org Type', value: 'orgType', show: true},
+    {text: '', value: 'icons', show: false, width: '100px'},
+  ])
+  const positionToDeleteName = computed(() =>{
+    return positionToDelete.value ? positionToDelete.value.position : ''
+  })
+
+  const filterPositions = computed(() =>{
+    return positions.value.filter(p => { return !p.archived})
+  })
+
+  onMounted(() => {
+    getPositions()
+  })
+  const clickRow = (id) => {
+    router.push({name: 'position', params: {id: id}})
+  }
+  const getPositions = async () => {
+    try {
+      const {data, status} = await getRequest(`/position`)
+      positions.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+  const deletePosition = async () => {
+    const p = positionToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await deleteRequest(`/position/${p.id}`)
+      p.archived = true
+      snackbar('SUCCESS', 'Position Deleted')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Position')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+
 </script>
 
 <style lang="scss">

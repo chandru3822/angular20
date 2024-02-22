@@ -19,7 +19,7 @@
                         label="Process">
           </v-text-field>
           <v-btn color="primary" :disabled="!newProcess.processName" v-if="addNew" @click="addNewProcess">Save</v-btn>
-          <v-list v-for="(p, index) in filterBy(processes, false, 'archived')"
+          <v-list v-for="(p, index) in filteredProcesses"
                   :key="index">
             <v-list-item :class="{'shaded-row': index % 2}">
               <v-list-item-content class="text-left clickable" @click="goToProcess(p.id)">
@@ -50,38 +50,39 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import Vue2Filters from 'vue2-filters'
 
 import { handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-export default {
-  name: 'Processes',
-  components: {ConfirmationDialog},
-  mixins: [Vue2Filters.mixin],
+import {getCurrentInstance, onMounted, ref, computed} from "vue";
 
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      addNew: false,
-      selectedProcessId: null,
-      newProcess: {},
-      companyId: this.$store.state.user.details.companyId,
-      parentCompanyId: this.$store.state.user.details.highestParentCompanyId,
-      userId: this.$store.state.user.details.id,
-      processes: [],
-      processToDelete: null
-    }
-  },
-  computed: {
-    processToDeleteName() {
-      return this.processToDelete ? this.processToDelete.processName : ''
-    }
-  },
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const vuetify = vueInstance.$vuetify
+const router = vueInstance.$router
+
+const addNew = ref(false)
+const selectedProcessId = ref(null)
+const newProcess = ref({})
+const companyId = ref(this.$store.state.user.details.companyId)
+const parentCompanyId = ref(this.$store.state.user.details.highestParentCompanyId)
+const userId = ref(this.$store.state.user.details.id)
+const processes = ref([])
+const processToDelete = ref(null)
+
+processToDeleteName() {
+  return this.processToDelete ? this.processToDelete.processName : ''
+}
+
+  const filteredProcesses = computed(() => {
+    processes.value.filter((p) => p.archived === false)
+  })
   methods: {
     goToProcess(processId) {
       this.$router.push({path: `/settings/processes/${processId}`})

@@ -17,14 +17,22 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn :disabled="!position.position || (!position.orgTypeId && !clonePositionId)" @click="savePosition" color="primary" v-if="userCanEdit || userCanEditAccessControl">
-              <v-icon>save</v-icon>
-              Save
-            </v-btn>
-            <v-btn text color="primary" @click="$router.push('/settings/positions')">
-              <v-icon>close</v-icon>
-              Close
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              :disabled="!position.position || (!position.orgTypeId && !clonePositionId)"
+              @click="savePosition"
+              color="primary"
+              v-if="userCanEdit || userCanEditAccessControl"
+              prepend-icon="save"
+              text="SAVE"
+            />
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="router.push('/settings/positions')"
+              prepend-icon="close"
+              text="CLOSE"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat class="mt-2 pa-5">
@@ -84,7 +92,7 @@
               <label>Can Own SMS Tickets:</label>
               <input type="checkbox" :disabled="!userCanEdit" class="ml-3" v-model="position.smsOwner" @change="setFieldsDirty">
             </div>
-            <div v-if="$store.getters.isParent(parentId)">
+            <div v-if="store.getters.isParent(parentId)">
               <label>Make Available in Children</label>
               <input type="checkbox" class="ml-3" v-model="position.availableToChildren" @change="setFieldsDirty">
             </div>
@@ -113,8 +121,8 @@
             <AccessControl v-if="positionLoaded"
                            :key="accessControlKey"
                            :user-can-edit="userCanEditAccessControl"
-                           :companyFeatures="getCompanyFeatures()" :callback="this.companyFeatureCallback"
-                           :dirtyFieldsCallback="this.setFieldsDirty"></AccessControl>
+                           :companyFeatures="getCompanyFeatures()" :callback="companyFeatureCallback"
+                           :dirtyFieldsCallback="setFieldsDirty"></AccessControl>
           </div>
         </v-card>
 
@@ -124,178 +132,175 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
 
   import {getOrgTypes} from '@/services/orgService'
   import AccessControl from '@/views/flow/settings/components/AccessControl.vue'
-  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, putRequest, postRequest} from '@/helpers/helpers'
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-  export default {
-    name: 'Position',
-    components: {
-      AccessControl
-    },
-    watch: {
-      'selectedRows': function () {
-        this.alterEnabledFlagForRows()
-      }
-    },
-    data() {
-      return {
-        snackbar: {},
-        position: {
-          companyFeatures: []
-        },
-        positions: [],
-        selectedRows: [],
-        positionLoaded: false,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanEditAccessControl: this.$store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'),
-        orgTypes: [],
-        positionId: this.$route.params.id,
-        clonePositionId: '',
-        features: [],
-        accessControlList: [],
-        parentId: this.$store.state.user.details.parentCompanyId,
-        headers: [
-          { text: 'Feature', value: 'featureName', show: true },
-        ],
-        accessControlKey: 0,
-        unsavedFieldsModal: false,
-        navigationOverride: false,
-        toPath: null,
-        dirtyFields: false
-      }
-    },
-    created () {
-      if(this.positionId) {
-        this.getPosition()
-      } else {
-        this.positionLoaded = true
-        this.getPositions()
-      }
-      this.getOrgTypes()
-    },
-    beforeRouteLeave(to, from, next) {
-      // called when the route that renders this component is about to
-      // be navigated away from.
-      // has access to `this` component instance.
-      if (this.navigationOverride || !this.dirtyFields) {
-        //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
-        next()
-      } else {
-        this.toPath = to.path
-        this.unsavedFieldsModal = true
-      }
-    },
-    methods: {
-      getCompanyFeatures() {
-        return this.position?.companyFeatures?.filter(cf => !cf.hidden) || []
-      },
-      async getOrgTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgTypes()
-          this.orgTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async savePosition() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          if(this.positionId) {
-            //we do this temp so that we only send up the values that need to be saved
-            let tempCompanyFeatures = this.position?.companyFeatures?.filter(cf => cf.dirty)
-            this.position.companyFeatures = tempCompanyFeatures
-            //removing for now since we dont know how to handle the data if we allow them to change this in the UI
-            //if the position isn't schedulable, dont allow them to save a true value for useSlotSchedule
-            // this.position.useSlotSchedule = this.position.schedulable ? this.position.useSlotSchedule : false
-            const {data, status} = await putRequest(`/position`, this.position)
-            this.position = data
-            this.accessControlKey++
-            // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
-            // this.$router.push({name: 'position', params: {id: this.positionId}})
-            handleHidingGlobalLoader(this, status)
-            this.dirtyFields = false
-          } else {
-            if (this.clonePositionId) {
-              const {data, status} = await postRequest('/position/clone/' + this.clonePositionId, this.position)
-              this.positionId = data.id
-              this.clonePositionId = ''
-              this.position = data
-              this.accessControlKey++
-              // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
-              // this.$router.push({name: 'position', params: {id: this.positionId}})
-              handleHidingGlobalLoader(this, status)
-              this.dirtyFields = false
-              // window.location.reload()
-            }
-            else {
-              const {data, status} = await postRequest(`/position/`, this.position)
-              this.positionId = data.id
-              this.position = data
-              this.accessControlKey++
-              // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
-              // this.$router.push({name: 'position', params: {id: this.positionId}})
-              handleHidingGlobalLoader(this, status)
-              this.dirtyFields = false
-            }
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+  import {getCurrentInstance, onMounted, ref, watch} from "vue";
+  import {onBeforeRouteLeave} from "vue-router/composables";
+  import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
 
-      },
-      async getPosition() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/position/${this.positionId}`)
-          this.position = data
-          this.positionLoaded = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Position')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
+
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+  const router = vueInstance.$router
+  const route = vueInstance.$route
+  const position = ref({
+    companyFeatures: []
+  })
+  const positions = ref([])
+  const selectedRows = ref([])
+  const positionLoaded = ref(false)
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanEditAccessControl = ref(store.getters.userHasFeatureAccessLevel('ACCESS_CONTROL', 'EDIT'))
+  const orgTypes = ref([])
+  const positionId = ref(vueInstance.$route.params.id)
+  const clonePositionId = ref('')
+  const features = ref([])
+  const accessControlList = ref([])
+  const parentId = ref(store.state.user.details.parentCompanyId)
+  const accessControlKey = ref(0)
+  const unsavedFieldsModal = ref(false)
+  const navigationOverride = ref(false)
+  const toPath = ref(null)
+  const dirtyFields = ref(false)
+  const headers = ref([
+    { text: 'Feature', value: 'featureName', show: true },
+  ])
+
+  watch(() => selectedRows, () => {
+    alterEnabledFlagForRows()
+  })
+
+  onMounted (() => {
+    if(positionId.value) {
+      getPosition()
+    } else {
+      positionLoaded.value = true
+      getPositions()
+    }
+    getAllOrgTypes()
+  })
+  onBeforeRouteLeave(async (to, from, next) => {
+    // called when the route that renders this component is about to
+    // be navigated away from.
+    if (navigationOverride.value || !dirtyFields.value) {
+      //navigationOverride gets set to true if they click "Yes" to continue. if you don't override then it just hits the else again before navigating
+      next()
+    } else {
+      toPath.value = to.path
+      unsavedFieldsModal.value = true
+    }
+  })
+
+  const getCompanyFeatures = () => {
+      return position.value?.companyFeatures?.filter(cf => !cf.hidden) || []
+  }
+  const getAllOrgTypes = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getOrgTypes()
+      orgTypes.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Org Types')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const savePosition = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      if(positionId.value) {
+        //we do this temp so that we only send up the values that need to be saved
+        let tempCompanyFeatures = position.value?.companyFeatures?.filter(cf => cf.dirty)
+        position.value.companyFeatures = tempCompanyFeatures
+        //removing for now since we dont know how to handle the data if we allow them to change this in the UI
+        //if the position isn't schedulable, dont allow them to save a true value for useSlotSchedule
+        // this.position.useSlotSchedule = this.position.schedulable ? this.position.useSlotSchedule : false
+        const {data, status} = await putRequest(`/position`, position.value)
+        position.value = data
+        accessControlKey.value++
+        // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+        // this.$router.push({name: 'position', params: {id: this.positionId}})
+        handleHidingGlobalLoader(vueInstance, status)
+        dirtyFields.value = false
+      } else {
+        if (clonePositionId.value) {
+          const {data, status} = await postRequest('/position/clone/' + clonePositionId.value, position.value)
+          positionId.value = data.id
+          clonePositionId.value = ''
+          position.value = data
+          accessControlKey.value++
+          // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+          // this.$router.push({name: 'position', params: {id: this.positionId}})
+          handleHidingGlobalLoader(vueInstance, status)
+          dirtyFields.value = false
+          // window.location.reload()
         }
-      },
-      async getPositions() {
-        try {
-          const {data, status} = await getRequest(`/position`)
-          this.positions = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      companyFeatureCallback (newValue) {
-        this.position.companyFeatures = newValue
-      },
-      setFieldsDirty() {
-        this.dirtyFields = true;
-      },
-      goToPath(path, targetBlank) {
-        if (targetBlank) {
-          let routerData = this.$router.resolve({path})
-          window.open(routerData.href, '_blank')
-        } else {
-          this.$router.push(path)
+        else {
+          const {data, status} = await postRequest(`/position`, position.value)
+          positionId.value = data.id
+          position.value = data
+          accessControlKey.value++
+          // this doesn't work anymore because a double navigation (nav to the current url is being blocked) so the position doesn't reload as expected
+          // this.$router.push({name: 'position', params: {id: this.positionId}})
+          handleHidingGlobalLoader(vueInstance, status)
+          dirtyFields.value = false
         }
       }
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Position')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const getPosition = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/position/${positionId.value}`)
+      position.value = data
+      positionLoaded.value = true
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Position')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const getPositions = async () => {
+    try {
+      const {data, status} = await getRequest(`/position/`)
+      positions.value = data
+      // dataLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Positions')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const companyFeatureCallback = (newValue) => {
+    position.value.companyFeatures = newValue
+  }
+  const setFieldsDirty = () => {
+    dirtyFields.value = true;
+  }
+
+  const goToPath = (path, targetBlank) =>{
+    if (targetBlank) {
+      let routerData = route.resolve({path})
+      window.open(routerData.href, '_blank')
+    } else {
+      router.push(path)
     }
   }
 </script>
