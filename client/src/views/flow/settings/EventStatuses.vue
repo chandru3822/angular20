@@ -6,11 +6,15 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Event Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton text color="primary" @click="[addNew = !addNew, newType = {}]"
-                   v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </AlbatrossButton>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newType = {}]"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :text="!addNew ? 'Add New Field' : 'Cancel'"
+              :prepend-icon="addNew ? 'close' : 'add'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card flat v-if="addNew" class="px-5 py-2 square-card" color="primary lighten-9">
@@ -23,9 +27,13 @@
                           item-value="id"
                           label="Select a Category"
                           item-text="eventStatusType"></v-autocomplete>
-          <AlbatrossButton color="primary" :disabled="!newType.eventStatusTypeId || !newType.eventStatusType" @click="saveType(newType, true)">
-            Save
-          </AlbatrossButton>
+          <AlbatrossButton
+            color="primary"
+            :disabled="!newType.eventStatusTypeId || !newType.eventStatusType"
+            @click="saveType(newType, true)"
+            text="Save"
+          />
+
         </v-card>
         <v-card class="square-card">
           <v-card-title class="pt-0">
@@ -67,19 +75,28 @@
                   :disabled="!userCanEdit"
                   label="Select a Category"
                   item-text="eventStatusType"></v-autocomplete>
-                <AlbatrossButton color="primary" dark class="white--text"
-                       v-if="userCanEdit"
-                       :disabled="!item.eventStatusType || !item.eventStatusTypeId"
-                       @click="saveType(item, false)">Save
-                </AlbatrossButton>
+                <AlbatrossButton
+                  color="primary"
+                  dark
+                  class="white--text"
+                  v-if="userCanEdit"
+                  :disabled="!item.eventStatusType || !item.eventStatusTypeId"
+                  @click="saveType(item, false)"
+                  text="Save"
+                />
               </td>
             </template>
             <template #item="{ item, index }">
               <tr :class="{'shaded-row': index % 2}">
                 <td style="width: 50px">
-                  <AlbatrossButton text color="primary" icon small class="handle" v-if="userCanEdit">
-                    <v-icon>drag_handle</v-icon>
-                  </AlbatrossButton>
+                  <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    size="small"
+                    class="handle"
+                    v-if="userCanEdit"
+                    prepend-icon="drag_handle"
+                  />
                 </td>
                 <td class="text-left">
                   {{ item.eventStatusType }}
@@ -88,24 +105,48 @@
                   {{ item.rootEventStatusType }}
                 </td>
                 <td class="text-right">
-                  <AlbatrossButton small text color="primary" @click="getUsesForStatus(item.id, item.eventStatusType)"><v-icon>mdi-clipboard-list-outline</v-icon></AlbatrossButton>
+                  <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    @click="getUsesForStatus(item.id, item.eventStatusType)"
+                    prepend-icon="mdi-clipboard-list-outline"/>
                   <v-tooltip left>
                     <template v-slot:activator="{ on, attrs }">
-                      <AlbatrossButton icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                             v-on="on"><v-icon>mdi-information</v-icon></AlbatrossButton>
+                      <AlbatrossButton
+                        color="primary"
+                        @click="copyToClipBoard(item.id)" v-bind="attrs"
+                        :activation-handler="on"
+                        prepend-icon="mdi-information"
+                        round
+                      />
                     </template>
                     <span>Event Status Id: {{item.id}}</span>
                     <div class="text-center">(click to copy)</div>
                   </v-tooltip>
-                  <AlbatrossButton small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                    <v-icon>edit</v-icon>
-                  </AlbatrossButton>
-                  <AlbatrossButton small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</AlbatrossButton>
-                  <AlbatrossButton small text color="primary" v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                         @click="[itemToDelete=item, showDeleteDialog=true]"
-                  >
-                    <v-icon>delete</v-icon>
-                  </AlbatrossButton>
+                  <AlbatrossButton
+                    icon
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="!expanded.includes(item)" @click="expanded = [item]"
+                    prepend-icon="edit"
+                  />
+                  <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="expanded.includes(item)" @click="expanded = []"
+                    text="cancel"
+                  />
+                  <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    @click="[itemToDelete=item, showDeleteDialog=true]"
+                    prepend-icon="delete"
+                  />
                 </td>
 
               </tr>
@@ -180,7 +221,7 @@
 </template>
 
 
-<script>
+<script setup>
 import {Actions} from '@/store'
 import {AppMutations} from '@/stores/AppStore'
 import draggable from 'vuedraggable'
@@ -189,17 +230,16 @@ import Sortable from 'sortablejs'
 
 import orderBy from 'lodash.orderby'
 import {getCompanyEventStatusTypes, getEventStatusTypes} from '@/services/eventStatusTypeService'
-import {getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+import {getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-import {computed, getCurrentInstance, ref, watch} from "vue";
+import {computed, getCurrentInstance, ref, onMounted} from "vue";
+import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
-const router = vueInstance.$route
-
 
 const search = ref('')
 const statusTypes = ref([])
@@ -241,8 +281,8 @@ onMounted(() => {
       _self.saveOrderChanges(statusTypesClone)
     }
   })
-  getCompanyStatusTypes.value()
-  getEventStatusTypes.value()
+  getCompanyStatusTypes()
+  getAllEventStatusTypes()
 })
 
 const itemToDeleteEventStatusType = computed(() =>{
@@ -321,7 +361,7 @@ const getCompanyStatusTypes = async () => {
   }
 }
 
-const getEventStatusTypes = async () => {
+const getAllEventStatusTypes = async () => {
   store.commit(AppMutations.SET_LOADING, true)
   try {
     const {data} = await getEventStatusTypes()

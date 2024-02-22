@@ -22,12 +22,10 @@
 
           <AlbatrossButton
             color="primary"
-            dark
             class="white--text"
             @click="deleteError = false"
-          >
-            OK
-          </AlbatrossButton>
+            text="OK"
+          />
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -37,9 +35,13 @@
           <v-toolbar-title class="app-title">Events</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton text color="primary" @click="[addNew = !addNew, newStep = {}, getResourceFields()]" v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              {{ addNew ? 'Cancel' : 'Add New'}}
-            </AlbatrossButton>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newStep = {}, getResourceFields()]"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :text="addNew ? 'Cancel' : 'Add New'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container class="pa-0">
@@ -58,10 +60,12 @@
               item-value="id"
             ></v-autocomplete>
 
-            <AlbatrossButton color="primary" :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
-                   @click="addEvent">
-              Save
-            </AlbatrossButton>
+            <AlbatrossButton
+              color="primary"
+              :disabled="!newEvent.eventName || !newEvent.resourceCustomFieldId"
+              @click="addEvent"
+              text="save"
+            />
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -77,7 +81,7 @@
             <v-data-table
                 id="events-settings-table"
               :headers="headers"
-              :items="filterEvents()"
+              :items="filterEvents"
               :fixed-header="true"
               :items-per-page="100"
               :search="search"
@@ -87,14 +91,21 @@
             >
               <template #item.eventName="{ item }" class="clickable" @click="goToEvent(item.id)">{{item.eventName}}</template>
               <template #item.icons="{item}" class="text-end">
-                    <AlbatrossButton small text color="primary" @click="goToEvent(item.id)">
-                      <v-icon>edit</v-icon>
-                    </AlbatrossButton>
-                    <AlbatrossButton small text color="primary"
-                           v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                           @click="eventToDelete=item">
-                      <v-icon>delete</v-icon>
-                    </AlbatrossButton>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="goToEvent(item.id)"
+                      prepend-icon="edit"
+                    />
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      @click="eventToDelete=item"
+                      prepend-icon="delete"
+                    />
                   </template>
 
             </v-data-table>
@@ -118,12 +129,12 @@ import { getEventResourceFields } from "@/services/eventService"
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-import {computed, getCurrentInstance, ref, watch} from "vue";
+import {computed, getCurrentInstance, ref, onMounted} from "vue";
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
-const router = vueInstance.$route
+const router = vueInstance.$router
 
 
 const addNew = ref(false)
@@ -132,6 +143,7 @@ const cannotDeleteReasons = ref({})
 const search = ref('')
 const newEvent = ref({})
 const selectedEventId = ref(null)
+
 const companyId = ref(store.state.user.details.companyId)
 const userId = ref(store.state.user.details.id)
 const events = ref([])
@@ -147,11 +159,14 @@ const footerProps = ref({
 const eventToDelete = ref(null)
 
 
-watch(options, () => {
-  const handler = () => {
-    getEvents()
-  }
+onMounted(() => {
+  getEvents()
 })
+// watch(options, () => {
+//   const handler = () => {
+//     getEvents()
+//   }
+// })
 
 const eventToDeleteName = computed(() => {
   return eventToDelete.value ? eventToDelete.value.eventName : ''
@@ -232,6 +247,9 @@ const addEvent = async () => {
   }
 }
 
+const goToEvent = (eventId) => {
+  router.push({path: `/settings/event/${eventId}/components`})
+}
 
 </script>
 

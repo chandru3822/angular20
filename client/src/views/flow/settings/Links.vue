@@ -6,10 +6,16 @@
           <v-toolbar-title class="title-large">Links</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton text color="primary" @click="[addNew = !addNew, newLink = { url: ''}]" v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="isMobile">{{addNew ? 'close' : 'add'}}</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </AlbatrossButton>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newLink = { url: ''}]"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :hide-text-on-mobile="isMobile"
+              :prepend-icon="addNew ? 'close' : 'add'"
+              :text="addNew ? '': 'Add New'"
+            />
+
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -28,14 +34,27 @@
               <p>Validation is not yet in place so be careful which screens you assign a url to.</p>
               <p>If you want to use the value from a cfga, prefix the id with CFGA_ID_. </p>
               <p>For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
-              <AlbatrossButton text outlined color="primary" v-for="p in linkParams" @click="updateUrl(newLink, p.code)" class="ma-2">
-                {{p.name}}
-              </AlbatrossButton>
+              <AlbatrossButton
+                variant="text"
+                outlined
+                color="primary"
+                v-for="p in linkParams"
+                @click="updateUrl(newLink, p.code)"
+                class="ma-2"
+                :text="p.name"
+              />
             </div>
-            <AlbatrossButton color="primary" class="mt-4" :disabled="!newLink.link || !newLink.url" @click="addNewLink">Save</AlbatrossButton>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              class="mt-4"
+              :disabled="!newLink.link || !newLink.url"
+              @click="addNewLink"
+              text="Save"
+            />
           </v-card>
           <div v-else>
-            <v-list v-for="(a, index) in filterBy(links, false, 'archived')"
+            <v-list v-for="(a, index) in filteredLinks"
                     :key="index"  class="pa-0">
               <v-list-item :class="{'shaded-row': index % 2, 'flex-column': vuetify.breakpoint.smAndDown && selectedLinkId === a.id}">
                 <v-list-item-content class="text-left">
@@ -56,26 +75,48 @@
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">Validation is not yet in place so be careful which screens you assign a url to. </p>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}"> If you want to use the value from a cfga, prefix the id with CFGA_ID_ </p>
                       <p :class="{'px-4': vuetify.breakpoint.smAndDown}">For example, you should not add a url using "Project Process Step Event ID" to a Process Step. </p>
-                      <AlbatrossButton text outlined color="primary" v-for="p in linkParams" @click="updateUrl(a, p.code)" class="ma-2">
-                        <span>{{p.name}}</span>
-                      </AlbatrossButton>
+                      <AlbatrossButton
+                        variant="text"
+                        outlined
+                        color="primary"
+                        v-for="p in linkParams"
+                        @click="updateUrl(a, p.code)"
+                        class="ma-2"
+                        :text="p.name"
+                      />
                     </div>
                   </div>
                   <div v-else>{{a.link}}</div>
                 </v-list-item-content>
-                <div :class="{'d-flex flex-row align-center justify-end': vuetify.breakpoint.smAndDown, 'align-self-end': selectedLinkId === a.id && vuetify.breakpoint.smAndDown}">
-                  <AlbatrossButton text color="primary" :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="saveLink(a)">
-                    <v-icon>save</v-icon>
-                  </AlbatrossButton>
-                  <v-icon v-else-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" color="primary" @click="selectedLinkId = a.id">edit</v-icon>
-                  <AlbatrossButton small text color="primary" v-if="selectedLinkId === a.id" @click="selectedLinkId = null">
-                    <v-icon>close</v-icon>
-                  </AlbatrossButton>
-                <AlbatrossButton small text color="primary"
-                       v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                       @click="linkToDelete=a">
-                  <v-icon>delete</v-icon>
-                </AlbatrossButton>
+                <div :class="{'d-flex flex-row align-center justify-end': vuetify.breakpoint.smAndDown, 'align-self-end': selectedLinkId === a.id && vuetify.breakpoint.smAndDown}"
+                      class="px-0">
+                  <AlbatrossButton
+                    variant="text"
+                    color="primary"
+                    :disabled="!a.url || !a.link" v-if="selectedLinkId === a.id && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                    @click="saveLink(a)"
+                    prepend-icon="save"
+                  />
+                  <v-icon
+                    v-else-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                    color="primary"
+                    @click="selectedLinkId = a.id">edit</v-icon>
+                  <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="selectedLinkId === a.id"
+                    @click="selectedLinkId = null"
+                    prepend-icon="close"
+                  />
+                  <AlbatrossButton
+                    size="small"
+                    variant="text"
+                    color="primary"
+                    v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                    @click="linkToDelete=a"
+                    prepend-icon="delete"
+                  />
                 </div>
               </v-list-item>
             </v-list>
@@ -99,14 +140,13 @@
   import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
-  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
   import {computed, getCurrentInstance, onMounted, ref} from "vue";
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const vuetify = vueInstance.$vuetify
   const store = vueInstance.$store
-  const router = vueInstance.$route
 
   const links = ref([])
   const addNew = ref(false)
@@ -132,6 +172,9 @@
     return vuetify.breakpoint.smAndDown
   })
 
+  const filteredLinks = computed(() => {
+    return links.value.filter((l) => l.archived === false)
+  })
   const updateUrl = (item, code) => {
     item.url == null ? item.url = code : item.url += code
   }
@@ -210,3 +253,4 @@
   })
 </script>
 
+<style lang="scss">

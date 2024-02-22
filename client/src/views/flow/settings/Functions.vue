@@ -27,16 +27,14 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
-  import { handleHidingGlobalLoader, getRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest } from '@/helpers/helpers'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-  import {computed, getCurrentInstance, onMounted, ref, watch} from "vue";
+  import {computed, getCurrentInstance, onMounted, ref} from "vue";
 
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
-  const router = vueInstance.$route
 
   const companyId = ref(store.state.user.details.companyId)
   const userId = ref(store.state.user.details.id)

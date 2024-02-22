@@ -6,13 +6,15 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Topic Hashtags</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <AlbatrossButton text color="primary"
-                   @click="[addNew = !addNew, newTag = {}]"
-                   v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else-if="!addNew"><v-icon>mdi-plus</v-icon>Add Topic</span>
-              <span v-else>Cancel</span>
-            </AlbatrossButton>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newTag = {}]"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :text="!addNew ? 'Add Topic' : 'Cancel'"
+              :prepend-icon="addNew ? '' : 'add'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -30,13 +32,21 @@
                               label="Add Topic Hashtag">
                 </v-text-field>
               </div>
-              <AlbatrossButton text color="primary" class="mt-4"
-                     @click="[addNew = !addNew, newTag = {}]">
-                <span>Cancel</span>
-              </AlbatrossButton>
-              <AlbatrossButton color="primary" class="mt-4" :disabled="!newTag.hashtag || !formValid"
-                     @click="saveTag(newTag, true)">Save
-              </AlbatrossButton>
+              <AlbatrossButton
+                variant="text"
+                color="primary"
+                class="mt-4"
+                @click="[addNew = !addNew, newTag = {}]"
+                text="Cancel"
+              />
+
+              <AlbatrossButton
+                color="primary"
+                class="mt-4"
+                :disabled="!newTag.hashtag || !formValid"
+                @click="saveTag(newTag, true)"
+                text="Save"
+              />
             </v-form>
           </v-card>
           <v-card class="square-card">
@@ -93,21 +103,39 @@
                     {{ item.hashtagType }}
                   </td>
                   <td class="text-right">
-                    <AlbatrossButton text color="primary" v-if="selectedTagId === item.id" :disabled="!item.hashtag"
-                           @click="tagToSave=item; showSaveDialog = true">
-                      <v-icon>save</v-icon>
-                    </AlbatrossButton>
-                    <v-icon v-else-if="item.hashtagTypeId !== 1" color="primary" @click="selectedTagId = item.id">
-                      edit
-                    </v-icon>
-                    <AlbatrossButton text color="primary" v-if="selectedTagId === item.id" @click="selectedTagId = null">
-                      <v-icon>close</v-icon>
-                    </AlbatrossButton>
-                    <AlbatrossButton small text color="primary"
-                           v-if="item.hashtagTypeId !== 1 && store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
-                           @click="tagToDelete=item">
-                      <v-icon>delete</v-icon>
-                    </AlbatrossButton>
+                    <AlbatrossButton
+                      variant="text"
+                      color="primary"
+                      v-if="selectedTagId === item.id"
+                      :disabled="!item.hashtag"
+                      @click="tagToSave=item; showSaveDialog = true"
+                      prepend-icon="save"
+                    />
+                    <albatross-button
+                      variant="text"
+                      color="primary"
+                      v-else-if="item.hashtagTypeId !== 1"
+                      @click="selectedTagId = item.id"
+                      prepend-icon="edit"
+                      class="pr-2"
+                    />
+                    <AlbatrossButton
+                      variant="text"
+                      color="primary"
+                      v-if="selectedTagId === item.id"
+                      @click="selectedTagId = null"
+                      prepend-icon="close"
+                    />
+
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="item.hashtagTypeId !== 1 && store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      @click="tagToDelete=item"
+                      prepend-icon="delete"
+                    />
+
                     <v-tooltip
                       content-class="full-opacity-tooltip"
                       :max-width="300"
@@ -115,16 +143,14 @@
                     >
                       <template v-slot:activator="{ on, attrs }">
                         <AlbatrossButton
-                          text small
+                          variant="text"
+                          size="small"
                           color="primary"
                           class="d-inline-block"
                           v-bind="attrs"
-                          v-on="on"
-                        >
-                          <v-icon color="primary" v-on="on">
-                            mdi-information
-                          </v-icon>
-                        </AlbatrossButton>
+                          :activation-handler="on"
+                          prepend-icon="mdi-information"
+                        />
                       </template>
                       <span>Hashtag ID: {{ item.id }}</span>
                     </v-tooltip>
@@ -160,18 +186,16 @@ import {
   deleteRequest,
   putRequest,
   postRequest,
-  getSnackbar
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
 
-import { computed, getCurrentInstance, ref } from "vue";
+import { computed, getCurrentInstance, ref, onMounted } from "vue";
 
 const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
-const router = vueInstance.$route
 
 const tags = ref([])
 const addNew = ref(false)

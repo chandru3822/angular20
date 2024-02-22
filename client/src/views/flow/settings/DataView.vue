@@ -513,7 +513,7 @@ const vueInstance = getCurrentInstance().proxy
 const snackbar = vueInstance.$snackbar
 const store = vueInstance.$store
 const vuetify = vueInstance.$vuetify
-const route = vueInstance.$route
+const router = vueInstance.$router
 
 const showMenu = ref(false)
 const childField = ref({})
@@ -560,7 +560,7 @@ const addNew = ref(false)
 const childSaveError = ref(false)
 const childSaveErrorMsg = ref('')
 const newField = ref({})
-const viewId = ref(parseInt(route.params.id))
+const viewId = ref(parseInt(vueInstance.$route.params.id))
 const dataView = ref({})
 const userId = ref(store.state.user.details.id)
 const companyId = ref(store.state.user.details.companyId)

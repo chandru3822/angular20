@@ -182,7 +182,7 @@ import AlbatrossButton from "@/components/customVuetify/AlbatrossButton"
 
 
 const vueInstance = getCurrentInstance().proxy
-const router = vueInstance.$router
+const route = vueInstance.$route
 const snackbar = vueInstance.$snackbar
 
 const store = vueInstance.$store
@@ -228,7 +228,7 @@ const onePlatformRequired = [
   v => (!!v || v === 0) || 'At least one platform is required'
 ];
 
-const announcementId = ref(parseInt(vueInstance.$route.params?.id));
+const announcementId = ref(parseInt(route.params?.id));
 const showDeleteDialog = ref(false);
 const announcementFile = ref(null);
 const announcementForm = ref(null);

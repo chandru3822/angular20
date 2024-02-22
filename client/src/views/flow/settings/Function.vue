@@ -55,7 +55,10 @@
                           item-value="customFieldGroupAssignmentId"
                 ></v-select>
               </div>
-              <AlbatrossButton @click="saveParam(item)" prepend-icon="save" text="Save">
+              <AlbatrossButton
+                @click="saveParam(item)"
+                prepend-icon="save"
+                text="Save">
               </AlbatrossButton>
             </td>
           </template>
@@ -89,10 +92,19 @@
               </td>
               <!-- icon column -->
               <td>
-                <AlbatrossButton text color="primary" v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)" @click="handleExpand(item, true)">
-                  <v-icon>edit</v-icon>
-                </AlbatrossButton>
-                <AlbatrossButton text v-if="item.parameterTypeId === 3 && expanded.includes(item)" @click="handleExpand(item, false)">cancel</AlbatrossButton>
+                <AlbatrossButton
+                  variant="text"
+                  color="primary"
+                  v-if="userCanEdit && item.parameterTypeId === 3 && !expanded.includes(item)"
+                  @click="handleExpand(item, true)"
+                  prepend-icon="edit"
+                />
+                <AlbatrossButton
+                  variant="text"
+                  v-if="item.parameterTypeId === 3 && expanded.includes(item)"
+                  @click="handleExpand(item, false)"
+                  text="cancel"
+                />
               </td>
             </tr>
           </template>
@@ -116,7 +128,7 @@
 
 <script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import { handleHidingGlobalLoader, getRequest, postRequest, getSnackbar } from '@/helpers/helpers'
+  import { handleHidingGlobalLoader, getRequest, postRequest } from '@/helpers/helpers'
   import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
   import {getCurrentInstance, onMounted, ref} from "vue";
@@ -124,7 +136,7 @@
   const vueInstance = getCurrentInstance().proxy
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
-  const router = vueInstance.$route
+  const route = vueInstance.$route
 
   const headers = ref([
     { text: 'Parameter Name', value: 'parameterName', show: true },
@@ -143,7 +155,7 @@
   ])
   const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
   const companyId = ref(store.state.user.details.companyId)
-  const functionId = ref(vueInstance.$route.params.id)
+  const functionId = ref(route.params.id)
   const userId = ref(store.state.user.details.id)
   const systemValues = ref([])
   const details = ref({})
