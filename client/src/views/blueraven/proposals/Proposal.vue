@@ -99,7 +99,7 @@
                     :list-of-value-filter="filters[field.customFieldId]"
                     :hint="getHint(field)"
                   />
-                  <CommissionDetailsMenu v-if="userIsAdmin && field.customFieldGroupAssignmentId === 454"
+                  <CommissionDetailsMenu v-if="field.customFieldGroupAssignmentId === 454"
                                          :custom-field-groups="sortedCustomFieldGroups"
                                          :proposal-id="proposalId"/>
                 </div>
