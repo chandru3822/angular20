@@ -143,7 +143,7 @@ BEGIN
            ppscfv45.numeric_value,
            p.company_process_id,
            pcfv24.numeric_value,
-	       ppscfv46.json_value->>'system_size_ac' as system_size_ac
+	       (ppscfv46.json_value->>'system_size_ac')::numeric as system_size_ac
     from brs.proposal prop
            inner join flow.project_process_step pps on prop.project_process_step_id = pps.id
            inner join flow.project p on pps.project_id = p.id
