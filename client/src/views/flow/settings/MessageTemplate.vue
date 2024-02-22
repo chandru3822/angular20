@@ -6,10 +6,15 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Message Templates</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addTemplate = !addTemplate, newType = {}]" v-if="userCanEdit">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addTemplate ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addTemplate = !addTemplate, newType = {}]"
+              v-if="userCanEdit"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
+              :text="addTemplate ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addTemplate" class="text-left pa-5 mb-3 mt-2" flat >
@@ -41,12 +46,19 @@
               >{{ newTemplate.teamIds.length }} selected</span>
             </template>
           </v-autocomplete>
-          <v-btn text color="primary" @click="[addTemplate = !addTemplate, newTemplate = {}]">Cancel</v-btn>
-          <v-btn :disabled="!newTemplate.title || !newTemplate.message"
-                 color="primary" class="white--text mr-2"
-                 @click="saveTemplate(newTemplate, true)">
-            Save
-          </v-btn>
+          <AlbatrossButton
+            variant="text"
+            color="primary"
+            @click="[addTemplate = !addTemplate, newTemplate = {}]"
+            text="CANCEL"
+          />
+          <AlbatrossButton
+            :disabled="!newTemplate.title || !newTemplate.message"
+            color="primary"
+            class="white--text mr-2"
+            @click="saveTemplate(newTemplate, true)"
+            text="SAVE"
+          />
         </v-card>
         <v-data-table
           :headers="headers"
@@ -101,7 +113,12 @@
 
               </v-autocomplete>
 
-              <v-btn color="primary" class="white--text mr-2" :disabled="!item.title || !item.message" @click="saveTemplate(item, false)">Save</v-btn>
+              <AlbatrossButton
+                color="primary"
+                class="white--text mr-2"
+                :disabled="!item.title || !item.message" @click="saveTemplate(item, false)"
+                text="SAVE"
+              />
             </td>
           </template>
 
@@ -110,13 +127,29 @@
               <td class="text-left">{{ item.title }}</td>
               <td class="">{{getTeamsForTemplate(item)}}</td>
               <td class="text-right flex-display align-center">
-                <v-btn small text color="primary" v-if="!expanded.includes(item) && userCanEdit" @click="expanded = [item]; expandedItem = item; getAttachments()">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="!expanded.includes(item) && userCanEdit" @click="templateToDelete=item">
-                  <v-icon>delete</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="!expanded.includes(item) && userCanEdit"
+                  @click="expanded = [item]; expandedItem = item;"
+                  prepend-icon="edit"
+                />
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="!expanded.includes(item) && userCanEdit" @click="templateToDelete=item"
+                  prepend-icon="delete"
+                />
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="expanded.includes(item)"
+                  @click="expanded = []"
+                  text="CANCEL"
+                />
               </td>
             </tr>
           </template>
@@ -129,134 +162,124 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {
   handleHidingGlobalLoader,
   putRequest,
-  getSnackbar,
   getRequest,
 } from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-export default {
-  name: 'MessageTemplate',
-  components: {ConfirmationDialog},
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      templates: [],
-      newTemplate: {},
-      addTemplate: false,
-      addTeam: false,
-      teamFilter: null,
-      showFilter:false,
-      levels: [],
-      parentId: this.$store.state.user.details.parentCompanyId,
-      headers: [
-        { text: 'Template Title', value: 'title', show: true },
-        {text: 'Teams', value: 'teamIds', show: true, sortable: false, filter: value => {
-          if(!value || !this.teamFilter) {
-            return true
-          }
-            return value.includes(this.teamFilter)
-          }},
-        { text: null, value: 'icons', show: true, sortable: false }
-      ],
-      expanded: [],
-      expandedItem: [],
-      showDeleteDialog: false,
-      teams: [],
-      selectableTeams: [],
-      templateToDelete: null
+import {computed, getCurrentInstance, onMounted, ref} from "vue";
+
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+
+const templates = ref([])
+const newTemplate = ref({})
+const addTemplate = ref(false)
+const addTeam = ref(false)
+const teamFilter = ref(null)
+const showFilter = ref(false)
+const levels = ref([])
+const parentId = ref(store.state.user.details.parentCompanyId)
+const expanded = ref([])
+const expandedItem = ref([])
+const showDeleteDialog = ref(false)
+const teams = ref([])
+const selectableTeams = ref([])
+const templateToDelete = ref(null)
+const headers = ref([
+  {text: 'Template Title', value: 'title', show: true },
+  {text: 'Teams', value: 'teamIds', show: true, sortable: false, filter: value => {
+      if(!value || !teamFilter.value) {
+        return true
+      }
+      return value.includes(teamFilter.value)
     }
   },
-  computed: {
-    filterTemplates () {
-      return this.templates.filter(tmp => !tmp.archived)
-    },
-    userCanEdit() {
-      return this.$store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
-    },
-  },
-  methods: {
-    async getTemplates () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getRequest(`/messaging/templates`)
-        this.templates = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Templates')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async saveTemplate(template, isNew) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await putRequest(`/messaging/template`, template)
-        if(isNew){
-          this.templates.push(data)
-          this.addTemplate = false
-          this.newTemplate = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Template Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } else {
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'Template Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async deleteTemplate() {
-      const template = this.templateToDelete
-      try {
-        const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
-        this.showDeleteDialog = false
-        template.archived = true
-        this.snackbar = getSnackbar('SUCCESS', 'Template Deleted')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Deleting Template')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getTeams() {
-      try {
-        const {data} = await getRequest(`/smsTeam/`)
-        this.selectableTeams = data
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error retrieving teams')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
+  { text: null, value: 'icons', show: true, sortable: false }
+])
 
-    getTeamsForTemplate(template) {
-        const teamNames = this.selectableTeams.filter(team => template.teamIds.includes(team.id)).map(team => {
-          return team.teamName
-      })
-      return teamNames.join(", ")
-    }
-  },
-  async created () {
-    await this.getTemplates()
-    await this.getTeams()
+const filterTemplates = computed(() => {
+  return templates.value.filter(tmp => !tmp.archived)
+})
+const userCanEdit = computed(() => {
+  return store.getters.userHasFeatureAccessLevel('SMS_INBOX', 'MANAGE')
+})
+
+const getTemplates = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getRequest(`/messaging/templates`)
+    templates.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Templates')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
+const saveTemplate = async (template, isNew) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await putRequest(`/messaging/template`, template)
+    if(isNew){
+      templates.value.push(data)
+      addTemplate.value = false
+      newTemplate.value = {}
+      snackbar('SUCCESS', 'Template Added')
+    } else {
+      expanded.value = []
+      snackbar('SUCCESS', 'Template Updated')
+    }
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', isNew ? 'Error Adding Template' : 'Error Updating Template')
+
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const deleteTemplate = async () => {
+  const template = templateToDelete.value
+  try {
+    const {status} = await putRequest(`/messaging/template/delete/${template.id}`)
+    showDeleteDialog.value = false
+    template.archived = true
+    snackbar('SUCCESS', 'Template Deleted')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Deleting Template')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const getTeams = async () => {
+  try {
+    const {data} = await getRequest(`/smsTeam/`)
+    selectableTeams.value = data
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error retrieving teams')
+  }
+}
+
+const getTeamsForTemplate = (template) => {
+  const teamNames = selectableTeams.value.filter(team => template.teamIds.includes(team.id)).map(team => {
+    return team.teamName
+  })
+  return teamNames.join(", ")
+}
+onMounted(async () => {
+  await getTemplates()
+  await getTeams()
+})
+
 </script>
 
 <style lang="scss">

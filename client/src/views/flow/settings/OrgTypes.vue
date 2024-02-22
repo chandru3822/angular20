@@ -6,10 +6,15 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Organization Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addType = !addType, newType = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addType ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addType = !addType, newType = {}]"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :prepend-icon="addType ? 'add' : ''"
+              :text="addType ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addType" class="text-left pa-5 mb-3 mt-2" flat >
@@ -29,17 +34,24 @@
                     item-text="orgType"
                     item-value="id"
           ></v-select>
-          <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+          <div class="mb-3" v-if="store.getters.isParent(parentId)">
             <label>Make available in children:</label>
             <input type="checkbox" class="ml-3" v-model="newOrgType.availableToChildren">
           </div>
 
-          <v-btn :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
-                 color="primary" class="white--text mr-2"
-                 @click="saveOrgType(newOrgType, true)">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addType = !addType, newOrgType = {}]">Cancel</v-btn>
+          <AlbatrossButton
+            :disabled="!newOrgType.orgType || !newOrgType.orgLevelId"
+            color="primary"
+            class="white--text mr-2"
+            @click="saveOrgType(newOrgType, true)"
+            text="SAVE"
+          />
+          <AlbatrossButton
+            variant="text"
+            color="primary"
+            @click="[addType = !addType, newOrgType = {}]"
+            text="CANCEL"
+          />
         </v-card>
         <v-data-table
             :headers="headers"
@@ -78,12 +90,17 @@
                         item-text="orgType"
                         item-value="id"
               ></v-select>
-              <div class="mb-3" v-if="$store.getters.isParent(parentId)">
+              <div class="mb-3" v-if="store.getters.isParent(parentId)">
                 <label>Make available in children:</label>
                 <input type="checkbox" class="ml-3" v-model="item.availableToChildren">
               </div>
-              <v-btn :disabled="!item.orgType || !item.orgLevelId"
-                     color="primary" class="white--text mr-2" @click="saveOrgType(item, false)">Save</v-btn>
+              <AlbatrossButton
+                :disabled="!item.orgType || !item.orgLevelId"
+                color="primary"
+                class="white--text mr-2"
+                @click="saveOrgType(item, false)"
+                text="SAVE"
+              />
             </td>
           </template>
 
@@ -93,10 +110,22 @@
               <td class="text-left">{{ item.level || 'n/a' }}</td>
               <td class="text-left">{{ item.orgParentType || 'n/a' }}</td>
               <td>
-                <v-btn small text color="primary" v-if="!expanded.includes(item) && $store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')" @click="expanded = [item]">
-                  <v-icon>edit</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="!expanded.includes(item) && store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT')"
+                  @click="expanded = [item]"
+                  prepend-icon="edit"
+                />
+                <AlbatrossButton
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  v-if="expanded.includes(item)"
+                  @click="expanded = []"
+                  text="CANCEL"
+                />
               </td>
             </tr>
           </template>
@@ -108,101 +137,93 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import { handleHidingGlobalLoader, putRequest, getSnackbar } from '@/helpers/helpers'
   import constants from '@/helpers/constants'
 
   import {getOrgTypes, getOrgLevels} from '@/services/orgService'
 
-  export default {
-    name: 'OrgTypes',
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {computed, getCurrentInstance, onMounted, ref} from "vue";
 
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        orgTypes: [],
-        newOrgType: {},
-        addType: false,
-        levels: [],
-        parentId: this.$store.state.user.details.parentCompanyId,
-        headers: [
-          { text: 'Org Type', value: 'orgType', show: true },
-          { text: 'Level', value: 'level', width: 80, show: true },
-          { text: 'Parent', value: 'orgParentType', show: true},
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-      }
-    },
-    computed: {},
-    methods: {
-      async getOrgTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgTypes()
-          this.orgTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Org Types')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getOrgLevels() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getOrgLevels()
-          this.levels = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Org Levels')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveOrgType(ot, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          ot.level = ot.level === 'n/a' ? null : ot.level
-          const {data, status} = await putRequest(`/orgType`, ot)
-          if(isNew){
-            this.orgTypes.push(data)
-            this.addType = false
-            this.newOrgType = {}
-            this.snackbar = getSnackbar('SUCCESS', 'Org Type Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            ot.level = data.level
-            ot.orgParentType = data.orgParentType
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'Org Type Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filteredOrgTypes(orgLevelId) {
-        // filter list so they cannot select a parent that is further down in the hierarchy than self
-        const orgLevel = this.levels.find(l => l.id === orgLevelId)
-        return this.orgTypes.filter(ot => {
-          return ot.level < orgLevel.level
-        })
-      },
-    },
-    async created () {
-      this.getOrgTypes()
-      this.getOrgLevels()
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+
+  const orgTypes = ref([])
+  const newOrgType = ref({})
+  const addType = ref(false)
+  const levels = ref([])
+  const parentId = ref(store.state.user.details.parentCompanyId)
+  const expanded = ref([])
+  const headers = ref([
+    { text: 'Org Type', value: 'orgType', show: true },
+    { text: 'Level', value: 'level', width: 80, show: true },
+    { text: 'Parent', value: 'orgParentType', show: true},
+    { text: null, value: 'icons', show: true, sortable: false }
+  ])
+
+  const getAllOrgTypes = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getOrgTypes()
+      orgTypes.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Org Types')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+  const getAllOrgLevels = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getOrgLevels()
+      levels.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Org Levels')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const saveOrgType = async (ot, isNew) => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      ot.level = ot.level === 'n/a' ? null : ot.level
+      const {data, status} = await putRequest(`/orgType`, ot)
+      if(isNew){
+        orgTypes.value.push(data)
+        addType.value = false
+        newOrgType.value = {}
+        snackbar('SUCCESS', 'Org Type Added')
+      } else {
+        ot.level = data.level
+        ot.orgParentType = data.orgParentType
+        expanded.value = []
+        snackbar('SUCCESS', 'Org Type Updated')
+      }
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', isNew ? 'Error Adding Org Type' : 'Error Updating Org Type')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const filteredOrgTypes = (orgLevelId) => {
+    // filter list so they cannot select a parent that is further down in the hierarchy than self
+    const orgLevel = levels.value.find(l => l.id === orgLevelId)
+    return orgTypes.value.filter(ot => {
+      return ot.level < orgLevel.level
+    })
+  }
+
+  onMounted(async() => {
+    await getAllOrgTypes()
+    await getAllOrgLevels()
+  })
+
 </script>
 
 <style lang="scss">
