@@ -23,15 +23,14 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <AlbatrossButton
             color="primary"
-            text
+            variant="text"
             dark
             class="white--text"
             @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+            text="OK"
+          />
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -41,12 +40,15 @@
           <v-toolbar-title class="app-title">Process Steps</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newStep = {}]" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon v-if="addNew && isMobile">mdi-close</v-icon>
-              <v-icon v-else-if="isMobile">mdi-plus</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New'}}</span>
-
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newStep = {}]"
+              v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+              :shide-text-on-mobile="true"
+              :prepend-icon="addNew ? 'mdi-close' : 'mdi-plus'"
+              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container class="pa-0">
@@ -56,7 +58,12 @@
                 tabindex=1
                 v-model="newStep.processStepName"
             ></v-text-field>
-            <v-btn color="primary" :disabled="!newStep.processStepName" @click="addProcessStep">Save</v-btn>
+            <AlbatrossButton
+              color="primary"
+              :disabled="!newStep.processStepName"
+              @click="addProcessStep"
+              text="SAVE"
+            />
           </v-card>
           <v-divider v-if="addNew"></v-divider>
           <v-card class="square-card">
@@ -72,7 +79,7 @@
             <v-data-table
                 id="process-steps-table"
               :headers="headers"
-              :items="filterProcessSteps()"
+              :items="filterProcessSteps"
               :fixed-header="true"
               :items-per-page="100"
               :search="search"
@@ -82,20 +89,35 @@
             >
 
                   <template #item.processStepName="{item}" >
-                    <v-btn small text :to="`/settings/processStep/${item.id}/components`" class="one-hunned process-step-button">
-                      {{item.processStepName}}
-                    </v-btn>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      :to="`/settings/processStep/${item.id}/components`"
+                      class="one-hunned process-step-button"
+                      :text="item.processStepName"
+                    />
                   </template>
                   <template #item.icons="{item}" >
-                    <v-btn small text color="primary" :to="`/settings/processStep/${item.id}/components`">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      :to="`/settings/processStep/${item.id}/components`"
+                      prepend-icon="edit"
+                    />
                     <v-tooltip top :disabled="!(item.workQueueTypes.length > 0 || item.usedByProcess)">
                       <template v-slot:activator="{ on: tooltip }">
                         <div v-on="{ ...tooltip }" class="d-inline-block">
-                          <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" :disabled="item.workQueueTypes.length > 0 || item.usedByProcess" @click="psToDelete=item">
-                            <v-icon>delete</v-icon>
-                          </v-btn>
+                          <AlbatrossButton
+                            size="small"
+                            variant="text"
+                            color="primary"
+                            v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                            :disabled="item.workQueueTypes.length > 0 || item.usedByProcess"
+                            @click="psToDelete=item"
+                            prepend-icon="delete"
+                          />
+
                         </div>
                       </template>
                       <span>{{ getDeleteTooltip(item) }}</span>
@@ -112,131 +134,116 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
 
   import { handleHidingGlobalLoader, getRequest, putRequest, postRequest, getSnackbar } from '@/helpers/helpers'
   import debounce from "lodash.debounce";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
+  import constants from "@/helpers/constants.js";
 
-  export default {
-    name: 'ProcessSteps',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
 
-    data () {
-      return {
-        snackbar: {},
-        addNew: false,
-        deleteError: false,
-        fieldsInUse: [],
-        search: '',
-        newStep: {},
-        selectedProcessStepId: null,
-        companyId: this.$store.state.user.details.companyId,
-        userId: this.$store.state.user.details.id,
-        processSteps: [],
-        headers: [
-          {text: 'Process Step Name', value: 'processStepName', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': this.isMobile ? '' : 'Rows per page:'
-        },
-        psToDelete: null
-      }
-    },
-    watch: {
-      options: {
-        handler () {
-          this.getProcessSteps()
-        },
-        deep: true,
-      },
-    },
-    computed: {
-      psToDeleteName(){
-        return this.psToDelete ? this.psToDelete.processStepName : ''
-      },
-      isMobile(){
-        return this.$vuetify.breakpoint.smAndDown
-      },
-    },
-    methods: {
-      debounceGetSteps: debounce( function () {
-        this.getProcessSteps()
-      }, 500),
-      async getProcessSteps () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processStep`)
-          this.processSteps = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      getDeleteTooltip(item) {
-        if(item.usedByProcess) {
-          return 'Cannot delete a Process Step that is assigned to a process'
-        } else if (item.workQueueTypes.length > 0 ) {
-          return 'Cannot delete a Process Step with assigned Work Queue Types'
-        }
-      },
-      async deleteProcessStep () {
-       const processStep = this.psToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await putRequest(`/processStep/delete/${processStep.id}`, null, null, [])
-          if (data?.length > 0) {
-            this.deleteError = true
-            processStep.deleteConfirm = false
-            this.fieldsInUse = data
-            this.snackbar = getSnackbar('ERROR', 'Process Step Cannot Be Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.fieldsInUse = []
-            processStep.archived = true
-            this.snackbar = getSnackbar('SUCCESS', 'Process Step Deleted')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Process Step')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.psToDelete = null
-      },
-      async addProcessStep () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/processStep`, this.newStep)
-          this.$router.push({path: `/settings/processStep/${data.id}/components`})
-          this.snackbar = getSnackbar('SUCCESS', 'Process Step Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Process Step')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterProcessSteps () {
-        return this.processSteps.filter(ps => { return !ps.archived})
-      },
-    },
-    async created () {
-      this.getProcessSteps()
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+  const router = vueInstance.$router
+
+  const addNew = ref(false)
+  const deleteError = ref(false)
+  const fieldsInUse = ref([])
+  const search = ref('')
+  const newStep = ref({})
+  const selectedProcessStepId = ref(null)
+  const companyId = ref(store.state.user.details.companyId)
+  const userId = ref(store.state.user.details.id)
+  const processSteps = ref([])
+  const headers = ref([
+    {text: 'Process Step Name', value: 'processStepName', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const footerProps = ref({
+    'items-per-page-options': [25, 50, 100, 1000],
+    'items-per-page-text': vuetify.breakpoint.smAndDown ? '' : 'Rows per page:'
+  })
+  const psToDelete = ref(null)
+
+  const psToDeleteName = computed(() => {
+    return psToDelete.value ? psToDelete.value.processStepName : ''
+  })
+  const isMobile = computed(() => {
+    return vuetify.breakpoint.smAndDown
+  })
+  const debounceGetSteps = () => {
+    debounce(function () {
+      getProcessSteps()
+    }, 500)
+  }
+  const getProcessSteps = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/processStep`)
+      processSteps.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+  const getDeleteTooltip = (item) => {
+    if(item.usedByProcess) {
+      return 'Cannot delete a Process Step that is assigned to a process'
+    } else if (item.workQueueTypes.length > 0 ) {
+      return 'Cannot delete a Process Step with assigned Work Queue Types'
+    }
+  }
+  const deleteProcessStep = async () => {
+   const processStep = psToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await putRequest(`/processStep/delete/${processStep.id}`, null, null, [])
+      if (data?.length > 0) {
+        deleteError.value = true
+        processStep.deleteConfirm = false
+        fieldsInUse.value = data
+        snackbar('ERROR', 'Process Step Cannot Be Deleted')
+      } else {
+        fieldsInUse.value = []
+        processStep.archived = true
+        snackbar('SUCCESS', 'Process Step Deleted')
+      }
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Process Step')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    psToDelete.value = null
+  }
+  const addProcessStep = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await postRequest(`/processStep`, newStep.value)
+      router.push({path: `/settings/processStep/${data.id}/components`})
+      snackbar('SUCCESS', 'Process Step Added')
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Process Step')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const filterProcessSteps = computed(() => {
+    return processSteps.value.filter(ps => { return !ps.archived})
+  })
+
+onMounted(async () => {
+  getProcessSteps()
+})
+
 </script>
 
 <style lang="scss">

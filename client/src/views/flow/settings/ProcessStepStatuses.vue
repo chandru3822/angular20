@@ -23,14 +23,13 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn
+          <AlbatrossButton
             color="primary"
             dark
             class="white--text"
             @click="deleteError = false"
-          >
-            OK
-          </v-btn>
+            text="OK"
+          />
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -41,10 +40,15 @@
           <v-toolbar-title v-if="!constants.IS_MOBILE" class="app-title">Process Step Status Types</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn v-if="userCanEdit" text color="primary" @click="[addNew = !addNew, newType = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+              v-if="userCanEdit"
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newType = {}]"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
+              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -61,7 +65,12 @@
                             label="Select a Category"
                             item-text="processStepStatusType"
                             attach></v-autocomplete>
-            <v-btn color="primary" :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType" @click="addNewType">Save</v-btn>
+            <AlbatrossButton
+              color="primary"
+              :disabled="!newType.processStepStatusTypeId || !newType.processStepStatusType"
+              @click="addNewType"
+              text="SAVE"
+            />
           </v-card>
           <v-card class="square-card">
             <v-card-title class="pt-0">
@@ -93,18 +102,24 @@
                                 :disabled="!userCanEdit"
                   ></v-text-field>
                   <v-autocomplete
-                    :items="filteredRootStatuses(item)"
+                    :items="filteredRootStatuses"
                     v-model="item.processStepStatusTypeId"
                     item-value="id"
                     :readonly="!userCanEdit"
                     :disabled="!userCanEdit || item.processStepStatusTypeId === 3"
                     label="Select a Category"
                     item-text="processStepStatusType"
-                    attach></v-autocomplete>
-
-                  <v-btn v-if="userCanEdit" color="primary" dark class="white--text mr-4"
-                         :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
-                         @click="saveType(item, false)">Save</v-btn>
+                    attach
+                  ></v-autocomplete>
+                  <AlbatrossButton
+                    v-if="userCanEdit"
+                    color="primary"
+                    dark
+                    class="white--text mr-4"
+                    :disabled="!item.processStepStatusType || !item.processStepStatusTypeId"
+                    @click="saveType(item, false)"
+                    text="SAVE"
+                  />
                 </td>
               </template>
               <template #item="{ item, index }">
@@ -116,22 +131,53 @@
                     {{item.rootProcessStepStatusType}}
                   </td>
                   <td class="text-right">
-                    <v-btn small text color="primary" @click="getUsesForStatus(item.id, item.processStepStatusType)"><v-icon>mdi-clipboard-list-outline</v-icon></v-btn>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      @click="getUsesForStatus(item.id, item.processStepStatusType)"
+                      prepend-icon="mdi-clipboard-list-outline"
+                    />
                     <v-tooltip left>
                       <template v-slot:activator="{ on, attrs }">
-                        <v-btn icon color="primary" @click="copyToClipBoard(item.id)" v-bind="attrs"
-                               v-on="on"><v-icon>mdi-information</v-icon></v-btn>
+                        <AlbatrossButton
+                          icon
+                          color="primary"
+                          @click="copyToClipBoard(item.id)"
+                          v-bind="attrs"
+                          :activation-handler="on"
+                          prepend-icon="mdi-information"
+                          round
+                        />
                       </template>
                       <span>Process Step Status ID: {{item.id}}</span>
                       <div class="text-center">(click to copy)</div>
                     </v-tooltip>
-                    <v-btn small text color="primary" v-if="!expanded.includes(item)" @click="expanded = [item]">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn small text color="primary" v-if="expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-                    <v-btn small text color="primary" v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" @click.stop="[itemToDelete=item, showDeleteDialog=true]">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="!expanded.includes(item)"
+                      @click="expanded = [item]"
+                      prepend-icon="edit"
+                    />
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="expanded.includes(item)"
+                      @click="expanded = []"
+                      text="CANCEL"
+                    />
+
+                    <AlbatrossButton
+                      size="small"
+                      variant="text"
+                      color="primary"
+                      v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')"
+                      @click="[itemToDelete=item, showDeleteDialog=true]"
+                      prepend-icon="delete"
+                    />
                   </td>
 
                 </tr>
@@ -174,193 +220,177 @@
 </template>
 
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
 
   import orderBy from 'lodash.orderby'
   import {getStatusTypes, getCompanyStatusTypes} from '@/services/processStepStatusTypeService'
-  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar,getRequest} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, deleteRequest, putRequest, postRequest, getSnackbar, getRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'Statuses',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
 
-    data () {
-      return {
-        snackbar: {},
-        constants,
-        search: '',
-        statusTypes: [],
-        expanded: [],
-        rootStatusTypes: [],
-        headers: [
-          {text: 'Process Step Status', value: 'processStepStatusType', show: true},
-          {text: 'Category', value: 'rootProcessStepStatusType', show: true},
-          {text: '', value: 'icons', show: true, sortable: false},
-        ],
-        footerProps: {
-          'items-per-page-options': [25, 50, 100, 1000],
-          'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
-        },
-        options: {
-          itemsPerPage: 100
-        },
-        addNew: false,
-        newType: {},
-        selectedStatusTypeId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        fieldsInUse: [],
-        deleteError: false,
-        showDeleteDialog: false,
-        itemToDelete: null,
-        showInfoDialog: false,
-        objectsUsingStatus: {
-          fieldName: null,
-          steps: []
-        }
-      }
-    },
-    computed: {
-      toDeleteProcessStepStatusType(){
-        return this.itemToDelete ? this.itemToDelete.processStepStatusType : ''
-      }
-    },
-    methods: {
-      filteredRootStatuses() {
-        return this.rootStatusTypes.filter(rst => rst.id !== 3)
-      },
-      async getCompanyStatusTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getCompanyStatusTypes()
-          this.statusTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getStatusTypes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getStatusTypes()
-          this.rootStatusTypes = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getUsesForStatus(processStepStatusId, processStepStatusName) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/processStep/status/getObjectsUsingStatus/${processStepStatusId}`, this.apiPath, null, []);
-          this.objectsUsingStatus.steps = data
-          this.objectsUsingStatus.fieldName = processStepStatusName
-          this.showInfoDialog = true
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteType () {
-        const type = this.itemToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
-          this.fieldsInUse = [];
-          type.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'Status Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        } catch (e) {
-          if (e.status === 400) {
-            this.deleteError = true;
-            this.fieldsInUse = e.data;
-            this.snackbar = getSnackbar("ERROR", "Status Cannot Be Deleted");
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-          else {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Deleting Status')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-        this.closeDeleteDialog()
-      },
-      async addNewType () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newType.companyId = this.companyId
-          const {data, status} = await postRequest(`/processStep/status`, this.newType)
-
-          // add it to the records already on the screen
-          this.statusTypes.push(data)
-          this.statusTypes = orderBy(this.statusTypes, [s => s.processStepStatusType.toLowerCase()])
-
-          // reset the new process fields
-          this.addNew = false
-          this.newType = {}
-          this.snackbar = getSnackbar('SUCCESS', 'Status Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveType (s) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/processStep/status`, s)
-          this.selectedStatusTypeId = null
-          this.expanded = []
-          this.snackbar = getSnackbar('SUCCESS', 'Status Updated')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Updating Status')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterProcessStepStatuses () {
-        return this.statusTypes.filter(s => { return !s.archived})
-      },
-      copyToClipBoard(textValue){
-        navigator.clipboard.writeText(textValue);
-        this.snackbar = getSnackbar('SUCCESS', 'Copied id to clipboard')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      },
-      closeDeleteDialog() {
-        this.showDeleteDialog = false
-        this.itemToDelete = null
-      }
-    },
-    async created () {
-      this.getCompanyStatusTypes()
-      this.getStatusTypes()
+  const search = ref('')
+  const statusTypes = ref([])
+  const expanded = ref([])
+  const rootStatusTypes = ref([])
+  const headers = ref([
+    {text: 'Process Step Status', value: 'processStepStatusType', show: true},
+    {text: 'Category', value: 'rootProcessStepStatusType', show: true},
+    {text: '', value: 'icons', show: true, sortable: false},
+  ])
+  const footerProps = ref({
+    'items-per-page-options': [25, 50, 100, 1000],
+    'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
+  })
+  const options = ref({
+    itemsPerPage: 100
+  })
+  const addNew = ref(false)
+  const newType = ref({})
+  const selectedStatusTypeId = ref(null)
+  const userId = ref(store.state.user.details.id)
+  const companyId = ref(store.state.user.details.companyId)
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const fieldsInUse = ref([])
+  const deleteError = ref(false)
+  const showDeleteDialog = ref(false)
+  const itemToDelete = ref(null)
+  const showInfoDialog = ref(false)
+  const objectsUsingStatus = ref({
+    fieldName: null,
+    steps: []
+  })
+  const toDeleteProcessStepStatusType = computed(() => {
+    return itemToDelete.value ? itemToDelete.value.processStepStatusType : ''
+  })
+  const filteredRootStatuses = computed(() => {
+    return rootStatusTypes.value.filter(rst => rst.id !== 3)
+  })
+  const getAllCompanyStatusTypes = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getCompanyStatusTypes()
+      statusTypes.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
+  const getAllStatusTypes = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getStatusTypes()
+      rootStatusTypes.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const getUsesForStatus = async (processStepStatusId, processStepStatusName) => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/processStep/status/getObwjectsUsingStatus/${processStepStatusId}`, null, []);
+      objectsUsingStatus.value.steps = data
+      objectsUsingStatus.value.fieldName = processStepStatusName
+      showInfoDialog.value = true
+      store.commit(AppMutations.SET_LOADING, false)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const deleteType = async () => {
+    const type = itemToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await deleteRequest(`/processStep/status/${type.id}`)
+      fieldsInUse.value = [];
+      type.archived = true
+      snackbar('SUCCESS', 'Status Deleted')
+      handleHidingGlobalLoader(vueInstance, status)
+      store.commit(AppMutations.SET_LOADING, false)
+    } catch (e) {
+      if (e.status === 400) {
+        deleteError.value = true;
+        fieldsInUse.value = e.data;
+        snackbar("ERROR", "Status Cannot Be Deleted");
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+      else {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Deleting Status')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
+    closeDeleteDialog()
+  }
+  const addNewType = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      newType.value.companyId = companyId.value
+      const {data, status} = await postRequest(`/processStep/status`, newType.value)
+
+      // add it to the records already on the screen
+      statusTypes.value.push(data)
+      statusTypes.value = orderBy(statusTypes.value, [s => s.processStepStatusType.toLowerCase()])
+
+      // reset the new process fields
+      addNew.value = false
+      newType.value = {}
+      snackbar('SUCCESS', 'Status Added')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Status')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const saveType = async (s) => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await putRequest(`/processStep/status`, s)
+      selectedStatusTypeId.value = null
+      expanded.value = []
+      snackbar('SUCCESS', 'Status Updated')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Updating Status')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const filterProcessStepStatuses =  () => {
+    return statusTypes.value.filter(s => { return !s.archived})
+  }
+  const copyToClipBoard = (textValue)=> {
+    navigator.clipboard.writeText(textValue);
+    snackbar('SUCCESS', 'Copied id to clipboard')
+
+  }
+  const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    itemToDelete.value = null
+  }
+  onMounted(async () => {
+    await getAllCompanyStatusTypes()
+    await getAllStatusTypes()
+  })
+
 </script>
 
 <style lang="scss">
