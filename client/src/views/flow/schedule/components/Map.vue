@@ -511,14 +511,6 @@ export default {
 
 
     /**Project Search Methods**/
-    goGoGadgetMapSearch(){
-      if(this.state?.id){
-        this.getProjects(true)
-      }
-      else if(this.searchProject?.projectId){
-        this.getSingleProject(this.searchProject.projectId, this.searchEventType.id, this.searchEventStatusType.id, this.searchProcessStepStatusType.id)
-      }
-    },
     async getProjects(resetQuery) {
       if(resetQuery) {
         // todo: should we remove this.$route.query params if the button is clicked?

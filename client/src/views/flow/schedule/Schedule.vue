@@ -287,6 +287,13 @@
         this.projectMapMarkers = newValue
         this.showMap = true
       },
+      // oneProjectMapMarker(add, project){
+      //   if(add){
+      //     this.projectMapMarkers = this.projectMapMarkers.concat([project])
+      //   } else {
+      //     this.projectMapMarkers = this.projectMapMarkers.filter(p => p.projectId !== project.projectId)
+      //   }
+      // },
       dateCallback (startTime, endTime) {
         this.startTime = startTime
         this.endTime = endTime

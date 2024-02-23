@@ -30,7 +30,7 @@ const props = defineProps({
   pinnedProjects:Array,
 })
 
-const emit = defineEmits(['close-dialog', 'pinToMap'])
+const emit = defineEmits(['close-dialog'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -142,7 +142,7 @@ const searchForProjects = async(search) => {
 const goGoGadgetMapSearch = () =>{
   projects.value = []
   showSearchResults.value = true
-  if(state.value?.id){
+  if(state?.value?.id){
     getProjects(true)
   }
   else if(searchProject.value?.projectId){
@@ -273,6 +273,19 @@ const toggleAllPinsOnMap = () => {
   }
 }
 
+const toggleOneMapPin = ({addPin, id}) => {
+  let pinnedList = props.pinnedProjects
+  if(addPin){
+    let project = projects.value.find(p => p.projectProcessStepEventId === id)
+    pinnedList = props.pinnedProjects.concat([project])
+  } else {
+    pinnedList = props.pinnedProjects.filter(p => {
+      return p.projectProcessStepEventId !== id
+    })
+  }
+  props.pinToMapCallback(pinnedList)
+}
+
 const allPinsPinned = computed(() => {
   let allPinned = true
   if(projects.value.length > 0 && props.pinnedProjects.length > 0) {
@@ -288,11 +301,10 @@ const allPinsPinned = computed(() => {
 
 const isOnePinned = (project) => {
   if(props.pinnedProjects.length > 0){
-    let answer = props.pinnedProjects.findIndex(pinned => {
-      return project.projectId === pinned.projectId
+    let index = props.pinnedProjects.findIndex(pinned => {
+      return project.projectProcessStepEventId === pinned.projectProcessStepEventId
     })
-    console.log(answer)
-    return answer >= 0
+    return index >= 0
   }
 }
 
@@ -451,6 +463,8 @@ onMounted(() => {
     <div v-for="p in projects">
       <ProjectSearchResultCard
           :project-name="p.projectName"
+          :project-id="p.projectId"
+          :id="p.projectProcessStepEventId"
           :event="p.eventName"
           :process-step="p.processStepName"
           :status="p.eventStatusType"
@@ -458,6 +472,7 @@ onMounted(() => {
           :end-date="p.end"
           :event-resource="p.resourceName"
           :pinned="isOnePinned(p)"
+          @pinToMap="toggleOneMapPin"
       />
     </div>
     </div>
