@@ -4,16 +4,16 @@
       <v-col cols="12">
         <v-toolbar flat class="app-toolbar">
           <v-toolbar-title class="title-large" :class="{'ml-n6': constants.IS_MOBILE}">
-            <v-btn icon color="primary" v-if="userIsAdmin && constants.IS_MOBILE" :to="`/settings/userProfile`">
-              <v-icon x-large>mdi-chevron-left</v-icon>
-            </v-btn>
+            <AlbatrossButton variant="text" icon color="primary" v-if="userIsAdmin && constants.IS_MOBILE" :to="`/settings/userProfile`" prepend-icon="mdi-chevron-left"/>
+
             User Profile Admin
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items v-if="!constants.IS_MOBILE">
-            <v-btn text color="primary" v-if="userIsAdmin" :to="`/settings/userProfile`">
-              Back to User Profile
-            </v-btn>
+            <AlbatrossButton
+              variant="text" color="primary" v-if="userIsAdmin"
+              :to="`/settings/userProfile`" text="Back to User Profile"
+            />
           </v-toolbar-items>
         </v-toolbar>
       </v-col>
@@ -55,62 +55,53 @@
 </template>
 
 
-<script>
+<script setup>
 import {AppMutations} from '@/stores/AppStore'
 import {getUserProfileDefaultFields} from '@/services/userService'
 import {handleHidingGlobalLoader, putRequest, getSnackbar} from '@/helpers/helpers'
 import constants from '@/helpers/constants'
 
-export default {
-  name: 'UserProfile',
-  components: {
-  },
-  data () {
-    return {
-      constants,
-      snackbar: {},
-      userProfileDefaultFields: [],
-      userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'),
-      headers: [
-        {text: 'Field Name', value: 'fieldName'},
-        {text: 'Show On User Profile', value: 'showOnUserProfile'},
-      ],
-    }
-  },
-  computed: {},
-  async created () {
-    this.getUserProfileDefaultFields()
-  },
-  methods: {
-    async getUserProfileDefaultFields() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {data, status} = await getUserProfileDefaultFields()
-        this.userProfileDefaultFields = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Default Fields')
-        this.loadingUserProfileCustomFields = false
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async updateShowOnUserProfile(item) {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/defaultField`, item)
-        this.snackbar = getSnackbar('SUCCESS', 'Saved Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Changes')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+
+const userProfileDefaultFields = ref([])
+const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('USERS', 'ADMIN'))
+const headers = ref([
+  {text: 'Field Name', value: 'fieldName'},
+  {text: 'Show On User Profile', value: 'showOnUserProfile'},
+])
+
+onMounted(async () => {
+  getAllUserProfileDefaultFields()
+})
+
+const getAllUserProfileDefaultFields = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {data, status} = await getUserProfileDefaultFields()
+    userProfileDefaultFields.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Default Fields')
+    loadingUserProfileCustomFields.value = false
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+const updateShowOnUserProfile = async (item) => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await putRequest(`/defaultField`, item)
+    snackbar('SUCCESS', 'Saved Changes')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Saving Changes')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
 </script>

@@ -6,10 +6,11 @@
           <v-toolbar-title class="app-title">States</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton variant="text" color="primary" v-if="userCanAdd" @click="[addNew = !addNew, selectedState = {}]"
+                             :hide-text-on-mobile="constants.IS_MOBILE"
+                             :prepend-icon="constants.IS_MOBILE ? 'add' : ''" :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
+
           </v-toolbar-items>
         </v-toolbar>
         <v-card v-if="addNew" class="text-left pa-5 mb-3 mt-2" flat >
@@ -25,12 +26,10 @@
                 attach
             ></v-autocomplete>
           </div>
-          <v-btn :disabled="!selectedState"
+          <AlbatrossButton :disabled="!selectedState"
                  color="primary" class="white--text mr-2"
-                 @click="saveCompanyState(selectedState, true)">
-            Save
-          </v-btn>
-          <v-btn text color="primary" @click="[addNew = !addNew, selectedState = {}]">Cancel</v-btn>
+                 @click="saveCompanyState(selectedState, true)" text="SAVE"/>
+          <AlbatrossButton variant="text" color="primary" @click="[addNew = !addNew, selectedState = {}]" text="CANCEL"/>
         </v-card>
         <v-data-table
             id="states-settings-table"
@@ -64,22 +63,23 @@
                 <label>Active:</label>
                 <input class="ml-3" type="checkbox" v-model="item.active">
               </div>
-              <v-btn :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
+              <AlbatrossButton :disabled="!item.mapLatitude || !item.mapLongitude || !item.mapZoom"
                      color="primary" class="white--text mr-2"
-                     @click="saveCompanyState(item, false)">
-                Save
-              </v-btn>
+                     @click="saveCompanyState(item, false)" text="SAVE"/>
             </td>
           </template>
           <template #item.active="{ item }">
             <input type="checkbox" v-model="item.active" disabled readonly>
           </template>
           <template #item.icons="{ item}">
-            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanEdit && expanded.includes(item)" @click="expanded = []">cancel</v-btn>
-            <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="stateToDelete=item"><v-icon>delete</v-icon></v-btn>
+            <AlbatrossButton size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
+                             v-if="userCanEdit && !expanded.includes(item)" @click="expanded = [item]"
+                             prepend-icon="edit"/>
+            <AlbatrossButton size="small" icon :large="vuetify.breakpoint.smAndDown" color="primary"
+                             v-if="userCanEdit && expanded.includes(item)"
+                             @click="expanded = []" text="CANCEL"/>
+            <AlbatrossButton size="small" icon variant="text" :large="vuetify.breakpoint.smAndDown" color="primary"
+                             v-if="userCanDelete" @click="stateToDelete=item" prepend-icon="delete"/>
           </template>
 
         </v-data-table>
@@ -91,129 +91,116 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
 
   import {getAvailableStates} from '@/services/stateService'
-  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest, getSnackbar} from '@/helpers/helpers'
+  import {handleHidingGlobalLoader, getRequest, deleteRequest, putRequest} from '@/helpers/helpers'
   import constants from '@/helpers/constants'
   import orderBy from "lodash.orderby";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'CompanyStates',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        addNew: false,
-        levels: [],
-        companyStates: [],
-        selectedState: {},
-        states: [],
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-        selectedCompanyStateId: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        headers: [
-          { text: 'State', value: 'state', show: true },
-          { text: 'Abbreviation', value: 'abbreviation', show: true },
-          { text: 'Active', value: 'active', show: true },
-          { text: null, value: 'icons', show: true, sortable: false }
-        ],
-        expanded: [],
-        stateToDelete: null
-      }
-    },
-    computed:{
-      stateToDeleteName() {
-        return this.stateToDelete ? this.stateToDelete.state : ''
-      },
-      filterStates () {
-        return orderBy(this.companyStates.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
-      },
-    },
-    async created () {
-      this.getCompanyStates()
-      this.getStates()
-    },
-    methods: {
-      async saveCompanyState(ol, isNew) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            ...ol
-          }
-          params.stateId = ol.id
-          params.id = isNew ? null : params.id
-          const {data, status} = await putRequest(`/state/saveCompanyState`, params)
-          if(isNew){
-            this.companyStates.push(data)
-            this.addNew = false
-            this.selectedState = {}
-            this.snackbar = getSnackbar('SUCCESS', 'State Added')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          } else {
-            this.expanded = []
-            this.snackbar = getSnackbar('SUCCESS', 'State Updated')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getCompanyStates() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/state/company`)
-          this.companyStates = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Company States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async getStates() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getAvailableStates()
-          this.states = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading States')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteCompanyState() {
-        const companyState = this.stateToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
-          companyState.archived = true
-          this.snackbar = getSnackbar('SUCCESS', 'State Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting State')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.stateToDelete = null
-      },
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+
+  const addNew = ref(false)
+  const levels = ref([])
+  const companyStates = ref([])
+  const selectedState = ref({})
+  const states = ref([])
+  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const selectedCompanyStateId = ref(null)
+  const userId = ref(store.state.user.details.id)
+  const companyId = ref(store.state.user.details.companyId)
+  const headers = ref([
+    { text: 'State', value: 'state', show: true },
+    { text: 'Abbreviation', value: 'abbreviation', show: true },
+    { text: 'Active', value: 'active', show: true },
+    { text: null, value: 'icons', show: true, sortable: false }
+  ])
+  const expanded = ref([])
+  const stateToDelete = ref(null)
+  const stateToDeleteName = computed(() => {
+    return stateToDelete.value ? stateToDelete.value.state : ''
+  })
+  const filterStates = computed(() => {
+    return orderBy(companyStates.value.filter(cs => { return !cs.archived}), [cs => cs.state.toLowerCase()])
+  })
+
+  onMounted(async () =>{
+    getCompanyStates()
+    await getStates()
+  })
+  const saveCompanyState = async (ol, isNew) => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      let params = {
+        ...ol
+      }
+      params.stateId = ol.id
+      params.id = isNew ? null : params.id
+      const {data, status} = await putRequest(`/state/saveCompanyState`, params)
+      if(isNew){
+        companyStates.value.push(data)
+        addNew.value = false
+        selectedState.value = {}
+        snackbar('SUCCESS', 'State Added')
+      } else {
+        expanded.value = []
+        snackbar('SUCCESS', 'State Updated')
+      }
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', isNew ? 'Error Adding State' : 'Error Updating State')
+      store.commit(AppMutations.SET_LOADING, false)
     }
+  }
+  const getCompanyStates = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/state/company`)
+      companyStates.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Company States')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const getStates = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getAvailableStates()
+      states.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading States')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const deleteCompanyState = async () => {
+    const companyState = stateToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await deleteRequest(`/state/companyState/${companyState.id}`)
+      companyState.archived = true
+      snackbar('SUCCESS', 'State Deleted')
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting State')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    stateToDelete.value = null
   }
 </script>
 <style scoped lang="scss">
