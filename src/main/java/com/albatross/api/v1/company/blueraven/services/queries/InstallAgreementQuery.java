@@ -228,4 +228,44 @@ public class InstallAgreementQuery {
              WHERE product_name ILIKE :batteryName
          ) AS subquery;
     """;
+
+  //language=PostgreSQL
+  public final static String getSrec = """
+    select
+      plh.id,
+      plh.proposal_nbr as proposal_number,
+      plh.project_id,
+      plh.il_srec_disclosure_form_id,
+      pd.contact_name,
+      pd.contact_email,
+      coalesce(pd.contact_phone, pd.contact_mobile_phone) as contact_phone,
+      pd.project_name,
+      pd.project_state_abbreviation,
+      pd.utility_company_name,
+      plh.loan_type,
+      pd.project_street1,
+      pd.project_city,
+      pd.project_postal_code,
+      pd.system_size,
+      plh.system_size_ac,
+      plh.year_1_kwh_output as year_one_kwh_output,
+      plh.loan_amount,
+      plh.optional_down_payment,
+      plh.required_down_payment,
+      plh.all_rebates->>'Illinois SREC' as srec_value,
+      plh.total_cost
+    from brs.proposal_log_history plh
+    inner join brs.project_details pd on pd.project_id = plh.project_id
+    where plh.project_id = :projectId and
+          plh.proposal_nbr = :proposalNumber
+        
+  """;
+
+  //language=PostgreSQL
+  public final static String setDisclosureId = """
+    update brs.proposal_log_history plh
+    set il_srec_disclosure_form_id = :formId
+    where plh.project_id = :projectId and
+          plh.proposal_nbr = :proposalNumber
+  """;
 }

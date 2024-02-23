@@ -598,7 +598,7 @@ public class BrsProcessStepActionFunctionService {
 
     } catch (Exception e) {
       if( !e.getMessage().equals("Not a valid phone number.") ) {
-        log.error("BRS:Action Function:sendBirdEyeCheckIn", e);
+        log.error("BRS:Action Function:sendBirdEyeCheckIn");
         throw new RuntimeException(formatErrorMessage(func, e.getMessage()));
       }
     }
