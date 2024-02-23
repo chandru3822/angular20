@@ -20,11 +20,10 @@
       <v-row class="map-row">
         <v-col cols="12" class="pa-0 ml-3">
           <Map v-if="showMap"
-               :states="states"
-               :latitude="state.mapLatitude"
+               :latitude="latitude"
                :markers="projectMapMarkers"
-               :longitude="state.mapLongitude"
-               :zoom="state.mapZoom"
+               :longitude="longitude"
+               :zoom="mapZoom"
                :map-resources="mapResources"
                :start-time="startTime"
                :end-time="endTime"
@@ -34,7 +33,7 @@
               <v-btn id="search-menu-btn" fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
-                                   @close-dialog="searchMenuOpen = false"/>
+                                   @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
             </template>
           </Map>
         </v-col>
@@ -52,17 +51,14 @@
   import {getEventTypes} from '@/services/scheduleService'
   import DatetimePickerInput from '@/components/DatetimePickerInput.vue'
   import { getStatusTypes } from '@/services/processStepStatusTypeService'
-  import axios from 'axios'
   import constants from "@/helpers/constants";
   import {
     getCancelledCompanyStatusTypesAssignedToPpsEvent,
     getEventStatusTypes
   } from "@/services/eventStatusTypeService";
-  import debounce from 'lodash.debounce'
   import ThreeColumnLayout from "@/views/ThreeColumnLayout.vue";
   import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
   import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
-  import cloneDeep from "lodash.clonedeep";
 
   export default {
     name: 'Schedule',
@@ -97,6 +93,9 @@
         selectedResources: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
         state: {},
+        mapZoom: null,
+        latitude: null,
+        longitude: null,
         states: [],
         eventStatusTypes: [],
         selectedEventStatusType: {},
@@ -175,11 +174,6 @@
       }
     },
     created() {
-      localStorage.setItem('scheduleState', null)
-      this.state = JSON.parse(localStorage.getItem('scheduleState')) || {}
-      this.selectedEventTypes = JSON.parse(localStorage.getItem('scheduleEventTypes')) || []
-      this.selectedProcessStepStatusType = JSON.parse(localStorage.getItem('scheduleProcessStepStatusType')) || {}
-      this.selectedEventStatusType = JSON.parse(localStorage.getItem('scheduleEventStatusType')) || {}
       this.getActiveStatesByHierarchy()
       this.getStatusTypes()
       this.getEventStatusTypes()
@@ -286,14 +280,10 @@
       projectMapMarkersCallback(newValue){
         this.projectMapMarkers = newValue
         this.showMap = true
+        if(newValue.length > 0){
+          this.zoomToMap(newValue[0], 8)
+        }
       },
-      // oneProjectMapMarker(add, project){
-      //   if(add){
-      //     this.projectMapMarkers = this.projectMapMarkers.concat([project])
-      //   } else {
-      //     this.projectMapMarkers = this.projectMapMarkers.filter(p => p.projectId !== project.projectId)
-      //   }
-      // },
       dateCallback (startTime, endTime) {
         this.startTime = startTime
         this.endTime = endTime
@@ -378,145 +368,14 @@
           this.$store.commit(AppMutations.SET_LOADING, false)
         }
       },
-      filterProjects: debounce(function () {
-        //dont run if the other filters aren't filled in
-        if(this.selectedEventTypes && this.selectedEventTypes.length > 0 &&
-          this.state && this.selectedEventStatusType && this.selectedEventStatusType.id &&
-          this.selectedProcessStepStatusType && this.selectedProcessStepStatusType) {
 
-          //don't allow projectFilter to be null - causes issues
-          this.projectFilter = this.projectFilter || ''
-          this.getProjects()
 
-        }
-      }, 500),
-      async getProjects(resetQuery) {
-        if(resetQuery) {
-          // todo: should we remove this.$route.query params if the button is clicked?
-          // this.$route.query = {}
-        }
-
-        const {page, itemsPerPage} = this.options
-
-        localStorage.setItem('scheduleState', JSON.stringify(this.state))
-        localStorage.setItem('scheduleEventTypes', JSON.stringify(this.selectedEventTypes))
-        localStorage.setItem('scheduleProcessStepStatusType', JSON.stringify(this.selectedProcessStepStatusType))
-        localStorage.setItem('scheduleEventStatusType', JSON.stringify(this.selectedEventStatusType))
-
-        if(this.selectedEventTypes?.length > 0) {
-          this.listLoading = true
-          try {
-            if(this.source){
-              this.source.cancel();
-            }
-            const CancelToken = axios.CancelToken;
-            this.source = CancelToken.source();
-
-            const {data} = await postRequest(`/schedule/projects`, {
-              search: this.projectFilter,
-              source: this.source,
-              cancelToken: this.source.token,
-              eventIds: this.selectedEventTypes?.length > 0 ? this.selectedEventTypes.map(o => o.id) : [],
-              //old way
-              // processStepStatusTypeId: this.selectedProcessStepStatusType.processStepStatusTypeId,
-              // new way:
-              processStepStatusTypeId: this.selectedProcessStepStatusType.id,
-              eventStatusTypeId: this.selectedEventStatusType.id,
-              companyStateId: this.state.id,
-              startTime: this.startTime,
-              endTime: this.endTime,
-              page: page - 1,
-              size: itemsPerPage
-            })
-            this.projects = data.content || []
-            this.projects.forEach(d => {
-              d.coordinates = [ d.longitude, d.latitude ]
-            })
-            this.totalProjects = data.totalElements
-            this.listLoading = false
-            this.initialLoad = false
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Projects')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.listLoading = false
-          }
-        } else {
-          this.projects = []
-        }
-      },
-      async searchForProjects(search) {
-        try {
-          let params = {
-            search
-          }
-          const {data} = await postRequest(`/schedule/projects/search`, params)
-          this.searchProjects = data
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Searching Projects')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getProjectsSearchedFor(search) {
-        // cancel pending call
-        clearTimeout(this._timerId);
-
-        this.searchProjectsLoading = true
-
-        // delay new call 500ms
-        this._timerId = setTimeout(async () => {
-          //todo:_this
-          await this.searchForProjects(search)
-          this.searchProjectsLoading = false
-        }, 500)
-      },
-      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
-        this.listLoading = true
-        try {
-          let params = {
-            projectId,
-            eventId,
-            processStepStatusTypeId,
-            projectProcessStepEventId,
-            eventStatusTypeId
-          }
-
-          //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
-          const {data} = await postRequest(`/schedule/getProject`, params, null, [])
-          this.projects = data
-          this.projects.forEach(d => {
-            d.coordinates = [ d.longitude, d.latitude ]
-          })
-
-          this.totalProjects = this.projects.length
-
-          if(this.projects.length === 1) {
-            this.selectedProject = this.projects[0]
-            this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
-            this.projectMapMarkers.push(this.projects[0])
-            this.zoomToMap({
-              item:{
-                longitude: this.selectedProject.longitude,
-                latitude: this.selectedProject.latitude
-              },
-              value: true
-            })
-          }
-          this.listLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.listLoading = false
-        }
-      },
-      zoomToMap(event) {
-        if(event.value){
-          const item = event.item
-          this.state.mapZoom = 10
-          this.state.mapLongitude = item.longitude
-          this.state.mapLatitude = item.latitude
+      zoomToMap(item, zoomOverride) {
+        console.log('zoomToMap')
+        if(item){
+          this.mapZoom = zoomOverride ? zoomOverride : 6
+          this.longitude = item.mapLongitude | item.longitude
+          this.latitude = item.mapLatitude | item.latitude
         }
       }
 

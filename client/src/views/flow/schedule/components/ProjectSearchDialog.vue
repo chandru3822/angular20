@@ -30,7 +30,7 @@ const props = defineProps({
   pinnedProjects:Array,
 })
 
-const emit = defineEmits(['close-dialog'])
+const emit = defineEmits(['close-dialog', 'zoom-map'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -144,6 +144,7 @@ const goGoGadgetMapSearch = () =>{
   showSearchResults.value = true
   if(state?.value?.id){
     getProjects(true)
+    emit('zoom-map', state.value)
   }
   else if(searchProject.value?.projectId){
     getSingleProject(searchProject.value.projectId, searchEventType.value.id, searchEventStatusType.value.id, selectedProcessStepStatusType.value.id)
@@ -236,14 +237,7 @@ const getProjectsSearchedFor = async(search) => {
     if(projects.value.length === 1) {
       selectedProject.value = projects.value[0]
       selectedProject.value.resource = { id: selectedProject.value.resourceId, name: selectedProject.value.resourceName }
-      // selectedRows.value.push(projects.value[0])
-      // zoomToMap({
-      //   item:{
-      //     longitude: selectedProject.value.longitude,
-      //     latitude: selectedProject.latitude
-      //   },
-      //   value: true
-      // })
+      toggleOneMapPin({addPin: true, project: projects.value[0]})
     }
     listLoading.value = false
   } catch (e) {
@@ -273,10 +267,12 @@ const toggleAllPinsOnMap = () => {
   }
 }
 
-const toggleOneMapPin = ({addPin, id}) => {
+const toggleOneMapPin = ({addPin, id, project}) => {
   let pinnedList = props.pinnedProjects
   if(addPin){
-    let project = projects.value.find(p => p.projectProcessStepEventId === id)
+    if(!project){
+      project = projects.value.find(p => p.projectProcessStepEventId === id)
+    }
     pinnedList = props.pinnedProjects.concat([project])
   } else {
     pinnedList = props.pinnedProjects.filter(p => {

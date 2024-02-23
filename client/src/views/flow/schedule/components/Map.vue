@@ -159,12 +159,11 @@ export default {
     zoom: {type: Number},
     markers: {type: Array},
     mapResources: {type: Array},
-    states:Array,
     startTime:String,
     endTime: String,
   },
   watch: {
-    'latitude': function () {
+    latitude: function () {
       // reset the selected group when the object type changes
       this.changeMapLocation()
     },

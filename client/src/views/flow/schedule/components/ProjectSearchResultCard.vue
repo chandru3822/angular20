@@ -56,7 +56,7 @@ const togglePinToMap = () => {
     </v-btn>
   </v-card-title>
   <v-card-text class="grey--text text--darken-4">
-    <div class="body-medium">{{id}} {{event}} ({{processStep}})</div>
+    <div class="body-medium">{{event}} ({{processStep}})</div>
     <div v-if="eventIsSameDay()" class="body-medium">{{startDate | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{endDate | formatDate('timestamp','h:mm a')}}</div>
     <div v-else-if="startDate" class="body-medium">{{startDate | formatDate('timestamp','MMM DD YYYY, h:mm a')}} - {{endDate | formatDate('timestamp','MMM DD YYYY, h:mm a')}}</div>
     <div v-if="eventResource && eventResource !== '  - '" class="body-medium">{{eventResource}}</div>
