@@ -34,6 +34,7 @@ const emit = defineEmits(['close-dialog', 'zoom-map'])
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
+const router = vueInstance.$router
 
 const state =ref({}),
     eventStatusTypes= ref([]),
@@ -304,6 +305,12 @@ const isOnePinned = (project) => {
   }
 }
 
+const openProjectEvent = (project) => {
+        //open event clicks in new window every time so they dont have to keep reloading the calendar
+        let routerData = router.resolve({path: `/project/${project.projectId}/processStep/${project.projectProcessStepId}/event/${project.projectProcessStepEventId}`})
+        window.open(routerData.href, '_blank')
+    }
+
 onMounted(() => {
   fetchEventTypes()
   fetchEventStatusTypes()
@@ -469,6 +476,8 @@ onMounted(() => {
           :event-resource="p.resourceName"
           :pinned="isOnePinned(p)"
           @pinToMap="toggleOneMapPin"
+          @click="openProjectEvent(p)"
+          class="clickable"
       />
     </div>
     </div>

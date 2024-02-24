@@ -275,7 +275,14 @@
       },
       resourceMapCallback (newValue, showMap) {
         this.mapResources = newValue
-        this.showMap = true
+        if(newValue.length > 0){
+          this.showMap = true
+          let zoomObj = newValue[0]
+          this.zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
+        }
+        else {
+          this.resetMapZoom()
+        }
       },
       projectMapMarkersCallback(newValue){
         this.projectMapMarkers = newValue
@@ -369,9 +376,17 @@
         }
       },
 
+      resetMapZoom(){
+        this.zoomToMap(
+            {
+              longitude: null,
+              latitude: null,
+            },
+            2
+        )
+      },
 
       zoomToMap(item, zoomOverride) {
-        console.log('zoomToMap')
         if(item){
           this.mapZoom = zoomOverride ? zoomOverride : 6
           this.longitude = item.mapLongitude | item.longitude

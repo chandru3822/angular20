@@ -45,7 +45,7 @@ const togglePinToMap = () => {
 </script>
 
 <template>
-<v-card outlined max-height="100%">
+<v-card outlined max-height="100%" @click="emit('click')">
   <v-card-title class="d-flex pa-2 align-start">
     <span class="label-medium pr-1 break-word max-width-half">{{projectName}}</span>
     <v-chip v-if="status" small color="success lighten-4" class="grey--text text--darken-4 body-small">{{status}}</v-chip>
