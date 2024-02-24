@@ -129,6 +129,9 @@
       </MglPopup>
     </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
+    <div class="bottom-control">
+    <slot name="bottomControl"/>
+    </div>
   </MglMap>
 </template>
 
@@ -143,10 +146,12 @@ import moment from 'moment'
 import debounce from "lodash.debounce";
 import axios from "axios";
 import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
+import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
 
 export default {
   name: 'ScheduleMap',
   components: {
+    ProjectModal,
     ProjectSearchDialog,
     MglMap,
     MglPopup,
@@ -687,4 +692,12 @@ export default {
   top:40px;
   right:38px;
 }
+
+.bottom-control {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 280px;
+}
+
 </style>
