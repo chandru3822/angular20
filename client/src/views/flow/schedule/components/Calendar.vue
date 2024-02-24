@@ -891,6 +891,10 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
           index = this.selectedOrgs.findIndex(r => r.id === resource.id)
           this.selectedOrgs.splice(index,1)
         }
+
+        if(this.isResourceOnMap(resource)){
+          this.toggleMapPinForResource(resource)
+        }
       },
 
       //map functions
