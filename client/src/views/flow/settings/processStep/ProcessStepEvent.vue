@@ -449,13 +449,6 @@
                       </v-btn>
                     </div>
                   </v-card>
-                  <v-divider/>
-                  <EventActionChildSms :selected-action-index="selectedActionIndex"
-                                  :action="action"
-                                  :process-step-id="processStepId"
-                                  :add-sms-callback="addSms"
-                                  :delete-sms-callback="deleteSms"
-                  ></EventActionChildSms>
                 </div>
                 <v-row justify="center" class="pl-3 pr-3"
                        v-if="action.childFunctions && action.childFunctions.length > 0">
@@ -609,6 +602,14 @@
                     </draggable>
                   </v-col>
                 </v-row>
+
+                <v-divider/>
+                <EventActionChildSms :selected-action-index="selectedActionIndex"
+                                     :action="action"
+                                     :process-step-id="processStepId"
+                                     :add-sms-callback="addSms"
+                                     :delete-sms-callback="deleteSms"
+                ></EventActionChildSms>
               </div>
               <div v-if="action.actionTypeId === 3">
                 <v-textarea required label="Banner Content" auto-grow filled
@@ -1539,7 +1540,6 @@ export default {
       }
     },
     addSms(actionId, smsItem) {
-      debugger
       this.selectedEvent.processStepEventActions.find(a => a.id === actionId).processStepEventActionChildSmsTemplates.push(smsItem)
     },
     deleteSms(actionId, id) {
