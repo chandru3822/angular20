@@ -44,6 +44,7 @@ public class Five9Service {
   private final GenesysService genesysService;
 
   private final SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd");
+  private final SimpleDateFormat formatterCreatedDate = new SimpleDateFormat("MM/dd/yyyy");
   private final SimpleDateFormat formatterTime = new SimpleDateFormat("HH:mm:ss");
 
   private Boolean referralValueSet = false;
@@ -55,6 +56,7 @@ public class Five9Service {
 
     String url = "";
     String contactListName = "";
+    formatterCreatedDate.setTimeZone(TimeZone.getTimeZone("US/Mountain"));
     try {
       GenesysService.CustomContact contact = genesysService.getContact(contactId, !false);
       String phone = contact.getPhone() != null ? contact.getPhone().replaceAll("[^0-9]", "") : "";
@@ -89,6 +91,7 @@ public class Five9Service {
         ZonedDateTime zonedDateTime = contact.getDateCreated().toInstant().atZone(ZoneId.of("US/Mountain"));
         b.addParameter("time_created_mst", formatterTime.format(Date.from(zonedDateTime.toInstant())));
         b.addParameter("date_created_mst", formatterDate.format(new Date()));
+        b.addParameter("date_created", formatterCreatedDate.format(new Date()));
         b.addParameter("DNC", "false");
 
         if (!referralValueSet) {
@@ -132,10 +135,18 @@ public class Five9Service {
         new SingleColumnRowMapper<>(String.class));
 
     if (appointmentDate.isPresent()) {
-      b.addParameter("appointment_date", appointmentDate.get());
+      String appointmentDateString = appointmentDate.get();
+      b.addParameter("appointment_date", appointmentDateString);
+      try {
+        Date date = new SimpleDateFormat("yyyy-MM-dd").parse(appointmentDateString);
+        b.addParameter("primary_appointment_date", formatterCreatedDate.format(date));
+      } catch (ParseException e) {
+        log.warn("FIVE9: Invalid appointment date format for contactId=" + contactId);
+      }
     }
     else {
       b.addParameter("appointment_date", "");
+      b.addParameter("primary_appointment_date", "");
     }
 
     Optional<String> appointmentOutcome =
