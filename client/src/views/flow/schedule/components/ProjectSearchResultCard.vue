@@ -50,7 +50,7 @@ const togglePinToMap = () => {
     <span class="label-medium pr-1 break-word max-width-half">{{projectName}}</span>
     <v-chip v-if="status" small color="success lighten-4" class="grey--text text--darken-4 body-small">{{status}}</v-chip>
     <v-spacer/>
-    <v-btn icon small color="primary" @click="togglePinToMap">
+    <v-btn icon small color="primary" @click.stop="togglePinToMap">
     <v-icon v-if="pinned">mdi-map-marker</v-icon>
     <v-icon v-else>mdi-map-marker-off</v-icon>
     </v-btn>

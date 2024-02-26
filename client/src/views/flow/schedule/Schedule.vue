@@ -12,6 +12,7 @@
       <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click="showMap = !showMap"><v-icon>mdi-map</v-icon></v-btn>
     <Calendar :map-resources="mapResources"
               ref="calendar"
+              :preselected-event="selectedProject"
               :states="states"
               :callback="resourceMapCallback"
               :date-callback="dateCallback"/>
@@ -36,63 +37,7 @@
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
             </template>
             <template v-slot:bottomControl>
-              <ProjectModal :project="{
-              resourceId: 80020,
-              companyId: 3,
-              systemListId: 2,
-              processStepId: 1,
-              systemListTypeId: 2,
-              projectId: 938806,
-              projectProcessStepId: 7833650,
-              stateId: null,
-              processStepStatusTypeId: 1,
-              companyProcessStepStatusTypeId: 76,
-              startCustomFieldValueId: null,
-              startCustomFieldGroupAssignmentId: null,
-              endCustomFieldValueId: null,
-              endCustomFieldGroupAssignmentId: null,
-              resourceCustomFieldValueId: null,
-              resourceCustomFieldGroupAssignmentId: null,
-              contactId: 3173700,
-              eventId: 14,
-              projectProcessStepEventId: 1974336,
-              processStepEventId: 14,
-              companyEventStatusTypeId: 7,
-              eventStatusTypeId: 1,
-              saveVersion: 3,
-              customFieldDisplayValueGroupAssignmentId: null,
-              userId: null,
-              resourceName: 'Aaron Jacobson - Closer',
-              groupName: null,
-              contactFirstName: 'Kevin',
-              contactLastName: 'Kuhn',
-              contactFullName: null,
-              projectName: 'Kevin Kuhn',
-              processStepName: 'Closer Appointment',
-              state: 'Minnesota',
-              processStepStatusType: 'Pending Event',
-              startFieldName: null,
-              endFieldName: null,
-              resourceFieldName: null,
-              street1: '19175 Poplar Cir',
-              city: 'Eden Prairie',
-              stateAbbreviation: 'MN',
-              postalCode: '55347',
-              phone: null,
-              mobile: null,
-              eventName: 'Closer Appointment',
-              eventStatusType: 'Pending',
-              companyEventStatusType: null,
-              archived: null,
-              startFieldReadOnly: null,
-              endFieldReadOnly: null,
-              resourceFieldReadOnly: null,
-              forceSave: null,
-              latitude: 44.85781,
-              longitude: -93.51951,
-              start: '2024-02-23T20:00:00.000+00:00',
-              end: '2024-02-23T21:30:00.000+00:00',
-              }"/>
+              <ProjectModal :project="selectedProject"/>
             </template>
           </Map>
         </v-col>
@@ -356,6 +301,34 @@
         this.startTime = startTime
         this.endTime = endTime
       },
+
+      async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
+        try {
+          let params = {
+            projectId,
+            eventId,
+            processStepStatusTypeId,
+            projectProcessStepEventId,
+            eventStatusTypeId
+          }
+
+          //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
+          const {data} = await postRequest(`/schedule/getProject`, params, null, [])
+          let projects = data
+          projects.forEach(d => {
+            d.coordinates = [ d.longitude, d.latitude ]
+          })
+          if(projects.length === 1) {
+            this.selectedProject = projects[0]
+            this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
+          }
+        } catch (e) {
+          console.error('*** ERROR ***', e)
+          this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
+          store.commit(AppMutations.SHOW_SNACK, this.snackbar)
+        }
+      },
+
       async getActiveStatesByHierarchy() {
         try {
           const {data} = await getActiveStatesByHierarchy()

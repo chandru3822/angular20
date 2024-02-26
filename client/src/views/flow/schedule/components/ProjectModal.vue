@@ -22,7 +22,14 @@ const props = defineProps({
   timezone:String,
 })
 const show = ref(true)
-const userCanEdit = ref(false)
+const userCanEdit = ref(true)
+
+
+import { watch } from 'vue'
+watch(props.project, () => {
+  //do stuff
+  debugger
+})
 
 const openInNewTab = (path) => {
   let routerData = router.resolve({path})
@@ -134,19 +141,13 @@ const getResources = async(item) => {
         Scheduled for
         <span v-if="eventIsSameDay()">{{project.start | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','h:mm a')}}</span>
         <span v-else> {{project.startDate | formatDate('timestamp','MMMM DD YYYY, h:mm a')}} - {{project.end | formatDate('timestamp','MMMM DD YYYY, h:mm a')}}</span>
-        with <div>{{project.resourceName}}</div>
+        with {{project.resourceName}}
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
         <v-btn color="primary" small text class="text-capitalize">Unschedule</v-btn>
       </v-card-actions>
-    </div>
-<!-- ------------------- -->
-
-<!-- Event uneditable & cannot be unscheduled   -->
-    <div v-else>
-
     </div>
 <!-- ------------------- -->
   </div>

@@ -281,7 +281,8 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       mapResources: {type: Array},
       callback: Function,
       dateCallback: Function,
-      states: {type: Array}
+      states: {type: Array},
+      preselectedEvent: {type:Object, required: false}
     },
     computed: {
       //states
@@ -774,6 +775,15 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
         try {
           const {data, status} = await getSchedulingOrgTypes()
           this.orgTypes = data
+
+          //if we came from an event, preselect the correct Resource TYPES
+          if(this.preselectedEvent){
+            debugger
+            if(this.preselectedEvent.systemListId === 3){
+              this.selectedOrgTypes = this.orgTypes.filter(ot => this.preselectedEvent.systemListOptionIds.includes(ot.id))
+            }
+          }
+
           this.orgTypesLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
@@ -788,6 +798,12 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
         try {
           const {data, status} = await getRequest(`/position/schedulable`, null, [])
           this.positions = data
+          //if we came from an event, preselect the correct Resource TYPES
+          if(this.preselectedEvent){
+            if(this.preselectedEvent.systemListId === 2){
+              this.selectedPositions = this.positions.filter(p => this.preselectedEvent.systemListOptionIds.includes(p.id))
+            }
+          }
           this.positionsLoading = false
           handleHidingGlobalLoader(this, status)
         } catch (e) {
