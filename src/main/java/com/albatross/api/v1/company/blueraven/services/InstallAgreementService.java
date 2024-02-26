@@ -204,10 +204,10 @@ public class InstallAgreementService {
       successfullySent = true;
     }
     catch (WebClientResponseException e) {
-      log.error("HIC (SREC): Error generating disclosure doc: " + e.getMessage() + ": " + e.getResponseBodyAsString());
+      log.error("HIC (SREC): Error generating disclosure doc (" + projectId + ", " + proposalNumber + "): " + e.getMessage() + ": " + e.getResponseBodyAsString());
     }
     catch (Exception e) {
-      log.error("HIC (SREC): " + e.getMessage());
+      log.error("HIC (SREC) (" + projectId + ", " + proposalNumber + "): " + e.getMessage());
     }
 
     return successfullySent;
