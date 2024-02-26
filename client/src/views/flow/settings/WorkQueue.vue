@@ -22,18 +22,13 @@
   </v-container>
 </template>
 
-<script>
-import Vue2Filters from 'vue2-filters'
+<script setup>
+import AlbatrossButton from "../../../components/customVuetify/AlbatrossButton.vue";
 import constants from '@/helpers/constants'
 
-export default {
-  name: 'WorkQueueAdmin',
-  mixins: [Vue2Filters.mixin],
-  data() {
-    return {
-      constants,
-      userCanAccessCategories: this.$store.getters.userHasFeature('SETTINGS')
-    }
-  }
-}
+import { getCurrentInstance, ref } from 'vue'
+const vueInstance = getCurrentInstance().proxy
+const store = vueInstance.$store
+const userCanAccessCategories = ref(store.getters.userHasFeature('SETTINGS'))
+
 </script>

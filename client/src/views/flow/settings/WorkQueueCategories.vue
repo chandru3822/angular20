@@ -5,10 +5,14 @@
         <v-toolbar flat class="app-toolbar">
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd">
-              <v-icon v-if="constants.IS_MOBILE">add</v-icon>
-              <span v-else>{{addNew ? 'Cancel' : 'Add New'}}</span>
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newCategory = { color: '#ffffff'}]" v-if="userCanAdd"
+              :hide-text-on-mobile="constants.IS_MOBILE"
+              :prepend-icon="constants.IS_MOBILE ? 'add' : ''"
+              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-container>
@@ -29,11 +33,16 @@
               </v-avatar>
             </div>
             <v-color-picker v-if="showColor" class="my-3" v-model="newCategory.color" :canvas-height="colorOptions.height" :width="colorOptions.width" :mode="colorOptions.mode" :hide-mode-switch="colorOptions.hideModeSwitch"></v-color-picker>
-            <v-btn color="primary" :disabled="!newCategory.workQueueCategory" @click="addNewCategory">Save</v-btn>
+            <AlbatrossButton
+              color="primary"
+              :disabled="!newCategory.workQueueCategory"
+              @click="addNewCategory"
+              text="SAVE"
+            />
           </div>
           <v-data-table
               :headers="headers"
-              :items="filterCategories()"
+              :items="filterCategories"
               :items-per-page="-1"
               :sort-desc="[false]"
               :sort-by="['displayOrder']"
@@ -54,9 +63,14 @@
             <template #item="{ item }">
               <tr :class="{'shaded-row': workQueueCategories.indexOf(item) % 2}">
                 <td style="width: 50px">
-                  <v-btn text color="primary" icon small class="handle" v-if="userCanEdit">
-                    <v-icon>drag_handle</v-icon>
-                  </v-btn>
+                  <AlbatrossButton variant="text"
+                                   color="primary"
+                                   icon
+                                   size="small"
+                                   class="handle"
+                                   v-if="userCanEdit"
+                                   prepend-icon="drag_handle"
+                  />
                 </td>
                 <td class="text-left">
                   <v-text-field class="one-hunned" v-if="selectedWorkQueueCategoryId === item.id" v-model="item.workQueueCategory"></v-text-field>
@@ -99,24 +113,36 @@
                                         @allow-changed="workQueueCategoriesHiddenAllowEventListener"
                                         @checkbox-changed="workQueueCategoriesHiddenCheckboxEventListener"></multi-select-group>
                                       <br v-if="!item.hidden">
-                                      <v-btn color="primary" dark class="d-inline-block white--text"
-                                             @click="saveHiddenAndWhiteList(item)">
-                                        <v-icon class="mr-2">save</v-icon>
-                                        Save Hidden
-                                      </v-btn>
+                                      <AlbatrossButton color="primary" dark class="d-inline-block white--text"
+                                             @click="saveHiddenAndWhiteList(item)" prepend-icon="save" text="SAVE HIDDEN"
+                                      />
                                     </v-card>
 
                 </td>
 
                 <td class="text-right">
-                  <div class="item-icons">
-                    <v-btn class="clickable" small text color="primary" v-if="userCanEdit">
-                      <v-icon v-if="selectedWorkQueueCategoryId === item.id" @click="saveCategory(item)">save</v-icon>
-                      <v-icon v-else @click="selectedWorkQueueCategoryId = item.id; selectedWorkQueueCategoryDisplayOrder = item.displayOrder">edit</v-icon>
-                    </v-btn>
-                    <v-btn :disabled="!userCanDelete" small text color="primary" class="clickable" @click="categoryToDelete=item">
-                      <v-icon>delete</v-icon>
-                    </v-btn>
+                  <div v-if="userCanEdit" class="item-icons">
+                    <AlbatrossButton v-if="selectedWorkQueueCategoryId  === item.id"
+                                     class="clickable"
+                                     size="small" variant="text"
+                                     color="primary"
+                                     prepend-icon="save"
+                                     @click="saveCategory(item)"
+                    />
+                    <AlbatrossButton v-else
+                                     class="clickable"
+                                     size="small" variant="text"
+                                     color="primary"
+                                     prepend-icon="edit"
+                                     @click="selectedWorkQueueCategoryId = item.id; selectedWorkQueueCategoryDisplayOrder = item.displayOrder"
+                    />
+                    <AlbatrossButton
+                      :disabled="!userCanDelete"
+                      size="small" variant="text"
+                      color="primary"
+                      class="clickable" @click="categoryToDelete=item"
+                      prepend-icon="delete"
+                    />
                   </div>
                 </td>
               </tr>
@@ -134,9 +160,8 @@
 </template>
 
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
-  import Vue2Filters from 'vue2-filters'
   import orderBy from 'lodash.orderby'
   import {getWorkQueueCategories} from '@/services/workQueueService'
 
@@ -153,252 +178,241 @@
   import cloneDeep from "lodash.clonedeep";
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'WorkQueueCategories',
-    components: {ConfirmationDialog},
-    mixins: [Vue2Filters.mixin],
+  import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-    mounted() {
-      let table = document.querySelector('tbody')
-      const _self = this
-      Sortable.create(table, {
-        handle: '.handle',
-        onEnd({ newIndex, oldIndex }) {
-          const rowSelected = _self.workQueueCategories.splice(oldIndex, 1)[0]
-          _self.workQueueCategories.splice(newIndex, 0, rowSelected)
-          let rowsClone = cloneDeep(_self.workQueueCategories)
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
 
-          let rowsToSave = []
-          rowsClone.forEach((r, idx) => {
-            //check if the row needs to be saved before updating display order
-            //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
-            let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
-            //update display order
-            r.displayOrder = idx
-            //save only rows that changed
-            if(save) {
-              _self.workQueueCategories[idx].newDisplayOrder = idx
-              rowsToSave.push(r)
-            }
-          })
-          _self.saveRowChanges(rowsToSave)
-        }
-      })
-    },
-    data() {
-      return {
-        snackbar: {},
-        constants,
-        colorOptions: {
-          canvasHeight: 75,
-          width: 200,
-          mode: 'hexa',
-          hideModeSwitch: true
-        },
-        workQueueCategories: [],
-        workQueueLoading: false,
-        positions: [],
-        positionsLoading: false,
-        hiddenPositionsChanged: false,
-        addNew: false,
-        showColor: false,
-        newCategory: { color: '#ffffff'},
-        selectedWorkQueueCategoryId: null,
-        selectedWorkQueueCategoryDisplayOrder: null,
-        userId: this.$store.state.user.details.id,
-        companyId: this.$store.state.user.details.companyId,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'),
-        expanded: [],
-        headers: [
-          { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
-          { text: 'Category', value: 'workQueueCategory', show: true },
-          { text: 'Color', value: 'color', show: true },
-          { text: null, value: 'hidden', show: true },
-          { text: null, value: 'icons', show: true }
-        ],
-        categoryToDelete:null
+  const colorOptions = ref({
+    canvasHeight: 75,
+    width: 200,
+    mode: 'hexa',
+    hideModeSwitch: true
+  })
+  const workQueueCategories = ref([])
+  const workQueueLoading = ref(false)
+  const positions = ref([])
+  const positionsLoading = ref(false)
+  const hiddenPositionsChanged = ref(false)
+  const addNew = ref(false)
+  const showColor = ref(false)
+  const newCategory = ref({ color: '#ffffff'})
+  const selectedWorkQueueCategoryId = ref(null)
+  const selectedWorkQueueCategoryDisplayOrder = ref(null)
+  const userId = ref(store.state.user.details.id)
+  const companyId = ref(store.state.user.details.companyId)
+  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE'))
+  const expanded = ref([])
+  const categoryToDelete = ref(null)
+  const headers = ref([
+    { text: null, value: 'draggable', width: '50px', show: true, sortable: false },
+    { text: 'Category', value: 'workQueueCategory', show: true },
+    { text: 'Color', value: 'color', show: true },
+    { text: null, value: 'hidden', show: true },
+    { text: null, value: 'icons', show: true }
+  ])
+
+  const categoryToDeleteName = computed(() => {
+    return categoryToDelete.value ? categoryToDelete.value.workQueueCategory : ''
+  })
+  const workQueueCategoriesHiddenSelectedEventListener = (e) => {
+    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenWhiteListedPositions = e;
+    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged = true;
+  }
+  const workQueueCategoriesHiddenAllowEventListener = (e) => {
+    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenAllow = (e === 0);
+    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged = true;
+  }
+  const workQueueCategoriesHiddenCheckboxEventListener = (e) => {
+    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hidden = e;
+    workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged = true;
+  }
+  const selectAllHidden = (wqc) => {
+    return wqc.hiddenWhiteListedPositions?.length === positions.value?.length
+  }
+  const selectSomeHidden = (wqc) => {
+    return wqc.hiddenWhiteListedPositions?.length > 0 && !selectAllHidden(wqc)
+  }
+  const iconOwner = (wqc) => {
+    if (selectAllHidden(wqc)) {
+      return 'check_box'
+    }
+    if (selectSomeHidden(wqc)) {
+      return 'indeterminate_check_box'
+    }
+    return 'check_box_outline_blank'
+  }
+  const toggleSelectAllPositions = (wqc) => {
+    vueInstance.$nextTick(() => {
+      if (selectAllHidden(wqc)) {
+        wqc.hiddenWhiteListedPositions = []
+        wqc.hiddenPositionsChanged = true
+      } else {
+        wqc.hiddenWhiteListedPositions = cloneDeep(positions.value)
+        wqc.hiddenPositionsChanged = true
       }
-    },
-    computed: {
-      categoryToDeleteName(){
-        return this.categoryToDelete ? this.categoryToDelete.workQueueCategory : ''
-      }
-    },
-    methods: {
-      workQueueCategoriesHiddenSelectedEventListener(e){
-        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenWhiteListedPositions = e;
-        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
-      },
-      workQueueCategoriesHiddenAllowEventListener(e){
-        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenAllow = (e === 0);
-        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
-      },
-      workQueueCategoriesHiddenCheckboxEventListener(e){
-        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hidden = e;
-        this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged = true;
+    })
+  }
+  const getPositions = async () => {
+    if (positions.value?.length === 0) {
+      try {
+        positionsLoading.value = true
+        const {data, status} = await getRequest(`/position/withParent`)
+        positions.value = data
+        positionsLoading.value = false
+        handleHidingGlobalLoader(vueInstance, status)
+      } catch (e) {
+        positionsLoading.value = false
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Retrieving Positions')
 
-      },
-      selectAllHidden (wqc) {
-        return wqc.hiddenWhiteListedPositions?.length === this.positions?.length
-      },
-      selectSomeHidden (wqc) {
-        return wqc.hiddenWhiteListedPositions?.length > 0 && !this.selectAllHidden(wqc)
-      },
-      iconOwner (wqc) {
-        if (this.selectAllHidden(wqc)) {
-          return 'check_box'
-        }
-        if (this.selectSomeHidden(wqc)) {
-          return 'indeterminate_check_box'
-        }
-        return 'check_box_outline_blank'
-      },
-      toggleSelectAllPositions (wqc) {
-        this.$nextTick(() => {
-          if (this.selectAllHidden(wqc)) {
-            wqc.hiddenWhiteListedPositions = []
-            wqc.hiddenPositionsChanged = true
-          } else {
-            wqc.hiddenWhiteListedPositions = cloneDeep(this.positions)
-            wqc.hiddenPositionsChanged = true
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
+  }
+  const saveHiddenAndWhiteList = async (item) => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenPositionsChanged ?? false}`, workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value])
+      hiddenPositionsChanged.value = false
+      if (!workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hidden) {
+        workQueueCategories.value[selectedWorkQueueCategoryDisplayOrder.value].hiddenWhiteListedPositions = []
+      }
+      snackbar('SUCCESS', 'Saved Successfully')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const updateItemValue = (item) => {
+    if (selectedWorkQueueCategoryId.value === item.id) {
+      vueInstance.$set(item, 'showColor', !item.showColor)
+    }
+  }
+  const getAllWorkQueueCategories = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      workQueueLoading.value = true;
+      const {data, status} = await getWorkQueueCategories(true)
+      workQueueCategories.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+      workQueueLoading.value = false;
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Work Queue Categories')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const deleteCategory = async () => {
+    const typeId = categoryToDelete.value.id
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
+      snackbar('SUCCESS', 'Successfully Deleted Work Queue Category')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Deleting Work Queue Category')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    categoryToDelete.value = null
+  }
+  const addNewCategory = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await postRequest(`/workQueueCategory`, newCategory.value)
+
+      snackbar('SUCCESS', 'Work Queue Category Added')
+
+
+      // add it to the records already on the screen
+      workQueueCategories.value.push(data)
+      workQueueCategories.value = orderBy(workQueueCategories.value, [wqc => wqc.workQueueCategory.toLowerCase()])
+
+      // reset the new process fields
+      addNew.value = false
+      newCategory.value = {color: null}
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Adding Work Queue Category')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const saveCategory = async (wqc) => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      selectedWorkQueueCategoryId.value = null
+      const {status} = await putRequest(`/workQueueCategory`, wqc)
+      wqc.showColor = false
+      snackbar('SUCCESS', 'Work Queue Category Saved')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Work Queue Category')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const saveRowChanges = async (rows) => {
+    if (rows?.length > 0) {
+      store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {status} = await putRequest(`/workQueueCategory/order`, rows)
+        snackbar('SUCCESS', 'Work Queue Category Order Saved')
+        handleHidingGlobalLoader(vueInstance, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Saving Work Queue Order')
+
+        store.commit(AppMutations.SET_LOADING, false)
+      }
+    }
+  }
+  const filterCategories = computed(() => {
+    return workQueueCategories.value.filter(wqc => {
+      return !wqc.archived
+    })
+  })
+
+  onMounted(() => {
+    let table = document.querySelector('tbody')
+    Sortable.create(table, {
+      handle: '.handle',
+      onEnd({newIndex, oldIndex}) {
+        const rowSelected = workQueueCategories.value.splice(oldIndex, 1)[0]
+        workQueueCategories.value.splice(newIndex, 0, rowSelected)
+        let rowsClone = cloneDeep(workQueueCategories.value)
+
+        let rowsToSave = []
+        rowsClone.forEach((r, idx) => {
+          //check if the row needs to be saved before updating display order
+          //todo: vuetify table sorting is doing something weird where it won't sort right if i update the actual display order. hacked around it for now _rn
+          let save = r.newDisplayOrder === undefined ? r.displayOrder !== idx : r.newDisplayOrder !== idx
+          //update display order
+          r.displayOrder = idx
+          //save only rows that changed
+          if (save) {
+            workQueueCategories.value[idx].newDisplayOrder = idx
+            rowsToSave.push(r)
           }
         })
-      },
-      async getPositions() {
-        if(this.positions?.length === 0) {
-          try {
-            this.positionsLoading = true
-            const {data, status} = await getRequest(`/position/withParent`)
-            this.positions = data
-            this.positionsLoading = false
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            this.positionsLoading = false
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Retrieving Positions')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async saveHiddenAndWhiteList (item) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await putRequest(`/workQueueCategory/saveHiddenAndWhiteList?savePositions=${this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenPositionsChanged ?? false}`, this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder])
-          this.hiddenPositionsChanged = false
-          if(!this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hidden) {
-            this.workQueueCategories[this.selectedWorkQueueCategoryDisplayOrder].hiddenWhiteListedPositions = []
-          }
-          this.snackbar = getSnackbar('SUCCESS', 'Saved Successfully')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      updateItemValue (item) {
-        if(this.selectedWorkQueueCategoryId === item.id) {
-          this.$set(item, 'showColor', !item.showColor)
-        }
-      },
-      async getWorkQueueCategories() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.workQueueLoading = true;
-          const {data, status} = await getWorkQueueCategories(true)
-          this.workQueueCategories = data
-          handleHidingGlobalLoader(this, status)
-          this.workQueueLoading = false;
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Work Queue Categories')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteCategory() {
-        const typeId = this.categoryToDelete.id
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/workQueueCategory/${typeId}`)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Deleted Work Queue Category')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Deleting Work Queue Category')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.categoryToDelete = null
-      },
-      async addNewCategory() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await postRequest(`/workQueueCategory`, this.newCategory)
-
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Added')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-
-          // add it to the records already on the screen
-          this.workQueueCategories.push(data)
-          this.workQueueCategories = orderBy(this.workQueueCategories, [wqc => wqc.workQueueCategory.toLowerCase()])
-
-          // reset the new process fields
-          this.addNew = false
-          this.newCategory = { color: null }
-
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Adding Work Queue Category')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveCategory(wqc) {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.selectedWorkQueueCategoryId = null
-          const {status} = await putRequest(`/workQueueCategory`, wqc)
-          wqc.showColor = false
-          this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Category')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async saveRowChanges(rows) {
-        if(rows?.length > 0) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {status} = await putRequest(`/workQueueCategory/order`, rows)
-            // this.$set(this, 'workQueueCategories', data)
-            this.snackbar = getSnackbar('SUCCESS', 'Work Queue Category Order Saved')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.snackbar = getSnackbar('ERROR', 'Error Saving Work Queue Order')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      filterCategories () {
-        return this.workQueueCategories.filter(wqc => { return !wqc.archived})
-      },
-    },
-    async created() {
-      this.getWorkQueueCategories()
-      this.getPositions()
-    },
-  }
+        saveRowChanges(rowsToSave)
+      }
+    })
+    getAllWorkQueueCategories()
+    getPositions()
+  })
 </script>
