@@ -778,7 +778,6 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 
           //if we came from an event, preselect the correct Resource TYPES
           if(this.preselectedEvent){
-            debugger
             if(this.preselectedEvent.systemListId === 3){
               this.selectedOrgTypes = this.orgTypes.filter(ot => this.preselectedEvent.systemListOptionIds.includes(ot.id))
             }
