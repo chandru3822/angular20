@@ -16,37 +16,29 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 
-  export default {
-    name: 'AvailabilityHeader',
+import {getCurrentInstance, ref, computed} from "vue";
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-    },
-    data() {
-      return {
-        tabs: [
-          {
-            label: 'Availability',
-            path: `/settings/availability/main/schedule`,
-            display: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW')
-          },
-          {
-            label: 'Slot Schedules',
-            path: `/settings/availability/slots`,
-            display: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
-          }
-        ]
-      }
-    },
-    created() {
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
 
-    },
-    methods: {
-
-    }
+const tabs = ref([
+  {
+    label: 'Availability',
+    path: `/settings/availability/main/schedule`,
+    display: store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW')
+  },
+  {
+    label: 'Slot Schedules',
+    path: `/settings/availability/slots`,
+    display: store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN')
   }
+])
+
+const displayedTabs = computed(() => {
+  return tabs.value.filter(tab => tab.display)
+})
+
 </script>

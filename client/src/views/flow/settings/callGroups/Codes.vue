@@ -8,10 +8,13 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[reloadAvailable(), addCode = !addCode, newCode = {}]">
-              <v-icon v-if="addCode">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton variant="text" icon
+                             :large="vuetify.breakpoint.smAndDown"
+                             color="primary"
+                             v-if="userCanAdd"
+                             @click="[reloadAvailable(), addCode = !addCode, newCode = {}]"
+                             :prepend-icon="addCode ? 'remove' : 'add'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -40,7 +43,7 @@
         <v-divider></v-divider>
         <v-data-table
           :headers="codeHeaders"
-          :items="filterPostalCodes()"
+          :items="filterPostalCodes"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
@@ -60,7 +63,14 @@
             <tr>
               <td class="text-left code-col">{{item.postalCode}}</td>
               <td class="text-right">
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="postalCodeToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton size="small" variant="text"
+                                 icon
+                                 :large="vuetify.breakpoint.smAndDown"
+                                 color="primary"
+                                 v-if="userCanDelete"
+                                 @click="postalCodeToDelete=item"
+                                 prepend-icon="delete"
+                />
               </td>
             </tr>
           </template>
@@ -73,120 +83,119 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'Codes',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        postalCodes: [],
-        availablePostalCodes: [],
-        showError: false,
-        codeDeleted: false,
-        errorMsg: '',
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'),
-        callGroupId: parseInt(this.$route.params.id),
-        dataLoading: true,
-        addCode: false,
-        newCode: {},
-        codeSearch: '',
-        codeHeaders: [
-          {text: 'Postal Code', value: 'postalCode', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        postalCodeToDelete: null
-      }
-    },
-    computed: {
-      postalCodeToDeleteCode(){
-        return this.postalCodeToDelete ? this.postalCodeToDelete.postalCode : ''
-      }
-    },
-    created () {
-      this.getCodesForZone()
-      this.getAvailablePostalCodes()
-    },
-    methods: {
-      reloadAvailable() {
-        if(this.codeDeleted) {
-          this.getAvailablePostalCodes()
-        }
-      },
-      async getAvailablePostalCodes () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}/availableCodes`, 'blueraven')
-          this.availablePostalCodes = data
-          //this makes it reload the available list any time one has been deleted locally
-          this.codeDeleted = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      filterPostalCodes () {
-        return this.postalCodes?.length ? this.postalCodes.filter(pc => { return !pc.archived}) : []
-      },
-      async getCodesForZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}/codes`, 'blueraven')
-          this.postalCodes = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteCodeFromGroup () {
-        const code = this.postalCodeToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
-          code.archived = true
-          this.codeDeleted = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Removing Postal Code')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.postalCodeToDelete = null
-      },
-      async addCodeToZone () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          this.newCode.callGroupId = this.callGroupId
-          const {data, status} = await postRequest(`/callGroup/addCode`, this.newCode, 'blueraven')
-          this.postalCodes.push(data)
-          this.availablePostalCodes = this.availablePostalCodes.filter(apc => apc.id !== data.id)
-          this.addCode = false
-          this.newCode = {}
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {getCurrentInstance, onMounted, ref, computed} from "vue";
+
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+  const route = vueInstance.$route
+
+  const postalCodes = ref([])
+  const availablePostalCodes = ref([])
+  const showError = ref(false)
+  const codeDeleted = ref(false)
+  const errorMsg = ref('')
+  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
+  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
+  const callGroupId = ref(parseInt(route.params.id))
+  const dataLoading = ref(true)
+  const addCode = ref(false)
+  const newCode = ref({})
+  const codeSearch = ref('')
+  const codeHeaders = ref([
+    {text: 'Postal Code', value: 'postalCode', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const postalCodeToDelete = ref(null)
+
+  const postalCodeToDeleteCode = computed(() => {
+    return postalCodeToDelete.value ? postalCodeToDelete.value.postalCode : ''
+  })
+
+  onMounted (() => {
+    getCodesForZone()
+    getAvailablePostalCodes()
+  })
+  const reloadAvailable = () => {
+    if(codeDeleted.value) {
+      getAvailablePostalCodes()
     }
   }
+  const getAvailablePostalCodes = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/callGroup/${callGroupId.value}/availableCodes`, 'blueraven')
+      availablePostalCodes.value = data
+      //this makes it reload the available list any time one has been deleted locally
+      codeDeleted.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const filterPostalCodes = computed(() =>{
+    return postalCodes.value?.length ? postalCodes.value.filter(pc => { return !pc.archived}) : []
+  })
+  const getCodesForZone = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/callGroup/${callGroupId.value}/codes`, 'blueraven')
+      postalCodes.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const deleteCodeFromGroup = async () => {
+    const code = postalCodeToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await deleteRequest(`/callGroup/code/${code.id}`, 'blueraven')
+      code.archived = true
+      codeDeleted.value = true
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Removing Postal Code')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    postalCodeToDelete.value = null
+  }
+  const addCodeToZone = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      newCode.value.callGroupId = callGroupId.value
+      const {data, status} = await postRequest(`/callGroup/addCode`, newCode.value, 'blueraven')
+      postalCodes.value.push(data)
+      availablePostalCodes.value = availablePostalCodes.value.filter(apc => apc.id !== data.id)
+      addCode.value = false
+      newCode.value = {}
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let msg = e.data?.message?.includes('Postal Code Already In Use') ? e.data.message : 'Error Adding Postal Code'
+      snackbar('ERROR', msg)
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+
 </script>
 <style scoped lang="scss">
 @media (max-width: 770px) {

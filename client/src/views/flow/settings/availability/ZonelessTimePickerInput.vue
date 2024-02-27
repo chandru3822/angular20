@@ -37,66 +37,61 @@
 </template>
 
 
-<script>
+<script setup>
+import {onMounted, ref, computed, watch, defineProps} from "vue";
 
-export default {
-  name: 'ZonelessTimePickerInput',
-  props: {
-    value: String,
-    label: String,
-    hideDetails: Boolean,
-    //if this is empty it shows all minutes
-    allowedMinutes: Function,
-    change: Function,
-    readonly: {
-      type: Boolean,
-      default: false
-    },
+const props = defineProps({
+  value: String,
+  label: String,
+  hideDetails: Boolean,
+  //if this is empty it shows all minutes
+  allowedMinutes: Function,
+  change: Function,
+  readonly: {
+    type: Boolean,
+    default: false
   },
-  data: () => ({
-    date: null,
-    testValue: null,
-    menu: false,
-  }),
-  created() {
-    this.init()
-  },
-  watch: {
-    '$props.value': function () {
-      if(null == this.$props.value) {
-        //re-init if the field ever gets nulled out
-        this.init()
-      }
-    }
-  },
-  computed: {
-    //cannot edit value from parent component, need a local copy to manipulate
-    localValue: {
-      get: function() {
-        return this.$props.value
-      },
-      set: function (date) {
-        //this is so dumb.  if I just return date the localValue never changes. so i have to use this test value garbage
-        this.testValue = date
-        return date
-      }
-    }
-  },
-  methods: {
-    saveTime () {
-      this.$emit('input', this.testValue)
-      this.menu = false
-    },
-    cancel () {
-      this.menu = false
-    },
-    init () {
-      this.testValue = this.$props.value
-    },
-    clearInput () {
-        this.$emit('input', null)
-    }
+})
+
+
+const date = ref(null)
+const testValue = ref(null)
+const menu = ref(false)
+
+const emit = defineEmits(['input'])
+onMounted(() => {
+  init()
+})
+
+watch('props.value', () => {
+  if (null == props.value) {
+    //re-init if the field ever gets nulled out
+    init()
   }
+})
+//cannot edit value from parent component, need a local copy to manipulate
+const localValue = computed({
+  get() {
+    return props.value
+  },
+  set(date) {
+    //this is so dumb.  if I just return date the localValue never changes. so i have to use this test value garbage
+    testValue.value = date
+    return date
+  }
+})
+const saveTime = () => {
+  emit('input', testValue.value)
+  menu.value = false
+}
+const cancel = () => {
+  menu.value = false
+}
+const init = () => {
+  testValue.value = props.value
+}
+const clearInput = () => {
+  emit('input', null)
 }
 </script>
 

@@ -8,10 +8,12 @@
           </v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanAdd" @click="[addNumber = !addNumber, newNumber = '']">
-              <v-icon v-if="addNumber">remove</v-icon>
-              <v-icon v-else>add</v-icon>
-            </v-btn>
+            <AlbatrossButton variant="text"
+                             icon
+                             :large="vuetify.breakpoint.smAndDown"
+                             color="primary" v-if="userCanAdd" @click="[addNumber = !addNumber, newNumber = '']"
+                             :prepend-icon="addNumber ? 'remove' : 'add'"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-divider></v-divider>
@@ -24,10 +26,10 @@
                         v-model="newNumber">
           </v-text-field>
           <div class="error-text mb-3" v-if="showError">{{errorMsg}}</div>
-          <v-btn color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
-                 :disabled="!newNumber">
-            Add
-          </v-btn>
+          <AlbatrossButton color="primary" class="mr-3 white--text" @click="addNumberToGroup()"
+                           :disabled="!newNumber"
+                           text="ADD"
+          />
         </v-card>
         <v-divider v-if="addNumber"></v-divider>
         <v-card-title class="pt-0">
@@ -42,7 +44,7 @@
         <v-divider></v-divider>
         <v-data-table id="call-group-phone-number-table"
           :headers="numberHeaders"
-          :items="filterPhoneNumbers()"
+          :items="filterPhoneNumbers"
           :fixed-header="true"
           :items-per-page="-1"
           disable-sort
@@ -69,7 +71,13 @@
                 <v-select attach style="width: 120px" v-model="item.active" :disabled="!userCanEdit" :items="items" @change="updatePhoneNumber(item)"></v-select>
               </template>
               <template #item.icons="{item}">
-                <v-btn small icon :large="$vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete" @click="phoneNumberToDelete=item"><v-icon>delete</v-icon></v-btn>
+                <AlbatrossButton size="small"
+                                 variant="text"
+                                 icon
+                                 :large="vuetify.breakpoint.smAndDown" color="primary" v-if="userCanDelete"
+                                 @click="phoneNumberToDelete=item"
+                                 prepend-icon="delete"
+                />
               </template>
         </v-data-table>
       </v-col>
@@ -80,131 +88,129 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import {handleHidingGlobalLoader, getRequest, deleteRequest, postRequest, getSnackbar} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'Numbers',
-    components: {ConfirmationDialog},
-    data() {
-      return {
-        snackbar: {},
-        phoneNumbers: [],
-        showError: false,
-        errorMsg: '',
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'),
-        callGroupId: this.$route.params.id,
-        dataLoading: true,
-        addNumber: false,
-        newNumber: '',
-        numberSearch: '',
-        numberHeaders: [
-          {text: 'Phone Number', value: 'phoneNumber', show: true},
-          {text: 'Date Added', value: 'dateCreated', show: true},
-          {text: 'Contacts Assigned', value: 'callCount', show: true},
-          {text: 'Status', value: 'active', show: true},
-          {text: '', value: 'icons', show: true},
-        ],
-        items: [
-          {text: 'Active', value: true},
-          {text: 'Disabled', value: false}
-        ],
-        phoneNumberToDelete: null
-      }
-    },
-    computed:{
-      phoneNumberToDeleteNumber(){
-        return this.phoneNumberToDelete ? this.phoneNumberToDelete.phoneNumber : ''
-      }
-    },
-    created () {
-      this.getNumbersForGroup()
-    },
-    methods: {
-      filterPhoneNumbers () {
-        return this.phoneNumbers?.length ? this.phoneNumbers.filter(pc => { return !pc.archived}) : []
-      },
-      async getNumbersForGroup () {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequest(`/callGroup/${this.callGroupId}/numbers`, 'blueraven')
-          this.phoneNumbers = data
-          this.dataLoading = false
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async deleteNumber () {
-        const number = this.phoneNumberToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await deleteRequest(`/callGroup/number/${number.id}`, 'blueraven')
-          number.archived = true
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Removing Phone Number')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async addNumberToGroup () {
-        this.showError = false
-        this.errorMsg = ''
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
-          if (!this.newNumber.match(phoneRegex) || this.newNumber.length > 20) {
-            this.snackbar = getSnackbar('ERROR', 'Error Adding Phone Number: Please reformat the Phone field with a valid phone number')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            return;
-          }
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {getCurrentInstance, onMounted, ref, computed} from "vue";
 
-          let params = {
-            callGroupId: this.callGroupId,
-            phoneNumber: this.newNumber
-          }
-          const {data, status} = await postRequest(`/callGroup/addNumber`, params, 'blueraven')
-          this.phoneNumbers.push(data)
-          this.addNumber = false
-          this.newNumber = {}
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = e.data?.message?.includes('Phone Number Already In Use') ? e.data.message : 'Error Adding Phone Number'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-      },
-      async updatePhoneNumber (item) {
-        this.showError = false
-        this.errorMsg = ''
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            id: item.id,
-            active: item.active
-          }
-          const {status} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          let msg = 'Error updating Phone Number'
-          this.snackbar = getSnackbar('ERROR', msg)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const vuetify = vueInstance.$vuetify
+  const store = vueInstance.$store
+  const route = vueInstance.$route
+
+  const phoneNumbers = ref([])
+  const showError = ref(false)
+  const errorMsg = ref('')
+  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'ADD'))
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'EDIT'))
+  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('CALL_GROUPS', 'DELETE'))
+  const callGroupId = ref(route.params.id)
+  const dataLoading = ref(true)
+  const addNumber = ref(false)
+  const newNumber = ref('')
+  const numberSearch = ref('')
+  const numberHeaders = ref([
+    {text: 'Phone Number', value: 'phoneNumber', show: true},
+    {text: 'Date Added', value: 'dateCreated', show: true},
+    {text: 'Contacts Assigned', value: 'callCount', show: true},
+    {text: 'Status', value: 'active', show: true},
+    {text: '', value: 'icons', show: true},
+  ])
+  const items = ref([
+    {text: 'Active', value: true},
+    {text: 'Disabled', value: false}
+  ])
+  const phoneNumberToDelete = ref(null)
+
+  const phoneNumberToDeleteNumber = computed(() => {
+    return phoneNumberToDelete.value ? phoneNumberToDelete.value.phoneNumber : ''
+  })
+
+  onMounted (() => {
+    getNumbersForGroup()
+  })
+
+  const filterPhoneNumbers = computed(() => {
+    return phoneNumbers.value?.length ? phoneNumbers.value.filter(pc => { return !pc.archived}) : []
+  })
+  const getNumbersForGroup = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequest(`/callGroup/${callGroupId.value}/numbers`, 'blueraven')
+      phoneNumbers.value = data
+      dataLoading.value = false
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Retrieving Data')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const deleteNumber = async () => {
+    const number = phoneNumberToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {status} = await deleteRequest(`/callGroup/number/${number.id}`, 'blueraven')
+      number.archived = true
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Removing Phone Number')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const addNumberToGroup = async () => {
+    showError.value = false
+    errorMsg.value = ''
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      let phoneRegex = '^\\s*(?:\\+?(\\d{1,3}))?[-. (]*(\\d{3})[-. )]*(\\d{3})[-. ]*(\\d{4})(?: *x(\\d+))?\\s*$'
+      if (!newNumber.value.match(phoneRegex) || newNumber.value.length > 20) {
+        snackbar('ERROR', 'Error Adding Phone Number: Please reformat the Phone field with a valid phone number')
+
+        store.commit(AppMutations.SET_LOADING, false)
+        return;
       }
+
+      let params = {
+        callGroupId: callGroupId.value,
+        phoneNumber: newNumber.value
+      }
+      const {data, status} = await postRequest(`/callGroup/addNumber`, params, 'blueraven')
+      phoneNumbers.value.push(data)
+      addNumber.value = false
+      newNumber.value = {}
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let msg = e.data?.message?.includes('Phone Number Already In Use') ? e.data.message : 'Error Adding Phone Number'
+      snackbar('ERROR', msg)
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const updatePhoneNumber = async (item) => {
+    showError.value = false
+    errorMsg.value = ''
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      let params = {
+        id: item.id,
+        active: item.active
+      }
+      const {status} = await postRequest(`/callGroup/updateNumber`, params, 'blueraven')
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      let msg = 'Error updating Phone Number'
+      snackbar('ERROR', msg)
+      store.commit(AppMutations.SET_LOADING, false)
     }
   }
 </script>

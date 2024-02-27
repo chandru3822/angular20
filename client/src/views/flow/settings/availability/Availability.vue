@@ -51,9 +51,13 @@
               @input="valueChanged = true"
               v-model="defaultAppointmentLength"
             ></v-text-field>
-            <v-btn class="d-inline-block" v-if="userIsAdmin && valueChanged" small text @click="saveApptLength()">
-              <v-icon>save</v-icon>
-            </v-btn>
+            <AlbatrossButton class="d-inline-block"
+                             v-if="userIsAdmin && valueChanged"
+                             size="small"
+                             variant="text"
+                             @click="saveApptLength()"
+                             prepend-icon="save"
+            />
           </div>
         </div>
         <v-divider class="mb-2"></v-divider>
@@ -74,143 +78,141 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
 
   import { handleHidingGlobalLoader, getRequestWithParams, postRequest, getSnackbar} from '@/helpers/helpers'
 
-  export default {
-    name: 'Availability',
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {getCurrentInstance, onMounted, ref, computed} from "vue";
 
-    computed: {
-      displayedTabs () {
-        return this.tabs.filter(tab => tab.display)
-      },
-      resourceProps() {
-        if (this.userId) {
-          return { userId: this.userId, useSlotSchedule: this.useSlotSchedule() }}
-        if (this.orgId) { return { orgId: this.orgId, useSlotSchedule: false }}
-      }
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
+
+  const defaultAppointmentLength = ref(null)
+  const valueChanged = ref(false)
+  const orgs = ref([])
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
+  const orgId = ref(null)
+  const orgsLoading = ref(false)
+  const users = ref([])
+  const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
+  const viewAll = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
+  const userId = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : store.state.user.details.id)
+  const showAllUsers = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'))
+  const currentUser = ref(store.state.user.details.fullName)
+  // serId: 2410262
+  const usersLoading = ref(false)
+  const model = ref('')
+  const tabs = ref([
+    {
+      label: 'Schedule',
+      path: '/settings/availability/main/schedule',
+      display: store.getters.userHasFeature('AVAILABILITY')
     },
-    data() {
-      return {
-        defaultAppointmentLength: null,
-        snackbar: {},
-        valueChanged: false,
-        orgs: [],
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
-        orgId: null,
-        orgsLoading: false,
-        users: [],
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'),
-        viewAll: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
-        userId: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL') ? null : this.$store.state.user.details.id,
-        showAllUsers: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'VIEW_ALL'),
-        currentUser: this.$store.state.user.details.fullName,
-        // userId: 2410262,
-        usersLoading: false,
-        model: '',
-        tabs: [ {
-          label: 'Schedule',
-          path: '/settings/availability/main/schedule',
-          display: this.$store.getters.userHasFeature('AVAILABILITY')
-        }, {
-          label: 'Appointments',
-          path: '/settings/availability/main/appointments',
-          display: this.$store.getters.userHasFeature('AVAILABILITY')
-        }]
-      }
-    },
-    created() {
-      if(null !== this.userId) {
-        this.getApptLength()
+    {
+      label: 'Appointments',
+      path: '/settings/availability/main/appointments',
+      display: store.getters.userHasFeature('AVAILABILITY')
+    }])
+  const displayedTabs = computed(() => {
+    return tabs.value.filter(tab => tab.display)
+  })
+  const resourceProps = computed(() =>{
+    if (userId.value) {
+      return { userId: userId.value, useSlotSchedule: useSlotSchedule.value() }}
+    if (orgId.value) { return { orgId: orgId.value, useSlotSchedule: false }}
+  })
+
+  onMounted(() => {
+      if (null !== userId.value) {
+        getApptLength()
       } else {
-        this.getOrgs()
-        this.getUsers()
+        getOrgs()
+        getUsers()
       }
-    },
-    methods: {
-      useSlotSchedule() {
-        if(this.userId) {
-          let user = this.showAllUsers ? this.users.find(u => u.id === this.userId) : this.$store.state.user.details
-          let useSlots = false
-          user?.userPositions?.forEach(up => {
-            if(up.useSlotSchedule) {
-              useSlots = true
-            }
-          })
-          return useSlots
+    }
+  )
+
+  const useSlotSchedule = () => {
+    if(userId.value) {
+      let user = showAllUsers.value ? users.value.find(u => u.id === userId.value) : store.state.user.details
+      let useSlots = false
+      user?.userPositions?.forEach(up => {
+        if(up.useSlotSchedule) {
+          useSlots = true
         }
-        return false
-      },
-      async getOrgs() {
-        this.orgsLoading = true
-        try {
-          const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
-            isSchedulingTool: false
+      })
+      return useSlots
+    }
+    return false
+  }
+  const getOrgs = async () => {
+    orgsLoading.value = true
+    try {
+      const {data} = await getRequestWithParams(`/org/getSchedulingOrgs`, { params: {
+        isSchedulingTool: false
+      }})
+      orgs.value = data
+      orgsLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Organizations')
+
+    }
+  }
+  const getUsers = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    usersLoading.value = true
+    try {
+      const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
+        isSchedulingTool: false
+      }})
+      users.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+      usersLoading.value = false
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Loading Users')
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+  }
+  const saveApptLength = async () => {
+    try {
+      let params = {
+        userId: userId.value,
+        orgId: orgId.value,
+        defaultAppointmentLength: defaultAppointmentLength.value
+      }
+      await postRequest(`/availability/appointments/length`, params)
+      snackbar('SUCCESS', 'Appointment Length Saved')
+
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error Saving Appointment Length')
+
+    }
+  }
+  const getApptLength = async () => {
+    if(orgId.value || userId.value) {
+      // store.commit(AppMutations.SET_LOADING, true)
+      valueChanged.value = false
+      try {
+        const {data} = await getRequestWithParams(`/availability/appointments/length`, { params: {
+            userId: userId.value,
+            orgId: orgId.value,
           }})
-          this.orgs = data
-          this.orgsLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Organizations')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getUsers() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        this.usersLoading = true
-        try {
-          const {data, status} = await getRequestWithParams(`/user/getSchedulingUsers`, { params: {
-            isSchedulingTool: false
-          }})
-          this.users = data
-          handleHidingGlobalLoader(this, status)
-          this.usersLoading = false
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Users')
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async saveApptLength() {
-        try {
-          let params = {
-            userId: this.userId,
-            orgId: this.orgId,
-            defaultAppointmentLength: this.defaultAppointmentLength
-          }
-          await postRequest(`/availability/appointments/length`, params)
-          this.snackbar = getSnackbar('SUCCESS', 'Appointment Length Saved')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Saving Appointment Length')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getApptLength() {
-        if(this.orgId || this.userId) {
-          // this.$store.commit(AppMutations.SET_LOADING, true)
-          this.valueChanged = false
-          try {
-            const {data} = await getRequestWithParams(`/availability/appointments/length`, { params: {
-                userId: this.userId,
-                orgId: this.orgId,
-              }})
-            this.defaultAppointmentLength = data
-            // this.$store.commit(AppMutations.SET_LOADING, false)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.valueChanged = false
-            this.defaultAppointmentLength = null
-            // this.$store.commit(AppMutations.SET_LOADING, false)
-            this.snackbar = getSnackbar('ERROR', 'Error Loading Default Appointment Length')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        }
-      },
+        defaultAppointmentLength.value = data
+        // store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        valueChanged.value = false
+        defaultAppointmentLength.value = null
+        // store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Loading Default Appointment Length')
+
+      }
     }
   }
 </script>

@@ -2,21 +2,19 @@
   <v-container v-if="orgId || userId">
     <v-row>
       <v-col>
-        <v-btn color="primary" v-if="!addNew && userCanAdd" @click="setNew" class="mb-3">
-          Add Schedule
-        </v-btn>
+        <AlbatrossButton color="primary" v-if="!addNew && userCanAdd" @click="setNew" class="mb-3" text="ADD SCHEDULE"/>
         <v-card v-if="addNew" flat class="px-3">
           <v-card-title>Add New Schedule</v-card-title>
           <DatetimePickerInput
             v-model="newSchedule.startDate"
-            :timezone="this.timezone"
+            :timezone="timezone"
             :type="'date'"
             :format="'MMMM DD, YYYY'"
             label="Start Date"
           />
           <DatetimePickerInput
             v-model="newSchedule.endDate"
-            :timezone="this.timezone"
+            :timezone="timezone"
             :type="'date'"
             :format="'MMMM DD, YYYY'"
             label="End Date"
@@ -95,27 +93,35 @@
                 <td class="text-left px-0" width="150px"  v-if="!useSlotSchedule">
                   <v-tooltip top v-if="index !== 6">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small color="primary" v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'down')">
-                        <v-icon>mdi-arrow-collapse-down</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        :activation-handler="on"
+                        v-if="userCanEdit"
+                        @click="copyTimes(newSchedule, item, index, 'down')"
+                        prepend-icon="mdi-arrow-collapse-down"
+                      />
                     </template>
                     <span>Copy Down</span>
                   </v-tooltip>
-                  <v-btn text small v-else>
-                  </v-btn>
+                  <AlbatrossButton variant="text" size="small" v-else/>
                   <v-tooltip top v-if="index !== 0">
                     <template v-slot:activator="{ on }">
-                      <v-btn text small color="primary" v-on="on" v-if="userCanEdit" @click="copyTimes(newSchedule, item, index, 'up')">
-                        <v-icon>mdi-arrow-collapse-up</v-icon>
-                      </v-btn>
+                      <AlbatrossButton
+                        variant="text"
+                        size="small"
+                        color="primary"
+                        :activation-handler="on"
+                        v-if="userCanEdit"
+                        @click="copyTimes(newSchedule, item, index, 'up')"
+                        prepend-icon="mdi-arrow-collapse-up"
+                      />
                     </template>
                     <span>Copy Up</span>
                   </v-tooltip>
-                  <v-btn text small v-else>
-                  </v-btn>
-                  <v-btn text small color="primary" @click="[item.startTime = null, item.endTime = null]">
-                    <v-icon>close</v-icon>
-                  </v-btn>
+                  <AlbatrossButton variant="text" size="small" v-else/>
+                  <AlbatrossButton variant="text" size="small" color="primary" @click="[item.startTime = null, item.endTime = null]" prepend-icon="close"/>
                 </td>
 
               </tr>
@@ -126,18 +132,16 @@
           </div>
           <v-card-actions>
             <v-card-actions>
-              <v-btn text color="primary" @click="[newSchedule = {}, addNew = false]">Cancel</v-btn>
-              <v-btn color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
-                     :disabled="!newSchedule.startDate">
-                Save
-              </v-btn>
+              <AlbatrossButton variant="text" color="primary" @click="[newSchedule = {}, addNew = false]" text="CANCEL"/>
+              <AlbatrossButton color="primary"  @click="saveSchedule(newSchedule, true)" class="white--text"
+                     :disabled="!newSchedule.startDate" text="SAVE"/>
             </v-card-actions>
           </v-card-actions>
         </v-card>
         <v-data-table
           v-if="!addNew"
           :headers="headers"
-          :items="filterSchedules()"
+          :items="filterSchedules"
           :fixed-header="true"
           :items-per-page="-1"
           single-expand
@@ -264,28 +268,28 @@
 
                         <v-tooltip top v-if="index !== 6 && userCanEdit">
                           <template v-slot:activator="{ on }">
-                            <v-btn text small color="primary" v-on="on" @click="copyTimes(schedule, item, index, 'down')">
-                              <v-icon>mdi-arrow-collapse-down</v-icon>
-                            </v-btn>
+                            <AlbatrossButton variant="text" size="small" color="primary" :activation-handler="on"
+                                             @click="copyTimes(schedule, item, index, 'down')"
+                                             prepend-icon="mdi-arrow-collapse-down"
+                            />
                           </template>
                           <span>Copy Down</span>
                         </v-tooltip>
-                        <v-btn text small v-else>
-                        </v-btn>
+                        <AlbatrossButton variant="text" size="small" v-else/>
                         <v-tooltip top v-if="index !== 0 && userCanEdit">
                           <template v-slot:activator="{ on }">
-                            <v-btn text color="primary" small v-on="on" @click="copyTimes(schedule, item, index, 'up')">
-                              <v-icon>mdi-arrow-collapse-up</v-icon>
-                            </v-btn>
+                            <AlbatrossButton variant="text" color="primary" size="small" :activation-handler="on"
+                                             @click="copyTimes(schedule, item, index, 'up')"
+                                             prepend-icon="mdi-arrow-collapse-up"/>
                           </template>
                           <span>Copy Up</span>
                         </v-tooltip>
 
-                        <v-btn text small v-else>
-                        </v-btn>
-                        <v-btn text small color="primary" @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit">
-                          <v-icon>close</v-icon>
-                        </v-btn>
+                        <AlbatrossButton variant="text" size="small" v-else/>
+                        <AlbatrossButton variant="text" size="small" color="primary"
+                                         @click="[item.startTime = null, item.endTime = null]" v-if="userCanEdit"
+                                         prepend-icon="close"
+                        />
                       </td>
 
                     </tr>
@@ -296,11 +300,9 @@
                 </div>
                 <v-card-actions>
                   <v-card-actions>
-                    <v-btn color="primary"  @click="saveSchedule(schedule, false)" class="white--text"
+                    <AlbatrossButton color="primary"  @click="saveSchedule(schedule, false)" class="white--text"
                            v-if="userCanEdit || userCanAdd"
-                           :disabled="!schedule.startDate">
-                      Save
-                    </v-btn>
+                           :disabled="!schedule.startDate" text="SAVE"/>
                   </v-card-actions>
                 </v-card-actions>
               </v-card>
@@ -311,17 +313,25 @@
             <tr class="clickable" :class="{'shaded-row': index % 2}">
               <td class="text-left">{{item.startDate | formatDate('date')}} - {{item.endDate | formatDate('date')}}</td>
               <td class="text-right">
-                <v-btn small text color="primary" @click="[expanded = [item], selectedIndex = index]"
-                       v-if="!expanded.includes(item)">
-                  <v-icon v-if="userCanEdit">edit</v-icon>
-                  <v-icon v-else>mdi-chevron-down</v-icon>
-                </v-btn>
-                <v-btn small text color="primary" @click="expanded = []"
-                       v-if="expanded.includes(item)">cancel
-                </v-btn>
-                <v-btn small text color="primary" :disabled="cannotDeleteSchedule(item)" @click="[itemToDelete=item, showDeleteDialog=true]">
-                  <v-icon>delete</v-icon>
-                </v-btn>
+                <AlbatrossButton size="small" variant="text" color="primary"
+                                 @click="[expanded = [item], selectedIndex = index]"
+                                 v-if="!expanded.includes(item)"
+                                 :prepend-icon="userCanEdit ? 'edit' : 'mdi-chevron-down'"
+                />
+                <AlbatrossButton size="small"
+                                 variant="text"
+                                 color="primary"
+                                 @click="expanded = []"
+                                 v-if="expanded.includes(item)"
+                                 text="CANCEL"
+                />
+                <AlbatrossButton size="small"
+                                 variant="text"
+                                 color="primary"
+                                 :disabled="cannotDeleteSchedule(item)"
+                                 @click="[itemToDelete=item, showDeleteDialog=true]"
+                                 prepend-icon="delete"
+                />
               </td>
             </tr>
           </template>
@@ -337,7 +347,7 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
   import {AppMutations} from '@/stores/AppStore'
   import cloneDeep from 'lodash.clonedeep'
   import moment from 'moment'
@@ -345,342 +355,333 @@
   import {handleHidingGlobalLoader, getRequest, getRequestWithParams, postRequest, getSnackbar, deleteRequest} from '@/helpers/helpers'
   import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-  export default {
-    name: 'Schedule',
-    components: {
-      ConfirmationDialog,
+  import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+  import {getCurrentInstance, onMounted, ref, computed, watch, defineProps} from "vue";
 
-      DatetimePickerInput
-    },
-    props: {
-      orgId: Number,
-      userId: Number,
-      useSlotSchedule: Boolean
-    },
-    data() {
-      return {
-        snackbar: {},
-        addNew: false,
-        userCanAdd: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'),
-        userCanEdit: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'),
-        userCanDelete: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'),
-        userIsAdmin: this.$store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'),
-        selectedIndex: null,
-        newSchedule: {},
-        allowedMinutesStep: m => m % 30 === 0,
-        headers: [
-          { text: 'Schedules', value: 'schedule', show: true},
-          { text: '', value: 'icons', show: true}
-        ],
-        timezone: this.$store.state.user.details.timezone.value,
-        schedules: [],
-        expanded: [],
-        workDays: [],
-        slotSchedules: [],
-        saveError: false,
-        saveErrorMsg: '',
-        currentlyInDST: moment().isDST(),
-        showDeleteDialog: false,
-        itemToDelete: null
-      }
-    },
-    computed: {
-      scheduleToDeleteString (){
-        return this.itemToDelete ?
-        `${this.$filters.formatDate(this.itemToDelete.startDate, 'date') || ''} - ${this.$filters.formatDate(this.itemToDelete.endDate, 'date') || ''}`
-            : ''
-      }
-    },
-    created() {
-      //reload the data if they switch back from the appointments tab
-      this.getSchedules()
-      this.getWorkDays()
-      if(this.useSlotSchedule) {
-        this.getSlotSchedules()
-      }
-    },
-    watch: {
-      'orgId': function () {
-        //without these if statements the schedule will get reloaded twice when switching between org and user
-        if(this.orgId != null) {
-          // reset the schedule when new org selected
-          this.schedules =  []
-          this.newSchedule = {}
-          this.addNew = false
-          this.getSchedules()
-        }
-      },
-      'userId': function () {
-        if(this.userId != null) {
-          // reset the schedule when new user selected
-          this.schedules = []
-          this.newSchedule = {}
-          this.addNew = false
-          this.getSchedules()
-          if(this.useSlotSchedule) {
-            this.getSlotSchedules()
-          }
-        }
-      }
-    },
-    methods: {
-      changeExcludedSlots(item, slotId) {
-        if(item.excludedResourceSlotTimeIds.includes(slotId)) {
-          //remove it if already in
-          item.excludedResourceSlotTimeIds = item.excludedResourceSlotTimeIds.filter(e => e !== slotId)
-        } else {
-          //else add it
-          item.excludedResourceSlotTimeIds.push(slotId)
-        }
-      },
-      getMatchingSlots(resourceSlotScheduleId) {
-        return this.slotSchedules.find(ss => ss.id === resourceSlotScheduleId)?.slotTimes
-      },
-      buildTimeString(schedule) {
-        let timeString = '['
-        schedule?.slotTimes?.forEach((st,idx) => {
-          timeString += (this.$filters.formatDateZoneless(st.startTime) + '-' + this.$filters.formatDateZoneless(st.endTime) + (idx === schedule.slotTimes.length - 1 ? '' : ', '))
-        })
-        timeString += ']'
-        return timeString
-      },
-      async getSchedules() {
-        if(this.orgId || this.userId) {
-          this.$store.commit(AppMutations.SET_LOADING, true)
-          try {
-            const {data, status} = await getRequestWithParams(`/availability`, { params: {
-                userId: this.userId,
-                orgId: this.orgId,
-              }}, null, [])
-            data?.forEach(sched => {
-              sched?.resourceScheduleAvailability?.forEach(day => {
-                //if the day was saved during DST, but now is NOT DST, then subtract an hour
-                if(day.daylightSavings && !this.currentlyInDST) {
-                  day.startTime = day.startTime == null ? null : moment.utc(day.startTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
-                  day.endTime = day.endTime == null ? null : moment.utc(day.endTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
-                } else if (!day.daylightSavings && this.currentlyInDST) {
-                  //else if the day was NOT saved during DST, but now IS DST, then add an hour
-                  day.startTime = day.startTime == null ? null : moment.utc(day.startTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
-                  day.endTime = day.endTime == null ? null : moment.utc(day.endTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
-                }
-              })
-            })
-            this.schedules = data
-            handleHidingGlobalLoader(this, status)
-          } catch (e) {
-            console.error('*** ERROR ***', e)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-            this.snackbar = getSnackbar('ERROR', 'Error Loading Schedules')
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          }
-        }
-      },
-      async getWorkDays() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {data, status} = await getRequestWithParams(`/availability/workDays`)
-          this.workDays = data
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Work Days')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async getSlotSchedules() {
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          let params = {
-            userId: this.userId
-          }
-          const {data, status} = await getRequestWithParams('/availability/slotSchedules', {params})
-          this.slotSchedules = data
+  const vueInstance = getCurrentInstance().proxy
+  const snackbar = vueInstance.$snackbar
+  const store = vueInstance.$store
 
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-          this.snackbar = getSnackbar('ERROR', 'Error Loading Schedules')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        }
-      },
-      async saveSchedule(sched) {
-        //clone the schedule so the times don't change on the screen, they only change for the save to the db
-        let s = cloneDeep(sched)
+  const props = defineProps({
+    orgId: Number,
+    userId: Number,
+    useSlotSchedule: Boolean
+  })
+  const addNew = ref(false)
+  const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADD'))
+  const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'EDIT'))
+  const userCanDelete = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'DELETE'))
+  const userIsAdmin = ref(store.getters.userHasFeatureAccessLevel('AVAILABILITY', 'ADMIN'))
+  const selectedIndex = ref(null)
+  const newSchedule = ref({})
+  const allowedMinutesStep = ref(m => m % 30 === 0)
+  const headers = ref([
+    { text: 'Schedules', value: 'schedule', show: true},
+    { text: '', value: 'icons', show: true}
+  ])
+  const timezone = ref(store.state.user.details.timezone.value)
+  const schedules = ref([])
+  const expanded = ref([])
+  const workDays = ref([])
+  const slotSchedules = ref([])
+  const saveError = ref(false)
+  const saveErrorMsg = ref('')
+  const currentlyInDST = ref(moment().isDST())
+  const showDeleteDialog = ref(false)
+  const itemToDelete = ref(null)
 
-        // filter out empties that dont need saved
-        s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.resourceSlotScheduleId != null || rsa.startTime != null || rsa.endTime != null) }) : []
-        // modify the times for saving to db
-        // s.resourceScheduleAvailability.forEach(rsa => {
-        //   rsa.startTime = rsa.startTime != null ? moment(rsa.startTime, 'HH:mm:ss A Z').toDate() : null
-        //   rsa.endTime = rsa.endTime != null ? moment(rsa.endTime, 'HH:mm:ss A Z').toDate() : null
-        // })
+  const scheduleToDeleteString = computed(() => {
+    return itemToDelete.value ?
+    `${vueInstance.$filters.formatDate(itemToDelete.value.startDate, 'date') || ''} - ${vueInstance.$filters.formatDate(itemToDelete.value.endDate, 'date') || ''}`
+        : ''
+  })
 
+  onMounted(() =>{
+    //reload the data if they switch back from the appointments tab
+    getSchedules()
+    getWorkDays()
+    if(props.useSlotSchedule) {
+      getSlotSchedules()
+    }
+  })
 
-        // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
-        if(moment(s.startDate).isBefore(moment(), 'd')) {
-          this.saveError = true
-          this.saveErrorMsg = '* Start Date cannot be before today.'
-        } else if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
-          this.saveError = true
-          this.saveErrorMsg = '* Schedule End Date cannot be before Start Date'
-        }
-        // else if (!s.resourceScheduleAvailability || s.resourceScheduleAvailability.length === 0) {
-        //   this.saveError = true
-        //   this.saveErrorMsg = '* Schedule must include at least one day of availability'
-        // }
-        else {
-          //check that no end times are before start times
-          let timeOverlap, invalidStarts, invalidEnds = false
-          s.resourceScheduleAvailability.forEach(rsa => {
-            rsa.daylightSavings = this.currentlyInDST
-            if(rsa.startTime == null && rsa.endTime != null) {
-              //this ensures that no daily schedules have an end time w/o a start time
-              invalidStarts = true
-            } else if(rsa.endTime == null && rsa.startTime != null) {
-              //this ensures that no daily schedules have a start time w/o an end time
-              invalidEnds = true
-            } else if( moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment.utc(rsa.startTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()
-                  >= moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment.utc(rsa.endTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()) {
-              //this is janky because if they set a time from 5pm - 11pm MST that is 11pm - 5am UTC so the end time is before the start time, i think this fixes that
-              // i transform each selected local time into today's date, even if it would be a different date in utc. then compare, but never save the values that way
-              timeOverlap = true
-            }
-            // if(rsa.startTime >= rsa.endTime) {
-            //   timeOverlap = true
-            // }
-          })
-
-          if(invalidStarts) {
-            this.saveError = true
-            this.saveErrorMsg = '* All work days with an end time must also have a start time'
-          } else if(invalidEnds) {
-            this.saveError = true
-            this.saveErrorMsg = '* All work days with a start time must also have an end time'
-          } else if(timeOverlap) {
-            this.saveError = true
-            this.saveErrorMsg = '* End times must be after start times'
-          } else {
-            //check that no other schedules overlap this one
-            let scheduleOverlap = false
-            let unEndingScheduleBeforeOthers = false
-            this.schedules.forEach(sd => {
-              if(s.id !== sd.id && ((new Date(s.startDate) >= new Date(sd.startDate) && new Date(s.startDate) <= new Date(sd.endDate)) ||
-                 (new Date(s.endDate) >= new Date(sd.startDate) && new Date(s.endDate) <= new Date(sd.endDate)))) {
-                scheduleOverlap = true
-              }
-              if(!s.endDate && s.startDate < sd.startDate) {
-                unEndingScheduleBeforeOthers = true
-              }
-            })
-
-            if(scheduleOverlap) {
-              this.saveError = true
-              this.saveErrorMsg = '* Schedule dates cannot overlap other schedules'
-            } else if(unEndingScheduleBeforeOthers) {
-              this.saveError = true
-              this.saveErrorMsg = '* A schedule without an end date cannot be created before any other existing schedule'
-            } else {
-              this.saveError = false
-              this.saveErrorMsg = ''
-              this.$store.commit(AppMutations.SET_LOADING, true)
-              try {
-                let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
-                formattedTimestamps.forEach(ft => {
-                  ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
-                  ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null
-                })
-                let params = {
-                  id: s.id,
-                  orgId: this.orgId,
-                  userId: this.userId,
-                  startDate: s.startDate,
-                  endDate: s.endDate,
-                  resourceScheduleAvailability: formattedTimestamps
-                }
-                const {data, status} = await postRequest(`/availability`, params)
-                //with the changes we made to the datetimepickerinput i dont think we need this code anymore
-                //update the returned formatting to match required input
-                // data.resourceScheduleAvailability.forEach(rsa => {
-                //   rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
-                //   rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(this.timezone).format('HH:mm') : null
-                // })
-                this.schedules = data
-                this.newSchedule = {}
-                this.addNew = false
-                this.expanded = []
-                handleHidingGlobalLoader(this, status)
-              } catch (e) {
-                console.error('*** ERROR ***', e)
-                this.$store.commit(AppMutations.SET_LOADING, false)
-                this.snackbar = getSnackbar('ERROR', 'Error Saving Schedule')
-                this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-              }
-            }
-          }
-
-        }
-      },
-      setNew() {
-        this.addNew = !this.addNew
-        if(this.addNew) {
-          this.newSchedule.resourceScheduleAvailability = []
-          this.workDays.forEach(wd => {
-            this.newSchedule.resourceScheduleAvailability.push({
-              dayOfWeekId: wd.id,
-              dayOfWeek: wd.dayOfWeek,
-              excludedResourceSlotTimeIds: [],
-              startTime: null,
-              endTime: null,
-              resourceSlotScheduleId: null
-            })
-          })
-        }
-      },
-      copyTimes(schedule, day, index, direction) {
-        let dayToUpdate = null
-        if(direction === 'down') {
-          dayToUpdate = schedule.resourceScheduleAvailability[index + 1]
-        } else {
-          dayToUpdate = schedule.resourceScheduleAvailability[index - 1]
-        }
-        if(dayToUpdate) {
-          this.$set(dayToUpdate, 'startTime', day.startTime)
-          this.$set(dayToUpdate, 'endTime', day.endTime)
-        }
-      },
-      cannotDeleteSchedule(item) {
-        //per judson request - cannot delete schedules that have a start date prior to or equal to today (unless they have admin permission)
-        return !this.userIsAdmin && moment(item.startDate) <= moment()
-      },
-      async archiveSchedule() {
-        const item = this.itemToDelete
-        this.$store.commit(AppMutations.SET_LOADING, true)
-
-        try {
-          const {status} = await deleteRequest(`/availability/${item.id}`)
-          item.archived = true
-          //remove it from the schedules list so they can recreate one with the same dates
-          this.schedules = this.schedules.filter(s => { return s.id !== item.id })
-          this.snackbar = getSnackbar('SUCCESS', 'Schedule Deleted')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          handleHidingGlobalLoader(this, status)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error deleting schedule')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
-        this.closeDeleteDialog()
-      },
-      filterSchedules () {
-        return this.schedules.filter(s => { return !s.archived})
-      },
-      closeDeleteDialog(){
-        this.showDeleteDialog = false
-        this.itemToDelete = null
+  watch('orgId', () => {
+    //without these if statements the schedule will get reloaded twice when switching between org and user
+    if(props.orgId != null) {
+      // reset the schedule when new org selected
+      schedules.value =  []
+      newSchedule.value = {}
+      addNew.value = false
+      getSchedules()
+    }
+  })
+  watch('userId', () => {
+    if(props.userId != null) {
+      // reset the schedule when new user selected
+      schedules.value = []
+      newSchedule.value = {}
+      addNew.value = false
+      getSchedules()
+      if(props.useSlotSchedule) {
+        getSlotSchedules()
       }
     }
+  })
+  const changeExcludedSlots = (item, slotId)  => {
+    if(item.excludedResourceSlotTimeIds.includes(slotId)) {
+      //remove it if already in
+      item.excludedResourceSlotTimeIds = item.excludedResourceSlotTimeIds.filter(e => e !== slotId)
+    } else {
+      //else add it
+      item.excludedResourceSlotTimeIds.push(slotId)
+    }
+  }
+  const getMatchingSlots = (resourceSlotScheduleId)  => {
+    return slotSchedules.value.find(ss => ss.id === resourceSlotScheduleId)?.slotTimes
+  }
+  const buildTimeString = (schedule)  => {
+    let timeString = '['
+    schedule?.slotTimes?.forEach((st,idx) => {
+      timeString += (vueInstance.$filters.formatDateZoneless(st.startTime) + '-' + vueInstance.$filters.formatDateZoneless(st.endTime) + (idx === schedule.slotTimes.length - 1 ? '' : ', '))
+    })
+    timeString += ']'
+    return timeString
+  }
+  const getSchedules = async () => {
+    if(props.orgId || props.userId) {
+      store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data, status} = await getRequestWithParams(`/availability`, { params: {
+            userId: props.userId,
+            orgId: props.orgId,
+          }}, null, [])
+        data?.forEach(sched => {
+          sched?.resourceScheduleAvailability?.forEach(day => {
+            //if the day was saved during DST, but now is NOT DST, then subtract an hour
+            if(day.daylightSavings && !currentlyInDST.value) {
+              day.startTime = day.startTime == null ? null : moment.utc(day.startTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
+              day.endTime = day.endTime == null ? null : moment.utc(day.endTime, 'HH:mm:ss').add(1, 'h').format('HH:mm:ss')
+            } else if (!day.daylightSavings && currentlyInDST.value) {
+              //else if the day was NOT saved during DST, but now IS DST, then add an hour
+              day.startTime = day.startTime == null ? null : moment.utc(day.startTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
+              day.endTime = day.endTime == null ? null : moment.utc(day.endTime, 'HH:mm:ss').subtract(1, 'h').format('HH:mm:ss')
+            }
+          })
+        })
+        schedules.value = data
+        handleHidingGlobalLoader(vueInstance, status)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Loading Schedules')
+
+      }
+    }
+  }
+  const getWorkDays = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      const {data, status} = await getRequestWithParams(`/availability/workDays`)
+      workDays.value = data
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      store.commit(AppMutations.SET_LOADING, false)
+      snackbar('ERROR', 'Error Loading Work Days')
+
+    }
+  }
+  const getSlotSchedules = async () => {
+    store.commit(AppMutations.SET_LOADING, true)
+    try {
+      let params = {
+        userId: props.userId
+      }
+      const {data, status} = await getRequestWithParams('/availability/slotSchedules', {params})
+      slotSchedules.value = data
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      store.commit(AppMutations.SET_LOADING, false)
+      snackbar('ERROR', 'Error Loading Schedules')
+
+    }
+  }
+  const saveSchedule = async (sched) => {
+    //clone the schedule so the times don't change on the screen, they only change for the save to the db
+    let s = cloneDeep(sched)
+
+    // filter out empties that don't need saved
+    s.resourceScheduleAvailability = s.resourceScheduleAvailability ? s.resourceScheduleAvailability.filter(rsa => { return rsa.id != null || (rsa.resourceSlotScheduleId != null || rsa.startTime != null || rsa.endTime != null) }) : []
+    // modify the times for saving to db
+    // s.resourceScheduleAvailability.forEach(rsa => {
+    //   rsa.startTime = rsa.startTime != null ? moment(rsa.startTime, 'HH:mm:ss A Z').toDate() : null
+    //   rsa.endTime = rsa.endTime != null ? moment(rsa.endTime, 'HH:mm:ss A Z').toDate() : null
+    // })
+
+
+    // do validations: todo: add the rest of them (make sure dates of schedules can't overlap)
+    if(moment(s.startDate).isBefore(moment(), 'd')) {
+      saveError.value = true
+      saveErrorMsg.value = '* Start Date cannot be before today.'
+    } else if(s.endDate !== null && new Date(s.startDate) > new Date(s.endDate)) {
+      saveError.value = true
+      saveErrorMsg.value = '* Schedule End Date cannot be before Start Date'
+    }
+    // else if (!s.resourceScheduleAvailability || s.resourceScheduleAvailability.length === 0) {
+    //   saveError.value = true
+    //   saveErrorMsg.value = '* Schedule must include at least one day of availability'
+    // }
+    else {
+      //check that no end times are before start times
+      let timeOverlap, invalidStarts, invalidEnds = false
+      s.resourceScheduleAvailability.forEach(rsa => {
+        rsa.daylightSavings = currentlyInDST.value
+        if(rsa.startTime == null && rsa.endTime != null) {
+          //this ensures that no daily schedules have an end time w/o a start time
+          invalidStarts = true
+        } else if(rsa.endTime == null && rsa.startTime != null) {
+          //this ensures that no daily schedules have a start time w/o an end time
+          invalidEnds = true
+        } else if( moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment.utc(rsa.startTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()
+              >= moment( moment().format('MM-DD-YYYY') + ' ' + moment(moment.utc(rsa.endTime, 'HH:mm:ss.SSSZ').toDate()).format('HH:mm')).toDate()) {
+          //this is janky because if they set a time from 5pm - 11pm MST that is 11pm - 5am UTC so the end time is before the start time, i think this fixes that
+          // i transform each selected local time into today's date, even if it would be a different date in utc. then compare, but never save the values that way
+          timeOverlap = true
+        }
+        // if(rsa.startTime >= rsa.endTime) {
+        //   timeOverlap = true
+        // }
+      })
+
+      if(invalidStarts) {
+        saveError.value = true
+        saveErrorMsg.value = '* All work days with an end time must also have a start time'
+      } else if(invalidEnds) {
+        saveError.value = true
+        saveErrorMsg.value = '* All work days with a start time must also have an end time'
+      } else if(timeOverlap) {
+        saveError.value = true
+        saveErrorMsg.value = '* End times must be after start times'
+      } else {
+        //check that no other schedules overlap this one
+        let scheduleOverlap = false
+        let unEndingScheduleBeforeOthers = false
+        schedules.value.forEach(sd => {
+          if(s.id !== sd.id && ((new Date(s.startDate) >= new Date(sd.startDate) && new Date(s.startDate) <= new Date(sd.endDate)) ||
+             (new Date(s.endDate) >= new Date(sd.startDate) && new Date(s.endDate) <= new Date(sd.endDate)))) {
+            scheduleOverlap = true
+          }
+          if(!s.endDate && s.startDate < sd.startDate) {
+            unEndingScheduleBeforeOthers = true
+          }
+        })
+
+        if(scheduleOverlap) {
+          saveError.value = true
+          saveErrorMsg.value = '* Schedule dates cannot overlap other schedules'
+        } else if(unEndingScheduleBeforeOthers) {
+          saveError.value = true
+          saveErrorMsg.value = '* A schedule without an end date cannot be created before any other existing schedule'
+        } else {
+          saveError.value = false
+          saveErrorMsg.value = ''
+          store.commit(AppMutations.SET_LOADING, true)
+          try {
+            let formattedTimestamps = cloneDeep(s.resourceScheduleAvailability)
+            formattedTimestamps.forEach(ft => {
+              ft.startTime = ft.startTime != null ? moment.utc(ft.startTime, 'hh:mm:ss').format('HH:mm:ss') : null
+              ft.endTime = ft.endTime != null ? moment.utc(ft.endTime, 'hh:mm:ss').format('HH:mm:ss') : null
+            })
+            let params = {
+              id: s.id,
+              orgId: props.orgId,
+              userId: props.userId,
+              startDate: s.startDate,
+              endDate: s.endDate,
+              resourceScheduleAvailability: formattedTimestamps
+            }
+            const {data, status} = await postRequest(`/availability`, params)
+            //with the changes we made to the datetimepickerinput i dont think we need this code anymore
+            //update the returned formatting to match required input
+            // data.resourceScheduleAvailability.forEach(rsa => {
+            //   rsa.startTime = rsa.startTime != null ? moment.utc(rsa.startTime, 'hh:mm:ss').tz(timezone.value).format('HH:mm') : null
+            //   rsa.endTime = rsa.endTime != null ? moment.utc(rsa.endTime, 'hh:mm:ss').tz(timezone.value).format('HH:mm') : null
+            // })
+            schedules.value = data
+            newSchedule.value = {}
+            addNew.value = false
+            expanded.value = []
+            handleHidingGlobalLoader(vueInstance, status)
+          } catch (e) {
+            console.error('*** ERROR ***', e)
+            store.commit(AppMutations.SET_LOADING, false)
+            snackbar('ERROR', 'Error Saving Schedule')
+
+          }
+        }
+      }
+
+    }
+  }
+  const setNew = ()  => {
+    addNew.value = !addNew.value
+    if(addNew.value) {
+      newSchedule.value.resourceScheduleAvailability = []
+      workDays.value.forEach(wd => {
+        newSchedule.value.resourceScheduleAvailability.push({
+          dayOfWeekId: wd.id,
+          dayOfWeek: wd.dayOfWeek,
+          excludedResourceSlotTimeIds: [],
+          startTime: null,
+          endTime: null,
+          resourceSlotScheduleId: null
+        })
+      })
+    }
+  }
+  const copyTimes = (schedule, day, index, direction)  => {
+    let dayToUpdate = null
+    if(direction === 'down') {
+      dayToUpdate = schedule.resourceScheduleAvailability[index + 1]
+    } else {
+      dayToUpdate = schedule.resourceScheduleAvailability[index - 1]
+    }
+    if(dayToUpdate) {
+      vueInstance.$set(dayToUpdate, 'startTime', day.startTime)
+      vueInstance.$set(dayToUpdate, 'endTime', day.endTime)
+    }
+  }
+  const cannotDeleteSchedule = (item)  => {
+    //per judson request - cannot delete schedules that have a start date prior to or equal to today (unless they have admin permission)
+    return !userIsAdmin.value && moment(item.startDate) <= moment()
+  }
+  const archiveSchedule = async () => {
+    const item = itemToDelete.value
+    store.commit(AppMutations.SET_LOADING, true)
+
+    try {
+      const {status} = await deleteRequest(`/availability/${item.id}`)
+      item.archived = true
+      //remove it from the schedules list so they can recreate one with the same dates
+      schedules.value = schedules.value.filter(s => { return s.id !== item.id })
+      snackbar('SUCCESS', 'Schedule Deleted')
+
+      handleHidingGlobalLoader(vueInstance, status)
+    } catch (e) {
+      console.error('*** ERROR ***', e)
+      snackbar('ERROR', 'Error deleting schedule')
+
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    closeDeleteDialog()
+  }
+  const filterSchedules = computed(() => {
+    return schedules.value.filter(s => { return !s.archived})
+  })
+  const closeDeleteDialog = () => {
+    showDeleteDialog.value = false
+    itemToDelete.value = null
   }
 </script>

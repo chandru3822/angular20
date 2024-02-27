@@ -129,6 +129,7 @@
   const snackbar = vueInstance.$snackbar
   const store = vueInstance.$store
   const router = vueInstance.$router
+  const vuetify = vueInstance.$vuetify
 
   const attachmentTypes =  ref([])
   const search =  ref('')

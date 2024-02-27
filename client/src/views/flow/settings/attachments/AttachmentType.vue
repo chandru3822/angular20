@@ -2,10 +2,11 @@
   <v-container class="custom-field-group-container">
     <v-row>
       <v-col cols="12">
-        <v-btn text color="primary" class="pl-1 pr-2" :to="'/settings/attachments'">
-          <v-icon>arrow_left</v-icon>
-          <span>Back</span>
-        </v-btn>
+        <AlbatrossButton variant="text" color="primary" class="pl-1 pr-2" :to="'/settings/attachments'"
+                         prepend-icon="arrow_left"
+                         text="BACK"
+
+        />
         <v-toolbar flat class="app-toolbar">
           <span class="headline-small" v-if="!editName">{{ attachment.attachmentType }}</span>
           <v-text-field v-else color="primary"
@@ -16,15 +17,17 @@
                         label="Event Name"></v-text-field>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text v-if="userCanEdit && !editName" color="primary" class="" @click="[oldName = attachment.attachmentType, editName = !editName]">
-              <v-icon>edit</v-icon>
-            </v-btn>
-            <v-btn text color="primary" class="" v-else-if="userCanEdit" @click="saveAttachmentType()">
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn text color="primary" v-if="userCanEdit && editName" class="" @click="[attachment.attachmentType = oldName, editName = !editName]">
-              cancel
-            </v-btn>
+            <AlbatrossButton variant="text" v-if="userCanEdit && !editName" color="primary" class=""
+                             @click="[oldName = attachment.attachmentType, editName = !editName]"
+                             prepend-icon="edit"/>
+            <AlbatrossButton variant="text" color="primary" class="" v-else-if="userCanEdit"
+                             @click="saveAttachmentType()"
+                             prepend-icon="save"
+            />
+            <AlbatrossButton variant="text" color="primary" v-if="userCanEdit && editName" class=""
+                             @click="[attachment.attachmentType = oldName, editName = !editName]"
+                             text="CANCEL"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-tabs class="tabs-bar">
@@ -39,66 +42,56 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import Vue2Filters from 'vue2-filters'
 
 import constants from '@/helpers/constants'
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getSnackbar, handleHidingGlobalLoader, putRequest} from "@/helpers/helpers";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
 
-export default {
-  name: 'AttachmentTypeSettings',
-  mixins: [Vue2Filters.mixin],
+import {getCurrentInstance, onMounted, ref, computed} from "vue";
 
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      editName: false,
-      oldName: null,
-      attachment: {},
-      attachmentTypeId: this.$route.params.id,
-      companyId: this.$store.state.user.details.companyId,
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'),
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const store = vueInstance.$store
+const route = vueInstance.$route
+
+const editName = ref(false)
+const oldName = ref(null)
+const attachment = ref({})
+const attachmentTypeId = ref(route.params.id)
+const companyId = ref(store.state.user.details.companyId)
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'EDIT'))
+
+onMounted(async () => {
+  await getAttachmentType()
+})
+    const getAttachmentType = async () => {
+      store.commit(AppMutations.SET_LOADING, true)
+      try {
+        const {data} = await getRequest(`/attachmentType/type/${attachmentTypeId.value}`)
+        attachment.value = data
+        store.commit(AppMutations.SET_LOADING, false)
+      } catch (e) {
+        console.error('*** ERROR ***', e)
+        snackbar('ERROR', 'Error Retrieving Data')
+        store.commit(AppMutations.SET_LOADING, false)
+      }
     }
-  },
-  computed: {
-  },
-  async created () {
-    await this.getAttachmentType()
-  },
-  methods: {
-    async getAttachmentType () {
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    const saveAttachmentType = async () => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data} = await getRequest(`/attachmentType/type/${this.attachmentTypeId}`)
-        this.attachment = data
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {status} = await putRequest(`/attachmentType/type`, attachment.value)
+        editName.value = false
+        snackbar('SUCCESS', 'Attachment Type Updated')
+        handleHidingGlobalLoader(vueInstance, status)
       } catch (e) {
         console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar('ERROR', 'Error Saving Attachment Type')
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async saveAttachmentType() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const {status} = await putRequest(`/attachmentType/type`, this.attachment)
-        this.editName = false
-        this.snackbar = getSnackbar('SUCCESS', 'Attachment Type Updated')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Saving Attachment Type')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-  }
-
-  }
+    }
 </script>
 
 <style scoped lang="scss">
