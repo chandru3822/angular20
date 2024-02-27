@@ -91,6 +91,12 @@
       </v-menu>
       <slot name="searchMenu"/>
     </div>
+<!--    this marker is for the event we came from using 'open scheduler'-->
+    <MglMarker v-if="currentProjectMarker.pinned"
+               :key="currentProjectMarker.projectProcessStepEventId+ `${markerCount}`"
+               :coordinates="currentProjectMarker.coordinates"
+               @click="selectAddressForDriveTime(currentProjectMarker)"
+               color="var(--v-primary-base)"/>
     <!-- these markers come from the project search  -->
     <MglMarker v-for="m in markers" v-if="m.coordinates"
                :key="m.projectProcessStepEventId + `${markerCount}`"
@@ -159,6 +165,7 @@ export default {
     latitude: {type: Number},
     longitude: {type: Number},
     zoom: {type: Number},
+    currentProjectMarker: Object,
     markers: {type: Array},
     mapResources: {type: Array},
     startTime:String,

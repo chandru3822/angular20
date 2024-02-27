@@ -16,6 +16,7 @@ const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
 const router = vueInstance.$router
 
+const emit = defineEmits(['toggleProjectMapPin'])
 
 const props = defineProps({
   project:Object,
@@ -69,13 +70,13 @@ const getResources = async(item) => {
 </script>
 
 <template>
-<v-card id="map-project-modal" :class="{'pb-4': !userCanEdit}">
+<v-card id="map-project-modal" :class="{'pb-4': !userCanEdit}" elevation="10">
 <!--  title and subtitle always show, even when collapsed-->
   <v-card-title class="d-flex align-start">
     <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
     <v-spacer/>
-    <v-btn class="mx-2" icon small color="primary" @click="togglePinToMap">
-      <v-icon v-if="pinned">mdi-map-marker</v-icon>
+    <v-btn class="mx-2" icon small color="primary" @click="emit('toggleProjectMapPin')">
+      <v-icon v-if="project.pinned">mdi-map-marker</v-icon>
       <v-icon v-else>mdi-map-marker-off</v-icon>
     </v-btn>
     <v-btn

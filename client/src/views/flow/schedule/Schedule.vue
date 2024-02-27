@@ -16,13 +16,14 @@
               :states="states"
               :callback="resourceMapCallback"
               :date-callback="dateCallback"/>
-      <ProjectModal :project="selectedProject"/>
+      <ProjectModal :project="selectedProject" @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
     </template>
     <template v-slot:right-column>
       <v-row class="map-row">
         <v-col cols="12" class="pa-0 ml-3">
           <Map v-if="showMap"
                :latitude="latitude"
+               :current-project-marker="selectedProject"
                :markers="projectMapMarkers"
                :longitude="longitude"
                :zoom="mapZoom"
@@ -295,6 +296,14 @@
           this.zoomToMap(newValue[0], 8)
         }
       },
+      toggleSelectedProjectMapPin(){
+        this.selectedProject.pinned = !this.selectedProject.pinned
+        if(this.selectedProject.pinned){
+          this.zoomToMap({latitude: this.selectedProject.latitude, longitude: this.selectedProject.longitude})
+        } else if(this.latitude === Math.round(this.selectedProject.latitude) && this.longitude === Math.round(this.selectedProject.longitude)) {
+          this.resetMapZoom()
+        }
+      },
       dateCallback (startTime, endTime) {
         this.startTime = startTime
         this.endTime = endTime
@@ -312,14 +321,11 @@
 
           //"getProject" is a bad term for this endpoint. it really returns a specific event with some project details
           const {data} = await postRequest(`/schedule/getProject`, params, null, [])
-          let projects = data
-          projects.forEach(d => {
-            d.coordinates = [ d.longitude, d.latitude ]
-          })
-          if(projects.length === 1) {
-            this.selectedProject = projects[0]
+          let project = data[0]
+          project.coordinates = [ project.longitude, project.latitude ]
+          project.pinned = false
+            this.selectedProject = project
             this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
-          }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
