@@ -26,11 +26,11 @@ const show = ref(true)
 const userCanEdit = ref(true)
 
 
-import { watch } from 'vue'
-watch(props.project, () => {
-  //do stuff
-  debugger
-})
+// import { watch } from 'vue'
+// watch(props.project, () => {
+//   //do stuff
+//   debugger
+// })
 
 const openInNewTab = (path) => {
   let routerData = router.resolve({path})
