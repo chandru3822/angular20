@@ -16,6 +16,7 @@
               :states="states"
               :callback="resourceMapCallback"
               :date-callback="dateCallback"/>
+      <ProjectModal :project="selectedProject"/>
     </template>
     <template v-slot:right-column>
       <v-row class="map-row">
@@ -35,9 +36,6 @@
               <ProjectSearchDialog v-show="searchMenuOpen" :pin-to-map-callback="projectMapMarkersCallback"  :pinned-projects="projectMapMarkers"
                                    :states="states" :start-time="startTime" :end-time="endTime"
                                    @close-dialog="searchMenuOpen = false" @zoom-map="zoomToMap"/>
-            </template>
-            <template v-slot:bottomControl>
-              <ProjectModal :project="selectedProject"/>
             </template>
           </Map>
         </v-col>

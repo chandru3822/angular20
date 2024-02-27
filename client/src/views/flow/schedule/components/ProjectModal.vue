@@ -69,7 +69,7 @@ const getResources = async(item) => {
 </script>
 
 <template>
-<v-card id="map-project-modal" class="pb-4">
+<v-card id="map-project-modal" :class="{'pb-4': !userCanEdit}">
 <!--  title and subtitle always show, even when collapsed-->
   <v-card-title class="d-flex align-start">
     <span class="label-large pr-1 break-word max-width-half">{{project.projectName}}</span>
@@ -155,4 +155,11 @@ const getResources = async(item) => {
 </template>
 
 <style scoped lang="scss">
+#map-project-modal {
+  position: absolute;
+  bottom: 24px;
+  right: 24px;
+  width: 280px;
+  z-index: 10;
+}
 </style>

@@ -129,9 +129,6 @@
       </MglPopup>
     </MglMarker>
     <MglNavigationControl :showCompass="false" position="top-right"/>
-    <div class="bottom-control">
-    <slot name="bottomControl"/>
-    </div>
   </MglMap>
 </template>
 
@@ -693,11 +690,5 @@ export default {
   right:38px;
 }
 
-.bottom-control {
-  position: absolute;
-  bottom: 24px;
-  right: 24px;
-  width: 280px;
-}
 
 </style>
