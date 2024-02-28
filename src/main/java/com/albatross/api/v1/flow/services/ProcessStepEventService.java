@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@PreAuthorize("hasFeatureAccess('PROCESS_STEPS')")
+@PreAuthorize("hasFeatureAccess('PROCESS_STEPS') || isBrSystemUser()")
 @RequiredArgsConstructor
 public class ProcessStepEventService {
 
