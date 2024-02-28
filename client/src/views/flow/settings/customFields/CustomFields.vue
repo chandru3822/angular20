@@ -20,12 +20,12 @@
           <v-toolbar-title v-if="!isMobile" class="title-large">Custom Fields</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn text color="primary"
+            <AlbatrossButton variant="text" color="primary"
                    @click="goToCustomField()"
-                   v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')">
-              <v-icon large v-if="$vuetify.breakpoint.smAndDown">add</v-icon>
-              <span v-else>{{ 'Add New'}}</span>
-            </v-btn>
+                   v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD')"
+                   :prepend-icon="vuetify.breakpoint.smAndDown ? 'add' : ''"
+                   :text="!vuetify.breakpoint.smAndDown ? 'ADD NEW' : ''"
+            />
           </v-toolbar-items>
         </v-toolbar>
         <v-card class="square-card">
@@ -41,7 +41,7 @@
           </v-card-title>
           <v-data-table id="custom-fields-table"
             :headers="headers"
-            :items="filterCustomFields()"
+            :items="filterCustomFields"
             :fixed-header="true"
             :items-per-page="25"
             :loading="fieldsLoading"
@@ -66,11 +66,13 @@
                 </td>
                 <td class="text-right icon-col">
                   <div class="item-icons">
-                    <v-btn class="clickable" small icon :large="$vuetify.breakpoint.smAndDown" color="primary"
-                           @click="goToCustomField(item.id)">
-                      <v-icon>edit</v-icon>
-                    </v-btn>
-                    <v-btn v-if="$store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" icon :large="$vuetify.breakpoint.smAndDown" color="primary" @click="getUsesForField(item)"><v-icon>delete</v-icon></v-btn>
+                    <AlbatrossButton class="clickable" size="small" variant="text" icon :large="vuetify.breakpoint.smAndDown" color="primary"
+                           @click="goToCustomField(item.id)" prepend-icon="edit"
+                    />
+                    <AlbatrossButton v-if="store.getters.userHasFeatureAccessLevel('SETTINGS', 'DELETE')" variant="text"
+                                     icon :large="vuetify.breakpoint.smAndDown" color="primary" @click="getUsesForField(item)"
+                                     prepend-icon="delete"
+                    />
                   </div>
                 </td>
               </tr>
@@ -105,14 +107,12 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import {AppMutations} from "@/stores/AppStore";
 import Vue2Filters from "vue2-filters";
 import cloneDeep from "lodash.clonedeep";
 import orderBy from "lodash.orderby";
-
 import draggable from "vuedraggable";
-
 import {
   getRequest,
   getSnackbar,
@@ -120,130 +120,126 @@ import {
   putRequest
 } from "@/helpers/helpers";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-export default {
-  name: "CustomFields",
-  mixins: [Vue2Filters.mixin],
-  props: {
-    apiPath: {type: String}
-  },
-  components: {
-    ConfirmationDialog,
-    draggable
-  },
-  data() {
-    return {
-      snackbar: {},
-      deleteError: false,
-      fieldsInUse: [],
-      headers: [
-        {text: "Field Name", value: "fieldName", showFilter: true},
-        {text: "", value: "icons", showFilter: false}
-      ],
-      footerProps: {
-        "items-per-page-options": [25, 50]
-      },
-      search: "",
-      customFields: [],
-      fieldsLoading: true,
-      userIsSystemAdmin: this.$store.getters.userHasFeature("SYSTEM"),
-      userCanEdit: this.$store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"),
-      showDeleteDialog: false,
-      itemToDelete: null,
-      usesForField: [],
-    };
-  },
-  computed : {
-    itemToDeleteName() {
-      return this.itemToDelete ? this.itemToDelete.fieldName : ''
-    },
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  async created() {
-    this.fieldsLoading = true
-    Promise.all([
-      this.getCustomFields(),
-    ]).then(() => {
-      this.fieldsLoading = false
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const router = vueInstance.$router
+
+const props = defineProps({
+  apiPath: {type: String}
+})
+
+const deleteError = ref(false)
+const fieldsInUse = ref([])
+const search = ref("")
+const customFields = ref([])
+const fieldsLoading = ref(true)
+const userIsSystemAdmin = ref(store.getters.userHasFeature("SYSTEM"))
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel("SETTINGS", "EDIT"))
+const showDeleteDialog = ref(false)
+const itemToDelete = ref(null)
+const usesForField = ref([])
+const allCustomFields = ref([])
+const headers = ref([
+  {text: "Field Name", value: "fieldName", showFilter: true},
+  {text: "", value: "icons", showFilter: false}
+])
+const footerProps = ref({
+  "items-per-page-options": [25, 50]
+})
+
+
+    const itemToDeleteName = computed(() => {
+      return itemToDelete.value ? itemToDelete.value.fieldName : ''
     })
-  },
+    const isMobile = computed(() => {
+      return vuetify.breakpoint.smAndDown
+    })
 
-  methods: {
-    goToCustomField(customFieldId) {
-      let path = null == this.apiPath ? `/settings/customField` : `/settings/companyCustomField`
+  onMounted(async () => {
+    fieldsLoading.value = true
+    Promise.all([
+      getCustomFields(),
+    ]).then(() => {
+      fieldsLoading.value = false
+    })
+  })
+
+
+    const goToCustomField = (customFieldId) => {
+      let path = null == props.apiPath ? `/settings/customField` : `/settings/companyCustomField`
       if(customFieldId) {
         path += `/${customFieldId}`
       }
-      this.$router.push(path)
-    },
-    async getCustomFields() {
+      router.push(path)
+    }
+    const getCustomFields = async ()  => {
       try {
-        const {data, status} = await getRequest(`/customField/getAll`, this.apiPath, null, []);
-        this.allCustomFields = orderBy(data, d => d.fieldName.toLowerCase());
-        this.customFields = cloneDeep(this.allCustomFields);
+        const {data, status} = await getRequest(`/customField/getAll`, props.apiPath, null, []);
+        allCustomFields.value = orderBy(data, d => d.fieldName.toLowerCase());
+        customFields.value = cloneDeep(allCustomFields.value);
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+        snackbar("ERROR", "Error Retrieving Data");
+
       }
-    },
-    async getUsesForField(customField){
-      this.$store.commit(AppMutations.SET_LOADING, true)
+    }
+    const getUsesForField = async (customField) => {
+      store.commit(AppMutations.SET_LOADING, true)
       try {
-        const {data, status} = await getRequest(`/customField/getUses/${customField.id}`, this.apiPath, null, []);
-        this.usesForField = data;
-        this.itemToDelete=customField
-        this.showDeleteDialog=true
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        const {data, status} = await getRequest(`/customField/getUses/${customField.id}`, props.apiPath, null, []);
+        usesForField.value = data;
+        itemToDelete.value=customField
+        showDeleteDialog.value=true
+        store.commit(AppMutations.SET_LOADING, false)
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Retrieving Data");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false)
+        snackbar("ERROR", "Error Retrieving Data");
+
+        store.commit(AppMutations.SET_LOADING, false)
       }
-    },
-    async deleteField() {
-      const item = this.itemToDelete
-      this.$store.commit(AppMutations.SET_LOADING, true);
+    }
+    const deleteField = async () => {
+      const item = itemToDelete.value
+      store.commit(AppMutations.SET_LOADING, true);
       try {
-        const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, this.apiPath, []);
+        const {data, status} = await putRequest(`/customField/delete/${item.id}`, null, props.apiPath, []);
         if (data?.length > 0) {
           item.deleteConfirm = false;
-          this.deleteError = true;
-          this.fieldsInUse = data;
-          // this.snackbar = getSnackbar("ERROR", "Field Cannot Be Deleted");
-          // this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+          deleteError.value = true;
+          fieldsInUse.value = data;
+          // snackbar("ERROR", "Field Cannot Be Deleted");
+          //
         } else {
           item.archived = true;
-          this.fieldsInUse = [];
-          this.customFields = this.customFields.filter((cf) => {
+          fieldsInUse.value = [];
+          customFields.value = customFields.value.filter((cf) => {
             return cf.id !== item.id;
           });
-          this.snackbar = getSnackbar("SUCCESS", "Field Deleted");
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
+          snackbar("SUCCESS", "Field Deleted");
+
         }
-        handleHidingGlobalLoader(this, status);
+        handleHidingGlobalLoader(vueInstance, status);
       } catch (e) {
         console.error("*** ERROR ***", e);
-        this.snackbar = getSnackbar("ERROR", "Error Deleting Field");
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar);
-        this.$store.commit(AppMutations.SET_LOADING, false);
+        snackbar("ERROR", "Error Deleting Field");
+        store.commit(AppMutations.SET_LOADING, false);
       }
-      this.closeDeleteDialog()
-    },
-    filterCustomFields() {
-      return this.customFields.filter(cf => {
+      closeDeleteDialog()
+    }
+    const filterCustomFields = computed(() => {
+      return customFields.value.filter(cf => {
         return !cf.archived;
       });
-    },
-    closeDeleteDialog(){
-      this.showDeleteDialog = false
-      this.itemToDelete = null
+    })
+    const closeDeleteDialog = ()=> {
+      showDeleteDialog.value = false
+      itemToDelete.value = null
     }
-  }
-};
 </script>
 
 <style lang="scss">

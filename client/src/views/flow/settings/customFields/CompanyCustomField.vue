@@ -3,22 +3,15 @@
   <CustomField v-else :api-path="apiPath"></CustomField>
 </template>
 
-<script>
+<script setup>
   import CustomField from "@/views/flow/settings/customFields/CustomField.vue"
-  export default {
-    name: 'CompanyCustomField',
-    components: {
-      CustomField,
-    },
-    data() {
-      return {
-        apiPath: this.$store.state.user.details.apiPath,
-      }
-    },
-    async created() {},
-    methods: {
-    }
-  }
+  import { ref, getCurrentInstance} from 'vue'
+
+  const vueInstance = getCurrentInstance()
+  const store = vueInstance.$store
+
+  const apiPath = ref(store.state.user.details.apiPath)
+
 </script>
 
 <style lang="scss">

@@ -230,7 +230,7 @@
                              @start="drag=true"
                              @end="drag=false"
                              @change="saveFieldChanges(item.customFields)">
-                    <v-list v-for="(cf, index) in filterCustomFieldGroups"
+                    <v-list v-for="(cf, index) in filteredCustomFields (item.customFields)"
                             :key="index" class="pa-0" :class="{ 'shaded-row': selectedIndex % 2 }">
                       <v-list-item class="grab pr-1">
                         <v-list-item-action v-if="userCanEdit">
@@ -818,9 +818,12 @@ const saveFieldChanges = async (fields) => {
   }
 
 }
+const filteredCustomFields = (customFields) => {
+  return customFields.filter((cfgt) => cfgt.archived === false)
+}
+
 const filterCustomFieldGroups = computed(() => {
-  console.log(props.customFieldGroups)
-  return props.customFieldGroups.filter((cfgt) => cfgt.archived === false)
+  return props.customFieldGroups.filter(cfgt => !cfgt.archived)
 })
 const getGroupsByCol = (colNumber) => {
   console.log("Getting Groups by col")
