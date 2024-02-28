@@ -16,7 +16,7 @@
               :states="states"
               :callback="resourceMapCallback"
               :date-callback="dateCallback"/>
-      <ProjectModal :project="selectedProject" @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
+      <ProjectModal :project="selectedProject" :timezone="timezone"  @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
     </template>
     <template v-slot:right-column>
       <v-row class="map-row">
@@ -300,7 +300,7 @@
         this.selectedProject.pinned = !this.selectedProject.pinned
         if(this.selectedProject.pinned){
           this.zoomToMap({latitude: this.selectedProject.latitude, longitude: this.selectedProject.longitude})
-        } else if(this.latitude === Math.round(this.selectedProject.latitude) && this.longitude === Math.round(this.selectedProject.longitude)) {
+        } else if(this.latitude === Math.trunc(this.selectedProject.latitude) && this.longitude === Math.trunc(this.selectedProject.longitude)) {
           this.resetMapZoom()
         }
       },

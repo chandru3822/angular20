@@ -23,8 +23,10 @@ const props = defineProps({
   timezone:String,
 })
 const show = ref(true)
-const userCanEdit = ref(true)
-
+const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
+const fieldsSaving = ref(false)
+const conflictingEvents = ref()
+const saveInvalid = ref(true)
 
 // import { watch } from 'vue'
 // watch(props.project, () => {
@@ -58,12 +60,60 @@ const getResources = async(item) => {
     }
     const {data, status} = await postRequest(`/schedule/projectResources`, params, null, [])
     item.resources = data || []
-    handleHidingGlobalLoader(this, status)
+    handleHidingGlobalLoader(vueInstance, status)
   } catch (e) {
     console.error('*** ERROR ***', e)
     let snackbar = getSnackbar('ERROR', 'Error Retrieving Resources')
     store.commit(AppMutations.SHOW_SNACK, snackbar)
     store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
+const validateSaveEvent = () => {
+  saveInvalid.value = !!(!props.project || !props.project.start || !props.project.end
+      || !props.project.resource || !props.project.resource.id || (props.project.start >= props.project.end) ||
+      //if all 3 fields are read only, dont let them save
+      (props.project.startFieldReadOnly && props.project.endFieldReadOnly && props.project.resourceFieldReadOnly));
+  console.log('save invalid?', saveInvalid.value)
+}
+const checkForSchedulingConflicts = async() => {
+  await scheduleProject(false);
+}
+const cancelDialog = async() => {
+  conflictingEvents.value = null
+  fieldsSaving.value = false
+  // $refs.value.calendar.getEvents(false, true)
+}
+const scheduleProject = async(forceSave) => {
+  props.project.resourceId = props.project.resource.id
+  props.project.resourceName = props.project.resource.name
+  props.project.forceSave = forceSave
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const {status} = await postRequest(`/schedule/saveEvent`, props.project)
+    //if saved successfully then increase the "saveVersion" so they can make a 2nd change too
+    props.project.saveVersion++
+    // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
+    // this.$refs.calendar.getEvents(false, true) todo: figure out what this should change to
+    handleHidingGlobalLoader(vueInstance, status)
+    fieldsSaving.value = false
+    let snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  } catch (e) {
+    if(e.status === 409){
+      conflictingEvents.value = e.data;
+      fieldsSaving.value = false
+      store.commit(AppMutations.SET_LOADING, false)
+    }
+    else {
+      console.error('*** ERROR ***', e)
+      let saveMismatch = e.data?.message === 'Save Version Mismatch'
+      let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
+      let snackbar = getSnackbar('ERROR', msg)
+      fieldsSaving.value = false
+      store.commit(AppMutations.SHOW_SNACK, snackbar)
+      store.commit(AppMutations.SET_LOADING, false)
+    }
   }
 }
 
@@ -94,7 +144,7 @@ const getResources = async(item) => {
   <!-- Everything below only shows when expanded -->
   <div v-show="show">
     <!--  When the event hasn't been scheduled  -->
-    <div v-if="!project.start">
+    <div v-if="userCanEdit && project.processStepStatusTypeId === 1 && project.eventStatusTypeId === 1">
       <v-card-text class="py-0">
         <v-autocomplete v-model="project.resource"
                         :items="project.resources"
@@ -112,7 +162,7 @@ const getResources = async(item) => {
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone"
-            :readonly="project.startFieldReadOnly || !userCanEdit || project.processStepStatusTypeId !== 1 || project.eventStatusTypeId !== 1"
+            :readonly="project.startFieldReadOnly"
             :type="'timestamp'"
             :format="'MMMM DD, YYYY, h:mm A'"
             label="Start Time"
@@ -133,7 +183,10 @@ const getResources = async(item) => {
         <div class="body-small grey--text text--darken-2 py-2">*Scheduling in US/Mountain Time</div>
       </v-card-text>
       <v-card-actions class="pb-4 px-4">
-        <v-btn color="primary" width="100%">Schedule</v-btn>
+        <v-btn color="primary" width="100%"
+               :disabled="fieldsSaving || saveInvalid"
+               @click="[fieldsSaving = true, checkForSchedulingConflicts()]"
+        >Schedule</v-btn>
       </v-card-actions>
     </div>
 <!-- ------------------- -->
@@ -152,6 +205,27 @@ const getResources = async(item) => {
     </div>
 <!-- ------------------- -->
   </div>
+  <ConfirmationDialog v-if="conflictingEvents != null" :open-dialog="conflictingEvents != null && conflictingEvents.length > 0" @confirm="scheduleProject(true)" @close-dialog="cancelDialog()">
+    <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
+    <template v-else v-slot:title>Conflict</template>
+    Resource <b>{{project.resourceName}}</b>
+    has another event on their calendar for:
+    <br><br>
+    <ol>
+      <li v-for="conflictingEvent in conflictingEvents">
+        <b>{{conflictingEvent?.start | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}
+          - {{conflictingEvent?.end | formatDate('timestamp', 'MMMM DD, YYYY, h:mm A')}}</b>.
+        <b></b>
+        <br>
+        <b>Existing Event:</b> {{ conflictingEvent?.eventName }} ({{ conflictingEvent?.projectName }}, ID: {{ conflictingEvent?.projectId }})
+        <br><br>
+      </li>
+    </ol>
+    <template v-slot:no>Cancel</template>
+    <template v-slot:yes>Schedule Anyway</template>
+
+  </ConfirmationDialog>
+
 </v-card>
 </template>
 
