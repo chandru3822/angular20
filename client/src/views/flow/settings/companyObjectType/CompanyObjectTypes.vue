@@ -27,9 +27,11 @@
           </template>
               <template #item.icons="{item}">
                 <div style="display: flex; justify-content: flex-end">
-                  <v-btn small :large="$vuetify.breakpoint.smAndDown" icon color="primary" @click="goToDetails(item)">
-                    <v-icon>edit</v-icon>
-                  </v-btn>
+                  <AlbatrossButton size="small" variant="text"
+                                   :large="vuetify.breakpoint.smAndDown"
+                                   icon color="primary" @click="goToDetails(item)"
+                                   prepend-icon="edit"
+                  />
                 </div>
               </template>
         </v-data-table>
@@ -39,45 +41,42 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
 import {getRequest, getSnackbar, logError} from "@/helpers/helpers";
 import {AppMutations} from "@/stores/AppStore";
 
-export default {
-  name: 'CompanyObjectTypes',
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      companyObjectTypes: [],
-      apiPath: this.$store.state.user.details.apiPath,
-      headers: [
-        {text: 'Object Type', value: 'objectType'},
-        {text: '', value: 'icons', show: true},
-      ],
-    }
-  },
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {getCurrentInstance, onMounted, ref} from "vue";
 
-  created () {
-    if(null != this.apiPath) {
-      this.getCompanyObjectTypes()
-    }
-  },
-  methods: {
-    async getCompanyObjectTypes() {
-      try {
-        const {data} = await getRequest(`/objectType/getCompanyObjectTypes`, 'blueraven')
-        this.companyObjectTypes = data
-      } catch (e) {
-        logError(e)
-        this.snackbar = getSnackbar('ERROR', 'Error fetching object types')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-      }
-    },
-    goToDetails (item) {
-      this.$router.push({name: 'companyObjectTypes', params: {id: item.id}})
-    }
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const router = vueInstance.$router
+
+const companyObjectTypes = ref([])
+const apiPath = ref(store.state.user.details.apiPath)
+const headers = ref([
+  {text: 'Object Type', value: 'objectType'},
+  {text: '', value: 'icons', show: true},
+])
+
+onMounted(() => {
+  if(null != apiPath.value) {
+    getCompanyObjectTypes()
   }
+})
+const getCompanyObjectTypes = async () => {
+  try {
+    const {data} = await getRequest(`/objectType/getCompanyObjectTypes`, 'blueraven')
+    companyObjectTypes.value = data
+  } catch (e) {
+    logError(e)
+    snackbar('ERROR', 'Error fetching object types')
+  }
+}
+const goToDetails = (item) => {
+  router.push({name: 'companyObjectTypes', params: {id: item.id}})
 }
 </script>

@@ -15,13 +15,15 @@
                         @click:append-outer="addCustomFieldGroup"
                         label="Custom Field Group" />
           <v-toolbar-items>
-            <v-btn text color="primary" @click="[addNew = !addNew, newGroup = {}]" v-if="userCanAdd">
-              <v-icon v-if="isMobile && addNew">close</v-icon>
-              <v-icon v-else-if="isMobile">add</v-icon>
-              <span v-else>{{ addNew ? 'Cancel' : 'Add New' }}</span>
-            </v-btn>
+            <AlbatrossButton
+              variant="text"
+              color="primary"
+              @click="[addNew = !addNew, newGroup = {}]"
+              v-if="userCanAdd"
+              :prepend-icon="isMobile && addNew ? 'close' : 'add'"
+              :text="addNew ? 'CANCEL' : 'ADD NEW'"
+            />
           </v-toolbar-items>
-
         </v-toolbar>
         <v-card flat class="mb-4 pt-3 px-3">
           Note: Some company specific screens ignore the display order and group name of Custom Fields Groups
@@ -34,97 +36,87 @@
   </v-container>
 </template>
 
-<script>
+<script setup>
 import constants from '@/helpers/constants'
 import CompanyCustomFieldGroup from './CompanyCustomFieldGroup'
 import {AppMutations} from "@/stores/AppStore";
 import {getRequest, getRequestWithParams, getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers";
 import cloneDeep from "lodash.clonedeep";
 
-export default {
-  name: 'CompanyObjectType',
-  components: {
-    CompanyCustomFieldGroup
-  },
-  data () {
-    return {
-      snackbar: {},
-      constants,
-      companyObjectTypeId: this.$route.params.id,
-      objectType: {},
-      customFieldGroups:[],
-      addNew: false,
-      newGroup: {
-        groupName: null
-      },
-      userCanAdd: this.$store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'),
-    }
-  },
-  computed:{
-    isMobile(){
-      return this.$vuetify.breakpoint.smAndDown
-    },
-  },
-  created () {
-    this.getObjectType()
-    this.getCustomFieldGroups()
-  },
-  methods: {
-    async getObjectType() {
-      //we have to get the object type details to determine if it can use ancillary fields
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data, status } = await getRequest(`/objectType/getByType/${this.$route.params.id}`, 'blueraven')
-        this.objectType = data
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
-    async getCustomFieldGroups() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        const { data, status } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
-          params: {
-            companyObjectTypeId: this.$route.params.id
-          }
-        }, 'blueraven')
-        this.customFieldGroups = cloneDeep(data?.map(d => {
-          d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
-          return d
-        }))
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Retrieving Data')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+import AlbatrossButton from "@/components/customVuetify/AlbatrossButton.vue";
+import {getCurrentInstance, onMounted, ref, computed, watch} from "vue";
 
-    async addCustomFieldGroup() {
-      this.$store.commit(AppMutations.SET_LOADING, true)
-      try {
-        this.newGroup.objectTypeId = parseInt(this.$route.params.id)
-        const { data, status } = await postRequest(`/customFieldGroup/addCustomFieldGroup`, this.newGroup, 'blueraven')
-        this.newGroup = {}
-        this.addNew = false
-        // add the new type to the list
-        this.customFieldGroups.push(data)
-        this.snackbar = getSnackbar('SUCCESS', 'Group Added')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        handleHidingGlobalLoader(this, status)
-      } catch (e) {
-        console.error('*** ERROR ***', e)
-        this.snackbar = getSnackbar('ERROR', 'Error Adding Custom Field Group')
-        this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        this.$store.commit(AppMutations.SET_LOADING, false)
-      }
-    },
+const vueInstance = getCurrentInstance().proxy
+const snackbar = vueInstance.$snackbar
+const vuetify = vueInstance.$vuetify
+const store = vueInstance.$store
+const route = vueInstance.$route
 
+const companyObjectTypeId = ref(route.params.id)
+const objectType = ref({})
+const customFieldGroups = ref([])
+const addNew = ref(false)
+const newGroup = ref({
+  groupName: null
+})
+const userCanAdd = ref(store.getters.userHasFeatureAccessLevel('SETTINGS', 'ADD'))
+
+const isMobile = computed(() => {
+  return vuetify.breakpoint.smAndDown
+})
+const getObjectType = async () => {
+  //we have to get the object type details to determine if it can use ancillary fields
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const { data, status } = await getRequest(`/objectType/getByType/${route.params.id}`, 'blueraven')
+    objectType.value = data
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
   }
 }
+const getCustomFieldGroups = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    const { data, status } = await getRequestWithParams(`/customFieldGroup/getCustomFieldGroupsByObjectTypeId`, {
+      params: {
+        companyObjectTypeId: route.params.id
+      }
+    }, 'blueraven')
+    customFieldGroups.value = cloneDeep(data?.map(d => {
+      d?.customFields?.forEach(cf => cf.hasConditionalOnId = !!cf.conditionalOnId)
+      return d
+    }))
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Retrieving Data')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+onMounted(() => {
+  getObjectType()
+  getCustomFieldGroups()
+})
+
+const addCustomFieldGroup = async () => {
+  store.commit(AppMutations.SET_LOADING, true)
+  try {
+    newGroup.value.objectTypeId = parseInt(route.params.id)
+    const { data, status } = await postRequest(`/customFieldGroup/addCustomFieldGroup`, newGroup.value, 'blueraven')
+    newGroup.value = {}
+    addNew.value = false
+    // add the new type to the list
+    customFieldGroups.value.push(data)
+    snackbar('SUCCESS', 'Group Added')
+    handleHidingGlobalLoader(vueInstance, status)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    snackbar('ERROR', 'Error Adding Custom Field Group')
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
 </script>
