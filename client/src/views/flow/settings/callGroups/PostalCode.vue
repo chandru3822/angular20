@@ -85,7 +85,7 @@
       async saveGroupInfo () {
         this.$store.commit(AppMutations.SET_LOADING, true)
         try {
-          const {data, status} = await postRequest(`/callGroup/`, this.group, 'blueraven')
+          const {data, status} = await postRequest(`/callGroup`, this.group, 'blueraven')
           this.group = data
           this.editGroup = false
           this.snackbar = getSnackbar('SUCCESS', 'Call Group saved')

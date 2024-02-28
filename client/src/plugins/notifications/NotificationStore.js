@@ -58,7 +58,7 @@ export default {
   },
     [NotificationActions.FETCH_NOTIFICATIONS]: async ({ commit }) => {
       try {
-        const { data } = await getRequest(`/notifications/`)
+        const { data } = await getRequest(`/notifications`)
         commit('setNotifications', data ?? [])
       } catch (e) {
         console.error('*** ERROR ***', e)
@@ -74,7 +74,7 @@ export default {
         const newState = state.notifications?.filter(n => !notificationIds.includes(n.id))
         commit('setNotifications', newState)
 
-        await postRequest(`/notifications/markNotificationAsRead/`, { notificationIds })
+        await postRequest(`/notifications/markNotificationAsRead`, { notificationIds })
 
       } catch (e) {
         console.error('*** ERROR ***', e)
