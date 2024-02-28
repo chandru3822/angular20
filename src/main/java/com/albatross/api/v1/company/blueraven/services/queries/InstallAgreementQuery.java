@@ -246,7 +246,7 @@ public class InstallAgreementQuery {
       pd.project_street1,
       pd.project_city,
       pd.project_postal_code,
-      pd.system_size,
+      plh.system_size,
       plh.system_size_ac,
       plh.year_1_kwh_output as year_one_kwh_output,
       plh.loan_amount,

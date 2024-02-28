@@ -88,7 +88,7 @@ public class ExpenseBudgetService {
   }
 
   public void generateNextMonthBudgets() {
-    sqlCache.updateBySql(ExpenseBudgetQuery.generateNextMonthBudgets, Collections.emptyMap());
+    sqlCache.executeSql(ExpenseBudgetQuery.generateNextMonthBudgets, Collections.emptyMap());
   }
 
   public Optional<BudgetTemplate> updateBudgetTemplate(BudgetTemplate budgetTemplate) {

@@ -35,6 +35,13 @@ public class BaseSqlCache {
     jdbc = in;
   }
 
+  public void executeSql(String sql, Map<String, Object> params) {
+    jdbc.execute(sql, params, ps -> {
+      ps.execute();
+      return null;
+    });
+  }
+
   public int updateBySql(String sql, Map<String, Object> params) {
     MapSqlParameterSource paramSource = scrubParams(params);
     return jdbc.update(sql, paramSource);

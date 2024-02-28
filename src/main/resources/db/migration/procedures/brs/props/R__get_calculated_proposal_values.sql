@@ -1480,7 +1480,7 @@ BEGIN
                                               v_aurora_design_summary,v_system_size,
                                               (coalesce(v_total_loan_amount, 0) + coalesce(v_down_payment_amount, 0) +
                                                coalesce(v_required_down_payment, 0)),
-                                              v_state_id,v_qualifies_for_incentive);
+                                              v_state_id,v_qualifies_for_incentive,v_storage_capacity);
 
   --raise notice 'v_below_the_line_utility_rebate_amount = %',v_below_the_line_utility_rebate_amount;
   --raise notice 'v_below_the_line_utility_rebates = %',v_below_the_line_utility_rebates;
