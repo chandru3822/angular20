@@ -237,7 +237,7 @@
               // window.location.reload()
             }
             else {
-              const {data, status} = await postRequest(`/position/`, this.position)
+              const {data, status} = await postRequest(`/position`, this.position)
               this.positionId = data.id
               this.position = data
               this.accessControlKey++
