@@ -212,7 +212,7 @@ export default {
     },
     async getTeams() {
       try {
-        const {data} = await getRequest(`/smsTeam/`)
+        const {data} = await getRequest(`/smsTeam`)
         this.selectableTeams = data
       } catch (e) {
         console.error('*** ERROR ***', e)

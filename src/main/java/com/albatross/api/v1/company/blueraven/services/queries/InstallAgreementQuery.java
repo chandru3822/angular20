@@ -253,7 +253,7 @@ public class InstallAgreementQuery {
       plh.optional_down_payment,
       plh.required_down_payment,
       plh.all_rebates->>'Illinois SREC' as srec_value,
-      plh.total_cost
+      plh.loan_amount::numeric + plh.optional_down_payment::numeric + plh.required_down_payment as total_cost
     from brs.proposal_log_history plh
     inner join brs.project_details pd on pd.project_id = plh.project_id
     where plh.project_id = :projectId and
