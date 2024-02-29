@@ -95,7 +95,8 @@ jobs:
           repository: 7oaksgroup/ops-blueraven-albatross
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
-      - uses: imranismail/setup-kustomize@v2
+      - name: Setup kustomize
+        uses: imranismail/setup-kustomize@v2
       - name: Update Image Tag
         env:
           TARGET_IMAGE: ${{ steps.build-image.outputs.image }}
@@ -104,7 +105,7 @@ jobs:
           kustomize edit set image web=${TARGET_IMAGE}
           git config --global user.name "7 Oaks Group CI"
           git config --global user.email "dev+ci@7oaksgroup.com"
-          git commit -am "Set web image to ${TARGET_IMAGE}"
+          git commit -am "${GITHUB_ACTOR}: set web image to ${TARGET_IMAGE}"
           git push
 
   frontend-build:
