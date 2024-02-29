@@ -940,7 +940,7 @@ BEGIN
         end loop;
     end loop;
 
-  if new.custom_field_group_assignment_id in (4, 21506) then
+  if new.custom_field_group_assignment_id in (4, 21506,1377) then
     perform flow.company_custom_field_event_specific_tasks(v_company_id,
                                                            new.project_process_step_event_id,
                                                            coalesce(v_project_id, v_project_id1));
