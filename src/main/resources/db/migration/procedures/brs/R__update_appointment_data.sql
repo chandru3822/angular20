@@ -106,6 +106,7 @@ BEGIN
     and ppsecfv1.int_value = any ('{2,1139,1140}')
     and ppse.start_time is not null
     and ppse.resource_id is not null
+    and ppse.archived is false
   order by project_id, start_time desc;
 
   if v_prioritized_closer_dashboard_ppse_id is null then
@@ -131,6 +132,7 @@ BEGIN
     where pps.project_id = p_project_id
       and ppse.start_time is not null
       and ppse.resource_id is not null
+      and ppse.archived is false
     order by project_id, start_time desc;
 
     if p_came_from_ppse is true and p_start_time > v_prioritized_closer_dashboard_start_time then
