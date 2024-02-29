@@ -937,4 +937,13 @@ public class UserQuery {
       and ust.has_access is true
     limit 1
     """;
+
+  public final static String getNotificationEnabledUsers = """
+select distinct u.id, u.first_name, u.last_name
+from flow.user_notification_token unt
+         inner join flow.user u on u.id = unt.user_id
+where unt.archived is false
+  and case when :query::varchar is not null then user_full_name_search like lower(:query) || '%' else 1 = 1 end
+limit :limit offset :offset
+    """;
 }
