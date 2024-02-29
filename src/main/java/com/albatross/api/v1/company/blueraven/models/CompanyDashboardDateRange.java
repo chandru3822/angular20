@@ -1,7 +1,6 @@
 package com.albatross.api.v1.company.blueraven.models;
 
 import lombok.Data;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 import java.util.List;

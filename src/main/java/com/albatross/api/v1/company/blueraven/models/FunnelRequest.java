@@ -2,7 +2,6 @@ package com.albatross.api.v1.company.blueraven.models;
 
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
