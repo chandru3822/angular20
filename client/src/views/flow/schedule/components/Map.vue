@@ -399,7 +399,7 @@ export default {
       }
     },
     async changeMapLocation() {
-      this.asyncActions.flyTo({
+      this.asyncActions?.flyTo({
         center:[this.longitude, this.latitude],
         zoom: this.zoom,
         speed: 2
