@@ -45,14 +45,3 @@ alter table flow."user"
 
 create index if not exists user_full_name_search_idx
   on flow.user using gin (user_full_name_search public.gin_trgm_ops);
-
-create index if not exists pdetails_building_permit_number_idx
-  on brs.project_details using gin ((trim(lower(translate(building_permit_number, E'/()_.,-:\n\r\t ', ''))))
-                                    gin_trgm_ops);
-
-create index if not exists pdetails_electrical_permit_number_idx
-  on brs.project_details using gin ((trim(lower(translate(electrical_permit_number, E'/()_.,-:\n\r\t ', ''))))
-                                    gin_trgm_ops);
-
-create index if not exists pdetails_mpu_permit_number_idx
-  on brs.project_details using gin ((trim(lower(translate(mpu_permit_number, E'/()_.,-:\n\r\t ', '')))) gin_trgm_ops);
