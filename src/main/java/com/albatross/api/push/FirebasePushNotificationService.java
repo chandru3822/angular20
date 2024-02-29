@@ -65,7 +65,7 @@ public class FirebasePushNotificationService implements PushNotificationService 
       .forEach(chunk -> {
         try {
           firebaseMessaging.sendEachForMulticast(MulticastMessage.builder()
-            .addAllTokens(tokens)
+            .addAllTokens(chunk)
             .setNotification(notification)
             .build(), appProperties.getFirebase().isDryRun());
         } catch (FirebaseMessagingException e) {
