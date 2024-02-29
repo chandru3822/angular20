@@ -62,16 +62,14 @@ public class ProjectProcessStepEventController {
     throws Exception {
     if (forceSave.isPresent() && !forceSave.get()) {
       List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-      if (conflictList != null && conflictList.size() > 0) {
-        return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+      if (conflictList != null && !conflictList.isEmpty()) {
+        return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
       }
     }
     return ResponseEntity.ok(projectProcessStepEventService.savePpsEventDetails(ppsId, eventId, saveEvent));
   }
 
-  @GetMapping(
-    value = "/{projectProcessStepEventId}/attachments",
-    produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = "/{projectProcessStepEventId}/attachments")
   public ResponseEntity<List<Attachment>> getProjectProcessStepEventAttachments(
     @PathVariable Long projectProcessStepEventId,
     @RequestParam(required = false) Boolean isMobile,
@@ -90,9 +88,7 @@ public class ProjectProcessStepEventController {
     projectProcessStepEventService.linkAttachment(projectProcessStepEventId, attachmentId, doLink);
   }
 
-  @PostMapping(
-    value = "/{projectProcessStepEventId}/attachment",
-    produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{projectProcessStepEventId}/attachment")
   public ResponseEntity<Attachment> uploadProjectProcessStepEventAttachment(
     @PathVariable Long projectProcessStepEventId,
     @RequestParam Long attachmentTypeId,
@@ -118,9 +114,7 @@ public class ProjectProcessStepEventController {
 
   // action
 
-  @PostMapping(
-    value = "/{eventId}/action/{actionId}/perform",
-    produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = "/{eventId}/action/{actionId}/perform")
   public ResponseEntity<Object> performStepEventAction(
     @PathVariable Long ppsId,
     @PathVariable Long eventId,
@@ -130,8 +124,8 @@ public class ProjectProcessStepEventController {
       if (actionId == 1) {
         if (saveEvent.getForceSave() != null && !saveEvent.getForceSave()) {
           List<ScheduleEvent> conflictList = projectProcessStepEventService.checkForSchedulingConflict(saveEvent, ppsId);
-          if (conflictList != null && conflictList.size() > 0) {
-            return new ResponseEntity(conflictList, HttpStatus.CONFLICT);
+          if (conflictList != null && !conflictList.isEmpty()) {
+            return new ResponseEntity<>(conflictList, HttpStatus.CONFLICT);
           }
         }
       }
@@ -158,7 +152,6 @@ public class ProjectProcessStepEventController {
     } catch (Exception e) {
       User currentUser = securityService.getCurrentUser();
       final String errMessage =
-
           "PPSE: Unable to MANUALLY trigger action ID: %s, PPS EVENT ID: %s, BY USER: %s *** %s".formatted(
           actionId, eventId, currentUser.trueUserId(), e.getMessage());
       log.error(errMessage);
