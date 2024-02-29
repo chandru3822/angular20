@@ -11,6 +11,11 @@ import {getCurrentInstance, ref} from "vue";
 import {AppMutations} from "@/stores/AppStore.js";
 import {getSnackbar, handleHidingGlobalLoader, postRequest} from "@/helpers/helpers.js";
 import DatetimePickerInput from "@/components/DatetimePickerInput.vue";
+import ConfirmationDialog from "@/components/ConfirmationDialog.vue";
+import {
+  getAssignedToEvent,
+  getCancelledCompanyStatusTypesAssignedToPpsEvent
+} from "@/services/eventStatusTypeService.js";
 
 const vueInstance = getCurrentInstance().proxy
 const store = vueInstance.$store
@@ -21,18 +26,22 @@ const emit = defineEmits(['toggleProjectMapPin'])
 const props = defineProps({
   project:Object,
   timezone:String,
+  resourceFromCalendar:Object,
 })
 const show = ref(true)
 const userCanEdit = ref(store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'))
 const fieldsSaving = ref(false)
 const conflictingEvents = ref()
 const saveInvalid = ref(true)
+const confirmUnschedule = ref(false)
+const cancelledCompanyEventStatuses = ref()
 
-// import { watch } from 'vue'
-// watch(props.project, () => {
-//   //do stuff
-//   debugger
-// })
+
+import { watch } from 'vue'
+import {ScheduleMutations} from "@/stores/ScheduleStore.js";
+watch(() => props.resourceFromCalendar, () => {
+  scheduleCalendarResourceToProject(props.resourceFromCalendar)
+})
 
 const openInNewTab = (path) => {
   let routerData = router.resolve({path})
@@ -68,6 +77,35 @@ const getResources = async(item) => {
     store.commit(AppMutations.SET_LOADING, false)
   }
 }
+
+const scheduleCalendarResourceToProject = (resource) => {
+  props.project.resource = props.project.resources.find( r => r.id === resource.extendedProps.orgId)
+  if(!props.project.resource) {
+    const projectUserResources = resource.extendedProps?.userPositions?.map(up => {
+      return props.project.resources.find(r => r.id === up.id)
+    })
+    if (projectUserResources?.length > 0) {
+      props.project.resource = projectUserResources[0]
+    }
+  }
+  store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, props.project.resource.id)
+  validateSaveEvent()
+}
+
+const getCancelledCompanyEventStatuses = async () => {
+  try {
+    const {data} = await getCancelledCompanyStatusTypesAssignedToPpsEvent(props.project.projectProcessStepId, props.project.projectProcessStepEventId)
+    cancelledCompanyEventStatuses.value = data
+    if(data?.length === 1) {
+      props.project.cancelledCompanyStatusType = data[0]
+    }
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  }
+}
+
 
 const validateSaveEvent = () => {
   saveInvalid.value = !!(!props.project || !props.project.start || !props.project.end
@@ -117,6 +155,21 @@ const scheduleProject = async(forceSave) => {
   }
 }
 
+const cancelProjectProcessStepEvent = async() => {
+  try {
+    const {status} = await postRequest(`/projectProcessStep/${props.project.projectProcessStepId}/event/${props.project.projectProcessStepEventId}/status`, props.project.cancelledCompanyStatusType)
+    props.project.eventStatusTypeId = props.project?.cancelledCompanyStatusType?.id
+    handleHidingGlobalLoader(vueInstance, status)
+    let snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+  } catch (e) {
+    console.error('*** ERROR ***', e)
+    let snackbar = getSnackbar('ERROR', 'Error Unscheduling Event')
+    store.commit(AppMutations.SHOW_SNACK, snackbar)
+    store.commit(AppMutations.SET_LOADING, false)
+  }
+}
+
 </script>
 
 <template>
@@ -158,7 +211,8 @@ const scheduleProject = async(forceSave) => {
                         item-value="id"
                         @input="validateSaveEvent()"
                         class="pb-2"
-        />
+                        :active="!!resourceFromCalendar"
+        />              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
         <DatetimePickerInput
             v-model="project.start"
             :timezone="timezone"
@@ -200,12 +254,12 @@ const scheduleProject = async(forceSave) => {
       </v-card-text>
       <v-card-actions v-if="userCanEdit" class="pt-1 pb-4 px-4">
         <v-spacer/>
-        <v-btn color="primary" small text class="text-capitalize">Unschedule</v-btn>
+        <v-btn @click="[confirmUnschedule = true, getCancelledCompanyEventStatuses()]" color="primary" small text class="text-capitalize">Unschedule</v-btn>
       </v-card-actions>
     </div>
 <!-- ------------------- -->
   </div>
-  <ConfirmationDialog v-if="conflictingEvents != null" :open-dialog="conflictingEvents != null && conflictingEvents.length > 0" @confirm="scheduleProject(true)" @close-dialog="cancelDialog()">
+  <ConfirmationDialog v-if="conflictingEvents != null" :open-dialog="conflictingEvents?.length > 0" @confirm="scheduleProject(true)" @close-dialog="cancelDialog()">
     <template v-if="conflictingEvents.length > 1" v-slot:title>Conflicts</template>
     <template v-else v-slot:title>Conflict</template>
     Resource <b>{{project.resourceName}}</b>
@@ -225,7 +279,21 @@ const scheduleProject = async(forceSave) => {
     <template v-slot:yes>Schedule Anyway</template>
 
   </ConfirmationDialog>
-
+  <ConfirmationDialog :open-dialog="confirmUnschedule" @close-dialog="confirmUnschedule = false" @confirm="cancelProjectProcessStepEvent">
+    <template v-slot:title>Unschedule</template>
+    Are you sure you want to unschedule and remove {{project.projectName}} {{project.eventName}} event from {{project.resourceName}}’s calendar?
+    <v-autocomplete
+        v-model="project.companyEventStatusTypeId"
+        :items="cancelledCompanyEventStatuses"
+        label="Event's new status"
+        :disabled="false"
+        item-text="eventStatusType"
+        item-value="id"
+        @input="[statusChanged = true, defaultValuesChanged = true]"
+        class="mt-2"
+    />
+    <template v-slot:yes>Unschedule</template>
+  </ConfirmationDialog>
 </v-card>
 </template>
 

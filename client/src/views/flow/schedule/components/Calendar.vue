@@ -242,7 +242,9 @@
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon v-else>mdi-map-marker-off</v-icon>
               </v-btn>
-              <v-btn icon x-small color="primary lighten-5" class="mx-1"><v-icon>mdi-calendar-plus</v-icon></v-btn>
+              <v-btn v-if="showScheduleBtnForResource(resource)" icon x-small :color="isAssignedResource(resource) ? 'primary lighten-5' : ''" class="mx-1" @click="[$emit('scheduleResource', resource)]">
+                <v-icon>mdi-calendar-plus</v-icon>
+              </v-btn>
               <v-btn icon x-small color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></v-btn>
             </div>
           </div>
@@ -580,6 +582,20 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       isResourceOnMap(resource){
         return this.mapResources.findIndex(mr => resource.id === mr.id) >=0
       },
+      isAssignedResource(resource){
+        let result = false
+        const selectedResourceId = this.$store.state.schedule.selectedResourceId
+        if(!selectedResourceId || selectedResourceId < 0){
+          return false
+        }
+        if(resource.extendedProps.orgId === selectedResourceId) {
+          result = true
+        } else {
+          const positions = resource.extendedProps.userPositions?.filter(p => p.id === selectedResourceId)
+          result = positions?.length > 0
+        }
+        return result
+      },
       // testEvents(){
       //   this.calendarApi.addEventSource( [
       //     {
@@ -741,6 +757,17 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
             this.selectedPositions = cloneDeep(this.positions)
           }
         })
+      },
+      showScheduleBtnForResource(resource) {
+        if(this.preselectedEvent) {
+          if (this.preselectedEvent.systemListId === 2) {
+            const allowedPositions = resource.extendedProps?.userPositions?.filter(p => this.preselectedEvent.systemListOptionIds.includes(p.positionId))
+            return allowedPositions?.length > 0
+          } else if (this.preselectedEvent.systemListId === 3) {
+            return this.preselectedEvent.systemListOptionIds.includes(resource.extendedProps.orgId)
+          }
+        }
+        return false
       },
       async getSchedulingOrgs() {
         this.$store.commit(AppMutations.SET_LOADING, true)

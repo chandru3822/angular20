@@ -15,8 +15,15 @@
               :preselected-event="selectedProject"
               :states="states"
               :callback="resourceMapCallback"
-              :date-callback="dateCallback"/>
-      <ProjectModal :project="selectedProject" :timezone="timezone"  @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
+              :date-callback="dateCallback"
+              @scheduleResource="scheduleResourceToCurrentProject"
+    />
+      <ProjectModal
+          v-if="selectedProject.projectId"
+          :project="selectedProject"
+          :timezone="timezone"
+          :resource-from-calendar="calendarResourceToSchedule"
+          @toggleProjectMapPin="toggleSelectedProjectMapPin()"/>
     </template>
     <template v-slot:right-column>
       <v-row class="map-row">
@@ -63,6 +70,8 @@
   import ThreeColumnLayoutMobile from "@/views/ThreeColumnLayoutMobile.vue";
   import ProjectSearchDialog from "@/views/flow/schedule/components/ProjectSearchDialog.vue";
   import ProjectModal from "@/views/flow/schedule/components/ProjectModal.vue";
+  import {ProjectMutations} from "@/stores/ProjectStore.js";
+  import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 
   export default {
     name: 'Schedule',
@@ -84,18 +93,11 @@
         saveInvalid: true,
         timezone: this.$store.state.user.details.timezone.value,
         defaultZoom: 2.0,
-        // they do these coordinates backwards to comply with geoJSON whatever that is.
-        //center of the USA
-        defaultCenter: [-98.5795, 39.8283],
-        scheduleConflict: false,
-        confirmSchedule: false,
-        center: null,
-        conflictingEvents: null,
         startTime: null,
         endTime: null,
         mapResources: [],
         projectMapMarkers: [],
-        selectedResources: [],
+        // selectedResources: [],
         userCanEdit: this.$store.getters.userHasFeatureAccessLevel('EVENTS', 'EDIT'),
         state: {},
         mapZoom: null,
@@ -103,9 +105,9 @@
         longitude: null,
         states: [],
         eventStatusTypes: [],
-        selectedEventStatusType: {},
+        // selectedEventStatusType: {},
         processStepStatusTypes: [],
-        selectedProcessStepStatusType: {},
+        // selectedProcessStepStatusType: {},
         eventTypes: [],
         totalProjects: 0,
         //used for multi select
@@ -121,20 +123,9 @@
         searchProject: {},
         searchProjects: [],
         eventTypesChanged: false,
-        searchProjectsLoading: false,
         search: null,
         fieldsSaving: false,
-        asyncActions: {},
-        headers: [
-          {text: 'Project', value: 'projectName', show: true},
-          {text: 'Process Step', value: 'processStepName', show: true},
-          {text: 'Event', value: 'eventName', show: true},
-          {text: 'Status', value: 'companyEventStatusType', show: true},
-          {text: 'Work Date', value: 'start', show: true},
-          {text: 'Resource', value: 'resourceName', show: true},
-        ],
         projects: [],
-        projectFilter: '',
         options: {
           itemsPerPage: 100
         },
@@ -142,8 +133,9 @@
           'items-per-page-options': [25, 50, 100],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
-        showMap: true
-        // masterProjects: []
+        showMap: true,
+        calendarResourceToSchedule:{},
+
       }
     },
     computed: {
@@ -189,21 +181,6 @@
       }
     },
     methods: {
-      getCancelledCompanyEventStatuses: async function () {
-        try {
-          const {data} = await getCancelledCompanyStatusTypesAssignedToPpsEvent(this.selectedProject.projectProcessStepId, this.selectedProject.projectProcessStepEventId)
-          this.cancelledCompanyEventStatuses = data
-          if(data?.length === 1) {
-            this.selectedProject.cancelledCompanyStatusType = data[0]
-          }
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error fetching process step statuses')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } finally {
-          this.fetchingSteps = false
-        }
-      },
       validateSaveEvent () {
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
           || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
@@ -218,58 +195,8 @@
           this.scheduleProject(false);
       },
       async cancelDialog(){
-        this.conflictingEvents = null
         this.fieldsSaving = false
         this.$refs.calendar.getEvents(false, true)
-      },
-      async scheduleProject(forceSave) {
-
-        this.selectedProject.resourceId = this.selectedProject.resource.id
-        this.selectedProject.resourceName = this.selectedProject.resource.name
-        this.selectedProject.forceSave = forceSave
-        this.$store.commit(AppMutations.SET_LOADING, true)
-        try {
-          const {status} = await postRequest(`/schedule/saveEvent`, this.selectedProject)
-          //if saved successfully then increase the "saveVersion" so they can make a 2nd change too
-          this.selectedProject.saveVersion++
-          // this tells the calendar to reload the events after a save (probably could just push the result into the existing records somehow but that was way harder)
-          this.$refs.calendar.getEvents(false, true)
-          handleHidingGlobalLoader(this, status)
-          this.fieldsSaving = false
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Scheduled Project')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } catch (e) {
-          if(e.status == 409){
-            this.conflictingEvents = e.data;
-            this.fieldsSaving = false
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-          else {
-            console.error('*** ERROR ***', e)
-            let saveMismatch = e.data?.message === 'Save Version Mismatch'
-            let msg = saveMismatch ? 'Error Scheduling Project. This event has been update by another user. Please refresh to see the latest data.' : 'Error Scheduling Project'
-            this.snackbar = getSnackbar('ERROR', msg)
-            this.fieldsSaving = false
-            this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-            this.$store.commit(AppMutations.SET_LOADING, false)
-          }
-        }
-      },
-      async cancelProjectProcessStepEvent() {
-        try {
-          const {status} = await postRequest(`/projectProcessStep/${this.selectedProject.projectProcessStepId}/event/${this.selectedProject.projectProcessStepEventId}/status`, this.selectedProject.cancelledCompanyStatusType)
-          // this.selectedProject.unscheduleConfirm = false
-          this.projects = this.projects.filter(p => p.projectProcessStepEventId !== this.selectedProject.projectProcessStepEventId)
-          this.selectedProject.eventStatusTypeId = this.selectedProject?.cancelledCompanyStatusType?.id
-          handleHidingGlobalLoader(this, status)
-          this.snackbar = getSnackbar('SUCCESS', 'Successfully Unscheduled Event')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-        } catch (e) {
-          console.error('*** ERROR ***', e)
-          this.snackbar = getSnackbar('ERROR', 'Error Unscheduling Event')
-          this.$store.commit(AppMutations.SHOW_SNACK, this.snackbar)
-          this.$store.commit(AppMutations.SET_LOADING, false)
-        }
       },
       goTo (ps, isProject, isProcessStep) {
         if (isProject) {
@@ -309,6 +236,10 @@
         this.endTime = endTime
       },
 
+      scheduleResourceToCurrentProject(resource){
+        this.calendarResourceToSchedule = resource
+      },
+
       async getSingleProject(projectId, eventId, eventStatusTypeId, processStepStatusTypeId, projectProcessStepEventId) {
         try {
           let params = {
@@ -325,7 +256,8 @@
           project.coordinates = [ project.longitude, project.latitude ]
           project.pinned = false
             this.selectedProject = project
-            this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
+          this.$store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, project.resourceId)
+          this.selectedProject.resource = { id: this.selectedProject.resourceId, name: this.selectedProject.resourceName }
         } catch (e) {
           console.error('*** ERROR ***', e)
           this.snackbar = getSnackbar('ERROR', 'Error Loading Project Details')
