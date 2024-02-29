@@ -530,27 +530,6 @@ public class AttachmentTypeQuery {
       order by at.attachment_type
     """;
 
-//  public static String getAvailableTypes(String tablePrefix) {
-//    //language=PostgreSQL
-//    return """
-//      select at.id,
-//                   at.attachment_type,
-//                   at.archived
-//            from flow.attachment_type at
-//            where at.archived is not true
-//              and at.company_id = :companyId
-//              and at.is_system is false
-//              and not exists (
-//                select oat.attachment_type_id
-//                from flow.%s_attachment_type oat
-//                where oat.company_id = :companyId
-//                  and oat.attachment_type_id = at.id
-//                  and oat.archived is not true
-//              )
-//            order by at.attachment_type
-//      """.formatted(tablePrefix);
-//  }
-
   public final static String contactAddType = """
       insert into flow.contact_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
       values (:companyId, :attachmentTypeId, :createdById,
@@ -589,17 +568,6 @@ public class AttachmentTypeQuery {
                    where event_id = :eventId and archived is false))
     """;
 
-
-//  public static String addType(String tablePrefix) {
-//    //language=PostgreSQL
-//    return """
-//      insert into flow.%s_attachment_type(company_id, attachment_type_id, created_by_id, display_order)
-//      values (:companyId, :attachmentTypeId, :createdById,
-//              (select coalesce(max(display_order) + 1, 0) from flow.%s_attachment_type
-//               where company_id = :companyId and archived is false))
-//      """.formatted(tablePrefix, tablePrefix);
-//  }
-
   public static String updateDisplayOrder(String tablePrefix) {
     //language=PostgreSQL
     return """
@@ -635,7 +603,6 @@ public class AttachmentTypeQuery {
       where id = :id
       """.formatted(tablePrefix);
   }
-
 
   //language=PostgreSQL
   public final static String projectGetAssignedTypes = """
@@ -758,38 +725,4 @@ public class AttachmentTypeQuery {
           and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
         order by at.attachment_type
       """;
-
-
-//  public static String getAssignedTypes(String tablePrefix) {
-//    //language=PostgreSQL
-//    return """
-//      select oat.id,
-//               oat.company_id,
-//               oat.attachment_type_id,
-//               oat.archived,
-//               at.attachment_type,
-//               oat.focused,
-//               oat.linkable,
-//               oat.allow_upload,
-//               oat.display_order,
-//               (
-//                 select cfga.id
-//                 from flow.custom_field_group_assignment cfga
-//                        left join flow.custom_field_group cfg on cfga.custom_field_group_id = cfg.id and cfg.attachment_type_id = oat.attachment_type_id and cfg.archived is false
-//                        left join flow.custom_field_group cfg2 on cfga.custom_field_group_id = cfg2.id and cfg2.project_attachment_type_id = oat.id and cfg2.archived is false
-//                 where cfga.archived is false
-//                   and (cfg2.id is not null or cfg.id is not null)
-//                 limit 1
-//               ) is not null as has_fields_assigned
-//        from flow.%s_attachment_type oat
-//               inner join flow.attachment_type at on oat.attachment_type_id = at.id
-//        where oat.company_id = :companyId
-//          and oat.archived is not true
-//          and case when :allowUpload::boolean is true then oat.allow_upload is true else 1=1 end
-//          and case when :focused::boolean is true then oat.focused is true else 1=1 end
-//          and case when :linkable::boolean is true then oat.linkable is true else 1=1 end
-//        order by at.attachment_type
-//      """.formatted(tablePrefix);
-//  }
-
 }

@@ -6,9 +6,6 @@ import org.springframework.cglib.core.Local;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Created by Joseph Canto on 2020-09-15.
- */
 @Data
 public class CompanyDashboardDateRange {
     private int id;
@@ -29,5 +26,5 @@ public class CompanyDashboardDateRange {
     this.trendText = trendText;
   }
 
-  public CompanyDashboardDateRange(){};
+  public CompanyDashboardDateRange(){}
 }
