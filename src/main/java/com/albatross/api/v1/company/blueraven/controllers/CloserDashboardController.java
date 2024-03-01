@@ -140,6 +140,7 @@ public class CloserDashboardController {
     return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
   }
 
+  @GetMapping(value = "/dropdownValues")
   public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
     return closerDashboardService.getDropdownValues(today);
   }
