@@ -7,9 +7,10 @@
              :auto-overflow-left="true"
              :useRightPanelMobile="true"
              :right-open="showMap"
+             :showRightCollapseBtn="false"
   >
     <template v-slot:main-column>
-      <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click="showMap = !showMap"><v-icon>mdi-map</v-icon></v-btn>
+      <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click=" showHideMap(!showMap)"><v-icon>mdi-map</v-icon></v-btn>
     <Calendar :map-resources="mapResources"
               ref="calendar"
               :preselected-event="selectedProject"
@@ -38,7 +39,7 @@
                :map-resources="mapResources"
                :start-time="startTime"
                :end-time="endTime"
-               @close-map="showMap = false"
+               @close-map="showHideMap(false)"
           >
             <template v-slot:searchMenu>
               <v-btn id="search-menu-btn" fab tile outlined @click="[searchMenuOpen = !searchMenuOpen, menuOpen = false]" small color="primary" class="rounded-tile-btn white-background"><v-icon>mdi-magnify</v-icon></v-btn>
@@ -134,7 +135,6 @@
           'items-per-page-options': [25, 50, 100],
           'items-per-page-text': constants.IS_MOBILE ? '' : 'Rows per page:'
         },
-        showMap: true,
         calendarResourceToSchedule:{},
 
       }
@@ -142,6 +142,9 @@
     computed: {
       activeComp() {
         return this.$vuetify.breakpoint.smAndDown ? 'ThreeColumnLayoutMobile' : 'ThreeColumnLayout'
+      },
+      showMap(){
+        return this.$store.state.schedule.showMap
       }
     },
     watch: {
@@ -182,6 +185,12 @@
       }
     },
     methods: {
+      showHideMap(show){
+        if(show !== this.showMap) {
+          this.$store.commit(ScheduleMutations.SHOW_HIDE_MAP)
+        }
+        console.log(this.$store.state.schedule.showMap)
+      },
       validateSaveEvent () {
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end
           || !this.selectedProject.resource || !this.selectedProject.resource.id || (this.selectedProject.start >= this.selectedProject.end) ||
@@ -206,10 +215,10 @@
           this.$router.push({name: 'projectProcessStep', params: {projectId: ps.projectId, processStepId: ps.projectProcessStepId}, query: { processStepId: ps.processStepId, contactId: ps.contactId }})
         }
       },
-      resourceMapCallback (newValue, showMap) {
+      resourceMapCallback (newValue) {
         this.mapResources = newValue
         if(newValue.length > 0){
-          this.showMap = true
+          this.showHideMap(true)
           let zoomObj = newValue[0]
           this.zoomToMap({latitude: zoomObj.coordinates[1], longitude: zoomObj.coordinates[0]})
         }
@@ -219,7 +228,7 @@
       },
       projectMapMarkersCallback(newValue){
         this.projectMapMarkers = newValue
-        this.showMap = true
+        this.showHideMap(true)
         if(newValue.length > 0){
           this.zoomToMap(newValue[0], 8)
         }
