@@ -13,6 +13,7 @@
       <v-btn id="map-btn" v-if="!showMap" fab tile absolute right color="primary" class="mt-4 mb-n1" @click=" showHideMap(!showMap)"><v-icon>mdi-map</v-icon></v-btn>
     <Calendar :map-resources="mapResources"
               ref="calendar"
+              :map-open="showMap"
               :preselected-event="selectedProject"
               :states="states"
               :callback="resourceMapCallback"
@@ -189,7 +190,6 @@
         if(show !== this.showMap) {
           this.$store.commit(ScheduleMutations.SHOW_HIDE_MAP)
         }
-        console.log(this.$store.state.schedule.showMap)
       },
       validateSaveEvent () {
         if(!this.selectedProject || !this.selectedProject.start || !this.selectedProject.end

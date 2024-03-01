@@ -90,7 +90,7 @@ const chooseSelectedView = (view, id) => {
     <slot name="main-column"/>
     </v-col>
   </v-row>
-    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped>
+    <v-navigation-drawer v-if="useRightPanelMobile" v-model="rightOpen" width="85%" right absolute temporary clipped touchless><!--touchless makes it so moving the map around doesn't trigger the sidebar closing-->
       <slot name="right-column"/>
     </v-navigation-drawer>
 

@@ -2,10 +2,10 @@
   <div id="calendar-container">
 
     <div id="calendar-filter-container" class="pa-6 pt-4">
-
+<v-col cols="11">
       <!-- if this row is not wrapped in a div then the calendar doesn't size well on refresh. i have no clue why -->
       <v-row class="py-0 d-flex align-baseline">
-        <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3">
+        <v-col id="states-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete attach v-model="selectedStates"
                     :items="sortedStates"
                     label="States"
@@ -46,7 +46,7 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3">
+        <v-col id="org-resource-types-filter-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedOrgTypes"
                     :items="sortedOrgTypes"
                     label="Organization Resource Types"
@@ -88,20 +88,47 @@
             ></v-divider>
           </v-autocomplete>
         </v-col>
-        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>
-        <v-col id="position-resource-types-col" class="py-0" cols="9" sm="4" md="3">
-
+<!--        <v-col id="placeholder-col-1" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
+        <v-col id="org-resources-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
+          <v-autocomplete v-model="selectedOrgs"
+                          ref="orgSelector"
+                          :items="sortedOrgs"
+                          label="Organization Resources"
+                          multiple
+                          clearable
+                          :loading="orgsLoading"
+                          :hide-details="countSelected < maxSelectionAllowed"
+                          :error="countSelected >= maxSelectionAllowed"
+                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
+                          return-object
+                          item-text="orgName"
+                          item-value="id"
+                          @input="[orgValuesChanged = true, limiter()]"
+                          @blur="reloadCalendar"
+                          attach
+          >
+            <template
+                v-slot:selection="{item, index}"
+            >
+              <span v-if="index === 0" class="primary--text text-caption">
+                {{ selectedOrgs.length }} selected
+              </span>
+            </template>
+          </v-autocomplete>
+        </v-col>
+        <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.md && !mapOpen" cols="0" md="3" class="py-0"/>
+        <v-col id="position-resource-types-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedPositions"
-                    :items="sortedPositions"
-                    label="Position Resource Types"
-                    multiple
-                    hide-details
-                    :loading="positionsLoading"
-                    return-object
-                    item-text="position"
-                    item-value="id"
-                    @input="poitionValuesChanged = true"
-                    @blur="filterOrgsAndUsers"
+                          :items="sortedPositions"
+                          label="Position Resource Types"
+                          multiple
+                          hide-details
+                          :loading="positionsLoading"
+                          return-object
+                          item-text="position"
+                          item-value="id"
+                          @input="poitionValuesChanged = true"
+                          @blur="filterOrgsAndUsers"
                           attach
           >
             <template
@@ -133,38 +160,10 @@
                 class="mt-2"
             ></v-divider>
           </v-autocomplete>
-        </v-col>
-        <v-col id="placeholder-desktop-col" v-if="$vuetify.breakpoint.mdAndUp" cols="0" md="3" class="py-0"/>
-        <v-col id="org-resources-col" class="py-0" cols="9" sm="4" md="3">
-          <v-autocomplete v-model="selectedOrgs"
-                          ref="orgSelector"
-                          :items="sortedOrgs"
-                          label="Organization Resources"
-                          multiple
-                          clearable
-                          :loading="orgsLoading"
-                          :hide-details="countSelected < maxSelectionAllowed"
-                          :error="countSelected >= maxSelectionAllowed"
-                          :error-messages="countSelected >= maxSelectionAllowed ? countErrorMessage : null"
-                          return-object
-                          item-text="orgName"
-                          item-value="id"
-                          @input="[orgValuesChanged = true, limiter()]"
-                          @blur="reloadCalendar"
-                          attach
-          >
-            <template
-                v-slot:selection="{item, index}"
-            >
-              <span v-if="index === 0" class="primary--text text-caption">
-                {{ selectedOrgs.length }} selected
-              </span>
-            </template>
-          </v-autocomplete>
-        </v-col>
-        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>
-        <v-col id="user-resources-col" class="py-0" cols="9" sm="4" md="3">
 
+        </v-col>
+<!--        <v-col id="placeholder-col-2" v-if="$vuetify.breakpoint.smOnly" cols="4" md="0" class="py-0"/>-->
+        <v-col id="user-resources-col" class="py-0" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-autocomplete v-model="selectedUsers"
                           :items="sortedUsers"
                           label="User Resources"
@@ -191,7 +190,7 @@
             </template>
           </v-autocomplete>
         </v-col>
-        <v-col id="time-zone-col" cols="9" sm="4" md="3">
+        <v-col id="time-zone-col" cols="9" sm="4" md="3" :lg="mapOpen ? '4' : '2'">
           <v-select
               v-model="timezone"
               :items="timezones"
@@ -200,10 +199,9 @@
               :hide-details="true"
               return-object
               prepend-icon="mdi-web"
-              outlined
           />
         </v-col>
-        <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4">
+        <v-col id="cancelled-events-toggle-col" class="py-0 d-flex align-start" cols="9" sm="4" md="3">
             <v-switch
               v-model="includeCancelled"
               dense
@@ -215,6 +213,7 @@
         </v-col>
 <!--        <v-col><v-btn @click="testEvents">test</v-btn></v-col>-->
       </v-row>
+</v-col>
     </div>
     <div class="calendar-resize-container background-white pa-6">
       <div id="calendar-loader" v-if="calendarLoading">
@@ -280,6 +279,7 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
       FullCalendar,
     },
     props: {
+      mapOpen:Boolean,
       mapResources: {type: Array},
       callback: Function,
       dateCallback: Function,
@@ -1463,7 +1463,7 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
   /* without this when you resize the screen the calendar goes whackadoodle */
   //flex: 1 1 auto;
   position: relative;
-  height: calc(100% - 250px);
+  height: calc(100% - 150px);
 }
 
 .border-bottom {
