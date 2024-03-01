@@ -242,7 +242,7 @@
                 <v-icon color="primary lighten-5"  v-if="isResourceOnMap(resource)">mdi-map-marker</v-icon>
                 <v-icon v-else>mdi-map-marker-off</v-icon>
               </v-btn>
-              <v-btn v-if="showScheduleBtnForResource(resource)" icon x-small :color="isAssignedResource(resource) ? 'primary lighten-5' : ''" class="mx-1" @click="[$emit('scheduleResource', resource)]">
+              <v-btn v-if="showScheduleBtnForResource(resource)" icon x-small :color="isAssignedResource(resource) ? 'primary lighten-5' : ''" class="mx-1" @click="toggleScheduleResource(resource)">
                 <v-icon>mdi-calendar-plus</v-icon>
               </v-btn>
               <v-btn icon x-small color="grey darken-1" class="mx-1" @click="closeResource(resource)"><v-icon>close</v-icon></v-btn>
@@ -936,6 +936,14 @@ import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 
         if(this.isResourceOnMap(resource)){
           this.toggleMapPinForResource(resource)
+        }
+      },
+
+      toggleScheduleResource(resource){
+        if(!this.isAssignedResource(resource)){
+          this.$emit('scheduleResource', resource)
+        } else {
+          this.$emit('unscheduleResource')
         }
       },
 

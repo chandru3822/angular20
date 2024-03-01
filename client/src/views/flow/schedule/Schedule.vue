@@ -17,6 +17,7 @@
               :callback="resourceMapCallback"
               :date-callback="dateCallback"
               @scheduleResource="scheduleResourceToCurrentProject"
+              @unscheduleResource="calendarResourceToSchedule = {}"
     />
       <ProjectModal
           v-if="selectedProject.projectId"

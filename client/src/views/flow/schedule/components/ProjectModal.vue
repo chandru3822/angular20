@@ -40,8 +40,20 @@ const cancelledCompanyEventStatuses = ref()
 import { watch } from 'vue'
 import {ScheduleMutations} from "@/stores/ScheduleStore.js";
 watch(() => props.resourceFromCalendar, () => {
-  scheduleCalendarResourceToProject(props.resourceFromCalendar)
+  if(props.resourceFromCalendar.id) {
+    scheduleCalendarResourceToProject(props.resourceFromCalendar)
+  } else {
+    props.project.resource = null
+    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, {})
+  }
 })
+
+const setSelectedResourceInStore = (resourceId) => {
+  if(resourceId){
+    store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, resourceId)
+  }
+  else store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, null)
+}
 
 const openInNewTab = (path) => {
   let routerData = router.resolve({path})
@@ -88,7 +100,7 @@ const scheduleCalendarResourceToProject = (resource) => {
       props.project.resource = projectUserResources[0]
     }
   }
-  store.commit(ScheduleMutations.SET_SELECTED_RESOURCE_ID, props.project.resource.id)
+  setSelectedResourceInStore(props.project.resource.id)
   validateSaveEvent()
 }
 
@@ -209,7 +221,8 @@ const cancelProjectProcessStepEvent = async() => {
                         dense
                         item-text="name"
                         item-value="id"
-                        @input="validateSaveEvent()"
+                        @input="[validateSaveEvent(), setSelectedResourceInStore(project.resource?.id)]"
+                        @click:clear="setSelectedResourceInStore(null)"
                         class="pb-2"
                         :active="!!resourceFromCalendar"
         />              <!--setting the 'active' prop this way forces the value to appear when when click the schedule button on the calendar-->
