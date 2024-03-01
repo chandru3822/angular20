@@ -139,4 +139,8 @@ public class CloserDashboardController {
   public String funnelDrilldownApptDateCohort(@RequestBody FunnelRequest funnelRequest) {
     return closerDashboardService.funnelDrilldownApptDateCohort(funnelRequest);
   }
+
+  public List<CloserDashboardDateRange> getDropdownValues(@RequestParam java.time.LocalDate today) {
+    return closerDashboardService.getDropdownValues(today);
+  }
 }

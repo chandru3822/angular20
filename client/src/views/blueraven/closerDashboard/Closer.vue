@@ -5,30 +5,13 @@
         <v-toolbar id="closer-dash-title-container" class="elevation-1">
           <v-toolbar-title>Closer Dashboard</v-toolbar-title>
         </v-toolbar>
-      </v-col>
-    </v-row>
-
-    <v-row id="closer-dash-tabs" class="mb-2" justify="center" no-gutters>
-      <v-col cols="12">
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('funnel')}" @click="goToRoute('closerFunnel')">
-          Funnel
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('dashboard')}" @click="goToRoute('closerDashboard')">
-          Dashboard
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('incentive')}" @click="goToRoute('closerIncentive')">
-          Incentive
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('leaderboard')}" @click="goToRoute('closerLeaderboard')">
-          Leaderboard
-        </span>
-        <div class="tab-separator mx-2"></div>
-        <span class="clickable primary--text" :class="{'font-weight-bold': $route.path.includes('residuals')}" @click="goToRoute('closerResiduals')">
-          Residuals
-        </span>
+        <v-tabs class="tabs-bar" v-model="activeTab">
+          <v-tab v-for="(tab, index) in tabs" :key="index" :to="tab.path"
+                 class="text-capitalize body-medium tab-bar"
+                 :style="{'margin-left': index === 0 ? '12px !important' : '0'}">
+            {{ tab.label }}
+          </v-tab>
+        </v-tabs>
       </v-col>
     </v-row>
     <router-view></router-view>
@@ -43,9 +26,45 @@
     data () {
       return {
         snackbar: {},
+        tabs: [
+          {
+            id: 1,
+            label: 'Funnel',
+            path: `/closer/funnel`,
+          },
+          {
+            id: 2,
+            label: 'Ranking',
+            path: `/closer/dashboard`,
+          },
+          {
+            id: 3,
+            label: 'Incentive',
+            path: `/closer/incentive`,
+          },
+          {
+            id: 4,
+            label: 'Leaderboard',
+            path: `/closer/leaderboard`,
+          },
+          {
+            id: 5,
+            label: 'Residuals',
+            path: `/closer/residuals`,
+          }
+        ]
       }
     },
-    computed: {},
+    computed: {
+      activeTab: {
+        get: function() {
+          return this.$route?.path?.includes('/event') ? `/settings/processStep/${this.$route.params.id}/events` : null
+        },
+        set: function(val) {
+          return val
+        }
+      }
+    },
     watch: {},
     methods: {
       goToRoute(name) {
@@ -56,6 +75,11 @@
 </script>
 
 <style lang="scss" scoped>
+  .tab-bar{
+    margin-left: 0px !important;
+    padding-left: 0px !important;
+  }
+
   #closer-dash-container {
     letter-spacing: 0.02em !important;
     overflow: auto;

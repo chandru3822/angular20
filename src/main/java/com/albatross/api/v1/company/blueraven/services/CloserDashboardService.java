@@ -4,6 +4,8 @@ import com.albatross.api.security.SecurityService;
 import com.albatross.api.utils.SqlCache;
 import com.albatross.api.v1.company.blueraven.models.*;
 import com.albatross.api.v1.company.blueraven.services.queries.CloserDashboardQuery;
+import com.albatross.api.v1.company.blueraven.services.queries.CompanyDashboardQuery;
+import com.albatross.api.v1.flow.model.FeatureAccessControl;
 import com.albatross.api.v1.flow.model.User;
 import com.albatross.api.v1.flow.model.org.Org;
 import com.albatross.api.v1.flow.model.roundRobin.RoundRobin;
@@ -19,8 +21,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.time.temporal.TemporalAdjusters.*;
+import static java.time.temporal.TemporalAdjusters.nextOrSame;
 
 @Slf4j
 @Service
@@ -252,7 +262,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_area_selection(:userId::bigint, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("setterOverride", req.getSetterOverride());
 
     String results = jdbc.queryForObject(sqlQuery, parameters, String.class);
@@ -264,7 +274,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_region_selection(:userId::bigint, :areas::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("setterOverride", req.getSetterOverride());
 
@@ -277,7 +287,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_district_selection(:userId::bigint, :areas::JSON, :regions::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("setterOverride", req.getSetterOverride());
@@ -291,7 +301,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_office_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :setterOverride::BOOLEAN)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("districts", req.getDistricts());
@@ -306,7 +316,7 @@ public class CloserDashboardService {
         "SELECT * FROM brs.util_closer_rep_selection(:userId::bigint, :areas::JSON, :regions::JSON, :districts::JSON, :offices::JSON)";
 
     MapSqlParameterSource parameters = new MapSqlParameterSource();
-    parameters.addValue("userId", req.getUserId());
+    parameters.addValue("userId", securityService.getCurrentUser().getId());
     parameters.addValue("areas", req.getAreas());
     parameters.addValue("regions", req.getRegions());
     parameters.addValue("districts", req.getDistricts());
@@ -409,4 +419,131 @@ public class CloserDashboardService {
     List<LeaderboardBooking> results = sqlCache.queryBySql(CloserDashboardQuery.getLeaderboardBookings, params, LeaderboardBooking.class);
     return results;
   }
+
+  public ArrayList<CloserDashboardDateRange> getDropdownValues(LocalDate today) {
+    Boolean isAdmin = securityService.getCurrentUser().isSystemAdmin();
+    if(!isAdmin) {
+      for (FeatureAccessControl feature : securityService.getCurrentUser().getFeatureAccess()) {
+        if (feature.getFeatureCode().equalsIgnoreCase("COMPANY_DASHBOARD") && feature.getAccessCode().equalsIgnoreCase("ADMIN")) {
+          isAdmin = true;
+        }
+      }
+    }
+    ArrayList<CloserDashboardDateRange> ranges = new ArrayList<>();
+    HashMap<String, Object> params = new HashMap<>();
+    params.put("today", today.toString());
+    List<CompanyPeriod> companyPeriods = sqlCache.queryBySql(CompanyDashboardQuery.getCompanyDashboardPeriods, params, CompanyPeriod.class);
+    CompanyPeriod currentPeriod = null;
+    CompanyPeriod previousPeriod = null;
+    CompanyPeriod doublePreviousPeriod = null;
+    Integer currentIndex = null;
+
+    for (CompanyPeriod period : companyPeriods) {
+      if (today.isBefore(period.getEndDate()) || today.isEqual(period.getEndDate())) {
+        currentPeriod = period;
+        currentIndex = companyPeriods.indexOf(period);
+        previousPeriod = companyPeriods.get(currentIndex - 1);
+        doublePreviousPeriod = companyPeriods.get(currentIndex - 2);
+      }
+    }
+
+    YearMonth month = YearMonth.from(today);
+    LocalDate currentMonthStart = month.atDay(1);
+    LocalDate currentMonthEnd = month.atEndOfMonth();
+    LocalDate previousMonthStart = today.minusMonths(1).withDayOfMonth(1);
+    LocalDate previousMonthEnd = currentMonthStart.minusDays(1);
+    LocalDate penultimateMonthStart = today.minusMonths(2).withDayOfMonth(1);
+    LocalDate penultimateMonthEnd = previousMonthStart.minusDays(1);
+    LocalDate currentYearStart = today.with(firstDayOfYear());
+    LocalDate currentYearEnd = today.with(lastDayOfYear());
+    LocalDate previousYearEnd = currentYearStart.minusDays(1);
+    LocalDate previousYearStart = previousYearEnd.with(firstDayOfYear());
+
+
+    Triumvirate triumvirate = sqlCache.queryBySql(CompanyDashboardQuery.getGetCompanyDashboardTriumvirate, params, Triumvirate.class).get(0);
+
+    DayOfWeek weekStart = DayOfWeek.MONDAY;
+    DayOfWeek weekEnd = DayOfWeek.SUNDAY;
+    LocalDate currentWeekStart = today.with(previousOrSame(weekStart));
+    LocalDate currentWeekEnd = today.with(nextOrSame(weekEnd));
+    LocalDate lastWeekStart = currentWeekStart.minusDays(7);
+    LocalDate lastWeekEnd = currentWeekEnd.minusDays(7);
+    LocalDate yesterday = today.minusDays(1);
+    LocalDate tomorrow = today.plusDays(1);
+
+    ranges.add(new CloserDashboardDateRange(1, "Yesterday", "YESTERDAY",
+      yesterday,
+      yesterday,
+      yesterday.minusDays(1),
+      yesterday.minusDays(1), "the day before yesterday"));
+
+    ranges.add(new CloserDashboardDateRange(2, "Today", "TODAY",
+      today, today, yesterday, yesterday, "yesterday"));
+
+    ranges.add(new CloserDashboardDateRange(3, "Last Week", "LAST WEEK",
+      lastWeekStart,
+      lastWeekEnd,
+      lastWeekStart.minusDays(7),
+      lastWeekEnd.minusDays(7), "the week before last week"));
+
+    ranges.add(new CloserDashboardDateRange(4, "Last Month", "LAST_MONTH",
+      previousMonthStart,
+      previousMonthEnd,
+      penultimateMonthStart,
+      penultimateMonthEnd, "the month before the last month"));
+
+    if(isAdmin) {
+      ranges.add(new CloserDashboardDateRange(5, "Last Period", "LAST_PERIOD",
+        previousPeriod.getStartDate(),
+        previousPeriod.getEndDate(),
+        doublePreviousPeriod.getStartDate(),
+        doublePreviousPeriod.getEndDate(), "the period before the last period"));
+    }
+
+    ranges.add(new CloserDashboardDateRange(6, "Week to Date", "WEEK_TO_DATE",
+      currentWeekStart,
+      today,
+      lastWeekStart,
+      lastWeekStart.plusDays(ChronoUnit.DAYS.between(currentWeekStart, today)), "the same timeframe last week"));
+
+    ranges.add(new CloserDashboardDateRange(7, "Month to Date", "MONTH_TO_DATE",
+      currentMonthStart,
+      today,
+      previousMonthStart,
+      previousMonthStart.plusDays(ChronoUnit.DAYS.between(currentMonthStart, today)), "the same timeframe last month"));
+
+    ranges.add(new CloserDashboardDateRange(8, "Period to Date", "PERIOD_TO_DATE",
+      currentPeriod.getStartDate(),
+      today,
+      previousPeriod.getStartDate(),
+      previousPeriod.getStartDate().plusDays(ChronoUnit.DAYS.between(currentPeriod.getStartDate(), today)), "the same timeframe last period"));
+
+    ranges.add(new CloserDashboardDateRange(9, "Quarter to Date", "QUARTER_TO_DATE",
+      triumvirate.getCurrentQuarterStart(),
+      today,
+      triumvirate.getLastQuarterStart(),
+      triumvirate.getLastQuarterStart().plusDays(ChronoUnit.DAYS.between(triumvirate.getCurrentQuarterStart(), today)), "the same timeframe last period"));
+
+    ranges.add(new CloserDashboardDateRange(10, "Year to Date", "YEAR_TO_DATE",
+      currentYearStart,
+      today,
+      previousYearStart,
+      previousYearStart.plusDays(ChronoUnit.DAYS.between(currentYearStart, today)), "the same timeframe last period"));
+
+    if(isAdmin) {
+      CloserDashboardDateRange periodRange = new CloserDashboardDateRange();
+      periodRange.setId(11);
+      Collections.reverse(companyPeriods);
+      periodRange.setPeriodList(companyPeriods);
+      periodRange.setTrendText("the period before the selected period");
+      periodRange.setFriendlyName("Period");
+      periodRange.setName("PERIOD");
+      ranges.add(periodRange);
+    }
+
+    ranges.add(new CloserDashboardDateRange(12, "Custom", "CUSTOM", null, null, null, null, null));
+
+    return ranges;
+  }
+
 }
